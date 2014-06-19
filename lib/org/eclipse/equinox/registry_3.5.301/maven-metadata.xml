@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.eclipse.equinox</groupId>
+  <artifactId>registry_3.5.301</artifactId>
+  <version>v20130717-1549</version>
+  <versioning>
+    <versions>
+      <version>v20130717-1549</version>
+    </versions>
+    <lastUpdated>20140528005805</lastUpdated>
+  </versioning>
+</metadata>
