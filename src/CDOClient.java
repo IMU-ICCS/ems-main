@@ -118,10 +118,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
  */
 public class CDOClient
 {	
-	//A CDOView to be used to run queries over the CDOStore
-	private CDOView view;
-	//A CDOTransaction to be used for storing models into the CDOStore
-	private CDOTransaction trans;
 	//A TCP Connector to the CDOServer
 	private org.eclipse.net4j.internal.tcp.TCPClientConnector connector;
 	//The CDOSession that is created by the CDOClient which will be used to create CDO transactions or views
@@ -266,33 +262,36 @@ public class CDOClient
 		session.getPackageRegistry().putEPackage(pack);
 	}
 	
-	/* This method can be used to open a CDO transaction or view. The developer
-	 * should not forget to close the respective cdo transaction or view 
-	 * in the end. The boolean input parameter indicates whether a CDO transaction
-	 * needs to be opened or not (and thus a view in this latter case).
+	/* This method can be used to open a CDO transaction and return it to
+	 * the developer/user. The developer/user should not forget to close 
+	 * the respective cdo transaction in the end.
 	 */
-	public void open(boolean transaction){
-		// Open view or transaction
-	    if (transaction){
-	    	trans = session.openTransaction();
-	    	System.out.println(" opened transaction!");
-	    	//trans.addTransactionHandler(new MyCDOTransactionHandler());
-	    }
-	    else{
-	    	view = session.openView();
-	    	System.out.println(" opened view!");
-	    }
+	public CDOTransaction openTransaction(){
+	    	CDOTransaction trans = session.openTransaction();
+	    	System.out.println("Opened transaction!");
+	    	return trans;
 	}
 	
-	/* This method is used for closing a CDO transaction or view. The developer
-	 * should be careful to close only transactions or views that have been
-	 * created. This means that if a transaction has been opened, then this
-	 * should be closed and not a view. Input parameter: a boolean parameter
-	 * indicating whether a CDO transaction or view should be closed. 
+	/* This method can be used to open a CDO view and return it to
+	 * the developer/user. The developer/user should not forget to close 
+	 * the respective cdo view in the end.
 	 */
-	public void close(boolean transaction){
-		if (transaction && trans != null) trans.close();
-		else if (!transaction && view != null) view.close();
+	public CDOView openView(){
+	    	CDOView view = session.openView();
+	    	System.out.println("Opened view!");
+	    	return view;
+	}
+	
+	/* This method is used for closing a CDO transaction. 
+	 */
+	public void closeTransaction(CDOTransaction trans){
+		trans.close();
+	}
+	
+	/* This method is used for closing a CDO view. 
+	 */
+	public void closeView(CDOView view){
+		view.close();
 	}
 	
 	/* This method is used to store a model into a CDOResource with a particular
@@ -301,7 +300,7 @@ public class CDOClient
 	 * CDOResource to contain it.
 	 */
 	public void storeModel(EObject model, String resourceName){
-		open(true);
+		CDOTransaction trans = openTransaction();
 		CDOResource cdo = trans.getOrCreateResource(resourceName);
 		EList<EObject> list = cdo.getContents();
 		list.add(model);
@@ -312,17 +311,6 @@ public class CDOClient
 		catch(Exception e){
 			e.printStackTrace();
 		}
-	}
-	
-	/* This method is used to obtain the content of a CDOResource with a 
-	 * particular path/name. You should open a view before using this method
-	 * and then close it. Input parameter: the name/path of the CDOResource.
-	 */
-	public EList<EObject> getResourceContents(String path){
-		open(false);
-		CDOResource resource = view.getResource(path);
-		EList<EObject> content = resource.getContents();
-		return content;
 	}
 	
 	/* This method is used to create a particular model based on the CERIF
@@ -411,7 +399,7 @@ public class CDOClient
 		}
 		assigns.add(ra1);
 			
-		/*camel.organisation.Resource r3 = OrganisationFactory.eINSTANCE.createResource();
+		camel.organisation.Resource r3 = OrganisationFactory.eINSTANCE.createResource();
 		rgroups.add(r3);
 		
 		ResourceGroup rg2 = OrganisationFactory.eINSTANCE.createResourceGroup();
@@ -424,7 +412,7 @@ public class CDOClient
 		rg1.setName("RG1");
 		EList<camel.organisation.Resource> res = rg1.getContainsResource();
 		res.add(rg2);
-		rgroups.add(rg1);*/
+		rgroups.add(rg1);
 		
 		Location l1 = OrganisationFactory.eINSTANCE.createLocation();
 		l1.setLatitude(80);
@@ -496,9 +484,10 @@ public class CDOClient
 	public void exportModel(String resourceName, Class c, String fileName){
 		  
 		  String filePath = retrievePropertiesFilePath(fileName);
+		  CDOTransaction trans = null;
 		  try{
 			  FileOutputStream fos = new FileOutputStream(filePath);
-			  open(true);
+			  trans = openTransaction();
 			  CDOResource resource = trans.getResource(resourceName);
 			  EObject obj = resource.getContents().get(0);
 			  final ResourceSet rs = new ResourceSetImpl();
@@ -588,33 +577,33 @@ public class CDOClient
 					  res.save(fos,null);
 				  }
 			  }
-			  close(true);
+			  trans.close();
 		  }
 		  catch(Exception e){
 			  e.printStackTrace();
-			  close(true);
+			  if (trans != null) trans.close();
 		  }
 	  }
 
-	/* This method is used to export a result of a query posed to CDO.
-	 * It takes as input two parameters: (a) the query results as an EObject to be exported, 
-	 * (b) the name of the file to be created (where the path maps to the PAASAGE_CONFIG_DIR).
-	 * Please note that this method should be called only when the respective CDO view 
-	 * through which the corresponding query was issued is active - otherwise an exception will
-	 * be thrown indicating that the view is not active any more       
+	/* This method is used to export a model or instance of EObject in general into a XMI file.
+	 * The model/EObject must have been either created programmatically or obtained via
+	 * issuing a query. The method takes as input two parameters: (a) the query results 
+	 * as an EObject to be exported, (b) the name of the file to be created (where the path 
+	 * maps to the PAASAGE_CONFIG_DIR).
+	 * Please note that this method should be called only when a respective CDO transaction 
+	 * has been opened - otherwise an exception will be thrown       
 	 */
-	public void exportModel(EObject object, String fileName){
+	public void exportModel(EObject model, String fileName){
 		  String filePath = retrievePropertiesFilePath(fileName);
 		  try{
 			  final ResourceSet rs = new ResourceSetImpl();
 			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 			  Resource res = rs.createResource(URI.createFileURI(filePath));
-			  res.getContents().add(object);
+			  res.getContents().add(model);
 			  res.save(null);
 		  }
 		  catch(Exception e){
 			  e.printStackTrace();
-			  close(true);
 		  }
 	  }
 
@@ -633,19 +622,19 @@ public class CDOClient
   public List<EObject> runQuery(String dialect, String queryStr, String fileName){
 	  List<EObject> results = null;
 	  if (fileName == null){
-		  open(false);
+		  CDOView view = openView();
 		  CDOQuery query = null;
 		  query = view.createQuery(dialect, queryStr);
 		  results = query.getResult(EObject.class);
-		  close(false);
+		  view.close();
 	  }
 	  else{
-		  open(true);
+		  CDOTransaction trans = openTransaction();
 		  CDOQuery query = null;
 		  query = trans.createQuery(dialect, queryStr);
 		  results = query.getResult(EObject.class);
   		  exportModel(results.get(0),fileName);
-  		  close(true);
+  		  trans.close();
   	  }
   	  return results;
   }
@@ -692,10 +681,10 @@ public class CDOClient
 	  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
 	  System.out.println("The results of the query are:" + results);
 	  //Obtaining all contents of a CDOResource
-	  cl.open(false);
-	  EList<EObject> objs = cl.getResourceContents("camel");
+	  CDOView view = cl.openView();
+	  EList<EObject> objs = view.getResource("camel").getContents();
 	  System.out.println("The objs stored are: " + objs);
-	  cl.close(false);
+	  cl.closeView(view);
 	  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
 	  cl.exportModel("camel", DeploymentModel.class, "SensApp_DepModel.xmi");
 	  //Close the CDOSession once you are done
