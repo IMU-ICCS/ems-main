@@ -1,0 +1,1194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/cdo-client/src" modelPluginID="cdo-client" modelName="Camel"
+    rootExtendsInterface="org.eclipse.emf.cdo.CDOObject" rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl"
+    reflectiveDelegation="true" importerID="org.eclipse.emf.importer.cdo" featureDelegation="Reflective"
+    complianceLevel="5.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>camel.ecore</foreignModel>
+  <modelPluginVariables>CDO=org.eclipse.emf.cdo</modelPluginVariables>
+  <genPackages prefix="Camel" disposableProviderFactory="true" ecorePackage="camel.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//ActionType">
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//ActionType/CREATES"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//ActionType/SCALE_IN"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//ActionType/SCALE_OUT"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//ActionType/SCALE_UP"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//ActionType/SCALE_DOWN"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//RequirementOperatorType">
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//RequirementOperatorType/AND"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//RequirementOperatorType/OR"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//UnitDimensionType">
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitDimensionType/TIME_INTERVAL"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitDimensionType/STORAGE"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitDimensionType/COST"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitDimensionType/THROUGHPUT"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitDimensionType/REQUEST_NUM"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitDimensionType/UNITLESS"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//UnitType">
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/BYTES"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/KILOBYTES"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/GIGABYTES"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/MEGABYTES"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/EUROS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/DOLLARS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/POUNDS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/MILLISECONDS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/SECONDS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/MINUTES"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/HOURS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/DAYS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/WEEKS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/MONTHS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/REQUESTS"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/REQUESTS_PER_SECOND"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/BYTES_PER_SECOND"/>
+      <genEnumLiterals ecoreEnumLiteral="camel.ecore#//UnitType/PERCENTAGE"/>
+    </genEnums>
+    <genClasses ecoreClass="camel.ecore#//CamelModel">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/organisationModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/scalabilityModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/providerModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/securityModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/deploymentModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/provenanceModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/typeRepositories"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/agreementModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/units"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/actions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/nodes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/objects"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/requirements"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/policies"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/applications"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/vmInfos"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/vmType"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//Action">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Action/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Action/type"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//Application">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Application/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Application/version"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//Application/owner"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//Application/deploymentModels"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//DataObject">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//DataObject/replication"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//DataObject/partitioning"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//DataObject/consistency"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//DataObject/name"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//PhysicalNode">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//PhysicalNode/IP"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//PhysicalNode/hardware"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//PhysicalNode/inDataCenter"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//VMType">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//VMType/feature"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//VMType/constraints"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMType/name"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//Requirement">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Requirement/priority"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Requirement/id"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//RequirementGroup">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//RequirementGroup/posedBy"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//RequirementGroup/requirement"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//RequirementGroup/onApplication"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//RequirementGroup/requirementOperator"/>
+      <genOperations ecoreOperation="camel.ecore#//RequirementGroup/checkRecursiveness">
+        <genParameters ecoreParameter="camel.ecore#//RequirementGroup/checkRecursiveness/rg1"/>
+        <genParameters ecoreParameter="camel.ecore#//RequirementGroup/checkRecursiveness/r"/>
+        <genParameters ecoreParameter="camel.ecore#//RequirementGroup/checkRecursiveness/resources"/>
+        <genParameters ecoreParameter="camel.ecore#//RequirementGroup/checkRecursiveness/context"/>
+      </genOperations>
+    </genClasses>
+    <genClasses image="false" ecoreClass="camel.ecore#//Unit">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Unit/dimensionType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//Unit/unit"/>
+      <genOperations ecoreOperation="camel.ecore#//Unit/checkUnit"/>
+    </genClasses>
+    <genClasses ecoreClass="camel.ecore#//MonetaryUnit"/>
+    <genClasses ecoreClass="camel.ecore#//RequestUnit"/>
+    <genClasses ecoreClass="camel.ecore#//StorageUnit"/>
+    <genClasses ecoreClass="camel.ecore#//ThroughputUnit"/>
+    <genClasses ecoreClass="camel.ecore#//TimeIntervalUnit"/>
+    <genClasses ecoreClass="camel.ecore#//Unitless"/>
+    <genClasses ecoreClass="camel.ecore#//VMInfo">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//VMInfo/ofVM"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//VMInfo/dataCenter"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/costPerHour"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference camel.ecore#//VMInfo/costUnit"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/benchmarkRate"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/evaluatedOn"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/classifiedOn"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/name"/>
+    </genClasses>
+    <nestedGenPackages prefix="Deployment" disposableProviderFactory="true" ecorePackage="camel.ecore#//deployment">
+      <genClasses image="false" ecoreClass="camel.ecore#//deployment/CloudMLElement">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/CloudMLElement/name"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/CloudMLElement/properties"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/CloudMLElement/resources"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/DeploymentModel">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/components"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/communications"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/hostings"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/images"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/providers"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/componentInstances"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/communicationInstances"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/hostingInstances"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//deployment/Component">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Component/ProvidedCommunications"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Component/providedHosts"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/InternalComponent">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/InternalComponent/requiredCommunications"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/InternalComponent/compositeInternalComponents"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/InternalComponent/requiredHost"/>
+        <genOperations ecoreOperation="camel.ecore#//deployment/InternalComponent/contains">
+          <genParameters ecoreParameter="camel.ecore#//deployment/InternalComponent/contains/ic"/>
+          <genParameters ecoreParameter="camel.ecore#//deployment/InternalComponent/contains/rc"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ExternalComponent">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/ExternalComponent/provider"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/ExternalComponent/location"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/VM">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/minRam"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/maxRam"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/VM/ramUnit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/minCores"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/maxCores"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/minStorage"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/maxStorage"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/VM/storageUnit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/minCPU"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/maxCPU"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/os"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VM/is64os"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/VM/vmType"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ComponentGroup">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComponentGroup/id"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ComputationalResource">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComputationalResource/downloadCommand"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComputationalResource/uploadCommand"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComputationalResource/installCommand"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComputationalResource/configureCommand"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComputationalResource/startCommand"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ComputationalResource/stopCommand"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/Communication">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/requiredCommunication"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/providedCommunication"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/requiredPortResource"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/providedPortResource"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/ofDataObject"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//deployment/CommunicationPort">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/CommunicationPort/component"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/CommunicationPort/isLocal"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/CommunicationPort/portNumber"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ProvidedCommunication"/>
+      <genClasses ecoreClass="camel.ecore#//deployment/RequiredCommunication">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/RequiredCommunication/isMandatory"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/Hosting">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/Hosting/providedHost"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/Hosting/requiredHost"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Hosting/requiredHostResource"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Hosting/providedHostResource"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//deployment/HostingPort">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPort/owner"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ProvidedHost">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/ProvidedHost/offers"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/RequiredHost">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/RequiredHost/demands"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/Image">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/os"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/is64os"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/imageId"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/imageGroup"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//deployment/ComponentInstance">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/ProvidedCommunicationInstances"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/type"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/providedHostInstances"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/InternalComponentInstance">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/InternalComponentInstance/requiredCommunicationInstances"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/InternalComponentInstance/requiredHostInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ExternalComponentInstance">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/ExternalComponentInstance/ips"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/VMInstance">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VMInstance/publicAddress"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VMInstance/createdOn"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/VMInstance/destroyedOn"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/VMInstance/hasConfig"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/VMInstance/hasInfo"/>
+        <genOperations ecoreOperation="camel.ecore#//deployment/VMInstance/checkDates">
+          <genParameters ecoreParameter="camel.ecore#//deployment/VMInstance/checkDates/vm"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/CommunicationInstance">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/CommunicationInstance/type"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/CommunicationInstance/requiredCommunicationInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/CommunicationInstance/providedCommunicationInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/CommunicationPortInstance">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/CommunicationPortInstance/type"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/CommunicationPortInstance/componentInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ProvidedCommunicationInstance"/>
+      <genClasses ecoreClass="camel.ecore#//deployment/RequiredCommunicationInstance"/>
+      <genClasses ecoreClass="camel.ecore#//deployment/HostingInstance">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingInstance/providedHostInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingInstance/requiredHostInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingInstance/type"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//deployment/HostingPortInstance">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPortInstance/owner"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPortInstance/type"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ProvidedHostInstance"/>
+      <genClasses ecoreClass="camel.ecore#//deployment/RequiredHostInstance"/>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Execution" disposableProviderFactory="true" ecorePackage="camel.ecore#//execution">
+      <genClasses ecoreClass="camel.ecore#//execution/ExecutionModel">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/executionContext"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/measurement"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/sloAssess"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/ruleTrigger"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/actionRealization"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/ActionRealization">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ActionRealization/action"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ActionRealization/startedOn"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ActionRealization/endedOn"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ActionRealization/lowLevelActions"/>
+        <genOperations ecoreOperation="camel.ecore#//execution/ActionRealization/checkStartEndDates">
+          <genParameters ecoreParameter="camel.ecore#//execution/ActionRealization/checkStartEndDates/this"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/ExecutionContext">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionContext/ofApplication"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ExecutionContext/ID"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ExecutionContext/startTime"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ExecutionContext/endTime"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/ExecutionContext/totalCost"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionContext/costUnit"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionContext/involvesDeployment"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionContext/basedOnRequirements"/>
+        <genOperations ecoreOperation="camel.ecore#//execution/ExecutionContext/checkStartEndDates">
+          <genParameters ecoreParameter="camel.ecore#//execution/ExecutionContext/checkStartEndDates/this"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/Measurement">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/Measurement/ID"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/Measurement/inExecutionContext"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/Measurement/ofMetric"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/Measurement/value"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/Measurement/rawData"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/Measurement/reportedOn"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/Measurement/itSLO"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/Measurement/triggers"/>
+        <genOperations ecoreOperation="camel.ecore#//execution/Measurement/checkDate">
+          <genParameters ecoreParameter="camel.ecore#//execution/Measurement/checkDate/m"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/ApplicationMeasurement">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ApplicationMeasurement/forApplication"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/InternalComponentMeasurement">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/InternalComponentMeasurement/ofComponentInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/ResourceCouplingMeasurement">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ResourceCouplingMeasurement/sourceVMInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ResourceCouplingMeasurement/destinationVMInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/ResourceMeasurement">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ResourceMeasurement/ofVMInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ResourceMeasurement/resourceClass"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ResourceMeasurement/physicalNode"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/ResourceMeasurement/dataObject"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/RuleTrigger">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/RuleTrigger/scalabilityRule"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/RuleTrigger/eventInstances"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/RuleTrigger/actionRealizations"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/RuleTrigger/firedOn"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/RuleTrigger/executionContext"/>
+        <genOperations ecoreOperation="camel.ecore#//execution/RuleTrigger/checkDate">
+          <genParameters ecoreParameter="camel.ecore#//execution/RuleTrigger/checkDate/rt"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//execution/SLOAssessment">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/SLOAssessment/itSLO"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/SLOAssessment/assessment"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/SLOAssessment/inExecutionContext"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//execution/SLOAssessment/measurement"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//execution/SLOAssessment/assessmentTime"/>
+        <genOperations ecoreOperation="camel.ecore#//execution/SLOAssessment/checkDate">
+          <genParameters ecoreParameter="camel.ecore#//execution/SLOAssessment/checkDate/sa"/>
+        </genOperations>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Organisation" disposableProviderFactory="true" ecorePackage="camel.ecore#//organisation">
+      <genClasses ecoreClass="camel.ecore#//organisation/OrganisationModel">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/users"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/provider"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/organization"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/userGroups"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/dataCentres"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/roleAssigments"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/roles"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/permissions"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/resources"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/locations"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/externalIdentifiers"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/allowedActions"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/AllowedActions">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/AllowedActions/resourceClass"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/AllowedActions/actions"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/Credentials">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/Credentials/cloudProvider"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Credentials/securityGroup"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Credentials/publicSSHKey"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Credentials/privateSSHKey"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/DataCenter">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/DataCenter/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/DataCenter/codeName"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/DataCenter/hasLocation"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/DataCenter/ofCloudProvider"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/Entity"/>
+      <genClasses ecoreClass="camel.ecore#//organisation/Organization">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Organization/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Organization/www"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Organization/postalAddress"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Organization/email"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/CloudProvider">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/CloudProvider/public"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/CloudProvider/SaaS"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/CloudProvider/PaaS"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/CloudProvider/IaaS"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/CloudProvider/offersSecControl"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/CloudProvider/providerModel"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/User">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/User/firstName"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/User/lastName"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/User/email"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/User/www"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/User/login"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/User/worksFor"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/User/hasExternalIdentifier"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/User/hasRequirement"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/User/hasCredentials"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/User/deploymentModel"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/ExternalIdentifier">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/ExternalIdentifier/identifier"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/ExternalIdentifier/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/ExternalIdentifier/description"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/Location">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/city"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/country"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/countryCode"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/latitude"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/longitude"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Location/address"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/Permission">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/Permission/forRole"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Permission/start"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Permission/end"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/Permission/issuedBy"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/Permission/onResource"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/Permission/toAction"/>
+        <genOperations ecoreOperation="camel.ecore#//organisation/Permission/checkStartEndDates">
+          <genParameters ecoreParameter="camel.ecore#//organisation/Permission/checkStartEndDates/this"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/Resource">
+        <genOperations ecoreOperation="camel.ecore#//organisation/Resource/ofClass">
+          <genParameters ecoreParameter="camel.ecore#//organisation/Resource/ofClass/x"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//organisation/Resource/allowsActions">
+          <genParameters ecoreParameter="camel.ecore#//organisation/Resource/allowsActions/acts"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/ResourceGroup">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/ResourceGroup/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/ResourceGroup/containsResource"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/ResourceGroup/level"/>
+        <genOperations ecoreOperation="camel.ecore#//organisation/ResourceGroup/allowsActionsOnResources">
+          <genParameters ecoreParameter="camel.ecore#//organisation/ResourceGroup/allowsActionsOnResources/actions"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//organisation/ResourceGroup/checkRecursiveness">
+          <genParameters ecoreParameter="camel.ecore#//organisation/ResourceGroup/checkRecursiveness/rg"/>
+          <genParameters ecoreParameter="camel.ecore#//organisation/ResourceGroup/checkRecursiveness/resource"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/Role">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/Role/name"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/RoleAssignment">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/RoleAssignment/ofUser"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/RoleAssignment/toRole"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/RoleAssignment/ofGroup"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/RoleAssignment/start"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/RoleAssignment/end"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/RoleAssignment/assignedOn"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/RoleAssignment/assignedBy"/>
+        <genOperations ecoreOperation="camel.ecore#//organisation/RoleAssignment/checkAssignedOnDates">
+          <genParameters ecoreParameter="camel.ecore#//organisation/RoleAssignment/checkAssignedOnDates/this"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//organisation/RoleAssignment/checkStartEndDates">
+          <genParameters ecoreParameter="camel.ecore#//organisation/RoleAssignment/checkStartEndDates/this"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//organisation/UserGroup">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//organisation/UserGroup/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//organisation/UserGroup/member"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Provider" disposableProviderFactory="true" ecorePackage="camel.ecore#//provider">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//provider/Operator">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/select"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/add"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/remove"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/multiply"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/divide"/>
+      </genEnums>
+      <genClasses ecoreClass="camel.ecore#//provider/ProviderModel">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/ProviderModel/constraints"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/ProviderModel/rootFeature"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Attribute">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Attribute/name"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Attribute/value"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Attribute/valueType"/>
+        <genOperations ecoreOperation="camel.ecore#//provider/Attribute/checkValue">
+          <genParameters ecoreParameter="camel.ecore#//provider/Attribute/checkValue/v"/>
+          <genParameters ecoreParameter="camel.ecore#//provider/Attribute/checkValue/diff"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/AttributeConstraint">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//provider/AttributeConstraint/from"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//provider/AttributeConstraint/to"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/AttributeConstraint/fromValue"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/AttributeConstraint/toValue"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//provider/Cardinality">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Cardinality/cardinalityMin"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Cardinality/cardinalityMax"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/FeatCardinality">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/FeatCardinality/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/GroupCardinality"/>
+      <genClasses ecoreClass="camel.ecore#//provider/Clone">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Clone/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//provider/Clone/subClones"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//provider/Constraint">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//provider/Constraint/from"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//provider/Constraint/to"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Constraint/attributeConstraints"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Excludes"/>
+      <genClasses ecoreClass="camel.ecore#//provider/Implies"/>
+      <genClasses ecoreClass="camel.ecore#//provider/Requires">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Requires/scopeFrom"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Requires/scopeTo"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Requires/cardFrom"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Requires/cardTo"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Functional">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Functional/type"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Functional/order"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Functional/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Feature">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Feature/attributes"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Feature/subFeatures"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Feature/featureCardinality"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Feature/clones"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//provider/Feature/name"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Alternative">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Alternative/groupCardinality"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//provider/Alternative/variants"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Exclusive"/>
+      <genClasses image="false" ecoreClass="camel.ecore#//provider/Scope"/>
+      <genClasses ecoreClass="camel.ecore#//provider/Instance">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//provider/Instance/feature"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//provider/Product"/>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Scalability" disposableProviderFactory="true" ecorePackage="camel.ecore#//scalability">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/BinaryPatternOperatorType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/AND"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/OR"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/XOR"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/PRECEDES"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/REPEAT_UNTIL"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/WHILE"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/ComparisonOperatorType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ComparisonOperatorType/GREATER_THAN"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ComparisonOperatorType/GREATER_EQUAL_THAN"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ComparisonOperatorType/LESS_THAN"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ComparisonOperatorType/LESS_EQUAL_THAN"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ComparisonOperatorType/EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ComparisonOperatorType/NOT_EQUAL"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/LayerType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/LayerType/SaaS"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/LayerType/PaaS"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/LayerType/IaaS"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/LayerType/BPM"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/LayerType/SCC"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/MetricFunctionArityType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionArityType/UNARY"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionArityType/BINARY"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionArityType/N_ARY"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/MetricFunctionType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/PLUS"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/MINUS"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/DIV"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/MODULO"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/AVERAGE"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/MEAN"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/STD"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricFunctionType/COUNT"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/MetricType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricType/RAW"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/MetricType/COMPOSITE"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/PropertyType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/PropertyType/ABSTRACT"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/PropertyType/MEASURABLE"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/ScheduleType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ScheduleType/FIXED_RATE"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ScheduleType/FIXED_DELAY"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/ScheduleType/SINGLE_EVENT"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/StatusType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/StatusType/CRITICAL"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/StatusType/WARNING"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/StatusType/SUCCESS"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/StatusType/FATAL"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/TimerType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/TimerType/WITHIN"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/TimerType/WITHIN_MAX"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/TimerType/INTERVAL"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/UnaryPatternOperatorType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/UnaryPatternOperatorType/EVERY"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/UnaryPatternOperatorType/NOT"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/UnaryPatternOperatorType/REPEAT"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/UnaryPatternOperatorType/WHERE"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/WindowSizeType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/WindowSizeType/MEASUREMENTS_ONLY"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/WindowSizeType/TIME_ONLY"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/WindowSizeType/FIRST_MATCH"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/WindowSizeType/BOTH_MATCH"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/WindowType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/WindowType/FIXED"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/WindowType/SLIDING"/>
+      </genEnums>
+      <genClasses ecoreClass="camel.ecore#//scalability/ScalabilityModel">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/metricTemplates"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/metrics"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/rules"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/events"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/eventInstances"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/conditions"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/properties"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/actions"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/formulas"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/bindings"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/bindingInstances"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/windows"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/schedules"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/parameters"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/patterns"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/timers"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/sensors"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/units"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/valueTypes"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityModel/policies"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//scalability/Condition">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Condition/validity"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Condition/threshold"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Condition/comparisonOperator"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricCondition">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricCondition/metric"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricTemplateCondition">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricTemplateCondition/metricTemplate"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Event">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Event/name"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//scalability/EventPattern">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/EventPattern/timer"/>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventPattern/includesEvent">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventPattern/includesEvent/e"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventPattern/includesLeftEvent">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventPattern/includesLeftEvent/e"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventPattern/includesRightEvent">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventPattern/includesRightEvent/e"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventPattern/relatedToExecutionContext">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventPattern/relatedToExecutionContext/ec"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventPattern/leftRelatedToExecutionContext">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventPattern/leftRelatedToExecutionContext/ec"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventPattern/rightRelatedToExecutionContext">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventPattern/rightRelatedToExecutionContext/ec"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/BinaryEventPattern">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/BinaryEventPattern/left"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/BinaryEventPattern/right"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/BinaryEventPattern/lowerOccurrenceBound"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/BinaryEventPattern/upperOccurrenceBound"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/BinaryEventPattern/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/UnaryEventPattern">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/UnaryEventPattern/event"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/UnaryEventPattern/occurrenceNum"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/UnaryEventPattern/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/SimpleEvent"/>
+      <genClasses ecoreClass="camel.ecore#//scalability/FunctionalEvent">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/FunctionalEvent/functionalType"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/NonFunctionalEvent">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/NonFunctionalEvent/condition"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/NonFunctionalEvent/isViolation"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/EventInstance">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/EventInstance/status"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/EventInstance/layer"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/EventInstance/onEvent"/>
+        <genOperations ecoreOperation="camel.ecore#//scalability/EventInstance/equalLayer">
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventInstance/equalLayer/l1"/>
+          <genParameters ecoreParameter="camel.ecore#//scalability/EventInstance/equalLayer/l2"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Metric">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Metric/id"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/hasTemplate"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/hasSchedule"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/window"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/componentMetrics"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/sensor"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/objectBinding"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//scalability/Metric/valueType"/>
+        <genOperations ecoreOperation="camel.ecore#//scalability/Metric/checkRecursiveness">
+          <genParameters ecoreParameter="camel.ecore#//scalability/Metric/checkRecursiveness/m1"/>
+          <genParameters ecoreParameter="camel.ecore#//scalability/Metric/checkRecursiveness/m2"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricFormulaParameter">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricFormulaParameter/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricFormula">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricFormula/function"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricFormula/functionArity"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricFormula/parameters"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricTemplate">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricTemplate/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricTemplate/description"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricTemplate/valueDirection"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricTemplate/unit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricTemplate/layer"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricTemplate/measures"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/MetricTemplate/type"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricTemplate/formula"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricTemplate/objectBinding"/>
+        <genOperations ecoreOperation="camel.ecore#//scalability/MetricTemplate/checkRecursiveness">
+          <genParameters ecoreParameter="camel.ecore#//scalability/MetricTemplate/checkRecursiveness/mt1"/>
+          <genParameters ecoreParameter="camel.ecore#//scalability/MetricTemplate/checkRecursiveness/mt2"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/MetricTemplate/greaterEqualThanLayer">
+          <genParameters ecoreParameter="camel.ecore#//scalability/MetricTemplate/greaterEqualThanLayer/l1"/>
+          <genParameters ecoreParameter="camel.ecore#//scalability/MetricTemplate/greaterEqualThanLayer/l2"/>
+        </genOperations>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//scalability/MetricObjectBinding">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricObjectBinding/application"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricApplicationBinding"/>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricComponentBinding">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricComponentBinding/vm"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricComponentBinding/component"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricVMBinding">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricVMBinding/vm"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//scalability/MetricObjectInstanceBinding">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricObjectInstanceBinding/executionContext"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricApplicationInstanceBinding"/>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricComponentInstanceBinding">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricComponentInstanceBinding/vmInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricComponentInstanceBinding/componentInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/MetricVMInstanceBinding">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/MetricVMInstanceBinding/vmInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Property">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Property/id"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Property/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Property/description"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Property/realizedBy"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Property/type"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//scalability/ScalabilityPolicy"/>
+      <genClasses ecoreClass="camel.ecore#//scalability/HorizontalScalabilityPolicy">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/HorizontalScalabilityPolicy/minInstances"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/HorizontalScalabilityPolicy/maxInstances"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/HorizontalScalabilityPolicy/component"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/VerticalScalabilityPolicy">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/minCores"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/maxCores"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/minMemory"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/maxMemory"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/minCPU"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/maxCPU"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/minStorage"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/VerticalScalabilityPolicy/maxStorage"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/VerticalScalabilityPolicy/vm"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/ScalabilityRule">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalabilityRule/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityRule/relatedEvent"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityRule/mapsToActions"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityRule/definedBy"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalabilityRule/invariantPolicies"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/ScalingAction">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/count"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/memoryUpdate"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/CPUUpdate"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/coreUpdate"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/storageUpdate"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/ioUpdate"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/ScalingAction/networkUpdate"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalingAction/vmInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalingAction/componentInstance"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/ScalingAction/containmentInstance"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Schedule">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Schedule/start"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Schedule/end"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Schedule/type"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Schedule/unit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Schedule/repetitions"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Schedule/interval"/>
+        <genOperations ecoreOperation="camel.ecore#//scalability/Schedule/checkStartEndDates">
+          <genParameters ecoreParameter="camel.ecore#//scalability/Schedule/checkStartEndDates/this"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//scalability/Schedule/checkIntervalRepetitions">
+          <genParameters ecoreParameter="camel.ecore#//scalability/Schedule/checkIntervalRepetitions/s"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Sensor">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Sensor/configuration"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Sensor/isPush"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Timer">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Timer/type"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Timer/timeValue"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Timer/maxOccurrenceNum"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Timer/unit"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//scalability/Window">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//scalability/Window/unit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Window/windowType"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Window/sizeType"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Window/measurementSize"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Window/timeSize"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Security" disposableProviderFactory="true" ecorePackage="camel.ecore#//security">
+      <genClasses ecoreClass="camel.ecore#//security/SecurityModel">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//security/SecurityModel/secControls"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//security/SecurityModel/secReq"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//security/SecurityModel/secProps"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//security/SecurityModel/secMetric"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//security/SecurityControl">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//security/SecurityControl/id"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//security/SecurityControl/domain"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//security/SecurityControl/specification"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//security/SecurityControl/linkToSecProp"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//security/SecurityMetric"/>
+      <genClasses ecoreClass="camel.ecore#//security/SecurityProperty">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//security/SecurityProperty/domain"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//security/Certifiable"/>
+      <genClasses ecoreClass="camel.ecore#//security/SecurityRequirement">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//security/SecurityRequirement/onSecControl"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Sla" disposableProviderFactory="true" ecorePackage="camel.ecore#//sla">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//sla/AgreementRoleType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//sla/AgreementRoleType/AgreementInitiator"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//sla/AgreementRoleType/AgreementResponder"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//sla/ServiceRoleType">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//sla/ServiceRoleType/ServiceConsumer"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//sla/ServiceRoleType/ServiceProvider"/>
+      </genEnums>
+      <genClasses ecoreClass="camel.ecore#//sla/AgreementContextType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementContextType/templateId"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementContextType/templateName"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementContextType/serviceProvider"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementContextType/serviceConsumer"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementContextType/expirationTime"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/AgreementContextType/agreementInitiator"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/AgreementContextType/agreementResponder"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/AgreementContextType/deploymentModel"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/AgreementType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementType/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AgreementType/agreementId"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/AgreementType/context"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/AgreementType/terms"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/AgreementType/slos"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/AssessmentIntervalType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AssessmentIntervalType/timeInterval"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/AssessmentIntervalType/count"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/AssessmentIntervalType/timeUnit"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/BusinessValueListType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/BusinessValueListType/importance"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/BusinessValueListType/penalty"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/BusinessValueListType/reward"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/BusinessValueListType/preference"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/BusinessValueListType/customBusinessValue"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/CompensationType">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/CompensationType/assessmentInterval"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/CompensationType/valueUnit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/CompensationType/valueExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/GuaranteeTermType">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/GuaranteeTermType/serviceScope"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/GuaranteeTermType/serviceLevelObjective"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/GuaranteeTermType/businessValueList"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/GuaranteeTermType/obligated"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/GuaranteeTermType/qualifyingCondition"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/KPITargetType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/KPITargetType/kPIName"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/KPITargetType/customServiceLevel"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/PreferenceType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/PreferenceType/serviceTermReference"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/PreferenceType/utility"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/ServiceLevelObjectiveTemplate">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/ServiceLevelObjectiveTemplate/condition"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/ServiceLevelObjectiveType">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/ServiceLevelObjectiveType/kPITarget"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/ServiceLevelObjectiveType/customServiceLevel"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/ServiceSelectorType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/ServiceSelectorType/serviceName"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/ServiceSelectorType/serviceReference"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/TermCompositorType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//sla/TermCompositorType/id"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/TermCompositorType/exactlyOne"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/TermCompositorType/oneOrMore"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/TermCompositorType/all"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//sla/TermCompositorType/serviceReference"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/TermCompositorType/guaranteeTerm"/>
+        <genOperations ecoreOperation="camel.ecore#//sla/TermCompositorType/checkRecursiveness">
+          <genParameters ecoreParameter="camel.ecore#//sla/TermCompositorType/checkRecursiveness/tct1"/>
+          <genParameters ecoreParameter="camel.ecore#//sla/TermCompositorType/checkRecursiveness/tct2"/>
+          <genParameters ecoreParameter="camel.ecore#//sla/TermCompositorType/checkRecursiveness/context"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//sla/TermTreeType">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/TermTreeType/all"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Type" disposableProviderFactory="true" ecorePackage="camel.ecore#//type">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//type/TypeEnum">
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/IntType"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/StringType"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/BooleanType"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/FloatType"/>
+        <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/DoubleType"/>
+      </genEnums>
+      <genClasses ecoreClass="camel.ecore#//type/TypeRepository">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/TypeRepository/dataTypes"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/TypeRepository/values"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/Limit">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/Limit/included"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/Limit/value"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//type/Value">
+        <genOperations ecoreOperation="camel.ecore#//type/Value/valueEquals">
+          <genParameters ecoreParameter="camel.ecore#//type/Value/valueEquals/v"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/BooleanValue">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/BooleanValue/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/EnumerateValue">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/EnumerateValue/value"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/EnumerateValue/name"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//type/NumericValue"/>
+      <genClasses ecoreClass="camel.ecore#//type/IntValue">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/IntValue/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/FloatValue">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/FloatValue/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/DoubleValue">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/DoubleValue/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/NegativeInf"/>
+      <genClasses ecoreClass="camel.ecore#//type/PositiveInf"/>
+      <genClasses ecoreClass="camel.ecore#//type/ValueToIncrease">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/ValueToIncrease/value"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/StringValue">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/StringValue/value"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="camel.ecore#//type/ValueType"/>
+      <genClasses ecoreClass="camel.ecore#//type/BooleanValueType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/BooleanValueType/primitiveType"/>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/Enumeration">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/Enumeration/values"/>
+        <genOperations ecoreOperation="camel.ecore#//type/Enumeration/includesName">
+          <genParameters ecoreParameter="camel.ecore#//type/Enumeration/includesName/name"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//type/Enumeration/includesValue">
+          <genParameters ecoreParameter="camel.ecore#//type/Enumeration/includesValue/value"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/List">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/List/values"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/List/primitiveType"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference camel.ecore#//type/List/type"/>
+        <genOperations ecoreOperation="camel.ecore#//type/List/includesValue">
+          <genParameters ecoreParameter="camel.ecore#//type/List/includesValue/v"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//type/List/checkValueType">
+          <genParameters ecoreParameter="camel.ecore#//type/List/checkValueType/p"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/Range">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/Range/lowerLimit"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/Range/upperLimit"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/Range/primitiveType"/>
+        <genOperations ecoreOperation="camel.ecore#//type/Range/checkType">
+          <genParameters ecoreParameter="camel.ecore#//type/Range/checkType/l"/>
+          <genParameters ecoreParameter="camel.ecore#//type/Range/checkType/type"/>
+          <genParameters ecoreParameter="camel.ecore#//type/Range/checkType/lower"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//type/Range/includesValue">
+          <genParameters ecoreParameter="camel.ecore#//type/Range/includesValue/n"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/RangeUnion">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//type/RangeUnion/ranges"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/RangeUnion/primitiveType"/>
+        <genOperations ecoreOperation="camel.ecore#//type/RangeUnion/includesValue">
+          <genParameters ecoreParameter="camel.ecore#//type/RangeUnion/includesValue/n"/>
+        </genOperations>
+        <genOperations ecoreOperation="camel.ecore#//type/RangeUnion/invalidRangeSequence">
+          <genParameters ecoreParameter="camel.ecore#//type/RangeUnion/invalidRangeSequence/ru"/>
+        </genOperations>
+      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//type/StringValueType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//type/StringValueType/primitiveType"/>
+      </genClasses>
+    </nestedGenPackages>
+  </genPackages>
+</genmodel:GenModel>
