@@ -596,20 +596,57 @@ public class CDOClient
 		  }
 	  }
 
+	/* This method is used to export a result of a query posed to CDO.
+	 * It takes as input two parameters: (a) the query results as an EObject to be exported, 
+	 * (b) the name of the file to be created (where the path maps to the PAASAGE_CONFIG_DIR).
+	 * Please note that this method should be called only when the respective CDO view 
+	 * through which the corresponding query was issued is active - otherwise an exception will
+	 * be thrown indicating that the view is not active any more       
+	 */
+	public void exportModel(EObject object, String fileName){
+		  String filePath = retrievePropertiesFilePath(fileName);
+		  try{
+			  final ResourceSet rs = new ResourceSetImpl();
+			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+			  Resource res = rs.createResource(URI.createFileURI(filePath));
+			  res.getContents().add(object);
+			  res.save(null);
+		  }
+		  catch(Exception e){
+			  e.printStackTrace();
+			  close(true);
+		  }
+	  }
+
 	
 	
 	/* This method is used to run a query over the contents stored in the 
 	 * CDO Store. You do not have to create a view before running the query
 	 * as the view is created before the query transparently by this method 
-	 * and closed when the query is finished. The input parameters are: the query
-	 * dialect (OCL, SQL, HQL) and the query String itself.   
+	 * and closed when the query is finished. The user has the optional
+	 * choice to store the first result of the query in a XMI file whose name
+	 * is given by him/her. The input parameters for this method are: (a) the 
+	 * query dialect (OCL, SQL, HQL), (b) the query String itself and (c) the
+	 * name of the XMI file in which the first query result will be stored - it
+	 * can be null if the user does not want to export the result.    
 	 */
-  public List<Object> runQuery(String dialect, String queryStr){
-	  open(false);
-	  CDOQuery query = null;
-	  query = view.createQuery(dialect, queryStr);
-  	  List<Object> results = query.getResult(Object.class);
-  	  view.close();
+  public List<EObject> runQuery(String dialect, String queryStr, String fileName){
+	  List<EObject> results = null;
+	  if (fileName == null){
+		  open(false);
+		  CDOQuery query = null;
+		  query = view.createQuery(dialect, queryStr);
+		  results = query.getResult(EObject.class);
+		  close(false);
+	  }
+	  else{
+		  open(true);
+		  CDOQuery query = null;
+		  query = trans.createQuery(dialect, queryStr);
+		  results = query.getResult(EObject.class);
+  		  exportModel(results.get(0),fileName);
+  		  close(true);
+  	  }
   	  return results;
   }
   
@@ -644,12 +681,17 @@ public class CDOClient
 	   * and process them to e.g. find the one you are looking for. Please
 	   * notice that for the third way, the user/developer has to first create
 	   * a view, get the contents of the CDOResource and process them and 
-	   * finally close the view.  
+	   * finally close the view. If the contents have to be modified, then
+	   * a transaction should be opened instead (and finally closed when
+	   * processing has been ended). 
 	   */
-	  List<Object> results = cl.runQuery("ocl","camel::organisation::User.allInstances()");
+	  //OCL query plus exporting of first result
+	  List<EObject> results = cl.runQuery("ocl","camel::organisation::User.allInstances()","queryResult.xmi");
 	  System.out.println("The results of the query are:" + results);
-	  results = cl.runQuery("hql","select dm from DeploymentModel dm");
+	  //HQL query with no exporting
+	  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
 	  System.out.println("The results of the query are:" + results);
+	  //Obtaining all contents of a CDOResource
 	  cl.open(false);
 	  EList<EObject> objs = cl.getResourceContents("camel");
 	  System.out.println("The objs stored are: " + objs);
