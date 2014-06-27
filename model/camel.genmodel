@@ -52,7 +52,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/providerModels"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/securityModels"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/deploymentModels"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/provenanceModels"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/executionModels"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/typeRepositories"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/agreementModels"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//CamelModel/units"/>
@@ -128,7 +128,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/classifiedOn"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//VMInfo/name"/>
     </genClasses>
-    <nestedGenPackages prefix="Deployment" disposableProviderFactory="true" ecorePackage="camel.ecore#//deployment">
+    <nestedGenPackages prefix="Deployment" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//deployment">
       <genClasses image="false" ecoreClass="camel.ecore#//deployment/CloudMLElement">
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/CloudMLElement/name"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/CloudMLElement/properties"/>
@@ -146,7 +147,7 @@
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/DeploymentModel/hostingInstances"/>
       </genClasses>
       <genClasses image="false" ecoreClass="camel.ecore#//deployment/Component">
-        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Component/ProvidedCommunications"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Component/providedCommunications"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Component/providedHosts"/>
       </genClasses>
       <genClasses ecoreClass="camel.ecore#//deployment/InternalComponent">
@@ -201,7 +202,7 @@
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/requiredPortResource"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/providedPortResource"/>
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
-            ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/ofDataObject"/>
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/Communication/dataObject"/>
       </genClasses>
       <genClasses image="false" ecoreClass="camel.ecore#//deployment/CommunicationPort">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
@@ -223,16 +224,10 @@
       </genClasses>
       <genClasses image="false" ecoreClass="camel.ecore#//deployment/HostingPort">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
-            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPort/owner"/>
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPort/component"/>
       </genClasses>
-      <genClasses ecoreClass="camel.ecore#//deployment/ProvidedHost">
-        <genFeatures notify="false" createChild="false" propertySortChoices="true"
-            ecoreFeature="ecore:EReference camel.ecore#//deployment/ProvidedHost/offers"/>
-      </genClasses>
-      <genClasses ecoreClass="camel.ecore#//deployment/RequiredHost">
-        <genFeatures notify="false" createChild="false" propertySortChoices="true"
-            ecoreFeature="ecore:EReference camel.ecore#//deployment/RequiredHost/demands"/>
-      </genClasses>
+      <genClasses ecoreClass="camel.ecore#//deployment/ProvidedHost"/>
+      <genClasses ecoreClass="camel.ecore#//deployment/RequiredHost"/>
       <genClasses ecoreClass="camel.ecore#//deployment/Image">
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/os"/>
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/is64os"/>
@@ -240,7 +235,7 @@
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//deployment/Image/imageGroup"/>
       </genClasses>
       <genClasses image="false" ecoreClass="camel.ecore#//deployment/ComponentInstance">
-        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/ProvidedCommunicationInstances"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/providedCommunicationInstances"/>
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
             ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/type"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//deployment/ComponentInstance/providedHostInstances"/>
@@ -290,14 +285,15 @@
       </genClasses>
       <genClasses image="false" ecoreClass="camel.ecore#//deployment/HostingPortInstance">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
-            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPortInstance/owner"/>
+            ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPortInstance/componentInstance"/>
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
             ecoreFeature="ecore:EReference camel.ecore#//deployment/HostingPortInstance/type"/>
       </genClasses>
       <genClasses ecoreClass="camel.ecore#//deployment/ProvidedHostInstance"/>
       <genClasses ecoreClass="camel.ecore#//deployment/RequiredHostInstance"/>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Execution" disposableProviderFactory="true" ecorePackage="camel.ecore#//execution">
+    <nestedGenPackages prefix="Execution" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//execution">
       <genClasses ecoreClass="camel.ecore#//execution/ExecutionModel">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/executionContext"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//execution/ExecutionModel/measurement"/>
@@ -401,7 +397,8 @@
         </genOperations>
       </genClasses>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Organisation" disposableProviderFactory="true" ecorePackage="camel.ecore#//organisation">
+    <nestedGenPackages prefix="Organisation" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//organisation">
       <genClasses ecoreClass="camel.ecore#//organisation/OrganisationModel">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/users"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//organisation/OrganisationModel/provider"/>
@@ -547,7 +544,8 @@
             ecoreFeature="ecore:EReference camel.ecore#//organisation/UserGroup/member"/>
       </genClasses>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Provider" disposableProviderFactory="true" ecorePackage="camel.ecore#//provider">
+    <nestedGenPackages prefix="Provider" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//provider">
       <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//provider/Operator">
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/select"/>
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//provider/Operator/add"/>
@@ -628,7 +626,8 @@
       </genClasses>
       <genClasses ecoreClass="camel.ecore#//provider/Product"/>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Scalability" disposableProviderFactory="true" ecorePackage="camel.ecore#//scalability">
+    <nestedGenPackages prefix="Scalability" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//scalability">
       <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//scalability/BinaryPatternOperatorType">
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/AND"/>
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//scalability/BinaryPatternOperatorType/OR"/>
@@ -972,7 +971,8 @@
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute camel.ecore#//scalability/Window/timeSize"/>
       </genClasses>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Security" disposableProviderFactory="true" ecorePackage="camel.ecore#//security">
+    <nestedGenPackages prefix="Security" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//security">
       <genClasses ecoreClass="camel.ecore#//security/SecurityModel">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//security/SecurityModel/secControls"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//security/SecurityModel/secReq"/>
@@ -996,7 +996,8 @@
             ecoreFeature="ecore:EReference camel.ecore#//security/SecurityRequirement/onSecControl"/>
       </genClasses>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Sla" disposableProviderFactory="true" ecorePackage="camel.ecore#//sla">
+    <nestedGenPackages prefix="Sla" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//sla">
       <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//sla/AgreementRoleType">
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//sla/AgreementRoleType/AgreementInitiator"/>
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//sla/AgreementRoleType/AgreementResponder"/>
@@ -1092,7 +1093,8 @@
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference camel.ecore#//sla/TermTreeType/all"/>
       </genClasses>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Type" disposableProviderFactory="true" ecorePackage="camel.ecore#//type">
+    <nestedGenPackages prefix="Type" basePackage="camel" disposableProviderFactory="true"
+        ecorePackage="camel.ecore#//type">
       <genEnums typeSafeEnumCompatible="false" ecoreEnum="camel.ecore#//type/TypeEnum">
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/IntType"/>
         <genEnumLiterals ecoreEnumLiteral="camel.ecore#//type/TypeEnum/StringType"/>

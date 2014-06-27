@@ -541,7 +541,7 @@ public class CDOClient
 				  if (obj instanceof ExecutionModel) resource.save(fos, null);
 				  else if (obj instanceof CamelModel){
 					  CamelModel cm = (CamelModel)obj;
-					  ExecutionModel dm = cm.getProvenanceModels().get(0);
+					  ExecutionModel dm = cm.getExecutionModels().get(0);
 					  Resource res = rs.createResource(URI.createFileURI(filePath));
 					  res.getContents().add(dm);
 					  res.save(fos,null);

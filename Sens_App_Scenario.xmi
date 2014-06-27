@@ -463,7 +463,7 @@
           name="SensApp"
           downloadCommand="wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh"
           installCommand="cd ~; sudo bash install_start_sensapp.sh"/>
-      <ProvidedCommunications
+      <providedCommunications
           name="rest"
           component="//@deploymentModels.0/@components.0"
           portNumber="8080"/>
@@ -474,7 +474,7 @@
           isMandatory="true"/>
       <requiredHost
           name="SensAppHostReq"
-          owner="//@deploymentModels.0/@components.0"/>
+          component="//@deploymentModels.0/@components.0"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
@@ -483,12 +483,12 @@
           name="MongoDBRes"
           downloadCommand="wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh"
           installCommand="cd ~; sudo bash install_mongoDB.sh"/>
-      <ProvidedCommunications
+      <providedCommunications
           name="mongoDB"
           component="//@deploymentModels.0/@components.1"/>
       <requiredHost
           name="MongoDBHostReq"
-          owner="//@deploymentModels.0/@components.1"/>
+          component="//@deploymentModels.0/@components.1"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
@@ -500,10 +500,10 @@
           stopCommand="sudo service jetty stop"/>
       <providedHosts
           name="JettyProvidedHost"
-          owner="//@deploymentModels.0/@components.2"/>
+          component="//@deploymentModels.0/@components.2"/>
       <requiredHost
           name="Jetty_Required_Host"
-          owner="//@deploymentModels.0/@components.2"/>
+          component="//@deploymentModels.0/@components.2"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
@@ -520,7 +520,7 @@
           portNumber="8080"/>
       <requiredHost
           name="Admin_Required_Host"
-          owner="//@deploymentModels.0/@components.3"/>
+          component="//@deploymentModels.0/@components.3"/>
     </components>
     <components
         xsi:type="deployment:VM"
@@ -539,7 +539,7 @@
       </properties>
       <providedHosts
           name="VM_ML_Host"
-          owner="//@deploymentModels.0/@components.4"/>
+          component="//@deploymentModels.0/@components.4"/>
     </components>
     <components
         xsi:type="deployment:VM"
@@ -552,7 +552,7 @@
         os="ubuntu">
       <providedHosts
           name="VM_SL_Host"
-          owner="//@deploymentModels.0/@components.5"/>
+          component="//@deploymentModels.0/@components.5"/>
     </components>
     <components
         xsi:type="deployment:VM"
@@ -565,12 +565,12 @@
         os="ubuntu">
       <providedHosts
           name="VM_LL_Host"
-          owner="//@deploymentModels.0/@components.6"/>
+          component="//@deploymentModels.0/@components.6"/>
     </components>
     <communications
         name="SensAPP_to_Admin"
         requiredCommunication="//@deploymentModels.0/@components.3/@requiredCommunications.0"
-        providedCommunication="//@deploymentModels.0/@components.0/@ProvidedCommunications.0">
+        providedCommunication="//@deploymentModels.0/@components.0/@providedCommunications.0">
       <requiredPortResource
           name="SensAppAdminSensApp"
           downloadCommand="get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh"
@@ -579,7 +579,7 @@
     <communications
         name="SensApp_to_MongoDB"
         requiredCommunication="//@deploymentModels.0/@components.0/@requiredCommunications.0"
-        providedCommunication="//@deploymentModels.0/@components.1/@ProvidedCommunications.0"/>
+        providedCommunication="//@deploymentModels.0/@components.1/@providedCommunications.0"/>
     <hostings
         name="Admin_to_Jetty"
         requiredHost="//@deploymentModels.0/@components.3/@requiredHost"
@@ -618,20 +618,20 @@
         type="//@deploymentModels.0/@components.2">
       <providedHostInstances
           name="Jetty_SC1_Provided_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.0"
+          componentInstance="//@deploymentModels.0/@componentInstances.0"
           type="//@deploymentModels.0/@components.2/@providedHosts.0"/>
       <requiredHostInstance
           name="Jetty_SC1_Required_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.0"
+          componentInstance="//@deploymentModels.0/@componentInstances.0"
           type="//@deploymentModels.0/@components.2/@requiredHost"/>
     </componentInstances>
     <componentInstances
         xsi:type="deployment:InternalComponentInstance"
         name="SensApp1"
         type="//@deploymentModels.0/@components.0">
-      <ProvidedCommunicationInstances
+      <providedCommunicationInstances
           name="SensApp1_Provided_Comm_Inst"
-          type="//@deploymentModels.0/@components.0/@ProvidedCommunications.0"
+          type="//@deploymentModels.0/@components.0/@providedCommunications.0"
           componentInstance="//@deploymentModels.0/@componentInstances.1"/>
       <requiredCommunicationInstances
           name="Sens_App1_Required_Comm_Inst"
@@ -639,20 +639,20 @@
           componentInstance="//@deploymentModels.0/@componentInstances.1"/>
       <requiredHostInstance
           name="SensApp1_Required_Host_Inst1"
-          owner="//@deploymentModels.0/@componentInstances.1"
+          componentInstance="//@deploymentModels.0/@componentInstances.1"
           type="//@deploymentModels.0/@components.0/@requiredHost"/>
     </componentInstances>
     <componentInstances
         xsi:type="deployment:InternalComponentInstance"
         name="MongoDB1"
         type="//@deploymentModels.0/@components.1">
-      <ProvidedCommunicationInstances
+      <providedCommunicationInstances
           name="MongoDB1_Provided_Comm_Inst"
-          type="//@deploymentModels.0/@components.1/@ProvidedCommunications.0"
+          type="//@deploymentModels.0/@components.1/@providedCommunications.0"
           componentInstance="//@deploymentModels.0/@componentInstances.2"/>
       <requiredHostInstance
           name="MongoDB1_Required_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.2"
+          componentInstance="//@deploymentModels.0/@componentInstances.2"
           type="//@deploymentModels.0/@components.1/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -661,11 +661,11 @@
         type="//@deploymentModels.0/@components.2">
       <providedHostInstances
           name="Jetty_SC2_Provided_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.3"
+          componentInstance="//@deploymentModels.0/@componentInstances.3"
           type="//@deploymentModels.0/@components.2/@providedHosts.0"/>
       <requiredHostInstance
           name="Jetty_SC2_Required_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.3"
+          componentInstance="//@deploymentModels.0/@componentInstances.3"
           type="//@deploymentModels.0/@components.2/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -678,7 +678,7 @@
           componentInstance="//@deploymentModels.0/@componentInstances.4"/>
       <requiredHostInstance
           name="Admin1_Required_Host_Inst"
-          owner="//@deploymentModels.0/@componentInstances.4"
+          componentInstance="//@deploymentModels.0/@componentInstances.4"
           type="//@deploymentModels.0/@components.3/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -689,7 +689,7 @@
         hasInfo="//@vmInfos.1">
       <providedHostInstances
           name="ML_Instance_Provided_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.5"
+          componentInstance="//@deploymentModels.0/@componentInstances.5"
           type="//@deploymentModels.0/@components.4/@providedHosts.0"/>
     </componentInstances>
     <componentInstances
@@ -700,7 +700,7 @@
         hasInfo="//@vmInfos.2">
       <providedHostInstances
           name="LL_Instance_Provided_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.6"
+          componentInstance="//@deploymentModels.0/@componentInstances.6"
           type="//@deploymentModels.0/@components.6/@providedHosts.0"/>
     </componentInstances>
     <componentInstances
@@ -711,19 +711,19 @@
         hasInfo="//@vmInfos.0">
       <providedHostInstances
           name="SL_Instance_Provided_Host_Instance"
-          owner="//@deploymentModels.0/@componentInstances.7"
+          componentInstance="//@deploymentModels.0/@componentInstances.7"
           type="//@deploymentModels.0/@components.5/@providedHosts.0"/>
     </componentInstances>
     <communicationInstances
         name="SensApp_to_Admin_Inst"
         type="//@deploymentModels.0/@communications.0"
         requiredCommunicationInstance="//@deploymentModels.0/@componentInstances.4/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@componentInstances.1/@ProvidedCommunicationInstances.0"/>
+        providedCommunicationInstance="//@deploymentModels.0/@componentInstances.1/@providedCommunicationInstances.0"/>
     <communicationInstances
         name="SensApp_To_MongoDB_Inst"
         type="//@deploymentModels.0/@communications.1"
         requiredCommunicationInstance="//@deploymentModels.0/@componentInstances.1/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@componentInstances.2/@ProvidedCommunicationInstances.0"/>
+        providedCommunicationInstance="//@deploymentModels.0/@componentInstances.2/@providedCommunicationInstances.0"/>
     <hostingInstances
         name="Admin1_to_JettySC2"
         providedHostInstance="//@deploymentModels.0/@componentInstances.3/@providedHostInstances.0"
@@ -750,13 +750,13 @@
         requiredHostInstance="//@deploymentModels.0/@componentInstances.1/@requiredHostInstance"
         type="//@deploymentModels.0/@hostings.1"/>
   </deploymentModels>
-  <provenanceModels>
+  <executionModels>
     <executionContext
         ofApplication="//@applications.0"
         ID="SensAppEC1"
         involvesDeployment="//@deploymentModels.0"
         basedOnRequirements="User1_RG"/>
-  </provenanceModels>
+  </executionModels>
   <units xsi:type="camel:MonetaryUnit"
       unit="EUROS"/>
   <requirements
