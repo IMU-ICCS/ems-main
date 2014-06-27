@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="ASCII"?>
+<deployment:DeploymentModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:deployment="http://www.paasage.eu/camel/cloudml" xmlns:type="http://www.paasage.eu/camel/type" name="SensApp">
+  <components xsi:type="deployment:InternalComponent" name="SensApp">
+    <resources name="SensApp" downloadCommand="wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh" installCommand="cd ~; sudo bash install_start_sensapp.sh"/>
+    <ProvidedCommunications name="rest" component="//@components.0" portNumber="8080"/>
+    <requiredCommunications name="mongoDBRequired" component="//@components.0" isLocal="true" isMandatory="true"/>
+    <requiredHost name="SensAppHostReq" owner="//@components.0"/>
+  </components>
+  <components xsi:type="deployment:InternalComponent" name="MongoDB">
+    <resources name="MongoDBRes" downloadCommand="wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh" installCommand="cd ~; sudo bash install_mongoDB.sh"/>
+    <ProvidedCommunications name="mongoDB" component="//@components.1"/>
+    <requiredHost name="MongoDBHostReq" owner="//@components.1"/>
+  </components>
+  <components xsi:type="deployment:InternalComponent" name="JettySC">
+    <resources name="jettySC" downloadCommand="wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh" installCommand="cd ~; sudo bash install_jetty.sh" stopCommand="sudo service jetty stop"/>
+    <providedHosts name="JettyProvidedHost" owner="//@components.2"/>
+    <requiredHost name="Jetty_Required_Host" owner="//@components.2"/>
+  </components>
+  <components xsi:type="deployment:InternalComponent" name="Admin">
+    <resources name="Admin" downloadCommand="wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json" installCommand="cd ~; sudo bash install_sensappadmin.sh" startCommand="cd ~; sudo bash start_sensappadmin.sh" stopCommand="sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart"/>
+    <requiredCommunications name="restRequired" component="//@components.3" portNumber="8080"/>
+    <requiredHost name="Admin_Required_Host" owner="//@components.3"/>
+  </components>
+  <components xsi:type="deployment:VM" name="ML" minRam="4096" minCores="2" minStorage="512" os="ubuntu">
+    <properties name="KeyPath">
+      <value xsi:type="type:StringValue" value="."/>
+    </properties>
+    <providedHosts name="VM_ML_Host" owner="//@components.4"/>
+    <provider href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#CloudProvider#5"/>
+    <location href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#Location#4"/>
+  </components>
+  <components xsi:type="deployment:VM" name="SL" minRam="1024" minCores="1" minStorage="200" os="ubuntu">
+    <providedHosts name="VM_SL_Host" owner="//@components.5"/>
+    <provider href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#CloudProvider#4"/>
+    <location href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#Location#3"/>
+  </components>
+  <components xsi:type="deployment:VM" name="LL" minRam="4096" minCores="4" minStorage="512" os="ubuntu">
+    <providedHosts name="VM_LL_Host" owner="//@components.6"/>
+    <provider href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#CloudProvider#6"/>
+    <location href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#Location#5"/>
+  </components>
+  <communications name="SensAPP_to_Admin" requiredCommunication="//@components.3/@requiredCommunications.0" providedCommunication="//@components.0/@ProvidedCommunications.0">
+    <requiredPortResource name="SensAppAdminSensApp" downloadCommand="get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh" installCommand="cd ~; sudo bash configure_sensappadmin.sh"/>
+  </communications>
+  <communications name="SensApp_to_MongoDB" requiredCommunication="//@components.0/@requiredCommunications.0" providedCommunication="//@components.1/@ProvidedCommunications.0"/>
+  <hostings name="Admin_to_Jetty" providedHost="//@components.2/@providedHosts.0" requiredHost="//@components.3/@requiredHost"/>
+  <hostings name="SensApp_to_Jetty" providedHost="//@components.2/@providedHosts.0" requiredHost="//@components.0/@requiredHost"/>
+  <hostings name="Jetty_to_LL" providedHost="//@components.6/@providedHosts.0" requiredHost="//@components.2/@requiredHost"/>
+  <hostings name="MongoDB_to_ML" providedHost="//@components.4/@providedHosts.0" requiredHost="//@components.1/@requiredHost"/>
+  <hostings name="Jetty_to_SL" providedHost="//@components.5/@providedHosts.0" requiredHost="//@components.2/@requiredHost"/>
+  <images name="ML_Image" os="ubuntu" imageId="RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4"/>
+  <images name="SL_Image" os="ubuntu" imageId="RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4"/>
+  <images name="LL_Image" os="ubuntu" imageId="RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4"/>
+  <providers href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#CloudProvider#4"/>
+  <providers href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#CloudProvider#5"/>
+  <providers href="cdo://repo1/camel#lhttp://www.paasage.eu/camel/cerif#CloudProvider#6"/>
+  <componentInstances xsi:type="deployment:InternalComponentInstance" name="Jetty_SC1" type="//@components.2">
+    <providedHostInstances name="Jetty_SC1_Provided_Host_Instance" owner="//@componentInstances.0" type="//@components.2/@providedHosts.0"/>
+    <requiredHostInstance name="Jetty_SC1_Required_Host_Instance" owner="//@componentInstances.0" type="//@components.2/@requiredHost"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:InternalComponentInstance" name="SensApp1" type="//@components.0">
+    <ProvidedCommunicationInstances name="SensApp1_Provided_Comm_Inst" type="//@components.0/@ProvidedCommunications.0" componentInstance="//@componentInstances.1"/>
+    <requiredCommunicationInstances name="Sens_App1_Required_Comm_Inst" type="//@components.0/@requiredCommunications.0" componentInstance="//@componentInstances.1"/>
+    <requiredHostInstance name="SensApp1_Required_Host_Inst1" owner="//@componentInstances.1" type="//@components.0/@requiredHost"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:InternalComponentInstance" name="MongoDB1" type="//@components.1">
+    <ProvidedCommunicationInstances name="MongoDB1_Provided_Comm_Inst" type="//@components.1/@ProvidedCommunications.0" componentInstance="//@componentInstances.2"/>
+    <requiredHostInstance name="MongoDB1_Required_Host_Instance" owner="//@componentInstances.2" type="//@components.1/@requiredHost"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:InternalComponentInstance" name="Jetty_SC2" type="//@components.2">
+    <providedHostInstances name="Jetty_SC2_Provided_Host_Instance" owner="//@componentInstances.3" type="//@components.2/@providedHosts.0"/>
+    <requiredHostInstance name="Jetty_SC2_Required_Host_Instance" owner="//@componentInstances.3" type="//@components.2/@requiredHost"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:InternalComponentInstance" name="Admin_Inst1" type="//@components.3">
+    <requiredCommunicationInstances name="Admin1_Required_Comm_Inst" type="//@components.3/@requiredCommunications.0" componentInstance="//@componentInstances.4"/>
+    <requiredHostInstance name="Admin1_Required_Host_Inst" owner="//@componentInstances.4" type="//@components.3/@requiredHost"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:VMInstance" name="ML_Instance" type="//@components.4" hasConfig="//@images.0">
+    <providedHostInstances name="ML_Instance_Provided_Host_Instance" owner="//@componentInstances.5" type="//@components.4/@providedHosts.0"/>
+    <hasInfo href="cdo://repo1/camel#lhttp://www.paasage.eu/camel#VMInfo#1"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:VMInstance" name="LL_Instance" type="//@components.6" hasConfig="//@images.2">
+    <providedHostInstances name="LL_Instance_Provided_Host_Instance" owner="//@componentInstances.6" type="//@components.6/@providedHosts.0"/>
+    <hasInfo href="cdo://repo1/camel#lhttp://www.paasage.eu/camel#VMInfo#2"/>
+  </componentInstances>
+  <componentInstances xsi:type="deployment:VMInstance" name="SL_Instance" type="//@components.5" hasConfig="//@images.1">
+    <providedHostInstances name="SL_Instance_Provided_Host_Instance" owner="//@componentInstances.7" type="//@components.5/@providedHosts.0"/>
+    <hasInfo href="cdo://repo1/camel#lhttp://www.paasage.eu/camel#VMInfo#3"/>
+  </componentInstances>
+  <communicationInstances name="SensApp_to_Admin_Inst" type="//@communications.0" requiredCommunicationInstance="//@componentInstances.4/@requiredCommunicationInstances.0" providedCommunicationInstance="//@componentInstances.1/@ProvidedCommunicationInstances.0"/>
+  <communicationInstances name="SensApp_To_MongoDB_Inst" type="//@communications.1" requiredCommunicationInstance="//@componentInstances.1/@requiredCommunicationInstances.0" providedCommunicationInstance="//@componentInstances.2/@ProvidedCommunicationInstances.0"/>
+  <hostingInstances name="Admin1_to_JettySC2" providedHostInstance="//@componentInstances.3/@providedHostInstances.0" requiredHostInstance="//@componentInstances.4/@requiredHostInstance" type="//@hostings.0"/>
+  <hostingInstances name="JettySC2_to_SL_Inst" providedHostInstance="//@componentInstances.7/@providedHostInstances.0" requiredHostInstance="//@componentInstances.3/@requiredHostInstance" type="//@hostings.4"/>
+  <hostingInstances name="JettySC1_to_LL_Inst" providedHostInstance="//@componentInstances.6/@providedHostInstances.0" requiredHostInstance="//@componentInstances.0/@requiredHostInstance" type="//@hostings.2"/>
+  <hostingInstances name="MongoDB_to_ML_Inst" providedHostInstance="//@componentInstances.5/@providedHostInstances.0" requiredHostInstance="//@componentInstances.2/@requiredHostInstance" type="//@hostings.3"/>
+  <hostingInstances name="SensApp1_to_JettySC1" providedHostInstance="//@componentInstances.0/@providedHostInstances.0" requiredHostInstance="//@componentInstances.1/@requiredHostInstance" type="//@hostings.1"/>
+</deployment:DeploymentModel>

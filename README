@@ -1,13 +1,21 @@
-This is a maven project incorporating java code which can be used to create a CDOClient and store models or run queries over the contents of a CDOStore/Server. To exploit this code, you just need to import the contents of this directory in the Application Development Environment of your choice and then:
-(a) run "maven clean install" to compile the code and produce the respective jar file (b) run "maven exec:java" to run the code/client. The code is accompanied with a .properties file (eu.paasage.wp4.client.properties) through which it can be specified:
+This is a maven project incorporating java code which can be used to create a CDOClient and store models or run queries over the contents of a CDOStore/Server. There are two ways to exploit the code: (1) import the contents of the respective directory in the Application Development Environment of your choice and then:
+(a) run "maven clean install" to compile the code and produce the respective jar file (b) run "maven exec:java" to run the code's main method (you can also run the code's main method at the command line by issuing "java -jar cdo-client-0.0.1-SNAPSHOT-jar-with-dependencies.jar". This exploitation route should probably concern just testing that the CDOClient code runs smoothly; (2) produce the jar of the code via "maven clean install" and incorporate it in the libraries of your code. In this second way, probably you need to follow a particular process through which you can exploit the code as there is no sense any more in exploiting the main method. Actually, the main method can be used as a guide based on which you will be able to exploit the CDOClient.
+
+The code is accompanied with a .properties file (eu.paasage.wp4.client.properties) through which it can be specified:
 (a) the IP of the host on which the CDO Server runs.
 (b) the port on which the CDO Server listens.
+This .properties file should be placed in a particular directory whose path is denoted by the system variable PAASAGE_CONFIG_DIR. Otherwise, the CDOClient will notbe able to connect correctly to the CDO Server that is running. 
+Another file, Sens_App_Scenario.xmi, has also been created which can be used to load a particular CAMEL model and then store it in the CDOServer. This file is used by the main method of the code to show that the loading of XMI files is possible and then the CDOClient can be used to store the loaded models. If you desire to load another file, then you will have to place it in the directory whose path is denoted by the system variable PAASAGE_CONFIG_DIR.
 
 FUNCTIONALITY: This CDO client exposes the following functionality: 
-(i) register the EPackage that map to the domain code to be manipulated
+(i) register the EPackage(s) that maps to the domain code to be manipulated
 (ii) store a model into a CDOResource with a particular name
 (iii) run a particular query according to a specific dialect (OCL, SQL, HQL) over the contents of the CDO Server / Store 
 (iv) open a view, get its contents (and probably process them - depends on the user's purposes) and finally close the view.
+(v) load a model from a file placed at the path designated by PAASAGE_CONFIG_DIR system variable
+(vi) export a CDOResource or a part of it or the results of a query
 Note: first functionality (EPackage registering) should be initially invoked in order to exploit the rest. The CDO session
 created by instantiating the CDOClient should be closed in the end by calling the respective java method.
+Please see the main method of the CDOClient which indicates possible ways the CDOClient can be exploited. 
+As you will see, the CDOClient needs to be created, then the appropriate EPackages must be registered, next follows the main exploitation logic in terms of particular CDOClient methods that can be called with the appropriate parameters and finally the closeSession method must be called to close the CDOSession opened by the CDOClient initially when it was created.
 

@@ -41,22 +41,21 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
-import camel.cerif.AllowedActions;
-import camel.cerif.CerifFactory;
-import camel.cerif.CerifModel;
-import camel.cerif.CerifPackage;
-import camel.cerif.CloudProvider;
-import camel.cerif.DataCenter;
-import camel.cerif.Entity;
-import camel.cerif.ExternalIdentifier;
-import camel.cerif.Location;
-import camel.cerif.Organization;
-import camel.cerif.Permission;
-import camel.cerif.ResourceGroup;
-import camel.cerif.Role;
-import camel.cerif.RoleAssignment;
-import camel.cerif.User;
-import camel.cerif.UserGroup;
+import application.ApplicationComponent;
+import application.ApplicationFactory;
+import application.RequiredFeature;
+import types.BasicTypeEnum;
+import types.DoubleValue;
+import types.IntegerValue;
+import types.TypesFactory;
+import types.typesPaasage.ProviderType;
+import cp.ComparatorEnum;
+import cp.ComparisonExpression;
+import cp.Constant;
+import cp.ConstraintProblem;
+import cp.CpFactory;
+import cp.RangeDomain;
+import cp.Variable;
 import camel.Application;
 import camel.CamelModel;
 import camel.CamelPackage;
@@ -68,14 +67,35 @@ import camel.MonetaryUnit;
 import camel.Requirement;
 import camel.RequirementGroup;
 import camel.RequirementOperatorType;
-import camel.ScalabilityPolicy;
-import camel.ScalabilityType;
 import camel.TimeIntervalUnit;
 import camel.Unit;
 import camel.UnitType;
 import camel.Unitless;
+import camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentPackage;
+import camel.execution.ExecutionModel;
+import camel.organisation.AllowedActions;
+import camel.organisation.CloudProvider;
+import camel.organisation.DataCenter;
+import camel.organisation.ExternalIdentifier;
+import camel.organisation.Location;
+import camel.organisation.OrganisationFactory;
+import camel.organisation.OrganisationModel;
+import camel.organisation.OrganisationPackage;
+import camel.organisation.Organization;
+import camel.organisation.Permission;
+import camel.organisation.ResourceGroup;
+import camel.organisation.Role;
+import camel.organisation.RoleAssignment;
+import camel.organisation.User;
+import camel.organisation.UserGroup;
+import camel.provider.ProviderModel;
+import camel.scalability.ScalabilityModel;
+import camel.security.SecurityModel;
+import camel.sla.AgreementType;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -115,6 +135,12 @@ public class CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
 	//A static parameter that maps to a default path where the properties file of the CDOClient can be found
     private static final String DEFAULT_PAASAGE_CONFIG_DIR =".paasage";
+    
+    private static final String propertyFilePath;
+    
+    static {
+    	propertyFilePath = retrieveConfigurationDirectoryFullPath(); 
+    }
 	
     /*Default constructor for the client which initiates a CDO session*/
 	public CDOClient(){
@@ -127,30 +153,30 @@ public class CDOClient
 	 */
 	private static String retrieveConfigurationDirectoryFullPath()
     {
-        String paasageConfigurationFullPath = System.getenv(ENV_CONFIG);
-        System.out.println("Got path: " + paasageConfigurationFullPath);
-        if (paasageConfigurationFullPath == null)
+        String propertyFilePath = System.getenv(ENV_CONFIG);
+        System.out.println("Got path: " + propertyFilePath);
+        if (propertyFilePath == null)
         {
             String home = System.getProperty("user.home");
             Path homePath = Paths.get(home);
-            paasageConfigurationFullPath = homePath.resolve(DEFAULT_PAASAGE_CONFIG_DIR).toAbsolutePath().toString();
+            propertyFilePath = homePath.resolve(DEFAULT_PAASAGE_CONFIG_DIR).toAbsolutePath().toString();
         }
-        return paasageConfigurationFullPath;
+        return propertyFilePath;
     }
 	
 	/* This method is used to find the path to the property file which specifies
 	 * the connection information to the CDO Server 
 	 */
-    private static String retrievePropertiesFilePath(String propertiesFileName)
+    private String retrievePropertiesFilePath(String propertiesFileName)
     {
-        Path configPath = Paths.get(retrieveConfigurationDirectoryFullPath());
+        Path configPath = Paths.get(propertyFilePath);
         return configPath.resolve(propertiesFileName).toAbsolutePath().toString();
     }
     
     /* This method is used in order to load a property file of the CDOClient
      * which contains the information needed to connect to the CDOServer
      */
-    public static Properties loadPropertyFile()
+    private Properties loadPropertyFile()
     {
         String propertyPath = retrievePropertiesFilePath("eu.paasage.wp4.client.properties");
         Properties props = new Properties();
@@ -227,9 +253,9 @@ public class CDOClient
 
 	    // Open session
 	    session = configuration.openNet4jSession();
-	    /*session.getPackageRegistry().putEPackage(CamelPackage.eINSTANCE);*/
-	    /*session.getPackageRegistry().putEPackage(CerifPackage.eINSTANCE);*/
-	    //session.getPackageRegistry().putEPackage(EcorePackage.eINSTANCE);
+	    /*session.getPackageRegistry().putEPackage(CamelPackage.eINSTANCE);
+	    session.getPackageRegistry().putEPackage(OrganisationPackage.eINSTANCE);
+	    session.getPackageRegistry().putEPackage(EcorePackage.eINSTANCE);*/
 	}
 	
 	/* This method is used for registering an EPackage mapping to the domain
@@ -305,78 +331,71 @@ public class CDOClient
 	 * by this model. 
 	 */
 	public EObject createCerifModel(){
-		CerifModel cm = CerifFactory.eINSTANCE.createCerifModel();
+		OrganisationModel cm = OrganisationFactory.eINSTANCE.createOrganisationModel();
 		EList<User> users = cm.getUsers();
-		EList<Organization> orgs = cm.getOrganization();
 		EList<UserGroup> ugroups = cm.getUserGroups();
 		EList<Role> roles = cm.getRoles();
 		EList<RoleAssignment> assigns = cm.getRoleAssigments();
-		EList<Permission> permissions = cm.getPermissions();
-		EList<camel.cerif.Resource> rgroups = cm.getResources();
+		EList<camel.organisation.Resource> rgroups = cm.getResources();
 		EList<ExternalIdentifier> ids = cm.getExternalIdentifiers();
-		EList<AllowedActions> aActs = cm.getAllowedActions();
 		EList<DataCenter> dcs = cm.getDataCentres();
 		EList<Location> locs = cm.getLocations();
 		
-		ExternalIdentifier id1 = CerifFactory.eINSTANCE.createExternalIdentifier();
+		ExternalIdentifier id1 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
 		id1.setName("ID1");
 		id1.setIdentifier("ID1");
 		ids.add(id1);
 		
-		ExternalIdentifier id2 = CerifFactory.eINSTANCE.createExternalIdentifier();
+		ExternalIdentifier id2 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
 		id2.setName("ID2");
 		id2.setIdentifier("ID2");
 		ids.add(id2);
 		
-		ExternalIdentifier id3 = CerifFactory.eINSTANCE.createExternalIdentifier();
+		ExternalIdentifier id3 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
 		id3.setName("ID3");
 		id3.setIdentifier("ID3");
 		ids.add(id3);
 		
-		User user1 = CerifFactory.eINSTANCE.createUser();
-		user1.setLastName("User1");
+		User user1 = OrganisationFactory.eINSTANCE.createUser();
+		user1.setLastName("User");
+		user1.setFirstName("User1");
 		EList<Organization> worksFor = user1.getWorksFor();
 		EList<ExternalIdentifier> exIDs1 = user1.getHasExternalIdentifier();
 		exIDs1.add(id1);
 		exIDs1.add(id2);
 		users.add(user1);
 		
-		User user2 = CerifFactory.eINSTANCE.createUser();
-		user2.setLastName("User2");
+		User user2 = OrganisationFactory.eINSTANCE.createUser();
+		user2.setFirstName("User2");
+		user2.setLastName("User");
 		users.add(user2);
 		exIDs1 = user2.getHasExternalIdentifier();
 		//exIDs1.add(id2);
 		exIDs1.add(id3);
 		
-		Organization org1 = CerifFactory.eINSTANCE.createOrganization();
-		org1.setEmail("email1");
-		org1.setName("Org1");
-		org1.setWww("www1");
+		CloudProvider org1 = OrganisationFactory.eINSTANCE.createCloudProvider();
+		org1.setEmail("email2");
+		org1.setName("Org2");
+		org1.setWww("www2");
+		org1.setPublic(true);
+		cm.setOrganization(org1);
 		worksFor.add(org1);
-		orgs.add(org1);
 		
-		CloudProvider org2 = CerifFactory.eINSTANCE.createCloudProvider();
-		org2.setEmail("email2");
-		org2.setName("Org2");
-		org2.setWww("www2");
-		org2.setPublic(true);
-		orgs.add(org2);
-		
-		UserGroup ug1 = CerifFactory.eINSTANCE.createUserGroup();
+		UserGroup ug1 = OrganisationFactory.eINSTANCE.createUserGroup();
 		ug1.setName("ug1");
 		EList<User> members = ug1.getMember();
 		members.add(user1);
 		ugroups.add(ug1);
 		
-		Role r1 = CerifFactory.eINSTANCE.createRole();
+		Role r1 = OrganisationFactory.eINSTANCE.createRole();
 		r1.setName("role1");
 		roles.add(r1);
 
-		Role r2 = CerifFactory.eINSTANCE.createRole();
+		Role r2 = OrganisationFactory.eINSTANCE.createRole();
 		r2.setName("role2");
 		roles.add(r2);
 		
-		RoleAssignment ra1 = CerifFactory.eINSTANCE.createRoleAssignment();
+		RoleAssignment ra1 = OrganisationFactory.eINSTANCE.createRoleAssignment();
 		ra1.setToRole(r1);
 		ra1.setOfUser(user1);
 		ra1.setAssignedBy(org1);
@@ -392,53 +411,192 @@ public class CDOClient
 		}
 		assigns.add(ra1);
 			
-		ResourceGroup rg1 = CerifFactory.eINSTANCE.createResourceGroup();
+		/*camel.organisation.Resource r3 = OrganisationFactory.eINSTANCE.createResource();
+		rgroups.add(r3);
 		
-		ResourceGroup rg3 = CerifFactory.eINSTANCE.createResourceGroup();
-		rg3.setName("RG3");
-		//res3.add(rg1);
-		rgroups.add(rg3);
-		
-		ResourceGroup rg2 = CerifFactory.eINSTANCE.createResourceGroup();
+		ResourceGroup rg2 = OrganisationFactory.eINSTANCE.createResourceGroup();
 		rg2.setName("RG2");
-		EList<camel.cerif.Resource> res2 = rg2.getContainsResource();
-		res2.add(rg3);
+		EList<camel.organisation.Resource> res2 = rg2.getContainsResource();
+		res2.add(r3);
 		rgroups.add(rg2);
 		
+		ResourceGroup rg1 = OrganisationFactory.eINSTANCE.createResourceGroup();
 		rg1.setName("RG1");
-		EList<camel.cerif.Resource> res = rg1.getContainsResource();
+		EList<camel.organisation.Resource> res = rg1.getContainsResource();
 		res.add(rg2);
-		//res.add(rg3);
-		rgroups.add(rg1);
+		rgroups.add(rg1);*/
 		
-		Location l1 = CerifFactory.eINSTANCE.createLocation();
+		Location l1 = OrganisationFactory.eINSTANCE.createLocation();
 		l1.setLatitude(80);
 		l1.setLongitude(175);
 		l1.setCity("City1");
 		locs.add(l1);
 		
-		Location l2 = CerifFactory.eINSTANCE.createLocation();
+		Location l2 = OrganisationFactory.eINSTANCE.createLocation();
 		l2.setLatitude(88);
 		l2.setLongitude(120);
 		l2.setCity("City1");
 		locs.add(l2);
 		
-		DataCenter dc1 = CerifFactory.eINSTANCE.createDataCenter();
+		DataCenter dc1 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc1.setName("DC1");
 		dc1.setCodeName("DC1");
-		dc1.setOfCloudProvider(org2);
+		dc1.setOfCloudProvider(org1);
 		dc1.setHasLocation(l1);
 		dcs.add(dc1);
 		
-		DataCenter dc2 = CerifFactory.eINSTANCE.createDataCenter();
+		DataCenter dc2 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc2.setName("DC2");
 		dc2.setCodeName("DC2");
-		dc2.setOfCloudProvider(org2);
+		dc2.setOfCloudProvider(org1);
 		dc2.setHasLocation(l2);
 		dcs.add(dc2);
 		
 		return cm;
 	}
+	
+	/* This method is used to load a model from a particular xmi resource. The model
+	 * can then be stored to the CDO Server/Repository. The method takes as input
+	 * the path (as a String) where the XML file resides.   
+	 */
+	public EObject loadModel(String fileName){
+		  Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
+			("*", 
+			new XMIResourceFactoryImpl()
+			{
+			public Resource createResource(URI uri)
+			{
+			XMIResource xmiResource = new XMIResourceImpl(uri);
+			return xmiResource;
+			}
+			});
+		  
+		  final ResourceSet rs = new ResourceSetImpl();
+		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+		  Resource res = rs.getResource(URI.createFileURI(retrievePropertiesFilePath(fileName)), true);
+		  System.out.println("Got resource: " + res);
+		  EList<EObject> contents = res.getContents();
+		  System.out.println("Contents are: " + contents);
+		  
+		  return contents.get(0);
+	  }
+	
+	/* This method is used to export a model that has been stored in the CDO Server/Repository.
+	 * It takes as input three parameters: (a) the name of the CDOResource, (b) the
+	 * Class of the model to be exported and (c) the name of the file to be created 
+	 * (where the path maps to the PAASAGE_CONFIG_DIR). We must highlight that if the
+	 * model required is not at the root of the CDOResource, we assume that it is 
+	 * obtained from the root EObject which maps to a CamelModel and that this CamelModel
+	 * does not contain other models that have the same type as the requested model (as
+	 * the first model of the respective type is actually obtained). We must also
+	 * note that the user is responsible of providing correct input parameters as well
+	 * as ensuring that the requested model is indeed stored in the CDOResource whose
+	 * name is signified in the input parameters.    
+	 */
+	public void exportModel(String resourceName, Class c, String fileName){
+		  
+		  String filePath = retrievePropertiesFilePath(fileName);
+		  try{
+			  FileOutputStream fos = new FileOutputStream(filePath);
+			  open(true);
+			  CDOResource resource = trans.getResource(resourceName);
+			  EObject obj = resource.getContents().get(0);
+			  final ResourceSet rs = new ResourceSetImpl();
+			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+			  
+			  if (c.equals(CamelModel.class) || c.equals(ConstraintProblem.class) || c.equals(ApplicationComponent.class)){
+				  if ((c.equals(CamelModel.class) && obj instanceof CamelModel) || (c.equals(ConstraintProblem.class) && obj instanceof ConstraintProblem) || (c.equals(ApplicationComponent.class) && obj instanceof ApplicationComponent))
+				  resource.save(fos, null);
+			  }
+			  else if (c.equals(DeploymentModel.class)){
+				  if (obj instanceof DeploymentModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  DeploymentModel dm = cm.getDeploymentModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(ProviderModel.class)){
+				  if (obj instanceof ProviderModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ProviderModel dm = cm.getProviderModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(OrganisationModel.class)){
+				  if (obj instanceof OrganisationModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  OrganisationModel dm = cm.getOrganisationModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(ScalabilityModel.class)){
+				  if (obj instanceof ScalabilityModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ScalabilityModel dm = cm.getScalabilityModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(ExecutionModel.class)){
+				  if (obj instanceof ExecutionModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ExecutionModel dm = cm.getProvenanceModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(SecurityModel.class)){
+				  if (obj instanceof SecurityModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  SecurityModel dm = cm.getSecurityModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(AgreementType.class)){
+				  if (obj instanceof AgreementType) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  AgreementType dm = cm.getAgreementModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  else if (c.equals(ProviderModel.class)){
+				  if (obj instanceof ProviderModel) resource.save(fos, null);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ProviderModel dm = cm.getProviderModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,null);
+				  }
+			  }
+			  close(true);
+		  }
+		  catch(Exception e){
+			  e.printStackTrace();
+			  close(true);
+		  }
+	  }
+
+	
 	
 	/* This method is used to run a query over the contents stored in the 
 	 * CDO Store. You do not have to create a view before running the query
@@ -447,7 +605,6 @@ public class CDOClient
 	 * dialect (OCL, SQL, HQL) and the query String itself.   
 	 */
   public List<Object> runQuery(String dialect, String queryStr){
-	  //CDOQuery query = view.createQuery("ocl", "self.copies.>=(1).not()",constraints.get(0).getContextVariable());
 	  open(false);
 	  CDOQuery query = null;
 	  query = view.createQuery(dialect, queryStr);
@@ -472,11 +629,16 @@ public class CDOClient
 	  CDOClient cl = new CDOClient();
 	  //Register the required packages
 	  cl.registerPackage(CamelPackage.eINSTANCE);
-	  cl.registerPackage(CerifPackage.eINSTANCE);
-	  //Create a particular model
-	  EObject cerifModel = cl.createCerifModel();
-	  //Store the model under a particular CDOResource
-	  cl.storeModel(cerifModel,"cerif2");
+	  cl.registerPackage(OrganisationPackage.eINSTANCE);
+	  cl.registerPackage(DeploymentPackage.eINSTANCE);
+	  //Create a particular model (CERIF)
+	  EObject model = cl.createCerifModel();
+	  //Store the model under a CDOResource with a particular name
+	  cl.storeModel(model,"cerif");
+	  //Load a model from a XMI resource
+	  model = cl.loadModel("Sens_App_Scenario.xmi");
+	  //Store the model under a CDOResource with a particular name
+	  cl.storeModel(model,"camel");
 	  /*Run a query - three ways are shown here: (i) ocl query, 
 	   * (ii) hql query and (iii) get all contents of a CDO Resource
 	   * and process them to e.g. find the one you are looking for. Please
@@ -484,14 +646,16 @@ public class CDOClient
 	   * a view, get the contents of the CDOResource and process them and 
 	   * finally close the view.  
 	   */
-	  List<Object> results = cl.runQuery("ocl","camel::cerif::User.allInstances()");
+	  List<Object> results = cl.runQuery("ocl","camel::organisation::User.allInstances()");
 	  System.out.println("The results of the query are:" + results);
-	  results = cl.runQuery("hql","select u from User u");
+	  results = cl.runQuery("hql","select dm from DeploymentModel dm");
 	  System.out.println("The results of the query are:" + results);
 	  cl.open(false);
-	  EList<EObject> objs = cl.getResourceContents("cerif2");
+	  EList<EObject> objs = cl.getResourceContents("camel");
 	  System.out.println("The objs stored are: " + objs);
 	  cl.close(false);
+	  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
+	  cl.exportModel("camel", DeploymentModel.class, "SensApp_DepModel.xmi");
 	  //Close the CDOSession once you are done
 	  cl.closeSession();
   }

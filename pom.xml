@@ -72,7 +72,21 @@
 		<artifactId>runtime_3.9.100</artifactId>
 		<version>v20131218-1515</version>
 	  </dependency>
-	  
+	  <dependency>
+		<groupId>javax</groupId>
+		<artifactId>annotation_1.1.0</artifactId>
+		<version>v20120906-0031</version>
+	  </dependency>
+	  <dependency>
+		<groupId>javax</groupId>
+		<artifactId>inject_1.0.0</artifactId>
+		<version>v20091030</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse</groupId>
+		<artifactId>osgi_3.9.1</artifactId>
+		<version>v20140110-1610</version>
+	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.equinox</groupId>
 		<artifactId>common_3.6.200</artifactId>
@@ -94,24 +108,14 @@
 		<version>v20130717-1549</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse</groupId>
-		<artifactId>osgi_3.9.1</artifactId>
-		<version>v20140110-1610</version>
+		<groupId>org.eclipse.equinox</groupId>
+		<artifactId>preferences_3.5.100</artifactId>
+		<version>v20130422-1538</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.core</groupId>
 		<artifactId>contenttype_3.4.200</artifactId>
 		<version>v20130326-1255</version>
-	  </dependency>
-	  <dependency>
-		<groupId>org.eclipse.emf</groupId>
-		<artifactId>cdo_4.2.1</artifactId>
-		<version>v20140218-1709</version>
-	  </dependency>
-	  <dependency>
-		<groupId>org.eclipse.emf.cdo</groupId>
-		<artifactId>common_4.2.1</artifactId>
-		<version>v20140218-1709</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.emf</groupId>
@@ -122,6 +126,16 @@
 		<groupId>org.eclipse.emf</groupId>
 		<artifactId>common_2.9.2</artifactId>
 		<version>v20131212-0545</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.emf</groupId>
+		<artifactId>cdo_4.2.1</artifactId>
+		<version>v20140218-1709</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.emf.cdo</groupId>
+		<artifactId>common_4.2.1</artifactId>
+		<version>v20140218-1709</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.emf.ecore</groupId>
@@ -139,26 +153,19 @@
 		<version>v20140218-1709</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse</groupId>
-		<artifactId>net4j_4.2.1</artifactId>
-		<version>v20140218-1709</version>
-	  </dependency>
-	  
-	  <dependency>
-		<groupId>org.eclipse.net4j</groupId>
-		<artifactId>tcp_4.1.101</artifactId>
-		<version>v20140218-1830</version>
-	  </dependency>
-	  
-	  <dependency>
 		<groupId>org.eclipse.emf.cdo</groupId>
 		<artifactId>net4j_4.1.101</artifactId>
 		<version>v20140218-1709</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.net4j</groupId>
-		<artifactId>jvm_4.1.101</artifactId>
+		<artifactId>tcp_4.1.101</artifactId>
 		<version>v20140218-1830</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse</groupId>
+		<artifactId>net4j_4.2.1</artifactId>
+		<version>v20140218-1709</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.apache.commons</groupId>
