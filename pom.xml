@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>cdo-client</groupId>
-  <artifactId>cdo-client</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <groupId>eu.paasage.mddb.cdo</groupId>
+  <artifactId>client</artifactId>
+  <version>1.0</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -26,7 +26,7 @@
     		</execution>
         </executions>
   		<configuration>
-    		<mainClass>CDOClient</mainClass>
+    		<mainClass>eu.paasage.mddb.cdo.client.CDOClient</mainClass>
     			<arguments>
     			</arguments>
   		</configuration>
@@ -38,7 +38,7 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <mainClass>CDOClient</mainClass>
+                        <mainClass>eu.paasage.mddb.cdo.client.CDOClient</mainClass>
                     </manifest>
                 </archive>
                 <descriptorRefs>
@@ -67,6 +67,11 @@
   </repositories>
   
   <dependencies>
+  	  <dependency>
+		<groupId>eu.paasage</groupId>
+		<artifactId>camel</artifactId>
+		<version>1.0</version>
+	  </dependency>
   	  <dependency>
 		<groupId>org.eclipse.core</groupId>
 		<artifactId>runtime_3.9.100</artifactId>
