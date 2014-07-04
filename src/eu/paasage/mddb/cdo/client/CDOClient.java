@@ -51,22 +51,14 @@ import eu.paasage.camel.sla.AgreementType;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit.*;
-
-import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author Eike Stepper
@@ -75,6 +67,7 @@ public class CDOClient
 {	
 	//A TCP Connector to the CDOServer
 	private org.eclipse.net4j.internal.tcp.TCPClientConnector connector;
+	//private org.eclipse.net4j.internal.jvm.JVMClientConnector connector;
 	//The CDOSession that is created by the CDOClient which will be used to create CDO transactions or views
 	private CDOSession session;
 	//Configuration object for the CDO session
@@ -85,8 +78,9 @@ public class CDOClient
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
 	//A static parameter that maps to a default path where the properties file of the CDOClient can be found
-    private static final String DEFAULT_PAASAGE_CONFIG_DIR =".paasage";
-    private static final String PROPERTY_FILE = "eu.paasage.mddb.cdo.client.properties";
+    private static final String DEFAULT_PAASAGE_CONFIG_DIR=".paasage";
+    //A static parameter that maps to the name of the properties file
+    private static final String PROPERTY_FILENAME="eu.paasage.mddb.cdo.client.properties";
     
     private static final String propertyFilePath;
     
@@ -130,7 +124,7 @@ public class CDOClient
      */
     private Properties loadPropertyFile()
     {
-        String propertyPath = retrievePropertiesFilePath(PROPERTY_FILE);
+        String propertyPath = retrievePropertiesFilePath(PROPERTY_FILENAME);
         Properties props = new Properties();
         try {
             props.load(new FileInputStream(propertyPath));
@@ -160,6 +154,7 @@ public class CDOClient
 	connection information from a property file*/
 	private void initSession(){
 		getConnectionInformation();
+
 		OMPlatform.INSTANCE.setDebugging(true);
 	    OMPlatform.INSTANCE.addLogHandler(PrintLogHandler.CONSOLE);
 	    OMPlatform.INSTANCE.addTraceHandler(PrintTraceHandler.CONSOLE);
@@ -175,6 +170,15 @@ public class CDOClient
 	        return thread;
 	      }
 	    });
+	    
+	    //IManagedContainer container = ContainerUtil.createContainer(); 
+	    /*IManagedContainer container = IPluginContainer.INSTANCE;
+		Net4jUtil.prepareContainer(container);
+		TCPUtil.prepareContainer(container);
+		//SSLUtil.prepareContainer(container);
+		//LifecycleUtil.activate(container);
+		CDONet4jUtil.prepareContainer(container); // Register CDO factories*/
+		//container.activate();
 
 	    // Prepare bufferProvider
 	    IBufferProvider bufferProvider = Net4jUtil.createBufferPool();
@@ -185,6 +189,7 @@ public class CDOClient
 
 	    // Prepare selector
 	    org.eclipse.net4j.internal.tcp.TCPSelector selector = new org.eclipse.net4j.internal.tcp.TCPSelector();
+	    //org.eclipse.net4j.internal.jvm.JVMSelector selector = new org.eclipse.net4j.internal.jvm.JVMSelector();
 	    selector.activate();
 
 	    // Prepare connector
@@ -197,6 +202,11 @@ public class CDOClient
 	    connector.setHost(host); //$NON-NLS-1$
 	    connector.setPort(Integer.parseInt(port.trim()));
 	    connector.activate();
+	    
+	    //ITCPConnector connector = TCPUtil.getConnector(container, "0.0.0.0:2036");
+	    //IConnector connector = SSLUtil.getConnector(container, "0.0.0.0:2036");
+	    //JVMUtil.getAcceptor(container, "default");
+	    //connector.activate();
 
 	    // Create configuration
 	    CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();

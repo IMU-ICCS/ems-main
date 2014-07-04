@@ -2,11 +2,12 @@
 <metadata>
   <groupId>org.eclipse.runtime</groupId>
   <artifactId>runtime-registry-compatibility</artifactId>
-  <version>1.0.0</version>
+  <version>v1.0.0</version>
   <versioning>
     <versions>
+      <version>v1.0.0</version>
       <version>1.0.0</version>
     </versions>
-    <lastUpdated>20140528224543</lastUpdated>
+    <lastUpdated>20140703212406</lastUpdated>
   </versioning>
 </metadata>

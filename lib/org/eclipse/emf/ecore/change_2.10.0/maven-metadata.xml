@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.eclipse.emf.ecore</groupId>
+  <artifactId>change_2.10.0</artifactId>
+  <version>v20140514-1158</version>
+  <versioning>
+    <versions>
+      <version>v20140514-1158</version>
+    </versions>
+    <lastUpdated>20140703213850</lastUpdated>
+  </versioning>
+</metadata>
