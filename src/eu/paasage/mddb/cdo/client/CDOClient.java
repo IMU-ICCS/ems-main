@@ -73,7 +73,7 @@ public class CDOClient
 	//Configuration object for the CDO session
 	private CDONet4jSessionConfiguration configuration = null;
 	//Parameters representing the required connection information in order to connect to the CDOServer
-	private String host, port;
+	private String host, port, repositoryName;
 	
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
@@ -147,7 +147,9 @@ public class CDOClient
 		Properties props = loadPropertyFile();
 		host = props.getProperty("host");
 		port = props.getProperty("port");
-		System.out.println("Got host: " + host + " port: " + port);
+		repositoryName = props.getProperty("repository");
+		if (repositoryName == null) repositoryName = "repo1";
+		System.out.println("Got host: " + host + " port: " + port + " repository:" + repositoryName);
 	}
 	
 	/*This method is used for initiating a CDO Session starting by obtaining
@@ -211,7 +213,7 @@ public class CDOClient
 	    // Create configuration
 	    CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
 	    configuration.setConnector(connector);
-	    configuration.setRepositoryName("repo1"); //$NON-NLS-1$
+	    configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
 	    // Open session
 	    session = configuration.openNet4jSession();
@@ -413,7 +415,7 @@ public class CDOClient
 	 * can then be stored to the CDO Server/Repository. The method takes as input
 	 * the path (as a String) where the XML file resides.   
 	 */
-	public EObject loadModel(String fileName){
+	public EObject loadModel(String pathName){
 		  Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
 			("*", 
 			new XMIResourceFactoryImpl()
@@ -427,7 +429,7 @@ public class CDOClient
 		  
 		  final ResourceSet rs = new ResourceSetImpl();
 		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
-		  Resource res = rs.getResource(URI.createFileURI(retrievePropertiesFilePath(fileName)), true);
+		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
 		  System.out.println("Got resource: " + res);
 		  EList<EObject> contents = res.getContents();
 		  System.out.println("Contents are: " + contents);
@@ -437,8 +439,8 @@ public class CDOClient
 	
 	/* This method is used to export a model that has been stored in the CDO Server/Repository.
 	 * It takes as input three parameters: (a) the name of the CDOResource, (b) the
-	 * Class of the model to be exported and (c) the name of the file to be created 
-	 * (where the path maps to the PAASAGE_CONFIG_DIR). We must highlight that if the
+	 * Class of the model to be exported and (c) the path of the file to be created as a String. 
+	 * We must highlight that if the
 	 * model required is not at the root of the CDOResource, we assume that it is 
 	 * obtained from the root EObject which maps to a CamelModel and that this CamelModel
 	 * does not contain other models that have the same type as the requested model (as
@@ -447,9 +449,8 @@ public class CDOClient
 	 * as ensuring that the requested model is indeed stored in the CDOResource whose
 	 * name is signified in the input parameters.    
 	 */
-	public void exportModel(String resourceName, Class c, String fileName){
+	public void exportModel(String resourceName, Class c, String filePath){
 		  
-		  String filePath = retrievePropertiesFilePath(fileName);
 		  CDOTransaction trans = null;
 		  try{
 			  FileOutputStream fos = new FileOutputStream(filePath);
@@ -553,13 +554,11 @@ public class CDOClient
 	/* This method is used to export a model or instance of EObject in general into a XMI file.
 	 * The model/EObject must have been either created programmatically or obtained via
 	 * issuing a query. The method takes as input two parameters: (a) the query results 
-	 * as an EObject to be exported, (b) the name of the file to be created (where the path 
-	 * maps to the PAASAGE_CONFIG_DIR).
+	 * as an EObject to be exported, (b) the path of the file to be created.
 	 * Please note that this method should be called only when a respective CDO transaction 
 	 * has been opened - otherwise an exception will be thrown       
 	 */
-	public void exportModel(EObject model, String fileName){
-		  String filePath = retrievePropertiesFilePath(fileName);
+	public void exportModel(EObject model, String filePath){
 		  try{
 			  final ResourceSet rs = new ResourceSetImpl();
 			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
@@ -627,7 +626,7 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"cerif");
 	  //Load a model from a XMI resource
-	  model = cl.loadModel("Sens_App_Scenario.xmi");
+	  model = cl.loadModel("input/Sens_App_Scenario.xmi");
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"camel");
 	  /*Run a query - three ways are shown here: (i) ocl query, 
@@ -651,7 +650,7 @@ public class CDOClient
 	  System.out.println("The objs stored are: " + objs);
 	  cl.closeView(view);
 	  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
-	  cl.exportModel("camel", DeploymentModel.class, "SensApp_DepModel.xmi");
+	  cl.exportModel("camel", DeploymentModel.class, "input/SensApp_DepModel.xmi");
 	  //Close the CDOSession once you are done
 	  cl.closeSession();
   }
