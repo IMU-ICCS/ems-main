@@ -46,6 +46,7 @@ import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.organisation.UserGroup;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.scalability.ScalabilityModel;
+import eu.paasage.camel.scalability.ScalabilityPackage;
 import eu.paasage.camel.security.SecurityModel;
 import eu.paasage.camel.sla.AgreementType;
 
@@ -315,8 +316,8 @@ public class CDOClient
 		User user1 = OrganisationFactory.eINSTANCE.createUser();
 		user1.setLastName("User");
 		user1.setFirstName("User1");
-		EList<Organization> worksFor = user1.getWorksFor();
-		EList<ExternalIdentifier> exIDs1 = user1.getHasExternalIdentifier();
+		EList<Organization> worksFor = user1.getOrganizations();
+		EList<ExternalIdentifier> exIDs1 = user1.getExternalIdentifiers();
 		exIDs1.add(id1);
 		exIDs1.add(id2);
 		users.add(user1);
@@ -325,7 +326,7 @@ public class CDOClient
 		user2.setFirstName("User2");
 		user2.setLastName("User");
 		users.add(user2);
-		exIDs1 = user2.getHasExternalIdentifier();
+		exIDs1 = user2.getExternalIdentifiers();
 		//exIDs1.add(id2);
 		exIDs1.add(id3);
 		
@@ -339,7 +340,7 @@ public class CDOClient
 		
 		UserGroup ug1 = OrganisationFactory.eINSTANCE.createUserGroup();
 		ug1.setName("ug1");
-		EList<User> members = ug1.getMember();
+		EList<User> members = ug1.getUsers();
 		members.add(user1);
 		ugroups.add(ug1);
 		
@@ -352,9 +353,9 @@ public class CDOClient
 		roles.add(r2);
 		
 		RoleAssignment ra1 = OrganisationFactory.eINSTANCE.createRoleAssignment();
-		ra1.setToRole(r1);
-		ra1.setOfUser(user1);
-		ra1.setAssignedBy(org1);
+		ra1.setRole(r1);
+		ra1.setUser(user1);
+		ra1.setOrganization(org1);
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
 		try{
 			ra1.setAssignedOn(ft.parse("1976-12-16"));
@@ -372,13 +373,13 @@ public class CDOClient
 		
 		ResourceGroup rg2 = OrganisationFactory.eINSTANCE.createResourceGroup();
 		rg2.setName("RG2");
-		EList<eu.paasage.camel.organisation.Resource> res2 = rg2.getContainsResource();
+		EList<eu.paasage.camel.organisation.Resource> res2 = rg2.getResources();
 		res2.add(r3);
 		rgroups.add(rg2);
 		
 		ResourceGroup rg1 = OrganisationFactory.eINSTANCE.createResourceGroup();
 		rg1.setName("RG1");
-		EList<eu.paasage.camel.organisation.Resource> res = rg1.getContainsResource();
+		EList<eu.paasage.camel.organisation.Resource> res = rg1.getResources();
 		res.add(rg2);
 		rgroups.add(rg1);
 		
@@ -397,15 +398,15 @@ public class CDOClient
 		DataCenter dc1 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc1.setName("DC1");
 		dc1.setCodeName("DC1");
-		dc1.setOfCloudProvider(org1);
-		dc1.setHasLocation(l1);
+		dc1.setCloudProvider(org1);
+		dc1.setLocation(l1);
 		dcs.add(dc1);
 		
 		DataCenter dc2 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc2.setName("DC2");
 		dc2.setCodeName("DC2");
-		dc2.setOfCloudProvider(org1);
-		dc2.setHasLocation(l2);
+		dc2.setCloudProvider(org1);
+		dc2.setLocation(l2);
 		dcs.add(dc2);
 		
 		return cm;
@@ -621,6 +622,7 @@ public class CDOClient
 	  cl.registerPackage(CamelPackage.eINSTANCE);
 	  cl.registerPackage(OrganisationPackage.eINSTANCE);
 	  cl.registerPackage(DeploymentPackage.eINSTANCE);
+	  cl.registerPackage(ScalabilityPackage.eINSTANCE);
 	  //Create a particular model (CERIF)
 	  EObject model = cl.createCerifModel();
 	  //Store the model under a CDOResource with a particular name

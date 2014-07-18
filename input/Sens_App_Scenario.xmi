@@ -9,7 +9,7 @@
     xmlns:provider="http://www.paasage.eu/camel/saloon/feature"
     xmlns:scalability="http://www.paasage.eu/camel/srl"
     xmlns:type="http://www.paasage.eu/camel/type"
-    xsi:schemaLocation="http://www.paasage.eu/camel camel.ecore http://www.paasage.eu/camel/cloudml camel.ecore#//deployment http://www.paasage.eu/camel/cerif camel.ecore#//organisation http://www.paasage.eu/camel/saloon/feature camel.ecore#//provider http://www.paasage.eu/camel/srl camel.ecore#//scalability http://www.paasage.eu/camel/type camel.ecore#//type">
+    xsi:schemaLocation="http://www.paasage.eu/camel camel.ecore#//paasage/camel http://www.paasage.eu/camel/cloudml camel.ecore#//paasage/camel/deployment http://www.paasage.eu/camel/cerif camel.ecore#//paasage/camel/organisation http://www.paasage.eu/camel/saloon/feature camel.ecore#//paasage/camel/provider http://www.paasage.eu/camel/srl camel.ecore#//paasage/camel/scalability http://www.paasage.eu/camel/type camel.ecore#//paasage/camel/type">
   <organisationModels>
     <organization
         xsi:type="organisation:CloudProvider"
@@ -23,8 +23,8 @@
     <dataCentres
         name="European Amazon Data Centre"
         codeName="amazon-eu"
-        hasLocation="//@organisationModels.0/@locations.0"
-        ofCloudProvider="//@organisationModels.0/@organization"/>
+        location="//@organisationModels.0/@locations.0"
+        cloudProvider="//@organisationModels.0/@organization"/>
     <locations
         name="amazon-eu"
         city=""
@@ -42,8 +42,8 @@
     <dataCentres
         name="Flexiant Data Centre"
         codeName="flexiant"
-        hasLocation="//@organisationModels.1/@locations.0"
-        ofCloudProvider="//@organisationModels.1/@organization"/>
+        location="//@organisationModels.1/@locations.0"
+        cloudProvider="//@organisationModels.1/@organization"/>
     <locations
         name="flexiant"
         city="Edinburg"
@@ -53,12 +53,12 @@
     <users firstName="User1"
         lastName="User"
         email="user@sintef.no"
-        hasRequirement="Horiz_Policy_Sens_App Vert_Pol_MongoDB">
-      <hasCredentials
+        requirements="Horiz_Policy_Sens_App Vert_Pol_MongoDB">
+      <credentials
           cloudProvider="//@organisationModels.0/@organization"/>
-      <hasCredentials
+      <credentials
           cloudProvider="//@organisationModels.1/@organization"/>
-      <hasCredentials
+      <credentials
           cloudProvider="//@organisationModels.2/@organization"/>
     </users>
     <organization
@@ -71,8 +71,8 @@
     <dataCentres
         name="Sintef Nova Data Centre"
         codeName="nova"
-        hasLocation="//@organisationModels.2/@locations.0"
-        ofCloudProvider="//@organisationModels.2/@organization"/>
+        location="//@organisationModels.2/@locations.0"
+        cloudProvider="//@organisationModels.2/@organization"/>
     <locations
         name="oslo-nova"
         city="Oslo"
@@ -82,21 +82,21 @@
     <metricTemplates
         name="RAW_EXEC_TIME"
         unit="//@scalabilityModels.0/@units.0"
-        measures="//@scalabilityModels.0/@properties.0"/>
+        property="//@scalabilityModels.0/@properties.0"/>
     <metricTemplates
         name="AVG_EXEC_TIME"
         unit="//@scalabilityModels.0/@units.0"
-        measures="//@scalabilityModels.0/@properties.0"
+        property="//@scalabilityModels.0/@properties.0"
         type="COMPOSITE"
         formula="//@scalabilityModels.0/@formulas.0"/>
     <metricTemplates
         name="Storage"
         unit="//@scalabilityModels.0/@units.1"
         layer="IaaS"
-        measures="//@scalabilityModels.0/@properties.1"/>
+        property="//@scalabilityModels.0/@properties.1"/>
     <metrics
         id="Raw_ET_Metric1"
-        hasTemplate="//@scalabilityModels.0/@metricTemplates.0"
+        template="//@scalabilityModels.0/@metricTemplates.0"
         sensor="//@scalabilityModels.0/@sensors.0"
         objectBinding="//@scalabilityModels.0/@bindingInstances.0">
       <valueType
@@ -114,7 +114,7 @@
     </metrics>
     <metrics
         id="AVG_ET_Metric1"
-        hasTemplate="//@scalabilityModels.0/@metricTemplates.1"
+        template="//@scalabilityModels.0/@metricTemplates.1"
         componentMetrics="Raw_ET_Metric1"
         objectBinding="//@scalabilityModels.0/@bindingInstances.0">
       <valueType
@@ -132,7 +132,7 @@
     </metrics>
     <metrics
         id="Raw_Storage_Num"
-        hasTemplate="//@scalabilityModels.0/@metricTemplates.2"
+        template="//@scalabilityModels.0/@metricTemplates.2"
         sensor="//@scalabilityModels.0/@sensors.1"
         objectBinding="//@scalabilityModels.0/@bindingInstances.1">
       <valueType
@@ -152,20 +152,20 @@
       </valueType>
     </metrics>
     <rules name="Avg_ET_Rule"
-        relatedEvent="//@scalabilityModels.0/@events.0"
-        mapsToActions="//@scalabilityModels.0/@actions.0"/>
+        event="//@scalabilityModels.0/@events.0"
+        actions="//@scalabilityModels.0/@actions.0"/>
     <rules name="Storage_Viol_Rule"
-        relatedEvent="//@scalabilityModels.0/@events.1"
-        mapsToActions="//@scalabilityModels.0/@actions.1"/>
+        event="//@scalabilityModels.0/@events.1"
+        actions="//@scalabilityModels.0/@actions.1"/>
     <events
         xsi:type="scalability:NonFunctionalEvent"
         name="NF_Avg_ET_Viol"
-        condition="//@scalabilityModels.0/@conditions.0"
+        metricCondition="//@scalabilityModels.0/@conditions.0"
         isViolation="true"/>
     <events
         xsi:type="scalability:NonFunctionalEvent"
         name="NF_Raw_Storage_Viol"
-        condition="//@scalabilityModels.0/@conditions.1"
+        metricCondition="//@scalabilityModels.0/@conditions.1"
         isViolation="true"/>
     <conditions
         xsi:type="scalability:MetricCondition"
@@ -198,10 +198,10 @@
         parameters="//@scalabilityModels.0/@metricTemplates.0"/>
     <bindingInstances
         xsi:type="scalability:MetricApplicationInstanceBinding"
-        executionContext="SensAppEC1"/>
+        executionContext="//@executionModels.0/@executionContexts.0"/>
     <bindingInstances
         xsi:type="scalability:MetricVMInstanceBinding"
-        executionContext="SensAppEC1"
+        executionContext="//@executionModels.0/@executionContexts.0"
         vmInstance="//@deploymentModels.0/@componentInstances.5"/>
     <sensors/>
     <sensors/>
@@ -751,49 +751,49 @@
         type="//@deploymentModels.0/@hostings.1"/>
   </deploymentModels>
   <executionModels>
-    <executionContext
-        ofApplication="//@applications.0"
+    <executionContexts
+        application="//@applications.0"
         ID="SensAppEC1"
-        involvesDeployment="//@deploymentModels.0"
-        basedOnRequirements="User1_RG"/>
+        deploymentModel="//@deploymentModels.0"
+        requirementGroup="User1_RG"/>
   </executionModels>
   <units xsi:type="camel:MonetaryUnit"
       unit="EUROS"/>
   <requirements
       xsi:type="camel:RequirementGroup"
       id="User1_RG"
-      posedBy="//@organisationModels.2/@users.0"
-      requirement="Horiz_Policy_Sens_App Vert_Pol_MongoDB"
-      onApplication="//@applications.0"/>
+      user="//@organisationModels.2/@users.0"
+      requirements="Horiz_Policy_Sens_App Vert_Pol_MongoDB"
+      application="//@applications.0"/>
   <applications
       name="SensApp"
       version="v1.0"
       owner="//@organisationModels.2/@users.0"
       deploymentModels="//@deploymentModels.0"/>
-  <vmInfos ofVM="//@vmType.0"
+  <vmInfos ofVM="//@vmTypes.0"
       costPerHour="0.5"
       costUnit="//@units.0"
       evaluatedOn="2012-12-10T00:00:00.000+0200"
       classifiedOn="2012-10-12T00:00:00.000+0300"
       name="Small_VM_Info"/>
-  <vmInfos ofVM="//@vmType.1"
+  <vmInfos ofVM="//@vmTypes.1"
       costPerHour="1.0"
       costUnit="//@units.0"
       evaluatedOn="2012-12-10T00:00:00.000+0200"
       classifiedOn="2012-10-12T00:00:00.000+0300"
       name="Medium_VM_Info"/>
-  <vmInfos ofVM="//@vmType.2"
+  <vmInfos ofVM="//@vmTypes.2"
       costUnit="//@units.0"
       evaluatedOn="2012-12-10T00:00:00.000+0200"
       classifiedOn="2012-10-12T00:00:00.000+0300"
       name="High_VM_Info"/>
-  <vmType feature="//@providerModels.0/@rootFeature"
+  <vmTypes feature="//@providerModels.0/@rootFeature"
       constraints="//@providerModels.0/@constraints.0"
       name="VM_Small"/>
-  <vmType feature="//@providerModels.0/@rootFeature"
+  <vmTypes feature="//@providerModels.0/@rootFeature"
       constraints="//@providerModels.0/@constraints.1"
       name="VM_Medium"/>
-  <vmType feature="//@providerModels.0/@rootFeature"
+  <vmTypes feature="//@providerModels.0/@rootFeature"
       constraints="//@providerModels.0/@constraints.2"
       name="VM_High"/>
 </camel:CamelModel>
