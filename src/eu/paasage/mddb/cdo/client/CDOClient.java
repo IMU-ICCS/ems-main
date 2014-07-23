@@ -104,6 +104,12 @@ public class CDOClient
     {
         String propertyFilePath = System.getenv(ENV_CONFIG);
         System.out.println("Got path: " + propertyFilePath);
+        
+     // enable passing the configuration directory through -Deu.paasage.configdir=PATH JVM option
+        if (propertyFilePath == null) {
+          propertyFilePath = System.getProperty("eu.paasage.configdir");
+        }
+        
         if (propertyFilePath == null)
         {
             String home = System.getProperty("user.home");
@@ -668,5 +674,6 @@ public class CDOClient
 	  cl.exportModel("sensAppResource1", DeploymentModel.class, "examples/SensApp_DepModel.xmi");
 	  //Close the CDOSession once you are done
 	  cl.closeSession();
+	  System.exit(1);
   }
 }
