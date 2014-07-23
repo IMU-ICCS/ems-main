@@ -1,5 +1,7 @@
 package eu.paasage.mddb.cdo.client;
 
+import no.sintef.camel.modeling.javaexample.CDOExampleCode;
+
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
@@ -623,14 +625,25 @@ public class CDOClient
 	  cl.registerPackage(OrganisationPackage.eINSTANCE);
 	  cl.registerPackage(DeploymentPackage.eINSTANCE);
 	  cl.registerPackage(ScalabilityPackage.eINSTANCE);
+	  /*cl.registerPackage(ApplicationPackage.eINSTANCE);
+	  cl.registerPackage(CpPackage.eINSTANCE);
+	  cl.registerPackage(TypesPackage.eINSTANCE);*/
 	  //Create a particular model (CERIF)
 	  EObject model = cl.createCerifModel();
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"cerif");
-	  //Load a model from a XMI resource
-	  model = cl.loadModel("input/Sens_App_Scenario.xmi");
+	  //Create a particular model (SensApp)
+	  model = CDOExampleCode.getSensAppCamelModel();
 	  //Store the model under a CDOResource with a particular name
-	  cl.storeModel(model,"camel");
+	  cl.storeModel(model,"sensAppResource1");
+	  //Load a model from a XMI resource
+	  model = cl.loadModel("examples/Sens_App_Scenario.xmi");
+	  //Store the model under a CDOResource with a particular name
+	  cl.storeModel(model,"sensAppResource2");
+	  //Load & store WP3 models
+	  //model = cl.loadModel("examples/cpModel.xmi");
+	  //cl.storeModel(model,"cpModel");
+	  
 	  /*Run a query - three ways are shown here: (i) ocl query, 
 	   * (ii) hql query and (iii) get all contents of a CDO Resource
 	   * and process them to e.g. find the one you are looking for. Please
@@ -648,11 +661,11 @@ public class CDOClient
 	  System.out.println("The results of the query are:" + results);
 	  //Obtaining all contents of a CDOResource
 	  CDOView view = cl.openView();
-	  EList<EObject> objs = view.getResource("camel").getContents();
+	  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
 	  System.out.println("The objs stored are: " + objs);
 	  cl.closeView(view);
 	  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
-	  cl.exportModel("camel", DeploymentModel.class, "input/SensApp_DepModel.xmi");
+	  cl.exportModel("sensAppResource1", DeploymentModel.class, "examples/SensApp_DepModel.xmi");
 	  //Close the CDOSession once you are done
 	  cl.closeSession();
   }
