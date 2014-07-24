@@ -1,7 +1,5 @@
 package eu.paasage.mddb.cdo.client;
 
-import no.sintef.camel.modeling.javaexample.CDOExampleCode;
-
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
@@ -32,6 +30,7 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
+import eu.paasage.camel.examples.SensAppCDO;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
@@ -639,7 +638,7 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"cerif");
 	  //Create a particular model (SensApp)
-	  model = CDOExampleCode.getSensAppCamelModel();
+	  model = SensAppCDO.getSensAppCamelModel();
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource

@@ -1,4 +1,4 @@
-package no.sintef.camel.modeling.javaexample;
+package eu.paasage.camel.examples;
 
 import java.util.Date;
 
@@ -97,7 +97,7 @@ import eu.paasage.camel.type.StringValue;
 import eu.paasage.camel.type.TypeEnum;
 import eu.paasage.camel.type.TypeFactory;
 
-public class CDOExampleCode {
+public class SensAppCDO {
 	
 	public static EObject getSensAppCamelModel(){
 			// complete mapping of the SensApp example
