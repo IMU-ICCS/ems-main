@@ -1173,9 +1173,6 @@ public class CDOExampleCode {
 		
 		MetricObjectInstanceBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE.createMetricApplicationInstanceBinding();
 		
-		// TODO there is a "circular" dependency here: 
-		// (EM) ExecutionContext --> (EM) RequirementGroup --> (SM) Horizontal/VerticalScalabilityPolicy
-		// (SM) MetricApplicationInstanceBinding --> ExecutionContext
 		ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE.createExecutionContext(); 
 		
 		rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
@@ -1186,7 +1183,6 @@ public class CDOExampleCode {
 		
 		Sensor sensor1 = ScalabilityFactory.eINSTANCE.createSensor();
 		sensor1.setIsPush(false); 
-		// TODO there is also a configuration attribute for the sensor class but that is it. Should there be more information available?
 		
 		scalabilityModel.getSensors().add(sensor1);
 		
@@ -1227,7 +1223,6 @@ public class CDOExampleCode {
 		
 		Sensor sensor2 = ScalabilityFactory.eINSTANCE.createSensor();
 		sensor2.setIsPush(false); 
-		// TODO there is also a configuration attribute for the sensor class but that is it. Should there be more information available?
 		
 		scalabilityModel.getSensors().add(sensor2);
 		
