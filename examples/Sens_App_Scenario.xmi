@@ -470,16 +470,16 @@
           installCommand="cd ~; sudo bash install_start_sensapp.sh"/>
       <providedCommunications
           name="rest"
-          component="//@deploymentModels.0/@components.0"
+          owner="//@deploymentModels.0/@components.0"
           portNumber="8080"/>
       <requiredCommunications
           name="mongoDBRequired"
-          component="//@deploymentModels.0/@components.0"
+          owner="//@deploymentModels.0/@components.0"
           isLocal="true"
           isMandatory="true"/>
       <requiredHost
           name="SensAppHostReq"
-          component="//@deploymentModels.0/@components.0"/>
+          owner="//@deploymentModels.0/@components.0"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
@@ -490,10 +490,10 @@
           installCommand="cd ~; sudo bash install_mongoDB.sh"/>
       <providedCommunications
           name="mongoDB"
-          component="//@deploymentModels.0/@components.1"/>
+          owner="//@deploymentModels.0/@components.1"/>
       <requiredHost
           name="MongoDBHostReq"
-          component="//@deploymentModels.0/@components.1"/>
+          owner="//@deploymentModels.0/@components.1"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
@@ -505,10 +505,10 @@
           stopCommand="sudo service jetty stop"/>
       <providedHosts
           name="JettyProvidedHost"
-          component="//@deploymentModels.0/@components.2"/>
+          owner="//@deploymentModels.0/@components.2"/>
       <requiredHost
           name="JettyRequiredHost"
-          component="//@deploymentModels.0/@components.2"/>
+          owner="//@deploymentModels.0/@components.2"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
@@ -521,11 +521,11 @@
           stopCommand="sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart"/>
       <requiredCommunications
           name="restRequired"
-          component="//@deploymentModels.0/@components.3"
+          owner="//@deploymentModels.0/@components.3"
           portNumber="8080"/>
       <requiredHost
           name="AdminRequiredHost"
-          component="//@deploymentModels.0/@components.3"/>
+          owner="//@deploymentModels.0/@components.3"/>
     </components>
     <components
         xsi:type="deployment:VM"
@@ -545,7 +545,7 @@
       </properties>
       <providedHosts
           name="VMMLHost"
-          component="//@deploymentModels.0/@components.4"/>
+          owner="//@deploymentModels.0/@components.4"/>
     </components>
     <components
         xsi:type="deployment:VM"
@@ -565,7 +565,7 @@
       </properties>
       <providedHosts
           name="VMSLHost"
-          component="//@deploymentModels.0/@components.5"/>
+          owner="//@deploymentModels.0/@components.5"/>
     </components>
     <components
         xsi:type="deployment:VM"
@@ -586,7 +586,7 @@
       </properties>
       <providedHosts
           name="VMLLHost"
-          component="//@deploymentModels.0/@components.6"/>
+          owner="//@deploymentModels.0/@components.6"/>
     </components>
     <communications
         name="SensAppToAdmin"
@@ -607,11 +607,11 @@
         type="//@deploymentModels.0/@components.2">
       <providedHostInstances
           name="JettySC1ProvidedHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.0"
+          owner="//@deploymentModels.0/@componentInstances.0"
           type="//@deploymentModels.0/@components.2/@providedHosts.0"/>
       <requiredHostInstance
           name="JettySC1RequiredHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.0"
+          owner="//@deploymentModels.0/@componentInstances.0"
           type="//@deploymentModels.0/@components.2/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -621,14 +621,14 @@
       <providedCommunicationInstances
           name="SensApp1ProvidedCommInst"
           type="//@deploymentModels.0/@components.0/@providedCommunications.0"
-          componentInstance="//@deploymentModels.0/@componentInstances.1"/>
+          owner="//@deploymentModels.0/@componentInstances.1"/>
       <requiredCommunicationInstances
           name="SensApp1RequiredCommInst"
           type="//@deploymentModels.0/@components.0/@requiredCommunications.0"
-          componentInstance="//@deploymentModels.0/@componentInstances.1"/>
+          owner="//@deploymentModels.0/@componentInstances.1"/>
       <requiredHostInstance
           name="SensApp1RequiredHostInst1"
-          componentInstance="//@deploymentModels.0/@componentInstances.1"
+          owner="//@deploymentModels.0/@componentInstances.1"
           type="//@deploymentModels.0/@components.0/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -638,10 +638,10 @@
       <providedCommunicationInstances
           name="MongoDB1ProvidedCommInst"
           type="//@deploymentModels.0/@components.1/@providedCommunications.0"
-          componentInstance="//@deploymentModels.0/@componentInstances.2"/>
+          owner="//@deploymentModels.0/@componentInstances.2"/>
       <requiredHostInstance
           name="MongoDB1RequiredHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.2"
+          owner="//@deploymentModels.0/@componentInstances.2"
           type="//@deploymentModels.0/@components.1/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -650,11 +650,11 @@
         type="//@deploymentModels.0/@components.2">
       <providedHostInstances
           name="JettySC2ProvidedHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.3"
+          owner="//@deploymentModels.0/@componentInstances.3"
           type="//@deploymentModels.0/@components.2/@providedHosts.0"/>
       <requiredHostInstance
           name="JettySC2RequiredHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.3"
+          owner="//@deploymentModels.0/@componentInstances.3"
           type="//@deploymentModels.0/@components.2/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -664,10 +664,10 @@
       <requiredCommunicationInstances
           name="Admin1RequiredCommInst"
           type="//@deploymentModels.0/@components.3/@requiredCommunications.0"
-          componentInstance="//@deploymentModels.0/@componentInstances.4"/>
+          owner="//@deploymentModels.0/@componentInstances.4"/>
       <requiredHostInstance
           name="Admin1RequiredHostInst"
-          componentInstance="//@deploymentModels.0/@componentInstances.4"
+          owner="//@deploymentModels.0/@componentInstances.4"
           type="//@deploymentModels.0/@components.3/@requiredHost"/>
     </componentInstances>
     <componentInstances
@@ -677,7 +677,7 @@
         hasInfo="//@vmInfos.1">
       <providedHostInstances
           name="MLInstanceProvidedHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.5"
+          owner="//@deploymentModels.0/@componentInstances.5"
           type="//@deploymentModels.0/@components.4/@providedHosts.0"/>
     </componentInstances>
     <componentInstances
@@ -687,7 +687,7 @@
         hasInfo="//@vmInfos.2">
       <providedHostInstances
           name="LLInstanceProvidedHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.6"
+          owner="//@deploymentModels.0/@componentInstances.6"
           type="//@deploymentModels.0/@components.6/@providedHosts.0"/>
     </componentInstances>
     <componentInstances
@@ -697,7 +697,7 @@
         hasInfo="//@vmInfos.0">
       <providedHostInstances
           name="SLInstanceProvidedHostInstance"
-          componentInstance="//@deploymentModels.0/@componentInstances.7"
+          owner="//@deploymentModels.0/@componentInstances.7"
           type="//@deploymentModels.0/@components.5/@providedHosts.0"/>
     </componentInstances>
     <communicationInstances

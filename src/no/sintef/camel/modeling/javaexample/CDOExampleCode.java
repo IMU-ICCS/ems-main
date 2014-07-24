@@ -595,7 +595,7 @@ public class CDOExampleCode {
 		sensAppIc.getResources().add(sensAppCompResource);
 		
 		ProvidedCommunication sensAppRestProvided = DeploymentFactory.eINSTANCE.createProvidedCommunication();
-		sensAppRestProvided.setComponent(sensAppIc);
+		sensAppRestProvided.setOwner(sensAppIc);
 		sensAppRestProvided.setIsLocal(false);
 		sensAppRestProvided.setName("rest");
 		sensAppRestProvided.setPortNumber(8080);
@@ -603,7 +603,7 @@ public class CDOExampleCode {
 		sensAppIc.getProvidedCommunications().add(sensAppRestProvided);
 		
 		RequiredCommunication mongoDbReqCommunication = DeploymentFactory.eINSTANCE.createRequiredCommunication();
-		mongoDbReqCommunication.setComponent(sensAppIc);
+		mongoDbReqCommunication.setOwner(sensAppIc);
 		mongoDbReqCommunication.setIsLocal(true);
 		mongoDbReqCommunication.setIsMandatory(true);
 		mongoDbReqCommunication.setName("mongoDBRequired");
@@ -612,7 +612,7 @@ public class CDOExampleCode {
 		sensAppIc.getRequiredCommunications().add(mongoDbReqCommunication);
 		
 		RequiredHost sensAppHostRequired = DeploymentFactory.eINSTANCE.createRequiredHost();
-		sensAppHostRequired.setComponent(sensAppIc);
+		sensAppHostRequired.setOwner(sensAppIc);
 		sensAppHostRequired.setName("SensAppHostReq");
 		
 		sensAppIc.setRequiredHost(sensAppHostRequired);
@@ -631,7 +631,7 @@ public class CDOExampleCode {
 		mongoDbIc.getResources().add(mongoDBResource);
 		
 		ProvidedCommunication mongoDBProvCommunication = DeploymentFactory.eINSTANCE.createProvidedCommunication();
-		mongoDBProvCommunication.setComponent(mongoDbIc);
+		mongoDBProvCommunication.setOwner(mongoDbIc);
 		mongoDBProvCommunication.setIsLocal(false);
 		mongoDBProvCommunication.setName("mongoDB");
 		mongoDBProvCommunication.setPortNumber(0);
@@ -639,7 +639,7 @@ public class CDOExampleCode {
 		mongoDbIc.getProvidedCommunications().add(mongoDBProvCommunication);
 		
 		RequiredHost mongoDbHostReq = DeploymentFactory.eINSTANCE.createRequiredHost();
-		mongoDbHostReq.setComponent(mongoDbIc);
+		mongoDbHostReq.setOwner(mongoDbIc);
 		mongoDbHostReq.setName("MongoDBHostReq");
 		
 		mongoDbIc.setRequiredHost(mongoDbHostReq);
@@ -660,13 +660,13 @@ public class CDOExampleCode {
 		jettyScIc.getResources().add(mongoDBResource);
 		
 		ProvidedHost jettyProvidedHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		jettyProvidedHost.setComponent(jettyScIc);
+		jettyProvidedHost.setOwner(jettyScIc);
 		jettyProvidedHost.setName("JettyProvidedHost");
 		
 		jettyScIc.getProvidedHosts().add(jettyProvidedHost);
 		
 		RequiredHost jettyRequiredHost = DeploymentFactory.eINSTANCE.createRequiredHost();
-		jettyRequiredHost.setComponent(jettyScIc);
+		jettyRequiredHost.setOwner(jettyScIc);
 		jettyRequiredHost.setName("JettyRequiredHost");
 		
 		jettyScIc.setRequiredHost(jettyRequiredHost);
@@ -688,7 +688,7 @@ public class CDOExampleCode {
 		adminIc.getResources().add(adminCompRes);
 		
 		RequiredCommunication adminRestRequired = DeploymentFactory.eINSTANCE.createRequiredCommunication();
-		adminRestRequired.setComponent(adminIc);
+		adminRestRequired.setOwner(adminIc);
 		adminRestRequired.setIsLocal(false);
 		adminRestRequired.setIsMandatory(false);
 		adminRestRequired.setName("restRequired");
@@ -697,7 +697,7 @@ public class CDOExampleCode {
 		adminIc.getRequiredCommunications().add(adminRestRequired);
 		
 		RequiredHost adminReqHost = DeploymentFactory.eINSTANCE.createRequiredHost();
-		adminReqHost.setComponent(adminIc);
+		adminReqHost.setOwner(adminIc);
 		adminReqHost.setName("AdminRequiredHost");
 		
 		adminIc.setRequiredHost(adminReqHost);
@@ -709,11 +709,9 @@ public class CDOExampleCode {
 		mlVm.setIs64os(true);
 		mlVm.setLocation(flexiantLocation);
 		mlVm.setMaxCores(0);
-		mlVm.setMaxCPU(0);
 		mlVm.setMaxRam(0);
 		mlVm.setMaxStorage(0);
 		mlVm.setMinCores(2);
-		mlVm.setMinCPU(0);
 		mlVm.setMinRam(4096);
 		mlVm.setMinStorage(512);
 		mlVm.setName("ML");
@@ -729,7 +727,7 @@ public class CDOExampleCode {
 		mlVm.getProperties().add(mlKeyPath);
 		
 		ProvidedHost vmMlHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		vmMlHost.setComponent(mlVm);
+		vmMlHost.setOwner(mlVm);
 		vmMlHost.setName("VMMLHost");
 		
 		mlVm.getProvidedHosts().add(vmMlHost);
@@ -741,11 +739,9 @@ public class CDOExampleCode {
 		slVm.setIs64os(true);
 		slVm.setLocation(amazonEuLocation);
 		slVm.setMaxCores(0);
-		slVm.setMaxCPU(0);
 		slVm.setMaxRam(0);
 		slVm.setMaxStorage(0);
 		slVm.setMinCores(1);
-		slVm.setMinCPU(0);
 		slVm.setMinRam(1024);
 		slVm.setMinStorage(200);
 		slVm.setName("SL");
@@ -761,7 +757,7 @@ public class CDOExampleCode {
 		slVm.getProperties().add(slKeyPath);
 		
 		ProvidedHost vmSlHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		vmSlHost.setComponent(slVm);
+		vmSlHost.setOwner(slVm);
 		vmSlHost.setName("VMSLHost");
 		
 		slVm.getProvidedHosts().add(vmSlHost);
@@ -773,11 +769,9 @@ public class CDOExampleCode {
 		llVm.setIs64os(true);
 		llVm.setLocation(osloNovaLocation);
 		llVm.setMaxCores(0);
-		llVm.setMaxCPU(0);
 		llVm.setMaxRam(0);
 		llVm.setMaxStorage(0);
 		llVm.setMinCores(4);
-		llVm.setMinCPU(0);
 		llVm.setMinRam(4096);
 		llVm.setMinStorage(512);
 		llVm.setName("LL");
@@ -793,7 +787,7 @@ public class CDOExampleCode {
 		llVm.getProperties().add(llKeyPath);
 		
 		ProvidedHost vmLlHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		vmLlHost.setComponent(llVm);
+		vmLlHost.setOwner(llVm);
 		vmLlHost.setName("VMLLHost");
 		
 		llVm.getProvidedHosts().add(vmLlHost);
@@ -828,14 +822,14 @@ public class CDOExampleCode {
 		jettySc1Ici.setType(jettyScIc);
 		
 		ProvidedHostInstance jettySc1ProvHostInst = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		jettySc1ProvHostInst.setComponentInstance(jettySc1Ici);
+		jettySc1ProvHostInst.setOwner(jettySc1Ici);
 		jettySc1ProvHostInst.setName("JettySc1ProvidedHostInstance");
 		jettySc1ProvHostInst.setType(jettyProvidedHost);
 		
 		jettySc1Ici.getProvidedHostInstances().add(jettySc1ProvHostInst);
 		
 		RequiredHostInstance jettySc1RequiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		jettySc1RequiredHostInstance.setComponentInstance(jettySc1Ici);
+		jettySc1RequiredHostInstance.setOwner(jettySc1Ici);
 		jettySc1RequiredHostInstance.setName("JettySC1RequiredHostInstance");
 		jettySc1RequiredHostInstance.setType(jettyRequiredHost);
 		
@@ -848,21 +842,21 @@ public class CDOExampleCode {
 		sensApp1Ici.setType(sensAppIc);
 		
 		ProvidedCommunicationInstance sensApp1ProvCommInst = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
-		sensApp1ProvCommInst.setComponentInstance(sensApp1Ici);
+		sensApp1ProvCommInst.setOwner(sensApp1Ici);
 		sensApp1ProvCommInst.setName("SensApp1ProvidedCommInst");
 		sensApp1ProvCommInst.setType(sensAppRestProvided);
 		
 		sensApp1Ici.getProvidedCommunicationInstances().add(sensApp1ProvCommInst);
 		
 		RequiredCommunicationInstance sensApp1RequiredCommInst = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
-		sensApp1RequiredCommInst.setComponentInstance(sensApp1Ici);
+		sensApp1RequiredCommInst.setOwner(sensApp1Ici);
 		sensApp1RequiredCommInst.setName("SensApp1RequiredCommInst");
 		sensApp1RequiredCommInst.setType(mongoDbReqCommunication);
 		
 		sensApp1Ici.getRequiredCommunicationInstances().add(sensApp1RequiredCommInst);
 		
 		RequiredHostInstance sensApp1ReqHostInst1 = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		sensApp1ReqHostInst1.setComponentInstance(sensApp1Ici);
+		sensApp1ReqHostInst1.setOwner(sensApp1Ici);
 		sensApp1ReqHostInst1.setName("SensApp1RequiredHostInst1");
 		sensApp1ReqHostInst1.setType(sensAppHostRequired);
 		
@@ -875,14 +869,14 @@ public class CDOExampleCode {
 		mongoDb1Ici.setType(mongoDbIc);
 		
 		ProvidedCommunicationInstance mongoDb1ProvidedCommInst = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
-		mongoDb1ProvidedCommInst.setComponentInstance(mongoDb1Ici);
+		mongoDb1ProvidedCommInst.setOwner(mongoDb1Ici);
 		mongoDb1ProvidedCommInst.setName("MongoDB1ProvidedCommInst");
 		mongoDb1ProvidedCommInst.setType(mongoDBProvCommunication);
 		
 		mongoDb1Ici.getProvidedCommunicationInstances().add(mongoDb1ProvidedCommInst);
 		
 		RequiredHostInstance mongoDb1RequiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		mongoDb1RequiredHostInstance.setComponentInstance(mongoDb1Ici);
+		mongoDb1RequiredHostInstance.setOwner(mongoDb1Ici);
 		mongoDb1RequiredHostInstance.setName("MongoDB1RequiredHostInstance");
 		mongoDb1RequiredHostInstance.setType(mongoDbHostReq);
 		
@@ -895,14 +889,14 @@ public class CDOExampleCode {
 		jettySc2Ici.setType(jettyScIc);
 		
 		ProvidedHostInstance jettySc2ProvHostInst = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		jettySc2ProvHostInst.setComponentInstance(jettySc2Ici);
+		jettySc2ProvHostInst.setOwner(jettySc2Ici);
 		jettySc2ProvHostInst.setName("JettySC2ProvidedHostInstance");
 		jettySc2ProvHostInst.setType(jettyProvidedHost);
 		
 		jettySc2Ici.getProvidedHostInstances().add(jettySc2ProvHostInst);
 		
 		RequiredHostInstance jettySc2RequiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		jettySc2RequiredHostInstance.setComponentInstance(jettySc2Ici);
+		jettySc2RequiredHostInstance.setOwner(jettySc2Ici);
 		jettySc2RequiredHostInstance.setName("JettySC2RequiredHostInstance");
 		jettySc2RequiredHostInstance.setType(jettyRequiredHost);
 		
@@ -915,14 +909,14 @@ public class CDOExampleCode {
 		admin1Ici.setType(adminIc);
 		
 		RequiredCommunicationInstance admin1ReqHostInst = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
-		admin1ReqHostInst.setComponentInstance(admin1Ici);
+		admin1ReqHostInst.setOwner(admin1Ici);
 		admin1ReqHostInst.setName("Admin1RequiredCommInst");
 		admin1ReqHostInst.setType(adminRestRequired);
 		
 		admin1Ici.getRequiredCommunicationInstances().add(admin1ReqHostInst);
 		
 		RequiredHostInstance admin1RequiredHostInst = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		admin1RequiredHostInst.setComponentInstance(admin1Ici);
+		admin1RequiredHostInst.setOwner(admin1Ici);
 		admin1RequiredHostInst.setName("Admin1REquiredHostInst");
 		admin1RequiredHostInst.setType(adminReqHost);
 		
@@ -963,7 +957,7 @@ public class CDOExampleCode {
 		mlInstance.setType(mlVm);
 		
 		ProvidedHostInstance mlInstanceProvidedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		mlInstanceProvidedHostInstance.setComponentInstance(mlInstance);
+		mlInstanceProvidedHostInstance.setOwner(mlInstance);
 		mlInstanceProvidedHostInstance.setName("MLInstanceProvidedHostInstance");
 		mlInstanceProvidedHostInstance.setType(vmMlHost);
 		
@@ -999,7 +993,7 @@ public class CDOExampleCode {
 		slInstance.setType(slVm);
 		
 		ProvidedHostInstance slInstanceProvidedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		slInstanceProvidedHostInstance.setComponentInstance(slInstance);
+		slInstanceProvidedHostInstance.setOwner(slInstance);
 		slInstanceProvidedHostInstance.setName("SLInstanceProvidedHostInstance");
 		slInstanceProvidedHostInstance.setType(vmSlHost);
 		
@@ -1034,7 +1028,7 @@ public class CDOExampleCode {
 		llInstance.setType(llVm);
 		
 		ProvidedHostInstance llInstanceProvidedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		llInstanceProvidedHostInstance.setComponentInstance(llInstance);
+		llInstanceProvidedHostInstance.setOwner(llInstance);
 		llInstanceProvidedHostInstance.setName("LLInstanceProvidedHostInstance");
 		llInstanceProvidedHostInstance.setType(vmLlHost);
 		
@@ -1458,7 +1452,7 @@ public class CDOExampleCode {
 	// create the session configuration
 	CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
 	config.setConnector(connector);
-	config.setRepositoryName("repo1");
+	config.setRepositoryName("demo");
 
 	// create the actual session with the repository
 	CDONet4jSession cdoSession = config.openNet4jSession();
