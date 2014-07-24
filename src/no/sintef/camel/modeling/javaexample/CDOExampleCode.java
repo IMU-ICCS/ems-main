@@ -1452,7 +1452,7 @@ public class CDOExampleCode {
 	// create the session configuration
 	CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
 	config.setConnector(connector);
-	config.setRepositoryName("demo");
+	config.setRepositoryName("repo1");
 
 	// create the actual session with the repository
 	CDONet4jSession cdoSession = config.openNet4jSession();
