@@ -642,7 +642,7 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource
-	  model = cl.loadModel("examples/Sens_App_Scenario.xmi");
+	  model = cl.loadModel("examples/SensApp.xmi");
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource2");
 	  //Load & store WP3 models
