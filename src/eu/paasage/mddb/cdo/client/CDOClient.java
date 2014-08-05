@@ -87,7 +87,22 @@ public class CDOClient
     private static final String propertyFilePath;
     
     static {
-    	propertyFilePath = retrieveConfigurationDirectoryFullPath(); 
+    	propertyFilePath = retrieveConfigurationDirectoryFullPath();
+    	XMIResToResFact();
+    }
+    
+    /* This method is required for loading/exporting XMI resources*/
+    private static void XMIResToResFact(){
+    	Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
+		("*", 
+		new XMIResourceFactoryImpl()
+		{
+		public Resource createResource(URI uri)
+		{
+		XMIResource xmiResource = new XMIResourceImpl(uri);
+		return xmiResource;
+		}
+		});
     }
 	
     /*Default constructor for the client which initiates a CDO session*/
@@ -424,17 +439,6 @@ public class CDOClient
 	 * the path (as a String) where the XML file resides.   
 	 */
 	public EObject loadModel(String pathName){
-		  Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
-			("*", 
-			new XMIResourceFactoryImpl()
-			{
-			public Resource createResource(URI uri)
-			{
-			XMIResource xmiResource = new XMIResourceImpl(uri);
-			return xmiResource;
-			}
-			});
-		  
 		  final ResourceSet rs = new ResourceSetImpl();
 		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
