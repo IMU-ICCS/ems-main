@@ -35,6 +35,7 @@ import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.ComputationalResource;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.deployment.InternalComponentInstance;
@@ -98,355 +99,388 @@ import eu.paasage.camel.type.TypeEnum;
 import eu.paasage.camel.type.TypeFactory;
 
 public class SensAppCDO {
-	
-	public static EObject getSensAppCamelModel(){
-			// complete mapping of the SensApp example
+
+	public static EObject getSensAppCamelModel() {
+		// complete mapping of the SensApp example
 		CamelModel camelModel = CamelFactory.eINSTANCE.createCamelModel();
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
-		
-		/////// START of definition of the Provider model
-		
-		ProviderModel providerModel = ProviderFactory.eINSTANCE.createProviderModel();
-		
+
+		// ///// START of definition of the Provider model
+
+		ProviderModel providerModel = ProviderFactory.eINSTANCE
+				.createProviderModel();
+
 		Feature vmFeature = ProviderFactory.eINSTANCE.createFeature();
 		vmFeature.setName("VM");
-		FeatCardinality vmCardinality = ProviderFactory.eINSTANCE.createFeatCardinality();
+		FeatCardinality vmCardinality = ProviderFactory.eINSTANCE
+				.createFeatCardinality();
 		vmCardinality.setValue(1);
 		vmCardinality.setCardinalityMin(1);
 		vmCardinality.setCardinalityMax(8);
 		vmFeature.setFeatureCardinality(vmCardinality);
-		
+
 		providerModel.setRootFeature(vmFeature);
-		
+
 		Attribute vmType = ProviderFactory.eINSTANCE.createAttribute();
 		vmType.setName("vmType");
-		
+
 		Enumeration vmTypes = TypeFactory.eINSTANCE.createEnumeration();
-		
+
 		EnumerateValue smallVm = TypeFactory.eINSTANCE.createEnumerateValue();
 		smallVm.setName("SMALL");
 		smallVm.setValue(0);
 		vmTypes.getValues().add(smallVm);
-		
+
 		EnumerateValue mediumVm = TypeFactory.eINSTANCE.createEnumerateValue();
 		mediumVm.setName("MEDIUM");
 		mediumVm.setValue(1);
 		vmTypes.getValues().add(mediumVm);
-		
+
 		EnumerateValue largeVm = TypeFactory.eINSTANCE.createEnumerateValue();
 		largeVm.setName("LARGE");
 		largeVm.setValue(2);
 		vmTypes.getValues().add(largeVm);
-		
+
 		vmType.setValueType(vmTypes);
-		
+
 		vmFeature.getAttributes().add(vmType);
-		
+
 		Attribute vmCPU = ProviderFactory.eINSTANCE.createAttribute();
 		vmCPU.setName("vmCPU");
 		Range vmCPURange = TypeFactory.eINSTANCE.createRange();
-		
+
 		vmCPURange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
-		
+
 		Limit minCPU = TypeFactory.eINSTANCE.createLimit();
 		minCPU.setIncluded(true);
 		FloatValue minCPUValue = TypeFactory.eINSTANCE.createFloatValue();
 		minCPUValue.setValue(1);
 		minCPU.setValue(minCPUValue);
-		
+
 		Limit maxCPU = TypeFactory.eINSTANCE.createLimit();
 		maxCPU.setIncluded(true);
 		FloatValue maxCPUValue = TypeFactory.eINSTANCE.createFloatValue();
 		maxCPUValue.setValue(5);
 		maxCPU.setValue(maxCPUValue);
-		
+
 		vmCPURange.setLowerLimit(minCPU);
 		vmCPURange.setUpperLimit(maxCPU);
-		
+
 		vmCPU.setValueType(vmCPURange);
-		
+
 		vmFeature.getAttributes().add(vmCPU);
-		
+
 		Attribute vmMemory = ProviderFactory.eINSTANCE.createAttribute();
 		vmMemory.setName("vmMemory");
-		
+
 		Range vmMemoryRange = TypeFactory.eINSTANCE.createRange();
-		
+
 		vmMemoryRange.setPrimitiveType(TypeEnum.INT_TYPE);
-		
+
 		Limit minMemory = TypeFactory.eINSTANCE.createLimit();
 		minMemory.setIncluded(true);
 		IntValue minMemoryValue = TypeFactory.eINSTANCE.createIntValue();
 		minMemoryValue.setValue(2048);
 		minMemory.setValue(minMemoryValue);
-		
+
 		Limit maxMemory = TypeFactory.eINSTANCE.createLimit();
 		maxMemory.setIncluded(true);
 		IntValue maxMemoryValue = TypeFactory.eINSTANCE.createIntValue();
 		maxMemoryValue.setValue(16384);
 		maxMemory.setValue(maxMemoryValue);
-		
+
 		vmMemoryRange.setLowerLimit(minMemory);
 		vmMemoryRange.setUpperLimit(maxMemory);
-		
+
 		vmMemory.setValueType(vmMemoryRange);
-		
+
 		vmFeature.getAttributes().add(vmMemory);
-		
+
 		Attribute vmStorage = ProviderFactory.eINSTANCE.createAttribute();
 		vmStorage.setName("vmStorage");
-		
+
 		Range vmStorageRange = TypeFactory.eINSTANCE.createRange();
-		
+
 		vmStorageRange.setPrimitiveType(TypeEnum.INT_TYPE);
-		
+
 		Limit minStorage = TypeFactory.eINSTANCE.createLimit();
 		minStorage.setIncluded(true);
 		IntValue minStorageValue = TypeFactory.eINSTANCE.createIntValue();
 		minStorageValue.setValue(200);
 		minStorage.setValue(minStorageValue);
-		
+
 		Limit maxStorage = TypeFactory.eINSTANCE.createLimit();
 		maxStorage.setIncluded(true);
 		IntValue maxStorageValue = TypeFactory.eINSTANCE.createIntValue();
 		maxStorageValue.setValue(2048);
 		maxStorage.setValue(maxStorageValue);
-		
+
 		vmStorageRange.setLowerLimit(minStorage);
 		vmStorageRange.setUpperLimit(maxStorage);
-		
+
 		vmStorage.setValueType(vmStorageRange);
-		
+
 		vmFeature.getAttributes().add(vmStorage);
-		
+
 		Attribute vmCores = ProviderFactory.eINSTANCE.createAttribute();
 		vmCores.setName("vmCores");
-		
+
 		Range vmCoresRange = TypeFactory.eINSTANCE.createRange();
-		
+
 		vmCoresRange.setPrimitiveType(TypeEnum.INT_TYPE);
-		
+
 		Limit minCores = TypeFactory.eINSTANCE.createLimit();
 		minCores.setIncluded(true);
 		IntValue minCoresValue = TypeFactory.eINSTANCE.createIntValue();
 		minCoresValue.setValue(1);
 		minCores.setValue(minCoresValue);
-		
+
 		Limit maxCores = TypeFactory.eINSTANCE.createLimit();
 		maxCores.setIncluded(true);
 		IntValue maxCoresValue = TypeFactory.eINSTANCE.createIntValue();
 		maxCoresValue.setValue(128);
 		maxCores.setValue(maxCoresValue);
-		
+
 		vmCoresRange.setLowerLimit(minCores);
 		vmCoresRange.setUpperLimit(maxCores);
-		
+
 		vmCores.setValueType(vmCoresRange);
-		
+
 		vmFeature.getAttributes().add(vmCores);
-		
+
 		Implies smallVmConstraint = ProviderFactory.eINSTANCE.createImplies();
-		
+
 		smallVmConstraint.setFrom(vmFeature);
 		smallVmConstraint.setTo(vmFeature);
-		
-		
-		AttributeConstraint smallVmCPUConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		AttributeConstraint smallVmCPUConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		smallVmCPUConstraint.setFrom(vmType);
-		StringValue smallVmCPUConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue smallVmCPUConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		smallVmCPUConstraintFrom.setValue("SMALL");
 		smallVmCPUConstraint.setFromValue(smallVmCPUConstraintFrom);
-		
+
 		smallVmCPUConstraint.setTo(vmCPU);
-		FloatValue smallCPUConstraintTo = TypeFactory.eINSTANCE.createFloatValue();
+		FloatValue smallCPUConstraintTo = TypeFactory.eINSTANCE
+				.createFloatValue();
 		smallCPUConstraintTo.setValue(1);
 		smallVmCPUConstraint.setToValue(smallCPUConstraintTo);
-		
+
 		smallVmConstraint.getAttributeConstraints().add(smallVmCPUConstraint);
-		
-		
-		AttributeConstraint smallVmMemoryConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		AttributeConstraint smallVmMemoryConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		smallVmMemoryConstraint.setFrom(vmType);
-		StringValue smallVmMemoryConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue smallVmMemoryConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		smallVmMemoryConstraintFrom.setValue("SMALL");
 		smallVmMemoryConstraint.setFromValue(smallVmMemoryConstraintFrom);
-		
+
 		smallVmMemoryConstraint.setTo(vmMemory);
-		IntValue smallMemoryConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue smallMemoryConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		smallMemoryConstraintTo.setValue(2048);
 		smallVmMemoryConstraint.setToValue(smallMemoryConstraintTo);
-		
-		smallVmConstraint.getAttributeConstraints().add(smallVmMemoryConstraint);
-		
-		
-		AttributeConstraint smallVmStorageConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		smallVmConstraint.getAttributeConstraints()
+				.add(smallVmMemoryConstraint);
+
+		AttributeConstraint smallVmStorageConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		smallVmStorageConstraint.setFrom(vmType);
-		StringValue smallVmStorageConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue smallVmStorageConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		smallVmStorageConstraintFrom.setValue("SMALL");
 		smallVmStorageConstraint.setFromValue(smallVmStorageConstraintFrom);
-		
+
 		smallVmStorageConstraint.setTo(vmStorage);
-		IntValue smallVmStorageConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue smallVmStorageConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		smallVmStorageConstraintTo.setValue(200);
 		smallVmStorageConstraint.setToValue(smallVmStorageConstraintTo);
-		
-		smallVmConstraint.getAttributeConstraints().add(smallVmStorageConstraint);
-		
-		
-		AttributeConstraint smallVmCoresConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		smallVmConstraint.getAttributeConstraints().add(
+				smallVmStorageConstraint);
+
+		AttributeConstraint smallVmCoresConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		smallVmCoresConstraint.setFrom(vmType);
-		StringValue smallVmCoresConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue smallVmCoresConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		smallVmCoresConstraintFrom.setValue("SMALL");
 		smallVmCoresConstraint.setFromValue(smallVmCoresConstraintFrom);
-		
+
 		smallVmCoresConstraint.setTo(vmCores);
-		IntValue smallVmCoresConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue smallVmCoresConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		smallVmCoresConstraintTo.setValue(1);
 		smallVmCoresConstraint.setToValue(smallVmCoresConstraintTo);
-		
+
 		smallVmConstraint.getAttributeConstraints().add(smallVmCoresConstraint);
-		
+
 		providerModel.getConstraints().add(smallVmConstraint);
 
-		
 		Implies mediumVmConstraint = ProviderFactory.eINSTANCE.createImplies();
-		
+
 		mediumVmConstraint.setFrom(vmFeature);
 		mediumVmConstraint.setTo(vmFeature);
-		
-		
-		AttributeConstraint mediumVmCPUConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		AttributeConstraint mediumVmCPUConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		mediumVmCPUConstraint.setFrom(vmType);
-		StringValue mediumVmCPUConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue mediumVmCPUConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		mediumVmCPUConstraintFrom.setValue("MEDIUM");
 		mediumVmCPUConstraint.setFromValue(mediumVmCPUConstraintFrom);
-		
+
 		mediumVmCPUConstraint.setTo(vmCPU);
-		FloatValue mediumCPUConstraintTo = TypeFactory.eINSTANCE.createFloatValue();
+		FloatValue mediumCPUConstraintTo = TypeFactory.eINSTANCE
+				.createFloatValue();
 		mediumCPUConstraintTo.setValue(2);
 		mediumVmCPUConstraint.setToValue(mediumCPUConstraintTo);
-		
+
 		mediumVmConstraint.getAttributeConstraints().add(mediumVmCPUConstraint);
-		
-		
-		AttributeConstraint mediumVmMemoryConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		AttributeConstraint mediumVmMemoryConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		mediumVmMemoryConstraint.setFrom(vmType);
-		StringValue mediumVmMemoryConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue mediumVmMemoryConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		mediumVmMemoryConstraintFrom.setValue("MEDIUM");
 		mediumVmMemoryConstraint.setFromValue(mediumVmMemoryConstraintFrom);
-		
+
 		mediumVmMemoryConstraint.setTo(vmMemory);
-		IntValue mediumMemoryConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue mediumMemoryConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		mediumMemoryConstraintTo.setValue(4096);
 		mediumVmMemoryConstraint.setToValue(mediumMemoryConstraintTo);
-		
-		mediumVmConstraint.getAttributeConstraints().add(mediumVmMemoryConstraint);
-		
-		
-		AttributeConstraint mediumVmStorageConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		mediumVmConstraint.getAttributeConstraints().add(
+				mediumVmMemoryConstraint);
+
+		AttributeConstraint mediumVmStorageConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		mediumVmStorageConstraint.setFrom(vmType);
-		StringValue mediumVmStorageConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue mediumVmStorageConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		mediumVmStorageConstraintFrom.setValue("MEDIUM");
 		mediumVmStorageConstraint.setFromValue(mediumVmStorageConstraintFrom);
-		
+
 		mediumVmStorageConstraint.setTo(vmStorage);
-		IntValue mediumVmStorageConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue mediumVmStorageConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		mediumVmStorageConstraintTo.setValue(512);
 		mediumVmStorageConstraint.setToValue(mediumVmStorageConstraintTo);
-		
-		mediumVmConstraint.getAttributeConstraints().add(mediumVmStorageConstraint);
-		
-		
-		AttributeConstraint mediumVmCoresConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		mediumVmConstraint.getAttributeConstraints().add(
+				mediumVmStorageConstraint);
+
+		AttributeConstraint mediumVmCoresConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		mediumVmCoresConstraint.setFrom(vmType);
-		StringValue mediumVmCoresConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue mediumVmCoresConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		mediumVmCoresConstraintFrom.setValue("MEDIUM");
 		mediumVmCoresConstraint.setFromValue(mediumVmCoresConstraintFrom);
-		
+
 		mediumVmCoresConstraint.setTo(vmCores);
-		IntValue mediumVmCoresConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue mediumVmCoresConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		mediumVmCoresConstraintTo.setValue(6);
 		mediumVmCoresConstraint.setToValue(mediumVmCoresConstraintTo);
-		
-		mediumVmConstraint.getAttributeConstraints().add(mediumVmCoresConstraint);
-		
+
+		mediumVmConstraint.getAttributeConstraints().add(
+				mediumVmCoresConstraint);
+
 		providerModel.getConstraints().add(mediumVmConstraint);
-		
-		
+
 		Implies largeVmConstraint = ProviderFactory.eINSTANCE.createImplies();
-		
+
 		largeVmConstraint.setFrom(vmFeature);
 		largeVmConstraint.setTo(vmFeature);
-		
-		
-		AttributeConstraint largeVmCPUConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		AttributeConstraint largeVmCPUConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		largeVmCPUConstraint.setFrom(vmType);
-		StringValue largeVmCPUConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue largeVmCPUConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		largeVmCPUConstraintFrom.setValue("LARGE");
 		largeVmCPUConstraint.setFromValue(largeVmCPUConstraintFrom);
-		
+
 		largeVmCPUConstraint.setTo(vmCPU);
-		FloatValue largeCPUConstraintTo = TypeFactory.eINSTANCE.createFloatValue();
+		FloatValue largeCPUConstraintTo = TypeFactory.eINSTANCE
+				.createFloatValue();
 		largeCPUConstraintTo.setValue((float) 3.2);
 		largeVmCPUConstraint.setToValue(largeCPUConstraintTo);
-		
+
 		largeVmConstraint.getAttributeConstraints().add(largeVmCPUConstraint);
-		
-		
-		AttributeConstraint largeVmMemoryConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		AttributeConstraint largeVmMemoryConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		largeVmMemoryConstraint.setFrom(vmType);
-		StringValue largeVmMemoryConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue largeVmMemoryConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		largeVmMemoryConstraintFrom.setValue("LARGE");
 		largeVmMemoryConstraint.setFromValue(largeVmMemoryConstraintFrom);
-		
+
 		largeVmMemoryConstraint.setTo(vmMemory);
-		IntValue largeMemoryConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue largeMemoryConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		largeMemoryConstraintTo.setValue(8192);
 		largeVmMemoryConstraint.setToValue(largeMemoryConstraintTo);
-		
-		largeVmConstraint.getAttributeConstraints().add(largeVmMemoryConstraint);
-		
-		
-		AttributeConstraint largeVmStorageConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		largeVmConstraint.getAttributeConstraints()
+				.add(largeVmMemoryConstraint);
+
+		AttributeConstraint largeVmStorageConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		largeVmStorageConstraint.setFrom(vmType);
-		StringValue largeVmStorageConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue largeVmStorageConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		largeVmStorageConstraintFrom.setValue("LARGE");
 		largeVmStorageConstraint.setFromValue(largeVmStorageConstraintFrom);
-		
+
 		largeVmStorageConstraint.setTo(vmStorage);
-		IntValue largeVmStorageConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue largeVmStorageConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		largeVmStorageConstraintTo.setValue(2048);
 		largeVmStorageConstraint.setToValue(largeVmStorageConstraintTo);
-		
-		largeVmConstraint.getAttributeConstraints().add(largeVmStorageConstraint);
-		
-		
-		AttributeConstraint largeVmCoresConstraint = ProviderFactory.eINSTANCE.createAttributeConstraint();
+
+		largeVmConstraint.getAttributeConstraints().add(
+				largeVmStorageConstraint);
+
+		AttributeConstraint largeVmCoresConstraint = ProviderFactory.eINSTANCE
+				.createAttributeConstraint();
 		largeVmCoresConstraint.setFrom(vmType);
-		StringValue largeVmCoresConstraintFrom = TypeFactory.eINSTANCE.createStringValue();
+		StringValue largeVmCoresConstraintFrom = TypeFactory.eINSTANCE
+				.createStringValue();
 		largeVmCoresConstraintFrom.setValue("LARGE");
 		largeVmCoresConstraint.setFromValue(largeVmCoresConstraintFrom);
-		
+
 		largeVmCoresConstraint.setTo(vmCores);
-		IntValue largeVmCoresConstraintTo = TypeFactory.eINSTANCE.createIntValue();
+		IntValue largeVmCoresConstraintTo = TypeFactory.eINSTANCE
+				.createIntValue();
 		largeVmCoresConstraintTo.setValue(12);
 		largeVmCoresConstraint.setToValue(largeVmCoresConstraintTo);
-		
+
 		largeVmConstraint.getAttributeConstraints().add(largeVmCoresConstraint);
-		
+
 		providerModel.getConstraints().add(largeVmConstraint);
-		
-		/////// END definition of Provider model
-		
+
+		// ///// END definition of Provider model
+
 		camelModel.getProviderModels().add(providerModel);
-		
-		////// BEGIN definition of Amazon Organization model
-		
-		OrganisationModel amazonOrgModel = OrganisationFactory.eINSTANCE.createOrganisationModel();
+
+		// //// BEGIN definition of Amazon Organization model
+
+		OrganisationModel amazonOrgModel = OrganisationFactory.eINSTANCE
+				.createOrganisationModel();
 		EList<DataCenter> amazonDCs = amazonOrgModel.getDataCentres();
 		EList<Location> amazonLocs = amazonOrgModel.getLocations();
-		
-		CloudProvider amazonProvider = OrganisationFactory.eINSTANCE.createCloudProvider();
+
+		CloudProvider amazonProvider = OrganisationFactory.eINSTANCE
+				.createCloudProvider();
 		amazonProvider.setEmail("contact@amazon.com");
 		amazonProvider.setIaaS(true);
 		amazonProvider.setName("Amazon");
@@ -454,35 +488,39 @@ public class SensAppCDO {
 		amazonProvider.setProviderModel(providerModel);
 		amazonProvider.setPublic(true);
 		amazonProvider.setSaaS(true);
-		
+
 		amazonOrgModel.setProvider(amazonProvider);
-		
-		Location amazonEuLocation = OrganisationFactory.eINSTANCE.createLocation();
+
+		Location amazonEuLocation = OrganisationFactory.eINSTANCE
+				.createLocation();
 		amazonEuLocation.setCountry("Ireland");
 		amazonEuLocation.setLatitude(0);
 		amazonEuLocation.setLongitude(0);
 		amazonEuLocation.setName("amazon-eu");
 		amazonLocs.add(amazonEuLocation);
-		
-		DataCenter amazonEuDataCenter = OrganisationFactory.eINSTANCE.createDataCenter();
+
+		DataCenter amazonEuDataCenter = OrganisationFactory.eINSTANCE
+				.createDataCenter();
 		amazonEuDataCenter.setCloudProvider(amazonProvider);
 		amazonEuDataCenter.setCodeName("amazon-eu");
 		amazonEuDataCenter.setLocation(amazonEuLocation);
 		amazonEuDataCenter.setName("European Amazon Data Centre");
-		
+
 		amazonDCs.add(amazonEuDataCenter);
-		
-		////// END definition of Amazon Organisation model
-		
+
+		// //// END definition of Amazon Organisation model
+
 		orgModels.add(amazonOrgModel);
-		
-		////// START definition of Flexiant Organisation model
-		
-		OrganisationModel flexiantOrgModel = OrganisationFactory.eINSTANCE.createOrganisationModel();
+
+		// //// START definition of Flexiant Organisation model
+
+		OrganisationModel flexiantOrgModel = OrganisationFactory.eINSTANCE
+				.createOrganisationModel();
 		EList<DataCenter> flexiantDCs = flexiantOrgModel.getDataCentres();
 		EList<Location> flexiantLocs = flexiantOrgModel.getLocations();
-		
-		CloudProvider flexiantProvider = OrganisationFactory.eINSTANCE.createCloudProvider();
+
+		CloudProvider flexiantProvider = OrganisationFactory.eINSTANCE
+				.createCloudProvider();
 		flexiantProvider.setEmail("contact@flexiant.com");
 		flexiantProvider.setIaaS(true);
 		flexiantProvider.setName("Flexiant");
@@ -490,54 +528,59 @@ public class SensAppCDO {
 		flexiantProvider.setProviderModel(providerModel);
 		flexiantProvider.setPublic(true);
 		flexiantProvider.setSaaS(false);
-		
+
 		flexiantOrgModel.setProvider(flexiantProvider);
-		
-		Location flexiantLocation = OrganisationFactory.eINSTANCE.createLocation();
+
+		Location flexiantLocation = OrganisationFactory.eINSTANCE
+				.createLocation();
 		flexiantLocation.setCountry("Scotland");
 		flexiantLocation.setCity("Edinburgh");
 		flexiantLocation.setLatitude(0);
 		flexiantLocation.setLongitude(0);
 		flexiantLocation.setName("flexiant");
-		
+
 		flexiantLocs.add(flexiantLocation);
-		
-		DataCenter flexiantEuDataCenter = OrganisationFactory.eINSTANCE.createDataCenter();
+
+		DataCenter flexiantEuDataCenter = OrganisationFactory.eINSTANCE
+				.createDataCenter();
 		flexiantEuDataCenter.setCloudProvider(flexiantProvider);
 		flexiantEuDataCenter.setCodeName("flexiant");
 		flexiantEuDataCenter.setLocation(flexiantLocation);
 		flexiantEuDataCenter.setName("Flexiant Data Centre");
-		
+
 		flexiantDCs.add(flexiantEuDataCenter);
-		
-		
-		////// END definition of Flexiant Organisation model
-		
+
+		// //// END definition of Flexiant Organisation model
+
 		orgModels.add(flexiantOrgModel);
-		
-		////// START definition of Sintef Nova Organisation model
-		
-		OrganisationModel sintefOrgModel = OrganisationFactory.eINSTANCE.createOrganisationModel();
+
+		// //// START definition of Sintef Nova Organisation model
+
+		OrganisationModel sintefOrgModel = OrganisationFactory.eINSTANCE
+				.createOrganisationModel();
 		EList<DataCenter> sintefDCs = sintefOrgModel.getDataCentres();
 		EList<Location> sintefLocs = sintefOrgModel.getLocations();
 		EList<User> sintefUsers = sintefOrgModel.getUsers();
 		EList<Credentials> sintefCredentials = sintefOrgModel.getCredentials();
-		
+
 		User user1 = OrganisationFactory.eINSTANCE.createUser();
 		user1.setEmail("user@sintef.no");
 		user1.setFirstName("User1");
 		user1.setLastName("User");
-		
+
 		sintefUsers.add(user1);
-		
-		Credentials user1AmazonCredentials = OrganisationFactory.eINSTANCE.createCredentials();
+
+		Credentials user1AmazonCredentials = OrganisationFactory.eINSTANCE
+				.createCredentials();
 		user1AmazonCredentials.setCloudProvider(amazonProvider);
 		sintefCredentials.add(user1AmazonCredentials);
-		Credentials user1FlexiantCredentials = OrganisationFactory.eINSTANCE.createCredentials();
+		Credentials user1FlexiantCredentials = OrganisationFactory.eINSTANCE
+				.createCredentials();
 		user1FlexiantCredentials.setCloudProvider(flexiantProvider);
 		sintefCredentials.add(user1FlexiantCredentials);
 
-		CloudProvider sintefNovaProvider = OrganisationFactory.eINSTANCE.createCloudProvider();
+		CloudProvider sintefNovaProvider = OrganisationFactory.eINSTANCE
+				.createCloudProvider();
 		sintefNovaProvider.setEmail("contact@sintef.no");
 		sintefNovaProvider.setIaaS(true);
 		sintefNovaProvider.setName("Sintef-Nova");
@@ -545,761 +588,901 @@ public class SensAppCDO {
 		sintefNovaProvider.setProviderModel(providerModel);
 		sintefNovaProvider.setPublic(false);
 		sintefNovaProvider.setSaaS(false);
-		
+
 		sintefOrgModel.setProvider(sintefNovaProvider);
-		
-		Location osloNovaLocation = OrganisationFactory.eINSTANCE.createLocation();
+
+		Location osloNovaLocation = OrganisationFactory.eINSTANCE
+				.createLocation();
 		osloNovaLocation.setCountry("Norway");
 		osloNovaLocation.setCity("Oslo");
 		osloNovaLocation.setLatitude(0);
 		osloNovaLocation.setLongitude(0);
 		osloNovaLocation.setName("oslo-nova");
-		
+
 		sintefLocs.add(osloNovaLocation);
-		
-		DataCenter sintefDataCenter = OrganisationFactory.eINSTANCE.createDataCenter();
+
+		DataCenter sintefDataCenter = OrganisationFactory.eINSTANCE
+				.createDataCenter();
 		sintefDataCenter.setCloudProvider(sintefNovaProvider);
 		sintefDataCenter.setCodeName("nova");
 		sintefDataCenter.setLocation(osloNovaLocation);
 		sintefDataCenter.setName("Sintef Nova Data Centre");
-		
+
 		sintefDCs.add(sintefDataCenter);
-		
-		Credentials user1SintefNovaCredentials = OrganisationFactory.eINSTANCE.createCredentials();
+
+		Credentials user1SintefNovaCredentials = OrganisationFactory.eINSTANCE
+				.createCredentials();
 		user1SintefNovaCredentials.setCloudProvider(sintefNovaProvider);
 		sintefCredentials.add(user1SintefNovaCredentials);
-		
-		////// END definition of Sintef Nova Organisation model
-		
+
+		// //// END definition of Sintef Nova Organisation model
+
 		orgModels.add(sintefOrgModel);
-		
-		////// START definition of Deployment model
-		
-		DeploymentModel sensAppDeploymentModel = DeploymentFactory.eINSTANCE.createDeploymentModel();
-		
+
+		// //// START definition of Deployment model
+
+		DeploymentModel sensAppDeploymentModel = DeploymentFactory.eINSTANCE
+				.createDeploymentModel();
+
 		sensAppDeploymentModel.setName("SensApp");
 		sensAppDeploymentModel.getProviders().add(amazonProvider);
 		sensAppDeploymentModel.getProviders().add(flexiantProvider);
 		sensAppDeploymentModel.getProviders().add(sintefNovaProvider);
-		
-		InternalComponent sensAppIc = DeploymentFactory.eINSTANCE.createInternalComponent();
-		sensAppIc.setName("SensApp");
-		
-		ComputationalResource sensAppCompResource = DeploymentFactory.eINSTANCE.createComputationalResource();
-		sensAppCompResource.setDownloadCommand("wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh");
-		sensAppCompResource.setExecuteLocally(false);
-		sensAppCompResource.setInstallCommand("cd ~; sudo bash install_start_sensapp.sh");
-		sensAppCompResource.setName("SensApp");
-		sensAppCompResource.setRequireCredentials(false);
-		
-		sensAppIc.getResources().add(sensAppCompResource);
-		
-		ProvidedCommunication sensAppRestProvided = DeploymentFactory.eINSTANCE.createProvidedCommunication();
-		sensAppRestProvided.setOwner(sensAppIc);
-		sensAppRestProvided.setIsLocal(false);
-		sensAppRestProvided.setName("rest");
-		sensAppRestProvided.setPortNumber(8080);
-		
-		sensAppIc.getProvidedCommunications().add(sensAppRestProvided);
-		
-		RequiredCommunication mongoDbReqCommunication = DeploymentFactory.eINSTANCE.createRequiredCommunication();
-		mongoDbReqCommunication.setOwner(sensAppIc);
-		mongoDbReqCommunication.setIsLocal(true);
-		mongoDbReqCommunication.setIsMandatory(true);
-		mongoDbReqCommunication.setName("mongoDBRequired");
-		mongoDbReqCommunication.setPortNumber(0);
-		
-		sensAppIc.getRequiredCommunications().add(mongoDbReqCommunication);
-		
-		RequiredHost sensAppHostRequired = DeploymentFactory.eINSTANCE.createRequiredHost();
-		sensAppHostRequired.setOwner(sensAppIc);
-		sensAppHostRequired.setName("SensAppHostReq");
-		
-		sensAppIc.setRequiredHost(sensAppHostRequired);
-		
-		sensAppDeploymentModel.getInternalComponents().add(sensAppIc);
-		
-		InternalComponent mongoDbIc = DeploymentFactory.eINSTANCE.createInternalComponent();
-		mongoDbIc.setName("MongoDB");
-		
-		ComputationalResource mongoDBResource = DeploymentFactory.eINSTANCE.createComputationalResource();
-		mongoDBResource.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh");
-		mongoDBResource.setExecuteLocally(false);
-		mongoDBResource.setInstallCommand("cd ~; sudo bash install_mongoDB.sh");
-		mongoDBResource.setName("MongoDBRes");
-		mongoDBResource.setRequireCredentials(false);
-		mongoDbIc.getResources().add(mongoDBResource);
-		
-		ProvidedCommunication mongoDBProvCommunication = DeploymentFactory.eINSTANCE.createProvidedCommunication();
-		mongoDBProvCommunication.setOwner(mongoDbIc);
-		mongoDBProvCommunication.setIsLocal(false);
-		mongoDBProvCommunication.setName("mongoDB");
-		mongoDBProvCommunication.setPortNumber(0);
-		
-		mongoDbIc.getProvidedCommunications().add(mongoDBProvCommunication);
-		
-		RequiredHost mongoDbHostReq = DeploymentFactory.eINSTANCE.createRequiredHost();
-		mongoDbHostReq.setOwner(mongoDbIc);
-		mongoDbHostReq.setName("MongoDBHostReq");
-		
-		mongoDbIc.setRequiredHost(mongoDbHostReq);
-		
-		sensAppDeploymentModel.getInternalComponents().add(mongoDbIc);
-		
-		InternalComponent jettyScIc = DeploymentFactory.eINSTANCE.createInternalComponent();
-		jettyScIc.setName("JettySC");
-		
-		ComputationalResource jettyScCompRes = DeploymentFactory.eINSTANCE.createComputationalResource();
-		jettyScCompRes.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh");
-		jettyScCompRes.setExecuteLocally(false);
-		jettyScCompRes.setInstallCommand("cd ~; sudo bash install_jetty.sh");
-		jettyScCompRes.setName("jettySC");
-		jettyScCompRes.setRequireCredentials(false);
-		jettyScCompRes.setStopCommand("sudo service jetty stop");
-		
-		jettyScIc.getResources().add(mongoDBResource);
-		
-		ProvidedHost jettyProvidedHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		jettyProvidedHost.setOwner(jettyScIc);
-		jettyProvidedHost.setName("JettyProvidedHost");
-		
-		jettyScIc.getProvidedHosts().add(jettyProvidedHost);
-		
-		RequiredHost jettyRequiredHost = DeploymentFactory.eINSTANCE.createRequiredHost();
-		jettyRequiredHost.setOwner(jettyScIc);
-		jettyRequiredHost.setName("JettyRequiredHost");
-		
-		jettyScIc.setRequiredHost(jettyRequiredHost);
-		
-		sensAppDeploymentModel.getInternalComponents().add(jettyScIc);
-		
-		InternalComponent adminIc = DeploymentFactory.eINSTANCE.createInternalComponent();
-		adminIc.setName("Admin");
-		
-		ComputationalResource adminCompRes = DeploymentFactory.eINSTANCE.createComputationalResource();
-		adminCompRes.setDownloadCommand("wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json");
-		adminCompRes.setExecuteLocally(false);
-		adminCompRes.setInstallCommand("cd ~; sudo bash install_sensappadmin.sh");
-		adminCompRes.setName("Admin");
-		adminCompRes.setRequireCredentials(false);
-		adminCompRes.setStartCommand("cd ~; sudo bash start_sensappadmin.sh");
-		adminCompRes.setStopCommand("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart");
-		
-		adminIc.getResources().add(adminCompRes);
-		
-		RequiredCommunication adminRestRequired = DeploymentFactory.eINSTANCE.createRequiredCommunication();
-		adminRestRequired.setOwner(adminIc);
-		adminRestRequired.setIsLocal(false);
-		adminRestRequired.setIsMandatory(false);
-		adminRestRequired.setName("restRequired");
-		adminRestRequired.setPortNumber(8080);
-		
-		adminIc.getRequiredCommunications().add(adminRestRequired);
-		
-		RequiredHost adminReqHost = DeploymentFactory.eINSTANCE.createRequiredHost();
-		adminReqHost.setOwner(adminIc);
-		adminReqHost.setName("AdminRequiredHost");
-		
-		adminIc.setRequiredHost(adminReqHost);
-		
-		sensAppDeploymentModel.getInternalComponents().add(adminIc);
-		
-		VM mlVm = DeploymentFactory.eINSTANCE.createVM();
-		mlVm.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
-		mlVm.setIs64os(true);
-		mlVm.setLocation(flexiantLocation);
-		mlVm.setMaxCores(0);
-		mlVm.setMaxRam(0);
-		mlVm.setMaxStorage(0);
-		mlVm.setMinCores(2);
-		mlVm.setMinRam(4096);
-		mlVm.setMinStorage(512);
-		mlVm.setName("ML");
-		mlVm.setOs("ubuntu");
-		mlVm.setProvider(flexiantProvider);
-		
+
+		InternalComponent sensApp = DeploymentFactory.eINSTANCE
+				.createInternalComponent();
+		sensApp.setName("SensApp");
+
+		ComputationalResource sensAppRes = DeploymentFactory.eINSTANCE
+				.createComputationalResource();
+		sensAppRes
+				.setDownloadCommand("wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh");
+		sensAppRes.setExecuteLocally(false);
+		sensAppRes
+				.setInstallCommand("cd ~; sudo bash install_start_sensapp.sh");
+		sensAppRes.setName("SensAppRes");
+		sensAppRes.setRequireCredentials(false);
+
+		sensApp.getResources().add(sensAppRes);
+
+		ProvidedCommunication restProv = DeploymentFactory.eINSTANCE
+				.createProvidedCommunication();
+		restProv.setOwner(sensApp);
+		restProv.setIsLocal(false);
+		restProv.setName("RESTProv");
+		restProv.setPortNumber(8080);
+
+		sensApp.getProvidedCommunications().add(restProv);
+
+		RequiredCommunication mongoDBReq = DeploymentFactory.eINSTANCE
+				.createRequiredCommunication();
+		mongoDBReq.setOwner(sensApp);
+		mongoDBReq.setIsLocal(true);
+		mongoDBReq.setIsMandatory(true);
+		mongoDBReq.setName("MongoDBReq");
+		mongoDBReq.setPortNumber(0);
+
+		sensApp.getRequiredCommunications().add(mongoDBReq);
+
+		RequiredHost servletContainerSensAppReq = DeploymentFactory.eINSTANCE
+				.createRequiredHost();
+		servletContainerSensAppReq.setOwner(sensApp);
+		servletContainerSensAppReq.setName("ServletContainerSensAppReq");
+
+		sensApp.setRequiredHost(servletContainerSensAppReq);
+
+		sensAppDeploymentModel.getInternalComponents().add(sensApp);
+
+		InternalComponent mongoDB = DeploymentFactory.eINSTANCE
+				.createInternalComponent();
+		mongoDB.setName("MongoDB");
+
+		ComputationalResource mongoDBRes = DeploymentFactory.eINSTANCE
+				.createComputationalResource();
+		mongoDBRes
+				.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh");
+		mongoDBRes.setExecuteLocally(false);
+		mongoDBRes.setInstallCommand("cd ~; sudo bash install_mongoDB.sh");
+		mongoDBRes.setName("MongoDBRes");
+		mongoDBRes.setRequireCredentials(false);
+		mongoDB.getResources().add(mongoDBRes);
+
+		ProvidedCommunication mongoDBProv = DeploymentFactory.eINSTANCE
+				.createProvidedCommunication();
+		mongoDBProv.setOwner(mongoDB);
+		mongoDBProv.setIsLocal(false);
+		mongoDBProv.setName("MongoDBProv");
+		mongoDBProv.setPortNumber(0);
+
+		mongoDB.getProvidedCommunications().add(mongoDBProv);
+
+		RequiredHost vmMongoDBReq = DeploymentFactory.eINSTANCE
+				.createRequiredHost();
+		vmMongoDBReq.setOwner(mongoDB);
+		vmMongoDBReq.setName("VMMongoDBReq");
+
+		mongoDB.setRequiredHost(vmMongoDBReq);
+
+		sensAppDeploymentModel.getInternalComponents().add(mongoDB);
+
+		InternalComponent jettySC = DeploymentFactory.eINSTANCE
+				.createInternalComponent();
+		jettySC.setName("JettySC");
+
+		ComputationalResource jettySCRes = DeploymentFactory.eINSTANCE
+				.createComputationalResource();
+		jettySCRes
+				.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh");
+		jettySCRes.setExecuteLocally(false);
+		jettySCRes.setInstallCommand("cd ~; sudo bash install_jetty.sh");
+		jettySCRes.setName("JettySCRes");
+		jettySCRes.setRequireCredentials(false);
+		jettySCRes.setStopCommand("sudo service jetty stop");
+
+		jettySC.getResources().add(mongoDBRes);
+
+		ProvidedHost servletContainerJettyProv = DeploymentFactory.eINSTANCE
+				.createProvidedHost();
+		servletContainerJettyProv.setOwner(jettySC);
+		servletContainerJettyProv.setName("ServletContainerJettyProv");
+
+		jettySC.getProvidedHosts().add(servletContainerJettyProv);
+
+		RequiredHost vmJettySCReq = DeploymentFactory.eINSTANCE
+				.createRequiredHost();
+		vmJettySCReq.setOwner(jettySC);
+		vmJettySCReq.setName("VMJettySCReq");
+
+		jettySC.setRequiredHost(vmJettySCReq);
+
+		sensAppDeploymentModel.getInternalComponents().add(jettySC);
+
+		InternalComponent admin = DeploymentFactory.eINSTANCE
+				.createInternalComponent();
+		admin.setName("Admin");
+
+		ComputationalResource adminRes = DeploymentFactory.eINSTANCE
+				.createComputationalResource();
+		adminRes.setDownloadCommand("wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json");
+		adminRes.setExecuteLocally(false);
+		adminRes.setInstallCommand("cd ~; sudo bash install_sensappadmin.sh");
+		adminRes.setName("AdminRes");
+		adminRes.setRequireCredentials(false);
+		adminRes.setStartCommand("cd ~; sudo bash start_sensappadmin.sh");
+		adminRes.setStopCommand("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart");
+
+		admin.getResources().add(adminRes);
+
+		RequiredCommunication restReq = DeploymentFactory.eINSTANCE
+				.createRequiredCommunication();
+		restReq.setOwner(admin);
+		restReq.setIsLocal(false);
+		restReq.setIsMandatory(false);
+		restReq.setName("RESTReq");
+		restReq.setPortNumber(8080);
+
+		admin.getRequiredCommunications().add(restReq);
+
+		RequiredHost servletContainerAdminReq = DeploymentFactory.eINSTANCE
+				.createRequiredHost();
+		servletContainerAdminReq.setOwner(admin);
+		servletContainerAdminReq.setName("ServletContainerAdminReq");
+
+		admin.setRequiredHost(servletContainerAdminReq);
+
+		sensAppDeploymentModel.getInternalComponents().add(admin);
+
+		VM ml = DeploymentFactory.eINSTANCE.createVM();
+		ml.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
+		ml.setIs64os(true);
+		ml.setLocation(flexiantLocation);
+		ml.setMaxCores(0);
+		ml.setMaxRam(0);
+		ml.setMaxStorage(0);
+		ml.setMinCores(2);
+		ml.setMinRam(4096);
+		ml.setMinStorage(512);
+		ml.setName("ML");
+		ml.setOs("ubuntu");
+		ml.setProvider(flexiantProvider);
+
 		Attribute mlKeyPath = ProviderFactory.eINSTANCE.createAttribute();
 		mlKeyPath.setName("KeyPath");
 		StringValue mlKeyPathValue = TypeFactory.eINSTANCE.createStringValue();
 		mlKeyPathValue.setValue(".");
 		mlKeyPath.setValue(mlKeyPathValue);
-		
-		mlVm.getProperties().add(mlKeyPath);
-		
-		ProvidedHost vmMlHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		vmMlHost.setOwner(mlVm);
-		vmMlHost.setName("VMMLHost");
-		
-		mlVm.getProvidedHosts().add(vmMlHost);
-		
-		sensAppDeploymentModel.getVms().add(mlVm);
-		
-		VM slVm = DeploymentFactory.eINSTANCE.createVM();
-		slVm.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
-		slVm.setIs64os(true);
-		slVm.setLocation(amazonEuLocation);
-		slVm.setMaxCores(0);
-		slVm.setMaxRam(0);
-		slVm.setMaxStorage(0);
-		slVm.setMinCores(1);
-		slVm.setMinRam(1024);
-		slVm.setMinStorage(200);
-		slVm.setName("SL");
-		slVm.setOs("ubuntu");
-		slVm.setProvider(amazonProvider);
-		
+
+		ml.getProperties().add(mlKeyPath);
+
+		ProvidedHost vmMLProv = DeploymentFactory.eINSTANCE
+				.createProvidedHost();
+		vmMLProv.setOwner(ml);
+		vmMLProv.setName("VMMLProv");
+
+		ml.getProvidedHosts().add(vmMLProv);
+
+		sensAppDeploymentModel.getVms().add(ml);
+
+		VM sl = DeploymentFactory.eINSTANCE.createVM();
+		sl.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
+		sl.setIs64os(true);
+		sl.setLocation(amazonEuLocation);
+		sl.setMaxCores(0);
+		sl.setMaxRam(0);
+		sl.setMaxStorage(0);
+		sl.setMinCores(1);
+		sl.setMinRam(1024);
+		sl.setMinStorage(200);
+		sl.setName("SL");
+		sl.setOs("ubuntu");
+		sl.setProvider(amazonProvider);
+
 		Attribute slKeyPath = ProviderFactory.eINSTANCE.createAttribute();
 		slKeyPath.setName("KeyPath");
 		StringValue slKeyPathValue = TypeFactory.eINSTANCE.createStringValue();
 		slKeyPathValue.setValue(".");
-		slKeyPath.setValue(slKeyPathValue); 
-		
-		slVm.getProperties().add(slKeyPath);
-		
-		ProvidedHost vmSlHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		vmSlHost.setOwner(slVm);
-		vmSlHost.setName("VMSLHost");
-		
-		slVm.getProvidedHosts().add(vmSlHost);
-		
-		sensAppDeploymentModel.getVms().add(slVm);
-		
-		VM llVm = DeploymentFactory.eINSTANCE.createVM();
-		llVm.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
-		llVm.setIs64os(true);
-		llVm.setLocation(osloNovaLocation);
-		llVm.setMaxCores(0);
-		llVm.setMaxRam(0);
-		llVm.setMaxStorage(0);
-		llVm.setMinCores(4);
-		llVm.setMinRam(4096);
-		llVm.setMinStorage(512);
-		llVm.setName("LL");
-		llVm.setOs("ubuntu");
-		llVm.setProvider(sintefNovaProvider);
-		
+		slKeyPath.setValue(slKeyPathValue);
+
+		sl.getProperties().add(slKeyPath);
+
+		ProvidedHost vmSLProv = DeploymentFactory.eINSTANCE
+				.createProvidedHost();
+		vmSLProv.setOwner(sl);
+		vmSLProv.setName("VMSLProv");
+
+		sl.getProvidedHosts().add(vmSLProv);
+
+		sensAppDeploymentModel.getVms().add(sl);
+
+		VM ll = DeploymentFactory.eINSTANCE.createVM();
+		ll.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
+		ll.setIs64os(true);
+		ll.setLocation(osloNovaLocation);
+		ll.setMaxCores(0);
+		ll.setMaxRam(0);
+		ll.setMaxStorage(0);
+		ll.setMinCores(4);
+		ll.setMinRam(4096);
+		ll.setMinStorage(512);
+		ll.setName("LL");
+		ll.setOs("ubuntu");
+		ll.setProvider(sintefNovaProvider);
+
 		Attribute llKeyPath = ProviderFactory.eINSTANCE.createAttribute();
 		llKeyPath.setName("KeyPath");
 		StringValue llKeyPathValue = TypeFactory.eINSTANCE.createStringValue();
 		llKeyPathValue.setValue(".");
 		llKeyPath.setValue(llKeyPathValue);
-		
-		llVm.getProperties().add(llKeyPath);
-		
-		ProvidedHost vmLlHost = DeploymentFactory.eINSTANCE.createProvidedHost();
-		vmLlHost.setOwner(llVm);
-		vmLlHost.setName("VMLLHost");
-		
-		llVm.getProvidedHosts().add(vmLlHost);
-		
-		sensAppDeploymentModel.getVms().add(llVm);
-		
-		Communication sensAppToAdmin = DeploymentFactory.eINSTANCE.createCommunication();
+
+		ll.getProperties().add(llKeyPath);
+
+		ProvidedHost vmLLProv = DeploymentFactory.eINSTANCE
+				.createProvidedHost();
+		vmLLProv.setOwner(ll);
+		vmLLProv.setName("VMLLProv");
+
+		ll.getProvidedHosts().add(vmLLProv);
+
+		sensAppDeploymentModel.getVms().add(ll);
+
+		Communication sensAppToAdmin = DeploymentFactory.eINSTANCE
+				.createCommunication();
 		sensAppToAdmin.setName("SensAppToAdmin");
-		sensAppToAdmin.setProvidedCommunication(sensAppRestProvided);
-		sensAppToAdmin.setRequiredCommunication(adminRestRequired);
-		
-		ComputationalResource sensAppAdminSensAppCompRes = DeploymentFactory.eINSTANCE.createComputationalResource();
-		sensAppAdminSensAppCompRes.setDownloadCommand("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh");
-		sensAppAdminSensAppCompRes.setExecuteLocally(false);
-		sensAppAdminSensAppCompRes.setInstallCommand("cd ~; sudo bash configure_sensappadmin.sh");
-		sensAppAdminSensAppCompRes.setName("SensAppAdminSensApp");
-		sensAppAdminSensAppCompRes.setRequireCredentials(false);
-		
-		sensAppToAdmin.getResources().add(sensAppAdminSensAppCompRes);
-		
+		sensAppToAdmin.setProvidedCommunication(restProv);
+		sensAppToAdmin.setRequiredCommunication(restReq);
+
+		ComputationalResource sensAppToAdminRes = DeploymentFactory.eINSTANCE
+				.createComputationalResource();
+		sensAppToAdminRes
+				.setDownloadCommand("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh");
+		sensAppToAdminRes.setExecuteLocally(false);
+		sensAppToAdminRes
+				.setInstallCommand("cd ~; sudo bash configure_sensappadmin.sh");
+		sensAppToAdminRes.setName("SensAppToAdminRes");
+		sensAppToAdminRes.setRequireCredentials(false);
+
+		sensAppToAdmin.getResources().add(sensAppToAdminRes);
+
 		sensAppDeploymentModel.getCommunications().add(sensAppToAdmin);
-		
-		Communication sensAppToMongoDb = DeploymentFactory.eINSTANCE.createCommunication();
-		sensAppToMongoDb.setName("SensAppToMongoDb");
-		sensAppToMongoDb.setProvidedCommunication(mongoDBProvCommunication);
-		sensAppToMongoDb.setRequiredCommunication(mongoDbReqCommunication);
-		
-		sensAppDeploymentModel.getCommunications().add(sensAppToMongoDb);
-		
-		InternalComponentInstance jettySc1Ici = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
-		jettySc1Ici.setName("JettySC1");
-		jettySc1Ici.setType(jettyScIc);
-		
-		ProvidedHostInstance jettySc1ProvHostInst = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		jettySc1ProvHostInst.setOwner(jettySc1Ici);
-		jettySc1ProvHostInst.setName("JettySc1ProvidedHostInstance");
-		jettySc1ProvHostInst.setType(jettyProvidedHost);
-		
-		jettySc1Ici.getProvidedHostInstances().add(jettySc1ProvHostInst);
-		
-		RequiredHostInstance jettySc1RequiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		jettySc1RequiredHostInstance.setOwner(jettySc1Ici);
-		jettySc1RequiredHostInstance.setName("JettySC1RequiredHostInstance");
-		jettySc1RequiredHostInstance.setType(jettyRequiredHost);
-		
-		jettySc1Ici.setRequiredHostInstance(jettySc1RequiredHostInstance);
-		
-		sensAppDeploymentModel.getInternalComponentInstances().add(jettySc1Ici);
-		
-		InternalComponentInstance sensApp1Ici = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
-		sensApp1Ici.setName("SensApp1");
-		sensApp1Ici.setType(sensAppIc);
-		
-		ProvidedCommunicationInstance sensApp1ProvCommInst = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
-		sensApp1ProvCommInst.setOwner(sensApp1Ici);
-		sensApp1ProvCommInst.setName("SensApp1ProvidedCommInst");
-		sensApp1ProvCommInst.setType(sensAppRestProvided);
-		
-		sensApp1Ici.getProvidedCommunicationInstances().add(sensApp1ProvCommInst);
-		
-		RequiredCommunicationInstance sensApp1RequiredCommInst = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
-		sensApp1RequiredCommInst.setOwner(sensApp1Ici);
-		sensApp1RequiredCommInst.setName("SensApp1RequiredCommInst");
-		sensApp1RequiredCommInst.setType(mongoDbReqCommunication);
-		
-		sensApp1Ici.getRequiredCommunicationInstances().add(sensApp1RequiredCommInst);
-		
-		RequiredHostInstance sensApp1ReqHostInst1 = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		sensApp1ReqHostInst1.setOwner(sensApp1Ici);
-		sensApp1ReqHostInst1.setName("SensApp1RequiredHostInst1");
-		sensApp1ReqHostInst1.setType(sensAppHostRequired);
-		
-		sensApp1Ici.setRequiredHostInstance(sensApp1ReqHostInst1);
-		
-		sensAppDeploymentModel.getInternalComponentInstances().add(sensApp1Ici);
-		
-		InternalComponentInstance mongoDb1Ici = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
-		mongoDb1Ici.setName("MongoDB1");
-		mongoDb1Ici.setType(mongoDbIc);
-		
-		ProvidedCommunicationInstance mongoDb1ProvidedCommInst = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
-		mongoDb1ProvidedCommInst.setOwner(mongoDb1Ici);
-		mongoDb1ProvidedCommInst.setName("MongoDB1ProvidedCommInst");
-		mongoDb1ProvidedCommInst.setType(mongoDBProvCommunication);
-		
-		mongoDb1Ici.getProvidedCommunicationInstances().add(mongoDb1ProvidedCommInst);
-		
-		RequiredHostInstance mongoDb1RequiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		mongoDb1RequiredHostInstance.setOwner(mongoDb1Ici);
-		mongoDb1RequiredHostInstance.setName("MongoDB1RequiredHostInstance");
-		mongoDb1RequiredHostInstance.setType(mongoDbHostReq);
-		
-		mongoDb1Ici.setRequiredHostInstance(mongoDb1RequiredHostInstance);
-		
-		sensAppDeploymentModel.getInternalComponentInstances().add(mongoDb1Ici);
-		
-		InternalComponentInstance jettySc2Ici = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
-		jettySc2Ici.setName("JettySC2");
-		jettySc2Ici.setType(jettyScIc);
-		
-		ProvidedHostInstance jettySc2ProvHostInst = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		jettySc2ProvHostInst.setOwner(jettySc2Ici);
-		jettySc2ProvHostInst.setName("JettySC2ProvidedHostInstance");
-		jettySc2ProvHostInst.setType(jettyProvidedHost);
-		
-		jettySc2Ici.getProvidedHostInstances().add(jettySc2ProvHostInst);
-		
-		RequiredHostInstance jettySc2RequiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		jettySc2RequiredHostInstance.setOwner(jettySc2Ici);
-		jettySc2RequiredHostInstance.setName("JettySC2RequiredHostInstance");
-		jettySc2RequiredHostInstance.setType(jettyRequiredHost);
-		
-		jettySc2Ici.setRequiredHostInstance(jettySc2RequiredHostInstance);
-		
-		sensAppDeploymentModel.getInternalComponentInstances().add(jettySc2Ici);
-		
-		InternalComponentInstance admin1Ici = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
-		admin1Ici.setName("AdminInst1");
-		admin1Ici.setType(adminIc);
-		
-		RequiredCommunicationInstance admin1ReqHostInst = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
-		admin1ReqHostInst.setOwner(admin1Ici);
-		admin1ReqHostInst.setName("Admin1RequiredCommInst");
-		admin1ReqHostInst.setType(adminRestRequired);
-		
-		admin1Ici.getRequiredCommunicationInstances().add(admin1ReqHostInst);
-		
-		RequiredHostInstance admin1RequiredHostInst = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		admin1RequiredHostInst.setOwner(admin1Ici);
-		admin1RequiredHostInst.setName("Admin1REquiredHostInst");
-		admin1RequiredHostInst.setType(adminReqHost);
-		
-		admin1Ici.setRequiredHostInstance(admin1RequiredHostInst);
-		
-		sensAppDeploymentModel.getInternalComponentInstances().add(admin1Ici);
-		
-		VMInstance mlInstance = DeploymentFactory.eINSTANCE.createVMInstance();
-		
+
+		Communication sensAppToMongoDB = DeploymentFactory.eINSTANCE
+				.createCommunication();
+		sensAppToMongoDB.setName("SensAppToMongoDB");
+		sensAppToMongoDB.setProvidedCommunication(mongoDBProv);
+		sensAppToMongoDB.setRequiredCommunication(mongoDBReq);
+
+		sensAppDeploymentModel.getCommunications().add(sensAppToMongoDB);
+
+		InternalComponentInstance jettySC1 = DeploymentFactory.eINSTANCE
+				.createInternalComponentInstance();
+		jettySC1.setName("JettySC1");
+		jettySC1.setType(jettySC);
+
+		ProvidedHostInstance servletContainerJettyProv1 = DeploymentFactory.eINSTANCE
+				.createProvidedHostInstance();
+		servletContainerJettyProv1.setOwner(jettySC1);
+		servletContainerJettyProv1.setName("ServletContainerJettyProv1");
+		servletContainerJettyProv1.setType(servletContainerJettyProv);
+
+		jettySC1.getProvidedHostInstances().add(servletContainerJettyProv1);
+
+		RequiredHostInstance vmJettySCReq1 = DeploymentFactory.eINSTANCE
+				.createRequiredHostInstance();
+		vmJettySCReq1.setOwner(jettySC1);
+		vmJettySCReq1.setName("VMJettySCReq1");
+		vmJettySCReq1.setType(vmJettySCReq);
+
+		jettySC1.setRequiredHostInstance(vmJettySCReq1);
+
+		sensAppDeploymentModel.getInternalComponentInstances().add(jettySC1);
+
+		InternalComponentInstance sensApp1 = DeploymentFactory.eINSTANCE
+				.createInternalComponentInstance();
+		sensApp1.setName("SensApp1");
+		sensApp1.setType(sensApp);
+
+		ProvidedCommunicationInstance restProv1 = DeploymentFactory.eINSTANCE
+				.createProvidedCommunicationInstance();
+		restProv1.setOwner(sensApp1);
+		restProv1.setName("RESTProv1");
+		restProv1.setType(restProv);
+
+		sensApp1.getProvidedCommunicationInstances().add(restProv1);
+
+		RequiredCommunicationInstance mongoDBReq1 = DeploymentFactory.eINSTANCE
+				.createRequiredCommunicationInstance();
+		mongoDBReq1.setOwner(sensApp1);
+		mongoDBReq1.setName("MongoDBReq1");
+		mongoDBReq1.setType(mongoDBReq);
+
+		sensApp1.getRequiredCommunicationInstances().add(mongoDBReq1);
+
+		RequiredHostInstance servletContainerSensAppReq1 = DeploymentFactory.eINSTANCE
+				.createRequiredHostInstance();
+		servletContainerSensAppReq1.setOwner(sensApp1);
+		servletContainerSensAppReq1.setName("ServletContainerSensAppReq1");
+		servletContainerSensAppReq1.setType(servletContainerSensAppReq);
+
+		sensApp1.setRequiredHostInstance(servletContainerSensAppReq1);
+
+		sensAppDeploymentModel.getInternalComponentInstances().add(sensApp1);
+
+		InternalComponentInstance mongoDB1 = DeploymentFactory.eINSTANCE
+				.createInternalComponentInstance();
+		mongoDB1.setName("MongoDB1");
+		mongoDB1.setType(mongoDB);
+
+		ProvidedCommunicationInstance mongoDBProv1 = DeploymentFactory.eINSTANCE
+				.createProvidedCommunicationInstance();
+		mongoDBProv1.setOwner(mongoDB1);
+		mongoDBProv1.setName("MongoDBProv1");
+		mongoDBProv1.setType(mongoDBProv);
+
+		mongoDB1.getProvidedCommunicationInstances().add(mongoDBProv1);
+
+		RequiredHostInstance vmMongoDBReq1 = DeploymentFactory.eINSTANCE
+				.createRequiredHostInstance();
+		vmMongoDBReq1.setOwner(mongoDB1);
+		vmMongoDBReq1.setName("VMMongoDBReq1");
+		vmMongoDBReq1.setType(vmMongoDBReq);
+
+		mongoDB1.setRequiredHostInstance(vmMongoDBReq1);
+
+		sensAppDeploymentModel.getInternalComponentInstances().add(mongoDB1);
+
+		InternalComponentInstance jettySC2 = DeploymentFactory.eINSTANCE
+				.createInternalComponentInstance();
+		jettySC2.setName("JettySC2");
+		jettySC2.setType(jettySC);
+
+		ProvidedHostInstance servletContainerJettyProv2 = DeploymentFactory.eINSTANCE
+				.createProvidedHostInstance();
+		servletContainerJettyProv2.setOwner(jettySC2);
+		servletContainerJettyProv2.setName("ServletContainerJettyProv2");
+		servletContainerJettyProv2.setType(servletContainerJettyProv);
+
+		jettySC2.getProvidedHostInstances().add(servletContainerJettyProv2);
+
+		RequiredHostInstance vmJettySCReq2 = DeploymentFactory.eINSTANCE
+				.createRequiredHostInstance();
+		vmJettySCReq2.setOwner(jettySC2);
+		vmJettySCReq2.setName("VMJettySCReq2");
+		vmJettySCReq2.setType(vmJettySCReq);
+
+		jettySC2.setRequiredHostInstance(vmJettySCReq2);
+
+		sensAppDeploymentModel.getInternalComponentInstances().add(jettySC2);
+
+		InternalComponentInstance admin1 = DeploymentFactory.eINSTANCE
+				.createInternalComponentInstance();
+		admin1.setName("Admin1");
+		admin1.setType(admin);
+
+		RequiredCommunicationInstance restReq1 = DeploymentFactory.eINSTANCE
+				.createRequiredCommunicationInstance();
+		restReq1.setOwner(admin1);
+		restReq1.setName("RESTReq1");
+		restReq1.setType(restReq);
+
+		admin1.getRequiredCommunicationInstances().add(restReq1);
+
+		RequiredHostInstance servletContainerAdminReq1 = DeploymentFactory.eINSTANCE
+				.createRequiredHostInstance();
+		servletContainerAdminReq1.setOwner(admin1);
+		servletContainerAdminReq1.setName("ServletContainerAdminReq1");
+		servletContainerAdminReq1.setType(servletContainerAdminReq);
+
+		admin1.setRequiredHostInstance(servletContainerAdminReq1);
+
+		sensAppDeploymentModel.getInternalComponentInstances().add(admin1);
+
+		VMInstance vmML1 = DeploymentFactory.eINSTANCE.createVMInstance();
+
 		VMInfo mediumVmInfo = CamelFactory.eINSTANCE.createVMInfo();
 		mediumVmInfo.setBenchmarkRate(0);
 		mediumVmInfo.setClassifiedOn(new Date());
 		mediumVmInfo.setCostPerHour(1);
-		
-		MonetaryUnit costMonetaryUnit = CamelFactory.eINSTANCE.createMonetaryUnit();
+
+		MonetaryUnit costMonetaryUnit = CamelFactory.eINSTANCE
+				.createMonetaryUnit();
 		costMonetaryUnit.setDimensionType(UnitDimensionType.COST);
 		costMonetaryUnit.setUnit(UnitType.EUROS);
-		
+
 		camelModel.getUnits().add(costMonetaryUnit);
-		
+
 		mediumVmInfo.setCostUnit(costMonetaryUnit);
 		mediumVmInfo.setEvaluatedOn(new Date());
 		mediumVmInfo.setName("MediumVmInfo");
-		
+
 		VMType mediumVmType = CamelFactory.eINSTANCE.createVMType();
 		mediumVmType.setFeature(vmFeature);
 		mediumVmType.setName("VM_Medium");
 		mediumVmType.getConstraints().add(mediumVmConstraint);
-		
+
 		mediumVmInfo.setType(mediumVmType);
 		camelModel.getVmTypes().add(mediumVmType);
-		
-		mlInstance.setHasInfo(mediumVmInfo);
-		
+
+		vmML1.setHasInfo(mediumVmInfo);
+
 		camelModel.getVmInfos().add(mediumVmInfo);
-		
-		mlInstance.setName("MLInstance");
-		mlInstance.setType(mlVm);
-		
-		ProvidedHostInstance mlInstanceProvidedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		mlInstanceProvidedHostInstance.setOwner(mlInstance);
-		mlInstanceProvidedHostInstance.setName("MLInstanceProvidedHostInstance");
-		mlInstanceProvidedHostInstance.setType(vmMlHost);
-		
-		mlInstance.getProvidedHostInstances().add(mlInstanceProvidedHostInstance);
-		
-		sensAppDeploymentModel.getVmInstances().add(mlInstance);
-		
-		VMInstance slInstance = DeploymentFactory.eINSTANCE.createVMInstance();
-		
+
+		vmML1.setName("VMML1");
+		vmML1.setType(ml);
+
+		ProvidedHostInstance vmMLProv1 = DeploymentFactory.eINSTANCE
+				.createProvidedHostInstance();
+		vmMLProv1.setOwner(vmML1);
+		vmMLProv1.setName("VMMLProv1");
+		vmMLProv1.setType(vmMLProv);
+
+		vmML1.getProvidedHostInstances().add(vmMLProv1);
+
+		sensAppDeploymentModel.getVmInstances().add(vmML1);
+
+		VMInstance vmSL1 = DeploymentFactory.eINSTANCE.createVMInstance();
+
 		VMInfo smallVmInfo = CamelFactory.eINSTANCE.createVMInfo();
 		smallVmInfo.setBenchmarkRate(0);
 		smallVmInfo.setClassifiedOn(new Date());
 		smallVmInfo.setCostPerHour(0.5);
-		
+
 		smallVmInfo.setCostUnit(costMonetaryUnit);
 		smallVmInfo.setEvaluatedOn(new Date());
 		smallVmInfo.setName("SmallVmInfo");
-		
+
 		VMType smallVmType = CamelFactory.eINSTANCE.createVMType();
 		smallVmType.setFeature(vmFeature);
 		smallVmType.setName("VMSmall");
 		smallVmType.getConstraints().add(smallVmConstraint);
-		
+
 		smallVmInfo.setType(smallVmType);
-		
+
 		camelModel.getVmTypes().add(smallVmType);
-		
-		slInstance.setHasInfo(smallVmInfo);
-		
+
+		vmSL1.setHasInfo(smallVmInfo);
+
 		camelModel.getVmInfos().add(smallVmInfo);
-		
-		slInstance.setName("SLInstance");
-		slInstance.setType(slVm);
-		
-		ProvidedHostInstance slInstanceProvidedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		slInstanceProvidedHostInstance.setOwner(slInstance);
-		slInstanceProvidedHostInstance.setName("SLInstanceProvidedHostInstance");
-		slInstanceProvidedHostInstance.setType(vmSlHost);
-		
-		slInstance.getProvidedHostInstances().add(slInstanceProvidedHostInstance);
-		
-		sensAppDeploymentModel.getVmInstances().add(slInstance);
-		
-		VMInstance llInstance = DeploymentFactory.eINSTANCE.createVMInstance();
-		
+
+		vmSL1.setName("VMSL1");
+		vmSL1.setType(sl);
+
+		ProvidedHostInstance vmSLProv1 = DeploymentFactory.eINSTANCE
+				.createProvidedHostInstance();
+		vmSLProv1.setOwner(vmSL1);
+		vmSLProv1.setName("VMSLProv1");
+		vmSLProv1.setType(vmSLProv);
+
+		vmSL1.getProvidedHostInstances().add(vmSLProv1);
+
+		sensAppDeploymentModel.getVmInstances().add(vmSL1);
+
+		VMInstance vmLL1 = DeploymentFactory.eINSTANCE.createVMInstance();
+
 		VMInfo largeVmInfo = CamelFactory.eINSTANCE.createVMInfo();
 		largeVmInfo.setBenchmarkRate(0);
 		largeVmInfo.setClassifiedOn(new Date());
 		largeVmInfo.setCostPerHour(2.0);
-		
+
 		largeVmInfo.setCostUnit(costMonetaryUnit);
 		largeVmInfo.setEvaluatedOn(new Date());
 		largeVmInfo.setName("LargeVmInfo");
-		
+
 		VMType largeVmType = CamelFactory.eINSTANCE.createVMType();
 		largeVmType.setFeature(vmFeature);
 		largeVmType.setName("VMLarge");
 		largeVmType.getConstraints().add(largeVmConstraint);
-		
+
 		largeVmInfo.setType(largeVmType);
 		camelModel.getVmTypes().add(largeVmType);
-		
-		llInstance.setHasInfo(largeVmInfo);
-		
+
+		vmLL1.setHasInfo(largeVmInfo);
+
 		camelModel.getVmInfos().add(largeVmInfo);
+
+		vmLL1.setName("VMLL1");
+		vmLL1.setType(ll);
+
+		ProvidedHostInstance vmLLProv1 = DeploymentFactory.eINSTANCE
+				.createProvidedHostInstance();
+		vmLLProv1.setOwner(vmLL1);
+		vmLLProv1.setName("VMLLProv1");
+		vmLLProv1.setType(vmLLProv);
+
+		vmLL1.getProvidedHostInstances().add(vmLLProv1);
+
+		sensAppDeploymentModel.getVmInstances().add(vmLL1);
+
+		CommunicationInstance sensAppToAdmin1 = DeploymentFactory.eINSTANCE
+				.createCommunicationInstance();
+		sensAppToAdmin1.setName("SensAppToAdmin1");
+		sensAppToAdmin1.setProvidedCommunicationInstance(restProv1);
+		sensAppToAdmin1.setRequiredCommunicationInstance(restReq1);
+		sensAppToAdmin1.setType(sensAppToAdmin);
+
+		sensAppDeploymentModel.getCommunicationInstances().add(sensAppToAdmin1);
+
+		CommunicationInstance sensAppToMongoDB1 = DeploymentFactory.eINSTANCE
+				.createCommunicationInstance();
+		sensAppToMongoDB1.setName("SensAppToMongoDB1");
+		sensAppToMongoDB1.setProvidedCommunicationInstance(mongoDBProv1);
+		sensAppToMongoDB1.setRequiredCommunicationInstance(mongoDBReq1);
+		sensAppToMongoDB1.setType(sensAppToMongoDB);
+
+		sensAppDeploymentModel.getCommunicationInstances().add(
+				sensAppToMongoDB1);
+
+		Hosting adminToServletContainer = DeploymentFactory.eINSTANCE.createHosting();
+		adminToServletContainer.setName("AdminToServletContainer");
+		adminToServletContainer.setProvidedHost(servletContainerJettyProv);
+		adminToServletContainer.setRequiredHost(servletContainerAdminReq);
 		
-		llInstance.setName("LLInstance");
-		llInstance.setType(llVm);
+		sensAppDeploymentModel.getHostings().add(adminToServletContainer);
 		
-		ProvidedHostInstance llInstanceProvidedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-		llInstanceProvidedHostInstance.setOwner(llInstance);
-		llInstanceProvidedHostInstance.setName("LLInstanceProvidedHostInstance");
-		llInstanceProvidedHostInstance.setType(vmLlHost);
+		Hosting jettySCToVMSL = DeploymentFactory.eINSTANCE.createHosting();
+		jettySCToVMSL.setName("JettySCToVMSL");
+		jettySCToVMSL.setProvidedHost(vmSLProv);
+		jettySCToVMSL.setRequiredHost(vmJettySCReq);
 		
-		llInstance.getProvidedHostInstances().add(llInstanceProvidedHostInstance);
+		sensAppDeploymentModel.getHostings().add(jettySCToVMSL);
 		
-		sensAppDeploymentModel.getVmInstances().add(llInstance);
+		Hosting jettySCToVMML = DeploymentFactory.eINSTANCE.createHosting();
+		jettySCToVMML.setName("JettySCToVMML");
+		jettySCToVMML.setProvidedHost(vmMLProv);
+		jettySCToVMML.setRequiredHost(vmJettySCReq);
 		
-		CommunicationInstance sensAppToAdminInstance = DeploymentFactory.eINSTANCE.createCommunicationInstance();
-		sensAppToAdminInstance.setName("SensAppToAdminInst");
-		sensAppToAdminInstance.setProvidedCommunicationInstance(sensApp1ProvCommInst);
-		sensAppToAdminInstance.setRequiredCommunicationInstance(admin1ReqHostInst);
-		sensAppToAdminInstance.setType(sensAppToAdmin);
+		sensAppDeploymentModel.getHostings().add(jettySCToVMML);
 		
-		sensAppDeploymentModel.getCommunicationInstances().add(sensAppToAdminInstance);
+		Hosting jettySCToVMLL = DeploymentFactory.eINSTANCE.createHosting();
+		jettySCToVMLL.setName("JettySCToVMLL");
+		jettySCToVMLL.setProvidedHost(vmLLProv);
+		jettySCToVMLL.setRequiredHost(vmJettySCReq);
 		
-		CommunicationInstance sensAppToMongoDBInstance = DeploymentFactory.eINSTANCE.createCommunicationInstance();
-		sensAppToMongoDBInstance.setName("SensAppToMongoDBInstance");
-		sensAppToMongoDBInstance.setProvidedCommunicationInstance(mongoDb1ProvidedCommInst);
-		sensAppToMongoDBInstance.setRequiredCommunicationInstance(sensApp1RequiredCommInst);
-		sensAppToMongoDBInstance.setType(sensAppToMongoDb);
+		sensAppDeploymentModel.getHostings().add(jettySCToVMLL);
 		
-		sensAppDeploymentModel.getCommunicationInstances().add(sensAppToMongoDBInstance);
+		Hosting mongoDBToVMSL = DeploymentFactory.eINSTANCE.createHosting();
+		mongoDBToVMSL.setName("MongoDBToVMSL");
+		mongoDBToVMSL.setProvidedHost(vmSLProv);
+		mongoDBToVMSL.setRequiredHost(vmMongoDBReq);
 		
-		HostingInstance admin1ToJettySc2HostInst = DeploymentFactory.eINSTANCE.createHostingInstance();
-		admin1ToJettySc2HostInst.setName("Admin1ToJettySC2");
-		admin1ToJettySc2HostInst.setProvidedHostInstance(jettySc2ProvHostInst);
-		admin1ToJettySc2HostInst.setRequiredHostInstance(admin1RequiredHostInst);
+		sensAppDeploymentModel.getHostings().add(mongoDBToVMSL);
 		
-		sensAppDeploymentModel.getHostingInstances().add(admin1ToJettySc2HostInst);
+		Hosting mongoDBToVMML = DeploymentFactory.eINSTANCE.createHosting();
+		mongoDBToVMML.setName("MongoDBToVMML");
+		mongoDBToVMML.setProvidedHost(vmMLProv);
+		mongoDBToVMML.setRequiredHost(vmMongoDBReq);
 		
-		HostingInstance jettySc2ToSLHostInst = DeploymentFactory.eINSTANCE.createHostingInstance();
-		jettySc2ToSLHostInst.setName("JettySC2ToSLInst");
-		jettySc2ToSLHostInst.setProvidedHostInstance(slInstanceProvidedHostInstance);
-		jettySc2ToSLHostInst.setRequiredHostInstance(jettySc2RequiredHostInstance);
+		sensAppDeploymentModel.getHostings().add(mongoDBToVMML);
 		
-		sensAppDeploymentModel.getHostingInstances().add(jettySc2ToSLHostInst);
+		Hosting mongoDBToVMLL = DeploymentFactory.eINSTANCE.createHosting();
+		mongoDBToVMLL.setName("MongoDBToVMLL");
+		mongoDBToVMLL.setProvidedHost(vmLLProv);
+		mongoDBToVMLL.setRequiredHost(vmMongoDBReq);
 		
-		HostingInstance jettySc1ToSLHostInst = DeploymentFactory.eINSTANCE.createHostingInstance();
-		jettySc1ToSLHostInst.setName("JettySC2ToSLInst");
-		jettySc1ToSLHostInst.setProvidedHostInstance(llInstanceProvidedHostInstance);
-		jettySc1ToSLHostInst.setRequiredHostInstance(jettySc1RequiredHostInstance);
+		sensAppDeploymentModel.getHostings().add(mongoDBToVMLL);
 		
-		sensAppDeploymentModel.getHostingInstances().add(jettySc1ToSLHostInst);
+		Hosting sensAppToServletContainer = DeploymentFactory.eINSTANCE.createHosting();
+		sensAppToServletContainer.setName("SensAppToServletContainer");
+		sensAppToServletContainer.setProvidedHost(servletContainerJettyProv);
+		sensAppToServletContainer.setRequiredHost(servletContainerSensAppReq);
 		
-		HostingInstance mongoDbToMlHostInst = DeploymentFactory.eINSTANCE.createHostingInstance();
-		mongoDbToMlHostInst.setName("MongoDBToMLInst");
-		mongoDbToMlHostInst.setProvidedHostInstance(mlInstanceProvidedHostInstance);
-		mongoDbToMlHostInst.setRequiredHostInstance(mongoDb1RequiredHostInstance);
+		sensAppDeploymentModel.getHostings().add(sensAppToServletContainer);
 		
-		sensAppDeploymentModel.getHostingInstances().add(mongoDbToMlHostInst);
-		
-		HostingInstance sensApp1ToJettySc1 = DeploymentFactory.eINSTANCE.createHostingInstance();
-		sensApp1ToJettySc1.setName("SensApp1ToJettySC1");
-		sensApp1ToJettySc1.setProvidedHostInstance(jettySc1ProvHostInst);
-		sensApp1ToJettySc1.setRequiredHostInstance(sensApp1ReqHostInst1);
-		
-		sensAppDeploymentModel.getHostingInstances().add(sensApp1ToJettySc1);
-		
-		////// END definition of Deployment model
-		
+		HostingInstance admin1ToJettySC2 = DeploymentFactory.eINSTANCE
+				.createHostingInstance();
+		admin1ToJettySC2.setName("Admin1ToJettySC2");
+		admin1ToJettySC2.setProvidedHostInstance(servletContainerJettyProv2);
+		admin1ToJettySC2.setRequiredHostInstance(servletContainerAdminReq1);
+		admin1ToJettySC2.setType(adminToServletContainer);
+
+		sensAppDeploymentModel.getHostingInstances().add(admin1ToJettySC2);
+
+		HostingInstance jettySC2ToSL1 = DeploymentFactory.eINSTANCE
+				.createHostingInstance();
+		jettySC2ToSL1.setName("JettySC2ToVMSL1");
+		jettySC2ToSL1.setProvidedHostInstance(vmSLProv1);
+		jettySC2ToSL1.setRequiredHostInstance(vmJettySCReq2);
+		jettySC2ToSL1.setType(jettySCToVMSL);
+
+		sensAppDeploymentModel.getHostingInstances().add(jettySC2ToSL1);
+
+		HostingInstance jettySC1ToVMLL1 = DeploymentFactory.eINSTANCE
+				.createHostingInstance();
+		jettySC1ToVMLL1.setName("JettySC1ToVMLL1");
+		jettySC1ToVMLL1.setProvidedHostInstance(vmLLProv1);
+		jettySC1ToVMLL1.setRequiredHostInstance(vmJettySCReq1);
+		jettySC1ToVMLL1.setType(jettySCToVMLL);
+
+		sensAppDeploymentModel.getHostingInstances().add(jettySC1ToVMLL1);
+
+		HostingInstance mongoDB1ToVMML1 = DeploymentFactory.eINSTANCE
+				.createHostingInstance();
+		mongoDB1ToVMML1.setName("MongoDB1ToVMML1");
+		mongoDB1ToVMML1.setProvidedHostInstance(vmMLProv1);
+		mongoDB1ToVMML1.setRequiredHostInstance(vmMongoDBReq1);
+		mongoDB1ToVMML1.setType(mongoDBToVMML);
+
+		sensAppDeploymentModel.getHostingInstances().add(mongoDB1ToVMML1);
+
+		HostingInstance sensApp1ToJettySC1 = DeploymentFactory.eINSTANCE
+				.createHostingInstance();
+		sensApp1ToJettySC1.setName("SensApp1ToJettySC1");
+		sensApp1ToJettySC1.setProvidedHostInstance(servletContainerJettyProv1);
+		sensApp1ToJettySC1.setRequiredHostInstance(servletContainerSensAppReq1);
+		sensApp1ToJettySC1.setType(sensAppToServletContainer);
+
+		sensAppDeploymentModel.getHostingInstances().add(sensApp1ToJettySC1);
+
+		// //// END definition of Deployment model
+
 		camelModel.getDeploymentModels().add(sensAppDeploymentModel);
-		
-		////// START definition of Scalability model
-		
-		ScalabilityModel scalabilityModel = ScalabilityFactory.eINSTANCE.createScalabilityModel();
-		
-		MetricTemplate rawExecTime = ScalabilityFactory.eINSTANCE.createMetricTemplate();
-		
+
+		// //// START definition of Scalability model
+
+		ScalabilityModel scalabilityModel = ScalabilityFactory.eINSTANCE
+				.createScalabilityModel();
+
+		MetricTemplate rawExecTime = ScalabilityFactory.eINSTANCE
+				.createMetricTemplate();
+
 		rawExecTime.setLayer(LayerType.SAA_S);
 		rawExecTime.setName("RAW_EXEC_TIME");
-		
+
 		Property execTime = ScalabilityFactory.eINSTANCE.createProperty();
 		execTime.setId("ExecTime");
 		execTime.setName("Execution Time");
 		execTime.setType(PropertyType.MEASURABLE);
 		scalabilityModel.getProperties().add(execTime);
-		
+
 		rawExecTime.setProperty(execTime);
 		rawExecTime.setType(MetricType.RAW);
-		
-		TimeIntervalUnit timeInterval = CamelFactory.eINSTANCE.createTimeIntervalUnit();
+
+		TimeIntervalUnit timeInterval = CamelFactory.eINSTANCE
+				.createTimeIntervalUnit();
 		timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
 		timeInterval.setUnit(UnitType.SECONDS);
 		scalabilityModel.getUnits().add(timeInterval);
-		
+
 		rawExecTime.setUnit(timeInterval);
 		rawExecTime.setValueDirection((short) 0);
-		
+
 		scalabilityModel.getMetricTemplates().add(rawExecTime);
-		
-		MetricTemplate avgExecTime = ScalabilityFactory.eINSTANCE.createMetricTemplate();
-		
-		MetricFormula avgExecTimeFormula = ScalabilityFactory.eINSTANCE.createMetricFormula();
+
+		MetricTemplate avgExecTime = ScalabilityFactory.eINSTANCE
+				.createMetricTemplate();
+
+		MetricFormula avgExecTimeFormula = ScalabilityFactory.eINSTANCE
+				.createMetricFormula();
 		avgExecTimeFormula.setFunction(MetricFunctionType.AVERAGE);
 		avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
 		avgExecTimeFormula.getParameters().add(rawExecTime);
 		scalabilityModel.getParameters().add(avgExecTimeFormula);
-		
+
 		avgExecTime.setFormula(avgExecTimeFormula);
 		avgExecTime.setLayer(LayerType.SAA_S);
 		avgExecTime.setName("AVG_EXEC_TIME");
-		
+
 		avgExecTime.setProperty(execTime);
 		avgExecTime.setType(MetricType.COMPOSITE);
-		
+
 		StorageUnit storageUnit = CamelFactory.eINSTANCE.createStorageUnit();
 		storageUnit.setDimensionType(UnitDimensionType.STORAGE);
 		storageUnit.setUnit(UnitType.GIGABYTES);
-		
+
 		scalabilityModel.getUnits().add(storageUnit);
-		
+
 		avgExecTime.setUnit(storageUnit);
 		avgExecTime.setValueDirection((short) 0);
-		
+
 		scalabilityModel.getMetricTemplates().add(avgExecTime);
-		
-		MetricTemplate storageMetricTemp = ScalabilityFactory.eINSTANCE.createMetricTemplate();
+
+		MetricTemplate storageMetricTemp = ScalabilityFactory.eINSTANCE
+				.createMetricTemplate();
 		storageMetricTemp.setLayer(LayerType.IAA_S);
 		storageMetricTemp.setName("Storage");
-		
-		Property storageProperty = ScalabilityFactory.eINSTANCE.createProperty();
+
+		Property storageProperty = ScalabilityFactory.eINSTANCE
+				.createProperty();
 		storageProperty.setId("Storage");
 		storageProperty.setName("Storage");
-		storageProperty.setType(PropertyType.MEASURABLE); 
+		storageProperty.setType(PropertyType.MEASURABLE);
 		scalabilityModel.getProperties().add(storageProperty);
-		
+
 		storageMetricTemp.setProperty(storageProperty);
 		storageMetricTemp.setType(MetricType.RAW);
-		storageMetricTemp.setUnit(storageUnit); 
+		storageMetricTemp.setUnit(storageUnit);
 		storageMetricTemp.setValueDirection((short) 0);
-		
+
 		scalabilityModel.getMetricTemplates().add(storageMetricTemp);
-		
+
 		Metric rawEtMetric = ScalabilityFactory.eINSTANCE.createMetric();
 		rawEtMetric.setId("RawETMetric1");
-		
-		MetricObjectInstanceBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE.createMetricApplicationInstanceBinding();
-		
-		ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE.createExecutionContext(); 
-		
+
+		MetricObjectInstanceBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE
+				.createMetricApplicationInstanceBinding();
+
+		ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE
+				.createExecutionContext();
+
 		rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
-		
+
 		scalabilityModel.getBindingInstances().add(rawEtMetricAIB);
-		
+
 		rawEtMetric.setObjectBinding(rawEtMetricAIB);
-		
+
 		Sensor sensor1 = ScalabilityFactory.eINSTANCE.createSensor();
-		sensor1.setIsPush(false); 
-		
+		sensor1.setIsPush(false);
+
 		scalabilityModel.getSensors().add(sensor1);
-		
-		rawEtMetric.setSensor(sensor1); 
+
+		rawEtMetric.setSensor(sensor1);
 		rawEtMetric.setTemplate(rawExecTime);
-		
+
 		Range rawEtMetricRange = TypeFactory.eINSTANCE.createRange();
 		rawEtMetricRange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
-		
+
 		Limit rawEtMetricMin = TypeFactory.eINSTANCE.createLimit();
 		rawEtMetricMin.setIncluded(false);
-		
-		FloatValue rawEtMetricMinValue = TypeFactory.eINSTANCE.createFloatValue();
+
+		FloatValue rawEtMetricMinValue = TypeFactory.eINSTANCE
+				.createFloatValue();
 		rawEtMetricMinValue.setValue(0);
-		
+
 		rawEtMetricMin.setValue(rawEtMetricMinValue);
-		
+
 		rawEtMetricRange.setLowerLimit(rawEtMetricMin);
-		
+
 		Limit rawEtMetricMax = TypeFactory.eINSTANCE.createLimit();
 		rawEtMetricMax.setIncluded(false);
-		
-		PositiveInf rawEtMetricMaxValue = TypeFactory.eINSTANCE.createPositiveInf();
-		
+
+		PositiveInf rawEtMetricMaxValue = TypeFactory.eINSTANCE
+				.createPositiveInf();
+
 		rawEtMetricMax.setValue(rawEtMetricMaxValue);
-		
+
 		rawEtMetricRange.setUpperLimit(rawEtMetricMax);
-		
+
 		rawEtMetric.setValueType(rawEtMetricRange);
-		
+
 		scalabilityModel.getMetrics().add(rawEtMetric);
-		
+
 		Metric avgEtMetric1 = ScalabilityFactory.eINSTANCE.createMetric();
 		avgEtMetric1.getComponentMetrics().add(rawEtMetric);
 		avgEtMetric1.setId("AVGETMetric1");
-		
+
 		avgEtMetric1.setObjectBinding(rawEtMetricAIB);
-		
+
 		Sensor sensor2 = ScalabilityFactory.eINSTANCE.createSensor();
-		sensor2.setIsPush(false); 
-		
+		sensor2.setIsPush(false);
+
 		scalabilityModel.getSensors().add(sensor2);
-		
-		avgEtMetric1.setSensor(sensor2); 
+
+		avgEtMetric1.setSensor(sensor2);
 		avgEtMetric1.setTemplate(avgExecTime);
-		
+
 		Range avgEtMetricRange = TypeFactory.eINSTANCE.createRange();
 		avgEtMetricRange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
-		
+
 		Limit avgEtMetricMin = TypeFactory.eINSTANCE.createLimit();
 		avgEtMetricMin.setIncluded(false);
-		
-		FloatValue avgEtMetricMinValue = TypeFactory.eINSTANCE.createFloatValue();
+
+		FloatValue avgEtMetricMinValue = TypeFactory.eINSTANCE
+				.createFloatValue();
 		avgEtMetricMinValue.setValue(0);
-		
+
 		avgEtMetricMin.setValue(avgEtMetricMinValue);
-		
+
 		avgEtMetricRange.setLowerLimit(avgEtMetricMin);
-		
+
 		Limit avgEtMetricMax = TypeFactory.eINSTANCE.createLimit();
 		avgEtMetricMax.setIncluded(false);
-		
-		PositiveInf avgEtMetricMaxValue = TypeFactory.eINSTANCE.createPositiveInf();
-		
+
+		PositiveInf avgEtMetricMaxValue = TypeFactory.eINSTANCE
+				.createPositiveInf();
+
 		avgEtMetricMax.setValue(avgEtMetricMaxValue);
-		
+
 		avgEtMetricRange.setUpperLimit(avgEtMetricMax);
-		
+
 		avgEtMetric1.setValueType(avgEtMetricRange);
-		
+
 		scalabilityModel.getMetrics().add(avgEtMetric1);
-		
+
 		Metric rawStorageMetric = ScalabilityFactory.eINSTANCE.createMetric();
 		rawStorageMetric.setId("RawStorageNum");
 
-		MetricVMInstanceBinding vmInstBinding = ScalabilityFactory.eINSTANCE.createMetricVMInstanceBinding();
+		MetricVMInstanceBinding vmInstBinding = ScalabilityFactory.eINSTANCE
+				.createMetricVMInstanceBinding();
 		vmInstBinding.setExecutionContext(sensAppExecutionContext);
-		vmInstBinding.setVmInstance(mlInstance);
-		
+		vmInstBinding.setVmInstance(vmML1);
+
 		scalabilityModel.getBindingInstances().add(vmInstBinding);
-		
+
 		rawStorageMetric.setObjectBinding(vmInstBinding);
-		
+
 		Sensor sensor3 = ScalabilityFactory.eINSTANCE.createSensor();
 		sensor3.setIsPush(false);
-		
+
 		scalabilityModel.getSensors().add(sensor3);
-		
+
 		rawStorageMetric.setSensor(sensor3);
-		
+
 		rawStorageMetric.setTemplate(storageMetricTemp);
-		
+
 		Range rawStorageMetricRange = TypeFactory.eINSTANCE.createRange();
 		rawStorageMetricRange.setPrimitiveType(TypeEnum.INT_TYPE);
-		
+
 		Limit rawStorageMetricMin = TypeFactory.eINSTANCE.createLimit();
 		rawStorageMetricMin.setIncluded(true);
-		
-		IntValue rawStorageMetricMinValue = TypeFactory.eINSTANCE.createIntValue();
+
+		IntValue rawStorageMetricMinValue = TypeFactory.eINSTANCE
+				.createIntValue();
 		rawStorageMetricMinValue.setValue(200);
-		
+
 		rawStorageMetricMin.setValue(rawStorageMetricMinValue);
-		
+
 		rawStorageMetricRange.setLowerLimit(rawStorageMetricMin);
-		
+
 		Limit rawStorageMetricMax = TypeFactory.eINSTANCE.createLimit();
 		rawStorageMetricMax.setIncluded(true);
-		
-		IntValue rawStorageMetricMaxValue = TypeFactory.eINSTANCE.createIntValue();
+
+		IntValue rawStorageMetricMaxValue = TypeFactory.eINSTANCE
+				.createIntValue();
 		rawStorageMetricMaxValue.setValue(2048);
-		
+
 		rawStorageMetricMax.setValue(rawStorageMetricMaxValue);
-		
+
 		rawStorageMetricRange.setUpperLimit(rawStorageMetricMax);
-		
+
 		rawStorageMetric.setValueType(rawStorageMetricRange);
-		
+
 		scalabilityModel.getMetrics().add(rawStorageMetric);
-		
-		ScalabilityRule avgEtScalabilityRule = ScalabilityFactory.eINSTANCE.createScalabilityRule();
-		
-		ScalingAction verticalScalingSensApp = ScalabilityFactory.eINSTANCE.createScalingAction();
-		verticalScalingSensApp.setComponentInstance(sensApp1Ici);
+
+		ScalabilityRule avgEtScalabilityRule = ScalabilityFactory.eINSTANCE
+				.createScalabilityRule();
+
+		ScalingAction verticalScalingSensApp = ScalabilityFactory.eINSTANCE
+				.createScalingAction();
+		verticalScalingSensApp.setComponentInstance(sensApp1);
 		verticalScalingSensApp.setCoreUpdate(0);
 		verticalScalingSensApp.setCount(1);
 		verticalScalingSensApp.setCPUUpdate(0);
@@ -1309,35 +1492,40 @@ public class SensAppCDO {
 		verticalScalingSensApp.setNetworkUpdate(0);
 		verticalScalingSensApp.setStorageUpdate(0);
 		verticalScalingSensApp.setType(ActionType.SCALE_OUT);
-		verticalScalingSensApp.setVmInstance(llInstance);
+		verticalScalingSensApp.setVmInstance(vmLL1);
 		scalabilityModel.getActions().add(verticalScalingSensApp);
-		
+
 		avgEtScalabilityRule.getActions().add(verticalScalingSensApp);
-		
-		NonFunctionalEvent avgExecutionTimeViolated = ScalabilityFactory.eINSTANCE.createNonFunctionalEvent();
+
+		NonFunctionalEvent avgExecutionTimeViolated = ScalabilityFactory.eINSTANCE
+				.createNonFunctionalEvent();
 		avgExecutionTimeViolated.setIsViolation(true);
-		
-		MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE.createMetricCondition();
-		avgEtMetricCondition.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
+
+		MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE
+				.createMetricCondition();
+		avgEtMetricCondition
+				.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
 		avgEtMetricCondition.setMetric(avgEtMetric1);
 		avgEtMetricCondition.setThreshold(10);
-		
+
 		scalabilityModel.getConditions().add(avgEtMetricCondition);
-		
+
 		avgExecutionTimeViolated.setMetricCondition(avgEtMetricCondition);
 		avgExecutionTimeViolated.setName("NFAvgETViol");
-		
+
 		scalabilityModel.getEvents().add(avgExecutionTimeViolated);
-		
+
 		avgEtScalabilityRule.setEvent(avgExecutionTimeViolated);
 		avgEtScalabilityRule.setName("AvgETRule");
-		
+
 		scalabilityModel.getRules().add(avgEtScalabilityRule);
-		
-		ScalabilityRule storageViolationScalabilityRule = ScalabilityFactory.eINSTANCE.createScalabilityRule();
-		
-		ScalingAction horizontalScaleMongoDBVm = ScalabilityFactory.eINSTANCE.createScalingAction();
-		horizontalScaleMongoDBVm.setComponentInstance(mongoDb1Ici);
+
+		ScalabilityRule storageViolationScalabilityRule = ScalabilityFactory.eINSTANCE
+				.createScalabilityRule();
+
+		ScalingAction horizontalScaleMongoDBVm = ScalabilityFactory.eINSTANCE
+				.createScalingAction();
+		horizontalScaleMongoDBVm.setComponentInstance(mongoDB1);
 		horizontalScaleMongoDBVm.setCoreUpdate(0);
 		horizontalScaleMongoDBVm.setCount(0);
 		horizontalScaleMongoDBVm.setCPUUpdate(0);
@@ -1347,41 +1535,47 @@ public class SensAppCDO {
 		horizontalScaleMongoDBVm.setNetworkUpdate(0);
 		horizontalScaleMongoDBVm.setStorageUpdate(512);
 		horizontalScaleMongoDBVm.setType(ActionType.SCALE_UP);
-		horizontalScaleMongoDBVm.setVmInstance(mlInstance);
-		
-		storageViolationScalabilityRule.getActions().add(horizontalScaleMongoDBVm);
+		horizontalScaleMongoDBVm.setVmInstance(vmML1);
+
+		storageViolationScalabilityRule.getActions().add(
+				horizontalScaleMongoDBVm);
 		scalabilityModel.getActions().add(horizontalScaleMongoDBVm);
-		
-		NonFunctionalEvent rawStorageViolated = ScalabilityFactory.eINSTANCE.createNonFunctionalEvent();
+
+		NonFunctionalEvent rawStorageViolated = ScalabilityFactory.eINSTANCE
+				.createNonFunctionalEvent();
 		rawStorageViolated.setIsViolation(true);
-		
-		MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE.createMetricCondition();
-		rawStorageMetricCondition.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
+
+		MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE
+				.createMetricCondition();
+		rawStorageMetricCondition
+				.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
 		rawStorageMetricCondition.setMetric(rawStorageMetric);
 		rawStorageMetricCondition.setThreshold(500);
-		
+
 		scalabilityModel.getConditions().add(rawStorageMetricCondition);
-		
+
 		rawStorageViolated.setMetricCondition(rawStorageMetricCondition);
 		rawStorageViolated.setName("NFRawStorageViol");
-		
+
 		scalabilityModel.getEvents().add(rawStorageViolated);
-		
+
 		storageViolationScalabilityRule.setEvent(rawStorageViolated);
 		storageViolationScalabilityRule.setName("StorageViolRule");
-		
+
 		scalabilityModel.getRules().add(storageViolationScalabilityRule);
-		
-		HorizontalScalabilityPolicy horizPolicySensApp = ScalabilityFactory.eINSTANCE.createHorizontalScalabilityPolicy();
-		horizPolicySensApp.setComponent(sensAppIc);
+
+		HorizontalScalabilityPolicy horizPolicySensApp = ScalabilityFactory.eINSTANCE
+				.createHorizontalScalabilityPolicy();
+		horizPolicySensApp.setComponent(sensApp);
 		horizPolicySensApp.setId("HorizPolicySensApp");
 		horizPolicySensApp.setMaxInstances(4);
 		horizPolicySensApp.setMinInstances(1);
 		horizPolicySensApp.setPriority(0);
-		
+
 		scalabilityModel.getPolicies().add(horizPolicySensApp);
-		
-		VerticalScalabilityPolicy verticalPolicyMongoDb = ScalabilityFactory.eINSTANCE.createVerticalScalabilityPolicy();
+
+		VerticalScalabilityPolicy verticalPolicyMongoDb = ScalabilityFactory.eINSTANCE
+				.createVerticalScalabilityPolicy();
 		verticalPolicyMongoDb.setId("VertPolMongoDB");
 		verticalPolicyMongoDb.setMaxCores(0);
 		verticalPolicyMongoDb.setMaxCPU(0);
@@ -1392,85 +1586,91 @@ public class SensAppCDO {
 		verticalPolicyMongoDb.setMinMemory(0);
 		verticalPolicyMongoDb.setMinStorage(512);
 		verticalPolicyMongoDb.setPriority(0);
-		verticalPolicyMongoDb.setVm(mlVm);
-		
+		verticalPolicyMongoDb.setVm(ml);
+
 		scalabilityModel.getPolicies().add(verticalPolicyMongoDb);
-		
-		////// END definition of Scalability model
-		
+
+		// //// END definition of Scalability model
+
 		camelModel.getScalabilityModels().add(scalabilityModel);
-		
-		////// START definition of Execution model
-		
-		ExecutionModel execModel = ExecutionFactory.eINSTANCE.createExecutionModel();
-		
-		Application sensAppApplication = CamelFactory.eINSTANCE.createApplication();
+
+		// //// START definition of Execution model
+
+		ExecutionModel execModel = ExecutionFactory.eINSTANCE
+				.createExecutionModel();
+
+		Application sensAppApplication = CamelFactory.eINSTANCE
+				.createApplication();
 		sensAppApplication.getDeploymentModels().add(sensAppDeploymentModel);
 		sensAppApplication.setName("SensApp");
 		sensAppApplication.setOwner(user1);
 		sensAppApplication.setVersion("v1.0");
-		
+
 		camelModel.getApplications().add(sensAppApplication);
-		
+
 		sensAppExecutionContext.setApplication(sensAppApplication);
 		sensAppExecutionContext.setDeploymentModel(sensAppDeploymentModel);
 		sensAppExecutionContext.setID("SensAppEC1");
-		
-		RequirementGroup user1RG = CamelFactory.eINSTANCE.createRequirementGroup();
-		
+
+		RequirementGroup user1RG = CamelFactory.eINSTANCE
+				.createRequirementGroup();
+
 		user1RG.setId("");
 		user1RG.setPriority(0);
 		user1RG.setRequirementOperator(RequirementOperatorType.AND);
 		user1RG.getRequirements().add(verticalPolicyMongoDb);
 		user1RG.getRequirements().add(horizPolicySensApp);
 		user1RG.setUser(user1);
-		
+
 		camelModel.getRequirements().add(user1RG);
-		
+
 		sensAppExecutionContext.setRequirementGroup(user1RG);
 		sensAppExecutionContext.setTotalCost(0);
-		
+
 		execModel.getExecutionContexts().add(sensAppExecutionContext);
-				
+
 		// END definition of Execution model
-		
+
 		camelModel.getExecutionModels().add(execModel);
 		return camelModel;
 	}
 
 	public static void main(String[] args) {
-	// initialize and activate a container
-	final IManagedContainer container = ContainerUtil.createContainer();
-	Net4jUtil.prepareContainer(container);
-	TCPUtil.prepareContainer(container);
-	// CDONet4jUtil.prepareContainer(container);
-	container.activate();
-	
-	// create a Net4j TCP connector
-	final IConnector connector = (IConnector) TCPUtil.getConnector(container, "localhost:2036");
+		// initialize and activate a container
+		final IManagedContainer container = ContainerUtil.createContainer();
+		Net4jUtil.prepareContainer(container);
+		TCPUtil.prepareContainer(container);
+		// CDONet4jUtil.prepareContainer(container);
+		container.activate();
 
-	// create the session configuration
-	CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
-	config.setConnector(connector);
-	config.setRepositoryName("repo1");
+		// create a Net4j TCP connector
+		final IConnector connector = (IConnector) TCPUtil.getConnector(
+				container, "localhost:2036");
 
-	// create the actual session with the repository
-	CDONet4jSession cdoSession = config.openNet4jSession();
+		// create the session configuration
+		CDONet4jSessionConfiguration config = CDONet4jUtil
+				.createNet4jSessionConfiguration();
+		config.setConnector(connector);
+		config.setRepositoryName("repo1");
 
-	// obtain a transaction object
-	CDOTransaction transaction = cdoSession.openTransaction();
+		// create the actual session with the repository
+		CDONet4jSession cdoSession = config.openNet4jSession();
 
-	// create a CDO resource object
-	CDOResource resource = transaction.getOrCreateResource("/sensAppResource");
-	
-	EObject camelModel = getSensAppCamelModel();
-	try {
-		resource.getContents().add(camelModel);
-		transaction.commit();
-	} catch (ConcurrentAccessException e) {
-		e.printStackTrace();
-	} catch (CommitException e) {
-		e.printStackTrace();
-	}
+		// obtain a transaction object
+		CDOTransaction transaction = cdoSession.openTransaction();
+
+		// create a CDO resource object
+		CDOResource resource = transaction
+				.getOrCreateResource("/sensAppResource");
+
+		EObject camelModel = getSensAppCamelModel();
+		try {
+			resource.getContents().add(camelModel);
+			transaction.commit();
+		} catch (ConcurrentAccessException e) {
+			e.printStackTrace();
+		} catch (CommitException e) {
+			e.printStackTrace();
+		}
 	}
 }

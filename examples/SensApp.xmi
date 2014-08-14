@@ -177,11 +177,11 @@
         comparisonOperator="GREATER_EQUAL_THAN"
         metric="RawStorageNum"/>
     <properties
-        id="ExecTime"
+        id="ExecutionTime1"
         name="Execution Time"
         type="MEASURABLE"/>
     <properties
-        id="Storage"
+        id="Storage1"
         name="Storage"
         type="MEASURABLE"/>
     <actions
@@ -465,20 +465,20 @@
         xsi:type="deployment:InternalComponent"
         name="SensApp">
       <resources
-          name="SensApp"
+          name="SensAppRes"
           downloadCommand="wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh"
           installCommand="cd ~; sudo bash install_start_sensapp.sh"/>
       <providedCommunications
-          name="rest"
+          name="RESTProv"
           owner="//@deploymentModels.0/@components.0"
           portNumber="8080"/>
       <requiredCommunications
-          name="mongoDBRequired"
+          name="MongoDBReq"
           owner="//@deploymentModels.0/@components.0"
           isLocal="true"
           isMandatory="true"/>
       <requiredHost
-          name="SensAppHostReq"
+          name="ServletContainerSensAppReq"
           owner="//@deploymentModels.0/@components.0"/>
     </components>
     <components
@@ -489,42 +489,42 @@
           downloadCommand="wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh"
           installCommand="cd ~; sudo bash install_mongoDB.sh"/>
       <providedCommunications
-          name="mongoDB"
+          name="MongoDBProv"
           owner="//@deploymentModels.0/@components.1"/>
       <requiredHost
-          name="MongoDBHostReq"
+          name="VMMongoDBReq"
           owner="//@deploymentModels.0/@components.1"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
         name="JettySC">
       <resources
-          name="jettySC"
+          name="JettySCRes"
           downloadCommand="wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh"
           installCommand="cd ~; sudo bash install_jetty.sh"
           stopCommand="sudo service jetty stop"/>
       <providedHosts
-          name="JettyProvidedHost"
+          name="ServletContainerJettyProv"
           owner="//@deploymentModels.0/@components.2"/>
       <requiredHost
-          name="JettyRequiredHost"
+          name="VMJettySCReq"
           owner="//@deploymentModels.0/@components.2"/>
     </components>
     <components
         xsi:type="deployment:InternalComponent"
         name="Admin">
       <resources
-          name="Admin"
+          name="AdminRes"
           downloadCommand="wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json"
           installCommand="cd ~; sudo bash install_sensappadmin.sh"
           startCommand="cd ~; sudo bash start_sensappadmin.sh"
           stopCommand="sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart"/>
       <requiredCommunications
-          name="restRequired"
+          name="RESTReq"
           owner="//@deploymentModels.0/@components.3"
           portNumber="8080"/>
       <requiredHost
-          name="AdminRequiredHost"
+          name="ServletContainerAdminReq"
           owner="//@deploymentModels.0/@components.3"/>
     </components>
     <components
@@ -544,7 +544,7 @@
             value="."/>
       </properties>
       <providedHosts
-          name="VMMLHost"
+          name="VMMLProv"
           owner="//@deploymentModels.0/@components.4"/>
     </components>
     <components
@@ -564,7 +564,7 @@
             value="."/>
       </properties>
       <providedHosts
-          name="VMSLHost"
+          name="VMSLProv"
           owner="//@deploymentModels.0/@components.5"/>
     </components>
     <components
@@ -585,7 +585,7 @@
             value="."/>
       </properties>
       <providedHosts
-          name="VMLLHost"
+          name="VMLLProv"
           owner="//@deploymentModels.0/@components.6"/>
     </components>
     <communications
@@ -593,7 +593,7 @@
         requiredCommunication="//@deploymentModels.0/@components.3/@requiredCommunications.0"
         providedCommunication="//@deploymentModels.0/@components.0/@providedCommunications.0">
       <requiredPortResource
-          name="SensAppAdminSensApp"
+          name="SensAppToAdminRes"
           downloadCommand="get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh"
           installCommand="cd ~; sudo bash configure_sensappadmin.sh"/>
     </communications>
@@ -606,11 +606,11 @@
         name="JettySC1"
         type="//@deploymentModels.0/@components.2">
       <providedHostInstances
-          name="JettySC1ProvidedHostInstance"
+          name="ServletContainerJettyProv1"
           owner="//@deploymentModels.0/@componentInstances.0"
           type="//@deploymentModels.0/@components.2/@providedHosts.0"/>
       <requiredHostInstance
-          name="JettySC1RequiredHostInstance"
+          name="VMJettySCReq1"
           owner="//@deploymentModels.0/@componentInstances.0"
           type="//@deploymentModels.0/@components.2/@requiredHost"/>
     </componentInstances>
@@ -619,15 +619,15 @@
         name="SensApp1"
         type="//@deploymentModels.0/@components.0">
       <providedCommunicationInstances
-          name="SensApp1ProvidedCommInst"
+          name="RESTProv1"
           type="//@deploymentModels.0/@components.0/@providedCommunications.0"
           owner="//@deploymentModels.0/@componentInstances.1"/>
       <requiredCommunicationInstances
-          name="SensApp1RequiredCommInst"
+          name="MongoDBReq1"
           type="//@deploymentModels.0/@components.0/@requiredCommunications.0"
           owner="//@deploymentModels.0/@componentInstances.1"/>
       <requiredHostInstance
-          name="SensApp1RequiredHostInst1"
+          name="ServletContainerSensAppReq1"
           owner="//@deploymentModels.0/@componentInstances.1"
           type="//@deploymentModels.0/@components.0/@requiredHost"/>
     </componentInstances>
@@ -636,11 +636,11 @@
         name="MongoDB1"
         type="//@deploymentModels.0/@components.1">
       <providedCommunicationInstances
-          name="MongoDB1ProvidedCommInst"
+          name="MongoDBProv1"
           type="//@deploymentModels.0/@components.1/@providedCommunications.0"
           owner="//@deploymentModels.0/@componentInstances.2"/>
       <requiredHostInstance
-          name="MongoDB1RequiredHostInstance"
+          name="VMMongoDBReq1"
           owner="//@deploymentModels.0/@componentInstances.2"
           type="//@deploymentModels.0/@components.1/@requiredHost"/>
     </componentInstances>
@@ -649,87 +649,124 @@
         name="JettySC2"
         type="//@deploymentModels.0/@components.2">
       <providedHostInstances
-          name="JettySC2ProvidedHostInstance"
+          name="ServletContainerJettyProv2"
           owner="//@deploymentModels.0/@componentInstances.3"
           type="//@deploymentModels.0/@components.2/@providedHosts.0"/>
       <requiredHostInstance
-          name="JettySC2RequiredHostInstance"
+          name="VMJettySCReq2"
           owner="//@deploymentModels.0/@componentInstances.3"
           type="//@deploymentModels.0/@components.2/@requiredHost"/>
     </componentInstances>
     <componentInstances
         xsi:type="deployment:InternalComponentInstance"
-        name="AdminInst1"
+        name="Admin1"
         type="//@deploymentModels.0/@components.3">
       <requiredCommunicationInstances
-          name="Admin1RequiredCommInst"
+          name="RESTReq1"
           type="//@deploymentModels.0/@components.3/@requiredCommunications.0"
           owner="//@deploymentModels.0/@componentInstances.4"/>
       <requiredHostInstance
-          name="Admin1RequiredHostInst"
+          name="ServletContainerAdminReq1"
           owner="//@deploymentModels.0/@componentInstances.4"
           type="//@deploymentModels.0/@components.3/@requiredHost"/>
     </componentInstances>
     <componentInstances
         xsi:type="deployment:VMInstance"
-        name="MLInstance"
+        name="VMML1"
         type="//@deploymentModels.0/@components.4"
         hasInfo="//@vmInfos.1">
       <providedHostInstances
-          name="MLInstanceProvidedHostInstance"
+          name="VMMLProv1"
           owner="//@deploymentModels.0/@componentInstances.5"
           type="//@deploymentModels.0/@components.4/@providedHosts.0"/>
     </componentInstances>
     <componentInstances
         xsi:type="deployment:VMInstance"
-        name="LLInstance"
+        name="VMLL1"
         type="//@deploymentModels.0/@components.6"
         hasInfo="//@vmInfos.2">
       <providedHostInstances
-          name="LLInstanceProvidedHostInstance"
+          name="VMLLProv1"
           owner="//@deploymentModels.0/@componentInstances.6"
           type="//@deploymentModels.0/@components.6/@providedHosts.0"/>
     </componentInstances>
     <componentInstances
         xsi:type="deployment:VMInstance"
-        name="SLInstance"
+        name="VMSL1"
         type="//@deploymentModels.0/@components.5"
         hasInfo="//@vmInfos.0">
       <providedHostInstances
-          name="SLInstanceProvidedHostInstance"
+          name="VMSLProv1"
           owner="//@deploymentModels.0/@componentInstances.7"
           type="//@deploymentModels.0/@components.5/@providedHosts.0"/>
     </componentInstances>
     <communicationInstances
-        name="SensAppToAdminInst"
+        name="SensAppToAdmin1"
         type="//@deploymentModels.0/@communications.0"
         requiredCommunicationInstance="//@deploymentModels.0/@componentInstances.4/@requiredCommunicationInstances.0"
         providedCommunicationInstance="//@deploymentModels.0/@componentInstances.1/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="SensAppToMongoDBInst"
+        name="SensAppToMongoDB1"
         type="//@deploymentModels.0/@communications.1"
         requiredCommunicationInstance="//@deploymentModels.0/@componentInstances.1/@requiredCommunicationInstances.0"
         providedCommunicationInstance="//@deploymentModels.0/@componentInstances.2/@providedCommunicationInstances.0"/>
+    <hostings
+        name="AdminToServletContainer"
+        providedHost="//@deploymentModels.0/@components.2/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.3/@requiredHost"/>
+    <hostings
+        name="JettySCToVMSL"
+        providedHost="//@deploymentModels.0/@components.5/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.2/@requiredHost"/>
+    <hostings
+        name="JettySCToVMML"
+        providedHost="//@deploymentModels.0/@components.4/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.2/@requiredHost"/>
+    <hostings
+        name="JettySCToVMLL"
+        providedHost="//@deploymentModels.0/@components.6/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.2/@requiredHost"/>
+    <hostings
+        name="MongoDBToVMSL"
+        providedHost="//@deploymentModels.0/@components.5/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.1/@requiredHost"/>
+    <hostings
+        name="MongoDBToVMML"
+        providedHost="//@deploymentModels.0/@components.4/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.1/@requiredHost"/>
+    <hostings
+        name="MongoDBToVMLL"
+        providedHost="//@deploymentModels.0/@components.6/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.1/@requiredHost"/>
+    <hostings
+        name="SensAppToServletContainer"
+        providedHost="//@deploymentModels.0/@components.2/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@components.0/@requiredHost"/>
     <hostingInstances
         name="Admin1ToJettySC2"
         providedHostInstance="//@deploymentModels.0/@componentInstances.3/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@componentInstances.4/@requiredHostInstance"/>
+        requiredHostInstance="//@deploymentModels.0/@componentInstances.4/@requiredHostInstance"
+        type="//@deploymentModels.0/@hostings.0"/>
     <hostingInstances
-        name="JettySC2ToSLInst"
+        name="JettySC2ToVMSL1"
         providedHostInstance="//@deploymentModels.0/@componentInstances.7/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@componentInstances.3/@requiredHostInstance"/>
+        requiredHostInstance="//@deploymentModels.0/@componentInstances.3/@requiredHostInstance"
+        type="//@deploymentModels.0/@hostings.1"/>
     <hostingInstances
-        name="JettySC1ToLLInst"
+        name="JettySC1ToVMLL1"
         providedHostInstance="//@deploymentModels.0/@componentInstances.6/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@componentInstances.0/@requiredHostInstance"/>
+        requiredHostInstance="//@deploymentModels.0/@componentInstances.0/@requiredHostInstance"
+        type="//@deploymentModels.0/@hostings.3"/>
     <hostingInstances
-        name="MongoDBToMLInst"
+        name="MongoDB1ToVMML1"
         providedHostInstance="//@deploymentModels.0/@componentInstances.5/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@componentInstances.2/@requiredHostInstance"/>
+        requiredHostInstance="//@deploymentModels.0/@componentInstances.2/@requiredHostInstance"
+        type="//@deploymentModels.0/@hostings.5"/>
     <hostingInstances
         name="SensApp1ToJettySC1"
         providedHostInstance="//@deploymentModels.0/@componentInstances.0/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@componentInstances.1/@requiredHostInstance"/>
+        requiredHostInstance="//@deploymentModels.0/@componentInstances.1/@requiredHostInstance"
+        type="//@deploymentModels.0/@hostings.7"/>
   </deploymentModels>
   <executionModels>
     <executionContexts
