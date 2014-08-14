@@ -1268,7 +1268,6 @@ public class SensAppCDO {
 		rawExecTime.setName("RAW_EXEC_TIME");
 
 		Property execTime = ScalabilityFactory.eINSTANCE.createProperty();
-		execTime.setId("ExecTime");
 		execTime.setName("Execution Time");
 		execTime.setType(PropertyType.MEASURABLE);
 		scalabilityModel.getProperties().add(execTime);
@@ -1322,7 +1321,6 @@ public class SensAppCDO {
 
 		Property storageProperty = ScalabilityFactory.eINSTANCE
 				.createProperty();
-		storageProperty.setId("Storage");
 		storageProperty.setName("Storage");
 		storageProperty.setType(PropertyType.MEASURABLE);
 		scalabilityModel.getProperties().add(storageProperty);

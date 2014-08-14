@@ -177,11 +177,11 @@
         comparisonOperator="GREATER_EQUAL_THAN"
         metric="RawStorageNum"/>
     <properties
-        id="ExecutionTime1"
+        id="ExecTime"
         name="Execution Time"
         type="MEASURABLE"/>
     <properties
-        id="Storage1"
+        id="Storage"
         name="Storage"
         type="MEASURABLE"/>
     <actions
