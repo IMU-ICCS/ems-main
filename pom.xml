@@ -187,5 +187,11 @@
 		<artifactId>logging_1.1.1</artifactId>
 		<version>v20110121-1721</version>
 	  </dependency>
+      <dependency>
+        <groupId>org.javatuples</groupId>
+        <artifactId>javatuples</artifactId>
+        <version>1.2</version>
+        <scope>compile</scope>
+      </dependency>
   </dependencies>
 </project>
