@@ -30,7 +30,7 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
-import eu.paasage.camel.examples.SensAppCDOStandAlone;
+import eu.paasage.camel.examples.SensAppCDO;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
@@ -582,8 +582,6 @@ public class CDOClient
 			  e.printStackTrace();
 		  }
 	  }
-
-	
 	
 	/* This method is used to run a query over the contents stored in the 
 	 * CDO Store. You do not have to create a view before running the query
@@ -642,13 +640,13 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"cerif");
 	  //Create a particular model (SensApp)
-	  model = SensAppCDOStandAlone.getSensAppCamelModel();
+	  model = SensAppCDO.getSensAppCamelModel();
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource
 	  model = cl.loadModel("examples/SensApp.xmi");
 	  //Store the model under a CDOResource with a particular name
-	  cl.storeModel(model,"sensAppResource2");
+	  //cl.storeModel(model,"sensAppResource2");
 	  //Load & store WP3 models
 	  //model = cl.loadModel("examples/cpModel.xmi");
 	  //cl.storeModel(model,"cpModel");
