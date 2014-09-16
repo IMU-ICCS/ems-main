@@ -91,13 +91,13 @@ public class ScalabilityModelClass {
         Metric rawEtMetric = ScalabilityFactory.eINSTANCE.createMetric();
         rawEtMetric.setId("RawETMetric1");
 
-        MetricObjectInstanceBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE.createMetricApplicationInstanceBinding();
+        MetricObjectBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE.createMetricApplicationBinding();
 
         ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE.createExecutionContext();
 
         rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
 
-        scalabilityModel.getBindingInstances().add(rawEtMetricAIB);
+        scalabilityModel.getBindings().add(rawEtMetricAIB);
 
         rawEtMetric.setObjectBinding(rawEtMetricAIB);
 
@@ -178,11 +178,11 @@ public class ScalabilityModelClass {
         Metric rawStorageMetric = ScalabilityFactory.eINSTANCE.createMetric();
         rawStorageMetric.setId("RawStorageNum");
 
-        MetricVMInstanceBinding vmInstBinding = ScalabilityFactory.eINSTANCE.createMetricVMInstanceBinding();
+        MetricVMBinding vmInstBinding = ScalabilityFactory.eINSTANCE.createMetricVMBinding();
         vmInstBinding.setExecutionContext(sensAppExecutionContext);
         vmInstBinding.setVmInstance(vmML1);
 
-        scalabilityModel.getBindingInstances().add(vmInstBinding);
+        scalabilityModel.getBindings().add(vmInstBinding);
 
         rawStorageMetric.setObjectBinding(vmInstBinding);
 

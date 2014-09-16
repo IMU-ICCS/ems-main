@@ -1030,6 +1030,7 @@ public class SensAppCDO {
 				.createMonetaryUnit();
 		costMonetaryUnit.setDimensionType(UnitDimensionType.COST);
 		costMonetaryUnit.setUnit(UnitType.EUROS);
+		costMonetaryUnit.setName("euros");
 
 		camelModel.getUnits().add(costMonetaryUnit);
 
@@ -1282,6 +1283,7 @@ public class SensAppCDO {
 				.createTimeIntervalUnit();
 		timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
 		timeInterval.setUnit(UnitType.SECONDS);
+		timeInterval.setName("seconds");
 		scalabilityModel.getUnits().add(timeInterval);
 
 		rawExecTime.setUnit(timeInterval);
@@ -1309,6 +1311,7 @@ public class SensAppCDO {
 		StorageUnit storageUnit = CamelFactory.eINSTANCE.createStorageUnit();
 		storageUnit.setDimensionType(UnitDimensionType.STORAGE);
 		storageUnit.setUnit(UnitType.GIGABYTES);
+		storageUnit.setName("gigabytes");
 
 		scalabilityModel.getUnits().add(storageUnit);
 
@@ -1508,6 +1511,7 @@ public class SensAppCDO {
 				.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
 		avgEtMetricCondition.setMetric(avgEtMetric1);
 		avgEtMetricCondition.setThreshold(10);
+		avgEtMetricCondition.setName("AVG_ET_GT_10");
 
 		scalabilityModel.getConditions().add(avgEtMetricCondition);
 
@@ -1552,6 +1556,7 @@ public class SensAppCDO {
 				.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
 		rawStorageMetricCondition.setMetric(rawStorageMetric);
 		rawStorageMetricCondition.setThreshold(500);
+		rawStorageMetricCondition.setName("RAW_STORAGE_NUM_GET_500");
 
 		scalabilityModel.getConditions().add(rawStorageMetricCondition);
 

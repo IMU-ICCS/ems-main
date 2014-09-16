@@ -74,9 +74,11 @@ import eu.paasage.camel.scalability.MetricCondition;
 import eu.paasage.camel.scalability.MetricFormula;
 import eu.paasage.camel.scalability.MetricFunctionArityType;
 import eu.paasage.camel.scalability.MetricFunctionType;
+import eu.paasage.camel.scalability.MetricObjectBinding;
 import eu.paasage.camel.scalability.MetricObjectInstanceBinding;
 import eu.paasage.camel.scalability.MetricTemplate;
 import eu.paasage.camel.scalability.MetricType;
+import eu.paasage.camel.scalability.MetricVMBinding;
 import eu.paasage.camel.scalability.MetricVMInstanceBinding;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
 import eu.paasage.camel.scalability.Property;
@@ -1335,15 +1337,15 @@ public class SensAppCDOStandAlone {
 		Metric rawEtMetric = ScalabilityFactory.eINSTANCE.createMetric();
 		rawEtMetric.setId("RawETMetric1");
 
-		MetricObjectInstanceBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE
-				.createMetricApplicationInstanceBinding();
+		MetricObjectBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE
+				.createMetricApplicationBinding();
 
 		ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE
 				.createExecutionContext();
 
 		rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
 
-		scalabilityModel.getBindingInstances().add(rawEtMetricAIB);
+		scalabilityModel.getBindings().add(rawEtMetricAIB);
 
 		rawEtMetric.setObjectBinding(rawEtMetricAIB);
 
@@ -1428,12 +1430,12 @@ public class SensAppCDOStandAlone {
 		Metric rawStorageMetric = ScalabilityFactory.eINSTANCE.createMetric();
 		rawStorageMetric.setId("RawStorageNum");
 
-		MetricVMInstanceBinding vmInstBinding = ScalabilityFactory.eINSTANCE
-				.createMetricVMInstanceBinding();
+		MetricVMBinding vmInstBinding = ScalabilityFactory.eINSTANCE
+				.createMetricVMBinding();
 		vmInstBinding.setExecutionContext(sensAppExecutionContext);
 		vmInstBinding.setVmInstance(vmML1);
 
-		scalabilityModel.getBindingInstances().add(vmInstBinding);
+		scalabilityModel.getBindings().add(vmInstBinding);
 
 		rawStorageMetric.setObjectBinding(vmInstBinding);
 
