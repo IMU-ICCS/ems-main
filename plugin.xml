@@ -6,107 +6,16 @@
 
 <plugin>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel"
-            class="camel.CamelPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/cloudml"
-            class="camel.deployment.DeploymentPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/execution"
-            class="camel.execution.ExecutionPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/cerif"
-            class="camel.organisation.OrganisationPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/saloon/feature"
-            class="camel.provider.ProviderPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/srl"
-            class="camel.scalability.ScalabilityPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/security"
-            class="camel.security.SecurityPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/wsag"
-            class="camel.sla.SlaPackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated camel -->
-      <package
-            uri="http://www.paasage.eu/camel/type"
-            class="camel.type.TypePackage"
-            genModel="model/camel.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated paasageApplication -->
-      <package
-            uri="http://paasage.inria.fr/metamodel/application"
-            class="application.ApplicationPackage"
-            genModel="model/paasageApplication.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated cp -->
-      <package
-            uri="http://paasage.inria.fr/metamodel/cp"
-            class="cp.CpPackage"
-            genModel="model/cp.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated cp -->
-      <package
-            uri="http://paasage.inria.fr/metamodel/types"
-            class="types.TypesPackage"
-            genModel="model/cp.genmodel"/>
-   </extension>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated cp -->
-      <package
-            uri="http://paasage.inria.fr/metamodel/types/typesPaasage"
-            class="types.typesPaasage.TypesPaasagePackage"
-            genModel="model/cp.genmodel"/>
-   </extension>
 </plugin>

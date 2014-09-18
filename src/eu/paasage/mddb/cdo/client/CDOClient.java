@@ -1,5 +1,9 @@
 package eu.paasage.mddb.cdo.client;
 
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.CDOObjectReference;
+import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
@@ -19,6 +23,7 @@ import org.eclipse.net4j.util.om.log.PrintLogHandler;
 import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -28,6 +33,8 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
+import eu.paasage.camel.RequirementGroup;
+import eu.paasage.camel.VMType;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.examples.SensAppCDO;
@@ -45,11 +52,14 @@ import eu.paasage.camel.organisation.Role;
 import eu.paasage.camel.organisation.RoleAssignment;
 import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.organisation.UserGroup;
+import eu.paasage.camel.provider.Implies;
 import eu.paasage.camel.provider.ProviderModel;
+import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.scalability.ScalabilityModel;
 import eu.paasage.camel.scalability.ScalabilityPackage;
 import eu.paasage.camel.security.SecurityModel;
 import eu.paasage.camel.sla.AgreementType;
+import eu.paasage.camel.type.TypePackage;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -271,6 +281,76 @@ public class CDOClient
 	    	CDOView view = session.openView();
 	    	System.out.println("Opened view!");
 	    	return view;
+	}
+	
+	/* This method can be used to delete an object provided that its cdoID is given
+	 * as a String. 
+	 */
+	public void deleteObject(CDOID uri){
+		try{
+			CDOTransaction trans = session.openTransaction();
+			//CDOID id = CDOIDUtil.createExternal(uri);
+			//System.out.println("ID given: " + uri + " ID produced: " + id);
+			CDOObject object = trans.getObject(uri);
+			deleteObject(object,trans,true);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+			
+	}
+	
+	/* This method can be used to delete an object provided that it has been obtained with the
+	 * transaction that is also used as input to this method. First, it obtains all
+	 * references to the object and deletes them and then deletes the object from its
+	 * container. Please be aware that the last input parameter dictates whether the transaction 
+	 * will be committed and closed by this method in the end or not. If not, then the user
+	 * should be responsible for setting this parameter as true in the last delete statement
+	 * in his/her code or for committing and closing the transaction him/herself.
+	 */
+	public void deleteObject(CDOObject object, CDOTransaction trans, boolean commitAndClose){
+		try{
+			//Get all references (non-containment associations) to the object
+			List<CDOObjectReference> refs = trans.queryXRefs(object);
+			for (CDOObjectReference ref: refs){
+				CDOObject source = (CDOObject)ref.getSourceObject();
+				CDOObject target = (CDOObject)ref.getTargetObject();
+				EStructuralFeature feat = ref.getSourceFeature();
+				Object eGet = source.eGet(feat);
+				List<?> list = null;
+				if(eGet instanceof List<?>){
+					list = (List<?>)eGet;
+					System.out.println("Prev size: is: " + list.size());
+					list.remove(target);
+					System.out.println("New size: is: " + list.size());
+				}
+				else{
+					source.eSet(feat, null);
+				}
+			}
+			//Get containment association and delete it
+			CDOObject parent = (CDOObject)object.eContainer();
+			EStructuralFeature feat = object.eContainmentFeature();
+			System.out.println("The feature is: " + feat);
+			Object eGet = parent.eGet(feat);
+			List<?> list = null;
+			if (eGet instanceof List<?>){
+				list = (List<?>)eGet;
+				System.out.println("Prev size: is: " + list.size());
+				list.remove(object);
+				System.out.println("New size: is: " + list.size());
+			}
+			else{
+				parent.eSet(feat, null);
+			}
+			if (commitAndClose){
+				trans.commit();
+				trans.close();
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 	/* This method is used for closing a CDO transaction. 
@@ -632,6 +712,8 @@ public class CDOClient
 	  cl.registerPackage(OrganisationPackage.eINSTANCE);
 	  cl.registerPackage(DeploymentPackage.eINSTANCE);
 	  cl.registerPackage(ScalabilityPackage.eINSTANCE);
+	  cl.registerPackage(ProviderPackage.eINSTANCE);
+	  cl.registerPackage(TypePackage.eINSTANCE);
 	  /*cl.registerPackage(ApplicationPackage.eINSTANCE);
 	  cl.registerPackage(CpPackage.eINSTANCE);
 	  cl.registerPackage(TypesPackage.eINSTANCE);*/
@@ -644,12 +726,35 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource
-	  model = cl.loadModel("examples/SensApp.xmi");
+	  //model = cl.loadModel("examples/SensApp.xmi");
 	  //Store the model under a CDOResource with a particular name
 	  //cl.storeModel(model,"sensAppResource2");
 	  //Load & store WP3 models
 	  //model = cl.loadModel("examples/cpModel.xmi");
 	  //cl.storeModel(model,"cpModel");
+	  
+	  //Create transaction and use this to delete object
+	  CDOTransaction trans = cl.openTransaction();
+	  ExternalIdentifier id = trans.createQuery("hql", "select id from ExternalIdentifier id where id.name='ID2'").getResult(ExternalIdentifier.class).get(0);
+	  cl.deleteObject(id,trans,true);
+	  trans = cl.openTransaction();
+	  id = trans.createQuery("hql", "select id from ExternalIdentifier id where id.name='ID3'").getResult(ExternalIdentifier.class).get(0);
+	  cl.deleteObject(id,trans,true);
+	  //Create view, get cdoID and then delete object by using this id as input
+	  CDOView view = cl.openView();
+	  User user = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
+	  CDOID uri = user.cdoID();
+	  System.out.println("URI Fragment: " + uri);
+	  view.close();
+	  cl.deleteObject(uri);
+	  
+	  //Check that the objects have been deleted
+	  view = cl.openView();
+	  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.name='ID2' or id.name='ID3')").getResult(ExternalIdentifier.class);
+	  System.out.println("Did we get the ids requested?: " + !(types.isEmpty()));
+	  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
+	  System.out.println("Did we get the users requested?: " + !(users.isEmpty()));
+	  view.close();
 	  
 	  /*Run a query - three ways are shown here: (i) ocl query, 
 	   * (ii) hql query and (iii) get all contents of a CDO Resource
@@ -667,7 +772,7 @@ public class CDOClient
 	  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
 	  System.out.println("The results of the query are:" + results);
 	  //Obtaining all contents of a CDOResource
-	  CDOView view = cl.openView();
+	  view = cl.openView();
 	  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
 	  System.out.println("The objs stored are: " + objs);
 	  cl.closeView(view);
