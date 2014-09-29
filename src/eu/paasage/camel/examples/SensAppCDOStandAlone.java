@@ -75,11 +75,9 @@ import eu.paasage.camel.scalability.MetricFormula;
 import eu.paasage.camel.scalability.MetricFunctionArityType;
 import eu.paasage.camel.scalability.MetricFunctionType;
 import eu.paasage.camel.scalability.MetricObjectBinding;
-import eu.paasage.camel.scalability.MetricObjectInstanceBinding;
 import eu.paasage.camel.scalability.MetricTemplate;
 import eu.paasage.camel.scalability.MetricType;
 import eu.paasage.camel.scalability.MetricVMBinding;
-import eu.paasage.camel.scalability.MetricVMInstanceBinding;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
 import eu.paasage.camel.scalability.Property;
 import eu.paasage.camel.scalability.PropertyType;
@@ -1661,7 +1659,7 @@ public class SensAppCDOStandAlone {
 
 		// create a CDO resource object
 		CDOResource resource = transaction
-				.getOrCreateResource("/sensAppResource");
+				.createResource("/sensAppResource");
 
 		EObject camelModel = getSensAppCamelModel();
 		try {

@@ -31,7 +31,7 @@ import org.javatuples.Triplet;
  */
 public class SensAppModel {
 
-    public static EObject createMyAppModel() {
+    public static EObject createSensAppModel() {
         // complete mapping of the SensApp examples
         CamelModel camelModel = CamelFactory.eINSTANCE.createCamelModel();
         EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
