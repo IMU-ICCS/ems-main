@@ -1,19 +1,9 @@
 package eu.paasage.mddb.cdo.client;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
@@ -23,6 +13,14 @@ import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.net4j.FactoriesProtocolProvider;
+import org.eclipse.net4j.Net4jUtil;
+import org.eclipse.net4j.buffer.IBufferProvider;
+import org.eclipse.net4j.protocol.IProtocolProvider;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.eclipse.net4j.util.om.OMPlatform;
+import org.eclipse.net4j.util.om.log.PrintLogHandler;
+import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -32,21 +30,16 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.net4j.FactoriesProtocolProvider;
-import org.eclipse.net4j.Net4jUtil;
-import org.eclipse.net4j.buffer.IBufferProvider;
-import org.eclipse.net4j.protocol.IProtocolProvider;
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
-import org.eclipse.net4j.util.om.OMPlatform;
-import org.eclipse.net4j.util.om.log.PrintLogHandler;
-import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
+import eu.paasage.camel.RequirementGroup;
+import eu.paasage.camel.VMType;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
-import eu.paasage.camel.examples.model.SensAppModel;
+import eu.paasage.camel.examples.SensAppCDO;
 import eu.paasage.camel.execution.ExecutionModel;
+import eu.paasage.camel.execution.ExecutionPackage;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.ExternalIdentifier;
@@ -60,13 +53,27 @@ import eu.paasage.camel.organisation.Role;
 import eu.paasage.camel.organisation.RoleAssignment;
 import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.organisation.UserGroup;
+import eu.paasage.camel.provider.Implies;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.scalability.ScalabilityModel;
 import eu.paasage.camel.scalability.ScalabilityPackage;
 import eu.paasage.camel.security.SecurityModel;
+import eu.paasage.camel.security.SecurityPackage;
 import eu.paasage.camel.sla.AgreementType;
+import eu.paasage.camel.sla.SlaPackage;
 import eu.paasage.camel.type.TypePackage;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Eike Stepper
@@ -246,9 +253,24 @@ public class CDOClient
 
 	    // Open session
 	    session = configuration.openNet4jSession();
+	    registerCamelPackages();
 	    /*session.getPackageRegistry().putEPackage(CamelPackage.eINSTANCE);
 	    session.getPackageRegistry().putEPackage(OrganisationPackage.eINSTANCE);
 	    session.getPackageRegistry().putEPackage(EcorePackage.eINSTANCE);*/
+	}
+	
+	/* This method is used to register all Packages of Camel meta-model
+	 */
+	public void registerCamelPackages(){
+		registerPackage(CamelPackage.eINSTANCE);
+		registerPackage(ScalabilityPackage.eINSTANCE);
+		registerPackage(DeploymentPackage.eINSTANCE);
+		registerPackage(OrganisationPackage.eINSTANCE);
+		registerPackage(ProviderPackage.eINSTANCE);
+		registerPackage(SecurityPackage.eINSTANCE);
+		registerPackage(ExecutionPackage.eINSTANCE);
+		registerPackage(TypePackage.eINSTANCE);
+		registerPackage(SlaPackage.eINSTANCE);
 	}
 	
 	/* This method is used for registering an EPackage mapping to the domain
@@ -718,13 +740,13 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"cerif");
 	  //Create a particular model (SensApp)
-	  model = SensAppModel.createSensAppModel();
+	  model = SensAppCDO.getSensAppCamelModel();
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource
-	  //model = cl.loadModel("examples/SensApp.xmi");
+	  model = cl.loadModel("examples/SensApp.xmi");
 	  //Store the model under a CDOResource with a particular name
-	  //cl.storeModel(model,"sensAppResource2");
+	  cl.storeModel(model,"sensAppResource2");
 	  //Load & store WP3 models
 	  //model = cl.loadModel("examples/cpModel.xmi");
 	  //cl.storeModel(model,"cpModel");
