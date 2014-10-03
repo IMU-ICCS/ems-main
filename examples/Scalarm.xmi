@@ -4,29 +4,30 @@
     xmlns:xmi="http://www.omg.org/XMI"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:camel="http://www.paasage.eu/camel"
+    xmlns:deployment="http://www.paasage.eu/camel/cloudml"
     xmlns:provider="http://www.paasage.eu/camel/saloon/feature"
     xmlns:scalability="http://www.paasage.eu/camel/srl"
     xmlns:type="http://www.paasage.eu/camel/type"
-    xsi:schemaLocation="http://www.paasage.eu/camel camel.ecore#//paasage/camel http://www.paasage.eu/camel/saloon/feature camel.ecore#//paasage/camel/provider http://www.paasage.eu/camel/srl camel.ecore#//paasage/camel/scalability http://www.paasage.eu/camel/type camel.ecore#//paasage/camel/type">
+    xsi:schemaLocation="http://www.paasage.eu/camel camel.ecore#//paasage/camel http://www.paasage.eu/camel/cloudml camel.ecore#//paasage/camel/deployment http://www.paasage.eu/camel/saloon/feature camel.ecore#//paasage/camel/provider http://www.paasage.eu/camel/srl camel.ecore#//paasage/camel/scalability http://www.paasage.eu/camel/type camel.ecore#//paasage/camel/type">
   <organisationModels>
     <provider
-        name="Flexiant"
-        www="www.flexiant.com"
-        postalAddress="Flexiant Limited, Geddes House, Kirkton North, Livingston, EH54 6GU, UK"
+        name="Flexiant Limited"
+        www="http://www.flexiant.com"
+        postalAddress="Geddes House, Kirkton North, Livingston, EH54 6GU, UK"
         email="contact@flexiant.com"
         public="true"
         PaaS="true"
         IaaS="true"
         providerModel="//@providerModels.0"/>
     <dataCentres
-        name="Flexiant Data Centre"
-        codeName="flexiant"
+        name="Flexiant Data Centre Edinburgh"
+        codeName="flexiant-uk"
         location="//@organisationModels.0/@locations.0"
         cloudProvider="//@organisationModels.0/@provider"/>
     <locations
-        name="flexiant-location"
+        name="flexiantLocation"
         city="Edinburgh"
-        country="Scotland"
+        country="United Kingdom"
         countryCode="UK"
         address=""/>
   </organisationModels>
@@ -39,26 +40,26 @@
     <organization
         name="SINTEF"
         www="http://www.sintef.no/"
-        postalAddress="SINTEF, Pb. 124 Blindern, 0314 Oslo"
+        postalAddress="P.O. Box 124 Blindern, 0314 Oslo, Norway"
         email="contact@sintef.no"/>
   </organisationModels>
   <organisationModels>
     <provider
         name="GWDG"
-        www="www.gwdg.de"
-        postalAddress="GWDG, Am Fa&#xdf;berg 11, 37077 G&#xf6;ttingen, Germany"
+        www="http://www.gwdg.de"
+        postalAddress="Am Fa&#xdf;berg 11, 37077 G&#xf6;ttingen, Germany"
         email="gwdg@gwdg.de"
         public="true"
         PaaS="true"
         IaaS="true"
         providerModel="//@providerModels.1"/>
     <dataCentres
-        name="GWDG Data Centre"
-        codeName="gwdg"
+        name="GWDG Data Centre G&#xf6;ttingen"
+        codeName="gwdg-de"
         location="//@organisationModels.2/@locations.0"
         cloudProvider="//@organisationModels.2/@provider"/>
     <locations
-        name="gwdg-location"
+        name="gwdgLocation"
         city="G&#xf6;ttingen"
         country="Germany"
         countryCode="DE"
@@ -109,13 +110,13 @@
         name="horizontalScalingSimulationManager"
         type="SCALE_OUT"
         count="1"
-        vmInstance="//@deploymentModels.0/@vmInstances.3"
+        vmInstance="//@deploymentModels.0/@vmInstances.1"
         componentInstance="//@deploymentModels.0/@internalComponentInstances.3"/>
     <bindings
         xsi:type="scalability:MetricVMBinding"
         name="storageManagerVMScalarmEC1"
         executionContext="ScalarmEC1"
-        vmInstance="//@deploymentModels.0/@vmInstances.0"/>
+        vmInstance="//@deploymentModels.0/@externalComponentInstances.1"/>
     <sensors
         id="cpuSensor1"/>
     <units xsi:type="camel:Unitless"
@@ -1231,6 +1232,74 @@
           name="informationManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.3"/>
     </internalComponents>
+    <externalComponents
+        xsi:type="deployment:VM"
+        name="GWDG_SL"
+        provider="//@organisationModels.0/@provider"
+        location="//@organisationModels.0/@locations.0"
+        minRam="2048"
+        maxRam="4096"
+        minCores="2"
+        maxCores="4"
+        minStorage="50"
+        os="ubuntu"
+        privateSshKey=""
+        imageId="RegionOne/&lt;ID NEEDED>">
+      <providedHosts
+          name="GWDGSLProvidedHost"
+          owner="//@deploymentModels.0/@externalComponents.0"/>
+    </externalComponents>
+    <externalComponents
+        xsi:type="deployment:VM"
+        name="GWDG_LL"
+        provider="//@organisationModels.2/@provider"
+        location="//@organisationModels.2/@locations.0"
+        minRam="4096"
+        maxRam="16384"
+        minCores="4"
+        maxCores="16"
+        minStorage="100"
+        os="ubuntu"
+        privateSshKey=""
+        imageId="RegionOne/&lt;ID NEEDED>">
+      <providedHosts
+          name="GWDGLLProvidedHost"
+          owner="//@deploymentModels.0/@externalComponents.1"/>
+    </externalComponents>
+    <externalComponents
+        xsi:type="deployment:VM"
+        name="FlexiantSL"
+        provider="//@organisationModels.0/@provider"
+        location="//@organisationModels.0/@locations.0"
+        minRam="2048"
+        maxRam="4096"
+        minCores="2"
+        maxCores="4"
+        minStorage="50"
+        os="ubuntu"
+        privateSshKey=""
+        imageId="RegionOne/&lt;ID NEEDED>">
+      <providedHosts
+          name="FlexiantSLProvidedHost"
+          owner="//@deploymentModels.0/@externalComponents.2"/>
+    </externalComponents>
+    <externalComponents
+        xsi:type="deployment:VM"
+        name="FlexiantLL"
+        provider="//@organisationModels.0/@provider"
+        location="//@organisationModels.0/@locations.0"
+        minRam="4096"
+        maxRam="16384"
+        minCores="4"
+        maxCores="16"
+        minStorage="100"
+        os="ubuntu"
+        privateSshKey=""
+        imageId="RegionOne/&lt;ID NEEDED>">
+      <providedHosts
+          name="FlexiantLLProvidedHost"
+          owner="//@deploymentModels.0/@externalComponents.3"/>
+    </externalComponents>
     <internalComponentInstances
         name="experimentManagerInstance"
         type="//@deploymentModels.0/@internalComponents.0">
@@ -1299,58 +1368,48 @@
           owner="//@deploymentModels.0/@internalComponentInstances.3"
           type="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
     </internalComponentInstances>
-    <vms name="firstVMType"
-        minRam="1024"
-        minCores="2"
-        minStorage="512"
-        os="ubuntu"
-        imageId="RegionOne/&lt;ID NEEDED>">
-      <properties
-          name="needed for amazon or GWDG">
-        <value
-            xsi:type="type:StringValue"
-            value="."/>
-      </properties>
-      <providedHosts
-          name="firstProvidedHostType"
-          owner="//@deploymentModels.0/@vms.0"/>
-    </vms>
-    <vmInstances
-        name="storageManagerVMInstance"
-        type="//@deploymentModels.0/@vms.0"
-        hasInfo="//@vmInfos.3">
-      <providedHostInstances
-          name="storageManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@vmInstances.0"
-          type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
-    </vmInstances>
-    <vmInstances
+    <externalComponentInstances
+        xsi:type="deployment:VMInstance"
         name="informationManagerVMInstance"
-        type="//@deploymentModels.0/@vms.0"
+        type="//@deploymentModels.0/@externalComponents.0"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
           name="informationManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@vmInstances.1"
-          type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
-    </vmInstances>
+          owner="//@deploymentModels.0/@externalComponentInstances.0"
+          type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
+    </externalComponentInstances>
+    <externalComponentInstances
+        xsi:type="deployment:VMInstance"
+        name="storageManagerVMInstance"
+        type="//@deploymentModels.0/@externalComponents.1"
+        hasInfo="//@vmInfos.3">
+      <providedHostInstances
+          name="storageManagerProvidedHostInstance"
+          owner="//@deploymentModels.0/@externalComponentInstances.1"
+          type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
+    </externalComponentInstances>
     <vmInstances
         name="experimentManagerVMInstance"
-        type="//@deploymentModels.0/@vms.0"
+        type="//@deploymentModels.0/@externalComponents.0"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
           name="experimentManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@vmInstances.2"
-          type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
+          owner="//@deploymentModels.0/@vmInstances.0"
+          type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
     </vmInstances>
     <vmInstances
         name="simulationManagerVMInstance"
-        type="//@deploymentModels.0/@vms.0"
+        type="//@deploymentModels.0/@externalComponents.0"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
           name="simulationManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@vmInstances.3"
-          type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
+          owner="//@deploymentModels.0/@vmInstances.1"
+          type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
     </vmInstances>
+    <communications
+        name="storageManagerToInformationService"
+        requiredCommunication="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
+        providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
     <communications
         name="experimentManagerToStorageManager"
         requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"
@@ -1360,14 +1419,6 @@
         requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"
         providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
     <communications
-        name="storageManagerToInformationService"
-        requiredCommunication="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
-        providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
-    <communications
-        name="simulationManagerToInformationService"
-        requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
-        providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
-    <communications
         name="simulationManagerToStorageManager"
         requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.1"
         providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
@@ -1375,71 +1426,75 @@
         name="simulationManagerToExperimentManager"
         requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.2"
         providedCommunication="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"/>
-    <hostings
-        name="masterVMtoExperimentManager"
-        providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0"
-        requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
+    <communications
+        name="simulationManagerToInformationService"
+        requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
+        providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
     <hostings
         name="masterVMtoStorageManager"
-        providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0"
+        providedHost="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     <hostings
+        name="masterVMtoExperimentManager"
+        providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
+        requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
+    <hostings
         name="masterVMtoInformationManager"
-        providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0"
+        providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     <hostings
         name="masterVMtoSimulationManager"
-        providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0"
+        providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
     <communicationInstances
-        name="experimentManagerToStorageManagerInstance"
+        name="storageManagerToInformationServiceInstance"
         type="//@deploymentModels.0/@communications.0"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredCommunicationInstances.0"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="experimentManagerToStorageManagerInstance"
+        type="//@deploymentModels.0/@communications.1"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.0"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
     <communicationInstances
         name="experimentManagerToInformationServiceInstance"
-        type="//@deploymentModels.0/@communications.1"
+        type="//@deploymentModels.0/@communications.2"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.1"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="storageManagerToInformationServiceInstance"
-        type="//@deploymentModels.0/@communications.2"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
-    <communicationInstances
-        name="simulationManagerToInformationServiceInstance"
-        type="//@deploymentModels.0/@communications.3"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
-    <communicationInstances
         name="simulationManagerToStorageManagerInstance"
-        type="//@deploymentModels.0/@communications.4"
+        type="//@deploymentModels.0/@communications.3"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.1"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="simulationManagerToExperimentManagerInstance"
+        name="simulationManagerToInformationServiceInstance"
         type="//@deploymentModels.0/@communications.5"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.0"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="simulationManagerToExperimentManagerInstance"
+        type="//@deploymentModels.0/@communications.4"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.2"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@providedCommunicationInstances.0"/>
     <hostingInstances
-        name="masterVMtoExperimentManagerInstance"
-        type="//@deploymentModels.0/@hostings.0"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.2/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
-    <hostingInstances
         name="masterVMtoStorageManagerInstance"
+        type="//@deploymentModels.0/@hostings.0"
+        providedHostInstance="//@deploymentModels.0/@externalComponentInstances.1/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
+    <hostingInstances
+        name="masterVMtoExperimentManagerInstance"
         type="//@deploymentModels.0/@hostings.1"
         providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
+        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
     <hostingInstances
         name="masterVMtoInformationManagerInstance"
         type="//@deploymentModels.0/@hostings.2"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
+        providedHostInstance="//@deploymentModels.0/@externalComponentInstances.0/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
     <hostingInstances
         name="masterVMtoSimulationManagerInstance"
         type="//@deploymentModels.0/@hostings.3"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.3/@providedHostInstances.0"
+        providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredHostInstance"/>
   </deploymentModels>
   <executionModels>
