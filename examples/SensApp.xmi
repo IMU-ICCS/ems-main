@@ -87,8 +87,11 @@
         name="AVG_EXEC_TIME"
         unit="//@scalabilityModels.0/@units.0"
         property="//@scalabilityModels.0/@properties.0"
-        type="COMPOSITE"
-        formula="//@scalabilityModels.0/@formulas.0"/>
+        type="COMPOSITE">
+      <formula
+          function="AVERAGE"
+          parameters="//@scalabilityModels.0/@metricTemplates.0"/>
+    </metricTemplates>
     <metricTemplates
         name="Storage"
         unit="//@scalabilityModels.0/@units.1"
@@ -133,7 +136,7 @@
     <metrics
         id="RawStorageNum"
         template="//@scalabilityModels.0/@metricTemplates.2"
-        sensor="//@scalabilityModels.0/@sensors.2"
+        sensor="//@scalabilityModels.0/@sensors.1"
         objectBinding="//@scalabilityModels.0/@bindings.1">
       <valueType
           xsi:type="type:Range">
@@ -195,20 +198,20 @@
         type="SCALE_UP"
         storageUpdate="512"
         vmInstance="//@deploymentModels.0/@componentInstances.5"/>
-    <formulas
-        function="AVERAGE"
-        parameters="//@scalabilityModels.0/@metricTemplates.0"/>
     <bindings
         xsi:type="scalability:MetricApplicationBinding"
+        name="SensAppCompBinding"
         executionContext="SensAppEC1"/>
     <bindings
         xsi:type="scalability:MetricVMBinding"
+        name="SensAppVMBinding"
         executionContext="SensAppEC1"
         vmInstance="//@deploymentModels.0/@componentInstances.5"/>
     <sensors
+        id="RawETSensor"
         configuration=""/>
-    <sensors/>
     <sensors
+        id="RawStorageSensor"
         configuration=""/>
     <units xsi:type="camel:TimeIntervalUnit"
         name="Seconds"
@@ -232,6 +235,7 @@
   <providerModels>
     <constraints
         xsi:type="provider:Implies"
+        name="SMALL_VM_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature"
         to="//@providerModels.0/@rootFeature">
       <attributeConstraints
@@ -277,6 +281,7 @@
     </constraints>
     <constraints
         xsi:type="provider:Implies"
+        name="MEDIUM_VM_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature"
         to="//@providerModels.0/@rootFeature">
       <attributeConstraints
@@ -322,6 +327,7 @@
     </constraints>
     <constraints
         xsi:type="provider:Implies"
+        name="HIGH_VM_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature"
         to="//@providerModels.0/@rootFeature">
       <attributeConstraints
