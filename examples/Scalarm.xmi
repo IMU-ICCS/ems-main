@@ -1235,8 +1235,8 @@
     <externalComponents
         xsi:type="deployment:VM"
         name="GWDG_SL"
-        provider="//@organisationModels.0/@provider"
-        location="//@organisationModels.0/@locations.0"
+        provider="//@organisationModels.2/@provider"
+        location="//@organisationModels.2/@locations.0"
         minRam="2048"
         maxRam="4096"
         minCores="2"
