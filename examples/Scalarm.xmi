@@ -1152,58 +1152,58 @@
     <internalComponents
         name="ExperimentManager">
       <resources
-          name="ExperimentManager"
+          name="ExperimentManagerRes"
           downloadCommand="wget &lt;things that will download ExperimentManager>"
           installCommand="&lt;the command that will install ExperimentManager>"/>
       <providedCommunications
-          name="ExperimentManager"
+          name="ExperimentManagerProv"
           owner="//@deploymentModels.0/@internalComponents.0"
           portNumber="443"/>
       <requiredCommunications
-          name="ExperimentManager_consumes_SotrageManager"
+          name="ExperimentManagerStorageManagerReq"
           owner="//@deploymentModels.0/@internalComponents.0"
           portNumber="20001"
           isMandatory="true"/>
       <requiredCommunications
-          name="ExperimentManager_consumes_Information Service"
+          name="ExperimentManagerInformationServiceReq"
           owner="//@deploymentModels.0/@internalComponents.0"
           portNumber="11300"
           isMandatory="true"/>
       <requiredHost
-          name="experimentManagerRequiredHost"
+          name="ExperimentManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.0"/>
     </internalComponents>
     <internalComponents
         name="StorageManager">
       <resources
-          name="StorageManager"
+          name="StorageManagerRes"
           downloadCommand="wget &lt;things that will download StorageManager>"
           installCommand="&lt;the command that will install StorageManager>"/>
       <providedCommunications
-          name="StorageManager_nginx"
+          name="StorageManagerProv"
           owner="//@deploymentModels.0/@internalComponents.1"
           portNumber="20001"/>
       <requiredCommunications
-          name="SotrageManager_consumes_Information Service"
+          name="SotrageManagerInformationServiceReq"
           owner="//@deploymentModels.0/@internalComponents.1"
           portNumber="11300"
           isMandatory="true"/>
       <requiredHost
-          name="storgeManagerRequiredHost"
+          name="StorgeManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.1"/>
     </internalComponents>
     <internalComponents
         name="InfomrationService">
       <resources
-          name="InfomrationService"
+          name="InfomrationServiceRes"
           downloadCommand="wget &lt;things that will download InfomrationManager>"
           installCommand="&lt;the command that will install InfomrationManager>"/>
       <providedCommunications
-          name="InfomrationService"
+          name="InfomrationServiceProv"
           owner="//@deploymentModels.0/@internalComponents.2"
           portNumber="11300"/>
       <requiredHost
-          name="informationManagerRequiredHost"
+          name="InformationManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.2"/>
     </internalComponents>
     <internalComponents
@@ -1214,22 +1214,22 @@
           installCommand="&lt;the command that will install SimulationManager>"
           stopCommand="&lt;command to stop service>"/>
       <requiredCommunications
-          name="SimulationManagerr_consumes_Information Service"
+          name="SimulationManagerInformationServiceReq"
           owner="//@deploymentModels.0/@internalComponents.3"
           portNumber="11300"
           isMandatory="true"/>
       <requiredCommunications
-          name="SimulationManagerr_consumes_StorageManager"
+          name="SimulationManagerStorageManagerReq"
           owner="//@deploymentModels.0/@internalComponents.3"
           portNumber="20001"
           isMandatory="true"/>
       <requiredCommunications
-          name="SimulationManagerr_consumes_Experiment Manager"
+          name="SimulationManagerExperimentManagerReq"
           owner="//@deploymentModels.0/@internalComponents.3"
           portNumber="443"
           isMandatory="true"/>
       <requiredHost
-          name="informationManagerRequiredHost"
+          name="InformationManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.3"/>
     </internalComponents>
     <externalComponents
@@ -1301,198 +1301,198 @@
           owner="//@deploymentModels.0/@externalComponents.3"/>
     </externalComponents>
     <internalComponentInstances
-        name="experimentManagerInstance"
+        name="ExperimentManagerInstance"
         type="//@deploymentModels.0/@internalComponents.0">
       <providedCommunicationInstances
-          name="experimentManagerProvidedCommunicationInstance"
+          name="ExperimentManagerProvInst"
           type="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"
           owner="//@deploymentModels.0/@internalComponentInstances.0"/>
       <requiredCommunicationInstances
-          name="experimentManagerReqStorageCommunicationInstance"
+          name="ExperimentManagerStorageManagerReqInst"
           type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"
           owner="//@deploymentModels.0/@internalComponentInstances.0"/>
       <requiredCommunicationInstances
-          name="experimentManagerReqInfoCommunicationInstance"
+          name="ExperimentManagerInformationServiceReqInst"
           type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"
           owner="//@deploymentModels.0/@internalComponentInstances.0"/>
       <requiredHostInstance
-          name="experimentManagerRequiredHostInstance"
+          name="ExperimentManagerRequiredHostInstance"
           owner="//@deploymentModels.0/@internalComponentInstances.0"
           type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="storageManagerInstance"
+        name="StorageManagerInstance"
         type="//@deploymentModels.0/@internalComponents.1">
       <providedCommunicationInstances
-          name="storageManagerProvidedCommunicationMongodNnginxInstance"
+          name="StorageManagerMongoDBProvInst"
           type="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"
           owner="//@deploymentModels.0/@internalComponentInstances.1"/>
       <requiredCommunicationInstances
-          name="storgeManagerReqInfoCommunicationInstance"
+          name="StorageManagerInformationServiceReqInst"
           type="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
           owner="//@deploymentModels.0/@internalComponentInstances.1"/>
       <requiredHostInstance
-          name="storgeManagerRequiredHostInstance"
+          name="StorageManagerRequiredHostInstance"
           owner="//@deploymentModels.0/@internalComponentInstances.1"
           type="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="informationManagerInstance"
+        name="InformationServiceInstance"
         type="//@deploymentModels.0/@internalComponents.2">
       <providedCommunicationInstances
-          name="informationManagerProvidedCommunicationInstance"
+          name="InformationManagerProvInst"
           type="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"
           owner="//@deploymentModels.0/@internalComponentInstances.2"/>
       <requiredHostInstance
-          name="informationManagerRequiredHostInstance"
+          name="InformationManagerRequiredHostInstance"
           owner="//@deploymentModels.0/@internalComponentInstances.2"
           type="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="simulationManagerInstance"
+        name="SimulationManagerInstance"
         type="//@deploymentModels.0/@internalComponents.3">
       <requiredCommunicationInstances
-          name="similationManagerReqInfoCommunicationInstance"
+          name="SimulationManagerInformationServiceReqInst"
           type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
           owner="//@deploymentModels.0/@internalComponentInstances.3"/>
       <requiredCommunicationInstances
-          name="simulationManagerReqStorCommunicationInstance"
+          name="SimulationManagerStorageManagerReqInst"
           type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.1"
           owner="//@deploymentModels.0/@internalComponentInstances.3"/>
       <requiredCommunicationInstances
-          name="similationManagerReqExpCommunicationInstance"
+          name="SimulationManagerExperimentReqInst"
           type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.2"
           owner="//@deploymentModels.0/@internalComponentInstances.3"/>
       <requiredHostInstance
-          name="informationManagerRequiredHostInstance"
+          name="InformationServiceRequiredHostInstance"
           owner="//@deploymentModels.0/@internalComponentInstances.3"
           type="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
     </internalComponentInstances>
     <externalComponentInstances
         xsi:type="deployment:VMInstance"
-        name="informationManagerVMInstance"
+        name="InformationServiceVMInstance"
         type="//@deploymentModels.0/@externalComponents.0"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
-          name="informationManagerProvidedHostInstance"
+          name="InformationServiceVMInstanceProvidedHostInstance"
           owner="//@deploymentModels.0/@externalComponentInstances.0"
           type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
     </externalComponentInstances>
     <externalComponentInstances
         xsi:type="deployment:VMInstance"
-        name="storageManagerVMInstance"
+        name="StorageManagerVMInstance"
         type="//@deploymentModels.0/@externalComponents.1"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
-          name="storageManagerProvidedHostInstance"
+          name="StorageManagerVMInstanceProvidedHostInstance"
           owner="//@deploymentModels.0/@externalComponentInstances.1"
           type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
     </externalComponentInstances>
     <vmInstances
-        name="experimentManagerVMInstance"
+        name="ExperimentManagerVMInstance"
         type="//@deploymentModels.0/@externalComponents.0"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
-          name="experimentManagerProvidedHostInstance"
+          name="ExperimentManagerVMInstanceProvidedHostInstance"
           owner="//@deploymentModels.0/@vmInstances.0"
           type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
     </vmInstances>
     <vmInstances
-        name="simulationManagerVMInstance"
+        name="SimulationManagerVMInstance"
         type="//@deploymentModels.0/@externalComponents.0"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
-          name="simulationManagerProvidedHostInstance"
+          name="SimulationManagerVMInstanceProvidedHostInstance"
           owner="//@deploymentModels.0/@vmInstances.1"
           type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
     </vmInstances>
     <communications
-        name="storageManagerToInformationService"
+        name="StorageManagerToInformationService"
         requiredCommunication="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
-        providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
+        providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
     <communications
-        name="experimentManagerToStorageManager"
+        name="ExperimentManagerToStorageManager"
         requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"
         providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
     <communications
-        name="experimentManagerToInformationService"
+        name="ExperimentManagerToInformationService"
         requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"
         providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
     <communications
-        name="simulationManagerToStorageManager"
+        name="SimulationManagerToStorageManager"
         requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.1"
         providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
     <communications
-        name="simulationManagerToExperimentManager"
+        name="SimulationManagerToExperimentManager"
         requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.2"
         providedCommunication="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"/>
     <communications
-        name="simulationManagerToInformationService"
+        name="SimulationManagerToInformationService"
         requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
         providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
     <hostings
-        name="masterVMtoStorageManager"
+        name="MasterVMtoStorageManager"
         providedHost="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     <hostings
-        name="masterVMtoExperimentManager"
+        name="MasterVMtoExperimentManager"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     <hostings
-        name="masterVMtoInformationManager"
+        name="MasterVMtoInformationService"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     <hostings
-        name="masterVMtoSimulationManager"
+        name="MasterVMtoSimulationManager"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
     <communicationInstances
-        name="storageManagerToInformationServiceInstance"
+        name="StorageManagerToInformationServiceInstance"
         type="//@deploymentModels.0/@communications.0"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="experimentManagerToStorageManagerInstance"
+        name="ExperimentManagerToStorageManagerInstance"
         type="//@deploymentModels.0/@communications.1"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.0"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="experimentManagerToInformationServiceInstance"
+        name="ExperimentManagerToInformationServiceInstance"
         type="//@deploymentModels.0/@communications.2"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.1"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="simulationManagerToStorageManagerInstance"
+        name="SimulationManagerToStorageManagerInstance"
         type="//@deploymentModels.0/@communications.3"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.1"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="simulationManagerToInformationServiceInstance"
+        name="SimulationManagerToInformationServiceInstance"
         type="//@deploymentModels.0/@communications.5"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.0"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
     <communicationInstances
-        name="simulationManagerToExperimentManagerInstance"
+        name="SimulationManagerToExperimentManagerInstance"
         type="//@deploymentModels.0/@communications.4"
         requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.2"
         providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@providedCommunicationInstances.0"/>
     <hostingInstances
-        name="masterVMtoStorageManagerInstance"
+        name="MasterVMtoStorageManagerInstance"
         type="//@deploymentModels.0/@hostings.0"
         providedHostInstance="//@deploymentModels.0/@externalComponentInstances.1/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
     <hostingInstances
-        name="masterVMtoExperimentManagerInstance"
+        name="MasterVMtoExperimentManagerInstance"
         type="//@deploymentModels.0/@hostings.1"
         providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
     <hostingInstances
-        name="masterVMtoInformationManagerInstance"
+        name="MasterVMtoInformationServiceInstance"
         type="//@deploymentModels.0/@hostings.2"
         providedHostInstance="//@deploymentModels.0/@externalComponentInstances.0/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
     <hostingInstances
-        name="masterVMtoSimulationManagerInstance"
+        name="MasterVMtoSimulationManagerInstance"
         type="//@deploymentModels.0/@hostings.3"
         providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredHostInstance"/>
