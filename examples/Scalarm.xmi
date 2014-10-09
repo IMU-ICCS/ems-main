@@ -1162,11 +1162,13 @@
       <requiredCommunications
           name="ExperimentManagerStorageManagerReq"
           owner="//@deploymentModels.0/@internalComponents.0"
+          isLocal="true"
           portNumber="20001"
           isMandatory="true"/>
       <requiredCommunications
           name="ExperimentManagerInformationServiceReq"
           owner="//@deploymentModels.0/@internalComponents.0"
+          isLocal="true"
           portNumber="11300"
           isMandatory="true"/>
       <requiredHost
@@ -1186,6 +1188,7 @@
       <requiredCommunications
           name="SotrageManagerInformationServiceReq"
           owner="//@deploymentModels.0/@internalComponents.1"
+          isLocal="true"
           portNumber="11300"
           isMandatory="true"/>
       <requiredHost
@@ -1371,12 +1374,12 @@
     <externalComponentInstances
         xsi:type="deployment:VMInstance"
         name="InformationServiceVMInstance"
-        type="//@deploymentModels.0/@externalComponents.0"
+        type="//@deploymentModels.0/@externalComponents.1"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
           name="InformationServiceVMInstanceProvidedHostInstance"
           owner="//@deploymentModels.0/@externalComponentInstances.0"
-          type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
+          type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
     </externalComponentInstances>
     <externalComponentInstances
         xsi:type="deployment:VMInstance"
@@ -1390,12 +1393,12 @@
     </externalComponentInstances>
     <vmInstances
         name="ExperimentManagerVMInstance"
-        type="//@deploymentModels.0/@externalComponents.0"
+        type="//@deploymentModels.0/@externalComponents.1"
         hasInfo="//@vmInfos.3">
       <providedHostInstances
           name="ExperimentManagerVMInstanceProvidedHostInstance"
           owner="//@deploymentModels.0/@vmInstances.0"
-          type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
+          type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
     </vmInstances>
     <vmInstances
         name="SimulationManagerVMInstance"
@@ -1436,11 +1439,11 @@
         requiredHost="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     <hostings
         name="MasterVMtoExperimentManager"
-        providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
+        providedHost="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     <hostings
         name="MasterVMtoInformationService"
-        providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
+        providedHost="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     <hostings
         name="MasterVMtoSimulationManager"
