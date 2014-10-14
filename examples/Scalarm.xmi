@@ -1505,6 +1505,12 @@
         deploymentModel="//@deploymentModels.0"
         requirementGroup="user1HorizPolicySimulationManager"/>
   </executionModels>
+  <agreementModels
+      name="Public Clouds in EU"
+      agreementId="EU">
+    <context
+        templateName="PublicCloud"/>
+  </agreementModels>
   <units xsi:type="camel:MonetaryUnit"
       name="euros"
       unit="EUROS"/>
