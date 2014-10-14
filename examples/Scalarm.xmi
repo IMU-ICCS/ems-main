@@ -1634,4 +1634,7 @@
   <vmTypes feature="//@providerModels.1/@rootFeature"
       constraints="//@providerModels.1/@constraints.15"
       name="C1.XXLARGE_VM_TYPE_GWDG"/>
+       <agreementModels xmi:id="L281">
+    <context xmi:id="L282" templateId="PC" templateName="PublicCloud"/>
+  </agreementModels>
 </camel:CamelModel>
