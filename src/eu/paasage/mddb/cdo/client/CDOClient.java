@@ -89,6 +89,7 @@ public class CDOClient
 	private CDONet4jSessionConfiguration configuration = null;
 	//Parameters representing the required connection information in order to connect to the CDOServer
 	private String host, port, repositoryName;
+	private boolean logging = false;
 	
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
@@ -185,6 +186,9 @@ public class CDOClient
 		port = props.getProperty("port");
 		repositoryName = props.getProperty("repository");
 		if (repositoryName == null) repositoryName = "repo1";
+		String log = props.getProperty("logging");
+		if (log == null || log.equals("off")) logging = false;
+		else if (log.equals("on")) logging = true;
 		System.out.println("Got host: " + host + " port: " + port + " repository:" + repositoryName);
 	}
 	
@@ -193,7 +197,7 @@ public class CDOClient
 	private void initSession(){
 		getConnectionInformation();
 
-		OMPlatform.INSTANCE.setDebugging(false);
+		OMPlatform.INSTANCE.setDebugging(logging);
 	    OMPlatform.INSTANCE.addLogHandler(PrintLogHandler.CONSOLE);
 	    OMPlatform.INSTANCE.addTraceHandler(PrintTraceHandler.CONSOLE);
 
