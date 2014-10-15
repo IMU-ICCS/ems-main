@@ -193,7 +193,7 @@ public class CDOClient
 	private void initSession(){
 		getConnectionInformation();
 
-		OMPlatform.INSTANCE.setDebugging(true);
+		OMPlatform.INSTANCE.setDebugging(false);
 	    OMPlatform.INSTANCE.addLogHandler(PrintLogHandler.CONSOLE);
 	    OMPlatform.INSTANCE.addTraceHandler(PrintTraceHandler.CONSOLE);
 
