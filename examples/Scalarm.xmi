@@ -1345,7 +1345,7 @@
           type="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="informationManagerInstance"
+        name="informationServiceInstance"
         type="//@deploymentModels.0/@internalComponents.2">
       <providedCommunicationInstances
           name="informationManagerProvidedCommunicationInstance"
@@ -1495,7 +1495,7 @@
         providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
     <hostingInstances
-        name="masterVMtoInformationManagerInstance"
+        name="masterVMtoInformationServiceInstance"
         type="//@deploymentModels.0/@hostings.2"
         providedHostInstance="//@deploymentModels.0/@externalComponentInstances.0/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
