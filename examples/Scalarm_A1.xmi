@@ -1629,9 +1629,9 @@
         name="ExperimentManager">
       <resources
           name="ExperimentManager"
-          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/v1.1.1.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf v1.1.1.tar.gz &amp;&amp; cd scalarm_service_scripts-1.1.1"
-          installCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./experiment_manager_install.sh"
-          startCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./experiment_manager_start.sh"
+          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
+          installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_install.sh"
+          startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_start.sh"
           stopCommand=""/>
       <providedCommunications
           name="ExperimentManager"
@@ -1655,9 +1655,9 @@
         name="StorageManager">
       <resources
           name="StorageManager"
-          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/v1.1.1.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf v1.1.1.tar.gz &amp;&amp; cd scalarm_service_scripts-1.1.1"
-          installCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./storage_manager_install.sh"
-          startCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./storage_manager_start.sh"
+          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
+          installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./storage_manager_install.sh"
+          startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./storage_manager_start.sh"
           stopCommand=""/>
       <providedCommunications
           name="StorageManager_nginx"
@@ -1676,9 +1676,9 @@
         name="InformationService">
       <resources
           name="InformationService"
-          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/v1.1.1.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf v1.1.1.tar.gz &amp;&amp; cd scalarm_service_scripts-1.1.1"
-          installCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./information_service_install.sh"
-          startCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./information_service_start.sh"
+          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
+          installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./information_service_install.sh"
+          startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./information_service_start.sh"
           stopCommand=""/>
       <providedCommunications
           name="InformationService"
@@ -1692,9 +1692,9 @@
         name="SimulationManager">
       <resources
           name="SimulationManager"
-          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/v1.1.1.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf v1.1.1.tar.gz &amp;&amp; cd scalarm_service_scripts-1.1.1"
-          installCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./simulation_manager_install.sh"
-          startCommand="cd scalarm_service_scripts-1.1.1 &amp;&amp; ./simulation_manager_start.sh"
+          downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
+          installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./simulation_manager_install.sh"
+          startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./simulation_manager_start.sh"
           stopCommand=""/>
       <requiredCommunications
           name="SimulationManagerr_consumes_Information Service"
