@@ -31,7 +31,7 @@
     			</arguments>
   		</configuration>
 	  </plugin>
-	    <plugin>
+	  <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
             <version>2.4</version>
@@ -47,8 +47,8 @@
             </configuration>
             <executions>
             <execution>
-            <id>make-assembly</id> <!-- this is used for inheritance merges -->
-            <phase>package</phase> <!-- bind to the packaging phase -->
+            <id>make-assembly</id> 
+            <phase>package</phase> 
             <goals>
               <goal>single</goal>
             </goals>
@@ -59,10 +59,10 @@
   </build>
   
   <repositories>
-  <repository>
-      <id>myrepo.local</id>
-      <name>myrepo</name>
-      <url>file://${basedir}/lib</url>
+    <repository>
+      <id>paasage.repo</id>
+      <name>PaaSage repository</name>
+      <url>http://jenkins.paasage.cetic.be/repository/</url>
     </repository>
   </repositories>
   
@@ -72,71 +72,71 @@
 		<artifactId>camel</artifactId>
 		<version>1.0</version>
 	  </dependency>
-	  <!-- <dependency>
-		<groupId>wp3</groupId>
-		<artifactId>wp3-cp-models</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	  </dependency> -->	
   	  <dependency>
 		<groupId>org.eclipse.core</groupId>
-		<artifactId>runtime_3.10.0</artifactId>
-		<version>v20140318-2214</version>
+		<artifactId>runtime</artifactId>
+		<version>3.10.0-v20140318-2214</version>
 	  </dependency>
 	  <dependency>
-		<groupId>javax</groupId>
-		<artifactId>annotation_1.2.0</artifactId>
-		<version>v20140104-2248</version>
+		<groupId>javax.annotation</groupId>
+		<artifactId>javax.annotation-api</artifactId>
+		<version>1.2</version>
 	  </dependency>
 	  <dependency>
-		<groupId>javax</groupId>
-		<artifactId>inject_1.0.0</artifactId>
-		<version>v20091030</version>
+		<groupId>javax.inject</groupId>
+		<artifactId>javax.inject</artifactId>
+		<version>1</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse</groupId>
-		<artifactId>osgi_3.10.0</artifactId>
-		<version>v20140606-1445</version>
+		<artifactId>osgi</artifactId>
+		<version>3.10.0-v20140606-1445</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse.equinox</groupId>
-		<artifactId>common_3.6.200</artifactId>
-		<version>v20130402-1505</version>
+		<groupId>org.eclipse.birt.runtime</groupId>
+		<artifactId>org.eclipse.equinox.common</artifactId>
+		<version>3.6.200.v20130402-1505</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse.core</groupId>
-		<artifactId>jobs_3.6.0</artifactId>
-		<version>v20140424-0053</version>
-	  </dependency>
+		<groupId>org.eclipse.birt.runtime</groupId>
+		<artifactId>org.eclipse.core.jobs</artifactId>
+		<version>3.6.0.v20140424-0053</version>
+	   </dependency>
+	  <!-- <dependency>
+		<groupId>org.eclipse.core.runtime.compatibility</groupId>
+		<artifactId>registry</artifactId>
+		<version>3.2.100-v20070316</version>
+	  </dependency> -->
 	  <dependency>
 		<groupId>org.eclipse.runtime</groupId>
 		<artifactId>runtime-registry-compatibility</artifactId>
 		<version>1.0.0</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse.equinox</groupId>
-		<artifactId>registry_3.5.400</artifactId>
-		<version>v20140428-1507</version>
+		<groupId>org.eclipse.birt.runtime</groupId>
+		<artifactId>org.eclipse.equinox.registry</artifactId>
+		<version>3.5.400.v20140428-1507</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.equinox</groupId>
-		<artifactId>preferences_3.5.200</artifactId>
-		<version>v20140224-1527</version>
+		<artifactId>preferences</artifactId>
+		<version>3.5.200-v20140224-1527</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.core</groupId>
-		<artifactId>contenttype_3.4.200</artifactId>
-		<version>v20140207-1251</version>
+		<artifactId>contenttype</artifactId>
+		<version>3.4.200-v20140207-1251</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.emf</groupId>
-		<artifactId>ecore_2.10.0</artifactId>
-		<version>v20140514-1158</version>
-	  </dependency>
+		<artifactId>org.eclipse.emf.ecore</artifactId>
+		<version>2.10.0-v20140514-1158</version>
+  	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.emf</groupId>
-		<artifactId>common_2.10.0</artifactId>
-		<version>v20140514-1158</version>
-	  </dependency>
+		<artifactId>org.eclipse.emf.common</artifactId>
+		<version>2.10.0-v20140514-1158</version>
+  	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.emf</groupId>
 		<artifactId>cdo_4.3.0</artifactId>
@@ -148,14 +148,14 @@
 		<version>v20140309-0644</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse.emf.ecore</groupId>
-		<artifactId>change_2.10.0</artifactId>
-		<version>v20140514-1158</version>
+		<groupId>org.eclipse.birt.runtime</groupId>
+		<artifactId>org.eclipse.emf.ecore.change</artifactId>
+		<version>2.10.0.v20140514-1158</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.eclipse.emf.ecore</groupId>
-		<artifactId>xmi_2.10.0</artifactId>
-		<version>v20140514-1158</version>
+		<groupId>org.eclipse.emf</groupId>
+		<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+		<version>2.10.0-v20140514-1158</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.net4j</groupId>
@@ -183,14 +183,14 @@
 		<version>v20140308-0604</version>
 	  </dependency>
 	  <dependency>
-		<groupId>org.apache.commons</groupId>
-		<artifactId>logging_1.1.1</artifactId>
-		<version>v20110121-1721</version>
+		<groupId>commons-logging</groupId>
+		<artifactId>commons-logging</artifactId>
+		<version>1.1.1</version>
 	  </dependency>
       <dependency>
-        <groupId>org.javatuples</groupId>
-        <artifactId>javatuples</artifactId>
-        <version>1.2</version>
+		<groupId>org.javatuples</groupId>
+		<artifactId>javatuples</artifactId>
+		<version>1.2</version>
         <scope>compile</scope>
       </dependency>
   </dependencies>
