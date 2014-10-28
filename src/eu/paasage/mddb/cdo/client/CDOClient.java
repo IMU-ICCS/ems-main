@@ -65,6 +65,7 @@ import eu.paasage.camel.sla.AgreementType;
 import eu.paasage.camel.sla.SlaPackage;
 import eu.paasage.camel.type.TypePackage;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
@@ -403,6 +404,34 @@ public class CDOClient
 		try{
 			  trans.commit();
 			  trans.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	/* This method is used to save a model into the file system in a specific path given as input
+	 * The input parameters are: the model to store and the file path to store it in the file system.
+	 */
+	public void saveModel(EObject model, String pathName){
+		final ResourceSet rs = new ResourceSetImpl();
+		rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+		Resource res = null;
+		File f = new File(pathName);
+		EList<EObject> contents = null;
+		if (f.exists()){
+			res = rs.getResource(URI.createFileURI(pathName), true);
+			contents = res.getContents();
+			contents.clear();
+		}
+		else{
+			res = rs.createResource(URI.createFileURI(pathName));
+			contents = res.getContents();
+		}
+		System.out.println("Got resource: " + res);
+		contents.add(model);
+		try{
+			res.save(null);
 		}
 		catch(Exception e){
 			e.printStackTrace();
