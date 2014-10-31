@@ -132,14 +132,11 @@
     <actions
         name="horizontalScalingSimulationManager"
         type="SCALE_OUT"
-        count="1"
-        vmInstance="//@deploymentModels.0/@vmInstances.1"
-        componentInstance="//@deploymentModels.0/@internalComponentInstances.3"/>
+        count="1"/>
     <bindings
         xsi:type="scalability:MetricVMBinding"
         name="storageManagerVMScalarmEC1"
-        executionContext="ScalarmEC1"
-        vmInstance="//@deploymentModels.0/@externalComponentInstances.1"/>
+        executionContext="ScalarmEC1"/>
     <sensors
         id="cpuSensor1"/>
     <units xsi:type="camel:Unitless"
@@ -1170,7 +1167,7 @@
           value="1"/>
     </rootFeature>
   </providerModels>
-<providerModels>
+  <providerModels>
     <constraints
         xsi:type="provider:Requires"
         name="r1"
@@ -1800,112 +1797,6 @@
           name="FlexiantLLProvidedHost"
           owner="//@deploymentModels.0/@externalComponents.4"/>
     </externalComponents>
-    <internalComponentInstances
-        name="experimentManagerInstance"
-        type="//@deploymentModels.0/@internalComponents.0">
-      <providedCommunicationInstances
-          name="experimentManagerProvidedCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"
-          owner="//@deploymentModels.0/@internalComponentInstances.0"/>
-      <requiredCommunicationInstances
-          name="experimentManagerReqStorageCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"
-          owner="//@deploymentModels.0/@internalComponentInstances.0"/>
-      <requiredCommunicationInstances
-          name="experimentManagerReqInfoCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"
-          owner="//@deploymentModels.0/@internalComponentInstances.0"/>
-      <requiredHostInstance
-          name="experimentManagerRequiredHostInstance"
-          owner="//@deploymentModels.0/@internalComponentInstances.0"
-          type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
-    </internalComponentInstances>
-    <internalComponentInstances
-        name="storageManagerInstance"
-        type="//@deploymentModels.0/@internalComponents.1">
-      <providedCommunicationInstances
-          name="storageManagerProvidedCommunicationMongodNnginxInstance"
-          type="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"
-          owner="//@deploymentModels.0/@internalComponentInstances.1"/>
-      <requiredCommunicationInstances
-          name="storgeManagerReqInfoCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
-          owner="//@deploymentModels.0/@internalComponentInstances.1"/>
-      <requiredHostInstance
-          name="storgeManagerRequiredHostInstance"
-          owner="//@deploymentModels.0/@internalComponentInstances.1"
-          type="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
-    </internalComponentInstances>
-    <internalComponentInstances
-        name="informationServiceInstance"
-        type="//@deploymentModels.0/@internalComponents.2">
-      <providedCommunicationInstances
-          name="informationManagerProvidedCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"
-          owner="//@deploymentModels.0/@internalComponentInstances.2"/>
-      <requiredHostInstance
-          name="informationManagerRequiredHostInstance"
-          owner="//@deploymentModels.0/@internalComponentInstances.2"
-          type="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
-    </internalComponentInstances>
-    <internalComponentInstances
-        name="simulationManagerInstance"
-        type="//@deploymentModels.0/@internalComponents.3">
-      <requiredCommunicationInstances
-          name="similationManagerReqInfoCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
-          owner="//@deploymentModels.0/@internalComponentInstances.3"/>
-      <requiredCommunicationInstances
-          name="simulationManagerReqStorCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.1"
-          owner="//@deploymentModels.0/@internalComponentInstances.3"/>
-      <requiredCommunicationInstances
-          name="similationManagerReqExpCommunicationInstance"
-          type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.2"
-          owner="//@deploymentModels.0/@internalComponentInstances.3"/>
-      <requiredHostInstance
-          name="informationManagerRequiredHostInstance"
-          owner="//@deploymentModels.0/@internalComponentInstances.3"
-          type="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
-    </internalComponentInstances>
-    <externalComponentInstances
-        xsi:type="deployment:VMInstance"
-        name="informationManagerVMInstance"
-        type="//@deploymentModels.0/@externalComponents.1"
-        hasInfo="//@vmInfos.18">
-      <providedHostInstances
-          name="informationManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@externalComponentInstances.0"
-          type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
-    </externalComponentInstances>
-    <externalComponentInstances
-        xsi:type="deployment:VMInstance"
-        name="storageManagerVMInstance"
-        type="//@deploymentModels.0/@externalComponents.1"
-        hasInfo="//@vmInfos.19">
-      <providedHostInstances
-          name="storageManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@externalComponentInstances.1"
-          type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
-    </externalComponentInstances>
-    <vmInstances
-        name="experimentManagerVMInstance"
-        type="//@deploymentModels.0/@externalComponents.1"
-        hasInfo="//@vmInfos.18">
-      <providedHostInstances
-          name="experimentManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@vmInstances.0"
-          type="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"/>
-    </vmInstances>
-    <vmInstances
-        name="simulationManagerVMInstance"
-        type="//@deploymentModels.0/@externalComponents.0"
-        hasInfo="//@vmInfos.18">
-      <providedHostInstances
-          name="simulationManagerProvidedHostInstance"
-          owner="//@deploymentModels.0/@vmInstances.1"
-          type="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"/>
-    </vmInstances>
     <communications
         name="storageManagerToInformationService"
         requiredCommunication="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
@@ -1946,56 +1837,6 @@
         name="masterVMtoSimulationManager"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
-    <communicationInstances
-        name="storageManagerToInformationServiceInstance"
-        type="//@deploymentModels.0/@communications.0"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
-    <communicationInstances
-        name="experimentManagerToStorageManagerInstance"
-        type="//@deploymentModels.0/@communications.1"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
-    <communicationInstances
-        name="experimentManagerToInformationServiceInstance"
-        type="//@deploymentModels.0/@communications.2"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.1"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
-    <communicationInstances
-        name="simulationManagerToStorageManagerInstance"
-        type="//@deploymentModels.0/@communications.3"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.1"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
-    <communicationInstances
-        name="simulationManagerToInformationServiceInstance"
-        type="//@deploymentModels.0/@communications.5"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
-    <communicationInstances
-        name="simulationManagerToExperimentManagerInstance"
-        type="//@deploymentModels.0/@communications.4"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.2"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@providedCommunicationInstances.0"/>
-    <hostingInstances
-        name="masterVMtoStorageManagerInstance"
-        type="//@deploymentModels.0/@hostings.0"
-        providedHostInstance="//@deploymentModels.0/@externalComponentInstances.1/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
-    <hostingInstances
-        name="masterVMtoExperimentManagerInstance"
-        type="//@deploymentModels.0/@hostings.1"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
-    <hostingInstances
-        name="masterVMtoInformationServiceInstance"
-        type="//@deploymentModels.0/@hostings.2"
-        providedHostInstance="//@deploymentModels.0/@externalComponentInstances.0/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
-    <hostingInstances
-        name="masterVMtoSimulationManagerInstance"
-        type="//@deploymentModels.0/@hostings.3"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredHostInstance"/>
   </deploymentModels>
   <executionModels>
     <executionContexts
@@ -2064,7 +1905,7 @@
       name="C1.XLARGE_VM_INFO_GWDG"/>
   <vmInfos type="//@vmTypes.22"
       name="C1.XXLARGE_VM_INFO_GWDG"/>
-<vmInfos type="//@vmTypes.23"
+  <vmInfos type="//@vmTypes.23"
       dataCenter="//@organisationModels.3/@dataCentres.0"
       name="M_VM_INFO_AMAZON"/>
   <vmInfos type="//@vmTypes.24"
@@ -2076,7 +1917,6 @@
   <vmInfos type="//@vmTypes.26"
       dataCenter="//@organisationModels.3/@dataCentres.0"
       name="XXL_VM_INFO_AMAZON"/>
-
   <vmTypes feature="//@providerModels.0/@rootFeature"
       constraints="//@providerModels.0/@constraints.0"
       name="LOWEST_VM_TYPE_FLEXIANT"/>
@@ -2146,7 +1986,7 @@
   <vmTypes feature="//@providerModels.1/@rootFeature"
       constraints="//@providerModels.1/@constraints.15"
       name="C1.XXLARGE_VM_TYPE_GWDG"/>
-<vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
+  <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
       constraints="//@providerModels.2/@constraints.0 //@providerModels.2/@constraints.1 //@providerModels.2/@constraints.2"
       name="M_VM_TYPE_AMAZON"/>
   <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
@@ -2158,5 +1998,4 @@
   <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
       constraints="//@providerModels.2/@constraints.9 //@providerModels.2/@constraints.10 //@providerModels.2/@constraints.11"
       name="XXL_VM_TYPE_AMAZON"/>
-
 </camel:CamelModel>
