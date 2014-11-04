@@ -1131,22 +1131,22 @@
     <internalComponents
         name="ExperimentManager">
       <resources
-          name="ExperimentManager"
+          name="experimentManagerCompRes"
           downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
           installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_install.sh"
           startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_start.sh"
           stopCommand=""/>
       <providedCommunications
-          name="ExperimentManager"
+          name="experimentManagerProvidedCommunication"
           owner="//@deploymentModels.0/@internalComponents.0"
           portNumber="443"/>
       <requiredCommunications
-          name="ExperimentManager_consumes_SotrageManager"
+          name="experimentManagerSMRequiredCommunication"
           owner="//@deploymentModels.0/@internalComponents.0"
           portNumber="20001"
           isMandatory="true"/>
       <requiredCommunications
-          name="ExperimentManager_consumes_Information Service"
+          name="experimentManagerISRequiredCommunication"
           owner="//@deploymentModels.0/@internalComponents.0"
           portNumber="11300"
           isMandatory="true"/>
@@ -1157,17 +1157,17 @@
     <internalComponents
         name="StorageManager">
       <resources
-          name="StorageManager"
+          name="storageManagerCompRes"
           downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
           installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./storage_manager_install.sh"
           startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./storage_manager_start.sh"
           stopCommand=""/>
       <providedCommunications
-          name="StorageManager_nginx"
+          name="storageManagerProvidedCommunication"
           owner="//@deploymentModels.0/@internalComponents.1"
           portNumber="20001"/>
       <requiredCommunications
-          name="SotrageManager_consumes_Information Service"
+          name="storageManagerISRequiredCommunication"
           owner="//@deploymentModels.0/@internalComponents.1"
           portNumber="11300"
           isMandatory="true"/>
@@ -1178,13 +1178,13 @@
     <internalComponents
         name="InformationService">
       <resources
-          name="InformationService"
+          name="informationServiceCompRes"
           downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
           installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./information_service_install.sh"
           startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./information_service_start.sh"
           stopCommand=""/>
       <providedCommunications
-          name="InformationService"
+          name="informationServiceProvidedCommunication"
           owner="//@deploymentModels.0/@internalComponents.2"
           portNumber="11300"/>
       <requiredHost
@@ -1194,33 +1194,33 @@
     <internalComponents
         name="SimulationManager">
       <resources
-          name="SimulationManager"
+          name="simulationManagerCompRes"
           downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
           installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./simulation_manager_install.sh"
           startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./simulation_manager_start.sh"
           stopCommand=""/>
       <requiredCommunications
-          name="SimulationManagerr_consumes_Information Service"
+          name="simulationManagerISRequiredCommunication"
           owner="//@deploymentModels.0/@internalComponents.3"
           portNumber="11300"
           isMandatory="true"/>
       <requiredCommunications
-          name="SimulationManagerr_consumes_StorageManager"
+          name="simulationManagerSMRequiredCommunication"
           owner="//@deploymentModels.0/@internalComponents.3"
           portNumber="20001"
           isMandatory="true"/>
       <requiredCommunications
-          name="SimulationManagerr_consumes_Experiment Manager"
+          name="simulationManagerEMRequiredCommunication"
           owner="//@deploymentModels.0/@internalComponents.3"
           portNumber="443"
           isMandatory="true"/>
       <requiredHost
-          name="informationManagerRequiredHost"
+          name="simulationManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.3"/>
     </internalComponents>
     <externalComponents
         xsi:type="deployment:VM"
-        name="GWDG_SL"
+        name="GWDG-SL"
         provider="//@organisationModels.2/@provider"
         location="//@organisationModels.2/@locations.0"
         minRam="2048"
@@ -1237,7 +1237,7 @@
     </externalComponents>
     <externalComponents
         xsi:type="deployment:VM"
-        name="GWDG_LL"
+        name="GWDG-LL"
         provider="//@organisationModels.2/@provider"
         location="//@organisationModels.2/@locations.0"
         minRam="4096"
