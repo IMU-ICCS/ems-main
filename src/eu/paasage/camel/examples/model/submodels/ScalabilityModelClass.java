@@ -224,18 +224,12 @@ public class ScalabilityModelClass {
 
         ScalabilityRule avgEtScalabilityRule = ScalabilityFactory.eINSTANCE.createScalabilityRule();
 
-        ScalingAction verticalScalingSensApp = ScalabilityFactory.eINSTANCE.createScalingAction();
-        verticalScalingSensApp.setComponentInstance(sensApp1);
-        verticalScalingSensApp.setCoreUpdate(0);
+        HorizontalScalingAction verticalScalingSensApp = ScalabilityFactory.eINSTANCE.createHorizontalScalingAction();
+        verticalScalingSensApp.setInternalComponent((InternalComponent)sensApp1.getType());
         verticalScalingSensApp.setCount(1);
-        verticalScalingSensApp.setCPUUpdate(0);
-        verticalScalingSensApp.setIoUpdate(0);
-        verticalScalingSensApp.setMemoryUpdate(0);
         verticalScalingSensApp.setName("VertScaleSensApp");
-        verticalScalingSensApp.setNetworkUpdate(0);
-        verticalScalingSensApp.setStorageUpdate(0);
         verticalScalingSensApp.setType(ActionType.SCALE_OUT);
-        verticalScalingSensApp.setVmInstance(vmLL1);
+        verticalScalingSensApp.setVm((VM)vmLL1.getType());
         scalabilityModel.getActions().add(verticalScalingSensApp);
 
         avgEtScalabilityRule.getActions().add(verticalScalingSensApp);
@@ -243,14 +237,14 @@ public class ScalabilityModelClass {
         NonFunctionalEvent avgExecutionTimeViolated = ScalabilityFactory.eINSTANCE.createNonFunctionalEvent();
         avgExecutionTimeViolated.setIsViolation(true);
 
-        MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE.createMetricCondition();
+        MetricTemplateCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE.createMetricTemplateCondition();
         avgEtMetricCondition.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
-        avgEtMetricCondition.setMetric(avgEtMetric1);
+        avgEtMetricCondition.setMetricTemplate(avgEtMetric1.getTemplate());
         avgEtMetricCondition.setThreshold(10);
 
         scalabilityModel.getConditions().add(avgEtMetricCondition);
 
-        avgExecutionTimeViolated.setMetricCondition(avgEtMetricCondition);
+        avgExecutionTimeViolated.setMetricTemplateCondition(avgEtMetricCondition);
         avgExecutionTimeViolated.setName("NFAvgETViol");
 
         scalabilityModel.getEvents().add(avgExecutionTimeViolated);
@@ -262,18 +256,16 @@ public class ScalabilityModelClass {
 
         ScalabilityRule storageViolationScalabilityRule = ScalabilityFactory.eINSTANCE.createScalabilityRule();
 
-        ScalingAction horizontalScaleMongoDBVm = ScalabilityFactory.eINSTANCE.createScalingAction();
-        horizontalScaleMongoDBVm.setComponentInstance(mongoDB1);
+        VerticalScalingAction horizontalScaleMongoDBVm = ScalabilityFactory.eINSTANCE.createVerticalScalingAction();
         horizontalScaleMongoDBVm.setCoreUpdate(0);
-        horizontalScaleMongoDBVm.setCount(0);
         horizontalScaleMongoDBVm.setCPUUpdate(0);
         horizontalScaleMongoDBVm.setIoUpdate(0);
         horizontalScaleMongoDBVm.setMemoryUpdate(0);
-        horizontalScaleMongoDBVm.setName("HorizScaleMongoDBVM");
+        horizontalScaleMongoDBVm.setName("VertScaleMongoDBVM");
         horizontalScaleMongoDBVm.setNetworkUpdate(0);
         horizontalScaleMongoDBVm.setStorageUpdate(512);
         horizontalScaleMongoDBVm.setType(ActionType.SCALE_UP);
-        horizontalScaleMongoDBVm.setVmInstance(vmML1);
+        horizontalScaleMongoDBVm.setVm((VM)vmML1.getType());
 
         storageViolationScalabilityRule.getActions().add(horizontalScaleMongoDBVm);
         scalabilityModel.getActions().add(horizontalScaleMongoDBVm);
@@ -281,14 +273,14 @@ public class ScalabilityModelClass {
         NonFunctionalEvent rawStorageViolated = ScalabilityFactory.eINSTANCE.createNonFunctionalEvent();
         rawStorageViolated.setIsViolation(true);
 
-        MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE.createMetricCondition();
+        MetricTemplateCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE.createMetricTemplateCondition();
         rawStorageMetricCondition.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
-        rawStorageMetricCondition.setMetric(rawStorageMetric);
+        rawStorageMetricCondition.setMetricTemplate(rawStorageMetric.getTemplate());
         rawStorageMetricCondition.setThreshold(500);
 
         scalabilityModel.getConditions().add(rawStorageMetricCondition);
 
-        rawStorageViolated.setMetricCondition(rawStorageMetricCondition);
+        rawStorageViolated.setMetricTemplateCondition(rawStorageMetricCondition);
         rawStorageViolated.setName("NFRawStorageViol");
 
         scalabilityModel.getEvents().add(rawStorageViolated);

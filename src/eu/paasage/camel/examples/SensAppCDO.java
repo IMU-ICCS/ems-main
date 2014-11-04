@@ -70,6 +70,7 @@ import eu.paasage.camel.provider.ProviderFactory;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.scalability.ComparisonOperatorType;
 import eu.paasage.camel.scalability.HorizontalScalabilityPolicy;
+import eu.paasage.camel.scalability.HorizontalScalingAction;
 import eu.paasage.camel.scalability.LayerType;
 import eu.paasage.camel.scalability.Metric;
 import eu.paasage.camel.scalability.MetricCondition;
@@ -78,6 +79,7 @@ import eu.paasage.camel.scalability.MetricFunctionArityType;
 import eu.paasage.camel.scalability.MetricFunctionType;
 import eu.paasage.camel.scalability.MetricObjectBinding;
 import eu.paasage.camel.scalability.MetricTemplate;
+import eu.paasage.camel.scalability.MetricTemplateCondition;
 import eu.paasage.camel.scalability.MetricType;
 import eu.paasage.camel.scalability.MetricVMBinding;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
@@ -89,6 +91,7 @@ import eu.paasage.camel.scalability.ScalabilityRule;
 import eu.paasage.camel.scalability.ScalingAction;
 import eu.paasage.camel.scalability.Sensor;
 import eu.paasage.camel.scalability.VerticalScalabilityPolicy;
+import eu.paasage.camel.scalability.VerticalScalingAction;
 import eu.paasage.camel.type.EnumerateValue;
 import eu.paasage.camel.type.Enumeration;
 import eu.paasage.camel.type.FloatValue;
@@ -1492,19 +1495,13 @@ public class SensAppCDO {
 		ScalabilityRule avgEtScalabilityRule = ScalabilityFactory.eINSTANCE
 				.createScalabilityRule();
 
-		ScalingAction verticalScalingSensApp = ScalabilityFactory.eINSTANCE
-				.createScalingAction();
-		verticalScalingSensApp.setComponentInstance(sensApp1);
-		verticalScalingSensApp.setCoreUpdate(0);
+		HorizontalScalingAction verticalScalingSensApp = ScalabilityFactory.eINSTANCE
+				.createHorizontalScalingAction();
+		verticalScalingSensApp.setInternalComponent((InternalComponent)sensApp1.getType());
 		verticalScalingSensApp.setCount(1);
-		verticalScalingSensApp.setCPUUpdate(0);
-		verticalScalingSensApp.setIoUpdate(0);
-		verticalScalingSensApp.setMemoryUpdate(0);
-		verticalScalingSensApp.setName("VertScaleSensApp");
-		verticalScalingSensApp.setNetworkUpdate(0);
-		verticalScalingSensApp.setStorageUpdate(0);
+		verticalScalingSensApp.setName("HorizScaleSensApp");
 		verticalScalingSensApp.setType(ActionType.SCALE_OUT);
-		verticalScalingSensApp.setVmInstance(vmLL1);
+		verticalScalingSensApp.setVm((VM)vmLL1.getType());
 		scalabilityModel.getActions().add(verticalScalingSensApp);
 
 		avgEtScalabilityRule.getActions().add(verticalScalingSensApp);
@@ -1513,17 +1510,17 @@ public class SensAppCDO {
 				.createNonFunctionalEvent();
 		avgExecutionTimeViolated.setIsViolation(true);
 
-		MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE
-				.createMetricCondition();
+		MetricTemplateCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE
+				.createMetricTemplateCondition();
 		avgEtMetricCondition
 				.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
-		avgEtMetricCondition.setMetric(avgEtMetric1);
+		avgEtMetricCondition.setMetricTemplate(avgEtMetric1.getTemplate());
 		avgEtMetricCondition.setThreshold(10);
 		avgEtMetricCondition.setName("AVG_ET_GT_10");
 
 		scalabilityModel.getConditions().add(avgEtMetricCondition);
 
-		avgExecutionTimeViolated.setMetricCondition(avgEtMetricCondition);
+		avgExecutionTimeViolated.setMetricTemplateCondition(avgEtMetricCondition);
 		avgExecutionTimeViolated.setName("NFAvgETViol");
 
 		scalabilityModel.getEvents().add(avgExecutionTimeViolated);
@@ -1536,11 +1533,9 @@ public class SensAppCDO {
 		ScalabilityRule storageViolationScalabilityRule = ScalabilityFactory.eINSTANCE
 				.createScalabilityRule();
 
-		ScalingAction horizontalScaleMongoDBVm = ScalabilityFactory.eINSTANCE
-				.createScalingAction();
-		horizontalScaleMongoDBVm.setComponentInstance(mongoDB1);
+		VerticalScalingAction horizontalScaleMongoDBVm = ScalabilityFactory.eINSTANCE
+				.createVerticalScalingAction();
 		horizontalScaleMongoDBVm.setCoreUpdate(0);
-		horizontalScaleMongoDBVm.setCount(0);
 		horizontalScaleMongoDBVm.setCPUUpdate(0);
 		horizontalScaleMongoDBVm.setIoUpdate(0);
 		horizontalScaleMongoDBVm.setMemoryUpdate(0);
@@ -1548,7 +1543,7 @@ public class SensAppCDO {
 		horizontalScaleMongoDBVm.setNetworkUpdate(0);
 		horizontalScaleMongoDBVm.setStorageUpdate(512);
 		horizontalScaleMongoDBVm.setType(ActionType.SCALE_UP);
-		horizontalScaleMongoDBVm.setVmInstance(vmML1);
+		horizontalScaleMongoDBVm.setVm((VM)vmML1);
 
 		storageViolationScalabilityRule.getActions().add(
 				horizontalScaleMongoDBVm);
@@ -1558,17 +1553,17 @@ public class SensAppCDO {
 				.createNonFunctionalEvent();
 		rawStorageViolated.setIsViolation(true);
 
-		MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE
-				.createMetricCondition();
+		MetricTemplateCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE
+				.createMetricTemplateCondition();
 		rawStorageMetricCondition
 				.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
-		rawStorageMetricCondition.setMetric(rawStorageMetric);
+		rawStorageMetricCondition.setMetricTemplate(rawStorageMetric.getTemplate());
 		rawStorageMetricCondition.setThreshold(500);
 		rawStorageMetricCondition.setName("RAW_STORAGE_NUM_GET_500");
 
 		scalabilityModel.getConditions().add(rawStorageMetricCondition);
 
-		rawStorageViolated.setMetricCondition(rawStorageMetricCondition);
+		rawStorageViolated.setMetricTemplateCondition(rawStorageMetricCondition);
 		rawStorageViolated.setName("NFRawStorageViol");
 
 		scalabilityModel.getEvents().add(rawStorageViolated);
