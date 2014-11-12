@@ -65,28 +65,6 @@
         countryCode="DE"
         address=""/>
   </organisationModels>
-  <organisationModels>
-    <provider
-        name="Amazon"
-        www="http://www.amazon.com"
-        postalAddress="US"
-        email="amazon@amazon.com"
-        public="true"
-        PaaS="true"
-        IaaS="true"
-        providerModel="//@providerModels.1"/>
-    <dataCentres
-        name="Amazon Datacenter"
-        codeName="amazon-us-east"
-        location="//@organisationModels.3/@locations.0"
-        cloudProvider="//@organisationModels.3/@provider"/>
-    <locations
-        name="amazonLocation"
-        city="Virgina"
-        country="United States"
-        countryCode="US"
-        address="US East (N. Virginia) region"/>
-  </organisationModels>
   <scalabilityModels>
     <metricTemplates
         name="CPU_RAW"
@@ -1148,459 +1126,6 @@
           value="1"/>
     </rootFeature>
   </providerModels>
-  <providerModels>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r1"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="M"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="1"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r2"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="M"/>
-        <toValue
-            xsi:type="type:FloatValue"
-            value="3.75"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r3"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.4">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="M"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="4"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r4"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="1"
-            name="L"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="2"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r5"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="1"
-            name="L"/>
-        <toValue
-            xsi:type="type:FloatValue"
-            value="7.5"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r6"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.4">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="1"
-            name="L"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="32"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r7"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="2"
-            name="XL"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="4"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r8"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="2"
-            name="XL"/>
-        <toValue
-            xsi:type="type:FloatValue"
-            value="15.0"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r9"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.4">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="2"
-            name="XL"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="80"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r10"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="3"
-            name="XXL"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="8"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r11"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="1"
-            name="XXL"/>
-        <toValue
-            xsi:type="type:FloatValue"
-            value="30.0"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <constraints
-        xsi:type="provider:Requires"
-        name="r12"
-        from="//@providerModels.2/@rootFeature/@subFeatures.0"
-        to="//@providerModels.2/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.1"
-          to="//@providerModels.2/@rootFeature/@subFeatures.0/@attributes.4">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            value="3"
-            name="XXL"/>
-        <toValue
-            xsi:type="type:IntValue"
-            value="160"/>
-      </attributeConstraints>
-      <cardFrom
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-      <cardTo
-          cardinalityMin="1"
-          cardinalityMax="1"/>
-    </constraints>
-    <rootFeature
-        name="Amazon EC2">
-      <attributes
-          name="deploymentModel">
-        <value
-            xsi:type="type:StringValue"
-            value="Public"/>
-        <valueType
-            xsi:type="type:StringValueType"
-            primitiveType="StringType"/>
-      </attributes>
-      <attributes
-          name="serviceModel">
-        <value
-            xsi:type="type:StringValue"
-            value="IaaS"/>
-        <valueType
-            xsi:type="type:StringValueType"/>
-      </attributes>
-      <subFeatures
-          name="Virtual Machine">
-        <attributes
-            name="vmOS">
-          <valueType
-              xsi:type="type:Enumeration">
-            <values
-                name="Ubuntu"/>
-            <values
-                value="1"
-                name="WindowsServer"/>
-            <values
-                value="2"
-                name="RedHatEnterpriseLinux"/>
-          </valueType>
-        </attributes>
-        <attributes
-            name="vmSize">
-          <valueType
-              xsi:type="type:Enumeration">
-            <values
-                name="M"/>
-            <values
-                value="1"
-                name="L"/>
-            <values
-                value="2"
-                name="XL"/>
-            <values
-                value="3"
-                name="XXL"/>
-          </valueType>
-        </attributes>
-        <attributes
-            name="vmMemorySize"
-            unitType="GIGABYTES">
-          <valueType
-              xsi:type="type:List"
-              primitiveType="FloatType">
-            <values
-                xsi:type="type:FloatValue"
-                value="3.75"/>
-            <values
-                xsi:type="type:FloatValue"
-                value="7.5"/>
-            <values
-                xsi:type="type:FloatValue"
-                value="15.0"/>
-            <values
-                xsi:type="type:FloatValue"
-                value="30.0"/>
-            <values
-                xsi:type="type:FloatValue"
-                value="3.75"/>
-          </valueType>
-        </attributes>
-        <attributes
-            name="vmCpuCores">
-          <valueType
-              xsi:type="type:List">
-            <values
-                xsi:type="type:IntValue"
-                value="1"/>
-            <values
-                xsi:type="type:IntValue"
-                value="2"/>
-            <values
-                xsi:type="type:IntValue"
-                value="4"/>
-            <values
-                xsi:type="type:IntValue"
-                value="8"/>
-          </valueType>
-        </attributes>
-        <attributes
-            name="vmStorage"
-            unitType="GIGABYTES">
-          <valueType
-              xsi:type="type:List">
-            <values
-                xsi:type="type:IntValue"
-                value="4"/>
-            <values
-                xsi:type="type:IntValue"
-                value="32"/>
-            <values
-                xsi:type="type:IntValue"
-                value="80"/>
-            <values
-                xsi:type="type:IntValue"
-                value="160"/>
-            <values
-                xsi:type="type:IntValue"
-                value="4"/>
-          </valueType>
-        </attributes>
-        <featureCardinality
-            cardinalityMin="1"
-            cardinalityMax="-1"/>
-      </subFeatures>
-      <subFeatures
-          name="Services">
-        <subFeatures
-            name="Amazon VPC">
-          <subFeatures
-              name="VPN Connection">
-            <featureCardinality
-                cardinalityMax="1"/>
-          </subFeatures>
-          <featureCardinality
-              cardinalityMin="1"
-              cardinalityMax="1"
-              value="1"/>
-        </subFeatures>
-        <featureCardinality
-            cardinalityMax="1"/>
-      </subFeatures>
-      <subFeatures
-          xsi:type="provider:Exclusive"
-          name="Location">
-        <subFeatures
-            name="Ireland">
-          <featureCardinality
-              cardinalityMax="1"/>
-        </subFeatures>
-        <featureCardinality
-            cardinalityMin="1"
-            cardinalityMax="1"
-            value="1"/>
-        <groupCardinality
-            cardinalityMin="1"
-            cardinalityMax="1"/>
-        <variants
-            name="EU">
-          <featureCardinality
-              cardinalityMax="1"/>
-        </variants>
-        <variants
-            name="US East">
-          <featureCardinality
-              cardinalityMax="1"/>
-        </variants>
-      </subFeatures>
-      <subFeatures
-          name="Pricing Model">
-        <subFeatures
-            name="Per Hour">
-          <featureCardinality
-              cardinalityMax="1"
-              value="1"/>
-        </subFeatures>
-        <featureCardinality
-            cardinalityMax="1"/>
-      </subFeatures>
-      <featureCardinality
-          cardinalityMin="1"
-          cardinalityMax="1"
-          value="1"/>
-    </rootFeature>
-  </providerModels>
   <deploymentModels
       name="Scalarm">
     <internalComponents
@@ -1647,7 +1172,7 @@
           portNumber="11300"
           isMandatory="true"/>
       <requiredHost
-          name="storgeManagerRequiredHost"
+          name="storageManagerRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.1"/>
     </internalComponents>
     <internalComponents
@@ -1761,23 +1286,111 @@
           name="FlexiantLLProvidedHost"
           owner="//@deploymentModels.0/@externalComponents.3"/>
     </externalComponents>
-    <externalComponents
-        xsi:type="deployment:VM"
-        name="AmazonEC2LL"
-        provider="//@organisationModels.3/@provider"
-        location="//@organisationModels.3/@locations.0"
-        minRam="4096"
-        maxRam="16384"
-        minCores="4"
-        maxCores="16"
-        minStorage="40"
-        os="ubuntu"
-        privateSshKey=""
-        imageId="RegionOne/&lt;ID NEEDED>">
-      <providedHosts
-          name="FlexiantLLProvidedHost"
-          owner="//@deploymentModels.0/@externalComponents.4"/>
-    </externalComponents>
+    <internalComponentInstances
+        name="experimentManagerInstance"
+        type="//@deploymentModels.0/@internalComponents.0">
+      <providedCommunicationInstances
+          name="experimentManagerProvidedCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"
+          owner="//@deploymentModels.0/@internalComponentInstances.0"/>
+      <requiredCommunicationInstances
+          name="experimentManagerReqStorageCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"
+          owner="//@deploymentModels.0/@internalComponentInstances.0"/>
+      <requiredCommunicationInstances
+          name="experimentManagerReqInfoCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"
+          owner="//@deploymentModels.0/@internalComponentInstances.0"/>
+      <requiredHostInstance
+          name="experimentManagerRequiredHostInstance"
+          owner="//@deploymentModels.0/@internalComponentInstances.0"
+          type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="storageManagerInstance"
+        type="//@deploymentModels.0/@internalComponents.1">
+      <providedCommunicationInstances
+          name="storageManagerProvidedCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"
+          owner="//@deploymentModels.0/@internalComponentInstances.1"/>
+      <requiredCommunicationInstances
+          name="storageManagerReqInfoCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
+          owner="//@deploymentModels.0/@internalComponentInstances.1"/>
+      <requiredHostInstance
+          name="storgeManagerRequiredHostInstance"
+          owner="//@deploymentModels.0/@internalComponentInstances.1"
+          type="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="informationServiceInstance"
+        type="//@deploymentModels.0/@internalComponents.2">
+      <providedCommunicationInstances
+          name="informationManagerProvidedCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"
+          owner="//@deploymentModels.0/@internalComponentInstances.2"/>
+      <requiredHostInstance
+          name="informationManagerRequiredHostInstance"
+          owner="//@deploymentModels.0/@internalComponentInstances.2"
+          type="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="simulationManagerInstance"
+        type="//@deploymentModels.0/@internalComponents.3">
+      <requiredCommunicationInstances
+          name="simulationManagerReqInfoCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
+          owner="//@deploymentModels.0/@internalComponentInstances.3"/>
+      <requiredCommunicationInstances
+          name="simulationManagerReqStorCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.1"
+          owner="//@deploymentModels.0/@internalComponentInstances.3"/>
+      <requiredCommunicationInstances
+          name="simulationManagerReqExpCommunicationInstance"
+          type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.2"
+          owner="//@deploymentModels.0/@internalComponentInstances.3"/>
+      <requiredHostInstance
+          name="simulationManagerRequiredHostInstance"
+          owner="//@deploymentModels.0/@internalComponentInstances.3"
+          type="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
+    </internalComponentInstances>
+    <vmInstances
+        name="informationManagerVMInstance"
+        type="//@deploymentModels.0/@externalComponents.3"
+        hasInfo="//@vmInfos.12">
+      <providedHostInstances
+          name="informationManagerProvidedHostInstance"
+          owner="//@deploymentModels.0/@vmInstances.0"
+          type="//@deploymentModels.0/@externalComponents.3/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="storageManagerVMInstance"
+        type="//@deploymentModels.0/@externalComponents.3"
+        hasInfo="//@vmInfos.16">
+      <providedHostInstances
+          name="storageManagerProvidedHostInstance"
+          owner="//@deploymentModels.0/@vmInstances.1"
+          type="//@deploymentModels.0/@externalComponents.3/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="experimentManagerVMInstance"
+        type="//@deploymentModels.0/@externalComponents.3"
+        hasInfo="//@vmInfos.20">
+      <providedHostInstances
+          name="experimentManagerProvidedHostInstance"
+          owner="//@deploymentModels.0/@vmInstances.2"
+          type="//@deploymentModels.0/@externalComponents.3/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="simulationManagerVMInstance"
+        type="//@deploymentModels.0/@externalComponents.2"
+        publicAddress=""
+        hasInfo="//@vmInfos.9">
+      <providedHostInstances
+          name="simulationManagerProvidedHostInstance"
+          owner="//@deploymentModels.0/@vmInstances.3"
+          type="//@deploymentModels.0/@externalComponents.2/@providedHosts.0"/>
+    </vmInstances>
     <communications
         name="storageManagerToInformationService"
         requiredCommunication="//@deploymentModels.0/@internalComponents.1/@requiredCommunications.0"
@@ -1803,21 +1416,71 @@
         requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"
         providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
     <hostings
-        name="masterVMtoStorageManager"
+        name="VMtoStorageManagerHosting"
         providedHost="//@deploymentModels.0/@externalComponents.1/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     <hostings
-        name="masterVMtoExperimentManager"
+        name="VMtoExperimentManagerHosting"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     <hostings
-        name="masterVMtoInformationService"
+        name="VMtoInformationServiceHosting"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     <hostings
-        name="masterVMtoSimulationManager"
+        name="VMtoSimulationManagerHosting"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
+    <communicationInstances
+        name="storageManagerToInformationServiceInstance"
+        type="//@deploymentModels.0/@communications.0"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredCommunicationInstances.0"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="experimentManagerToStorageManagerInstance"
+        type="//@deploymentModels.0/@communications.1"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.0"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="experimentManagerToInformationServiceInstance"
+        type="//@deploymentModels.0/@communications.2"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.1"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="simulationManagerToStorageManagerInstance"
+        type="//@deploymentModels.0/@communications.3"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.1"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="simulationManagerToInformationServiceInstance"
+        type="//@deploymentModels.0/@communications.5"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.0"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"/>
+    <communicationInstances
+        name="simulationManagerToExperimentManagerInstance"
+        type="//@deploymentModels.0/@communications.4"
+        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredCommunicationInstances.2"
+        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@providedCommunicationInstances.0"/>
+    <hostingInstances
+        name="VMtoStorageManagerHostingInstance"
+        type="//@deploymentModels.0/@hostings.0"
+        providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
+    <hostingInstances
+        name="VMtoExperimentManagerHostingInstance"
+        type="//@deploymentModels.0/@hostings.1"
+        providedHostInstance="//@deploymentModels.0/@vmInstances.2/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
+    <hostingInstances
+        name="VMtoInformationServiceHostingInstance"
+        type="//@deploymentModels.0/@hostings.2"
+        providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
+    <hostingInstances
+        name="VMtoSimulationManagerHostingInstance"
+        type="//@deploymentModels.0/@hostings.3"
+        providedHostInstance="//@deploymentModels.0/@vmInstances.3/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredHostInstance"/>
   </deploymentModels>
   <executionModels>
     <executionContexts
@@ -1886,18 +1549,6 @@
       name="C1.XLARGE_VM_INFO_GWDG"/>
   <vmInfos type="//@vmTypes.22"
       name="C1.XXLARGE_VM_INFO_GWDG"/>
-  <vmInfos type="//@vmTypes.23"
-      dataCenter="//@organisationModels.3/@dataCentres.0"
-      name="M_VM_INFO_AMAZON"/>
-  <vmInfos type="//@vmTypes.24"
-      dataCenter="//@organisationModels.3/@dataCentres.0"
-      name="L_VM_INFO_AMAZON"/>
-  <vmInfos type="//@vmTypes.25"
-      dataCenter="//@organisationModels.3/@dataCentres.0"
-      name="XL_VM_INFO_AMAZON"/>
-  <vmInfos type="//@vmTypes.26"
-      dataCenter="//@organisationModels.3/@dataCentres.0"
-      name="XXL_VM_INFO_AMAZON"/>
   <vmTypes feature="//@providerModels.0/@rootFeature"
       constraints="//@providerModels.0/@constraints.0"
       name="LOWEST_VM_TYPE_FLEXIANT"/>
@@ -1967,16 +1618,4 @@
   <vmTypes feature="//@providerModels.1/@rootFeature"
       constraints="//@providerModels.1/@constraints.15"
       name="C1.XXLARGE_VM_TYPE_GWDG"/>
-  <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
-      constraints="//@providerModels.2/@constraints.0 //@providerModels.2/@constraints.1 //@providerModels.2/@constraints.2"
-      name="M_VM_TYPE_AMAZON"/>
-  <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
-      constraints="//@providerModels.2/@constraints.3 //@providerModels.2/@constraints.4 //@providerModels.2/@constraints.5"
-      name="L_VM_TYPE_AMAZON"/>
-  <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
-      constraints="//@providerModels.2/@constraints.6 //@providerModels.2/@constraints.7 //@providerModels.2/@constraints.8"
-      name="XL_VM_TYPE_AMAZON"/>
-  <vmTypes feature="//@providerModels.2/@rootFeature/@subFeatures.0"
-      constraints="//@providerModels.2/@constraints.9 //@providerModels.2/@constraints.10 //@providerModels.2/@constraints.11"
-      name="XXL_VM_TYPE_AMAZON"/>
 </camel:CamelModel>

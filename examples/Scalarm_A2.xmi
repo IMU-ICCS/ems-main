@@ -1663,7 +1663,7 @@
           owner="//@deploymentModels.0/@internalComponents.2"
           portNumber="11300"/>
       <requiredHost
-          name="informationManagerRequiredHost"
+          name="informationServiceRequiredHost"
           owner="//@deploymentModels.0/@internalComponents.2"/>
     </internalComponents>
     <internalComponents
@@ -1811,7 +1811,7 @@
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     <hostings
-        name="masterVMtoInformationManager"
+        name="masterVMtoInformationService"
         providedHost="//@deploymentModels.0/@externalComponents.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     <hostings
