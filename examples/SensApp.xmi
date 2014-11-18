@@ -154,22 +154,6 @@
         </upperLimit>
       </valueType>
     </metrics>
-    <rules name="AvgETRule"
-        event="//@scalabilityModels.0/@events.0"
-        actions="//@scalabilityModels.0/@actions.0"/>
-    <rules name="StorageViolRule"
-        event="//@scalabilityModels.0/@events.1"
-        actions="//@scalabilityModels.0/@actions.1"/>
-    <events
-        xsi:type="scalability:NonFunctionalEvent"
-        name="NFAvgETViol"
-        metricCondition="//@scalabilityModels.0/@conditions.0"
-        isViolation="true"/>
-    <events
-        xsi:type="scalability:NonFunctionalEvent"
-        name="NFRawStorageViol"
-        metricCondition="//@scalabilityModels.0/@conditions.1"
-        isViolation="true"/>
     <conditions
         xsi:type="scalability:MetricCondition"
         name="AVG_ET_GT_10"
@@ -187,17 +171,6 @@
     <properties
         name="Storage"
         type="MEASURABLE"/>
-    <actions
-        name="VertScaleSensApp"
-        type="SCALE_OUT"
-        count="1"
-        vmInstance="//@deploymentModels.0/@componentInstances.6"
-        componentInstance="//@deploymentModels.0/@componentInstances.1"/>
-    <actions
-        name="HorizScaleMongoDBVM"
-        type="SCALE_UP"
-        storageUpdate="512"
-        vmInstance="//@deploymentModels.0/@componentInstances.5"/>
     <bindings
         xsi:type="scalability:MetricApplicationBinding"
         name="SensAppCompBinding"
@@ -800,20 +773,20 @@
   <vmInfos type="//@vmTypes.0"
       costPerHour="0.5"
       costUnit="//@units.0"
-      evaluatedOn="2012-12-10T00:00:00.000+0200"
-      classifiedOn="2012-10-12T00:00:00.000+0300"
+      evaluatedOn="2012-12-09T23:00:00.000+0100"
+      classifiedOn="2012-10-11T23:00:00.000+0200"
       name="SmallVMInfo"/>
   <vmInfos type="//@vmTypes.1"
       costPerHour="1.0"
       costUnit="//@units.0"
-      evaluatedOn="2012-12-10T00:00:00.000+0200"
-      classifiedOn="2012-10-12T00:00:00.000+0300"
+      evaluatedOn="2012-12-09T23:00:00.000+0100"
+      classifiedOn="2012-10-11T23:00:00.000+0200"
       name="MediumVMInfo"/>
   <vmInfos type="//@vmTypes.2"
       costPerHour="2.0"
       costUnit="//@units.0"
-      evaluatedOn="2012-12-10T00:00:00.000+0200"
-      classifiedOn="2012-10-12T00:00:00.000+0300"
+      evaluatedOn="2012-12-09T23:00:00.000+0100"
+      classifiedOn="2012-10-11T23:00:00.000+0200"
       name="HighVMInfo"/>
   <vmTypes feature="//@providerModels.0/@rootFeature"
       constraints="//@providerModels.0/@constraints.0"
