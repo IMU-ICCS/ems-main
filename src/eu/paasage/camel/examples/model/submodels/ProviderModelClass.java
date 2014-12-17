@@ -11,6 +11,7 @@ public class ProviderModelClass {
 
     public static Quintet<ProviderModel, Feature, Constraint, Constraint, Constraint> createProviderModel() {
         ProviderModel providerModel = ProviderFactory.eINSTANCE.createProviderModel();
+        providerModel.setName("Provider Model");
 
         Feature vmFeature = ProviderFactory.eINSTANCE.createFeature();
         vmFeature.setName("VM");

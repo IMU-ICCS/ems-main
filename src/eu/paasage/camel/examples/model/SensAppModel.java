@@ -16,9 +16,10 @@ import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.provider.Constraint;
 import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
-import eu.paasage.camel.scalability.HorizontalScalabilityPolicy;
+import eu.paasage.camel.scalability.HorizontalScalingPolicy;
 import eu.paasage.camel.scalability.ScalabilityModel;
-import eu.paasage.camel.scalability.VerticalScalabilityPolicy;
+import eu.paasage.camel.scalability.VerticalScalingPolicy;
+
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.javatuples.Quartet;
@@ -79,11 +80,11 @@ public class SensAppModel {
         camelModel.getDeploymentModels().add(sensAppDeploymentModel);
 
         //Scalability
-        Quartet<ScalabilityModel, ExecutionContext, VerticalScalabilityPolicy, HorizontalScalabilityPolicy> scalabilitReturns = ScalabilityModelClass.createMyScalabilityModel(sensAppIc, sensApp1Ici, mongoDb1Ici, mlInstance, llInstance, mlVm);
+        Quartet<ScalabilityModel, ExecutionContext, VerticalScalingPolicy, HorizontalScalingPolicy> scalabilitReturns = ScalabilityModelClass.createMyScalabilityModel(sensAppIc, sensApp1Ici, mongoDb1Ici, mlInstance, llInstance, mlVm);
         ScalabilityModel scalabilityModel = scalabilitReturns.getValue0();
         ExecutionContext sensAppExecutionContext = scalabilitReturns.getValue1();
-        VerticalScalabilityPolicy verticalPolicyMongoDb = scalabilitReturns.getValue2();
-        HorizontalScalabilityPolicy horizPolicySensApp = scalabilitReturns.getValue3();
+        VerticalScalingPolicy verticalPolicyMongoDb = scalabilitReturns.getValue2();
+        HorizontalScalingPolicy horizPolicySensApp = scalabilitReturns.getValue3();
         camelModel.getScalabilityModels().add(scalabilityModel);
 
         //Execution

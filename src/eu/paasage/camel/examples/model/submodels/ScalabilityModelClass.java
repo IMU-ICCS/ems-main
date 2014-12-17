@@ -16,14 +16,15 @@ import org.javatuples.Quartet;
  */
 public class ScalabilityModelClass {
 
-    public static Quartet<ScalabilityModel, ExecutionContext, VerticalScalabilityPolicy, HorizontalScalabilityPolicy> createMyScalabilityModel(InternalComponent sensApp, InternalComponentInstance sensApp1, InternalComponentInstance mongoDB1, VMInstance vmML1, VMInstance vmLL1, VM ml) {
+    public static Quartet<ScalabilityModel, ExecutionContext, VerticalScalingPolicy, HorizontalScalingPolicy> createMyScalabilityModel(InternalComponent sensApp, InternalComponentInstance sensApp1, InternalComponentInstance mongoDB1, VMInstance vmML1, VMInstance vmLL1, VM ml) {
         ////// START definition of Scalability model
 
         ////// START definition of Scalability model
 
         ScalabilityModel scalabilityModel = ScalabilityFactory.eINSTANCE.createScalabilityModel();
+        scalabilityModel.setName("SensApp Scalability Model");
 
-        MetricTemplate rawExecTime = ScalabilityFactory.eINSTANCE.createMetricTemplate();
+        Metric rawExecTime = ScalabilityFactory.eINSTANCE.createMetric();
 
         rawExecTime.setLayer(LayerType.SAA_S);
         rawExecTime.setName("RAW_EXEC_TIME");
@@ -44,11 +45,12 @@ public class ScalabilityModelClass {
         rawExecTime.setUnit(timeInterval);
         rawExecTime.setValueDirection((short) 0);
 
-        scalabilityModel.getMetricTemplates().add(rawExecTime);
+        scalabilityModel.getMetrics().add(rawExecTime);
 
-        MetricTemplate avgExecTime = ScalabilityFactory.eINSTANCE.createMetricTemplate();
+        Metric avgExecTime = ScalabilityFactory.eINSTANCE.createMetric();
 
         MetricFormula avgExecTimeFormula = ScalabilityFactory.eINSTANCE.createMetricFormula();
+        avgExecTimeFormula.setName("AVG_ET_METRIC_FORMULA");
         avgExecTimeFormula.setFunction(MetricFunctionType.AVERAGE);
         avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
         avgExecTimeFormula.getParameters().add(rawExecTime);
@@ -70,9 +72,9 @@ public class ScalabilityModelClass {
         avgExecTime.setUnit(storageUnit);
         avgExecTime.setValueDirection((short) 0);
 
-        scalabilityModel.getMetricTemplates().add(avgExecTime);
+        scalabilityModel.getMetrics().add(avgExecTime);
 
-        MetricTemplate storageMetricTemp = ScalabilityFactory.eINSTANCE.createMetricTemplate();
+        Metric storageMetricTemp = ScalabilityFactory.eINSTANCE.createMetric();
         storageMetricTemp.setLayer(LayerType.IAA_S);
         storageMetricTemp.setName("Storage");
 
@@ -86,9 +88,9 @@ public class ScalabilityModelClass {
         storageMetricTemp.setUnit(storageUnit);
         storageMetricTemp.setValueDirection((short) 0);
 
-        scalabilityModel.getMetricTemplates().add(storageMetricTemp);
+        scalabilityModel.getMetrics().add(storageMetricTemp);
 
-        Metric rawEtMetric = ScalabilityFactory.eINSTANCE.createMetric();
+        MetricInstance rawEtMetric = ScalabilityFactory.eINSTANCE.createMetricInstance();
         rawEtMetric.setId("RawETMetric1");
 
         MetricObjectBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE.createMetricApplicationBinding();
@@ -107,7 +109,7 @@ public class ScalabilityModelClass {
         scalabilityModel.getSensors().add(sensor1);
 
         rawEtMetric.setSensor(sensor1);
-        rawEtMetric.setTemplate(rawExecTime);
+        rawEtMetric.setMetric(rawExecTime);
 
         Range rawEtMetricRange = TypeFactory.eINSTANCE.createRange();
         rawEtMetricRange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
@@ -133,10 +135,10 @@ public class ScalabilityModelClass {
 
         rawEtMetric.setValueType(rawEtMetricRange);
 
-        scalabilityModel.getMetrics().add(rawEtMetric);
+        scalabilityModel.getMetricInstances().add(rawEtMetric);
 
-        Metric avgEtMetric1 = ScalabilityFactory.eINSTANCE.createMetric();
-        avgEtMetric1.getComponentMetrics().add(rawEtMetric);
+        MetricInstance avgEtMetric1 = ScalabilityFactory.eINSTANCE.createMetricInstance();
+        avgEtMetric1.getComposingMetricInstances().add(rawEtMetric);
         avgEtMetric1.setId("AVGETMetric1");
 
         avgEtMetric1.setObjectBinding(rawEtMetricAIB);
@@ -147,7 +149,7 @@ public class ScalabilityModelClass {
         scalabilityModel.getSensors().add(sensor2);
 
         avgEtMetric1.setSensor(sensor2);
-        avgEtMetric1.setTemplate(avgExecTime);
+        avgEtMetric1.setMetric(avgExecTime);
 
         Range avgEtMetricRange = TypeFactory.eINSTANCE.createRange();
         avgEtMetricRange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
@@ -173,9 +175,9 @@ public class ScalabilityModelClass {
 
         avgEtMetric1.setValueType(avgEtMetricRange);
 
-        scalabilityModel.getMetrics().add(avgEtMetric1);
+        scalabilityModel.getMetricInstances().add(avgEtMetric1);
 
-        Metric rawStorageMetric = ScalabilityFactory.eINSTANCE.createMetric();
+        MetricInstance rawStorageMetric = ScalabilityFactory.eINSTANCE.createMetricInstance();
         rawStorageMetric.setId("RawStorageNum");
 
         MetricVMBinding vmInstBinding = ScalabilityFactory.eINSTANCE.createMetricVMBinding();
@@ -193,7 +195,7 @@ public class ScalabilityModelClass {
 
         rawStorageMetric.setSensor(sensor3);
 
-        rawStorageMetric.setTemplate(storageMetricTemp);
+        rawStorageMetric.setMetric(storageMetricTemp);
 
         Range rawStorageMetricRange = TypeFactory.eINSTANCE.createRange();
         rawStorageMetricRange.setPrimitiveType(TypeEnum.INT_TYPE);
@@ -220,7 +222,7 @@ public class ScalabilityModelClass {
 
         rawStorageMetric.setValueType(rawStorageMetricRange);
 
-        scalabilityModel.getMetrics().add(rawStorageMetric);
+        scalabilityModel.getMetricInstances().add(rawStorageMetric);
 
         ScalabilityRule avgEtScalabilityRule = ScalabilityFactory.eINSTANCE.createScalabilityRule();
 
@@ -237,14 +239,14 @@ public class ScalabilityModelClass {
         NonFunctionalEvent avgExecutionTimeViolated = ScalabilityFactory.eINSTANCE.createNonFunctionalEvent();
         avgExecutionTimeViolated.setIsViolation(true);
 
-        MetricTemplateCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE.createMetricTemplateCondition();
+        MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE.createMetricCondition();
         avgEtMetricCondition.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
-        avgEtMetricCondition.setMetricTemplate(avgEtMetric1.getTemplate());
+        avgEtMetricCondition.setMetric(avgEtMetric1.getMetric());
         avgEtMetricCondition.setThreshold(10);
 
         scalabilityModel.getConditions().add(avgEtMetricCondition);
 
-        avgExecutionTimeViolated.setMetricTemplateCondition(avgEtMetricCondition);
+        avgExecutionTimeViolated.setMetricCondition(avgEtMetricCondition);
         avgExecutionTimeViolated.setName("NFAvgETViol");
 
         scalabilityModel.getEvents().add(avgExecutionTimeViolated);
@@ -273,14 +275,14 @@ public class ScalabilityModelClass {
         NonFunctionalEvent rawStorageViolated = ScalabilityFactory.eINSTANCE.createNonFunctionalEvent();
         rawStorageViolated.setIsViolation(true);
 
-        MetricTemplateCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE.createMetricTemplateCondition();
+        MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE.createMetricCondition();
         rawStorageMetricCondition.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
-        rawStorageMetricCondition.setMetricTemplate(rawStorageMetric.getTemplate());
+        rawStorageMetricCondition.setMetric(rawStorageMetric.getMetric());
         rawStorageMetricCondition.setThreshold(500);
 
         scalabilityModel.getConditions().add(rawStorageMetricCondition);
 
-        rawStorageViolated.setMetricTemplateCondition(rawStorageMetricCondition);
+        rawStorageViolated.setMetricCondition(rawStorageMetricCondition);
         rawStorageViolated.setName("NFRawStorageViol");
 
         scalabilityModel.getEvents().add(rawStorageViolated);
@@ -290,7 +292,7 @@ public class ScalabilityModelClass {
 
         scalabilityModel.getRules().add(storageViolationScalabilityRule);
 
-        HorizontalScalabilityPolicy horizPolicySensApp = ScalabilityFactory.eINSTANCE.createHorizontalScalabilityPolicy();
+        HorizontalScalingPolicy horizPolicySensApp = ScalabilityFactory.eINSTANCE.createHorizontalScalingPolicy();
         horizPolicySensApp.setComponent(sensApp);
         horizPolicySensApp.setId("HorizPolicySensApp");
         horizPolicySensApp.setMaxInstances(4);
@@ -299,7 +301,7 @@ public class ScalabilityModelClass {
 
         scalabilityModel.getPolicies().add(horizPolicySensApp);
 
-        VerticalScalabilityPolicy verticalPolicyMongoDb = ScalabilityFactory.eINSTANCE.createVerticalScalabilityPolicy();
+        VerticalScalingPolicy verticalPolicyMongoDb = ScalabilityFactory.eINSTANCE.createVerticalScalingPolicy();
         verticalPolicyMongoDb.setId("VertPolMongoDB");
         verticalPolicyMongoDb.setMaxCores(0);
         verticalPolicyMongoDb.setMaxCPU(0);
@@ -315,6 +317,6 @@ public class ScalabilityModelClass {
         scalabilityModel.getPolicies().add(verticalPolicyMongoDb);
 
         // //// END definition of Scalability model
-        return new Quartet<ScalabilityModel, ExecutionContext, VerticalScalabilityPolicy, HorizontalScalabilityPolicy>(scalabilityModel, sensAppExecutionContext, verticalPolicyMongoDb, horizPolicySensApp);
+        return new Quartet<ScalabilityModel, ExecutionContext, VerticalScalingPolicy, HorizontalScalingPolicy>(scalabilityModel, sensAppExecutionContext, verticalPolicyMongoDb, horizPolicySensApp);
     }
 }

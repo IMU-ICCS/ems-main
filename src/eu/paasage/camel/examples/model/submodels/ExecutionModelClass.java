@@ -6,8 +6,8 @@ import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.organisation.User;
-import eu.paasage.camel.scalability.HorizontalScalabilityPolicy;
-import eu.paasage.camel.scalability.VerticalScalabilityPolicy;
+import eu.paasage.camel.scalability.HorizontalScalingPolicy;
+import eu.paasage.camel.scalability.VerticalScalingPolicy;
 
 /**
  * Created by orzech on 27/07/14.
@@ -15,10 +15,11 @@ import eu.paasage.camel.scalability.VerticalScalabilityPolicy;
 public class ExecutionModelClass {
 
     public static ExecutionModel createMyExecutionModel(DeploymentModel sensAppDeploymentModel, CamelModel camelModel, ExecutionContext sensAppExecutionContext,
-                                                        VerticalScalabilityPolicy verticalPolicyMongoDb, HorizontalScalabilityPolicy horizPolicySensApp, User user1) {
+                                                        VerticalScalingPolicy verticalPolicyMongoDb, HorizontalScalingPolicy horizPolicySensApp, User user1) {
         ////// START definition of Execution model
 
         ExecutionModel execModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+        execModel.setName("SensApp Execution Model");
 
         Application sensAppApplication = CamelFactory.eINSTANCE.createApplication();
         sensAppApplication.getDeploymentModels().add(sensAppDeploymentModel);
