@@ -64,7 +64,6 @@ import eu.paasage.camel.organisation.Organisation;
 import eu.paasage.camel.organisation.OrganisationFactory;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.OrganisationPackage;
-import eu.paasage.camel.organisation.Organization;
 import eu.paasage.camel.organisation.ResourceGroup;
 import eu.paasage.camel.organisation.Role;
 import eu.paasage.camel.organisation.RoleAssignment;
