@@ -68,6 +68,7 @@ import eu.paasage.camel.provider.Implies;
 import eu.paasage.camel.provider.ProviderFactory;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.scalability.ComparisonOperatorType;
+import eu.paasage.camel.scalability.Context;
 import eu.paasage.camel.scalability.HorizontalScalingAction;
 import eu.paasage.camel.scalability.HorizontalScalingPolicy;
 import eu.paasage.camel.scalability.LayerType;
@@ -109,6 +110,8 @@ public class SensAppCDO {
 		camelModel.setName("Sensapp Camel Model");
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
 
+		Application sensAppApplication = CamelFactory.eINSTANCE
+				.createApplication();
 		// ///// START of definition of the Provider model
 
 		ProviderModel providerModel = ProviderFactory.eINSTANCE
@@ -1306,7 +1309,7 @@ public class SensAppCDO {
 		MetricFormula avgExecTimeFormula = ScalabilityFactory.eINSTANCE
 				.createMetricFormula();
 		avgExecTimeFormula.setName("AVG_ET_METRIC_FORMULA");
-		avgExecTimeFormula.setFunction(MetricFunctionType.AVERAGE);
+		avgExecTimeFormula.setFunction(MetricFunctionType.MEAN);
 		avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
 		avgExecTimeFormula.getParameters().add(rawExecTime);
 		scalabilityModel.getParameters().add(avgExecTimeFormula);
@@ -1513,6 +1516,11 @@ public class SensAppCDO {
 		NonFunctionalEvent avgExecutionTimeViolated = ScalabilityFactory.eINSTANCE
 				.createNonFunctionalEvent();
 		avgExecutionTimeViolated.setIsViolation(true);
+		
+		Context sensAppContext = ScalabilityFactory.eINSTANCE.createContext();
+		sensAppContext.setName("AVG_ET_GT_10");
+		sensAppContext.setApplication(sensAppApplication);
+		scalabilityModel.getContexts().add(sensAppContext);
 
 		MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE
 				.createMetricCondition();
@@ -1521,6 +1529,7 @@ public class SensAppCDO {
 		avgEtMetricCondition.setMetric(avgEtMetric1.getMetric());
 		avgEtMetricCondition.setThreshold(10);
 		avgEtMetricCondition.setName("AVG_ET_GT_10");
+		avgEtMetricCondition.setContext(sensAppContext);
 
 		scalabilityModel.getConditions().add(avgEtMetricCondition);
 
@@ -1556,6 +1565,11 @@ public class SensAppCDO {
 		NonFunctionalEvent rawStorageViolated = ScalabilityFactory.eINSTANCE
 				.createNonFunctionalEvent();
 		rawStorageViolated.setIsViolation(true);
+		
+		Context mlContext = ScalabilityFactory.eINSTANCE.createContext();
+		mlContext.setName("RAW_STORAGE_NUM_CONTEXT");
+		mlContext.setComponent(ml);
+		scalabilityModel.getContexts().add(mlContext);
 
 		MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE
 				.createMetricCondition();
@@ -1564,6 +1578,7 @@ public class SensAppCDO {
 		rawStorageMetricCondition.setMetric(rawStorageMetric.getMetric());
 		rawStorageMetricCondition.setThreshold(500);
 		rawStorageMetricCondition.setName("RAW_STORAGE_NUM_GET_500");
+		rawStorageMetricCondition.setContext(mlContext);
 
 		scalabilityModel.getConditions().add(rawStorageMetricCondition);
 
@@ -1613,8 +1628,6 @@ public class SensAppCDO {
 				.createExecutionModel();
 		execModel.setName("SensApp Execution Model");
 
-		Application sensAppApplication = CamelFactory.eINSTANCE
-				.createApplication();
 		sensAppApplication.getDeploymentModels().add(sensAppDeploymentModel);
 		sensAppApplication.setName("SensApp");
 		sensAppApplication.setOwner(user1);
