@@ -94,7 +94,7 @@
         property="//@scalabilityModels.0/@properties.0">
       <formula
           name="AVG_EXECUTION_TIME_FORMULA"
-          function="AVERAGE"
+          function="MEAN"
           parameters="//@scalabilityModels.0/@metrics.0"/>
     </metrics>
     <metrics
@@ -163,15 +163,15 @@
         xsi:type="scalability:MetricCondition"
         name="AVG_ET_GT_10"
         threshold="10.0"
-        metric="//@scalabilityModels.0/@metrics.1"
-        application="//@applications.0"/>
+        context="//@scalabilityModels.0/@contexts.0"
+        metric="//@scalabilityModels.0/@metrics.1"/>
     <conditions
         xsi:type="scalability:MetricCondition"
         name="RAW_STORAGE_NUM_GET_500"
         threshold="500.0"
         comparisonOperator="GREATER_EQUAL_THAN"
-        metric="//@scalabilityModels.0/@metrics.2"
-        component="//@deploymentModels.0/@components.4"/>
+        context="//@scalabilityModels.0/@contexts.1"
+        metric="//@scalabilityModels.0/@metrics.2"/>
     <properties
         name="Execution Time"
         type="MEASURABLE"/>
@@ -211,6 +211,12 @@
         minStorage="512"
         maxStorage="2048"
         vm="//@deploymentModels.0/@components.4"/>
+    <contexts
+        name="AVG_ET_GT_10_Context"
+        application="//@applications.0"/>
+    <contexts
+        name="RAW_STORAGE_NUM_GET_500_Context"
+        component="//@deploymentModels.0/@components.4"/>
   </scalabilityModels>
   <providerModels
       name="Provider">

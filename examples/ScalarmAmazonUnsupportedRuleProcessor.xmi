@@ -108,12 +108,15 @@
         name="CPULoadToHigh"
         metricCondition="//@scalabilityModels.0/@conditions.0"
         isViolation="true"/>
+    <contexts
+    	name="CPUMetricConditionContext"
+    	component="//@deploymentModels.0/@internalComponents.3"/>
     <conditions
         xsi:type="scalability:MetricCondition"
         name="CPUMetricCondition"
         threshold="80.0"
         metric="//@scalabilityModels.0/@metrics.0"
-        component="//@deploymentModels.0/@internalComponents.3"/>
+        context="//@scalabilityModels.0/@contexts.0"/>
     <properties
         name="CPU"
         type="MEASURABLE"/>
