@@ -47,6 +47,7 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 
+import eu.paasage.camel.CamelFactory;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.RequirementGroup;
@@ -56,10 +57,12 @@ import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.examples.SensAppCDO;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.execution.ExecutionPackage;
+import eu.paasage.camel.location.Country;
+import eu.paasage.camel.location.LocationFactory;
+import eu.paasage.camel.location.LocationModel;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.ExternalIdentifier;
-import eu.paasage.camel.organisation.Location;
 import eu.paasage.camel.organisation.Organisation;
 import eu.paasage.camel.organisation.OrganisationFactory;
 import eu.paasage.camel.organisation.OrganisationModel;
@@ -515,16 +518,22 @@ public class CDOClient
 	 * by this model. 
 	 */
 	public EObject createCerifModel(){
-		OrganisationModel cm = OrganisationFactory.eINSTANCE.createOrganisationModel();
-		cm.setName("MY ORGANISATION MODEL");
-		EList<User> users = cm.getUsers();
-		EList<UserGroup> ugroups = cm.getUserGroups();
-		EList<Role> roles = cm.getRoles();
-		EList<RoleAssignment> assigns = cm.getRoleAssigments();
-		EList<eu.paasage.camel.organisation.Resource> rgroups = cm.getResources();
-		EList<ExternalIdentifier> ids = cm.getExternalIdentifiers();
-		EList<DataCenter> dcs = cm.getDataCentres();
-		EList<Location> locs = cm.getLocations();
+		CamelModel cm = CamelFactory.eINSTANCE.createCamelModel();
+		cm.setName("MY CAMEL MODEL");
+		OrganisationModel om = OrganisationFactory.eINSTANCE.createOrganisationModel();
+		om.setName("MY ORGANISATION MODEL");
+		LocationModel lm = LocationFactory.eINSTANCE.createLocationModel();
+		lm.setName("MY LOCATION MODEL");
+		cm.getOrganisationModels().add(om);
+		cm.getLocationModels().add(lm);
+		EList<User> users = om.getUsers();
+		EList<UserGroup> ugroups = om.getUserGroups();
+		EList<Role> roles = om.getRoles();
+		EList<RoleAssignment> assigns = om.getRoleAssigments();
+		EList<eu.paasage.camel.organisation.Resource> rgroups = om.getResources();
+		EList<ExternalIdentifier> ids = om.getExternalIdentifiers();
+		EList<DataCenter> dcs = om.getDataCentres();
+		
 		
 		ExternalIdentifier id1 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
 		id1.setName("ID1");
@@ -563,7 +572,7 @@ public class CDOClient
 		org1.setName("Org2");
 		org1.setWww("www2");
 		org1.setPublic(true);
-		cm.setOrganisation(org1);
+		om.setOrganisation(org1);
 		worksFor.add(org1);
 		
 		UserGroup ug1 = OrganisationFactory.eINSTANCE.createUserGroup();
@@ -612,17 +621,15 @@ public class CDOClient
 		res.add(rg2);
 		rgroups.add(rg1);
 		
-		Location l1 = OrganisationFactory.eINSTANCE.createLocation();
-		l1.setLatitude(80);
-		l1.setLongitude(175);
-		l1.setCity("City1");
-		locs.add(l1);
+		Country l1 = LocationFactory.eINSTANCE.createCountry();
+		l1.setName("Country1");
+		l1.setAbbreviation("C1");
+		lm.getCountries().add(l1);
 		
-		Location l2 = OrganisationFactory.eINSTANCE.createLocation();
-		l2.setLatitude(88);
-		l2.setLongitude(120);
-		l2.setCity("City1");
-		locs.add(l2);
+		Country l2 = LocationFactory.eINSTANCE.createCountry();
+		l2.setName("Country2");
+		l2.setAbbreviation("C2");
+		lm.getCountries().add(l2);
 		
 		DataCenter dc1 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc1.setName("DC1");
@@ -862,9 +869,9 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource
-	  model = cl.loadModel("examples/SensApp.xmi");
+	  //model = cl.loadModel("examples/SensApp.xmi");
 	  //Store the model under a CDOResource with a particular name
-	  cl.storeModel(model,"sensAppResource2");
+	  //cl.storeModel(model,"sensAppResource2");
 	  //Load & store WP3 models
 	  //model = cl.loadModel("examples/cpModel.xmi");
 	  //cl.storeModel(model,"cpModel");

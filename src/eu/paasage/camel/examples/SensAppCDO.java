@@ -56,7 +56,6 @@ import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.Credentials;
 import eu.paasage.camel.organisation.DataCenter;
-import eu.paasage.camel.organisation.Location;
 import eu.paasage.camel.organisation.OrganisationFactory;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.User;
@@ -67,27 +66,32 @@ import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.Implies;
 import eu.paasage.camel.provider.ProviderFactory;
 import eu.paasage.camel.provider.ProviderModel;
-import eu.paasage.camel.scalability.ComparisonOperatorType;
-import eu.paasage.camel.scalability.Context;
+import eu.paasage.camel.location.Country;
+import eu.paasage.camel.location.LocationFactory;
+import eu.paasage.camel.location.LocationModel;
+import eu.paasage.camel.metric.ComparisonOperatorType;
 import eu.paasage.camel.scalability.HorizontalScalingAction;
 import eu.paasage.camel.scalability.HorizontalScalingPolicy;
-import eu.paasage.camel.scalability.LayerType;
-import eu.paasage.camel.scalability.Metric;
-import eu.paasage.camel.scalability.MetricCondition;
-import eu.paasage.camel.scalability.MetricFormula;
-import eu.paasage.camel.scalability.MetricFunctionArityType;
-import eu.paasage.camel.scalability.MetricFunctionType;
-import eu.paasage.camel.scalability.MetricInstance;
-import eu.paasage.camel.scalability.MetricObjectBinding;
-import eu.paasage.camel.scalability.MetricType;
-import eu.paasage.camel.scalability.MetricVMBinding;
+import eu.paasage.camel.LayerType;
+import eu.paasage.camel.metric.Metric;
+import eu.paasage.camel.metric.MetricCondition;
+import eu.paasage.camel.metric.MetricContext;
+import eu.paasage.camel.metric.MetricFactory;
+import eu.paasage.camel.metric.MetricFormula;
+import eu.paasage.camel.metric.MetricFunctionArityType;
+import eu.paasage.camel.metric.MetricFunctionType;
+import eu.paasage.camel.metric.MetricInstance;
+import eu.paasage.camel.metric.MetricModel;
+import eu.paasage.camel.metric.MetricObjectBinding;
+import eu.paasage.camel.metric.MetricType;
+import eu.paasage.camel.metric.MetricVMBinding;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
-import eu.paasage.camel.scalability.Property;
-import eu.paasage.camel.scalability.PropertyType;
+import eu.paasage.camel.metric.Property;
+import eu.paasage.camel.metric.PropertyType;
 import eu.paasage.camel.scalability.ScalabilityFactory;
 import eu.paasage.camel.scalability.ScalabilityModel;
 import eu.paasage.camel.scalability.ScalabilityRule;
-import eu.paasage.camel.scalability.Sensor;
+import eu.paasage.camel.metric.Sensor;
 import eu.paasage.camel.scalability.VerticalScalingAction;
 import eu.paasage.camel.scalability.VerticalScalingPolicy;
 import eu.paasage.camel.type.EnumerateValue;
@@ -487,9 +491,23 @@ public class SensAppCDO {
 
 		OrganisationModel amazonOrgModel = OrganisationFactory.eINSTANCE
 				.createOrganisationModel();
+		LocationModel lm = LocationFactory.eINSTANCE.createLocationModel();
+		lm.setName("Location Model");
+		camelModel.getLocationModels().add(lm);
+		Country ireland = LocationFactory.eINSTANCE.createCountry();
+		ireland.setName("Ireland");
+		ireland.setAbbreviation("IE");
+		lm.getCountries().add(ireland);
+		Country scotland = LocationFactory.eINSTANCE.createCountry();
+		scotland.setName("Scotland");
+		scotland.setAbbreviation("SC");
+		lm.getCountries().add(scotland);
+		Country norway = LocationFactory.eINSTANCE.createCountry();
+		norway.setName("Norway");
+		norway.setAbbreviation("NO");
+		lm.getCountries().add(norway);
 		amazonOrgModel.setName("Amazon Organisation Model");
 		EList<DataCenter> amazonDCs = amazonOrgModel.getDataCentres();
-		EList<Location> amazonLocs = amazonOrgModel.getLocations();
 
 		CloudProvider amazonProvider = OrganisationFactory.eINSTANCE
 				.createCloudProvider();
@@ -503,19 +521,11 @@ public class SensAppCDO {
 
 		amazonOrgModel.setProvider(amazonProvider);
 
-		Location amazonEuLocation = OrganisationFactory.eINSTANCE
-				.createLocation();
-		amazonEuLocation.setCountry("Ireland");
-		amazonEuLocation.setLatitude(0);
-		amazonEuLocation.setLongitude(0);
-		amazonEuLocation.setName("amazon-eu");
-		amazonLocs.add(amazonEuLocation);
-
 		DataCenter amazonEuDataCenter = OrganisationFactory.eINSTANCE
 				.createDataCenter();
 		amazonEuDataCenter.setCloudProvider(amazonProvider);
 		amazonEuDataCenter.setCodeName("amazon-eu");
-		amazonEuDataCenter.setLocation(amazonEuLocation);
+		amazonEuDataCenter.setLocation(ireland);
 		amazonEuDataCenter.setName("European Amazon Data Centre");
 
 		amazonDCs.add(amazonEuDataCenter);
@@ -530,7 +540,6 @@ public class SensAppCDO {
 				.createOrganisationModel();
 		flexiantOrgModel.setName("Flexiant Organisation Model");
 		EList<DataCenter> flexiantDCs = flexiantOrgModel.getDataCentres();
-		EList<Location> flexiantLocs = flexiantOrgModel.getLocations();
 
 		CloudProvider flexiantProvider = OrganisationFactory.eINSTANCE
 				.createCloudProvider();
@@ -544,21 +553,11 @@ public class SensAppCDO {
 
 		flexiantOrgModel.setProvider(flexiantProvider);
 
-		Location flexiantLocation = OrganisationFactory.eINSTANCE
-				.createLocation();
-		flexiantLocation.setCountry("Scotland");
-		flexiantLocation.setCity("Edinburgh");
-		flexiantLocation.setLatitude(0);
-		flexiantLocation.setLongitude(0);
-		flexiantLocation.setName("flexiant");
-
-		flexiantLocs.add(flexiantLocation);
-
 		DataCenter flexiantEuDataCenter = OrganisationFactory.eINSTANCE
 				.createDataCenter();
 		flexiantEuDataCenter.setCloudProvider(flexiantProvider);
 		flexiantEuDataCenter.setCodeName("flexiant");
-		flexiantEuDataCenter.setLocation(flexiantLocation);
+		flexiantEuDataCenter.setLocation(scotland);
 		flexiantEuDataCenter.setName("Flexiant Data Centre");
 
 		flexiantDCs.add(flexiantEuDataCenter);
@@ -573,7 +572,6 @@ public class SensAppCDO {
 				.createOrganisationModel();
 		sintefOrgModel.setName("SINTEF Organisation Model");
 		EList<DataCenter> sintefDCs = sintefOrgModel.getDataCentres();
-		EList<Location> sintefLocs = sintefOrgModel.getLocations();
 		EList<User> sintefUsers = sintefOrgModel.getUsers();
 		EList<Credentials> sintefCredentials = sintefOrgModel.getCredentials();
 
@@ -605,21 +603,11 @@ public class SensAppCDO {
 
 		sintefOrgModel.setProvider(sintefNovaProvider);
 
-		Location osloNovaLocation = OrganisationFactory.eINSTANCE
-				.createLocation();
-		osloNovaLocation.setCountry("Norway");
-		osloNovaLocation.setCity("Oslo");
-		osloNovaLocation.setLatitude(0);
-		osloNovaLocation.setLongitude(0);
-		osloNovaLocation.setName("oslo-nova");
-
-		sintefLocs.add(osloNovaLocation);
-
 		DataCenter sintefDataCenter = OrganisationFactory.eINSTANCE
 				.createDataCenter();
 		sintefDataCenter.setCloudProvider(sintefNovaProvider);
 		sintefDataCenter.setCodeName("nova");
-		sintefDataCenter.setLocation(osloNovaLocation);
+		sintefDataCenter.setLocation(norway);
 		sintefDataCenter.setName("Sintef Nova Data Centre");
 
 		sintefDCs.add(sintefDataCenter);
@@ -789,7 +777,7 @@ public class SensAppCDO {
 		VM ml = DeploymentFactory.eINSTANCE.createVM();
 		ml.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
 		ml.setIs64os(true);
-		ml.setLocation(flexiantLocation);
+		ml.setLocation(scotland);
 		ml.setMaxCores(0);
 		ml.setMaxRam(0);
 		ml.setMaxStorage(0);
@@ -820,7 +808,7 @@ public class SensAppCDO {
 		VM sl = DeploymentFactory.eINSTANCE.createVM();
 		sl.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
 		sl.setIs64os(true);
-		sl.setLocation(amazonEuLocation);
+		sl.setLocation(ireland);
 		sl.setMaxCores(0);
 		sl.setMaxRam(0);
 		sl.setMaxStorage(0);
@@ -851,7 +839,7 @@ public class SensAppCDO {
 		VM ll = DeploymentFactory.eINSTANCE.createVM();
 		ll.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
 		ll.setIs64os(true);
-		ll.setLocation(osloNovaLocation);
+		ll.setLocation(norway);
 		ll.setMaxCores(0);
 		ll.setMaxRam(0);
 		ll.setMaxStorage(0);
@@ -1276,17 +1264,22 @@ public class SensAppCDO {
 		ScalabilityModel scalabilityModel = ScalabilityFactory.eINSTANCE
 				.createScalabilityModel();
 		scalabilityModel.setName("SensApp Scalability Model");
+		
+		MetricModel metricModel = MetricFactory.eINSTANCE
+				.createMetricModel();
+		metricModel.setName("SensApp Metric Model");
+		camelModel.getMetricModels().add(metricModel);
 
-		Metric rawExecTime = ScalabilityFactory.eINSTANCE
+		Metric rawExecTime = MetricFactory.eINSTANCE
 				.createMetric();
 
 		rawExecTime.setLayer(LayerType.SAA_S);
 		rawExecTime.setName("RAW_EXEC_TIME");
 
-		Property execTime = ScalabilityFactory.eINSTANCE.createProperty();
+		Property execTime = MetricFactory.eINSTANCE.createProperty();
 		execTime.setName("Execution Time");
 		execTime.setType(PropertyType.MEASURABLE);
-		scalabilityModel.getProperties().add(execTime);
+		metricModel.getProperties().add(execTime);
 
 		rawExecTime.setProperty(execTime);
 		rawExecTime.setType(MetricType.RAW);
@@ -1296,23 +1289,23 @@ public class SensAppCDO {
 		timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
 		timeInterval.setUnit(UnitType.SECONDS);
 		timeInterval.setName("seconds");
-		scalabilityModel.getUnits().add(timeInterval);
+		metricModel.getUnits().add(timeInterval);
 
 		rawExecTime.setUnit(timeInterval);
 		rawExecTime.setValueDirection((short) 0);
 
-		scalabilityModel.getMetrics().add(rawExecTime);
+		metricModel.getMetrics().add(rawExecTime);
 
-		Metric avgExecTime = ScalabilityFactory.eINSTANCE
+		Metric avgExecTime = MetricFactory.eINSTANCE
 				.createMetric();
 
-		MetricFormula avgExecTimeFormula = ScalabilityFactory.eINSTANCE
+		MetricFormula avgExecTimeFormula = MetricFactory.eINSTANCE
 				.createMetricFormula();
 		avgExecTimeFormula.setName("AVG_ET_METRIC_FORMULA");
 		avgExecTimeFormula.setFunction(MetricFunctionType.MEAN);
 		avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
 		avgExecTimeFormula.getParameters().add(rawExecTime);
-		scalabilityModel.getParameters().add(avgExecTimeFormula);
+		metricModel.getParameters().add(avgExecTimeFormula);
 
 		avgExecTime.setFormula(avgExecTimeFormula);
 		avgExecTime.setLayer(LayerType.SAA_S);
@@ -1326,35 +1319,35 @@ public class SensAppCDO {
 		storageUnit.setUnit(UnitType.GIGABYTES);
 		storageUnit.setName("gigabytes");
 
-		scalabilityModel.getUnits().add(storageUnit);
+		metricModel.getUnits().add(storageUnit);
 
 		avgExecTime.setUnit(storageUnit);
 		avgExecTime.setValueDirection((short) 0);
 
-		scalabilityModel.getMetrics().add(avgExecTime);
+		metricModel.getMetrics().add(avgExecTime);
 
-		Metric storageMetricTemp = ScalabilityFactory.eINSTANCE
+		Metric storageMetricTemp = MetricFactory.eINSTANCE
 				.createMetric();
 		storageMetricTemp.setLayer(LayerType.IAA_S);
 		storageMetricTemp.setName("Storage");
 
-		Property storageProperty = ScalabilityFactory.eINSTANCE
+		Property storageProperty = MetricFactory.eINSTANCE
 				.createProperty();
 		storageProperty.setName("Storage");
 		storageProperty.setType(PropertyType.MEASURABLE);
-		scalabilityModel.getProperties().add(storageProperty);
+		metricModel.getProperties().add(storageProperty);
 
 		storageMetricTemp.setProperty(storageProperty);
 		storageMetricTemp.setType(MetricType.RAW);
 		storageMetricTemp.setUnit(storageUnit);
 		storageMetricTemp.setValueDirection((short) 0);
 
-		scalabilityModel.getMetrics().add(storageMetricTemp);
+		metricModel.getMetrics().add(storageMetricTemp);
 
-		MetricInstance rawEtMetric = ScalabilityFactory.eINSTANCE.createMetricInstance();
+		MetricInstance rawEtMetric = MetricFactory.eINSTANCE.createMetricInstance();
 		rawEtMetric.setId("RawETMetric1");
 
-		MetricObjectBinding rawEtMetricAIB = ScalabilityFactory.eINSTANCE
+		MetricObjectBinding rawEtMetricAIB = MetricFactory.eINSTANCE
 				.createMetricApplicationBinding();
 		rawEtMetricAIB.setName("SensAppCompBinding");
 
@@ -1363,15 +1356,15 @@ public class SensAppCDO {
 
 		rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
 
-		scalabilityModel.getBindings().add(rawEtMetricAIB);
+		metricModel.getBindings().add(rawEtMetricAIB);
 
 		rawEtMetric.setObjectBinding(rawEtMetricAIB);
 
-		Sensor sensor1 = ScalabilityFactory.eINSTANCE.createSensor();
+		Sensor sensor1 = MetricFactory.eINSTANCE.createSensor();
 		sensor1.setId("RawETSensor");
 		sensor1.setIsPush(false);
 
-		scalabilityModel.getSensors().add(sensor1);
+		metricModel.getSensors().add(sensor1);
 
 		rawEtMetric.setSensor(sensor1);
 		rawEtMetric.setMetric(rawExecTime);
@@ -1402,19 +1395,19 @@ public class SensAppCDO {
 
 		rawEtMetric.setValueType(rawEtMetricRange);
 
-		scalabilityModel.getMetricInstances().add(rawEtMetric);
+		metricModel.getMetricInstances().add(rawEtMetric);
 
-		MetricInstance avgEtMetric1 = ScalabilityFactory.eINSTANCE.createMetricInstance();
+		MetricInstance avgEtMetric1 = MetricFactory.eINSTANCE.createMetricInstance();
 		avgEtMetric1.getComposingMetricInstances().add(rawEtMetric);
 		avgEtMetric1.setId("AVGETMetric1");
 
 		avgEtMetric1.setObjectBinding(rawEtMetricAIB);
 
-		Sensor sensor2 = ScalabilityFactory.eINSTANCE.createSensor();
+		Sensor sensor2 = MetricFactory.eINSTANCE.createSensor();
 		sensor2.setId("RawStorageSensor");
 		sensor2.setIsPush(false);
 
-		scalabilityModel.getSensors().add(sensor2);
+		metricModel.getSensors().add(sensor2);
 
 		avgEtMetric1.setSensor(sensor2);
 		avgEtMetric1.setMetric(avgExecTime);
@@ -1445,26 +1438,26 @@ public class SensAppCDO {
 
 		avgEtMetric1.setValueType(avgEtMetricRange);
 
-		scalabilityModel.getMetricInstances().add(avgEtMetric1);
+		metricModel.getMetricInstances().add(avgEtMetric1);
 
-		MetricInstance rawStorageMetric = ScalabilityFactory.eINSTANCE.createMetricInstance();
+		MetricInstance rawStorageMetric = MetricFactory.eINSTANCE.createMetricInstance();
 		rawStorageMetric.setId("RawStorageNum");
 
-		MetricVMBinding vmInstBinding = ScalabilityFactory.eINSTANCE
+		MetricVMBinding vmInstBinding = MetricFactory.eINSTANCE
 				.createMetricVMBinding();
 		vmInstBinding.setName("SensAppVMBinding");
 		vmInstBinding.setExecutionContext(sensAppExecutionContext);
 		vmInstBinding.setVmInstance(vmML1);
 
-		scalabilityModel.getBindings().add(vmInstBinding);
+		metricModel.getBindings().add(vmInstBinding);
 
 		rawStorageMetric.setObjectBinding(vmInstBinding);
 
-		Sensor sensor3 = ScalabilityFactory.eINSTANCE.createSensor();
+		Sensor sensor3 = MetricFactory.eINSTANCE.createSensor();
 		sensor3.setId("Sensor3");
 		sensor3.setIsPush(false);
 
-		scalabilityModel.getSensors().add(sensor3);
+		metricModel.getSensors().add(sensor3);
 
 		rawStorageMetric.setSensor(sensor3);
 
@@ -1497,7 +1490,7 @@ public class SensAppCDO {
 
 		rawStorageMetric.setValueType(rawStorageMetricRange);
 
-		scalabilityModel.getMetricInstances().add(rawStorageMetric);
+		metricModel.getMetricInstances().add(rawStorageMetric);
 
 		ScalabilityRule avgEtScalabilityRule = ScalabilityFactory.eINSTANCE
 				.createScalabilityRule();
@@ -1517,21 +1510,21 @@ public class SensAppCDO {
 				.createNonFunctionalEvent();
 		avgExecutionTimeViolated.setIsViolation(true);
 		
-		Context sensAppContext = ScalabilityFactory.eINSTANCE.createContext();
+		MetricContext sensAppContext = MetricFactory.eINSTANCE.createMetricContext();
 		sensAppContext.setName("AVG_ET_GT_10");
 		sensAppContext.setApplication(sensAppApplication);
-		scalabilityModel.getContexts().add(sensAppContext);
+		sensAppContext.setMetric(avgEtMetric1.getMetric());
+		metricModel.getContexts().add(sensAppContext);
 
-		MetricCondition avgEtMetricCondition = ScalabilityFactory.eINSTANCE
+		MetricCondition avgEtMetricCondition = MetricFactory.eINSTANCE
 				.createMetricCondition();
 		avgEtMetricCondition
 				.setComparisonOperator(ComparisonOperatorType.GREATER_THAN);
-		avgEtMetricCondition.setMetric(avgEtMetric1.getMetric());
 		avgEtMetricCondition.setThreshold(10);
 		avgEtMetricCondition.setName("AVG_ET_GT_10");
-		avgEtMetricCondition.setContext(sensAppContext);
+		avgEtMetricCondition.setMetricContext(sensAppContext);
 
-		scalabilityModel.getConditions().add(avgEtMetricCondition);
+		metricModel.getConditions().add(avgEtMetricCondition);
 
 		avgExecutionTimeViolated.setMetricCondition(avgEtMetricCondition);
 		avgExecutionTimeViolated.setName("NFAvgETViol");
@@ -1566,21 +1559,21 @@ public class SensAppCDO {
 				.createNonFunctionalEvent();
 		rawStorageViolated.setIsViolation(true);
 		
-		Context mlContext = ScalabilityFactory.eINSTANCE.createContext();
+		MetricContext mlContext = MetricFactory.eINSTANCE.createMetricContext();
 		mlContext.setName("RAW_STORAGE_NUM_CONTEXT");
 		mlContext.setComponent(ml);
-		scalabilityModel.getContexts().add(mlContext);
+		mlContext.setMetric(rawStorageMetric.getMetric());
+		metricModel.getContexts().add(mlContext);
 
-		MetricCondition rawStorageMetricCondition = ScalabilityFactory.eINSTANCE
+		MetricCondition rawStorageMetricCondition = MetricFactory.eINSTANCE
 				.createMetricCondition();
 		rawStorageMetricCondition
 				.setComparisonOperator(ComparisonOperatorType.GREATER_EQUAL_THAN);
-		rawStorageMetricCondition.setMetric(rawStorageMetric.getMetric());
 		rawStorageMetricCondition.setThreshold(500);
 		rawStorageMetricCondition.setName("RAW_STORAGE_NUM_GET_500");
-		rawStorageMetricCondition.setContext(mlContext);
+		rawStorageMetricCondition.setMetricContext(mlContext);
 
-		scalabilityModel.getConditions().add(rawStorageMetricCondition);
+		metricModel.getConditions().add(rawStorageMetricCondition);
 
 		rawStorageViolated.setMetricCondition(rawStorageMetricCondition);
 		rawStorageViolated.setName("NFRawStorageViol");
