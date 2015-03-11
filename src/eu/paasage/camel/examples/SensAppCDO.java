@@ -37,7 +37,7 @@ import eu.paasage.camel.unit.UnitFactory;
 import eu.paasage.camel.unit.UnitType;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
-import eu.paasage.camel.deployment.ConfigurationManager;
+import eu.paasage.camel.deployment.Configuration;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
@@ -640,15 +640,14 @@ public class SensAppCDO {
 				.createInternalComponent();
 		sensApp.setName("SensApp");
 
-		/*ConfigurationManager sensAppRes = DeploymentFactory.eINSTANCE
-				.createConfigurationManager();
+		Configuration sensAppRes = DeploymentFactory.eINSTANCE
+				.createConfiguration();
 		sensAppRes
 				.setDownloadCommand("wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh");
-		sensAppRes.setExecuteLocally(false);
 		sensAppRes
 				.setInstallCommand("cd ~; sudo bash install_start_sensapp.sh");
 		sensAppRes.setName("SensAppRes");
-		sensAppRes.setRequireCredentials(false);*/
+		sensApp.getConfigurations().add(sensAppRes);
 
 		ProvidedCommunication restProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
@@ -682,14 +681,13 @@ public class SensAppCDO {
 				.createInternalComponent();
 		mongoDB.setName("MongoDB");
 
-		/*ConfigurationManager mongoDBRes = DeploymentFactory.eINSTANCE
-				.createConfigurationManager();
+		Configuration mongoDBRes = DeploymentFactory.eINSTANCE
+				.createConfiguration();
 		mongoDBRes
 				.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh");
-		mongoDBRes.setExecuteLocally(false);
 		mongoDBRes.setInstallCommand("cd ~; sudo bash install_mongoDB.sh");
 		mongoDBRes.setName("MongoDBRes");
-		mongoDBRes.setRequireCredentials(false);*/
+		mongoDB.getConfigurations().add(mongoDBRes);
 
 		ProvidedCommunication mongoDBProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
@@ -713,15 +711,15 @@ public class SensAppCDO {
 				.createInternalComponent();
 		jettySC.setName("JettySC");
 
-		/*ConfigurationManager jettySCRes = DeploymentFactory.eINSTANCE
-				.createConfigurationManager();
+		Configuration jettySCRes = DeploymentFactory.eINSTANCE
+				.createConfiguration();
 		jettySCRes
 				.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh");
-		jettySCRes.setExecuteLocally(false);
 		jettySCRes.setInstallCommand("cd ~; sudo bash install_jetty.sh");
 		jettySCRes.setName("JettySCRes");
-		jettySCRes.setRequireCredentials(false);
-		jettySCRes.setStopCommand("sudo service jetty stop");*/
+		jettySCRes.setStopCommand("sudo service jetty stop");
+		
+		jettySC.getConfigurations().add(jettySCRes);
 
 		ProvidedHost servletContainerJettyProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
@@ -743,15 +741,15 @@ public class SensAppCDO {
 				.createInternalComponent();
 		admin.setName("Admin");
 
-		/*ConfigurationManager adminRes = DeploymentFactory.eINSTANCE
-				.createConfigurationManager();
+		Configuration adminRes = DeploymentFactory.eINSTANCE
+				.createConfiguration();
 		adminRes.setDownloadCommand("wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json");
-		adminRes.setExecuteLocally(false);
 		adminRes.setInstallCommand("cd ~; sudo bash install_sensappadmin.sh");
 		adminRes.setName("AdminRes");
-		adminRes.setRequireCredentials(false);
 		adminRes.setStartCommand("cd ~; sudo bash start_sensappadmin.sh");
-		adminRes.setStopCommand("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart");*/
+		adminRes.setStopCommand("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart");
+		
+		admin.getConfigurations().add(adminRes);
 
 		RequiredCommunication restReq = DeploymentFactory.eINSTANCE
 				.createRequiredCommunication();
@@ -914,15 +912,15 @@ public class SensAppCDO {
 		sensAppToAdmin.setProvidedCommunication(restProv);
 		sensAppToAdmin.setRequiredCommunication(restReq);
 
-		/*ConfigurationManager sensAppToAdminRes = DeploymentFactory.eINSTANCE
-				.createConfigurationManager();
+		Configuration sensAppToAdminRes = DeploymentFactory.eINSTANCE
+				.createConfiguration();
 		sensAppToAdminRes
 				.setDownloadCommand("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh");
-		sensAppToAdminRes.setExecuteLocally(false);
 		sensAppToAdminRes
 				.setInstallCommand("cd ~; sudo bash configure_sensappadmin.sh");
 		sensAppToAdminRes.setName("SensAppToAdminRes");
-		sensAppToAdminRes.setRequireCredentials(false);*/
+		
+		sensAppToAdmin.setProvidedPortConfiguration(sensAppToAdminRes);
 
 		sensAppDeploymentModel.getCommunications().add(sensAppToAdmin);
 
@@ -1574,7 +1572,7 @@ public class SensAppCDO {
 		horizPolicySensApp.setMaxInstances(4);
 		horizPolicySensApp.setMinInstances(1);
 
-		scalabilityModel.getPolicies().add(horizPolicySensApp);
+		scalabilityModel.getScaleRequirements().add(horizPolicySensApp);
 
 		VerticalScaleRequirement verticalPolicyMongoDb = RequirementFactory.eINSTANCE
 				.createVerticalScaleRequirement();
@@ -1589,7 +1587,7 @@ public class SensAppCDO {
 		verticalPolicyMongoDb.setMinStorage(512);
 		verticalPolicyMongoDb.setVm(ml);
 
-		scalabilityModel.getPolicies().add(verticalPolicyMongoDb);
+		scalabilityModel.getScaleRequirements().add(verticalPolicyMongoDb);
 
 		// //// END definition of Scalability model
 
