@@ -50,8 +50,8 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import eu.paasage.camel.CamelFactory;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.RequirementGroup;
-import eu.paasage.camel.VMType;
+import eu.paasage.camel.requirement.RequirementGroup;
+import eu.paasage.camel.requirement.RequirementModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.examples.SensAppCDO;
@@ -60,6 +60,8 @@ import eu.paasage.camel.execution.ExecutionPackage;
 import eu.paasage.camel.location.Country;
 import eu.paasage.camel.location.LocationFactory;
 import eu.paasage.camel.location.LocationModel;
+import eu.paasage.camel.location.LocationPackage;
+import eu.paasage.camel.metric.MetricPackage;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.ExternalIdentifier;
@@ -79,9 +81,9 @@ import eu.paasage.camel.scalability.ScalabilityModel;
 import eu.paasage.camel.scalability.ScalabilityPackage;
 import eu.paasage.camel.security.SecurityModel;
 import eu.paasage.camel.security.SecurityPackage;
-import eu.paasage.camel.sla.AgreementType;
-import eu.paasage.camel.sla.SlaPackage;
+import eu.paasage.camel.requirement.RequirementPackage;
 import eu.paasage.camel.type.TypePackage;
+import eu.paasage.camel.unit.UnitPackage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -352,7 +354,10 @@ public class CDOClient
 		registerPackage(SecurityPackage.eINSTANCE);
 		registerPackage(ExecutionPackage.eINSTANCE);
 		registerPackage(TypePackage.eINSTANCE);
-		registerPackage(SlaPackage.eINSTANCE);
+		registerPackage(RequirementPackage.eINSTANCE);
+		registerPackage(MetricPackage.eINSTANCE);
+		registerPackage(UnitPackage.eINSTANCE);
+		registerPackage(LocationPackage.eINSTANCE);
 	}
 	
 	/* This method is used for registering an EPackage mapping to the domain
@@ -590,7 +595,7 @@ public class CDOClient
 		roles.add(r2);
 		
 		RoleAssignment ra1 = OrganisationFactory.eINSTANCE.createRoleAssignment();
-		ra1.setID("MY_ROLE_ASSIGNMENT");
+		ra1.setId("MY_ROLE_ASSIGNMENT");
 		ra1.setRole(r1);
 		ra1.setUser(user1);
 		ra1.setOrganisation(org1);
@@ -749,13 +754,13 @@ public class CDOClient
 					  res.save(fos,null);
 				  }
 			  }
-			  else if (c.equals(AgreementType.class)){
-				  if (obj instanceof AgreementType) resource.save(fos, null);
+			  else if (c.equals(RequirementModel.class)){
+				  if (obj instanceof RequirementModel) resource.save(fos, null);
 				  else if (obj instanceof CamelModel){
 					  CamelModel cm = (CamelModel)obj;
-					  AgreementType dm = cm.getAgreementModels().get(0);
+					  RequirementModel rm = cm.getRequirementModels().get(0);
 					  Resource res = rs.createResource(URI.createFileURI(filePath));
-					  res.getContents().add(dm);
+					  res.getContents().add(rm);
 					  res.save(fos,null);
 				  }
 			  }

@@ -22,18 +22,22 @@ import eu.paasage.camel.ActionType;
 import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelFactory;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.MonetaryUnit;
-import eu.paasage.camel.RequirementGroup;
-import eu.paasage.camel.RequirementOperatorType;
-import eu.paasage.camel.StorageUnit;
-import eu.paasage.camel.TimeIntervalUnit;
-import eu.paasage.camel.UnitDimensionType;
-import eu.paasage.camel.UnitType;
-import eu.paasage.camel.VMInfo;
-import eu.paasage.camel.VMType;
+import eu.paasage.camel.unit.MonetaryUnit;
+import eu.paasage.camel.requirement.LocationRequirement;
+import eu.paasage.camel.requirement.OSRequirement;
+import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
+import eu.paasage.camel.requirement.RequirementFactory;
+import eu.paasage.camel.requirement.RequirementGroup;
+import eu.paasage.camel.requirement.RequirementModel;
+import eu.paasage.camel.requirement.RequirementOperatorType;
+import eu.paasage.camel.unit.StorageUnit;
+import eu.paasage.camel.unit.TimeIntervalUnit;
+import eu.paasage.camel.unit.UnitDimensionType;
+import eu.paasage.camel.unit.UnitFactory;
+import eu.paasage.camel.unit.UnitType;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
-import eu.paasage.camel.deployment.ComputationalResource;
+import eu.paasage.camel.deployment.ConfigurationManager;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
@@ -50,6 +54,7 @@ import eu.paasage.camel.deployment.RequiredHost;
 import eu.paasage.camel.deployment.RequiredHostInstance;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
+import eu.paasage.camel.deployment.VMRequirements;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
@@ -71,7 +76,7 @@ import eu.paasage.camel.location.LocationFactory;
 import eu.paasage.camel.location.LocationModel;
 import eu.paasage.camel.metric.ComparisonOperatorType;
 import eu.paasage.camel.scalability.HorizontalScalingAction;
-import eu.paasage.camel.scalability.HorizontalScalingPolicy;
+import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.LayerType;
 import eu.paasage.camel.metric.Metric;
 import eu.paasage.camel.metric.MetricCondition;
@@ -93,7 +98,7 @@ import eu.paasage.camel.scalability.ScalabilityModel;
 import eu.paasage.camel.scalability.ScalabilityRule;
 import eu.paasage.camel.metric.Sensor;
 import eu.paasage.camel.scalability.VerticalScalingAction;
-import eu.paasage.camel.scalability.VerticalScalingPolicy;
+import eu.paasage.camel.requirement.VerticalScaleRequirement;
 import eu.paasage.camel.type.EnumerateValue;
 import eu.paasage.camel.type.Enumeration;
 import eu.paasage.camel.type.FloatValue;
@@ -635,17 +640,15 @@ public class SensAppCDO {
 				.createInternalComponent();
 		sensApp.setName("SensApp");
 
-		ComputationalResource sensAppRes = DeploymentFactory.eINSTANCE
-				.createComputationalResource();
+		/*ConfigurationManager sensAppRes = DeploymentFactory.eINSTANCE
+				.createConfigurationManager();
 		sensAppRes
 				.setDownloadCommand("wget -P ~ http://github.com/downloads/SINTEF-9012/sensapp/sensapp.war; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensapp/install_start_sensapp.sh");
 		sensAppRes.setExecuteLocally(false);
 		sensAppRes
 				.setInstallCommand("cd ~; sudo bash install_start_sensapp.sh");
 		sensAppRes.setName("SensAppRes");
-		sensAppRes.setRequireCredentials(false);
-
-		sensApp.getResources().add(sensAppRes);
+		sensAppRes.setRequireCredentials(false);*/
 
 		ProvidedCommunication restProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
@@ -679,15 +682,14 @@ public class SensAppCDO {
 				.createInternalComponent();
 		mongoDB.setName("MongoDB");
 
-		ComputationalResource mongoDBRes = DeploymentFactory.eINSTANCE
-				.createComputationalResource();
+		/*ConfigurationManager mongoDBRes = DeploymentFactory.eINSTANCE
+				.createConfigurationManager();
 		mongoDBRes
 				.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/mongoDB/install_mongoDB.sh");
 		mongoDBRes.setExecuteLocally(false);
 		mongoDBRes.setInstallCommand("cd ~; sudo bash install_mongoDB.sh");
 		mongoDBRes.setName("MongoDBRes");
-		mongoDBRes.setRequireCredentials(false);
-		mongoDB.getResources().add(mongoDBRes);
+		mongoDBRes.setRequireCredentials(false);*/
 
 		ProvidedCommunication mongoDBProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
@@ -711,17 +713,15 @@ public class SensAppCDO {
 				.createInternalComponent();
 		jettySC.setName("JettySC");
 
-		ComputationalResource jettySCRes = DeploymentFactory.eINSTANCE
-				.createComputationalResource();
+		/*ConfigurationManager jettySCRes = DeploymentFactory.eINSTANCE
+				.createConfigurationManager();
 		jettySCRes
 				.setDownloadCommand("wget -P ~ http://cloudml.org/scripts/linux/ubuntu/jetty/install_jetty.sh");
 		jettySCRes.setExecuteLocally(false);
 		jettySCRes.setInstallCommand("cd ~; sudo bash install_jetty.sh");
 		jettySCRes.setName("JettySCRes");
 		jettySCRes.setRequireCredentials(false);
-		jettySCRes.setStopCommand("sudo service jetty stop");
-
-		jettySC.getResources().add(mongoDBRes);
+		jettySCRes.setStopCommand("sudo service jetty stop");*/
 
 		ProvidedHost servletContainerJettyProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
@@ -743,17 +743,15 @@ public class SensAppCDO {
 				.createInternalComponent();
 		admin.setName("Admin");
 
-		ComputationalResource adminRes = DeploymentFactory.eINSTANCE
-				.createComputationalResource();
+		/*ConfigurationManager adminRes = DeploymentFactory.eINSTANCE
+				.createConfigurationManager();
 		adminRes.setDownloadCommand("wget -P ~ http://cloudml.org/resources/sensappAdmin/SensAppAdmin.tar; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/start_sensappadmin.sh ; wget -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/install_sensappadmin.sh ; wget -P ~ http://cloudml.org/resources/sensappAdmin/localTopology.json");
 		adminRes.setExecuteLocally(false);
 		adminRes.setInstallCommand("cd ~; sudo bash install_sensappadmin.sh");
 		adminRes.setName("AdminRes");
 		adminRes.setRequireCredentials(false);
 		adminRes.setStartCommand("cd ~; sudo bash start_sensappadmin.sh");
-		adminRes.setStopCommand("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart");
-
-		admin.getResources().add(adminRes);
+		adminRes.setStopCommand("sudo rm -rf /opt/jetty/webapps/SensAppGUI ; sudo service jetty restart");*/
 
 		RequiredCommunication restReq = DeploymentFactory.eINSTANCE
 				.createRequiredCommunication();
@@ -773,20 +771,37 @@ public class SensAppCDO {
 		admin.setRequiredHost(servletContainerAdminReq);
 
 		sensAppDeploymentModel.getInternalComponents().add(admin);
+		
+		RequirementModel rm = RequirementFactory.eINSTANCE.createRequirementModel();
+		rm.setName("SensAPP-Requirement Model");
+		camelModel.getRequirementModels().add(rm);
 
 		VM ml = DeploymentFactory.eINSTANCE.createVM();
-		ml.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
-		ml.setIs64os(true);
-		ml.setLocation(scotland);
-		ml.setMaxCores(0);
-		ml.setMaxRam(0);
-		ml.setMaxStorage(0);
-		ml.setMinCores(2);
-		ml.setMinRam(4096);
-		ml.setMinStorage(512);
+		VMRequirements mlReqs = DeploymentFactory.eINSTANCE.createVMRequirements();
+		mlReqs.setName("ML_VM_REQS");
+		ml.setVmRequirements(mlReqs);
+		QuantitativeHardwareRequirement mlHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
+		mlHardReq.setId("ML_VM_HARD_REQS");
+		mlHardReq.setMaxCores(0);
+		mlHardReq.setMaxRAM(0);
+		mlHardReq.setMaxStorage(0);
+		mlHardReq.setMinCores(2);
+		mlHardReq.setMinRAM(4096);
+		mlHardReq.setMinStorage(512);
+		rm.getRequirements().add(mlHardReq);
+		mlReqs.setQuantitativeHardwareRequirement(mlHardReq);
+		OSRequirement mlOsReq = RequirementFactory.eINSTANCE.createOSRequirement();
+		mlOsReq.setId("ML_OS_REQ");
+		mlOsReq.setIs64os(true);
+		mlOsReq.setOs("ubuntu");
+		rm.getRequirements().add(mlOsReq);
+		mlReqs.setOsOrImageRequirement(mlOsReq);
+		LocationRequirement mlLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
+		mlLocReq.setId("ML_LOC_REC");
+		mlLocReq.setLocation(scotland);
+		rm.getRequirements().add(mlLocReq);
+		mlReqs.setLocationRequirement(mlLocReq);
 		ml.setName("ML");
-		ml.setOs("ubuntu");
-		ml.setProvider(flexiantProvider);
 
 		Attribute mlKeyPath = ProviderFactory.eINSTANCE.createAttribute();
 		mlKeyPath.setName("KeyPath");
@@ -806,18 +821,31 @@ public class SensAppCDO {
 		sensAppDeploymentModel.getVms().add(ml);
 
 		VM sl = DeploymentFactory.eINSTANCE.createVM();
-		sl.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
-		sl.setIs64os(true);
-		sl.setLocation(ireland);
-		sl.setMaxCores(0);
-		sl.setMaxRam(0);
-		sl.setMaxStorage(0);
-		sl.setMinCores(1);
-		sl.setMinRam(1024);
-		sl.setMinStorage(200);
+		VMRequirements slReqs = DeploymentFactory.eINSTANCE.createVMRequirements();
+		slReqs.setName("SL_VM_REQS");
+		sl.setVmRequirements(slReqs);
+		QuantitativeHardwareRequirement slHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
+		slHardReq.setId("SL_VM_HARD_REQS");
+		slHardReq.setMaxCores(0);
+		slHardReq.setMaxRAM(0);
+		slHardReq.setMaxStorage(0);
+		slHardReq.setMinCores(1);
+		slHardReq.setMinRAM(1024);
+		slHardReq.setMinStorage(200);
+		rm.getRequirements().add(slHardReq);
+		slReqs.setQuantitativeHardwareRequirement(slHardReq);
+		OSRequirement slOsReq = RequirementFactory.eINSTANCE.createOSRequirement();
+		slOsReq.setId("SL_OS_REQ");
+		slOsReq.setIs64os(true);
+		slOsReq.setOs("ubuntu");
+		rm.getRequirements().add(slOsReq);
+		slReqs.setOsOrImageRequirement(slOsReq);
+		LocationRequirement slLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
+		slLocReq.setId("SL_LOC_REC");
+		slLocReq.setLocation(ireland);
+		rm.getRequirements().add(slLocReq);
+		slReqs.setLocationRequirement(slLocReq);
 		sl.setName("SL");
-		sl.setOs("ubuntu");
-		sl.setProvider(amazonProvider);
 
 		Attribute slKeyPath = ProviderFactory.eINSTANCE.createAttribute();
 		slKeyPath.setName("KeyPath");
@@ -837,18 +865,31 @@ public class SensAppCDO {
 		sensAppDeploymentModel.getVms().add(sl);
 
 		VM ll = DeploymentFactory.eINSTANCE.createVM();
-		ll.setImageId("RegionOne/9e2877b8-799e-4c87-a9f7-48140b021ba4");
-		ll.setIs64os(true);
-		ll.setLocation(norway);
-		ll.setMaxCores(0);
-		ll.setMaxRam(0);
-		ll.setMaxStorage(0);
-		ll.setMinCores(4);
-		ll.setMinRam(4096);
-		ll.setMinStorage(512);
+		VMRequirements llReqs = DeploymentFactory.eINSTANCE.createVMRequirements();
+		llReqs.setName("LL_VM_REQS");
+		ll.setVmRequirements(llReqs);
+		QuantitativeHardwareRequirement llHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
+		llHardReq.setId("LL_VM_HARD_REQS");
+		llHardReq.setMaxCores(0);
+		llHardReq.setMaxRAM(0);
+		llHardReq.setMaxStorage(0);
+		llHardReq.setMinCores(4);
+		llHardReq.setMinRAM(4096);
+		llHardReq.setMinStorage(512);
+		rm.getRequirements().add(llHardReq);
+		llReqs.setQuantitativeHardwareRequirement(llHardReq);
+		OSRequirement llOsReq = RequirementFactory.eINSTANCE.createOSRequirement();
+		llOsReq.setId("LL_OS_REQ");
+		llOsReq.setIs64os(true);
+		llOsReq.setOs("ubuntu");
+		rm.getRequirements().add(llOsReq);
+		llReqs.setOsOrImageRequirement(llOsReq);
+		LocationRequirement llLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
+		llLocReq.setId("LL_LOC_REC");
+		llLocReq.setLocation(norway);
+		rm.getRequirements().add(llLocReq);
+		llReqs.setLocationRequirement(llLocReq);
 		ll.setName("LL");
-		ll.setOs("ubuntu");
-		ll.setProvider(sintefNovaProvider);
 
 		Attribute llKeyPath = ProviderFactory.eINSTANCE.createAttribute();
 		llKeyPath.setName("KeyPath");
@@ -873,17 +914,15 @@ public class SensAppCDO {
 		sensAppToAdmin.setProvidedCommunication(restProv);
 		sensAppToAdmin.setRequiredCommunication(restReq);
 
-		ComputationalResource sensAppToAdminRes = DeploymentFactory.eINSTANCE
-				.createComputationalResource();
+		/*ConfigurationManager sensAppToAdminRes = DeploymentFactory.eINSTANCE
+				.createConfigurationManager();
 		sensAppToAdminRes
 				.setDownloadCommand("get -P ~ http://cloudml.org/scripts/linux/ubuntu/sensappAdmin/configure_sensappadmin.sh");
 		sensAppToAdminRes.setExecuteLocally(false);
 		sensAppToAdminRes
 				.setInstallCommand("cd ~; sudo bash configure_sensappadmin.sh");
 		sensAppToAdminRes.setName("SensAppToAdminRes");
-		sensAppToAdminRes.setRequireCredentials(false);
-
-		sensAppToAdmin.getResources().add(sensAppToAdminRes);
+		sensAppToAdminRes.setRequireCredentials(false);*/
 
 		sensAppDeploymentModel.getCommunications().add(sensAppToAdmin);
 
@@ -1019,35 +1058,17 @@ public class SensAppCDO {
 		sensAppDeploymentModel.getInternalComponentInstances().add(admin1);
 
 		VMInstance vmML1 = DeploymentFactory.eINSTANCE.createVMInstance();
+		vmML1.setVmType(vmType);
+		vmML1.setVmTypeValue(mediumVm);
 
-		VMInfo mediumVmInfo = CamelFactory.eINSTANCE.createVMInfo();
-		mediumVmInfo.setBenchmarkRate(0);
-		mediumVmInfo.setClassifiedOn(new Date());
-		mediumVmInfo.setCostPerHour(1);
 
-		MonetaryUnit costMonetaryUnit = CamelFactory.eINSTANCE
+		MonetaryUnit costMonetaryUnit = UnitFactory.eINSTANCE
 				.createMonetaryUnit();
 		costMonetaryUnit.setDimensionType(UnitDimensionType.COST);
 		costMonetaryUnit.setUnit(UnitType.EUROS);
 		costMonetaryUnit.setName("euros");
 
 		camelModel.getUnits().add(costMonetaryUnit);
-
-		mediumVmInfo.setCostUnit(costMonetaryUnit);
-		mediumVmInfo.setEvaluatedOn(new Date());
-		mediumVmInfo.setName("MediumVmInfo");
-
-		VMType mediumVmType = CamelFactory.eINSTANCE.createVMType();
-		mediumVmType.setFeature(vmFeature);
-		mediumVmType.setName("VM_Medium");
-		mediumVmType.getConstraints().add(mediumVmConstraint);
-
-		mediumVmInfo.setType(mediumVmType);
-		camelModel.getVmTypes().add(mediumVmType);
-
-		vmML1.setHasInfo(mediumVmInfo);
-
-		camelModel.getVmInfos().add(mediumVmInfo);
 
 		vmML1.setName("VMML1");
 		vmML1.setType(ml);
@@ -1064,30 +1085,10 @@ public class SensAppCDO {
 
 		VMInstance vmSL1 = DeploymentFactory.eINSTANCE.createVMInstance();
 
-		VMInfo smallVmInfo = CamelFactory.eINSTANCE.createVMInfo();
-		smallVmInfo.setBenchmarkRate(0);
-		smallVmInfo.setClassifiedOn(new Date());
-		smallVmInfo.setCostPerHour(0.5);
-
-		smallVmInfo.setCostUnit(costMonetaryUnit);
-		smallVmInfo.setEvaluatedOn(new Date());
-		smallVmInfo.setName("SmallVmInfo");
-
-		VMType smallVmType = CamelFactory.eINSTANCE.createVMType();
-		smallVmType.setFeature(vmFeature);
-		smallVmType.setName("VMSmall");
-		smallVmType.getConstraints().add(smallVmConstraint);
-
-		smallVmInfo.setType(smallVmType);
-
-		camelModel.getVmTypes().add(smallVmType);
-
-		vmSL1.setHasInfo(smallVmInfo);
-
-		camelModel.getVmInfos().add(smallVmInfo);
-
 		vmSL1.setName("VMSL1");
 		vmSL1.setType(sl);
+		vmSL1.setVmType(vmType);
+		vmSL1.setVmTypeValue(smallVm);
 
 		ProvidedHostInstance vmSLProv1 = DeploymentFactory.eINSTANCE
 				.createProvidedHostInstance();
@@ -1101,29 +1102,10 @@ public class SensAppCDO {
 
 		VMInstance vmLL1 = DeploymentFactory.eINSTANCE.createVMInstance();
 
-		VMInfo largeVmInfo = CamelFactory.eINSTANCE.createVMInfo();
-		largeVmInfo.setBenchmarkRate(0);
-		largeVmInfo.setClassifiedOn(new Date());
-		largeVmInfo.setCostPerHour(2.0);
-
-		largeVmInfo.setCostUnit(costMonetaryUnit);
-		largeVmInfo.setEvaluatedOn(new Date());
-		largeVmInfo.setName("LargeVmInfo");
-
-		VMType largeVmType = CamelFactory.eINSTANCE.createVMType();
-		largeVmType.setFeature(vmFeature);
-		largeVmType.setName("VMLarge");
-		largeVmType.getConstraints().add(largeVmConstraint);
-
-		largeVmInfo.setType(largeVmType);
-		camelModel.getVmTypes().add(largeVmType);
-
-		vmLL1.setHasInfo(largeVmInfo);
-
-		camelModel.getVmInfos().add(largeVmInfo);
-
 		vmLL1.setName("VMLL1");
 		vmLL1.setType(ll);
+		vmLL1.setVmType(vmType);
+		vmLL1.setVmTypeValue(largeVm);
 
 		ProvidedHostInstance vmLLProv1 = DeploymentFactory.eINSTANCE
 				.createProvidedHostInstance();
@@ -1284,7 +1266,7 @@ public class SensAppCDO {
 		rawExecTime.setProperty(execTime);
 		rawExecTime.setType(MetricType.RAW);
 
-		TimeIntervalUnit timeInterval = CamelFactory.eINSTANCE
+		TimeIntervalUnit timeInterval = UnitFactory.eINSTANCE
 				.createTimeIntervalUnit();
 		timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
 		timeInterval.setUnit(UnitType.SECONDS);
@@ -1314,7 +1296,7 @@ public class SensAppCDO {
 		avgExecTime.setProperty(execTime);
 		avgExecTime.setType(MetricType.COMPOSITE);
 
-		StorageUnit storageUnit = CamelFactory.eINSTANCE.createStorageUnit();
+		StorageUnit storageUnit = UnitFactory.eINSTANCE.createStorageUnit();
 		storageUnit.setDimensionType(UnitDimensionType.STORAGE);
 		storageUnit.setUnit(UnitType.GIGABYTES);
 		storageUnit.setName("gigabytes");
@@ -1585,28 +1567,26 @@ public class SensAppCDO {
 
 		scalabilityModel.getRules().add(storageViolationScalabilityRule);
 
-		HorizontalScalingPolicy horizPolicySensApp = ScalabilityFactory.eINSTANCE
-				.createHorizontalScalingPolicy();
+		HorizontalScaleRequirement horizPolicySensApp = RequirementFactory.eINSTANCE
+				.createHorizontalScaleRequirement();
 		horizPolicySensApp.setComponent(sensApp);
 		horizPolicySensApp.setId("HorizPolicySensApp");
 		horizPolicySensApp.setMaxInstances(4);
 		horizPolicySensApp.setMinInstances(1);
-		horizPolicySensApp.setPriority(0);
 
 		scalabilityModel.getPolicies().add(horizPolicySensApp);
 
-		VerticalScalingPolicy verticalPolicyMongoDb = ScalabilityFactory.eINSTANCE
-				.createVerticalScalingPolicy();
+		VerticalScaleRequirement verticalPolicyMongoDb = RequirementFactory.eINSTANCE
+				.createVerticalScaleRequirement();
 		verticalPolicyMongoDb.setId("VertPolMongoDB");
 		verticalPolicyMongoDb.setMaxCores(0);
 		verticalPolicyMongoDb.setMaxCPU(0);
-		verticalPolicyMongoDb.setMaxMemory(0);
+		verticalPolicyMongoDb.setMaxRAM(0);
 		verticalPolicyMongoDb.setMaxStorage(2048);
 		verticalPolicyMongoDb.setMinCores(0);
 		verticalPolicyMongoDb.setMinCPU(0);
-		verticalPolicyMongoDb.setMinMemory(0);
+		verticalPolicyMongoDb.setMinRAM(0);
 		verticalPolicyMongoDb.setMinStorage(512);
-		verticalPolicyMongoDb.setPriority(0);
 		verticalPolicyMongoDb.setVm(ml);
 
 		scalabilityModel.getPolicies().add(verticalPolicyMongoDb);
@@ -1630,19 +1610,18 @@ public class SensAppCDO {
 
 		sensAppExecutionContext.setApplication(sensAppApplication);
 		sensAppExecutionContext.setDeploymentModel(sensAppDeploymentModel);
-		sensAppExecutionContext.setID("SensAppEC1");
+		sensAppExecutionContext.setId("SensAppEC1");
 
-		RequirementGroup user1RG = CamelFactory.eINSTANCE
+		RequirementGroup user1RG = RequirementFactory.eINSTANCE
 				.createRequirementGroup();
 
 		user1RG.setId("");
-		user1RG.setPriority(0);
 		user1RG.setRequirementOperator(RequirementOperatorType.AND);
 		user1RG.getRequirements().add(verticalPolicyMongoDb);
 		user1RG.getRequirements().add(horizPolicySensApp);
 		user1RG.setUser(user1);
 
-		camelModel.getRequirements().add(user1RG);
+		rm.getRequirements().add(user1RG);
 
 		sensAppExecutionContext.setRequirementGroup(user1RG);
 		sensAppExecutionContext.setTotalCost(0);
