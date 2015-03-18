@@ -25,6 +25,7 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.unit.MonetaryUnit;
 import eu.paasage.camel.requirement.LocationRequirement;
 import eu.paasage.camel.requirement.OSRequirement;
+import eu.paasage.camel.requirement.ProviderRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.camel.requirement.RequirementFactory;
 import eu.paasage.camel.requirement.RequirementGroup;
@@ -37,6 +38,7 @@ import eu.paasage.camel.unit.UnitFactory;
 import eu.paasage.camel.unit.UnitType;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
+import eu.paasage.camel.deployment.CommunicationType;
 import eu.paasage.camel.deployment.Configuration;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.DeploymentModel;
@@ -54,7 +56,7 @@ import eu.paasage.camel.deployment.RequiredHost;
 import eu.paasage.camel.deployment.RequiredHostInstance;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.deployment.VMRequirements;
+import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
@@ -632,9 +634,27 @@ public class SensAppCDO {
 				.createDeploymentModel();
 
 		sensAppDeploymentModel.setName("SensApp");
-		sensAppDeploymentModel.getProviders().add(amazonProvider);
-		sensAppDeploymentModel.getProviders().add(flexiantProvider);
-		sensAppDeploymentModel.getProviders().add(sintefNovaProvider);
+		
+		RequirementModel rm = RequirementFactory.eINSTANCE.createRequirementModel();
+		rm.setName("SensAPP-Requirement Model");
+		camelModel.getRequirementModels().add(rm);
+		ProviderRequirement pr = RequirementFactory.eINSTANCE.createProviderRequirement();
+		pr.setId("Provider_Requirements_SensApp");
+		rm.getRequirements().add(pr);
+		pr.getProviders().add(amazonProvider);
+		pr.getProviders().add(flexiantProvider);
+		pr.getProviders().add(sintefNovaProvider);
+		VMRequirementSet globalReqs = DeploymentFactory.eINSTANCE.createVMRequirementSet();
+		globalReqs.setName("Global_Reqs_Sens_App");
+		globalReqs.setProviderRequirement(pr);
+		OSRequirement osReq = RequirementFactory.eINSTANCE.createOSRequirement();
+		osReq.setId("GLOBAL_OS_REQ");
+		osReq.setIs64os(true);
+		osReq.setOs("ubuntu");
+		rm.getRequirements().add(osReq);
+		globalReqs.setOsOrImageRequirement(osReq);
+		sensAppDeploymentModel.setGlobalVMRequirementSet(globalReqs);
+		sensAppDeploymentModel.getVmRequirementSets().add(globalReqs);
 
 		InternalComponent sensApp = DeploymentFactory.eINSTANCE
 				.createInternalComponent();
@@ -652,7 +672,6 @@ public class SensAppCDO {
 		ProvidedCommunication restProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
 		restProv.setOwner(sensApp);
-		restProv.setIsLocal(false);
 		restProv.setName("RESTProv");
 		restProv.setPortNumber(8080);
 
@@ -661,7 +680,6 @@ public class SensAppCDO {
 		RequiredCommunication mongoDBReq = DeploymentFactory.eINSTANCE
 				.createRequiredCommunication();
 		mongoDBReq.setOwner(sensApp);
-		mongoDBReq.setIsLocal(true);
 		mongoDBReq.setIsMandatory(true);
 		mongoDBReq.setName("MongoDBReq");
 		mongoDBReq.setPortNumber(0);
@@ -692,7 +710,6 @@ public class SensAppCDO {
 		ProvidedCommunication mongoDBProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
 		mongoDBProv.setOwner(mongoDB);
-		mongoDBProv.setIsLocal(false);
 		mongoDBProv.setName("MongoDBProv");
 		mongoDBProv.setPortNumber(0);
 
@@ -754,7 +771,6 @@ public class SensAppCDO {
 		RequiredCommunication restReq = DeploymentFactory.eINSTANCE
 				.createRequiredCommunication();
 		restReq.setOwner(admin);
-		restReq.setIsLocal(false);
 		restReq.setIsMandatory(false);
 		restReq.setName("RESTReq");
 		restReq.setPortNumber(8080);
@@ -769,15 +785,12 @@ public class SensAppCDO {
 		admin.setRequiredHost(servletContainerAdminReq);
 
 		sensAppDeploymentModel.getInternalComponents().add(admin);
-		
-		RequirementModel rm = RequirementFactory.eINSTANCE.createRequirementModel();
-		rm.setName("SensAPP-Requirement Model");
-		camelModel.getRequirementModels().add(rm);
 
 		VM ml = DeploymentFactory.eINSTANCE.createVM();
-		VMRequirements mlReqs = DeploymentFactory.eINSTANCE.createVMRequirements();
+		VMRequirementSet mlReqs = DeploymentFactory.eINSTANCE.createVMRequirementSet();
 		mlReqs.setName("ML_VM_REQS");
-		ml.setVmRequirements(mlReqs);
+		ml.setVmRequirementSet(mlReqs);
+		sensAppDeploymentModel.getVmRequirementSets().add(mlReqs);
 		QuantitativeHardwareRequirement mlHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
 		mlHardReq.setId("ML_VM_HARD_REQS");
 		mlHardReq.setMaxCores(0);
@@ -788,15 +801,9 @@ public class SensAppCDO {
 		mlHardReq.setMinStorage(512);
 		rm.getRequirements().add(mlHardReq);
 		mlReqs.setQuantitativeHardwareRequirement(mlHardReq);
-		OSRequirement mlOsReq = RequirementFactory.eINSTANCE.createOSRequirement();
-		mlOsReq.setId("ML_OS_REQ");
-		mlOsReq.setIs64os(true);
-		mlOsReq.setOs("ubuntu");
-		rm.getRequirements().add(mlOsReq);
-		mlReqs.setOsOrImageRequirement(mlOsReq);
 		LocationRequirement mlLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
 		mlLocReq.setId("ML_LOC_REC");
-		mlLocReq.setLocation(scotland);
+		mlLocReq.getLocations().add(scotland);
 		rm.getRequirements().add(mlLocReq);
 		mlReqs.setLocationRequirement(mlLocReq);
 		ml.setName("ML");
@@ -819,9 +826,10 @@ public class SensAppCDO {
 		sensAppDeploymentModel.getVms().add(ml);
 
 		VM sl = DeploymentFactory.eINSTANCE.createVM();
-		VMRequirements slReqs = DeploymentFactory.eINSTANCE.createVMRequirements();
+		VMRequirementSet slReqs = DeploymentFactory.eINSTANCE.createVMRequirementSet();
 		slReqs.setName("SL_VM_REQS");
-		sl.setVmRequirements(slReqs);
+		sl.setVmRequirementSet(slReqs);
+		sensAppDeploymentModel.getVmRequirementSets().add(slReqs);
 		QuantitativeHardwareRequirement slHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
 		slHardReq.setId("SL_VM_HARD_REQS");
 		slHardReq.setMaxCores(0);
@@ -832,15 +840,9 @@ public class SensAppCDO {
 		slHardReq.setMinStorage(200);
 		rm.getRequirements().add(slHardReq);
 		slReqs.setQuantitativeHardwareRequirement(slHardReq);
-		OSRequirement slOsReq = RequirementFactory.eINSTANCE.createOSRequirement();
-		slOsReq.setId("SL_OS_REQ");
-		slOsReq.setIs64os(true);
-		slOsReq.setOs("ubuntu");
-		rm.getRequirements().add(slOsReq);
-		slReqs.setOsOrImageRequirement(slOsReq);
 		LocationRequirement slLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
 		slLocReq.setId("SL_LOC_REC");
-		slLocReq.setLocation(ireland);
+		slLocReq.getLocations().add(ireland);
 		rm.getRequirements().add(slLocReq);
 		slReqs.setLocationRequirement(slLocReq);
 		sl.setName("SL");
@@ -863,9 +865,10 @@ public class SensAppCDO {
 		sensAppDeploymentModel.getVms().add(sl);
 
 		VM ll = DeploymentFactory.eINSTANCE.createVM();
-		VMRequirements llReqs = DeploymentFactory.eINSTANCE.createVMRequirements();
+		VMRequirementSet llReqs = DeploymentFactory.eINSTANCE.createVMRequirementSet();
 		llReqs.setName("LL_VM_REQS");
-		ll.setVmRequirements(llReqs);
+		ll.setVmRequirementSet(llReqs);
+		sensAppDeploymentModel.getVmRequirementSets().add(llReqs);
 		QuantitativeHardwareRequirement llHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
 		llHardReq.setId("LL_VM_HARD_REQS");
 		llHardReq.setMaxCores(0);
@@ -876,15 +879,9 @@ public class SensAppCDO {
 		llHardReq.setMinStorage(512);
 		rm.getRequirements().add(llHardReq);
 		llReqs.setQuantitativeHardwareRequirement(llHardReq);
-		OSRequirement llOsReq = RequirementFactory.eINSTANCE.createOSRequirement();
-		llOsReq.setId("LL_OS_REQ");
-		llOsReq.setIs64os(true);
-		llOsReq.setOs("ubuntu");
-		rm.getRequirements().add(llOsReq);
-		llReqs.setOsOrImageRequirement(llOsReq);
 		LocationRequirement llLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
 		llLocReq.setId("LL_LOC_REC");
-		llLocReq.setLocation(norway);
+		llLocReq.getLocations().add(norway);
 		rm.getRequirements().add(llLocReq);
 		llReqs.setLocationRequirement(llLocReq);
 		ll.setName("LL");
@@ -929,6 +926,7 @@ public class SensAppCDO {
 		sensAppToMongoDB.setName("SensAppToMongoDB");
 		sensAppToMongoDB.setProvidedCommunication(mongoDBProv);
 		sensAppToMongoDB.setRequiredCommunication(mongoDBReq);
+		sensAppToMongoDB.setCommunicationType(CommunicationType.LOCAL);
 
 		sensAppDeploymentModel.getCommunications().add(sensAppToMongoDB);
 
