@@ -846,7 +846,7 @@ public class CDOClient
   public static void main(String[] args){
 	  //Create the CDOClient
 	  CDOClient cl = new CDOClient();
-	  cl.session.addListener(cl.new MyListener());
+	  //cl.session.addListener(cl.new MyListener());
 	  //cl.session.options().setPassiveUpdateEnabled(true);
 	  //cl.session.options().setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.ADDITIONS);
 	  //CDOView constantView = cl.openView();

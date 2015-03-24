@@ -80,6 +80,9 @@ import eu.paasage.camel.metric.ComparisonOperatorType;
 import eu.paasage.camel.scalability.HorizontalScalingAction;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.LayerType;
+import eu.paasage.camel.metric.CompositeMetric;
+import eu.paasage.camel.metric.CompositeMetricContext;
+import eu.paasage.camel.metric.CompositeMetricInstance;
 import eu.paasage.camel.metric.Metric;
 import eu.paasage.camel.metric.MetricCondition;
 import eu.paasage.camel.metric.MetricContext;
@@ -92,6 +95,9 @@ import eu.paasage.camel.metric.MetricModel;
 import eu.paasage.camel.metric.MetricObjectBinding;
 import eu.paasage.camel.metric.MetricType;
 import eu.paasage.camel.metric.MetricVMBinding;
+import eu.paasage.camel.metric.RawMetric;
+import eu.paasage.camel.metric.RawMetricContext;
+import eu.paasage.camel.metric.RawMetricInstance;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
 import eu.paasage.camel.metric.Property;
 import eu.paasage.camel.metric.PropertyType;
@@ -1248,8 +1254,8 @@ public class SensAppCDO {
 		metricModel.setName("SensApp Metric Model");
 		camelModel.getMetricModels().add(metricModel);
 
-		Metric rawExecTime = MetricFactory.eINSTANCE
-				.createMetric();
+		RawMetric rawExecTime = MetricFactory.eINSTANCE
+				.createRawMetric();
 
 		rawExecTime.setLayer(LayerType.SAA_S);
 		rawExecTime.setName("RAW_EXEC_TIME");
@@ -1260,7 +1266,6 @@ public class SensAppCDO {
 		metricModel.getProperties().add(execTime);
 
 		rawExecTime.setProperty(execTime);
-		rawExecTime.setType(MetricType.RAW);
 
 		TimeIntervalUnit timeInterval = UnitFactory.eINSTANCE
 				.createTimeIntervalUnit();
@@ -1271,82 +1276,7 @@ public class SensAppCDO {
 
 		rawExecTime.setUnit(timeInterval);
 		rawExecTime.setValueDirection((short) 0);
-
-		metricModel.getMetrics().add(rawExecTime);
-
-		Metric avgExecTime = MetricFactory.eINSTANCE
-				.createMetric();
-
-		MetricFormula avgExecTimeFormula = MetricFactory.eINSTANCE
-				.createMetricFormula();
-		avgExecTimeFormula.setName("AVG_ET_METRIC_FORMULA");
-		avgExecTimeFormula.setFunction(MetricFunctionType.MEAN);
-		avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
-		avgExecTimeFormula.getParameters().add(rawExecTime);
-		metricModel.getParameters().add(avgExecTimeFormula);
-
-		avgExecTime.setFormula(avgExecTimeFormula);
-		avgExecTime.setLayer(LayerType.SAA_S);
-		avgExecTime.setName("AVG_EXEC_TIME");
-
-		avgExecTime.setProperty(execTime);
-		avgExecTime.setType(MetricType.COMPOSITE);
-
-		StorageUnit storageUnit = UnitFactory.eINSTANCE.createStorageUnit();
-		storageUnit.setDimensionType(UnitDimensionType.STORAGE);
-		storageUnit.setUnit(UnitType.GIGABYTES);
-		storageUnit.setName("gigabytes");
-
-		metricModel.getUnits().add(storageUnit);
-
-		avgExecTime.setUnit(storageUnit);
-		avgExecTime.setValueDirection((short) 0);
-
-		metricModel.getMetrics().add(avgExecTime);
-
-		Metric storageMetricTemp = MetricFactory.eINSTANCE
-				.createMetric();
-		storageMetricTemp.setLayer(LayerType.IAA_S);
-		storageMetricTemp.setName("Storage");
-
-		Property storageProperty = MetricFactory.eINSTANCE
-				.createProperty();
-		storageProperty.setName("Storage");
-		storageProperty.setType(PropertyType.MEASURABLE);
-		metricModel.getProperties().add(storageProperty);
-
-		storageMetricTemp.setProperty(storageProperty);
-		storageMetricTemp.setType(MetricType.RAW);
-		storageMetricTemp.setUnit(storageUnit);
-		storageMetricTemp.setValueDirection((short) 0);
-
-		metricModel.getMetrics().add(storageMetricTemp);
-
-		MetricInstance rawEtMetric = MetricFactory.eINSTANCE.createMetricInstance();
-		rawEtMetric.setId("RawETMetric1");
-
-		MetricObjectBinding rawEtMetricAIB = MetricFactory.eINSTANCE
-				.createMetricApplicationBinding();
-		rawEtMetricAIB.setName("SensAppCompBinding");
-
-		ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE
-				.createExecutionContext();
-
-		rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
-
-		metricModel.getBindings().add(rawEtMetricAIB);
-
-		rawEtMetric.setObjectBinding(rawEtMetricAIB);
-
-		Sensor sensor1 = MetricFactory.eINSTANCE.createSensor();
-		sensor1.setId("RawETSensor");
-		sensor1.setIsPush(false);
-
-		metricModel.getSensors().add(sensor1);
-
-		rawEtMetric.setSensor(sensor1);
-		rawEtMetric.setMetric(rawExecTime);
-
+		
 		Range rawEtMetricRange = TypeFactory.eINSTANCE.createRange();
 		rawEtMetricRange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
 
@@ -1371,25 +1301,28 @@ public class SensAppCDO {
 
 		rawEtMetricRange.setUpperLimit(rawEtMetricMax);
 
-		rawEtMetric.setValueType(rawEtMetricRange);
+		rawExecTime.setValueType(rawEtMetricRange);
 
-		metricModel.getMetricInstances().add(rawEtMetric);
 
-		MetricInstance avgEtMetric1 = MetricFactory.eINSTANCE.createMetricInstance();
-		avgEtMetric1.getComposingMetricInstances().add(rawEtMetric);
-		avgEtMetric1.setId("AVGETMetric1");
+		metricModel.getMetrics().add(rawExecTime);
 
-		avgEtMetric1.setObjectBinding(rawEtMetricAIB);
+		CompositeMetric avgExecTime = MetricFactory.eINSTANCE
+				.createCompositeMetric();
 
-		Sensor sensor2 = MetricFactory.eINSTANCE.createSensor();
-		sensor2.setId("RawStorageSensor");
-		sensor2.setIsPush(false);
+		MetricFormula avgExecTimeFormula = MetricFactory.eINSTANCE
+				.createMetricFormula();
+		avgExecTimeFormula.setName("AVG_ET_METRIC_FORMULA");
+		avgExecTimeFormula.setFunction(MetricFunctionType.MEAN);
+		avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
+		avgExecTimeFormula.getParameters().add(rawExecTime);
+		metricModel.getParameters().add(avgExecTimeFormula);
 
-		metricModel.getSensors().add(sensor2);
+		avgExecTime.setFormula(avgExecTimeFormula);
+		avgExecTime.setLayer(LayerType.SAA_S);
+		avgExecTime.setName("AVG_EXEC_TIME");
 
-		avgEtMetric1.setSensor(sensor2);
-		avgEtMetric1.setMetric(avgExecTime);
-
+		avgExecTime.setProperty(execTime);
+		
 		Range avgEtMetricRange = TypeFactory.eINSTANCE.createRange();
 		avgEtMetricRange.setPrimitiveType(TypeEnum.FLOAT_TYPE);
 
@@ -1414,33 +1347,25 @@ public class SensAppCDO {
 
 		avgEtMetricRange.setUpperLimit(avgEtMetricMax);
 
-		avgEtMetric1.setValueType(avgEtMetricRange);
+		avgExecTime.setValueType(avgEtMetricRange);
 
-		metricModel.getMetricInstances().add(avgEtMetric1);
+		StorageUnit storageUnit = UnitFactory.eINSTANCE.createStorageUnit();
+		storageUnit.setDimensionType(UnitDimensionType.STORAGE);
+		storageUnit.setUnit(UnitType.GIGABYTES);
+		storageUnit.setName("gigabytes");
 
-		MetricInstance rawStorageMetric = MetricFactory.eINSTANCE.createMetricInstance();
-		rawStorageMetric.setId("RawStorageNum");
+		metricModel.getUnits().add(storageUnit);
 
-		MetricVMBinding vmInstBinding = MetricFactory.eINSTANCE
-				.createMetricVMBinding();
-		vmInstBinding.setName("SensAppVMBinding");
-		vmInstBinding.setExecutionContext(sensAppExecutionContext);
-		vmInstBinding.setVmInstance(vmML1);
+		avgExecTime.setUnit(storageUnit);
+		avgExecTime.setValueDirection((short) 0);
 
-		metricModel.getBindings().add(vmInstBinding);
+		metricModel.getMetrics().add(avgExecTime);
 
-		rawStorageMetric.setObjectBinding(vmInstBinding);
-
-		Sensor sensor3 = MetricFactory.eINSTANCE.createSensor();
-		sensor3.setId("Sensor3");
-		sensor3.setIsPush(false);
-
-		metricModel.getSensors().add(sensor3);
-
-		rawStorageMetric.setSensor(sensor3);
-
-		rawStorageMetric.setMetric(storageMetricTemp);
-
+		RawMetric storageMetricTemp = MetricFactory.eINSTANCE
+				.createRawMetric();
+		storageMetricTemp.setLayer(LayerType.IAA_S);
+		storageMetricTemp.setName("Storage");
+		
 		Range rawStorageMetricRange = TypeFactory.eINSTANCE.createRange();
 		rawStorageMetricRange.setPrimitiveType(TypeEnum.INT_TYPE);
 
@@ -1466,7 +1391,86 @@ public class SensAppCDO {
 
 		rawStorageMetricRange.setUpperLimit(rawStorageMetricMax);
 
-		rawStorageMetric.setValueType(rawStorageMetricRange);
+		storageMetricTemp.setValueType(rawStorageMetricRange);
+
+
+		Property storageProperty = MetricFactory.eINSTANCE
+				.createProperty();
+		storageProperty.setName("Storage");
+		storageProperty.setType(PropertyType.MEASURABLE);
+		metricModel.getProperties().add(storageProperty);
+
+		storageMetricTemp.setProperty(storageProperty);
+		storageMetricTemp.setUnit(storageUnit);
+		storageMetricTemp.setValueDirection((short) 0);
+
+		metricModel.getMetrics().add(storageMetricTemp);
+
+		RawMetricInstance rawEtMetric = MetricFactory.eINSTANCE.createRawMetricInstance();
+		rawEtMetric.setId("RawETMetric1");
+
+		MetricObjectBinding rawEtMetricAIB = MetricFactory.eINSTANCE
+				.createMetricApplicationBinding();
+		rawEtMetricAIB.setName("SensAppCompBinding");
+
+		ExecutionContext sensAppExecutionContext = ExecutionFactory.eINSTANCE
+				.createExecutionContext();
+
+		rawEtMetricAIB.setExecutionContext(sensAppExecutionContext);
+
+		metricModel.getBindings().add(rawEtMetricAIB);
+
+		rawEtMetric.setObjectBinding(rawEtMetricAIB);
+
+		Sensor sensor1 = MetricFactory.eINSTANCE.createSensor();
+		sensor1.setId("RawETSensor");
+		sensor1.setIsPush(false);
+
+		metricModel.getSensors().add(sensor1);
+
+		rawEtMetric.setSensor(sensor1);
+		rawEtMetric.setMetric(rawExecTime);
+
+		metricModel.getMetricInstances().add(rawEtMetric);
+
+		CompositeMetricInstance avgEtMetric1 = MetricFactory.eINSTANCE.createCompositeMetricInstance();
+		avgEtMetric1.getComposingMetricInstances().add(rawEtMetric);
+		avgEtMetric1.setId("AVGETMetric1");
+
+		avgEtMetric1.setObjectBinding(rawEtMetricAIB);
+
+		Sensor sensor2 = MetricFactory.eINSTANCE.createSensor();
+		sensor2.setId("RawStorageSensor");
+		sensor2.setIsPush(false);
+
+		metricModel.getSensors().add(sensor2);
+
+		avgEtMetric1.setMetric(avgExecTime);
+
+		metricModel.getMetricInstances().add(avgEtMetric1);
+
+		RawMetricInstance rawStorageMetric = MetricFactory.eINSTANCE.createRawMetricInstance();
+		rawStorageMetric.setId("RawStorageNum");
+
+		MetricVMBinding vmInstBinding = MetricFactory.eINSTANCE
+				.createMetricVMBinding();
+		vmInstBinding.setName("SensAppVMBinding");
+		vmInstBinding.setExecutionContext(sensAppExecutionContext);
+		vmInstBinding.setVmInstance(vmML1);
+
+		metricModel.getBindings().add(vmInstBinding);
+
+		rawStorageMetric.setObjectBinding(vmInstBinding);
+
+		Sensor sensor3 = MetricFactory.eINSTANCE.createSensor();
+		sensor3.setId("Sensor3");
+		sensor3.setIsPush(false);
+
+		metricModel.getSensors().add(sensor3);
+
+		rawStorageMetric.setSensor(sensor3);
+
+		rawStorageMetric.setMetric(storageMetricTemp);
 
 		metricModel.getMetricInstances().add(rawStorageMetric);
 
@@ -1488,11 +1492,19 @@ public class SensAppCDO {
 				.createNonFunctionalEvent();
 		avgExecutionTimeViolated.setIsViolation(true);
 		
-		MetricContext sensAppContext = MetricFactory.eINSTANCE.createMetricContext();
+		CompositeMetricContext sensAppContext = MetricFactory.eINSTANCE.createCompositeMetricContext();
 		sensAppContext.setName("AVG_ET_GT_10");
 		sensAppContext.setApplication(sensAppApplication);
 		sensAppContext.setMetric(avgEtMetric1.getMetric());
 		metricModel.getContexts().add(sensAppContext);
+		
+		RawMetricContext rawETContext = MetricFactory.eINSTANCE.createRawMetricContext();
+		rawETContext.setName("RAW_ET_CONTEXT");
+		rawETContext.setApplication(sensAppApplication);
+		rawETContext.setMetric(rawEtMetric.getMetric());
+		rawETContext.setSensor(sensor1);
+		metricModel.getContexts().add(rawETContext);
+		sensAppContext.getComposingMetricContexts().add(rawETContext);
 
 		MetricCondition avgEtMetricCondition = MetricFactory.eINSTANCE
 				.createMetricCondition();
@@ -1537,11 +1549,12 @@ public class SensAppCDO {
 				.createNonFunctionalEvent();
 		rawStorageViolated.setIsViolation(true);
 		
-		MetricContext mlContext = MetricFactory.eINSTANCE.createMetricContext();
+		RawMetricContext mlContext = MetricFactory.eINSTANCE.createRawMetricContext();
 		mlContext.setName("RAW_STORAGE_NUM_CONTEXT");
 		mlContext.setComponent(ml);
 		mlContext.setMetric(rawStorageMetric.getMetric());
 		metricModel.getContexts().add(mlContext);
+		mlContext.setSensor(sensor2);
 
 		MetricCondition rawStorageMetricCondition = MetricFactory.eINSTANCE
 				.createMetricCondition();
