@@ -12,6 +12,13 @@ Note: first functionality (EPackage registering) should be initially invoked in 
 created by instantiating the CDOClient should be closed in the end by calling the respective java method.
 Please see the main method of the CDOClient which indicates possible ways the CDOClient can be exploited. 
 As you will see, the CDOClient needs to be created, then the appropriate EPackages must be registered, next follows the main exploitation logic in terms of particular CDOClient methods that can be called with the appropriate parameters and finally the closeSession method must be called to close the CDOSession opened by the CDOClient initially when it was created.
+In case the CDOServer is configured with security on, then the CDOClient can be initiated with
+respective userName and password to be used for authentication. If authentication is successful, 
+then the respective session keeps the user credentials until the very end of the corresponding
+CDOClient object lifetime. This means that during the lifetime of the CDOClient instance/object, 
+the user or  program will be granted access to those resources on which it has the respective 
+rights. There is no error to provide credential information even if CDOServer is not configured 
+for security but this information is actually ignored. 
 
 REQUIREMENTS:
 - Java 7

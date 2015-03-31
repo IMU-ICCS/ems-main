@@ -1,5 +1,6 @@
 package eu.paasage.mddb.cdo.client;
 
+import org.apache.log4j.BasicConfigurator;
 import org.eclipse.emf.cdo.CDOAdapter;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
@@ -36,6 +37,8 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.OMPlatform;
 import org.eclipse.net4j.util.om.log.PrintLogHandler;
 import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
+import org.eclipse.net4j.util.security.IPasswordCredentialsProvider;
+import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -114,17 +117,19 @@ public class CDOClient
 	//Parameters representing the required connection information in order to connect to the CDOServer
 	private String host, port, repositoryName;
 	private boolean logging = false;
+	private String userName, password;
+	static final  org.apache.log4j.Logger logger =  org.apache.log4j.Logger.getLogger(CDOClient.class);
 	
-	public class MyListener implements IListener{
+	/*public class MyListener implements IListener{
 
 		public void notifyEvent(IEvent arg0) {
 			// TODO Auto-generated method stub
-			System.out.println("EVENT: " + arg0);
+			logger.debug("EVENT: " + arg0);
 			if (arg0 instanceof CDOSessionInvalidationEvent){
 				CDOSessionInvalidationEvent e = (CDOSessionInvalidationEvent)arg0;
 				List<CDOIDAndVersion> newObjs = e.getNewObjects();
 				for (CDOIDAndVersion id: newObjs){
-					System.out.println("Got new object with id: " + id.getID());
+					logger.debug("Got new object with id: " + id.getID());
 				}
 		    }
 		}
@@ -136,7 +141,7 @@ public class CDOClient
 		public void objectStateChanged(CDOView arg0, CDOObject arg1,
 				CDOState arg2, CDOState arg3) {
 			// TODO Auto-generated method stub
-			System.out.println("FINALLY NOTIFIED ABOUT OBJECT STATE CHANGE FOR OBJECT: " + arg1 + " WITH STATE: " + arg3);
+			logger.debug("FINALLY NOTIFIED ABOUT OBJECT STATE CHANGE FOR OBJECT: " + arg1 + " WITH STATE: " + arg3);
 		}
 		
 	}
@@ -159,9 +164,9 @@ public class CDOClient
 
 		public void notifyChanged(Notification arg0) {
 			// TODO Auto-generated method stub
-			System.out.println("Got Notification: " + arg0);
-			System.out.println("Event type: " + arg0.getEventType());
-			System.out.println("For object: " + arg0.getFeature());
+			logger.debug("Got Notification: " + arg0);
+			logger.debug("Event type: " + arg0.getEventType());
+			logger.debug("For object: " + arg0.getFeature());
 		}
 
 		public void setTarget(Notifier arg0) {
@@ -169,7 +174,7 @@ public class CDOClient
 			
 		}
 		
-	}
+	}*/
 	
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
@@ -183,6 +188,7 @@ public class CDOClient
     static {
     	propertyFilePath = retrieveConfigurationDirectoryFullPath();
     	XMIResToResFact();
+    	BasicConfigurator.configure();
     }
     
     /* This method is required for loading/exporting XMI resources*/
@@ -204,6 +210,14 @@ public class CDOClient
 		initSession();
 	}
 	
+	/*Constructor for the client which initiates a CDO session with the authentication 
+	 * information provided*/
+	public CDOClient(String userName,String password){
+		this.userName = userName;
+		this.password = password;
+		initSession();
+	}
+	
 	/* This method is used in order to retrieve the full path to the 
 	 * configuration directory which contains the properties file of the 
 	 * CDOClient (which contains information to connect to the CDO Server)
@@ -211,7 +225,7 @@ public class CDOClient
 	private static String retrieveConfigurationDirectoryFullPath()
     {
         String propertyFilePath = System.getenv(ENV_CONFIG);
-        System.out.println("Got path: " + propertyFilePath);
+        logger.debug("Got path: " + propertyFilePath);
         
      // enable passing the configuration directory through -Deu.paasage.configdir=PATH JVM option
         if (propertyFilePath == null) {
@@ -269,7 +283,7 @@ public class CDOClient
 		String log = props.getProperty("logging");
 		if (log == null || log.equals("off")) logging = false;
 		else if (log.equals("on")) logging = true;
-		System.out.println("Got host: " + host + " port: " + port + " repository:" + repositoryName);
+		logger.debug("Got host: " + host + " port: " + port + " repository:" + repositoryName);
 	}
 	
 	/*This method is used for initiating a CDO Session starting by obtaining
@@ -335,6 +349,13 @@ public class CDOClient
 	    configuration.setConnector(connector);
 	    configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
+	    //Provide security information, if supplied by user
+	    //authentication, if succeeds last for the whole session - lifetime of CDOClient object
+	    if (userName != null && password != null){
+		    IPasswordCredentialsProvider credentialsProvider = new PasswordCredentialsProvider(userName, password);
+		    configuration.setCredentialsProvider(credentialsProvider);
+	    }
+	    
 	    // Open session
 	    session = configuration.openNet4jSession();
 	    registerCamelPackages();
@@ -374,7 +395,7 @@ public class CDOClient
 	 */
 	public CDOTransaction openTransaction(){
 	    	CDOTransaction trans = session.openTransaction();
-	    	System.out.println("Opened transaction!");
+	    	logger.debug("Opened transaction!");
 	    	return trans;
 	}
 	
@@ -384,24 +405,28 @@ public class CDOClient
 	 */
 	public CDOView openView(){
 	    	CDOView view = session.openView();
-	    	System.out.println("Opened view!");
+	    	logger.debug("Opened view!");
 	    	return view;
 	}
 	
 	/* This method can be used to delete an object provided that its cdoID is given
-	 * as a String. 
+	 * as a String. A return of false will indicate that something went wrong with the deletion
+	 * of the object. Then the respective log file must be checked to see the error message
 	 */
-	public void deleteObject(CDOID uri){
+	public boolean deleteObject(CDOID uri){
 		try{
 			CDOTransaction trans = session.openTransaction();
 			//CDOID id = CDOIDUtil.createExternal(uri);
-			//System.out.println("ID given: " + uri + " ID produced: " + id);
+			//logger.debug("ID given: " + uri + " ID produced: " + id);
 			CDOObject object = trans.getObject(uri);
-			deleteObject(object,trans,true);
+			return deleteObject(object,trans,true);
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			logger.error("Something went wrong while deleting object with CDOID: " + uri);
+			logger.error(e.getMessage());
+			//e.printStackTrace();
 		}
+		return false;
 			
 	}
 	
@@ -411,9 +436,11 @@ public class CDOClient
 	 * container. Please be aware that the last input parameter dictates whether the transaction 
 	 * will be committed and closed by this method in the end or not. If not, then the user
 	 * should be responsible for setting this parameter as true in the last delete statement
-	 * in his/her code or for committing and closing the transaction him/herself.
+	 * in his/her code or for committing and closing the transaction him/herself. 
+	 * The method returns a value of true when the deletion of the object was successful or false
+	 * otherwise. The respective log file must be inspected in the latter case.
 	 */
-	public void deleteObject(CDOObject object, CDOTransaction trans, boolean commitAndClose){
+	public boolean deleteObject(CDOObject object, CDOTransaction trans, boolean commitAndClose){
 		try{
 			//Get all references (non-containment associations) to the object
 			List<CDOObjectReference> refs = trans.queryXRefs(object);
@@ -425,9 +452,9 @@ public class CDOClient
 				List<?> list = null;
 				if(eGet instanceof List<?>){
 					list = (List<?>)eGet;
-					System.out.println("Prev size: is: " + list.size());
+					logger.debug("Prev size: is: " + list.size());
 					list.remove(target);
-					System.out.println("New size: is: " + list.size());
+					logger.debug("New size: is: " + list.size());
 				}
 				else{
 					source.eSet(feat, null);
@@ -436,14 +463,14 @@ public class CDOClient
 			//Get containment association and delete it
 			CDOObject parent = (CDOObject)object.eContainer();
 			EStructuralFeature feat = object.eContainmentFeature();
-			System.out.println("The feature is: " + feat);
+			logger.debug("The feature is: " + feat);
 			Object eGet = parent.eGet(feat);
 			List<?> list = null;
 			if (eGet instanceof List<?>){
 				list = (List<?>)eGet;
-				System.out.println("Prev size: is: " + list.size());
+				logger.debug("Prev size: is: " + list.size());
 				list.remove(object);
-				System.out.println("New size: is: " + list.size());
+				logger.debug("New size: is: " + list.size());
 			}
 			else{
 				parent.eSet(feat, null);
@@ -452,10 +479,14 @@ public class CDOClient
 				trans.commit();
 				trans.close();
 			}
+			return true;
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			logger.error("Something went wrong while deleting object: " + object);
+			logger.error(e.getMessage());
+			//e.printStackTrace();
 		}
+		return false;
 	}
 	
 	/* This method is used for closing a CDO transaction. 
@@ -473,9 +504,11 @@ public class CDOClient
 	/* This method is used to store a model into a CDOResource with a particular
 	 * name. Do not need to open or close a transaction for this as the
 	 * method performs them for you in a transparent manner. The input parameters are: the model to store and the name of the
-	 * CDOResource to contain it.
+	 * CDOResource to contain it. The output of the method call indicates whether the model
+	 * storage was successful or not. In the latter, negative case, the log file must be 
+	 * inspected.
 	 */
-	public void storeModel(EObject model, String resourceName){
+	public boolean storeModel(EObject model, String resourceName){
 		CDOTransaction trans = openTransaction();
 		CDOResource cdo = trans.getOrCreateResource(resourceName);
 		EList<EObject> list = cdo.getContents();
@@ -483,16 +516,22 @@ public class CDOClient
 		try{
 			  trans.commit();
 			  trans.close();
+			  return true;
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			logger.error("Something went wrong while storing model: " + model + " with resourceName:" + resourceName);
+			logger.error(e.getMessage());
+			//e.printStackTrace();
 		}
+		return false;
 	}
 	
 	/* This method is used to save a model into the file system in a specific path given as input
 	 * The input parameters are: the model to store and the file path to store it in the file system.
+	 * The output indicates whether the model saving was successful or not. The log file must be
+	 * inspected in the latter negative case. 
 	 */
-	public void saveModel(EObject model, String pathName){
+	public boolean saveModel(EObject model, String pathName){
 		final ResourceSet rs = new ResourceSetImpl();
 		rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		Resource res = null;
@@ -507,14 +546,18 @@ public class CDOClient
 			res = rs.createResource(URI.createFileURI(pathName));
 			contents = res.getContents();
 		}
-		System.out.println("Got resource: " + res);
+		logger.debug("Got resource: " + res);
 		contents.add(model);
 		try{
 			res.save(null);
+			return true;
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			logger.error("Something went wrong while storing model: " + model + " at path: " + pathName);
+			logger.error(e.getMessage());
+			//e.printStackTrace();
 		}
+		return false;
 	}
 	
 	/* This method is used to create a particular model based on the CERIF
@@ -604,7 +647,7 @@ public class CDOClient
 			ra1.setAssignedOn(ft.parse("1976-12-16"));
 			ra1.setStart(ft.parse("1977-12-16"));
 			ra1.setEnd(ft.parse("1978-12-16"));
-			System.out.println("End date: " + ra1.getEnd());
+			logger.debug("End date: " + ra1.getEnd());
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -661,9 +704,9 @@ public class CDOClient
 		  final ResourceSet rs = new ResourceSetImpl();
 		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
-		  System.out.println("Got resource: " + res);
+		  logger.debug("Got resource: " + res);
 		  EList<EObject> contents = res.getContents();
-		  System.out.println("Contents are: " + contents);
+		  logger.debug("Contents are: " + contents);
 		  
 		  return contents.get(0);
 	  }
@@ -678,9 +721,11 @@ public class CDOClient
 	 * the first model of the respective type is actually obtained). We must also
 	 * note that the user is responsible of providing correct input parameters as well
 	 * as ensuring that the requested model is indeed stored in the CDOResource whose
-	 * name is signified in the input parameters.    
+	 * name is signified in the input parameters. In case of an exception affecting the model
+	 * exporting, the value of false is returned by this method and the respective log file
+	 * must be inspected to check the exception raised.    
 	 */
-	public void exportModel(String resourceName, Class c, String filePath){
+	public boolean exportModel(String resourceName, Class c, String filePath){
 		  
 		  CDOTransaction trans = null;
 		  try{
@@ -775,11 +820,15 @@ public class CDOClient
 				  }
 			  }
 			  trans.close();
+			  return true;
 		  }
 		  catch(Exception e){
-			  e.printStackTrace();
+			  logger.error("Something went wrong while exporting resource: " + resourceName);
+			  logger.error(e.getMessage());
+			  //e.printStackTrace();
 			  if (trans != null) trans.close();
 		  }
+		  return false;
 	  }
 
 	/* This method is used to export a model or instance of EObject in general into a XMI file.
@@ -787,19 +836,25 @@ public class CDOClient
 	 * issuing a query. The method takes as input two parameters: (a) the query results 
 	 * as an EObject to be exported, (b) the path of the file to be created.
 	 * Please note that this method should be called only when a respective CDO transaction 
-	 * has been opened - otherwise an exception will be thrown       
+	 * has been opened - otherwise an exception will be thrown. Any exception leads to the
+	 * return of a false value and the generation of a respective error entry in the log file;
+	 * otherwise, a value of true is returned.       
 	 */
-	public void exportModel(EObject model, String filePath){
+	public boolean exportModel(EObject model, String filePath){
 		  try{
 			  final ResourceSet rs = new ResourceSetImpl();
 			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 			  Resource res = rs.createResource(URI.createFileURI(filePath));
 			  res.getContents().add(model);
 			  res.save(null);
+			  return true;
 		  }
 		  catch(Exception e){
-			  e.printStackTrace();
+			  logger.error("Something went wrong while exporting model: " + model + " at path: " + filePath);
+			  logger.error(e.getMessage());
+			  //e.printStackTrace();
 		  }
+		  return false;
 	  }
 	
 	/* This method is used to run a query over the contents stored in the 
@@ -845,7 +900,7 @@ public class CDOClient
    * obtain particular objects specified by it*/
   public static void main(String[] args){
 	  //Create the CDOClient
-	  CDOClient cl = new CDOClient();
+	  CDOClient cl = new CDOClient("Administrator","0000");
 	  //cl.session.addListener(cl.new MyListener());
 	  //cl.session.options().setPassiveUpdateEnabled(true);
 	  //cl.session.options().setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.ADDITIONS);
@@ -855,13 +910,7 @@ public class CDOClient
 	  constantView.addObjectHandler(cl.new MyHandler());
 	  constantView.addListener(cl.new MyListener());*/
 	  //constantView.addObjectHandler(cl.new MyHandler());
-	  //Register the required packages
-	  cl.registerPackage(CamelPackage.eINSTANCE);
-	  cl.registerPackage(OrganisationPackage.eINSTANCE);
-	  cl.registerPackage(DeploymentPackage.eINSTANCE);
-	  cl.registerPackage(ScalabilityPackage.eINSTANCE);
-	  cl.registerPackage(ProviderPackage.eINSTANCE);
-	  cl.registerPackage(TypePackage.eINSTANCE);
+	  //Register required packages, such as those pertaining to the WP3 meta-models
 	  /*cl.registerPackage(ApplicationPackage.eINSTANCE);
 	  cl.registerPackage(CpPackage.eINSTANCE);
 	  cl.registerPackage(TypesPackage.eINSTANCE);*/
@@ -874,9 +923,9 @@ public class CDOClient
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1");
 	  //Load a model from a XMI resource
-	  //model = cl.loadModel("examples/SensApp.xmi");
+	  model = cl.loadModel("examples/Scalarm.xmi");
 	  //Store the model under a CDOResource with a particular name
-	  //cl.storeModel(model,"sensAppResource2");
+	  cl.storeModel(model,"sensAppResource1");
 	  //Load & store WP3 models
 	  //model = cl.loadModel("examples/cpModel.xmi");
 	  //cl.storeModel(model,"cpModel");
@@ -892,16 +941,16 @@ public class CDOClient
 	  CDOView view = cl.openView();
 	  User user = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
 	  CDOID uri = user.cdoID();
-	  System.out.println("URI Fragment: " + uri);
+	  logger.debug("URI Fragment: " + uri);
 	  view.close();
 	  cl.deleteObject(uri);
 	  
 	  //Check that the objects have been deleted
 	  view = cl.openView();
 	  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.name='ID2' or id.name='ID3')").getResult(ExternalIdentifier.class);
-	  System.out.println("Did we get the ids requested?: " + !(types.isEmpty()));
+	  logger.debug("Did we get the ids requested?: " + !(types.isEmpty()));
 	  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
-	  System.out.println("Did we get the users requested?: " + !(users.isEmpty()));
+	  logger.debug("Did we get the users requested?: " + !(users.isEmpty()));
 	  view.close();
 	  
 	  /*Run a query - three ways are shown here: (i) ocl query, 
@@ -915,14 +964,14 @@ public class CDOClient
 	   */
 	  //OCL query plus exporting of first result
 	  List<EObject> results = cl.runQuery("ocl","camel::organisation::User.allInstances()","queryResult.xmi");
-	  System.out.println("The results of the query are:" + results);
+	  logger.debug("The results of the query are:" + results);
 	  //HQL query with no exporting
 	  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
-	  System.out.println("The results of the query are:" + results);
+	  logger.debug("The results of the query are:" + results);
 	  //Obtaining all contents of a CDOResource
 	  view = cl.openView();
 	  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
-	  System.out.println("The objs stored are: " + objs);
+	  logger.debug("The objs stored are: " + objs);
 	  cl.closeView(view);
 	  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
 	  cl.exportModel("sensAppResource1", DeploymentModel.class, "examples/SensApp_DepModel.xmi");
