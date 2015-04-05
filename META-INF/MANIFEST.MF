@@ -17,5 +17,6 @@ Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.emf.cdo.internal.net4j.protocol;version="4.1.200",
  org.eclipse.emf.cdo.net4j;version="4.1.200",
  org.eclipse.emf.cdo.view,
- org.eclipse.net4j.internal.tcp;version="4.1.200"
+ org.eclipse.net4j.internal.tcp;version="4.1.200",
+ org.eclipse.ocl.examples.library.oclstdlib
 Export-Package: eu.paasage.mddb.cdo.client

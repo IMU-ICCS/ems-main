@@ -1066,7 +1066,7 @@ public class SensAppCDO {
 
 		MonetaryUnit costMonetaryUnit = UnitFactory.eINSTANCE
 				.createMonetaryUnit();
-		costMonetaryUnit.setDimensionType(UnitDimensionType.COST);
+		//costMonetaryUnit.setDimensionType(UnitDimensionType.COST);
 		costMonetaryUnit.setUnit(UnitType.EUROS);
 		costMonetaryUnit.setName("euros");
 
@@ -1152,7 +1152,7 @@ public class SensAppCDO {
 		
 		sensAppDeploymentModel.getHostings().add(jettySCToVMSL);
 		
-		Hosting jettySCToVMML = DeploymentFactory.eINSTANCE.createHosting();
+		/*Hosting jettySCToVMML = DeploymentFactory.eINSTANCE.createHosting();
 		jettySCToVMML.setName("JettySCToVMML");
 		jettySCToVMML.setProvidedHost(vmMLProv);
 		jettySCToVMML.setRequiredHost(vmJettySCReq);
@@ -1164,7 +1164,7 @@ public class SensAppCDO {
 		jettySCToVMLL.setProvidedHost(vmLLProv);
 		jettySCToVMLL.setRequiredHost(vmJettySCReq);
 		
-		sensAppDeploymentModel.getHostings().add(jettySCToVMLL);
+		sensAppDeploymentModel.getHostings().add(jettySCToVMLL);*/
 		
 		Hosting mongoDBToVMSL = DeploymentFactory.eINSTANCE.createHosting();
 		mongoDBToVMSL.setName("MongoDBToVMSL");
@@ -1173,7 +1173,7 @@ public class SensAppCDO {
 		
 		sensAppDeploymentModel.getHostings().add(mongoDBToVMSL);
 		
-		Hosting mongoDBToVMML = DeploymentFactory.eINSTANCE.createHosting();
+		/*Hosting mongoDBToVMML = DeploymentFactory.eINSTANCE.createHosting();
 		mongoDBToVMML.setName("MongoDBToVMML");
 		mongoDBToVMML.setProvidedHost(vmMLProv);
 		mongoDBToVMML.setRequiredHost(vmMongoDBReq);
@@ -1185,7 +1185,7 @@ public class SensAppCDO {
 		mongoDBToVMLL.setProvidedHost(vmLLProv);
 		mongoDBToVMLL.setRequiredHost(vmMongoDBReq);
 		
-		sensAppDeploymentModel.getHostings().add(mongoDBToVMLL);
+		sensAppDeploymentModel.getHostings().add(mongoDBToVMLL);*/
 		
 		Hosting sensAppToServletContainer = DeploymentFactory.eINSTANCE.createHosting();
 		sensAppToServletContainer.setName("SensAppToServletContainer");
@@ -1212,7 +1212,7 @@ public class SensAppCDO {
 
 		sensAppDeploymentModel.getHostingInstances().add(jettySC2ToSL1);
 
-		HostingInstance jettySC1ToVMLL1 = DeploymentFactory.eINSTANCE
+		/*HostingInstance jettySC1ToVMLL1 = DeploymentFactory.eINSTANCE
 				.createHostingInstance();
 		jettySC1ToVMLL1.setName("JettySC1ToVMLL1");
 		jettySC1ToVMLL1.setProvidedHostInstance(vmLLProv1);
@@ -1228,7 +1228,7 @@ public class SensAppCDO {
 		mongoDB1ToVMML1.setRequiredHostInstance(vmMongoDBReq1);
 		mongoDB1ToVMML1.setType(mongoDBToVMML);
 
-		sensAppDeploymentModel.getHostingInstances().add(mongoDB1ToVMML1);
+		sensAppDeploymentModel.getHostingInstances().add(mongoDB1ToVMML1);*/
 
 		HostingInstance sensApp1ToJettySC1 = DeploymentFactory.eINSTANCE
 				.createHostingInstance();
@@ -1269,7 +1269,7 @@ public class SensAppCDO {
 
 		TimeIntervalUnit timeInterval = UnitFactory.eINSTANCE
 				.createTimeIntervalUnit();
-		timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
+		//timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
 		timeInterval.setUnit(UnitType.SECONDS);
 		timeInterval.setName("seconds");
 		metricModel.getUnits().add(timeInterval);
@@ -1315,7 +1315,6 @@ public class SensAppCDO {
 		avgExecTimeFormula.setFunction(MetricFunctionType.MEAN);
 		avgExecTimeFormula.setFunctionArity(MetricFunctionArityType.UNARY);
 		avgExecTimeFormula.getParameters().add(rawExecTime);
-		metricModel.getParameters().add(avgExecTimeFormula);
 
 		avgExecTime.setFormula(avgExecTimeFormula);
 		avgExecTime.setLayer(LayerType.SAA_S);
@@ -1350,7 +1349,7 @@ public class SensAppCDO {
 		avgExecTime.setValueType(avgEtMetricRange);
 
 		StorageUnit storageUnit = UnitFactory.eINSTANCE.createStorageUnit();
-		storageUnit.setDimensionType(UnitDimensionType.STORAGE);
+		//storageUnit.setDimensionType(UnitDimensionType.STORAGE);
 		storageUnit.setUnit(UnitType.GIGABYTES);
 		storageUnit.setName("gigabytes");
 
@@ -1582,7 +1581,9 @@ public class SensAppCDO {
 		horizPolicySensApp.setId("HorizPolicySensApp");
 		horizPolicySensApp.setMaxInstances(4);
 		horizPolicySensApp.setMinInstances(1);
-
+		
+		user1.getRequirements().add(horizPolicySensApp);
+		
 		scalabilityModel.getScaleRequirements().add(horizPolicySensApp);
 
 		VerticalScaleRequirement verticalPolicyMongoDb = RequirementFactory.eINSTANCE
@@ -1597,6 +1598,8 @@ public class SensAppCDO {
 		verticalPolicyMongoDb.setMinRAM(0);
 		verticalPolicyMongoDb.setMinStorage(512);
 		verticalPolicyMongoDb.setVm(ml);
+		
+		user1.getRequirements().add(verticalPolicyMongoDb);
 
 		scalabilityModel.getScaleRequirements().add(verticalPolicyMongoDb);
 

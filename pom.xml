@@ -63,6 +63,11 @@
       <name>PaaSage repository</name>
       <url>http://jenkins.paasage.cetic.be/repository/</url>
     </repository>
+    <repository>
+        <id>local</id>
+        <name>local library</name>
+        <url>file:${project.basedir}/lib</url>
+    </repository>
   </repositories>
   
   <dependencies>
@@ -182,10 +187,116 @@
 		<version>v20140308-0604</version>
 	  </dependency>
 	  <dependency>
+		<groupId>org.eclipse.ocl.examples</groupId>
+		<artifactId>pivot_3.4.0</artifactId>
+		<version>v20140601-1110</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples.xtext</groupId>
+		<artifactId>completeocl_3.4.0</artifactId>
+		<version>v20140528-1458</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples.xtext</groupId>
+		<artifactId>oclinecore_3.4.0</artifactId>
+		<version>v20140528-1458</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples.xtext</groupId>
+		<artifactId>oclstdlib_3.4.0</artifactId>
+		<version>v20140528-1458</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples</groupId>
+		<artifactId>domain_3.4.2</artifactId>
+		<version>v20140725-1916</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples</groupId>
+		<artifactId>library_3.4.2</artifactId>
+		<version>v20140725-1916</version>
+	  </dependency>
+	  <!-- <dependency>
+		<groupId>org.eclipse.ocl</groupId>
+		<artifactId>common</artifactId>
+		<version>1.2.0-v20140528-1458</version>
+	  </dependency> -->
+	  <dependency>
+		<groupId>org.eclipse.xtext</groupId>
+		<artifactId>org.eclipse.xtext</artifactId>
+		<version>2.7.2</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl</groupId>
+		<artifactId>common_1.2.0</artifactId>
+		<version>v20140610-0641</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples.xtext</groupId>
+		<artifactId>essentialocl_3.4.2</artifactId>
+		<version>v20140819-1601</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples.xtext</groupId>
+		<artifactId>base_3.4.2</artifactId>
+		<version>v20140725-1916</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.uml2</groupId>
+		<artifactId>uml_5.0.1</artifactId>
+		<version>v20140910-1354</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples</groupId>
+		<artifactId>common_3.3.0</artifactId>
+		<version>v20140712-2020</version>
+	  </dependency>
+	  <!-- <dependency>
+		<groupId>org.eclipse.emf</groupId>
+		<artifactId>edit_2.10.1</artifactId>
+		<version>v20140901-1055</version>
+	  </dependency> -->
+	  <dependency>
+		<groupId>org.eclipse.emf</groupId>
+		<artifactId>org.eclipse.emf.edit</artifactId>
+		<version>2.10.1-v20140901-1055</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.xtext</groupId>
+		<artifactId>org.eclipse.xtext.common.types</artifactId>
+		<version>2.7.2</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.uml2.uml</groupId>
+		<artifactId>resources_5.0.0</artifactId>
+		<version>v20140910-1354</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.uml2</groupId>
+		<artifactId>common_2.0.1</artifactId>
+		<version>v20140910-1354</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.uml2</groupId>
+		<artifactId>types_2.0.0</artifactId>
+		<version>v20140910-1354</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.uml2.uml.profile</groupId>
+		<artifactId>standard_1.0.0</artifactId>
+		<version>v20140910-1354</version>
+	  </dependency>
+	  <dependency>
+		<groupId>org.eclipse.emf</groupId>
+		<artifactId>org.eclipse.emf.mapping.ecore2xml</artifactId>
+		<version>2.8.0-v20140901-1055</version>
+	  </dependency>
+	  <!-- <dependency>
 		<groupId>commons-logging</groupId>
 		<artifactId>commons-logging</artifactId>
 		<version>1.1.1</version>
 	  </dependency>
+	   -->
 	  <dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
