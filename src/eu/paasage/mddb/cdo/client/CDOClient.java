@@ -1,31 +1,20 @@
 package eu.paasage.mddb.cdo.client;
 
-import org.apache.log4j.BasicConfigurator;
-import org.eclipse.emf.cdo.CDOAdapter;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
-import org.eclipse.emf.cdo.CDOState;
-import org.eclipse.emf.cdo.common.CDOCommonSession;
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
+import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
-import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.session.CDOSessionInvalidationEvent;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.transaction.CDOTransactionFinishedEvent;
-import org.eclipse.emf.cdo.view.CDOAdapterPolicy;
-import org.eclipse.emf.cdo.view.CDOObjectHandler;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.cdo.view.CDOViewAdaptersNotifiedEvent;
-import org.eclipse.emf.cdo.view.CDOViewInvalidationEvent;
-import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;
-import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.net4j.FactoriesProtocolProvider;
@@ -46,16 +35,14 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.Diagnostician;
+import org.eclipse.emf.ecore.util.EContentAdapter;
 import org.eclipse.emf.ecore.xmi.XMIResource;
-import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 
 import eu.paasage.camel.CamelFactory;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.requirement.RequirementGroup;
 import eu.paasage.camel.requirement.RequirementModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
@@ -70,16 +57,15 @@ import eu.paasage.camel.metric.MetricPackage;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.ExternalIdentifier;
-import eu.paasage.camel.organisation.Organisation;
 import eu.paasage.camel.organisation.OrganisationFactory;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.OrganisationPackage;
+import eu.paasage.camel.organisation.PaaSageCredentials;
 import eu.paasage.camel.organisation.ResourceGroup;
 import eu.paasage.camel.organisation.Role;
 import eu.paasage.camel.organisation.RoleAssignment;
 import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.organisation.UserGroup;
-import eu.paasage.camel.provider.Implies;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.scalability.ScalabilityModel;
@@ -96,9 +82,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -113,71 +97,41 @@ public class CDOClient
 	private org.eclipse.net4j.internal.tcp.TCPClientConnector connector;
 	//private org.eclipse.net4j.internal.jvm.JVMClientConnector connector;
 	//The CDOSession that is created by the CDOClient which will be used to create CDO transactions or views
-	private CDOSession session;
-	//Configuration object for the CDO session
-	private CDONet4jSessionConfiguration configuration = null;
+	private CDONet4jSession session;
 	//Parameters representing the required connection information in order to connect to the CDOServer
 	private String host, port, repositoryName;
 	private boolean logging = false;
 	private String userName, password;
 	private static org.apache.log4j.Logger logger;
 	
-	/*public class MyListener implements IListener{
+	public class MyListener implements IListener{
 
+		/* Listens to CDOSessionInvalidationEvent and reports new, updated & deleted objects
+		 * in the context of any successful execution of any transaction
+		 * @see org.eclipse.net4j.util.event.IListener#notifyEvent(org.eclipse.net4j.util.event.IEvent)
+		 */
 		public void notifyEvent(IEvent arg0) {
 			// TODO Auto-generated method stub
 			logger.info("EVENT: " + arg0);
 			if (arg0 instanceof CDOSessionInvalidationEvent){
 				CDOSessionInvalidationEvent e = (CDOSessionInvalidationEvent)arg0;
-				List<CDOIDAndVersion> newObjs = e.getNewObjects();
-				for (CDOIDAndVersion id: newObjs){
+				List<CDOIDAndVersion> objs = e.getNewObjects();
+				for (CDOIDAndVersion id: objs){
 					logger.info("Got new object with id: " + id.getID());
+				}
+				objs = e.getDetachedObjects();
+				for (CDOIDAndVersion id: objs){
+					logger.info("Got deleted object with id: " + id.getID());
+				}
+				List<CDORevisionKey> modObjs = e.getChangedObjects();
+				for (CDORevisionKey id: modObjs){
+					logger.info("Got changed object with id: " + id.getID());
 				}
 		    }
 		}
 		
 	}
-	
-	public class MyHandler implements CDOObjectHandler{
-
-		public void objectStateChanged(CDOView arg0, CDOObject arg1,
-				CDOState arg2, CDOState arg3) {
-			// TODO Auto-generated method stub
-			logger.info("FINALLY NOTIFIED ABOUT OBJECT STATE CHANGE FOR OBJECT: " + arg1 + " WITH STATE: " + arg3);
-		}
 		
-	}
-	
-	public class MyInformer implements CDOAdapter{
-		
-		public MyInformer(){
-			
-		}
-
-		public Notifier getTarget() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		public boolean isAdapterForType(Object arg0) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		public void notifyChanged(Notification arg0) {
-			// TODO Auto-generated method stub
-			logger.info("Got Notification: " + arg0);
-			logger.info("Event type: " + arg0.getEventType());
-			logger.info("For object: " + arg0.getFeature());
-		}
-
-		public void setTarget(Notifier arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}*/
-	
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
 	//A static parameter that maps to a default path where the properties file of the CDOClient can be found
@@ -361,9 +315,6 @@ public class CDOClient
 	    // Open session
 	    session = configuration.openNet4jSession();
 	    registerCamelPackages();
-	    /*session.getPackageRegistry().putEPackage(CamelPackage.eINSTANCE);
-	    session.getPackageRegistry().putEPackage(OrganisationPackage.eINSTANCE);
-	    session.getPackageRegistry().putEPackage(EcorePackage.eINSTANCE);*/
 	}
 	
 	/* This method is used to register all Packages of Camel meta-model
@@ -516,6 +467,20 @@ public class CDOClient
 		view.close();
 	}
 	
+	/* This method is used for adding a listener to the CDOSession established. 
+	 */
+	public void addListener(IListener listener){
+		if (!session.hasListeners()) session.options().setPassiveUpdateEnabled(true);
+		session.addListener(listener);
+	}
+	
+	/* This method is used for removing a listener to the CDOSession established. 
+	 */
+	public void removeListener(IListener listener){
+		session.removeListener(listener);
+		if (!session.hasListeners()) session.options().setPassiveUpdateEnabled(false);
+	}
+	
 	/* This method is used to store a model into a CDOResource with a particular
 	 * name. Do not need to open or close a transaction for this as the
 	 * method performs them for you in a transparent manner. The input parameters 
@@ -627,11 +592,16 @@ public class CDOClient
 		user1.setLastName("User");
 		user1.setFirstName("User1");
 		user1.setEmail("user@user1");
-		EList<Organisation> worksFor = user1.getOrganisations();
 		EList<ExternalIdentifier> exIDs1 = user1.getExternalIdentifiers();
 		exIDs1.add(id1);
 		exIDs1.add(id2);
 		users.add(user1);
+		
+		PaaSageCredentials pc1 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
+		pc1.setId("user1_P_Credentials");
+		pc1.setUsername("user1");
+		pc1.setPassword("user1");
+		user1.setPaasageCredentials(pc1);
 		
 		User user2 = OrganisationFactory.eINSTANCE.createUser();
 		user2.setFirstName("User2");
@@ -642,13 +612,18 @@ public class CDOClient
 		//exIDs1.add(id2);
 		exIDs1.add(id3);
 		
+		PaaSageCredentials pc2 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
+		pc2.setId("user2_P_Credentials");
+		pc2.setUsername("user2");
+		pc2.setPassword("user2");
+		user2.setPaasageCredentials(pc2);
+		
 		CloudProvider org1 = OrganisationFactory.eINSTANCE.createCloudProvider();
 		org1.setEmail("email2");
 		org1.setName("Org2");
 		org1.setWww("www2");
 		org1.setPublic(true);
 		om.setOrganisation(org1);
-		worksFor.add(org1);
 		
 		UserGroup ug1 = OrganisationFactory.eINSTANCE.createUserGroup();
 		ug1.setName("ug1");
@@ -928,19 +903,9 @@ public class CDOClient
   public static void main(String[] args){
 	  //Create the CDOClient
 	  CDOClient cl = new CDOClient("Administrator","0000");
-	  //cl.session.addListener(cl.new MyListener());
-	  //cl.session.options().setPassiveUpdateEnabled(true);
-	  //cl.session.options().setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.ADDITIONS);
-	  //CDOView constantView = cl.openView();
-	  /*constantView.options().setInvalidationNotificationEnabled(true);
-	  constantView.options().addChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
-	  constantView.addObjectHandler(cl.new MyHandler());
-	  constantView.addListener(cl.new MyListener());*/
-	  //constantView.addObjectHandler(cl.new MyHandler());
-	  //Register required packages, such as those pertaining to the WP3 meta-models
-	  /*cl.registerPackage(ApplicationPackage.eINSTANCE);
-	  cl.registerPackage(CpPackage.eINSTANCE);
-	  cl.registerPackage(TypesPackage.eINSTANCE);*/
+	  //Creating & adding a listener to the session
+	  MyListener listener = cl.new MyListener();
+	  cl.addListener(listener);
 	  //Create a particular model (CERIF)
 	  EObject model = cl.createCerifModel();
 	  //Store the model under a CDOResource with a particular name
@@ -953,24 +918,18 @@ public class CDOClient
 	  model = cl.loadModel("examples/Scalarm.xmi");
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"scalarmResource1",true);
-	  //Load & store WP3 models
-	  //model = cl.loadModel("examples/cpModel.xmi");
-	  //cl.storeModel(model,"cpModel");
 	  
 	  //Create transaction and use this to delete object
 	  CDOTransaction trans = cl.openTransaction(true);
-	  ExternalIdentifier id = trans.createQuery("hql", "select id from ExternalIdentifier id where id.name='ID2'").getResult(ExternalIdentifier.class).get(0);
-	  cl.deleteObject(id,trans,true);
-	  trans = cl.openTransaction(true);
-	  id = trans.createQuery("hql", "select id from ExternalIdentifier id where id.name='ID3'").getResult(ExternalIdentifier.class).get(0);
-	  cl.deleteObject(id,trans,true);
+	  User user = trans.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
+	  cl.deleteObject(user.getPaasageCredentials(),trans,false);
+	  cl.deleteObject(user,trans,true);
 	  //Create view, get cdoID and then delete object by using this id as input
 	  CDOView view = cl.openView();
-	  User user = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
-	  CDOID uri = user.cdoID();
-	  logger.info("URI Fragment: " + uri);
+	  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.name='ID2'").getResult(ExternalIdentifier.class).get(0);
+	  CDOID cdoID1 = id1.cdoID();
 	  view.close();
-	  cl.deleteObject(uri);
+	  cl.deleteObject(cdoID1);
 	  
 	  //Check that the objects have been deleted
 	  view = cl.openView();
@@ -1002,8 +961,9 @@ public class CDOClient
 	  cl.closeView(view);
 	  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
 	  cl.exportModel("sensAppResource1", DeploymentModel.class, "examples/SensApp_DepModel.xmi");
+	  //Remove listener as no longer needed
+	  cl.removeListener(listener);
 	  //Close the CDOSession once you are done
-	  //constantView.close();
 	  cl.closeSession();
 	  System.exit(1);
   }

@@ -60,11 +60,13 @@ import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
+import eu.paasage.camel.organisation.CloudCredentials;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.Credentials;
 import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.OrganisationFactory;
 import eu.paasage.camel.organisation.OrganisationModel;
+import eu.paasage.camel.organisation.PaaSageCredentials;
 import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.AttributeConstraint;
@@ -586,7 +588,6 @@ public class SensAppCDO {
 		sintefOrgModel.setName("SINTEF Organisation Model");
 		EList<DataCenter> sintefDCs = sintefOrgModel.getDataCentres();
 		EList<User> sintefUsers = sintefOrgModel.getUsers();
-		EList<Credentials> sintefCredentials = sintefOrgModel.getCredentials();
 
 		User user1 = OrganisationFactory.eINSTANCE.createUser();
 		user1.setEmail("user@sintef.no");
@@ -594,15 +595,23 @@ public class SensAppCDO {
 		user1.setLastName("User");
 
 		sintefUsers.add(user1);
+		
+		PaaSageCredentials user1Credentials = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
+		user1Credentials.setId("User1_PaaSage_Credentials");
+		user1Credentials.setUsername("user1");
+		user1Credentials.setPassword("user1_at_sintef_dot_no");
+		user1.setPaasageCredentials(user1Credentials);
 
-		Credentials user1AmazonCredentials = OrganisationFactory.eINSTANCE
-				.createCredentials();
+		CloudCredentials user1AmazonCredentials = OrganisationFactory.eINSTANCE
+				.createCloudCredentials();
+		user1AmazonCredentials.setId("User1_Amazon_Credentials");
 		user1AmazonCredentials.setCloudProvider(amazonProvider);
-		sintefCredentials.add(user1AmazonCredentials);
-		Credentials user1FlexiantCredentials = OrganisationFactory.eINSTANCE
-				.createCredentials();
+		user1.getCloudCredentials().add(user1AmazonCredentials);
+		CloudCredentials user1FlexiantCredentials = OrganisationFactory.eINSTANCE
+				.createCloudCredentials();
+		user1FlexiantCredentials.setId("User1_Flexiant_Credentials");
 		user1FlexiantCredentials.setCloudProvider(flexiantProvider);
-		sintefCredentials.add(user1FlexiantCredentials);
+		user1.getCloudCredentials().add(user1FlexiantCredentials);
 
 		CloudProvider sintefNovaProvider = OrganisationFactory.eINSTANCE
 				.createCloudProvider();
@@ -625,10 +634,11 @@ public class SensAppCDO {
 
 		sintefDCs.add(sintefDataCenter);
 
-		Credentials user1SintefNovaCredentials = OrganisationFactory.eINSTANCE
-				.createCredentials();
+		CloudCredentials user1SintefNovaCredentials = OrganisationFactory.eINSTANCE
+				.createCloudCredentials();
+		user1SintefNovaCredentials.setId("User1_Amazon_Credentials");
 		user1SintefNovaCredentials.setCloudProvider(sintefNovaProvider);
-		sintefCredentials.add(user1SintefNovaCredentials);
+		user1.getCloudCredentials().add(user1SintefNovaCredentials);
 
 		// //// END definition of Sintef Nova Organisation model
 
