@@ -591,6 +591,7 @@ public class CDOClient
 		User user1 = OrganisationFactory.eINSTANCE.createUser();
 		user1.setLastName("User");
 		user1.setFirstName("User1");
+		user1.setId("User1");
 		user1.setEmail("user@user1");
 		EList<ExternalIdentifier> exIDs1 = user1.getExternalIdentifiers();
 		exIDs1.add(id1);
@@ -606,6 +607,7 @@ public class CDOClient
 		User user2 = OrganisationFactory.eINSTANCE.createUser();
 		user2.setFirstName("User2");
 		user2.setLastName("User");
+		user2.setId("User2");
 		user2.setEmail("user2@User");
 		users.add(user2);
 		exIDs1 = user2.getExternalIdentifiers();

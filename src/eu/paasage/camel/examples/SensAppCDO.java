@@ -593,6 +593,7 @@ public class SensAppCDO {
 		user1.setEmail("user@sintef.no");
 		user1.setFirstName("User1");
 		user1.setLastName("User");
+		user1.setId("User1");
 
 		sintefUsers.add(user1);
 		
@@ -1591,8 +1592,9 @@ public class SensAppCDO {
 		horizPolicySensApp.setId("HorizPolicySensApp");
 		horizPolicySensApp.setMaxInstances(4);
 		horizPolicySensApp.setMinInstances(1);
+		rm.getRequirements().add(horizPolicySensApp);
 		
-		user1.getRequirements().add(horizPolicySensApp);
+		user1.getRequirementModels().add(rm);
 		
 		scalabilityModel.getScaleRequirements().add(horizPolicySensApp);
 
@@ -1609,7 +1611,7 @@ public class SensAppCDO {
 		verticalPolicyMongoDb.setMinStorage(512);
 		verticalPolicyMongoDb.setVm(ml);
 		
-		user1.getRequirements().add(verticalPolicyMongoDb);
+		rm.getRequirements().add(verticalPolicyMongoDb);
 
 		scalabilityModel.getScaleRequirements().add(verticalPolicyMongoDb);
 
@@ -1641,7 +1643,6 @@ public class SensAppCDO {
 		user1RG.setRequirementOperator(RequirementOperatorType.AND);
 		user1RG.getRequirements().add(verticalPolicyMongoDb);
 		user1RG.getRequirements().add(horizPolicySensApp);
-		user1RG.setUser(user1);
 
 		rm.getRequirements().add(user1RG);
 
