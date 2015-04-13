@@ -79,9 +79,12 @@ import eu.paasage.camel.unit.UnitPackage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -103,35 +106,7 @@ public class CDOClient
 	private boolean logging = false;
 	private String userName, password;
 	private static org.apache.log4j.Logger logger;
-	
-	public class MyListener implements IListener{
-
-		/* Listens to CDOSessionInvalidationEvent and reports new, updated & deleted objects
-		 * in the context of any successful execution of any transaction
-		 * @see org.eclipse.net4j.util.event.IListener#notifyEvent(org.eclipse.net4j.util.event.IEvent)
-		 */
-		public void notifyEvent(IEvent arg0) {
-			// TODO Auto-generated method stub
-			logger.info("EVENT: " + arg0);
-			if (arg0 instanceof CDOSessionInvalidationEvent){
-				CDOSessionInvalidationEvent e = (CDOSessionInvalidationEvent)arg0;
-				List<CDOIDAndVersion> objs = e.getNewObjects();
-				for (CDOIDAndVersion id: objs){
-					logger.info("Got new object with id: " + id.getID());
-				}
-				objs = e.getDetachedObjects();
-				for (CDOIDAndVersion id: objs){
-					logger.info("Got deleted object with id: " + id.getID());
-				}
-				List<CDORevisionKey> modObjs = e.getChangedObjects();
-				for (CDORevisionKey id: modObjs){
-					logger.info("Got changed object with id: " + id.getID());
-				}
-		    }
-		}
-		
-	}
-		
+			
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
 	//A static parameter that maps to a default path where the properties file of the CDOClient can be found
@@ -713,7 +688,30 @@ public class CDOClient
 		  logger.info("Contents are: " + contents);
 		  
 		  return contents.get(0);
-	  }
+	}
+	
+	/* This method is used to load a model from a particular xmi resource. The model
+	 * can then be stored to the CDO Server/Repository. The method takes as input
+	 * the URL from which the XML file is available. This URL can point to an external
+	 * web point or to an internal file or resource inside a jar file.   
+	 */
+	public EObject loadModel(URL url){
+		  logger.info("Got url: " + url);
+		  final ResourceSet rs = new ResourceSetImpl();
+		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+		  EList<EObject> contents = null;
+		  try{
+			  Resource res = rs.getResource(URI.createURI(url.toURI().toString()), true);
+			  logger.info("Got resource: " + res);
+			  contents = res.getContents();
+			  logger.info("Contents are: " + contents);
+		  }
+		  catch(Exception e){
+			  e.printStackTrace();
+		  }
+		  
+		  return contents.get(0);
+	}
 	
 	/* This method is used to export a model that has been stored in the CDO Server/Repository.
 	 * It takes as input three parameters: (a) the name of the CDOResource, (b) the
@@ -850,7 +848,9 @@ public class CDOClient
 			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 			  Resource res = rs.createResource(URI.createFileURI(filePath));
 			  res.getContents().add(model);
-			  res.save(null);
+			  HashMap<String, Object> opts = new HashMap<String, Object>();
+			  opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
+			  res.save(opts);
 			  return true;
 		  }
 		  catch(Exception e){
@@ -906,7 +906,7 @@ public class CDOClient
 	  //Create the CDOClient
 	  CDOClient cl = new CDOClient("Administrator","0000");
 	  //Creating & adding a listener to the session
-	  MyListener listener = cl.new MyListener();
+	  MyListener listener = new MyListener();
 	  cl.addListener(listener);
 	  //Create a particular model (CERIF)
 	  EObject model = cl.createCerifModel();
@@ -916,8 +916,10 @@ public class CDOClient
 	  model = SensAppCDO.getSensAppCamelModel();
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"sensAppResource1",true);
-	  //Load a model from a XMI resource
-	  model = cl.loadModel("examples/Scalarm.xmi");
+	  //Load a model from a XMI resource situated inside jar file
+	  URL url = cl.getClass().getResource("/Scalarm.xmi");
+	  //model = cl.loadModel("examples/Scalarm.xmi");
+	  model = cl.loadModel(url);
 	  //Store the model under a CDOResource with a particular name
 	  cl.storeModel(model,"scalarmResource1",true);
 	  
