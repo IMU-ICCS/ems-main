@@ -620,7 +620,6 @@ public class CDOClient
 		ra1.setId("MY_ROLE_ASSIGNMENT");
 		ra1.setRole(r1);
 		ra1.setUser(user1);
-		ra1.setOrganisation(org1);
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
 		try{
 			ra1.setAssignedOn(ft.parse("1976-12-16"));
