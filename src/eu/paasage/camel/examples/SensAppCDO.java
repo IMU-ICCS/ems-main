@@ -688,7 +688,6 @@ public class SensAppCDO {
 
 		ProvidedCommunication restProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
-		restProv.setOwner(sensApp);
 		restProv.setName("RESTProv");
 		restProv.setPortNumber(8080);
 
@@ -696,7 +695,6 @@ public class SensAppCDO {
 
 		RequiredCommunication mongoDBReq = DeploymentFactory.eINSTANCE
 				.createRequiredCommunication();
-		mongoDBReq.setOwner(sensApp);
 		mongoDBReq.setIsMandatory(true);
 		mongoDBReq.setName("MongoDBReq");
 		mongoDBReq.setPortNumber(0);
@@ -705,7 +703,6 @@ public class SensAppCDO {
 
 		RequiredHost servletContainerSensAppReq = DeploymentFactory.eINSTANCE
 				.createRequiredHost();
-		servletContainerSensAppReq.setOwner(sensApp);
 		servletContainerSensAppReq.setName("ServletContainerSensAppReq");
 
 		sensApp.setRequiredHost(servletContainerSensAppReq);
@@ -726,7 +723,6 @@ public class SensAppCDO {
 
 		ProvidedCommunication mongoDBProv = DeploymentFactory.eINSTANCE
 				.createProvidedCommunication();
-		mongoDBProv.setOwner(mongoDB);
 		mongoDBProv.setName("MongoDBProv");
 		mongoDBProv.setPortNumber(0);
 
@@ -734,7 +730,6 @@ public class SensAppCDO {
 
 		RequiredHost vmMongoDBReq = DeploymentFactory.eINSTANCE
 				.createRequiredHost();
-		vmMongoDBReq.setOwner(mongoDB);
 		vmMongoDBReq.setName("VMMongoDBReq");
 
 		mongoDB.setRequiredHost(vmMongoDBReq);
@@ -757,14 +752,12 @@ public class SensAppCDO {
 
 		ProvidedHost servletContainerJettyProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
-		servletContainerJettyProv.setOwner(jettySC);
 		servletContainerJettyProv.setName("ServletContainerJettyProv");
 
 		jettySC.getProvidedHosts().add(servletContainerJettyProv);
 
 		RequiredHost vmJettySCReq = DeploymentFactory.eINSTANCE
 				.createRequiredHost();
-		vmJettySCReq.setOwner(jettySC);
 		vmJettySCReq.setName("VMJettySCReq");
 
 		jettySC.setRequiredHost(vmJettySCReq);
@@ -787,7 +780,6 @@ public class SensAppCDO {
 
 		RequiredCommunication restReq = DeploymentFactory.eINSTANCE
 				.createRequiredCommunication();
-		restReq.setOwner(admin);
 		restReq.setIsMandatory(false);
 		restReq.setName("RESTReq");
 		restReq.setPortNumber(8080);
@@ -796,7 +788,6 @@ public class SensAppCDO {
 
 		RequiredHost servletContainerAdminReq = DeploymentFactory.eINSTANCE
 				.createRequiredHost();
-		servletContainerAdminReq.setOwner(admin);
 		servletContainerAdminReq.setName("ServletContainerAdminReq");
 
 		admin.setRequiredHost(servletContainerAdminReq);
@@ -835,7 +826,6 @@ public class SensAppCDO {
 
 		ProvidedHost vmMLProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
-		vmMLProv.setOwner(ml);
 		vmMLProv.setName("VMMLProv");
 
 		ml.getProvidedHosts().add(vmMLProv);
@@ -874,7 +864,6 @@ public class SensAppCDO {
 
 		ProvidedHost vmSLProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
-		vmSLProv.setOwner(sl);
 		vmSLProv.setName("VMSLProv");
 
 		sl.getProvidedHosts().add(vmSLProv);
@@ -913,7 +902,6 @@ public class SensAppCDO {
 
 		ProvidedHost vmLLProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
-		vmLLProv.setOwner(ll);
 		vmLLProv.setName("VMLLProv");
 
 		ll.getProvidedHosts().add(vmLLProv);
@@ -943,7 +931,7 @@ public class SensAppCDO {
 		sensAppToMongoDB.setName("SensAppToMongoDB");
 		sensAppToMongoDB.setProvidedCommunication(mongoDBProv);
 		sensAppToMongoDB.setRequiredCommunication(mongoDBReq);
-		sensAppToMongoDB.setCommunicationType(CommunicationType.LOCAL);
+		sensAppToMongoDB.setType(CommunicationType.LOCAL);
 
 		sensAppDeploymentModel.getCommunications().add(sensAppToMongoDB);
 
