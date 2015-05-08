@@ -649,12 +649,12 @@ public class CDOClient
 		
 		Country l1 = LocationFactory.eINSTANCE.createCountry();
 		l1.setName("Country1");
-		l1.setAbbreviation("C1");
+		l1.setId("C1");
 		lm.getCountries().add(l1);
 		
 		Country l2 = LocationFactory.eINSTANCE.createCountry();
 		l2.setName("Country2");
-		l2.setAbbreviation("C2");
+		l2.setId("C2");
 		lm.getCountries().add(l2);
 		
 		DataCenter dc1 = OrganisationFactory.eINSTANCE.createDataCenter();

@@ -511,15 +511,15 @@ public class SensAppCDO {
 		camelModel.getLocationModels().add(lm);
 		Country ireland = LocationFactory.eINSTANCE.createCountry();
 		ireland.setName("Ireland");
-		ireland.setAbbreviation("IE");
+		ireland.setId("IE");
 		lm.getCountries().add(ireland);
 		Country scotland = LocationFactory.eINSTANCE.createCountry();
 		scotland.setName("Scotland");
-		scotland.setAbbreviation("SC");
+		scotland.setId("SC");
 		lm.getCountries().add(scotland);
 		Country norway = LocationFactory.eINSTANCE.createCountry();
 		norway.setName("Norway");
-		norway.setAbbreviation("NO");
+		norway.setId("NO");
 		lm.getCountries().add(norway);
 		amazonOrgModel.setName("Amazon Organisation Model");
 		EList<DataCenter> amazonDCs = amazonOrgModel.getDataCentres();
