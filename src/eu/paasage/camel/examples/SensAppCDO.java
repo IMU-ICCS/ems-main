@@ -816,14 +816,6 @@ public class SensAppCDO {
 		mlReqs.setLocationRequirement(mlLocReq);
 		ml.setName("ML");
 
-		Attribute mlKeyPath = ProviderFactory.eINSTANCE.createAttribute();
-		mlKeyPath.setName("KeyPath");
-		StringValue mlKeyPathValue = TypeFactory.eINSTANCE.createStringValue();
-		mlKeyPathValue.setValue(".");
-		mlKeyPath.setValue(mlKeyPathValue);
-
-		ml.getProperties().add(mlKeyPath);
-
 		ProvidedHost vmMLProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
 		vmMLProv.setName("VMMLProv");
@@ -854,14 +846,6 @@ public class SensAppCDO {
 		slReqs.setLocationRequirement(slLocReq);
 		sl.setName("SL");
 
-		Attribute slKeyPath = ProviderFactory.eINSTANCE.createAttribute();
-		slKeyPath.setName("KeyPath");
-		StringValue slKeyPathValue = TypeFactory.eINSTANCE.createStringValue();
-		slKeyPathValue.setValue(".");
-		slKeyPath.setValue(slKeyPathValue);
-
-		sl.getProperties().add(slKeyPath);
-
 		ProvidedHost vmSLProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
 		vmSLProv.setName("VMSLProv");
@@ -891,14 +875,6 @@ public class SensAppCDO {
 		rm.getRequirements().add(llLocReq);
 		llReqs.setLocationRequirement(llLocReq);
 		ll.setName("LL");
-
-		Attribute llKeyPath = ProviderFactory.eINSTANCE.createAttribute();
-		llKeyPath.setName("KeyPath");
-		StringValue llKeyPathValue = TypeFactory.eINSTANCE.createStringValue();
-		llKeyPathValue.setValue(".");
-		llKeyPath.setValue(llKeyPathValue);
-
-		ll.getProperties().add(llKeyPath);
 
 		ProvidedHost vmLLProv = DeploymentFactory.eINSTANCE
 				.createProvidedHost();
