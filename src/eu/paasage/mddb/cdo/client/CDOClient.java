@@ -549,24 +549,21 @@ public class CDOClient
 		
 		
 		ExternalIdentifier id1 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
-		id1.setName("ID1");
 		id1.setIdentifier("ID1");
 		ids.add(id1);
 		
 		ExternalIdentifier id2 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
-		id2.setName("ID2");
 		id2.setIdentifier("ID2");
 		ids.add(id2);
 		
 		ExternalIdentifier id3 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
-		id3.setName("ID3");
 		id3.setIdentifier("ID3");
 		ids.add(id3);
 		
 		User user1 = OrganisationFactory.eINSTANCE.createUser();
 		user1.setLastName("User");
 		user1.setFirstName("User1");
-		user1.setId("User1");
+		user1.setName("User1");
 		user1.setEmail("user@user1");
 		EList<ExternalIdentifier> exIDs1 = user1.getExternalIdentifiers();
 		exIDs1.add(id1);
@@ -574,7 +571,7 @@ public class CDOClient
 		users.add(user1);
 		
 		PaaSageCredentials pc1 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-		pc1.setId("user1_P_Credentials");
+		pc1.setName("user1_P_Credentials");
 		pc1.setUsername("user1");
 		pc1.setPassword("user1");
 		user1.setPaasageCredentials(pc1);
@@ -582,7 +579,7 @@ public class CDOClient
 		User user2 = OrganisationFactory.eINSTANCE.createUser();
 		user2.setFirstName("User2");
 		user2.setLastName("User");
-		user2.setId("User2");
+		user2.setName("User2");
 		user2.setEmail("user2@User");
 		users.add(user2);
 		exIDs1 = user2.getExternalIdentifiers();
@@ -590,7 +587,7 @@ public class CDOClient
 		exIDs1.add(id3);
 		
 		PaaSageCredentials pc2 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-		pc2.setId("user2_P_Credentials");
+		pc2.setName("user2_P_Credentials");
 		pc2.setUsername("user2");
 		pc2.setPassword("user2");
 		user2.setPaasageCredentials(pc2);
@@ -617,7 +614,7 @@ public class CDOClient
 		roles.add(r2);
 		
 		RoleAssignment ra1 = OrganisationFactory.eINSTANCE.createRoleAssignment();
-		ra1.setId("MY_ROLE_ASSIGNMENT");
+		ra1.setName("MY_ROLE_ASSIGNMENT");
 		ra1.setRole(r1);
 		ra1.setUser(user1);
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
@@ -929,14 +926,14 @@ public class CDOClient
 	  cl.deleteObject(user,trans,true);
 	  //Create view, get cdoID and then delete object by using this id as input
 	  CDOView view = cl.openView();
-	  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.name='ID2'").getResult(ExternalIdentifier.class).get(0);
+	  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.identifier='ID2'").getResult(ExternalIdentifier.class).get(0);
 	  CDOID cdoID1 = id1.cdoID();
 	  view.close();
 	  cl.deleteObject(cdoID1);
 	  
 	  //Check that the objects have been deleted
 	  view = cl.openView();
-	  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.name='ID2' or id.name='ID3')").getResult(ExternalIdentifier.class);
+	  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.identifier='ID2' or id.identifier='ID3')").getResult(ExternalIdentifier.class);
 	  logger.info("Did we get the ids requested?: " + !(types.isEmpty()));
 	  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
 	  logger.info("Did we get the users requested?: " + !(users.isEmpty()));

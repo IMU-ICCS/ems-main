@@ -35,6 +35,7 @@ import eu.paasage.camel.unit.StorageUnit;
 import eu.paasage.camel.unit.TimeIntervalUnit;
 import eu.paasage.camel.unit.UnitDimensionType;
 import eu.paasage.camel.unit.UnitFactory;
+import eu.paasage.camel.unit.UnitModel;
 import eu.paasage.camel.unit.UnitType;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
@@ -119,6 +120,7 @@ import eu.paasage.camel.type.Range;
 import eu.paasage.camel.type.StringValue;
 import eu.paasage.camel.type.TypeEnum;
 import eu.paasage.camel.type.TypeFactory;
+import eu.paasage.camel.type.TypeModel;
 
 
 public class SensAppCDO {
@@ -127,6 +129,12 @@ public class SensAppCDO {
 		// complete mapping of the SensApp example
 		CamelModel camelModel = CamelFactory.eINSTANCE.createCamelModel();
 		camelModel.setName("Sensapp Camel Model");
+		UnitModel unitModel = UnitFactory.eINSTANCE.createUnitModel();
+		unitModel.setName("Sensapp Unit Model");
+		camelModel.getUnitModels().add(unitModel);
+		TypeModel typeModel = TypeFactory.eINSTANCE.createTypeModel();
+		typeModel.setName("Sensapp Type Model");
+		camelModel.getTypeModels().add(typeModel);
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
 
 		Application sensAppApplication = CamelFactory.eINSTANCE
@@ -169,6 +177,7 @@ public class SensAppCDO {
 		vmTypes.getValues().add(largeVm);
 
 		vmType.setValueType(vmTypes);
+		typeModel.getDataTypes().add(vmTypes);
 
 		vmFeature.getAttributes().add(vmType);
 
@@ -194,6 +203,7 @@ public class SensAppCDO {
 		vmCPURange.setUpperLimit(maxCPU);
 
 		vmCPU.setValueType(vmCPURange);
+		typeModel.getDataTypes().add(vmCPURange);
 
 		vmFeature.getAttributes().add(vmCPU);
 
@@ -220,6 +230,7 @@ public class SensAppCDO {
 		vmMemoryRange.setUpperLimit(maxMemory);
 
 		vmMemory.setValueType(vmMemoryRange);
+		typeModel.getDataTypes().add(vmMemoryRange);
 
 		vmFeature.getAttributes().add(vmMemory);
 
@@ -246,6 +257,7 @@ public class SensAppCDO {
 		vmStorageRange.setUpperLimit(maxStorage);
 
 		vmStorage.setValueType(vmStorageRange);
+		typeModel.getDataTypes().add(vmStorageRange);
 
 		vmFeature.getAttributes().add(vmStorage);
 
@@ -272,6 +284,7 @@ public class SensAppCDO {
 		vmCoresRange.setUpperLimit(maxCores);
 
 		vmCores.setValueType(vmCoresRange);
+		typeModel.getDataTypes().add(vmCoresRange);
 
 		vmFeature.getAttributes().add(vmCores);
 
@@ -593,24 +606,24 @@ public class SensAppCDO {
 		user1.setEmail("user@sintef.no");
 		user1.setFirstName("User1");
 		user1.setLastName("User");
-		user1.setId("User1");
+		user1.setName("User1");
 
 		sintefUsers.add(user1);
 		
 		PaaSageCredentials user1Credentials = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-		user1Credentials.setId("User1_PaaSage_Credentials");
+		user1Credentials.setName("User1_PaaSage_Credentials");
 		user1Credentials.setUsername("user1");
 		user1Credentials.setPassword("user1_at_sintef_dot_no");
 		user1.setPaasageCredentials(user1Credentials);
 
 		CloudCredentials user1AmazonCredentials = OrganisationFactory.eINSTANCE
 				.createCloudCredentials();
-		user1AmazonCredentials.setId("User1_Amazon_Credentials");
+		user1AmazonCredentials.setName("User1_Amazon_Credentials");
 		user1AmazonCredentials.setCloudProvider(amazonProvider);
 		user1.getCloudCredentials().add(user1AmazonCredentials);
 		CloudCredentials user1FlexiantCredentials = OrganisationFactory.eINSTANCE
 				.createCloudCredentials();
-		user1FlexiantCredentials.setId("User1_Flexiant_Credentials");
+		user1FlexiantCredentials.setName("User1_Flexiant_Credentials");
 		user1FlexiantCredentials.setCloudProvider(flexiantProvider);
 		user1.getCloudCredentials().add(user1FlexiantCredentials);
 
@@ -637,7 +650,7 @@ public class SensAppCDO {
 
 		CloudCredentials user1SintefNovaCredentials = OrganisationFactory.eINSTANCE
 				.createCloudCredentials();
-		user1SintefNovaCredentials.setId("User1_Amazon_Credentials");
+		user1SintefNovaCredentials.setName("User1_Amazon_Credentials");
 		user1SintefNovaCredentials.setCloudProvider(sintefNovaProvider);
 		user1.getCloudCredentials().add(user1SintefNovaCredentials);
 
@@ -656,7 +669,7 @@ public class SensAppCDO {
 		rm.setName("SensAPP-Requirement Model");
 		camelModel.getRequirementModels().add(rm);
 		ProviderRequirement pr = RequirementFactory.eINSTANCE.createProviderRequirement();
-		pr.setId("Provider_Requirements_SensApp");
+		pr.setName("Provider_Requirements_SensApp");
 		rm.getRequirements().add(pr);
 		pr.getProviders().add(amazonProvider);
 		pr.getProviders().add(flexiantProvider);
@@ -665,7 +678,7 @@ public class SensAppCDO {
 		globalReqs.setName("Global_Reqs_Sens_App");
 		globalReqs.setProviderRequirement(pr);
 		OSRequirement osReq = RequirementFactory.eINSTANCE.createOSRequirement();
-		osReq.setId("GLOBAL_OS_REQ");
+		osReq.setName("GLOBAL_OS_REQ");
 		osReq.setIs64os(true);
 		osReq.setOs("ubuntu");
 		rm.getRequirements().add(osReq);
@@ -800,7 +813,7 @@ public class SensAppCDO {
 		ml.setVmRequirementSet(mlReqs);
 		sensAppDeploymentModel.getVmRequirementSets().add(mlReqs);
 		QuantitativeHardwareRequirement mlHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
-		mlHardReq.setId("ML_VM_HARD_REQS");
+		mlHardReq.setName("ML_VM_HARD_REQS");
 		mlHardReq.setMaxCores(0);
 		mlHardReq.setMaxRAM(0);
 		mlHardReq.setMaxStorage(0);
@@ -810,7 +823,7 @@ public class SensAppCDO {
 		rm.getRequirements().add(mlHardReq);
 		mlReqs.setQuantitativeHardwareRequirement(mlHardReq);
 		LocationRequirement mlLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
-		mlLocReq.setId("ML_LOC_REC");
+		mlLocReq.setName("ML_LOC_REC");
 		mlLocReq.getLocations().add(scotland);
 		rm.getRequirements().add(mlLocReq);
 		mlReqs.setLocationRequirement(mlLocReq);
@@ -830,7 +843,7 @@ public class SensAppCDO {
 		sl.setVmRequirementSet(slReqs);
 		sensAppDeploymentModel.getVmRequirementSets().add(slReqs);
 		QuantitativeHardwareRequirement slHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
-		slHardReq.setId("SL_VM_HARD_REQS");
+		slHardReq.setName("SL_VM_HARD_REQS");
 		slHardReq.setMaxCores(0);
 		slHardReq.setMaxRAM(0);
 		slHardReq.setMaxStorage(0);
@@ -840,7 +853,7 @@ public class SensAppCDO {
 		rm.getRequirements().add(slHardReq);
 		slReqs.setQuantitativeHardwareRequirement(slHardReq);
 		LocationRequirement slLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
-		slLocReq.setId("SL_LOC_REC");
+		slLocReq.setName("SL_LOC_REC");
 		slLocReq.getLocations().add(ireland);
 		rm.getRequirements().add(slLocReq);
 		slReqs.setLocationRequirement(slLocReq);
@@ -860,7 +873,7 @@ public class SensAppCDO {
 		ll.setVmRequirementSet(llReqs);
 		sensAppDeploymentModel.getVmRequirementSets().add(llReqs);
 		QuantitativeHardwareRequirement llHardReq = RequirementFactory.eINSTANCE.createQuantitativeHardwareRequirement();
-		llHardReq.setId("LL_VM_HARD_REQS");
+		llHardReq.setName("LL_VM_HARD_REQS");
 		llHardReq.setMaxCores(0);
 		llHardReq.setMaxRAM(0);
 		llHardReq.setMaxStorage(0);
@@ -870,7 +883,7 @@ public class SensAppCDO {
 		rm.getRequirements().add(llHardReq);
 		llReqs.setQuantitativeHardwareRequirement(llHardReq);
 		LocationRequirement llLocReq = RequirementFactory.eINSTANCE.createLocationRequirement();
-		llLocReq.setId("LL_LOC_REC");
+		llLocReq.setName("LL_LOC_REC");
 		llLocReq.getLocations().add(norway);
 		rm.getRequirements().add(llLocReq);
 		llReqs.setLocationRequirement(llLocReq);
@@ -1045,7 +1058,7 @@ public class SensAppCDO {
 		costMonetaryUnit.setUnit(UnitType.EUROS);
 		costMonetaryUnit.setName("euros");
 
-		camelModel.getUnits().add(costMonetaryUnit);
+		unitModel.getUnits().add(costMonetaryUnit);
 
 		vmML1.setName("VMML1");
 		vmML1.setType(ml);
@@ -1247,7 +1260,7 @@ public class SensAppCDO {
 		//timeInterval.setDimensionType(UnitDimensionType.TIME_INTERVAL);
 		timeInterval.setUnit(UnitType.SECONDS);
 		timeInterval.setName("seconds");
-		metricModel.getUnits().add(timeInterval);
+		unitModel.getUnits().add(timeInterval);
 
 		rawExecTime.setUnit(timeInterval);
 		rawExecTime.setValueDirection((short) 0);
@@ -1277,6 +1290,7 @@ public class SensAppCDO {
 		rawEtMetricRange.setUpperLimit(rawEtMetricMax);
 
 		rawExecTime.setValueType(rawEtMetricRange);
+		typeModel.getDataTypes().add(rawEtMetricRange);
 
 
 		metricModel.getMetrics().add(rawExecTime);
@@ -1322,13 +1336,14 @@ public class SensAppCDO {
 		avgEtMetricRange.setUpperLimit(avgEtMetricMax);
 
 		avgExecTime.setValueType(avgEtMetricRange);
+		typeModel.getDataTypes().add(avgEtMetricRange);
 
 		StorageUnit storageUnit = UnitFactory.eINSTANCE.createStorageUnit();
 		//storageUnit.setDimensionType(UnitDimensionType.STORAGE);
 		storageUnit.setUnit(UnitType.GIGABYTES);
 		storageUnit.setName("gigabytes");
 
-		metricModel.getUnits().add(storageUnit);
+		unitModel.getUnits().add(storageUnit);
 
 		avgExecTime.setUnit(storageUnit);
 		avgExecTime.setValueDirection((short) 0);
@@ -1366,6 +1381,7 @@ public class SensAppCDO {
 		rawStorageMetricRange.setUpperLimit(rawStorageMetricMax);
 
 		storageMetricTemp.setValueType(rawStorageMetricRange);
+		typeModel.getDataTypes().add(rawStorageMetricRange);
 
 
 		Property storageProperty = MetricFactory.eINSTANCE
@@ -1381,7 +1397,7 @@ public class SensAppCDO {
 		metricModel.getMetrics().add(storageMetricTemp);
 
 		RawMetricInstance rawEtMetric = MetricFactory.eINSTANCE.createRawMetricInstance();
-		rawEtMetric.setId("RawETMetric1");
+		rawEtMetric.setName("RawETMetric1");
 
 		MetricObjectBinding rawEtMetricAIB = MetricFactory.eINSTANCE
 				.createMetricApplicationBinding();
@@ -1397,7 +1413,7 @@ public class SensAppCDO {
 		rawEtMetric.setObjectBinding(rawEtMetricAIB);
 
 		Sensor sensor1 = MetricFactory.eINSTANCE.createSensor();
-		sensor1.setId("RawETSensor");
+		sensor1.setName("RawETSensor");
 		sensor1.setIsPush(false);
 
 		metricModel.getSensors().add(sensor1);
@@ -1409,12 +1425,12 @@ public class SensAppCDO {
 
 		CompositeMetricInstance avgEtMetric1 = MetricFactory.eINSTANCE.createCompositeMetricInstance();
 		avgEtMetric1.getComposingMetricInstances().add(rawEtMetric);
-		avgEtMetric1.setId("AVGETMetric1");
+		avgEtMetric1.setName("AVGETMetric1");
 
 		avgEtMetric1.setObjectBinding(rawEtMetricAIB);
 
 		Sensor sensor2 = MetricFactory.eINSTANCE.createSensor();
-		sensor2.setId("RawStorageSensor");
+		sensor2.setName("RawStorageSensor");
 		sensor2.setIsPush(false);
 
 		metricModel.getSensors().add(sensor2);
@@ -1424,7 +1440,7 @@ public class SensAppCDO {
 		metricModel.getMetricInstances().add(avgEtMetric1);
 
 		RawMetricInstance rawStorageMetric = MetricFactory.eINSTANCE.createRawMetricInstance();
-		rawStorageMetric.setId("RawStorageNum");
+		rawStorageMetric.setName("RawStorageNum");
 
 		MetricVMBinding vmInstBinding = MetricFactory.eINSTANCE
 				.createMetricVMBinding();
@@ -1437,7 +1453,7 @@ public class SensAppCDO {
 		rawStorageMetric.setObjectBinding(vmInstBinding);
 
 		Sensor sensor3 = MetricFactory.eINSTANCE.createSensor();
-		sensor3.setId("Sensor3");
+		sensor3.setName("Sensor3");
 		sensor3.setIsPush(false);
 
 		metricModel.getSensors().add(sensor3);
@@ -1553,7 +1569,7 @@ public class SensAppCDO {
 		HorizontalScaleRequirement horizPolicySensApp = RequirementFactory.eINSTANCE
 				.createHorizontalScaleRequirement();
 		horizPolicySensApp.setComponent(sensApp);
-		horizPolicySensApp.setId("HorizPolicySensApp");
+		horizPolicySensApp.setName("HorizPolicySensApp");
 		horizPolicySensApp.setMaxInstances(4);
 		horizPolicySensApp.setMinInstances(1);
 		rm.getRequirements().add(horizPolicySensApp);
@@ -1564,7 +1580,7 @@ public class SensAppCDO {
 
 		VerticalScaleRequirement verticalPolicyMongoDb = RequirementFactory.eINSTANCE
 				.createVerticalScaleRequirement();
-		verticalPolicyMongoDb.setId("VertPolMongoDB");
+		verticalPolicyMongoDb.setName("VertPolMongoDB");
 		verticalPolicyMongoDb.setMaxCores(0);
 		verticalPolicyMongoDb.setMaxCPU(0);
 		verticalPolicyMongoDb.setMaxRAM(0);
@@ -1598,12 +1614,12 @@ public class SensAppCDO {
 
 		sensAppExecutionContext.setApplication(sensAppApplication);
 		sensAppExecutionContext.setDeploymentModel(sensAppDeploymentModel);
-		sensAppExecutionContext.setId("SensAppEC1");
+		sensAppExecutionContext.setName("SensAppEC1");
 
 		RequirementGroup user1RG = RequirementFactory.eINSTANCE
 				.createRequirementGroup();
 
-		user1RG.setId("");
+		user1RG.setName("");
 		user1RG.setRequirementOperator(RequirementOperatorType.AND);
 		user1RG.getRequirements().add(verticalPolicyMongoDb);
 		user1RG.getRequirements().add(horizPolicySensApp);
