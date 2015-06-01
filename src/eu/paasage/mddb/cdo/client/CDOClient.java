@@ -61,7 +61,6 @@ import eu.paasage.camel.organisation.OrganisationFactory;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.OrganisationPackage;
 import eu.paasage.camel.organisation.PaaSageCredentials;
-import eu.paasage.camel.organisation.ResourceGroup;
 import eu.paasage.camel.organisation.Role;
 import eu.paasage.camel.organisation.RoleAssignment;
 import eu.paasage.camel.organisation.User;
@@ -161,6 +160,7 @@ public class CDOClient
      // enable passing the configuration directory through -Deu.paasage.configdir=PATH JVM option
         if (propertyFilePath == null) {
           propertyFilePath = System.getProperty("eu.paasage.configdir");
+          logger.info("Got path: " + propertyFilePath);
         }
         
         if (propertyFilePath == null)
@@ -543,7 +543,6 @@ public class CDOClient
 		EList<UserGroup> ugroups = om.getUserGroups();
 		EList<Role> roles = om.getRoles();
 		EList<RoleAssignment> assigns = om.getRoleAssigments();
-		EList<eu.paasage.camel.organisation.Resource> rgroups = om.getResources();
 		EList<ExternalIdentifier> ids = om.getExternalIdentifiers();
 		EList<DataCenter> dcs = om.getDataCentres();
 		
@@ -628,21 +627,6 @@ public class CDOClient
 			e.printStackTrace();
 		}
 		assigns.add(ra1);
-			
-		eu.paasage.camel.organisation.Resource r3 = OrganisationFactory.eINSTANCE.createResource();
-		rgroups.add(r3);
-		
-		ResourceGroup rg2 = OrganisationFactory.eINSTANCE.createResourceGroup();
-		rg2.setName("RG2");
-		EList<eu.paasage.camel.organisation.Resource> res2 = rg2.getResources();
-		res2.add(r3);
-		rgroups.add(rg2);
-		
-		ResourceGroup rg1 = OrganisationFactory.eINSTANCE.createResourceGroup();
-		rg1.setName("RG1");
-		EList<eu.paasage.camel.organisation.Resource> res = rg1.getResources();
-		res.add(rg2);
-		rgroups.add(rg1);
 		
 		Country l1 = LocationFactory.eINSTANCE.createCountry();
 		l1.setName("Country1");

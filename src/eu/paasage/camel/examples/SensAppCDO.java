@@ -112,12 +112,12 @@ import eu.paasage.camel.scalability.VerticalScalingAction;
 import eu.paasage.camel.requirement.VerticalScaleRequirement;
 import eu.paasage.camel.type.EnumerateValue;
 import eu.paasage.camel.type.Enumeration;
-import eu.paasage.camel.type.FloatValue;
-import eu.paasage.camel.type.IntValue;
+import eu.paasage.camel.type.FloatsValue;
+import eu.paasage.camel.type.IntegerValue;
 import eu.paasage.camel.type.Limit;
 import eu.paasage.camel.type.PositiveInf;
 import eu.paasage.camel.type.Range;
-import eu.paasage.camel.type.StringValue;
+import eu.paasage.camel.type.StringsValue;
 import eu.paasage.camel.type.TypeEnum;
 import eu.paasage.camel.type.TypeFactory;
 import eu.paasage.camel.type.TypeModel;
@@ -189,13 +189,13 @@ public class SensAppCDO {
 
 		Limit minCPU = TypeFactory.eINSTANCE.createLimit();
 		minCPU.setIncluded(true);
-		FloatValue minCPUValue = TypeFactory.eINSTANCE.createFloatValue();
+		FloatsValue minCPUValue = TypeFactory.eINSTANCE.createFloatsValue();
 		minCPUValue.setValue(1);
 		minCPU.setValue(minCPUValue);
 
 		Limit maxCPU = TypeFactory.eINSTANCE.createLimit();
 		maxCPU.setIncluded(true);
-		FloatValue maxCPUValue = TypeFactory.eINSTANCE.createFloatValue();
+		FloatsValue maxCPUValue = TypeFactory.eINSTANCE.createFloatsValue();
 		maxCPUValue.setValue(5);
 		maxCPU.setValue(maxCPUValue);
 
@@ -216,13 +216,13 @@ public class SensAppCDO {
 
 		Limit minMemory = TypeFactory.eINSTANCE.createLimit();
 		minMemory.setIncluded(true);
-		IntValue minMemoryValue = TypeFactory.eINSTANCE.createIntValue();
+		IntegerValue minMemoryValue = TypeFactory.eINSTANCE.createIntegerValue();
 		minMemoryValue.setValue(2048);
 		minMemory.setValue(minMemoryValue);
 
 		Limit maxMemory = TypeFactory.eINSTANCE.createLimit();
 		maxMemory.setIncluded(true);
-		IntValue maxMemoryValue = TypeFactory.eINSTANCE.createIntValue();
+		IntegerValue maxMemoryValue = TypeFactory.eINSTANCE.createIntegerValue();
 		maxMemoryValue.setValue(16384);
 		maxMemory.setValue(maxMemoryValue);
 
@@ -243,13 +243,13 @@ public class SensAppCDO {
 
 		Limit minStorage = TypeFactory.eINSTANCE.createLimit();
 		minStorage.setIncluded(true);
-		IntValue minStorageValue = TypeFactory.eINSTANCE.createIntValue();
+		IntegerValue minStorageValue = TypeFactory.eINSTANCE.createIntegerValue();
 		minStorageValue.setValue(200);
 		minStorage.setValue(minStorageValue);
 
 		Limit maxStorage = TypeFactory.eINSTANCE.createLimit();
 		maxStorage.setIncluded(true);
-		IntValue maxStorageValue = TypeFactory.eINSTANCE.createIntValue();
+		IntegerValue maxStorageValue = TypeFactory.eINSTANCE.createIntegerValue();
 		maxStorageValue.setValue(2048);
 		maxStorage.setValue(maxStorageValue);
 
@@ -270,13 +270,13 @@ public class SensAppCDO {
 
 		Limit minCores = TypeFactory.eINSTANCE.createLimit();
 		minCores.setIncluded(true);
-		IntValue minCoresValue = TypeFactory.eINSTANCE.createIntValue();
+		IntegerValue minCoresValue = TypeFactory.eINSTANCE.createIntegerValue();
 		minCoresValue.setValue(1);
 		minCores.setValue(minCoresValue);
 
 		Limit maxCores = TypeFactory.eINSTANCE.createLimit();
 		maxCores.setIncluded(true);
-		IntValue maxCoresValue = TypeFactory.eINSTANCE.createIntValue();
+		IntegerValue maxCoresValue = TypeFactory.eINSTANCE.createIntegerValue();
 		maxCoresValue.setValue(128);
 		maxCores.setValue(maxCoresValue);
 
@@ -297,14 +297,14 @@ public class SensAppCDO {
 		AttributeConstraint smallVmCPUConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		smallVmCPUConstraint.setFrom(vmType);
-		StringValue smallVmCPUConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue smallVmCPUConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		smallVmCPUConstraintFrom.setValue("SMALL");
 		smallVmCPUConstraint.setFromValue(smallVmCPUConstraintFrom);
 
 		smallVmCPUConstraint.setTo(vmCPU);
-		FloatValue smallCPUConstraintTo = TypeFactory.eINSTANCE
-				.createFloatValue();
+		FloatsValue smallCPUConstraintTo = TypeFactory.eINSTANCE
+				.createFloatsValue();
 		smallCPUConstraintTo.setValue(1);
 		smallVmCPUConstraint.setToValue(smallCPUConstraintTo);
 
@@ -313,14 +313,14 @@ public class SensAppCDO {
 		AttributeConstraint smallVmMemoryConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		smallVmMemoryConstraint.setFrom(vmType);
-		StringValue smallVmMemoryConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue smallVmMemoryConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		smallVmMemoryConstraintFrom.setValue("SMALL");
 		smallVmMemoryConstraint.setFromValue(smallVmMemoryConstraintFrom);
 
 		smallVmMemoryConstraint.setTo(vmMemory);
-		IntValue smallMemoryConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue smallMemoryConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		smallMemoryConstraintTo.setValue(2048);
 		smallVmMemoryConstraint.setToValue(smallMemoryConstraintTo);
 
@@ -330,14 +330,14 @@ public class SensAppCDO {
 		AttributeConstraint smallVmStorageConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		smallVmStorageConstraint.setFrom(vmType);
-		StringValue smallVmStorageConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue smallVmStorageConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		smallVmStorageConstraintFrom.setValue("SMALL");
 		smallVmStorageConstraint.setFromValue(smallVmStorageConstraintFrom);
 
 		smallVmStorageConstraint.setTo(vmStorage);
-		IntValue smallVmStorageConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue smallVmStorageConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		smallVmStorageConstraintTo.setValue(200);
 		smallVmStorageConstraint.setToValue(smallVmStorageConstraintTo);
 
@@ -347,14 +347,14 @@ public class SensAppCDO {
 		AttributeConstraint smallVmCoresConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		smallVmCoresConstraint.setFrom(vmType);
-		StringValue smallVmCoresConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue smallVmCoresConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		smallVmCoresConstraintFrom.setValue("SMALL");
 		smallVmCoresConstraint.setFromValue(smallVmCoresConstraintFrom);
 
 		smallVmCoresConstraint.setTo(vmCores);
-		IntValue smallVmCoresConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue smallVmCoresConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		smallVmCoresConstraintTo.setValue(1);
 		smallVmCoresConstraint.setToValue(smallVmCoresConstraintTo);
 
@@ -371,14 +371,14 @@ public class SensAppCDO {
 		AttributeConstraint mediumVmCPUConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		mediumVmCPUConstraint.setFrom(vmType);
-		StringValue mediumVmCPUConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue mediumVmCPUConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		mediumVmCPUConstraintFrom.setValue("MEDIUM");
 		mediumVmCPUConstraint.setFromValue(mediumVmCPUConstraintFrom);
 
 		mediumVmCPUConstraint.setTo(vmCPU);
-		FloatValue mediumCPUConstraintTo = TypeFactory.eINSTANCE
-				.createFloatValue();
+		FloatsValue mediumCPUConstraintTo = TypeFactory.eINSTANCE
+				.createFloatsValue();
 		mediumCPUConstraintTo.setValue(2);
 		mediumVmCPUConstraint.setToValue(mediumCPUConstraintTo);
 
@@ -387,14 +387,14 @@ public class SensAppCDO {
 		AttributeConstraint mediumVmMemoryConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		mediumVmMemoryConstraint.setFrom(vmType);
-		StringValue mediumVmMemoryConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue mediumVmMemoryConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		mediumVmMemoryConstraintFrom.setValue("MEDIUM");
 		mediumVmMemoryConstraint.setFromValue(mediumVmMemoryConstraintFrom);
 
 		mediumVmMemoryConstraint.setTo(vmMemory);
-		IntValue mediumMemoryConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue mediumMemoryConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		mediumMemoryConstraintTo.setValue(4096);
 		mediumVmMemoryConstraint.setToValue(mediumMemoryConstraintTo);
 
@@ -404,14 +404,14 @@ public class SensAppCDO {
 		AttributeConstraint mediumVmStorageConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		mediumVmStorageConstraint.setFrom(vmType);
-		StringValue mediumVmStorageConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue mediumVmStorageConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		mediumVmStorageConstraintFrom.setValue("MEDIUM");
 		mediumVmStorageConstraint.setFromValue(mediumVmStorageConstraintFrom);
 
 		mediumVmStorageConstraint.setTo(vmStorage);
-		IntValue mediumVmStorageConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue mediumVmStorageConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		mediumVmStorageConstraintTo.setValue(512);
 		mediumVmStorageConstraint.setToValue(mediumVmStorageConstraintTo);
 
@@ -421,14 +421,14 @@ public class SensAppCDO {
 		AttributeConstraint mediumVmCoresConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		mediumVmCoresConstraint.setFrom(vmType);
-		StringValue mediumVmCoresConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue mediumVmCoresConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		mediumVmCoresConstraintFrom.setValue("MEDIUM");
 		mediumVmCoresConstraint.setFromValue(mediumVmCoresConstraintFrom);
 
 		mediumVmCoresConstraint.setTo(vmCores);
-		IntValue mediumVmCoresConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue mediumVmCoresConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		mediumVmCoresConstraintTo.setValue(6);
 		mediumVmCoresConstraint.setToValue(mediumVmCoresConstraintTo);
 
@@ -446,14 +446,14 @@ public class SensAppCDO {
 		AttributeConstraint largeVmCPUConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		largeVmCPUConstraint.setFrom(vmType);
-		StringValue largeVmCPUConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue largeVmCPUConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		largeVmCPUConstraintFrom.setValue("LARGE");
 		largeVmCPUConstraint.setFromValue(largeVmCPUConstraintFrom);
 
 		largeVmCPUConstraint.setTo(vmCPU);
-		FloatValue largeCPUConstraintTo = TypeFactory.eINSTANCE
-				.createFloatValue();
+		FloatsValue largeCPUConstraintTo = TypeFactory.eINSTANCE
+				.createFloatsValue();
 		largeCPUConstraintTo.setValue((float) 3.2);
 		largeVmCPUConstraint.setToValue(largeCPUConstraintTo);
 
@@ -462,14 +462,14 @@ public class SensAppCDO {
 		AttributeConstraint largeVmMemoryConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		largeVmMemoryConstraint.setFrom(vmType);
-		StringValue largeVmMemoryConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue largeVmMemoryConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		largeVmMemoryConstraintFrom.setValue("LARGE");
 		largeVmMemoryConstraint.setFromValue(largeVmMemoryConstraintFrom);
 
 		largeVmMemoryConstraint.setTo(vmMemory);
-		IntValue largeMemoryConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue largeMemoryConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		largeMemoryConstraintTo.setValue(8192);
 		largeVmMemoryConstraint.setToValue(largeMemoryConstraintTo);
 
@@ -479,14 +479,14 @@ public class SensAppCDO {
 		AttributeConstraint largeVmStorageConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		largeVmStorageConstraint.setFrom(vmType);
-		StringValue largeVmStorageConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue largeVmStorageConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		largeVmStorageConstraintFrom.setValue("LARGE");
 		largeVmStorageConstraint.setFromValue(largeVmStorageConstraintFrom);
 
 		largeVmStorageConstraint.setTo(vmStorage);
-		IntValue largeVmStorageConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue largeVmStorageConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		largeVmStorageConstraintTo.setValue(2048);
 		largeVmStorageConstraint.setToValue(largeVmStorageConstraintTo);
 
@@ -496,14 +496,14 @@ public class SensAppCDO {
 		AttributeConstraint largeVmCoresConstraint = ProviderFactory.eINSTANCE
 				.createAttributeConstraint();
 		largeVmCoresConstraint.setFrom(vmType);
-		StringValue largeVmCoresConstraintFrom = TypeFactory.eINSTANCE
-				.createStringValue();
+		StringsValue largeVmCoresConstraintFrom = TypeFactory.eINSTANCE
+				.createStringsValue();
 		largeVmCoresConstraintFrom.setValue("LARGE");
 		largeVmCoresConstraint.setFromValue(largeVmCoresConstraintFrom);
 
 		largeVmCoresConstraint.setTo(vmCores);
-		IntValue largeVmCoresConstraintTo = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue largeVmCoresConstraintTo = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		largeVmCoresConstraintTo.setValue(12);
 		largeVmCoresConstraint.setToValue(largeVmCoresConstraintTo);
 
@@ -1271,8 +1271,8 @@ public class SensAppCDO {
 		Limit rawEtMetricMin = TypeFactory.eINSTANCE.createLimit();
 		rawEtMetricMin.setIncluded(false);
 
-		FloatValue rawEtMetricMinValue = TypeFactory.eINSTANCE
-				.createFloatValue();
+		FloatsValue rawEtMetricMinValue = TypeFactory.eINSTANCE
+				.createFloatsValue();
 		rawEtMetricMinValue.setValue(0);
 
 		rawEtMetricMin.setValue(rawEtMetricMinValue);
@@ -1317,8 +1317,8 @@ public class SensAppCDO {
 		Limit avgEtMetricMin = TypeFactory.eINSTANCE.createLimit();
 		avgEtMetricMin.setIncluded(false);
 
-		FloatValue avgEtMetricMinValue = TypeFactory.eINSTANCE
-				.createFloatValue();
+		FloatsValue avgEtMetricMinValue = TypeFactory.eINSTANCE
+				.createFloatsValue();
 		avgEtMetricMinValue.setValue(0);
 
 		avgEtMetricMin.setValue(avgEtMetricMinValue);
@@ -1361,8 +1361,8 @@ public class SensAppCDO {
 		Limit rawStorageMetricMin = TypeFactory.eINSTANCE.createLimit();
 		rawStorageMetricMin.setIncluded(true);
 
-		IntValue rawStorageMetricMinValue = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue rawStorageMetricMinValue = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		rawStorageMetricMinValue.setValue(200);
 
 		rawStorageMetricMin.setValue(rawStorageMetricMinValue);
@@ -1372,8 +1372,8 @@ public class SensAppCDO {
 		Limit rawStorageMetricMax = TypeFactory.eINSTANCE.createLimit();
 		rawStorageMetricMax.setIncluded(true);
 
-		IntValue rawStorageMetricMaxValue = TypeFactory.eINSTANCE
-				.createIntValue();
+		IntegerValue rawStorageMetricMaxValue = TypeFactory.eINSTANCE
+				.createIntegerValue();
 		rawStorageMetricMaxValue.setValue(2048);
 
 		rawStorageMetricMax.setValue(rawStorageMetricMaxValue);
