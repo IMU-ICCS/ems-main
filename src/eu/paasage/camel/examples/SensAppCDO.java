@@ -611,8 +611,6 @@ public class SensAppCDO {
 		sintefUsers.add(user1);
 		
 		PaaSageCredentials user1Credentials = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-		user1Credentials.setName("User1_PaaSage_Credentials");
-		user1Credentials.setUsername("user1");
 		user1Credentials.setPassword("user1_at_sintef_dot_no");
 		user1.setPaasageCredentials(user1Credentials);
 

@@ -570,8 +570,6 @@ public class CDOClient
 		users.add(user1);
 		
 		PaaSageCredentials pc1 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-		pc1.setName("user1_P_Credentials");
-		pc1.setUsername("user1");
 		pc1.setPassword("user1");
 		user1.setPaasageCredentials(pc1);
 		
@@ -586,8 +584,6 @@ public class CDOClient
 		exIDs1.add(id3);
 		
 		PaaSageCredentials pc2 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-		pc2.setName("user2_P_Credentials");
-		pc2.setUsername("user2");
 		pc2.setPassword("user2");
 		user2.setPaasageCredentials(pc2);
 		
