@@ -186,10 +186,15 @@
 		<artifactId>net4j_4.3.0</artifactId>
 		<version>v20140308-0604</version>
 	  </dependency>
-	  <dependency>
+	  <!-- <dependency>
 		<groupId>org.eclipse.ocl.examples</groupId>
 		<artifactId>pivot_3.4.0</artifactId>
 		<version>v20140601-1110</version>
+	  </dependency> -->
+	  <dependency>
+		<groupId>org.eclipse.ocl.examples</groupId>
+		<artifactId>pivot_3.4.2</artifactId>
+		<version>v20140725-1945</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.eclipse.ocl.examples.xtext</groupId>
