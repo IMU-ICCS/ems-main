@@ -1,0 +1,29 @@
+These examples:
+
+ScalarmModel.xmi - 
+created by Kyriakos on 23/6/2015.  This one can be 'opened' by the tree editor.  Have been edited to include cloudcredentials (username/password)
+
+Scarlarm_full.xmi - 
+created by Alessandro at the Ulm meeing. I have changed the schemaLocation to make it works with my local installation of emf.
+
+Scarlarm_V2.xmi - 
+predates the ULM meeting.  It will not work with the Camel lib updated after the ULM meeting.
+
+test.xmi - 
+deployment model created by S2D, but manually updated to correct incorrect mappings in communication intances and duplicate name in an vm instance.  Exported using the CDO client exportWithRefRec method.
+Manually edited to include cloudcredentials (username/password)
+
+upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi - 
+provider model associated with test.xmi.  Exported using the CDO client exportWithRefRec method.  Manually edited to include endpoint and driver.
+
+test_1_reconfig.xmi -
+based on test.xmi and has been manually updated to add more objects to test the reconfiguration code.  The provider model references/URIs have been updated to point to 
+upperware-models_fms_1.xmi.  Manually edited to include cloudcredentials (username/password)
+
+upperware-models_fms_1.xmi - provider model associated with 
+test_1_reconfig.xmi.  The xmi is based on upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi  
+
+
+----
+Shirley Crompton, STFC
+26/08/2015

@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="ASCII"?>
+<camel:CamelModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://www.paasage.eu/2015/06/camel" xmlns:provider="http://www.paasage.eu/2015/06/camel/provider" xmlns:type="http://www.paasage.eu/2015/06/camel/type" xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type" name="GWDG">
+  <providerModels name="GWDG">
+    <constraints xsi:type="provider:Implies" name="M1.MICRO_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.MICRO"/>
+        <toValue xsi:type="type:IntegerValue" value="256"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.MICRO"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.MICRO"/>
+        <toValue xsi:type="type:IntegerValue"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1.TINY_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.TINY"/>
+        <toValue xsi:type="type:IntegerValue" value="512"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.TINY"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.TINY"/>
+        <toValue xsi:type="type:IntegerValue"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1.SMALL_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="20"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1.MEDIUM_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="2"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="40"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1.LARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="80"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1.XLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16384"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1.XXLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1.XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="32768"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1.XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1.XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2.SMALL_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="20"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2.MEDIUM_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="2"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="40"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2.LARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16384"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="80"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2.XLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="32768"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1.SMALL_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="2"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1.SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="20"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1.MEDIUM_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1.MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="40"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1.LARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1.LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="80"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1.XLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16384"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1.XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1.XXLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature/@subFeatures.0" to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1.XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="32768"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1.XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0" to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1.XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="1600"/>
+      </attributeConstraints>
+    </constraints>
+    <rootFeature name="GWDG">
+      <attributes name="deploymentModel" valueType="//@typeModels.0/@dataTypes.5">
+        <value xsi:type="type:StringsValue" value="Private"/>
+      </attributes>
+      <attributes name="serviceModel" valueType="//@typeModels.0/@dataTypes.5">
+        <value xsi:type="type:StringsValue" value="IaaS"/>
+      </attributes>
+      <attributes name="Availability" valueType="//@typeModels.0/@dataTypes.5" unitType="PERCENTAGE">
+        <value xsi:type="type:StringsValue" value="95"/>
+      </attributes>
+      <attributes name="Driver" valueType="//@typeModels.0/@dataTypes.5">
+        <value xsi:type="type:StringsValue" value="openstack-nova"/>
+      </attributes>
+      <attributes name="EndPoint" valueType="//@typeModels.0/@dataTypes.5">
+        <value xsi:type="type:StringsValue" value="https://api.cloud.gwdg.de:5000/v2.0/"/>
+      </attributes>
+      <subFeatures name="VM">
+        <attributes name="vmType" valueType="//@typeModels.0/@dataTypes.4">
+          <value xsi:type="type:EnumerateValue" name="C1.XXLARGE" value="15"/>
+        </attributes>
+        <attributes name="vmMemory" valueType="//@typeModels.0/@dataTypes.3" unitType="MEGABYTES">
+          <value xsi:type="type:IntegerValue" value="32768"/>
+        </attributes>
+        <attributes name="vmStorage" valueType="//@typeModels.0/@dataTypes.2" unitType="GIGABYTES">
+          <value xsi:type="type:IntegerValue" value="1600"/>
+        </attributes>
+        <attributes name="vmCores" valueType="//@typeModels.0/@dataTypes.1">
+          <value xsi:type="type:IntegerValue" value="16"/>
+        </attributes>
+        <attributes name="vmOS" valueType="//@typeModels.0/@dataTypes.0">
+          <value xsi:type="type:EnumerateValue" name="ubuntu" value="12"/>
+        </attributes>
+        <featureCardinality cardinalityMin="1" cardinalityMax="8" value="1"/>
+      </subFeatures>
+      <subFeatures name="Location">
+        <subFeatures name="Germany">
+          <featureCardinality cardinalityMin="1" cardinalityMax="1" value="1"/>
+        </subFeatures>
+        <featureCardinality cardinalityMin="1" cardinalityMax="1" value="1"/>
+      </subFeatures>
+      <featureCardinality cardinalityMin="1" cardinalityMax="1" value="1"/>
+    </rootFeature>
+  </providerModels>
+  <typeModels name="GWDGTypes">
+    <dataTypes xsi:type="type:Enumeration" name="OS_ENUMERATION">
+      <values name="Fedora 20 server x86_64"/>
+      <values name="Ubuntu 14.04 LTS Server x86_64" value="1"/>
+      <values name="Debian 7.6.0 Server x86_64" value="2"/>
+      <values name="Scientific Linux 6.5 Server x86_64" value="3"/>
+      <values name="openSUSE 13.1 Server x86_64" value="4"/>
+      <values name="CentOS 6.5 Server x86_64" value="5"/>
+      <values name="Ubuntu 13.10 Desktop Unity x86_64" value="6"/>
+      <values name="Fedora 20 Desktop Gnome x86_64" value="7"/>
+      <values name="openSUSE 13.1 Desktop Gnome x86_64" value="8"/>
+      <values name="Fedora 20 Desktop KDE x86_64" value="9"/>
+      <values name="openSUSE 13.1 Desktop KDE x86_64" value="10"/>
+      <values name="other" value="11"/>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="CORES_RANGE">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue" value="1"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="16"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="STORAGE_RANGE">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="1600"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="MEMORY_RANGE">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue" value="256"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="32768"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Enumeration" name="VM_TYPE_ENUMERATION">
+      <values name="M1.MICRO"/>
+      <values name="M1.TINY" value="1"/>
+      <values name="M1.SMALL" value="2"/>
+      <values name="M1.MEDIUM" value="3"/>
+      <values name="M1.LARGE" value="4"/>
+      <values name="M1.XLARGE" value="5"/>
+      <values name="M1.XXLARGE" value="6"/>
+      <values name="M2.SMALL" value="7"/>
+      <values name="M2.MEDIUM" value="8"/>
+      <values name="M2.LARGE" value="9"/>
+      <values name="M2.XLARGE" value="10"/>
+      <values name="C1.SMALL" value="11"/>
+      <values name="C1.MEDIUM" value="12"/>
+      <values name="C1.LARGE" value="13"/>
+      <values name="C1.XLARGE" value="14"/>
+      <values name="C1.XXLARGE" value="15"/>
+    </dataTypes>
+    <dataTypes xsi:type="type:StringValueType" name="StringValueType" primitiveType="StringType"/>
+  </typeModels>
+</camel:CamelModel>
