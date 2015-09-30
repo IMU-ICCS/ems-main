@@ -89,10 +89,10 @@ public class PlanGenerator {
 	 * <p>
 	 * @param currentModel	the current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 * @param targetModel	the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
-	 * @return				the computed deployment {@link eu.paasage.upperware.plangenerator.model.Plan <em>Plan</em>} containing 
-	 * 						  a list of deployment tasks to create/update a cloud application managed by PaaSage.
-	 * @throws	{@link eu.paasage.upperware.plangenerator.exception.PlanGenerationException <em>PlanGenerationException</em>} or
-	 * 			{@link eu.paasage.upperware.plangenerator.exception.ModelComparatorException <em>ModelComparatorException</em>}on error
+	 * @return	the computed deployment {@link eu.paasage.upperware.plangenerator.model.Plan <em>Plan</em>} containing  
+	 * 			a list of deployment tasks to create/update a cloud application managed by PaaSage.
+	 * @throws  ModelComparatorException for error during models comparison
+	 * @throws	PlanGenerationException for error during dependencies generation
 	 */
 	public Plan generate(DeploymentModel currentModel, DeploymentModel targetModel) throws PlanGenerationException, ModelComparatorException {
 		//currentModel is nullable but must have a targetModel

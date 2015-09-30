@@ -9,13 +9,11 @@ package eu.paasage.upperware.plangenerator.type;
 
 /**
  * An enum of permitted task type:
- * <p> 
  * <ul>
  * <li>CREATE</li>
  * <li>DELETE</li>
  * <li>UPDATE</li>
  * </ul>
- * <p>
  * @author Shirley Crompton (shirley.crompton@stfc.ac.uk)
  * org     UK Science and Technology Facilities Council
  * project PaaSage
