@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Copyright (C) 2015 INRIA, Université Lille 1
+
+   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
+   - Date: 09/2015
+   - This Source Code Form is subject to the terms of the Mozilla Public 
+   - License, v. 2.0. If a copy of the MPL was not distributed with this 
+   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
+
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="eu" nsURI="http://www.paasage.eu/eu" nsPrefix="eu">
+  <eSubpackages name="paasage" nsURI="http://www.paasage.eu/eu/paasage" nsPrefix="paasage">
+    <eSubpackages name="upperware" nsURI="http://www.paasage.eu/eu/paasage/upperware"
+        nsPrefix="upperware">
+      <eSubpackages name="metamodel" nsURI="http://www.paasage.eu/eu/paasage/upperware/metamodel"
+          nsPrefix="metamodel">
+        <eSubpackages name="cp" nsURI="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp"
+            nsPrefix="cp">
+          <eClassifiers xsi:type="ecore:EClass" name="CPElement" abstract="true">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" lowerBound="1"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="ConstraintProblem">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="goals" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/Goal" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="constants" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/Constant" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="variables" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/Variable" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/ComparisonExpression" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="auxExpressions"
+                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/Expression"
+                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="metricVariables"
+                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/MetricVariable"
+                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="solution" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/Solution" containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Expression" abstract="true"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement"/>
+          <eClassifiers xsi:type="ecore:EClass" name="NumericExpression" abstract="true"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/Expression"/>
+          <eClassifiers xsi:type="ecore:EClass" name="Variable" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="domain" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/Domain" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="locationId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="providerId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="vmId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="OsImageId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="hardwareId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Domain" abstract="true"/>
+          <eClassifiers xsi:type="ecore:EClass" name="NumericDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/Domain">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1"
+                eType="ecore:EEnum paasageTypes.ecore#//paasage/upperware/metamodel/types/BasicTypeEnum"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="RangeDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericDomain">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="from" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="to" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="NumericListDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericDomain">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="values" lowerBound="1"
+                upperBound="-1" eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Constant" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1"
+                eType="ecore:EEnum paasageTypes.ecore#//paasage/upperware/metamodel/types/BasicTypeEnum"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="ComposedExpression" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="expressions" lowerBound="2"
+                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/NumericExpression"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" eType="#//paasage/upperware/metamodel/cp/OperatorEnum"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EEnum" name="OperatorEnum">
+            <eLiterals name="plus"/>
+            <eLiterals name="minus" value="1"/>
+            <eLiterals name="times" value="2"/>
+            <eLiterals name="div" value="3"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EEnum" name="GoalOperatorEnum">
+            <eLiterals name="max" literal="max"/>
+            <eLiterals name="min" value="1" literal="min"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EEnum" name="ComparatorEnum">
+            <eLiterals name="greaterThan"/>
+            <eLiterals name="lessThan" value="1"/>
+            <eLiterals name="greaterOrEqualTo" value="2"/>
+            <eLiterals name="lessOrEqualTo" value="3"/>
+            <eLiterals name="equalTo" value="4"/>
+            <eLiterals name="different" value="5"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="ComparisonExpression" eSuperTypes="#//paasage/upperware/metamodel/cp/BooleanExpression">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="exp1" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/Expression"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="exp2" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/Expression"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="comparator" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/ComparatorEnum"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Goal" eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/NumericExpression" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="goalType" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/GoalOperatorEnum"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="BooleanExpression" abstract="true"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/Expression"/>
+          <eClassifiers xsi:type="ecore:EClass" name="ListDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/Domain">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="values" lowerBound="1"
+                upperBound="-1" eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/StringValueUpperware"
+                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/StringValueUpperware"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="MultiRangeDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericDomain">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="ranges" lowerBound="2"
+                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/RangeDomain"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="UnaryExpression" abstract="true"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/NumericExpression"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EEnum" name="SimpleUnaryOperatorEnum">
+            <eLiterals name="abstractValue"/>
+            <eLiterals name="lnValue" value="1"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EEnum" name="ComposedUnaryOperatorEnum">
+            <eLiterals name="exponentialValue"/>
+            <eLiterals name="logValue" value="1"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="SimpleUnaryExpression" abstract="true"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/UnaryExpression">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/SimpleUnaryOperatorEnum"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="ComposedUnaryExpression" abstract="true"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/UnaryExpression">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/ComposedUnaryOperatorEnum"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" lowerBound="1"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="BooleanDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/Domain"/>
+          <eClassifiers xsi:type="ecore:EClass" name="MetricVariable" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1"
+                eType="ecore:EEnum paasageTypes.ecore#//paasage/upperware/metamodel/types/BasicTypeEnum"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Solution">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="timestamp" lowerBound="1"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="variableValue"
+                lowerBound="1" upperBound="-1" eType="#//paasage/upperware/metamodel/cp/VariableValue"
+                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="metricVariableValue"
+                lowerBound="1" upperBound="-1" eType="#//paasage/upperware/metamodel/cp/MetricVariableValue"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="VariableValue">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/Variable"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="MetricVariableValue">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/MetricVariable"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+          </eClassifiers>
+        </eSubpackages>
+      </eSubpackages>
+    </eSubpackages>
+  </eSubpackages>
+</ecore:EPackage>

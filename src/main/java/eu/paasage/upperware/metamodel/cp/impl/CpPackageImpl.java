@@ -1,0 +1,1288 @@
+/**
+ * Copyright (C) 2015 INRIA, Université Lille 1
+ *
+ * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
+ * Date: 09/2015
+ 
+ * This Source Code Form is subject to the terms of the Mozilla Public 
+ * License, v. 2.0. If a copy of the MPL was not distributed with this 
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+package eu.paasage.upperware.metamodel.cp.impl;
+
+import eu.paasage.upperware.metamodel.cp.BooleanDomain;
+import eu.paasage.upperware.metamodel.cp.BooleanExpression;
+import eu.paasage.upperware.metamodel.cp.CPElement;
+import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
+import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.Constant;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.Domain;
+import eu.paasage.upperware.metamodel.cp.Expression;
+import eu.paasage.upperware.metamodel.cp.Goal;
+import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.ListDomain;
+import eu.paasage.upperware.metamodel.cp.MetricVariable;
+import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
+import eu.paasage.upperware.metamodel.cp.MultiRangeDomain;
+import eu.paasage.upperware.metamodel.cp.NumericDomain;
+import eu.paasage.upperware.metamodel.cp.NumericExpression;
+import eu.paasage.upperware.metamodel.cp.NumericListDomain;
+import eu.paasage.upperware.metamodel.cp.OperatorEnum;
+import eu.paasage.upperware.metamodel.cp.RangeDomain;
+import eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression;
+import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.cp.UnaryExpression;
+import eu.paasage.upperware.metamodel.cp.Variable;
+import eu.paasage.upperware.metamodel.cp.VariableValue;
+
+import eu.paasage.upperware.metamodel.types.TypesPackage;
+
+import eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl;
+
+import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+
+import eu.paasage.upperware.metamodel.types.typesPaasage.impl.TypesPaasagePackageImpl;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+import org.eclipse.emf.ecore.impl.EPackageImpl;
+
+/**
+ * <!-- begin-user-doc -->
+ * An implementation of the model <b>Package</b>.
+ * <!-- end-user-doc -->
+ * 
+ */
+public class CpPackageImpl extends EPackageImpl implements CpPackage {
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass cpElementEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass constraintProblemEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass expressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass numericExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass variableEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass domainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass numericDomainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass rangeDomainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass numericListDomainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass constantEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass composedExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass comparisonExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass goalEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass booleanExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass listDomainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass multiRangeDomainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass unaryExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass simpleUnaryExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass composedUnaryExpressionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass booleanDomainEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass metricVariableEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass solutionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass variableValueEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EClass metricVariableValueEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EEnum operatorEnumEEnum = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EEnum goalOperatorEnumEEnum = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EEnum comparatorEnumEEnum = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EEnum simpleUnaryOperatorEnumEEnum = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private EEnum composedUnaryOperatorEnumEEnum = null;
+
+	/**
+	 * Creates an instance of the model <b>Package</b>, registered with
+	 * {@link org.eclipse.emf.ecore.EPackage.Registry EPackage.Registry} by the package
+	 * package URI value.
+	 * <p>Note: the correct way to create the package is via the static
+	 * factory method {@link #init init()}, which also performs
+	 * initialization of the package, or returns the registered package,
+	 * if one already exists.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.eclipse.emf.ecore.EPackage.Registry
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#eNS_URI
+	 * @see #init()
+	 * 
+	 */
+	private CpPackageImpl() {
+		super(eNS_URI, CpFactory.eINSTANCE);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private static boolean isInited = false;
+
+	/**
+	 * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
+	 * 
+	 * <p>This method is used to initialize {@link CpPackage#eINSTANCE} when that field is accessed.
+	 * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #eNS_URI
+	 * @see #createPackageContents()
+	 * @see #initializePackageContents()
+	 * 
+	 */
+	public static CpPackage init() {
+		if (isInited) return (CpPackage)EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI);
+
+		// Obtain or create and register package
+		CpPackageImpl theCpPackage = (CpPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof CpPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new CpPackageImpl());
+
+		isInited = true;
+
+		// Obtain or create and register interdependencies
+		TypesPackageImpl theTypesPackage = (TypesPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) instanceof TypesPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) : TypesPackage.eINSTANCE);
+		TypesPaasagePackageImpl theTypesPaasagePackage = (TypesPaasagePackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) instanceof TypesPaasagePackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) : TypesPaasagePackage.eINSTANCE);
+
+		// Create package meta-data objects
+		theCpPackage.createPackageContents();
+		theTypesPackage.createPackageContents();
+		theTypesPaasagePackage.createPackageContents();
+
+		// Initialize created meta-data
+		theCpPackage.initializePackageContents();
+		theTypesPackage.initializePackageContents();
+		theTypesPaasagePackage.initializePackageContents();
+
+		// Mark meta-data to indicate it can't be changed
+		theCpPackage.freeze();
+
+  
+		// Update the registry and return the package
+		EPackage.Registry.INSTANCE.put(CpPackage.eNS_URI, theCpPackage);
+		return theCpPackage;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getCPElement() {
+		return cpElementEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getCPElement_Id() {
+		return (EAttribute)cpElementEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getConstraintProblem() {
+		return constraintProblemEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_Goals() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_Constants() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_Variables() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_Constraints() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_AuxExpressions() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_MetricVariables() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(5);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstraintProblem_Solution() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(6);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getExpression() {
+		return expressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getNumericExpression() {
+		return numericExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getVariable() {
+		return variableEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getVariable_Domain() {
+		return (EReference)variableEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getVariable_LocationId() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getVariable_ProviderId() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getVariable_VmId() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getVariable_OsImageId() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getVariable_HardwareId() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(5);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getDomain() {
+		return domainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getNumericDomain() {
+		return numericDomainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getNumericDomain_Type() {
+		return (EAttribute)numericDomainEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getNumericDomain_Value() {
+		return (EReference)numericDomainEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getRangeDomain() {
+		return rangeDomainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getRangeDomain_From() {
+		return (EReference)rangeDomainEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getRangeDomain_To() {
+		return (EReference)rangeDomainEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getNumericListDomain() {
+		return numericListDomainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getNumericListDomain_Values() {
+		return (EReference)numericListDomainEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getConstant() {
+		return constantEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getConstant_Type() {
+		return (EAttribute)constantEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getConstant_Value() {
+		return (EReference)constantEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getComposedExpression() {
+		return composedExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getComposedExpression_Expressions() {
+		return (EReference)composedExpressionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getComposedExpression_Operator() {
+		return (EAttribute)composedExpressionEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getComparisonExpression() {
+		return comparisonExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getComparisonExpression_Exp1() {
+		return (EReference)comparisonExpressionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getComparisonExpression_Exp2() {
+		return (EReference)comparisonExpressionEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getComparisonExpression_Comparator() {
+		return (EAttribute)comparisonExpressionEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getGoal() {
+		return goalEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getGoal_Expression() {
+		return (EReference)goalEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getGoal_GoalType() {
+		return (EAttribute)goalEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getBooleanExpression() {
+		return booleanExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getListDomain() {
+		return listDomainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getListDomain_Values() {
+		return (EReference)listDomainEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getListDomain_Value() {
+		return (EReference)listDomainEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getMultiRangeDomain() {
+		return multiRangeDomainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getMultiRangeDomain_Ranges() {
+		return (EReference)multiRangeDomainEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getUnaryExpression() {
+		return unaryExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getUnaryExpression_Expression() {
+		return (EReference)unaryExpressionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getSimpleUnaryExpression() {
+		return simpleUnaryExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getSimpleUnaryExpression_Operator() {
+		return (EAttribute)simpleUnaryExpressionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getComposedUnaryExpression() {
+		return composedUnaryExpressionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getComposedUnaryExpression_Operator() {
+		return (EAttribute)composedUnaryExpressionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getComposedUnaryExpression_Value() {
+		return (EAttribute)composedUnaryExpressionEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getBooleanDomain() {
+		return booleanDomainEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getMetricVariable() {
+		return metricVariableEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getMetricVariable_Type() {
+		return (EAttribute)metricVariableEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getSolution() {
+		return solutionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EAttribute getSolution_Timestamp() {
+		return (EAttribute)solutionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getSolution_VariableValue() {
+		return (EReference)solutionEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getSolution_MetricVariableValue() {
+		return (EReference)solutionEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getVariableValue() {
+		return variableValueEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getVariableValue_Variable() {
+		return (EReference)variableValueEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getVariableValue_Value() {
+		return (EReference)variableValueEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EClass getMetricVariableValue() {
+		return metricVariableValueEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getMetricVariableValue_Variable() {
+		return (EReference)metricVariableValueEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EReference getMetricVariableValue_Value() {
+		return (EReference)metricVariableValueEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EEnum getOperatorEnum() {
+		return operatorEnumEEnum;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EEnum getGoalOperatorEnum() {
+		return goalOperatorEnumEEnum;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EEnum getComparatorEnum() {
+		return comparatorEnumEEnum;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EEnum getSimpleUnaryOperatorEnum() {
+		return simpleUnaryOperatorEnumEEnum;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public EEnum getComposedUnaryOperatorEnum() {
+		return composedUnaryOperatorEnumEEnum;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public CpFactory getCpFactory() {
+		return (CpFactory)getEFactoryInstance();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private boolean isCreated = false;
+
+	/**
+	 * Creates the meta-model objects for the package.  This method is
+	 * guarded to have no affect on any invocation but its first.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public void createPackageContents() {
+		if (isCreated) return;
+		isCreated = true;
+
+		// Create classes and their features
+		cpElementEClass = createEClass(CP_ELEMENT);
+		createEAttribute(cpElementEClass, CP_ELEMENT__ID);
+
+		constraintProblemEClass = createEClass(CONSTRAINT_PROBLEM);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__GOALS);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__CONSTANTS);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__VARIABLES);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__CONSTRAINTS);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__AUX_EXPRESSIONS);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__METRIC_VARIABLES);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__SOLUTION);
+
+		expressionEClass = createEClass(EXPRESSION);
+
+		numericExpressionEClass = createEClass(NUMERIC_EXPRESSION);
+
+		variableEClass = createEClass(VARIABLE);
+		createEReference(variableEClass, VARIABLE__DOMAIN);
+		createEAttribute(variableEClass, VARIABLE__LOCATION_ID);
+		createEAttribute(variableEClass, VARIABLE__PROVIDER_ID);
+		createEAttribute(variableEClass, VARIABLE__VM_ID);
+		createEAttribute(variableEClass, VARIABLE__OS_IMAGE_ID);
+		createEAttribute(variableEClass, VARIABLE__HARDWARE_ID);
+
+		domainEClass = createEClass(DOMAIN);
+
+		numericDomainEClass = createEClass(NUMERIC_DOMAIN);
+		createEAttribute(numericDomainEClass, NUMERIC_DOMAIN__TYPE);
+		createEReference(numericDomainEClass, NUMERIC_DOMAIN__VALUE);
+
+		rangeDomainEClass = createEClass(RANGE_DOMAIN);
+		createEReference(rangeDomainEClass, RANGE_DOMAIN__FROM);
+		createEReference(rangeDomainEClass, RANGE_DOMAIN__TO);
+
+		numericListDomainEClass = createEClass(NUMERIC_LIST_DOMAIN);
+		createEReference(numericListDomainEClass, NUMERIC_LIST_DOMAIN__VALUES);
+
+		constantEClass = createEClass(CONSTANT);
+		createEAttribute(constantEClass, CONSTANT__TYPE);
+		createEReference(constantEClass, CONSTANT__VALUE);
+
+		composedExpressionEClass = createEClass(COMPOSED_EXPRESSION);
+		createEReference(composedExpressionEClass, COMPOSED_EXPRESSION__EXPRESSIONS);
+		createEAttribute(composedExpressionEClass, COMPOSED_EXPRESSION__OPERATOR);
+
+		comparisonExpressionEClass = createEClass(COMPARISON_EXPRESSION);
+		createEReference(comparisonExpressionEClass, COMPARISON_EXPRESSION__EXP1);
+		createEReference(comparisonExpressionEClass, COMPARISON_EXPRESSION__EXP2);
+		createEAttribute(comparisonExpressionEClass, COMPARISON_EXPRESSION__COMPARATOR);
+
+		goalEClass = createEClass(GOAL);
+		createEReference(goalEClass, GOAL__EXPRESSION);
+		createEAttribute(goalEClass, GOAL__GOAL_TYPE);
+
+		booleanExpressionEClass = createEClass(BOOLEAN_EXPRESSION);
+
+		listDomainEClass = createEClass(LIST_DOMAIN);
+		createEReference(listDomainEClass, LIST_DOMAIN__VALUES);
+		createEReference(listDomainEClass, LIST_DOMAIN__VALUE);
+
+		multiRangeDomainEClass = createEClass(MULTI_RANGE_DOMAIN);
+		createEReference(multiRangeDomainEClass, MULTI_RANGE_DOMAIN__RANGES);
+
+		unaryExpressionEClass = createEClass(UNARY_EXPRESSION);
+		createEReference(unaryExpressionEClass, UNARY_EXPRESSION__EXPRESSION);
+
+		simpleUnaryExpressionEClass = createEClass(SIMPLE_UNARY_EXPRESSION);
+		createEAttribute(simpleUnaryExpressionEClass, SIMPLE_UNARY_EXPRESSION__OPERATOR);
+
+		composedUnaryExpressionEClass = createEClass(COMPOSED_UNARY_EXPRESSION);
+		createEAttribute(composedUnaryExpressionEClass, COMPOSED_UNARY_EXPRESSION__OPERATOR);
+		createEAttribute(composedUnaryExpressionEClass, COMPOSED_UNARY_EXPRESSION__VALUE);
+
+		booleanDomainEClass = createEClass(BOOLEAN_DOMAIN);
+
+		metricVariableEClass = createEClass(METRIC_VARIABLE);
+		createEAttribute(metricVariableEClass, METRIC_VARIABLE__TYPE);
+
+		solutionEClass = createEClass(SOLUTION);
+		createEAttribute(solutionEClass, SOLUTION__TIMESTAMP);
+		createEReference(solutionEClass, SOLUTION__VARIABLE_VALUE);
+		createEReference(solutionEClass, SOLUTION__METRIC_VARIABLE_VALUE);
+
+		variableValueEClass = createEClass(VARIABLE_VALUE);
+		createEReference(variableValueEClass, VARIABLE_VALUE__VARIABLE);
+		createEReference(variableValueEClass, VARIABLE_VALUE__VALUE);
+
+		metricVariableValueEClass = createEClass(METRIC_VARIABLE_VALUE);
+		createEReference(metricVariableValueEClass, METRIC_VARIABLE_VALUE__VARIABLE);
+		createEReference(metricVariableValueEClass, METRIC_VARIABLE_VALUE__VALUE);
+
+		// Create enums
+		operatorEnumEEnum = createEEnum(OPERATOR_ENUM);
+		goalOperatorEnumEEnum = createEEnum(GOAL_OPERATOR_ENUM);
+		comparatorEnumEEnum = createEEnum(COMPARATOR_ENUM);
+		simpleUnaryOperatorEnumEEnum = createEEnum(SIMPLE_UNARY_OPERATOR_ENUM);
+		composedUnaryOperatorEnumEEnum = createEEnum(COMPOSED_UNARY_OPERATOR_ENUM);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	private boolean isInitialized = false;
+
+	/**
+	 * Complete the initialization of the package and its meta-model.  This
+	 * method is guarded to have no affect on any invocation but its first.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * 
+	 */
+	public void initializePackageContents() {
+		if (isInitialized) return;
+		isInitialized = true;
+
+		// Initialize package
+		setName(eNAME);
+		setNsPrefix(eNS_PREFIX);
+		setNsURI(eNS_URI);
+
+		// Obtain other dependent packages
+		TypesPackage theTypesPackage = (TypesPackage)EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI);
+
+		// Create type parameters
+
+		// Set bounds for type parameters
+
+		// Add supertypes to classes
+		expressionEClass.getESuperTypes().add(this.getCPElement());
+		numericExpressionEClass.getESuperTypes().add(this.getExpression());
+		variableEClass.getESuperTypes().add(this.getNumericExpression());
+		numericDomainEClass.getESuperTypes().add(this.getDomain());
+		rangeDomainEClass.getESuperTypes().add(this.getNumericDomain());
+		numericListDomainEClass.getESuperTypes().add(this.getNumericDomain());
+		constantEClass.getESuperTypes().add(this.getNumericExpression());
+		composedExpressionEClass.getESuperTypes().add(this.getNumericExpression());
+		comparisonExpressionEClass.getESuperTypes().add(this.getBooleanExpression());
+		goalEClass.getESuperTypes().add(this.getCPElement());
+		booleanExpressionEClass.getESuperTypes().add(this.getExpression());
+		listDomainEClass.getESuperTypes().add(this.getDomain());
+		multiRangeDomainEClass.getESuperTypes().add(this.getNumericDomain());
+		unaryExpressionEClass.getESuperTypes().add(this.getNumericExpression());
+		simpleUnaryExpressionEClass.getESuperTypes().add(this.getUnaryExpression());
+		composedUnaryExpressionEClass.getESuperTypes().add(this.getUnaryExpression());
+		booleanDomainEClass.getESuperTypes().add(this.getDomain());
+		metricVariableEClass.getESuperTypes().add(this.getNumericExpression());
+
+		// Initialize classes, features, and operations; add parameters
+		initEClass(cpElementEClass, CPElement.class, "CPElement", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getCPElement_Id(), ecorePackage.getEString(), "id", null, 1, 1, CPElement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(constraintProblemEClass, ConstraintProblem.class, "ConstraintProblem", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getConstraintProblem_Goals(), this.getGoal(), null, "goals", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_Constants(), this.getConstant(), null, "constants", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_Variables(), this.getVariable(), null, "variables", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_Constraints(), this.getComparisonExpression(), null, "constraints", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_AuxExpressions(), this.getExpression(), null, "auxExpressions", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_MetricVariables(), this.getMetricVariable(), null, "metricVariables", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_Solution(), this.getSolution(), null, "solution", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(expressionEClass, Expression.class, "Expression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(numericExpressionEClass, NumericExpression.class, "NumericExpression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(variableEClass, Variable.class, "Variable", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getVariable_Domain(), this.getDomain(), null, "domain", null, 1, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_LocationId(), ecorePackage.getEString(), "locationId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_ProviderId(), ecorePackage.getEString(), "providerId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_VmId(), ecorePackage.getEString(), "vmId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_OsImageId(), ecorePackage.getEString(), "OsImageId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_HardwareId(), ecorePackage.getEString(), "hardwareId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(domainEClass, Domain.class, "Domain", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(numericDomainEClass, NumericDomain.class, "NumericDomain", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getNumericDomain_Type(), theTypesPackage.getBasicTypeEnum(), "type", null, 1, 1, NumericDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getNumericDomain_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 0, 1, NumericDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(rangeDomainEClass, RangeDomain.class, "RangeDomain", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getRangeDomain_From(), theTypesPackage.getNumericValueUpperware(), null, "from", null, 1, 1, RangeDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getRangeDomain_To(), theTypesPackage.getNumericValueUpperware(), null, "to", null, 1, 1, RangeDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(numericListDomainEClass, NumericListDomain.class, "NumericListDomain", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getNumericListDomain_Values(), theTypesPackage.getNumericValueUpperware(), null, "values", null, 1, -1, NumericListDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(constantEClass, Constant.class, "Constant", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getConstant_Type(), theTypesPackage.getBasicTypeEnum(), "type", null, 1, 1, Constant.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstant_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 1, 1, Constant.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(composedExpressionEClass, ComposedExpression.class, "ComposedExpression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getComposedExpression_Expressions(), this.getNumericExpression(), null, "expressions", null, 2, -1, ComposedExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getComposedExpression_Operator(), this.getOperatorEnum(), "operator", null, 0, 1, ComposedExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(comparisonExpressionEClass, ComparisonExpression.class, "ComparisonExpression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getComparisonExpression_Exp1(), this.getExpression(), null, "exp1", null, 1, 1, ComparisonExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getComparisonExpression_Exp2(), this.getExpression(), null, "exp2", null, 1, 1, ComparisonExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getComparisonExpression_Comparator(), this.getComparatorEnum(), "comparator", null, 1, 1, ComparisonExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(goalEClass, Goal.class, "Goal", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getGoal_Expression(), this.getNumericExpression(), null, "expression", null, 1, 1, Goal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getGoal_GoalType(), this.getGoalOperatorEnum(), "goalType", null, 1, 1, Goal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(booleanExpressionEClass, BooleanExpression.class, "BooleanExpression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(listDomainEClass, ListDomain.class, "ListDomain", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getListDomain_Values(), theTypesPackage.getStringValueUpperware(), null, "values", null, 1, -1, ListDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getListDomain_Value(), theTypesPackage.getStringValueUpperware(), null, "value", null, 0, 1, ListDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(multiRangeDomainEClass, MultiRangeDomain.class, "MultiRangeDomain", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getMultiRangeDomain_Ranges(), this.getRangeDomain(), null, "ranges", null, 2, -1, MultiRangeDomain.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(unaryExpressionEClass, UnaryExpression.class, "UnaryExpression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getUnaryExpression_Expression(), this.getNumericExpression(), null, "expression", null, 1, 1, UnaryExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(simpleUnaryExpressionEClass, SimpleUnaryExpression.class, "SimpleUnaryExpression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSimpleUnaryExpression_Operator(), this.getSimpleUnaryOperatorEnum(), "operator", null, 1, 1, SimpleUnaryExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(composedUnaryExpressionEClass, ComposedUnaryExpression.class, "ComposedUnaryExpression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getComposedUnaryExpression_Operator(), this.getComposedUnaryOperatorEnum(), "operator", null, 1, 1, ComposedUnaryExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getComposedUnaryExpression_Value(), ecorePackage.getEInt(), "value", null, 1, 1, ComposedUnaryExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(booleanDomainEClass, BooleanDomain.class, "BooleanDomain", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(metricVariableEClass, MetricVariable.class, "MetricVariable", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getMetricVariable_Type(), theTypesPackage.getBasicTypeEnum(), "type", null, 1, 1, MetricVariable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(solutionEClass, Solution.class, "Solution", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSolution_Timestamp(), ecorePackage.getELong(), "timestamp", null, 1, 1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getSolution_VariableValue(), this.getVariableValue(), null, "variableValue", null, 1, -1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getSolution_MetricVariableValue(), this.getMetricVariableValue(), null, "metricVariableValue", null, 1, -1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(variableValueEClass, VariableValue.class, "VariableValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getVariableValue_Variable(), this.getVariable(), null, "variable", null, 1, 1, VariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getVariableValue_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 1, 1, VariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(metricVariableValueEClass, MetricVariableValue.class, "MetricVariableValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getMetricVariableValue_Variable(), this.getMetricVariable(), null, "variable", null, 1, 1, MetricVariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getMetricVariableValue_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 1, 1, MetricVariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		// Initialize enums and add enum literals
+		initEEnum(operatorEnumEEnum, OperatorEnum.class, "OperatorEnum");
+		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.PLUS);
+		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.MINUS);
+		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.TIMES);
+		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.DIV);
+
+		initEEnum(goalOperatorEnumEEnum, GoalOperatorEnum.class, "GoalOperatorEnum");
+		addEEnumLiteral(goalOperatorEnumEEnum, GoalOperatorEnum.MAX);
+		addEEnumLiteral(goalOperatorEnumEEnum, GoalOperatorEnum.MIN);
+
+		initEEnum(comparatorEnumEEnum, ComparatorEnum.class, "ComparatorEnum");
+		addEEnumLiteral(comparatorEnumEEnum, ComparatorEnum.GREATER_THAN);
+		addEEnumLiteral(comparatorEnumEEnum, ComparatorEnum.LESS_THAN);
+		addEEnumLiteral(comparatorEnumEEnum, ComparatorEnum.GREATER_OR_EQUAL_TO);
+		addEEnumLiteral(comparatorEnumEEnum, ComparatorEnum.LESS_OR_EQUAL_TO);
+		addEEnumLiteral(comparatorEnumEEnum, ComparatorEnum.EQUAL_TO);
+		addEEnumLiteral(comparatorEnumEEnum, ComparatorEnum.DIFFERENT);
+
+		initEEnum(simpleUnaryOperatorEnumEEnum, SimpleUnaryOperatorEnum.class, "SimpleUnaryOperatorEnum");
+		addEEnumLiteral(simpleUnaryOperatorEnumEEnum, SimpleUnaryOperatorEnum.ABSTRACT_VALUE);
+		addEEnumLiteral(simpleUnaryOperatorEnumEEnum, SimpleUnaryOperatorEnum.LN_VALUE);
+
+		initEEnum(composedUnaryOperatorEnumEEnum, ComposedUnaryOperatorEnum.class, "ComposedUnaryOperatorEnum");
+		addEEnumLiteral(composedUnaryOperatorEnumEEnum, ComposedUnaryOperatorEnum.EXPONENTIAL_VALUE);
+		addEEnumLiteral(composedUnaryOperatorEnumEEnum, ComposedUnaryOperatorEnum.LOG_VALUE);
+
+		// Create resource
+		createResource(eNS_URI);
+	}
+
+} //CpPackageImpl

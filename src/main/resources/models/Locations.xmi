@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="ASCII"?>
+<!-- Copyright (C) 2015 INRIA, Universite Lille 1
+
+   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
+   - Date: 09/2015
+   - This Source Code Form is subject to the terms of the Mozilla Public 
+   - License, v. 2.0. If a copy of the MPL was not distributed with this 
+   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
+<typesPaasage:Locations
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
+    xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      name="France"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="1"
+      name="Spain"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="2"
+      name="Japan"
+      continent="#//@locations.6"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="3"
+      name="Brasil"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="4"
+      name="US">
+    <alternativeNames>US East</alternativeNames>
+    <alternativeNames>United States</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:ContinentUpperware"
+      typeId="5"
+      name="Europe">
+    <alternativeNames>eu</alternativeNames>
+    <alternativeNames>EU</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:ContinentUpperware"
+      typeId="6"
+      name="Asia"/>
+  <locations
+      xsi:type="typesPaasage:ContinentUpperware"
+      typeId="7"
+      name="Latin America"/>
+  <locations
+      xsi:type="typesPaasage:ContinentUpperware"
+      typeId="8"
+      name="America"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="9"
+      name="UK">
+    <alternativeNames>United Kingdom</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="10"
+      name="Scotland"
+      continent="#//@locations.5">
+    <alternativeNames>United Kingdom</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:CityUpperware"
+      typeId="11"
+      name="Edinburg"
+      country="#//@locations.10">
+    <alternativeNames>Edinburgh</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="12"
+      name="Ireland"
+      continent="#//@locations.5"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="13"
+      name="Norway"
+      continent="#//@locations.5"/>
+  <locations
+      xsi:type="typesPaasage:CityUpperware"
+      typeId="14"
+      name="Oslo"
+      country="#//@locations.13"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="15"
+      name="Ireland"
+      continent="#//@locations.5"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="16"
+      name="Germany"
+      continent="#//@locations.5">
+    <alternativeNames>germany</alternativeNames>
+    <alternativeNames>DE</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:CityUpperware"
+      typeId="17"
+      name="G&#xf6;ttingen"/>
+  <locations
+      xsi:type="typesPaasage:CityUpperware"
+      typeId="18"
+      name="Virgina"
+      country="#//@locations.4">
+    <alternativeNames>Virgina</alternativeNames>
+  </locations>
+  <locations
+      xsi:type="typesPaasage:CityUpperware"
+      typeId="19"
+      name="Tokyo"
+      country="#//@locations.2"/>
+  <locations
+      xsi:type="typesPaasage:CountryUpperware"
+      typeId="20"
+      name="Norway"
+      continent="#//@locations.5">
+    <alternativeNames>NO</alternativeNames>
+  </locations>
+</typesPaasage:Locations>
