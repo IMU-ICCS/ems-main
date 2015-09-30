@@ -6,27 +6,26 @@ tmp/
 out.txt
 
 # Java/Scala/Eclipse ignores
-milp_solver/target/
-milp_solver/bin/
-milp_solver/.cache
-milp_solver/.settings/
-milp_solver/.history/
-milp_solver/.lib/
+/target/
+/bin/
+/.cache
+/.settings/
+/.history/
+/.lib/
 
 *.class
 *.log
 
 # sbt specific
-milp_solver/.lib/
-milp_solver/dist/*
-milp_solver/target/
-milp_solver/lib_managed/
-milp_solver/src_managed/
-milp_solver/project/boot/
-milp_solver/project/target
-milp_solver/project/plugins/project/
+/.lib/
+/dist/*
+/target/
+/lib_managed/
+/src_managed/
+/project/boot/
+/project/target
+/project/plugins/project/
 
 .idea
-milp_solver/project
-milp_solver/dupa
-milp_solver.iml
+/dupa
+.iml
