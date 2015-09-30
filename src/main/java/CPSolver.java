@@ -1,0 +1,1085 @@
+/* Copyright (C) 2015 KYRIAKOS KRITIKOS <kritikos@ics.forth.gr> */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public 
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
+ */
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.List;
+
+import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
+
+import eu.paasage.camel.CamelPackage;
+import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
+import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.Constant;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.Domain;
+import eu.paasage.upperware.metamodel.cp.Expression;
+import eu.paasage.upperware.metamodel.cp.Goal;
+import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.MetricVariable;
+import eu.paasage.upperware.metamodel.cp.NumericDomain;
+import eu.paasage.upperware.metamodel.cp.NumericExpression;
+import eu.paasage.upperware.metamodel.cp.OperatorEnum;
+import eu.paasage.upperware.metamodel.cp.RangeDomain;
+import eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression;
+import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.cp.UnaryExpression;
+import eu.paasage.upperware.metamodel.cp.Variable;
+import eu.paasage.upperware.metamodel.cp.VariableValue;
+import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
+import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
+import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
+import eu.paasage.upperware.metamodel.types.LongValueUpperware;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
+import eu.paasage.upperware.metamodel.types.TypesFactory;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
+import solver.ResolutionPolicy;
+import solver.Solver;
+import solver.constraints.Constraint;
+import solver.constraints.IntConstraintFactory;
+import solver.constraints.real.RealConstraint;
+import solver.search.strategy.IntStrategyFactory;
+import solver.variables.BoolVar;
+import solver.variables.IntVar;
+import solver.variables.RealVar;
+import solver.variables.VariableFactory;
+import util.ESat;
+import util.tools.ArrayUtils;
+
+
+public class CPSolver {
+
+	private Solver solver = null;
+	private String cdoPath = null;
+	private String pathName = null;
+	private ResolutionPolicy policy = null;
+	private IntVar intGoal = null;
+	private RealVar realGoal = null;
+	//private IntVar[] intVars = null;
+	private Hashtable<String,IntVar> idToIntVar;
+	private Hashtable<String,RealVar> idToRealVar;
+	private Hashtable<String,BoolVar> idToBoolVar;
+	private List<Constraint> constraints;
+	private ConstraintProblem cp = null;
+	private static final double epsilon = 0.000001d;
+	private static final int LOW_INT_LIMIT = -10000000;
+	private static final int UPPER_INT_LIMIT = 10000000;
+	private static final double LOW_REAL_LIMIT = -1000000000.0;
+	private static final double UPPER_REAL_LIMIT = 1000000000.0;
+	private int intVarNum = 0;
+	private int realVarNum = 0;
+	private int constNum = 0;
+	private boolean cdoMode = false;
+ 	
+	//Constructor which also reads the CP Model either from CDO via a CDO path given as String 
+	//or from file system via a String path 
+	public CPSolver(String cdoPath, String pathName){
+		solver = new Solver();
+		this.cdoPath = cdoPath;
+		this.pathName = pathName;
+		readCPModel(cdoPath,pathName);
+	}
+	
+	//Default Constructor - need to read CP Model by calling the respective method with the CDOID of
+	// this model as otherwise no solution will be produced by calling solve method
+	public CPSolver(){
+		solver = new Solver();
+	}
+	
+	private void readModel(ConstraintProblem cp){
+		EList<Constant> constants = cp.getConstants();
+		createConstants(constants);
+		EList<Variable> vars = cp.getVariables();
+		createVariables(vars);
+		EList<MetricVariable> metricVars = cp.getMetricVariables();
+		createMetricVariables(metricVars);
+		EList<ComparisonExpression> constraints = cp.getConstraints();
+		createConstraints(constraints);
+		EList<Goal> goals = cp.getGoals();
+		createGoals(goals);
+	}
+	
+	//Reads the CPModel from CDO provided that a correct CDO path or a file path name for this model 
+	//is provided as input
+	public void readCPModel(String cdoPath, String pathName){
+		CDOClient cl = new CDOClient();
+		cl.registerPackage(TypesPackage.eINSTANCE);
+		cl.registerPackage(CpPackage.eINSTANCE);
+		this.cdoPath = cdoPath;
+		this.pathName = pathName;
+		if (cdoPath != null){
+			cdoMode = true;
+			CDOView view = cl.openView();
+			CDOResource res = view.getResource(cdoPath);
+			if (res != null){
+				cp = (ConstraintProblem)res.getContents().get(0);
+				readModel(cp);
+			}
+			view.close();
+		}
+		else if (pathName != null){
+			cdoMode = false;
+			cp = (ConstraintProblem)cl.loadModel(pathName);
+			readModel(cp);
+		}
+		System.out.println("CDO Mode: " + cdoMode);
+		cl.closeSession();
+	}
+	
+	//Solves the CPModel previously read, updates the model if a solution was found and returns a boolean value
+	//indicating whether a solution has been found or not
+	public boolean solve() throws Exception{
+		boolean hasSolutions = false;
+		if (idToIntVar != null){
+			IntVar[] vars = new IntVar[idToIntVar.size()];
+			int i = 0;
+			for (Object o: idToIntVar.values().toArray()){
+				IntVar var = (IntVar)o;
+				vars[i++] = var;
+			}
+			solver.set(IntStrategyFactory.random(vars, System.currentTimeMillis()));
+		}
+		if (policy != null){
+			if (realGoal != null){
+				solver.findOptimalSolution(policy, realGoal);
+				System.out.println("Optimal value is: " + realGoal.getUB());
+			}
+			else{
+				solver.findOptimalSolution(policy, intGoal);
+				System.out.println("Optimal value is: " + intGoal.getValue());
+			}
+			hasSolutions = (solver.isFeasible() == ESat.TRUE);
+			if (hasSolutions) saveSolution();
+			dispose();
+			solver.getIbex().release();
+		}
+		else{
+			hasSolutions = solver.findSolution();
+			if (hasSolutions) saveSolution();
+			dispose();
+		}
+		return hasSolutions;
+	}
+	
+	private void saveSolution(){
+		CDOTransaction trans = null;
+		ConstraintProblem cp = null;
+		CDOClient cl = new CDOClient();
+		cl.registerPackage(TypesPackage.eINSTANCE);
+		cl.registerPackage(CpPackage.eINSTANCE);
+		//System.out.println("CDOMode: " + cdoMode);
+		if (cdoMode){
+			trans = cl.openTransaction();
+			CDOResource resource = trans.getResource(cdoPath);
+			cp = (ConstraintProblem)resource.getContents().get(0);
+		}
+		else{
+			cp = (ConstraintProblem)cl.loadModel(pathName);
+		}
+		Solution solution = CpFactory.eINSTANCE.createSolution();
+		solution.setTimestamp(new Date().getTime());
+		cp.getSolution().add(solution);
+		EList<VariableValue> varValues = solution.getVariableValue();
+		
+		try{
+			EList<Variable> vars = cp.getVariables();
+			for (Variable var: vars){
+				VariableValue varVal = CpFactory.eINSTANCE.createVariableValue();
+				varVal.setVariable(var);
+				Domain dom = var.getDomain();
+				IntVar iv = idToIntVar.get(var.getId());
+				if (iv != null){
+					int val = iv.getValue();
+					System.out.println("Discovered value for variable :" + var.getId() + " is: " + val);
+					if (dom instanceof NumericDomain){
+						NumericDomain nd = (NumericDomain)dom;
+						BasicTypeEnum type = nd.getType();
+						if (type.equals(BasicTypeEnum.INTEGER)){
+							IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+							value.setValue(val);
+							varVal.setValue(value);
+						}
+						else{
+							LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+							value.setValue(val);
+							varVal.setValue(value);
+						}
+					}
+					else if (dom instanceof RangeDomain){
+						RangeDomain rd = (RangeDomain)dom;
+						NumericValueUpperware from = rd.getFrom();
+						if (from instanceof IntegerValueUpperware){
+							IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+							value.setValue(val);
+							varVal.setValue(value);
+						}
+						else{
+							LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+							value.setValue(val);
+							varVal.setValue(value);
+						}
+					}
+				}
+				else{
+					RealVar rv = idToRealVar.get(var.getId());
+					if (rv != null){
+						double val = rv.getUB();
+						System.out.println("Discovered value for variable :" + var.getId() + " is: " + val);
+						if (dom instanceof NumericDomain){
+							NumericDomain nd = (NumericDomain)dom;
+							BasicTypeEnum type = nd.getType();
+							if (type.equals(BasicTypeEnum.DOUBLE)){
+								DoubleValueUpperware value = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+								value.setValue(val);
+								varVal.setValue(value);
+							}
+							else{
+								FloatValueUpperware value = TypesFactory.eINSTANCE.createFloatValueUpperware();
+								value.setValue((float)val);
+								varVal.setValue(value);
+							}
+						}
+						else if (dom instanceof RangeDomain){
+							RangeDomain rd = (RangeDomain)dom;
+							NumericValueUpperware from = rd.getFrom();
+							if (from instanceof DoubleValueUpperware){
+								DoubleValueUpperware value = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+								value.setValue(val);
+								varVal.setValue(value);
+							}
+							else{
+								FloatValueUpperware value = TypesFactory.eINSTANCE.createFloatValueUpperware();
+								value.setValue((float)val);
+								varVal.setValue(value);
+							}
+						}
+					}
+				}
+				varValues.add(varVal);
+			}
+			if (cdoMode){
+				trans.commit();
+				trans.close();
+			}
+			else{
+				cl.saveModel(cp, pathName);
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		cl.closeSession();
+	}
+	
+	private ResolutionPolicy getPolicy(GoalOperatorEnum type){
+		if (type.equals(GoalOperatorEnum.MAX)) return ResolutionPolicy.MAXIMIZE;
+		else if (type.equals(GoalOperatorEnum.MIN)) return ResolutionPolicy.MINIMIZE;
+		return ResolutionPolicy.MAXIMIZE;
+	}
+	
+	private int isMax(GoalOperatorEnum type){
+		if (type.equals(GoalOperatorEnum.MAX)) return 1;
+		else if (type.equals(GoalOperatorEnum.MIN)) return 0;
+		return 0;
+	}
+	
+	private void createGoals(EList<Goal> goals){
+		System.out.println("--------------- Goals ---------------");
+		int size = goals.size();
+		if (size == 1){
+			Goal goal = goals.get(0);
+			NumericExpression expr = goal.getExpression();
+			boolean isInt = involvesOnlyInt(expr);
+			if (isInt){
+				intGoal = parseExpression(expr);
+				System.out.println("Optimization Variable: " + intGoal.getName());
+			}
+			else{
+				RealConstraint rc = new RealConstraint(solver);
+				realGoal = parseRealExpression(expr,rc);
+				System.out.println("Optimization Variable: " + realGoal.getName());
+				solver.post(rc);
+			}
+			GoalOperatorEnum type = goal.getGoalType();
+			policy = getPolicy(type);
+		}
+		else if (size > 1){
+			boolean isInt = true;
+			for (Goal goal: goals){
+				NumericExpression expr = goal.getExpression();
+				if (!involvesOnlyInt(expr)){
+					isInt = false;
+					break;
+				}
+			}
+			if (isInt){
+				IntVar[] vars = new IntVar[size];
+				int[] dirs = new int[size];
+				for (int i = 0; i < size; i++){
+					Goal goal = goals.get(i);
+					vars[i] = parseExpression(goal.getExpression());
+					dirs[i] = isMax(goal.getGoalType());
+				}
+				intGoal = VariableFactory.bounded("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+				System.out.println("Optimization Variable: " + intGoal.getName());
+				solver.post(IntConstraintFactory.scalar(vars, dirs, intGoal));
+				policy = ResolutionPolicy.MAXIMIZE;
+			}
+			else{
+				RealConstraint rc = new RealConstraint(solver);
+				RealVar[] vars = new RealVar[size];
+				int[] dirs = new int[size];
+				for (int i = 0; i < size; i++){
+					Goal goal = goals.get(i);
+					vars[i] = parseRealExpression(goal.getExpression(),rc);
+					dirs[i] = isMax(goal.getGoalType());
+				}
+				realGoal = VariableFactory.real("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, epsilon, solver);
+				StringBuilder function = new StringBuilder("(");
+				if (dirs[0] == 0) function.append("- {0} ");
+				else function.append(" {0} ");
+				for (int i = 1; i < size; i++){
+					if (dirs[i] == 0) function.append(" - {" + i + "} ");
+					else function.append(" + {" + i + "} ");
+				}
+				function.append(") = { " + size + "}");
+				RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{realGoal});
+				rc.addFunction(function.toString(), finalVars);
+				solver.post(rc);
+				policy = ResolutionPolicy.MAXIMIZE;
+				System.out.println("Optimization Variable: " + realGoal.getName());
+			}
+		}
+		System.out.println("------------------------------------------");
+	}
+	
+	private boolean involvesOnlyInt(Expression expr){
+		boolean onlyInt = false;
+		if (expr instanceof Variable){
+			Variable v = (Variable)expr;
+			IntVar iv = idToIntVar.get(v.getId());
+			if (iv != null) onlyInt = true;
+		}
+		else if (expr instanceof MetricVariable){
+			MetricVariable v = (MetricVariable)expr;
+			IntVar iv = idToIntVar.get(v.getId());
+			if (iv != null) onlyInt = true;
+		}
+		else if (expr instanceof Constant){
+			Constant c = (Constant)expr;
+			BasicTypeEnum type = c.getType();
+			if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
+				onlyInt = true;
+			}
+		}
+		else if (expr instanceof ComposedExpression){
+			ComposedExpression cep = (ComposedExpression)expr;
+			boolean res = false;
+			for (NumericExpression ne: cep.getExpressions()){
+				res = involvesOnlyInt(ne);
+				if (res == false) break;
+			}
+			if (res == true) onlyInt = true;
+		}
+		else if (expr instanceof ComparisonExpression){
+			ComparisonExpression cep = (ComparisonExpression)expr;
+			Expression expr1 = cep.getExp1();
+			Expression expr2 = cep.getExp2();
+			boolean res = involvesOnlyInt(expr1);
+			if (res == true){
+				res = involvesOnlyInt(expr2);
+				if (res == true) onlyInt = true;
+			}
+		}
+		else if (expr instanceof UnaryExpression){
+			UnaryExpression ue = (UnaryExpression)expr;
+			onlyInt = involvesOnlyInt(ue.getExpression());
+		}
+		return onlyInt;
+	}
+	
+	private String getComparator(ComparatorEnum comp, boolean opposite){
+		if (!opposite){
+			if (comp.equals(ComparatorEnum.DIFFERENT)) return "!=";
+			else if (comp.equals(ComparatorEnum.EQUAL_TO)) return "=";
+			else if (comp.equals(ComparatorEnum.GREATER_OR_EQUAL_TO)) return ">=";
+			else if (comp.equals(ComparatorEnum.GREATER_THAN)) return ">";
+			else if (comp.equals(ComparatorEnum.LESS_OR_EQUAL_TO)) return "<=";
+			else if (comp.equals(ComparatorEnum.LESS_THAN)) return "<";
+		}
+		else{
+			if (comp.equals(ComparatorEnum.DIFFERENT)) return "!=";
+			else if (comp.equals(ComparatorEnum.EQUAL_TO)) return "=";
+			else if (comp.equals(ComparatorEnum.GREATER_OR_EQUAL_TO)) return "<";
+			else if (comp.equals(ComparatorEnum.GREATER_THAN)) return "<=";
+			else if (comp.equals(ComparatorEnum.LESS_OR_EQUAL_TO)) return ">";
+			else if (comp.equals(ComparatorEnum.LESS_THAN)) return ">=";
+		}
+		return "";
+	}
+	
+	private IntVar parseExpression(Expression expr){
+		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
+			if (expr instanceof Variable) return idToIntVar.get(((Variable)expr).getId());
+			else if (expr instanceof MetricVariable) return idToIntVar.get(((MetricVariable)expr).getId());
+			else{
+				Constant constant = (Constant)expr;
+				BasicTypeEnum type = constant.getType();
+				if (type.equals(BasicTypeEnum.INTEGER)){
+					IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
+					IntVar v = VariableFactory.bounded("Constant" + (constNum++), intVal.getValue(), intVal.getValue(), solver);
+					System.out.println("Constant: " + v.getName() + ": " + v);
+					return v;
+				}
+				else if (type.equals(BasicTypeEnum.LONG)){
+					LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
+					IntVar v = VariableFactory.bounded("Constant" + (constNum++), (int)longVal.getValue(), (int)longVal.getValue(), solver);
+					System.out.println("Constant: " + v.getName() + ": " + v);
+					return v;
+				}
+			}
+		}
+		else{
+			if (expr instanceof ComposedExpression){
+				ComposedExpression cep = (ComposedExpression)expr;
+				EList<NumericExpression> exprs = cep.getExpressions();
+				IntVar[] vars = new IntVar[exprs.size()];
+				int i = 0;
+				for (NumericExpression ne: exprs){
+					vars[i++] = parseExpression(ne);
+				}
+				OperatorEnum op = cep.getOperator();
+				if (op.equals(OperatorEnum.PLUS)){
+					IntVar var = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					System.out.println("IntVar: " + var);
+					solver.post(IntConstraintFactory.sum(vars,var));
+					System.out.println("IntConstraint: SUM with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
+					return var;
+				}
+				else if (op.equals(OperatorEnum.MINUS)){
+					IntVar var = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					System.out.println("IntVar: " + var);
+					int[] coeff = new int[exprs.size()];
+					Arrays.fill(coeff, -1);
+					coeff[0] = 1;
+					solver.post(IntConstraintFactory.scalar(vars, coeff, var));
+					System.out.println("IntConstraint: NARY_MINUS with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
+					return var;
+				}
+				else if (op.equals(OperatorEnum.TIMES)){
+					IntVar prev = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					solver.post(IntConstraintFactory.times(vars[0], vars[1], prev));
+					for (int j = 2; j < exprs.size(); j++){
+						IntVar v = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						solver.post(IntConstraintFactory.times(vars[j], prev, v));
+						prev = v;
+					}
+					System.out.println("IntVar: " + prev);
+					System.out.println("IntConstraint: TIMES with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
+					return prev;
+				}
+				else if (op.equals(OperatorEnum.DIV)){
+					IntVar prev = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					solver.post(IntConstraintFactory.eucl_div(vars[0], vars[1], prev));
+					for (int j = 2; j < exprs.size(); j++){
+						IntVar v = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						solver.post(IntConstraintFactory.eucl_div(vars[j], prev, v));
+						prev = v;
+					}
+					System.out.println("IntVar: " + prev);
+					System.out.println("IntConstraint: DIV with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
+					return prev;
+				}
+			}
+			else if (expr instanceof UnaryExpression){
+				UnaryExpression ue = (UnaryExpression)expr;
+				IntVar var2 = parseExpression(ue.getExpression());
+				if (ue instanceof SimpleUnaryExpression){
+					SimpleUnaryExpression sue = (SimpleUnaryExpression)ue;
+					SimpleUnaryOperatorEnum op = sue.getOperator();
+					if (op.equals(SimpleUnaryOperatorEnum.ABSTRACT_VALUE)){
+						IntVar newVar = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						System.out.println("IntVar: " + newVar);
+						solver.post(IntConstraintFactory.absolute(newVar, var2));
+						System.out.println("IntConstraint: ABS with var: " + newVar);
+						return newVar;
+					}
+				}
+				else if (ue instanceof ComposedUnaryExpression){
+					ComposedUnaryExpression cue = (ComposedUnaryExpression)ue;
+					int val = cue.getValue();
+					ComposedUnaryOperatorEnum op = cue.getOperator();
+					if (op.equals(ComposedUnaryOperatorEnum.EXPONENTIAL_VALUE)){
+						IntVar prevVar = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						if (val == 1){
+							System.out.println("IntConstraint: EXP with x: " + var2 + " and y: " + val);
+							return var2;
+						}
+						else if (val == 2){
+							solver.post(IntConstraintFactory.times(var2,var2,prevVar));
+							System.out.println("IntVar: " + prevVar);
+							System.out.println("IntConstraint: EXP with x: " + prevVar + " and y: " + val);
+							return prevVar;
+						}
+						else{
+							solver.post(IntConstraintFactory.times(var2,var2,prevVar));
+							for (int i = 3; i <= val; i++){
+								IntVar varN = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+								solver.post(IntConstraintFactory.times(prevVar,var2,varN));
+								prevVar = varN;
+								if (i == val){
+									System.out.println("IntVar: " + varN);
+									System.out.println("IntConstraint: EXP with x: " + varN + " and y: " + val);
+									return varN;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	private String printVarArray(solver.variables.Variable[] vars){
+		String toRet = "[";
+		if (vars.length >= 0){
+			toRet += vars[0].getName();
+			for (int i = 1; i < vars.length; i++)
+				toRet += " , " + vars[i].getName();
+		}
+		toRet += "]";
+		return toRet;
+	}
+	
+	private RealVar parseRealExpression(Expression expr, RealConstraint rc){
+		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
+			if (expr instanceof Variable){
+				RealVar v = null;
+				v = idToRealVar.get(((Variable)expr).getId());
+				if (v == null){
+					IntVar iv = idToIntVar.get(((Variable)expr).getId());
+					if (iv != null){
+						v = VariableFactory.real(iv,epsilon);
+						System.out.println("RealVar: " + v + " on top of IntVar: " + iv.getName());
+					}
+				}
+				return v;
+			}
+			else if (expr instanceof MetricVariable){
+				RealVar v = null;
+				v = idToRealVar.get(((MetricVariable)expr).getId());
+				if (v == null){
+					IntVar iv = idToIntVar.get(((MetricVariable)expr).getId());
+					if (iv != null){
+						v = VariableFactory.real(iv,epsilon);
+						System.out.println("RealVar: " + v + " on top of IntVar: " + iv.getName());
+					}
+				}
+				return v;
+			}
+			else{
+				Constant constant = (Constant)expr;
+				BasicTypeEnum type = constant.getType();
+				if (type.equals(BasicTypeEnum.INTEGER)){
+					IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
+					int val = intVal.getValue();
+					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
+					System.out.println("Constant: " + v);
+					return v;
+				}
+				else if (type.equals(BasicTypeEnum.LONG)){
+					LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
+					long val = longVal.getValue();
+					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
+					System.out.println("Constant: " + v);
+					return v;
+				}
+				else if (type.equals(BasicTypeEnum.FLOAT)){
+					FloatValueUpperware floatVal = (FloatValueUpperware)constant.getValue();
+					float val = floatVal.getValue();
+					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
+					System.out.println("Constant: " + v);
+					return v;
+				}
+				else if (type.equals(BasicTypeEnum.DOUBLE)){
+					DoubleValueUpperware doubleVal = (DoubleValueUpperware)constant.getValue();
+					double val = doubleVal.getValue();
+					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
+					System.out.println("Constant: " + v);
+					return v;
+				}
+			}
+		}
+		else{
+			RealVar var = VariableFactory.real("RealVar" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+			System.out.println("RealVar: " + var);
+			if (expr instanceof ComposedExpression){
+				ComposedExpression cep = (ComposedExpression)expr;
+				EList<NumericExpression> exprs = cep.getExpressions();
+				int size = exprs.size();
+				RealVar[] vars = new RealVar[size];
+				int i = 0;
+				for (NumericExpression ne: exprs){
+					vars[i++] = parseRealExpression(ne,rc);
+				}
+				OperatorEnum op = cep.getOperator();
+				StringBuilder function = new StringBuilder("(");
+				if (op.equals(OperatorEnum.PLUS)){
+					function.append(" {0} ");
+					for (int j = 1; j < size; j++)
+						function.append("+ {" + j + "} ");
+					function.append(") = {" + size + "}");
+					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
+					String func = function.toString();
+					rc.addFunction(func, finalVars);
+					System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+				}
+				else if (op.equals(OperatorEnum.MINUS)){
+					function.append(" {0} ");
+					for (int j = 1; j < size; j++)
+						function.append("- {" + j + "} ");
+					function.append(") = {" + size + "} ");
+					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
+					String func = function.toString();
+					rc.addFunction(func, finalVars);
+					System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+				}
+				else if (op.equals(OperatorEnum.TIMES)){
+					function.append(" {0} ");
+					for (int j = 1; j < size; j++)
+						function.append("* {" + j + "} ");
+					function.append(") = {" + size + "} ");
+					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
+					String func = function.toString();
+					rc.addFunction(func, finalVars);
+					System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+				}
+				else if (op.equals(OperatorEnum.DIV)){
+					function.append(" {0} ");
+					for (int j = 1; j < size; j++)
+						function.append("/ {" + j + "} ");
+					function.append(") = {" + size + "} ");
+					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
+					String func = function.toString();
+					rc.addFunction(func, finalVars);
+					System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+				}
+				return var;
+			}
+			else if (expr instanceof UnaryExpression){
+				UnaryExpression ue = (UnaryExpression)expr;
+				RealVar var2 = parseRealExpression(ue.getExpression(),rc);
+				StringBuilder function = new StringBuilder("(");
+				if (ue instanceof SimpleUnaryExpression){
+					SimpleUnaryExpression sue = (SimpleUnaryExpression)ue;
+					SimpleUnaryOperatorEnum op = sue.getOperator();
+					if (op.equals(SimpleUnaryOperatorEnum.ABSTRACT_VALUE)){
+						function.append(" abs({0}) = {1} )");
+						RealVar[] vars = new RealVar[]{var2,var};
+						String func = function.toString();
+						rc.addFunction(func, vars);
+						System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+					}
+					else if (op.equals(SimpleUnaryOperatorEnum.LN_VALUE)){
+						function.append(" ln({0}) = {1} )");
+						RealVar[] vars = new RealVar[]{var2,var};
+						String func = function.toString();
+						rc.addFunction(func, vars);
+						System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+					}
+					return var;
+				}
+				else if (ue instanceof ComposedUnaryExpression){
+					ComposedUnaryExpression cue = (ComposedUnaryExpression)ue;
+					int val = cue.getValue();
+					ComposedUnaryOperatorEnum op = cue.getOperator();
+					if (op.equals(ComposedUnaryOperatorEnum.EXPONENTIAL_VALUE)){
+						/*if (val == 1) return var2;
+						else if (val == 2){
+							function = new StringBuilder("(");
+							function.append("{0} * {0} = {1} )");
+							RealVar[] vars = new RealVar[]{var2,var};
+							rc.addFunction(function.toString(),vars);
+						}
+						else{
+							function = new StringBuilder("( {0} ");
+							for (int i = 1; i < val; i++){
+								function.append("* {" + i + "} ");
+							}
+							function.append(" )");
+							RealVar[] vars = new RealVar[]{var2,var};
+							rc.addFunction(function.toString(),vars);
+						}*/
+						function = new StringBuilder("( pow( {0}, " + val + " ) = {1} )");
+						RealVar[] vars = new RealVar[]{var2,var};
+						String func = function.toString();
+						rc.addFunction(func, vars);
+						System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+					}
+					else{
+						//! Is this correct?
+						function = new StringBuilder("( log( {0}, " + val + " ) = {1} )");
+						RealVar[] vars = new RealVar[]{var2,var};
+						String func = function.toString();
+						rc.addFunction(func, vars);
+						System.out.println("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+					}
+					return var;
+				}
+			}
+		}
+		return null;
+	}
+	
+	private void createConstraints(EList<ComparisonExpression> constraints){
+		RealConstraint rc = null;
+		System.out.println("--------------- Constraints ---------------");
+		for (ComparisonExpression constr: constraints){
+			Expression expr1 = constr.getExp1();
+			Expression expr2 = constr.getExp2();
+			ComparatorEnum operator = constr.getComparator();
+			boolean isInt = involvesOnlyInt(expr1);
+			if (isInt){
+				isInt = involvesOnlyInt(expr2);
+				System.out.println("Constraint only involves integer variables");
+			}
+			else{
+				System.out.println("Constraint involves real variables");
+			}
+			
+			Constraint constraint = null;
+			if (isInt){
+				if (expr1 instanceof Variable){
+					Variable var = (Variable)expr1;
+					String id = var.getId();
+					IntVar v = idToIntVar.get(id);
+					IntVar var2 = parseExpression(expr2);
+					String opStr = getComparator(operator,false);
+					constraint = IntConstraintFactory.arithm(v, opStr, var2);
+					System.out.println("IntConstraint: " + v.getId() + " " + opStr + " " + var2.getId());
+				}
+				else if (expr1 instanceof MetricVariable){
+					MetricVariable var = (MetricVariable)expr1;
+					String id = var.getId();
+					IntVar v = idToIntVar.get(id);
+					IntVar var2 = parseExpression(expr2);
+					String opStr = getComparator(operator,false);
+					constraint = IntConstraintFactory.arithm(v, opStr, var2);
+					System.out.println("IntConstraint: " + v.getName() + " " + opStr + " " + var2.getName());
+				}
+				else if (expr1 instanceof Constant){
+					Constant constant = (Constant)expr1;
+					BasicTypeEnum type = constant.getType();
+					if (type.equals(BasicTypeEnum.INTEGER)){
+						IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
+						int value = intVal.getValue();
+						IntVar v = parseExpression(expr2);
+						//System.out.println("Parsed expression is: " + parseExpression(expr2));
+						String opStr = getComparator(operator,true);
+						constraint = IntConstraintFactory.arithm(parseExpression(expr2), opStr, value);
+						System.out.println("IntConstraint: " + v.getName() + " " + opStr + " " + value);
+					}
+					else if (type.equals(BasicTypeEnum.LONG)){
+						LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
+						long value = longVal.getValue();
+						IntVar v = parseExpression(expr2);
+						//System.out.println("Parsed expression is: " + parseExpression(expr2));
+						String opStr = getComparator(operator,true);
+						constraint = IntConstraintFactory.arithm(v, opStr, (int)value);
+						System.out.println("IntConstraint: " + v.getName() + " " + opStr + " " + value);
+					}
+				}
+				if (expr1 instanceof ComposedExpression || expr1 instanceof UnaryExpression){
+					if (expr1 instanceof ComposedExpression){
+						//System.out.println("First expression is: " + parseExpression(expr1) + " and second expression is: " + parseExpression(expr2));
+						IntVar v1 = parseExpression(expr1);
+						IntVar v2 = parseExpression(expr2);
+						String opStr = getComparator(operator,false);
+						constraint = IntConstraintFactory.arithm(v1, opStr, v2);
+						System.out.println("IntConstraint: " + v1.getName() + " " + opStr + " " + v2.getName());
+					}
+				}
+			}
+			else{
+				if (rc == null) rc = new RealConstraint(solver);
+				StringBuilder function = new StringBuilder("(");
+				if (expr1 instanceof Variable){
+					Variable var = (Variable)expr1;
+					String id = var.getId();
+					RealVar v = idToRealVar.get(id);
+					function.append(" {0} " + getComparator(operator,false) + " {1} )");
+					RealVar[] all_vars = new RealVar[]{v, parseRealExpression(expr2,rc)};
+					String func = function.toString();
+					System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+			        rc.addFunction(func, all_vars);
+				}
+				else if (expr1 instanceof MetricVariable){
+					MetricVariable var = (MetricVariable)expr1;
+					String id = var.getId();
+					RealVar v = idToRealVar.get(id);
+					function.append(" {0} " + getComparator(operator,false) + " {1} )");
+					RealVar[] all_vars = new RealVar[]{v, parseRealExpression(expr2,rc)};
+					String func = function.toString();
+					System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+			        rc.addFunction(func, all_vars);
+				}
+				else if (expr1 instanceof Constant){
+					Constant constant = (Constant)expr1;
+					BasicTypeEnum type = constant.getType();
+					if (type.equals(BasicTypeEnum.INTEGER)){
+						IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
+						function.append(" " + intVal.getValue() + getComparator(operator,false) + " {0} )");
+						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
+						String func = function.toString();
+						System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+				        rc.addFunction(func, all_vars);
+					}
+					else if (type.equals(BasicTypeEnum.LONG)){
+						LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
+						function.append(" " + longVal.getValue() + getComparator(operator,false) + " {0} )");
+						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
+						String func = function.toString();
+						System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+				        rc.addFunction(func, all_vars);
+					}
+					else if (type.equals(BasicTypeEnum.FLOAT)){
+						FloatValueUpperware floatVal = (FloatValueUpperware)constant.getValue();
+						function.append(" " + floatVal.getValue() + getComparator(operator,false) + " {0} )");
+						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
+						String func = function.toString();
+						System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+				        rc.addFunction(func, all_vars);
+					}
+					else if (type.equals(BasicTypeEnum.DOUBLE)){
+						DoubleValueUpperware doubleVal = (DoubleValueUpperware)constant.getValue();
+						function.append(" " + doubleVal.getValue() + getComparator(operator,false) + " {0} )");
+						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
+						String func = function.toString();
+						System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+				        rc.addFunction(func, all_vars);
+					}
+				}
+				if (expr1 instanceof ComposedExpression || expr1 instanceof UnaryExpression){
+					ComposedExpression expr = (ComposedExpression)expr1;
+					RealVar var1 = parseRealExpression(expr, rc);
+					RealVar var2 = parseRealExpression(expr2, rc);
+					function.append(" {0} " + getComparator(operator,false) + " {1} )");
+					RealVar[] all_vars = new RealVar[]{var1,var2};
+					String func = function.toString();
+					System.out.println("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+			        rc.addFunction(func, all_vars);
+				}
+			}
+			if (constraint != null){
+				solver.post(constraint);
+			}
+		}
+		if (rc != null){
+			solver.post(rc);
+		}
+		System.out.println("------------------------------------------");
+	}
+	
+	private void createMetricVariables(EList<MetricVariable> vars){
+		System.out.println("--------------- MetricVariables ---------------");
+		for (MetricVariable var: vars){
+			BasicTypeEnum type = var.getType();
+			if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
+				String id = var.getId();
+				IntVar v = VariableFactory.bounded(id, LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+				System.out.println("IntVar: " + v);
+				if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
+				idToIntVar.put(id,v);
+			}
+			else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
+				String id = var.getId();
+				RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+				System.out.println("RealVar: " + v);
+				if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
+				idToRealVar.put(id,v);
+			}
+		}
+		System.out.println("------------------------------------------");
+	}
+	
+	private void createVariables(EList<Variable> vars){
+		System.out.println("--------------- Variables ---------------");
+		for (Variable var: vars){
+			Domain dom = var.getDomain();
+			if (dom instanceof NumericDomain && ! (dom instanceof RangeDomain)){
+				//System.out.println("Got numeric domain for variable:" + var.getId());
+				NumericDomain nd = (NumericDomain)dom;
+				BasicTypeEnum type = nd.getType();
+				if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
+					String id = var.getId();
+					IntVar v = VariableFactory.bounded(id, LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					System.out.println("IntVar: " + v);
+					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
+					idToIntVar.put(id,v);
+				}
+				else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
+					idToRealVar.put(id,v);
+				}
+			}
+			else if (dom instanceof RangeDomain){
+				RangeDomain rd = (RangeDomain)dom;
+				//System.out.println("Got range domain for variable:" + var.getId());
+				BasicTypeEnum type = rd.getType();
+				//System.out.println("Type of variable: " + var.getId() + " is: " + type);
+				NumericValueUpperware val1 = rd.getFrom();
+				NumericValueUpperware val2 = rd.getTo();
+				if (type.equals(BasicTypeEnum.INTEGER)){
+					IntegerValueUpperware int1 = (IntegerValueUpperware)val1;
+					IntegerValueUpperware int2 = (IntegerValueUpperware)val2;
+					String id = var.getId();
+					//System.out.println("Integer variable has the values: " + int1.getValue() + " " + int2.getValue());
+					IntVar v = VariableFactory.bounded(id, int1.getValue(), int2.getValue(), solver);
+					System.out.println("IntVar: " + v);
+					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
+					idToIntVar.put(id,v);
+				}
+				else if(type.equals(BasicTypeEnum.LONG)){
+					LongValueUpperware long1 = (LongValueUpperware)val1;
+					LongValueUpperware long2 = (LongValueUpperware)val2;
+					String id = var.getId();
+					IntVar v = VariableFactory.bounded(id, (int)long1.getValue(), (int)long2.getValue(), solver);
+					System.out.println("IntVar: " + v);
+					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
+					idToIntVar.put(id,v);
+				}
+				else if (type.equals(BasicTypeEnum.DOUBLE)){
+					DoubleValueUpperware real1 = (DoubleValueUpperware)val1;
+					DoubleValueUpperware real2 = (DoubleValueUpperware)val2;
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, real1.getValue(), real2.getValue(), epsilon, solver);
+					System.out.println("RealVar: " + v);
+					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
+					idToRealVar.put(id,v);
+				}
+				else if (type.equals(BasicTypeEnum.FLOAT)){
+					FloatValueUpperware float1 = (FloatValueUpperware)val1;
+					FloatValueUpperware float2 = (FloatValueUpperware)val2;
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, float1.getValue(), float2.getValue(), epsilon, solver);
+					System.out.println("RealVar: " + v);
+					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
+					idToRealVar.put(id,v);
+				}
+			}
+		}
+		System.out.println("------------------------------------------");
+	}
+	
+	private void createConstants(EList<Constant> constants){
+		System.out.println("--------------- Constants ---------------");
+		for (Constant constant: constants){
+			NumericValueUpperware value = constant.getValue();
+			//System.out.println("Type of constant is: " + constant.getType());
+			if (constant.getType().equals(BasicTypeEnum.DOUBLE)){
+				if (value instanceof DoubleValueUpperware){
+					double val = ((DoubleValueUpperware)value).getValue();
+					RealVar var = VariableFactory.real(constant.getId(), val, val, epsilon, solver);
+					System.out.println("Constant " + constant.getId() + ": " + var);
+					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
+					idToRealVar.put(constant.getId(),var);
+				} 
+			}
+			else if (constant.getType().equals(BasicTypeEnum.INTEGER)){
+				if (value instanceof IntegerValueUpperware){
+					int val = ((IntegerValueUpperware)value).getValue();
+					IntVar var = VariableFactory.fixed(val, solver);
+					System.out.println("Constant: " + constant.getId() + ": " + var);
+					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
+					idToIntVar.put(constant.getId(),var);
+				}
+			}
+			else if (constant.getType().equals(BasicTypeEnum.LONG)){
+				if (value instanceof LongValueUpperware){
+					long val = ((IntegerValueUpperware)value).getValue();
+					IntVar var = VariableFactory.fixed((int)val, solver);
+					System.out.println("Constant " + constant.getId() + ": " + var);
+					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
+					idToIntVar.put(constant.getId(),var);
+				}
+			}
+			else if (constant.getType().equals(BasicTypeEnum.FLOAT)){
+				if (value instanceof FloatValueUpperware){
+					double val = ((FloatValueUpperware)value).getValue();
+					RealVar var = VariableFactory.real(constant.getId(), val, val, epsilon, solver);
+					System.out.println("Constant " + constant.getId() + ": " + var);
+					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
+					idToRealVar.put(constant.getId(),var);
+				}
+			}
+		}
+		System.out.println("------------------------------------------");
+	}
+	
+	private void dispose(){
+		intVarNum = 0;
+		realVarNum = 0;
+		constNum = 0;
+	}
+	
+	public static void main(String[] args){
+		if (args.length == 0){
+			System.out.println("No input arguments were given!\nThe solver will not perform anything");
+			System.exit(0);
+		}
+		else if (args.length == 1){
+			System.out.println("Incorrect number of input arguments was given!\nThe solver will not perform anything");
+			System.exit(0);
+		}
+		CDOClient cl = new CDOClient();
+		cl.registerPackage(TypesPackage.eINSTANCE);
+		cl.registerPackage(CpPackage.eINSTANCE);
+		//Read/write from CDOServer or from file system
+		String mode = args[0];
+		//CDO or file path
+		String path = args[1];
+		CPSolver solver = null;
+		try{
+			if (mode.toLowerCase().equals("cdo")){
+				solver = new CPSolver(path,null);
+			}
+			else{
+				solver = new CPSolver(null,path);
+			}
+			solver.solve();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		cl.closeSession();
+	}
+	
+}
