@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ASCII"?>
+<typesPaasage:OperatingSystems
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
+    xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
+  <oss name="Ubuntu Server"
+      vers="Ubuntu Server 12.04.3 LTS"/>
+  <oss typeId="1"
+      name="Windows Server"
+      vers="Windows Server"/>
+  <oss typeId="2"
+      name="ubuntu"
+      vers="Ubuntu Server 12.04.3 LTS"
+      architecture="64bits"/>
+  <oss typeId="3"
+      name="Ubuntu"
+      vers="Ubuntu Server 12.04.3 LTS"
+      architecture="64bits"/>
+  <oss name="Windows"
+      architecture="64bits"/>
+</typesPaasage:OperatingSystems>

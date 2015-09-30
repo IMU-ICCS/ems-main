@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ASCII"?>
+<typesPaasage:ApplicationComponentTypes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
+    xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
+  <types id="ApplicationServer"/>
+  <types id="Database"/>
+  <types id="WebServer"/>
+  <types id="War"/>
+  <types id="Jar"/>
+  <types id="StorageServer"/>
+  <types id="MPI"/>
+</typesPaasage:ApplicationComponentTypes>

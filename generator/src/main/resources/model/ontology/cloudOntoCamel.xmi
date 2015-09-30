@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="ASCII"?>
+<!-- Copyright (C) 2015 INRIA, Universite Lille 1
+
+   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
+   - Date: 09/2015
+   - This Source Code Form is subject to the terms of the Mozilla Public 
+   - License, v. 2.0. If a copy of the MPL was not distributed with this 
+   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
+<ontology:OntologyCamel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ontology="http://fr.inria.saloon.model.camel.ontology" xsi:schemaLocation="http://fr.inria.saloon.model.camel.ontology ../../metamodel/OntologyCamel.ecore#//inria/paasage/saloon/camel/ontology">
+  <concepts name="TechnicalElement">
+    <subConcept xsi:type="ontology:CountableElementCamel" name="Virtual Machine" referencedConcept="//@concepts.1/@subConcept.0/@subConcept.0 //@concepts.0/@subConcept.11"/>
+    <subConcept name="Language">
+      <subConcept xsi:type="ontology:CountableElementCamel" name="Scala" inherits="//@concepts.0/@subConcept.1"/>
+      <subConcept xsi:type="ontology:CountableElementCamel" name="JavaScript" inherits="//@concepts.0/@subConcept.1/@subConcept.1"/>
+      <subConcept name="Java">
+        <subConcept name="Java 6"/>
+        <subConcept name="Java 7" inherits="//@concepts.0/@subConcept.1/@subConcept.2"/>
+      </subConcept>
+      <subConcept name="Ruby">
+        <subConcept name="Ruby 2.0.0" inherits="//@concepts.0/@subConcept.1/@subConcept.3"/>
+      </subConcept>
+      <subConcept name="Python">
+        <subConcept name="Python 2.7" inherits="//@concepts.0/@subConcept.1/@subConcept.4"/>
+        <subConcept name="Python 2.7.4" inherits="//@concepts.0/@subConcept.1/@subConcept.4"/>
+        <subConcept name="Python 3.3.2" inherits="//@concepts.0/@subConcept.1/@subConcept.4"/>
+      </subConcept>
+      <subConcept name="PHP">
+        <subConcept name="PHP 5.3" inherits="//@concepts.0/@subConcept.1/@subConcept.5"/>
+        <subConcept name="PHP 5.4" inherits="//@concepts.0/@subConcept.1/@subConcept.5"/>
+      </subConcept>
+      <subConcept name="Clojure">
+        <subConcept name="Clojure 1.5.1" inherits="//@concepts.0/@subConcept.1/@subConcept.6"/>
+      </subConcept>
+    </subConcept>
+    <subConcept name="Framework">
+      <subConcept name="Spring" inherits="//@concepts.0/@subConcept.2"/>
+      <subConcept name="Rails" inherits="//@concepts.0/@subConcept.2">
+        <subConcept name="Rails 4.X" inherits="//@concepts.0/@subConcept.2/@subConcept.1"/>
+        <subConcept name="Rails 3.X" inherits="//@concepts.0/@subConcept.2/@subConcept.1"/>
+      </subConcept>
+      <subConcept name="Node.js" inherits="//@concepts.0/@subConcept.2">
+        <subConcept name="Node.js 0.8.4" inherits="//@concepts.0/@subConcept.2/@subConcept.2"/>
+        <subConcept name="Node.js 0.6.20" inherits="//@concepts.0/@subConcept.2/@subConcept.2"/>
+        <subConcept name="Node.js 0.617" inherits="//@concepts.0/@subConcept.2/@subConcept.2"/>
+        <subConcept name="Node.js 0.4.7" inherits="//@concepts.0/@subConcept.2/@subConcept.2"/>
+      </subConcept>
+      <subConcept name="Play" inherits="//@concepts.0/@subConcept.2">
+        <subConcept name="Play 1.2.3"/>
+      </subConcept>
+    </subConcept>
+    <subConcept name="Application Server">
+      <subConcept name="Tomcat" inherits="//@concepts.0/@subConcept.3">
+        <subConcept xsi:type="ontology:CountableElementCamel" name="Tomcat 6.0" inherits="//@concepts.0/@subConcept.3/@subConcept.0"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="Tomcat 7.0" inherits="//@concepts.0/@subConcept.3/@subConcept.0"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="Tomcat 7.0.X" inherits="//@concepts.0/@subConcept.3/@subConcept.0"/>
+      </subConcept>
+      <subConcept name="Jetty" inherits="//@concepts.0/@subConcept.3">
+        <subConcept xsi:type="ontology:CountableElementCamel" name="Jetty 6.1" inherits="//@concepts.0/@subConcept.3/@subConcept.1"/>
+      </subConcept>
+      <subConcept name="GlassFish" inherits="//@concepts.0/@subConcept.3">
+        <subConcept xsi:type="ontology:CountableElementCamel" name="GlassFish 3.1" inherits="//@concepts.0/@subConcept.3/@subConcept.2"/>
+      </subConcept>
+      <subConcept xsi:type="ontology:CountableElementCamel" name="TomEE+" inherits="//@concepts.0/@subConcept.3"/>
+    </subConcept>
+    <subConcept name="Database">
+      <subConcept name="SQL" inherits="//@concepts.0/@subConcept.4">
+        <subConcept name="MySQL" inherits="//@concepts.0/@subConcept.4/@subConcept.0">
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MySQL 5.5" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.0" referencedConcept="//@concepts.10"/>
+        </subConcept>
+        <subConcept name="PostgreSQL" inherits="//@concepts.0/@subConcept.4/@subConcept.0">
+          <subConcept xsi:type="ontology:CountableElementCamel" name="PostgreSQL 9.2" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.1" referencedConcept="//@concepts.11"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="PostgreSQL 8.4" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.1" referencedConcept="//@concepts.12"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="Heroku Postgres 2.0" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.1" referencedConcept="//@concepts.24"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="PostgreSQL 9.3" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.1" referencedConcept="//@concepts.25"/>
+        </subConcept>
+        <subConcept name="MariaDB" inherits="//@concepts.0/@subConcept.4/@subConcept.0">
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MariaDB 10" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.2" referencedConcept="//@concepts.13"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MariaDB 5.5" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.2" referencedConcept="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.2/@subConcept.1"/>
+        </subConcept>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="TreasureData" inherits="//@concepts.0/@subConcept.4/@subConcept.0" referencedConcept="//@concepts.4"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="PG Backups" inherits="//@concepts.0/@subConcept.4/@subConcept.0" referencedConcept="//@concepts.5"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="ClearDB MySQL" inherits="//@concepts.0/@subConcept.4/@subConcept.0" referencedConcept="//@concepts.6"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="Amazon RDS" inherits="//@concepts.0/@subConcept.4/@subConcept.0" referencedConcept="//@concepts.7"/>
+        <subConcept name="Windows Azure SQL" inherits="//@concepts.0/@subConcept.4/@subConcept.0">
+          <subConcept xsi:type="ontology:CountableElementCamel" name="SQL Premium" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.7" referencedConcept="//@concepts.8"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="SQL Web and Business" inherits="//@concepts.0/@subConcept.4/@subConcept.0/@subConcept.7" referencedConcept="//@concepts.9"/>
+        </subConcept>
+      </subConcept>
+      <subConcept name="NoSQL" inherits="//@concepts.0/@subConcept.4">
+        <subConcept name="CouchDB" inherits="//@concepts.0/@subConcept.4/@subConcept.1">
+          <subConcept xsi:type="ontology:CountableElementCamel" name="CouchDB 1.2" inherits="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.0/@subConcept.0" referencedConcept="//@reusedConcept.1"/>
+        </subConcept>
+        <subConcept name="MongoDB" inherits="//@concepts.0/@subConcept.4/@subConcept.1">
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MongoDB 2.0.2" inherits="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1" referencedConcept="//@concepts.15"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MongoDB  2.2" inherits="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1" referencedConcept="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1/@subConcept.1"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MongoDB 2.2.X" inherits="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1" referencedConcept="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1/@subConcept.2"/>
+          <subConcept xsi:type="ontology:CountableElementCamel" name="MongoDB 2.4.X" inherits="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1" referencedConcept="//@concepts.0/@subConcept.4/@subConcept.1/@subConcept.1/@subConcept.3"/>
+        </subConcept>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="Cloudant" inherits="//@concepts.0/@subConcept.4/@subConcept.1" referencedConcept="//@concepts.19"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="IronCache" inherits="//@concepts.0/@subConcept.4/@subConcept.1" referencedConcept="//@concepts.20"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="RedisGreen" inherits="//@concepts.0/@subConcept.4/@subConcept.1" referencedConcept="//@concepts.21"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="MongoLab" inherits="//@concepts.0/@subConcept.4/@subConcept.1" referencedConcept="//@concepts.22"/>
+        <subConcept xsi:type="ontology:CountableElementCamel" name="MongoHQ" inherits="//@concepts.0/@subConcept.4/@subConcept.1" referencedConcept="//@concepts.23"/>
+      </subConcept>
+    </subConcept>
+    <subConcept name="Cache">
+      <subConcept name="Cache Service" inherits="//@concepts.0/@subConcept.5"/>
+      <subConcept name="IronCache" inherits="//@concepts.0/@subConcept.5"/>
+      <subConcept name="Cachely" inherits="//@concepts.0/@subConcept.5"/>
+      <subConcept name="MemCachier" inherits="//@concepts.0/@subConcept.5"/>
+      <subConcept name="MemCached" inherits="//@concepts.0/@subConcept.5"/>
+    </subConcept>
+    <subConcept name="Search Engine">
+      <subConcept name="Web Solr" inherits="//@concepts.0/@subConcept.6"/>
+      <subConcept name="Flying Sphinx" inherits="//@concepts.0/@subConcept.6"/>
+      <subConcept name="Bonsai Elastic Search" inherits="//@concepts.0/@subConcept.6"/>
+      <subConcept name="Found Elastic Search" inherits="//@concepts.0/@subConcept.6"/>
+    </subConcept>
+    <subConcept name="Provider">
+      <subConcept name="Heorku" inherits="//@concepts.0/@subConcept.7"/>
+      <subConcept name="Google App Engine" inherits="//@concepts.0/@subConcept.7"/>
+      <subConcept name="Windows Azure" inherits="//@concepts.0/@subConcept.7"/>
+      <subConcept name="Amazon EC2" inherits="//@concepts.0/@subConcept.7"/>
+      <subConcept name="ElasticHosts" inherits="//@concepts.0/@subConcept.7"/>
+      <subConcept name="Private Cloud A" inherits="//@concepts.0/@subConcept.7"/>
+      <subConcept name="Private Cloud B" inherits="//@concepts.0/@subConcept.7"/>
+    </subConcept>
+    <subConcept name="Location">
+      <subConcept name="France" inherits="//@concepts.0/@subConcept.8"/>
+      <subConcept name="EU" inherits="//@concepts.0/@subConcept.8"/>
+      <subConcept name="US" inherits="//@concepts.0/@subConcept.8"/>
+      <subConcept name="Scotland"/>
+      <subConcept name="Oslo"/>
+      <subConcept name="Ireland"/>
+      <subConcept name="Germany"/>
+      <subConcept name="Edinburgh"/>
+      <subConcept name="Japan"/>
+      <subConcept name="Virginia"/>
+      <subConcept name="Virgina"/>
+      <subConcept name="UK"/>
+      <subConcept name="DE"/>
+    </subConcept>
+    <subConcept name="Deployment Model">
+      <subConcept name="Public"/>
+      <subConcept name="Private"/>
+    </subConcept>
+    <subConcept name="Service Model">
+      <subConcept name="PaaS"/>
+      <subConcept name="IaaS"/>
+    </subConcept>
+    <subConcept name="OS">
+      <subConcept name="Windows Server"/>
+      <subConcept name="Ubuntu"/>
+      <subConcept name="ubuntu"/>
+    </subConcept>
+  </concepts>
+  <concepts name="Provisioning">
+    <subConcept name="Resource">
+      <subConcept xsi:type="ontology:QuantifiableElementCamel" name="CPU" inherits="//@concepts.1/@subConcept.0" referencedConcept="//@reusedConcept.2" unit="//@reusedConcept.0/@subConcept.1"/>
+      <subConcept xsi:type="ontology:QuantifiableElementCamel" name="Bandwidth" inherits="//@concepts.1/@subConcept.0" unit="//@reusedConcept.0/@subConcept.2"/>
+      <subConcept xsi:type="ontology:QuantifiableBoundedElementCamel" name="Memory" inherits="//@concepts.1/@subConcept.0" unit="//@reusedConcept.0/@subConcept.0/@subConcept.0"/>
+      <subConcept xsi:type="ontology:QuantifiableBoundedElementCamel" name="Disk" inherits="//@concepts.1/@subConcept.0" unit="//@reusedConcept.0/@subConcept.0/@subConcept.0"/>
+      <subConcept xsi:type="ontology:BoundedElementCamel" name="Core Number" inherits="//@concepts.1/@subConcept.0"/>
+    </subConcept>
+  </concepts>
+  <concepts name="Goal">
+    <subConcept name="Max"/>
+    <subConcept name="Min"/>
+  </concepts>
+  <concepts name="Criteria">
+    <subConcept name="Cost"/>
+    <subConcept name="Response Time"/>
+    <subConcept name="Availability"/>
+  </concepts>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="Treasure Data Databse Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="PG Backups Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="ClearDB MySQL Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="Amazon RDS Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="Windows Azure SQL Premium Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="Windows Azure SQL Web and Business Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MySQL 5.5 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="PostgreSQL 9.2 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="PostgreSQL 8.4 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MariaDB 10 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MariaDB 5.5 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MongoDB 2.0.2 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MongoDB 2.2 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MongoDB 2.2.X Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MongoDB 2.4.X Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="Cloudant Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="IronCache Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="RedisGreen Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MongoLab Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="MongoHQ Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="Heroku Postgres 2.0 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <concepts xsi:type="ontology:QuantifiableElementCamel" name="PostgreSQL 9.3 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <reusedConcept name="Unit">
+    <subConcept name="Stockage Unit">
+      <subConcept name="MEGABYTES" inherits="//@reusedConcept.0/@subConcept.0"/>
+      <subConcept name="GIGABYTES" inherits="//@reusedConcept.0/@subConcept.0"/>
+      <subConcept name="TB" inherits="//@reusedConcept.0/@subConcept.0"/>
+    </subConcept>
+    <subConcept name="Frequency Unit">
+      <subConcept name="MHz" inherits="//@reusedConcept.0/@subConcept.1"/>
+      <subConcept name="GHz" inherits="//@reusedConcept.0/@subConcept.1"/>
+    </subConcept>
+    <subConcept name="Transfer Rate Unit">
+      <subConcept name="BitPerSecond" inherits="//@reusedConcept.0/@subConcept.2"/>
+      <subConcept name="KBPerSecond" inherits="//@reusedConcept.0/@subConcept.2"/>
+      <subConcept name="MBPerSecond" inherits="//@reusedConcept.0/@subConcept.2"/>
+      <subConcept name="GBPerSecond" inherits="//@reusedConcept.0/@subConcept.2"/>
+    </subConcept>
+  </reusedConcept>
+  <reusedConcept xsi:type="ontology:QuantifiableElementCamel" name="CouchDB 1.2 Database Size" unit="//@reusedConcept.0/@subConcept.0"/>
+  <reusedConcept xsi:type="ontology:CountableElementCamel" name="Core Number"/>
+</ontology:OntologyCamel>
