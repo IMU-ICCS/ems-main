@@ -23,6 +23,27 @@ public class CamelExecwareMapping {
 	
 	private static final Logger LOGGER = Logger
 			.getLogger(CamelExecwareMapping.class.getName());
+	/**
+	 * The cloud lookup is for connecting a cloud to ExecWare for the first time.
+	 * This is a one time process when there's a new cloud
+	 */
+	static boolean cloudLookup = false;
+	
+	public static synchronized boolean isCloudLookupInProgress(){
+		return cloudLookup;
+	}
+	
+	public static synchronized boolean cloudLookingUp(){
+		if(!cloudLookup)
+			cloudLookup = true;
+		return cloudLookup;
+	}
+	
+	public static synchronized boolean CloudLookedUp(){
+		if(cloudLookup)
+			cloudLookup = false;
+		return (!cloudLookup);
+	}
 	
 	//BiMap<String, String> components = HashBiMap.create();
 	Application appli;
@@ -151,7 +172,7 @@ public class CamelExecwareMapping {
 	/**
 	 * returns an String array of ExecWare IDs for VM template, cloud, image, location, hardware
 	 * @param name_Camel
-	 * @return an String array of ExecWare IDs for VM template, cloud, image, location, hardware (in this order)
+	 * @return an String array of ExecWare IDs for VM template, cloud, image, location, hardware (as in ordered)
 	 */
 	public String[] getEntityVMTIDs(String name_Camel){
 		

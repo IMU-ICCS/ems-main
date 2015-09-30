@@ -115,12 +115,12 @@ public class ExecInterfacer {
 	//Not required ones are commented
 	private User execUser;
 	public static final String API_LOGIN = "/api/login";
-	//public static final String API_API = "/api/api";
+	public static final String API_API = "/api/api";
 	public static final String API_APPLICATION = "/api/application";//DONE
 	public static final String API_APPLICATIONCOMPONENT = "/api/ac";//DONE
 	public static final String API_APPLICATIONINSTANCE = "/api/applicationInstance";//DONE
 	public static final String API_CLOUD = "/api/cloud";//need to get its id for /location - DONE
-	//public static final String API_CLOUDCREDENTIAL = "/api/cloudCredential";
+	public static final String API_CLOUDCREDENTIAL = "/api/cloudCredential";
 	public static final String API_PORTPROV = "/api/portProv";
 	public static final String API_PORTREQ = "/api/portReq";
 	public static final String API_COMMUNICATION = "/api/communication";//DONE
@@ -1112,8 +1112,93 @@ public class ExecInterfacer {
 	public String trimResponseID(String resp){
 		return resp.substring(resp.lastIndexOf('/')+1);
 	}
+	
+	
+	public JSONArray getAPIs() throws IOException, ParseException{
 
-	public String createCloud(String name) throws ExecutionwareError{
+		//Header inHeader = new BasicHeader(name, value);
+		
+		HttpResponse resp = getRequest(API_API, null);
+        HttpEntity respEntity = resp.getEntity();
+        
+        String respString = EntityUtils.toString(respEntity);
+        JSONParser parser = new JSONParser();
+        //JSONObject result = null;
+        JSONArray jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+    	System.out.println(respString);
+    	return jArr;
+	}
+	
+	public String createCloudCredential(String userName, String password, Integer cloud, Integer tenant) throws ExecutionwareError{
+		
+		boolean status = false;
+		
+		HttpResponse resp = null;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("user", userName);
+	        inBody.put("secret", password);
+	        inBody.put("cloud", cloud);
+	        inBody.put("tenant", tenant);
+
+	        resp = postRequest(API_CLOUDCREDENTIAL, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+	        
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+	            //JSONObject result = (JSONObject)parser.parse(respString);
+	            //execUser.setCreatedOn((long)result.get("createdOn"));
+
+        		try {
+        			obj = parser.parse(new String(respString));
+        		} catch (ParseException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
+        		JSONObject jObj = (JSONObject) obj;
+        		
+        		// loop array
+        		JSONArray links = (JSONArray) jObj.get("links");
+        		Iterator<JSONObject> iterator = links.iterator();
+        		while (iterator.hasNext()) {
+        			JSONObject factObj = (JSONObject) iterator.next();
+        			String href = (String) factObj.get("href");
+        			System.out.println("New cloud is located at " + href);
+        			return href;
+        		}
+        		//System.out.println("New cloud id is located at " + cloudId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		
+		int responseCode = resp.getStatusLine().getStatusCode();
+		if ((responseCode < 200) || (responseCode >= 300)) {
+			LOGGER.log(Level.SEVERE,
+					"Adding Cloud: Failed with response code "
+							+ responseCode);
+			throw new ExecutionwareError();
+		}
+		
+		//return cloudId;
+		return "";
+	}
+
+	public String createCloud(String name, String endpoint, Integer api) throws ExecutionwareError{
 		
 		boolean status = false;
 		
@@ -1123,6 +1208,8 @@ public class ExecInterfacer {
 
 			JSONObject inBody = new JSONObject();
 	        inBody.put("name", name);
+	        inBody.put("endpoint", endpoint);
+	        inBody.put("api", api);
 
 	        resp = postRequest(API_CLOUD, null, inBody);
 	        HttpEntity respEntity = resp.getEntity();
@@ -1201,7 +1288,7 @@ public class ExecInterfacer {
 
 		//Header inHeader = new BasicHeader(name, value);
 		
-		HttpResponse resp = getRequest("/api/cloud", null);
+		HttpResponse resp = getRequest(API_CLOUD, null);
         HttpEntity respEntity = resp.getEntity();
         
         String respString = EntityUtils.toString(respEntity);

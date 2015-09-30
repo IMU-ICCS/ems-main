@@ -85,6 +85,11 @@ public class VMInstanceAction implements Action {
 					cloudName = "omistack";*/
 					
 					String tempCloudID = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloudName);
+					
+					while(tempCloudID.equalsIgnoreCase("")){
+						
+					}
+					
 					cloudID = execInterfacer.trimResponseID(tempCloudID);
 					LOGGER.log(Level.INFO, "Found cloud name: " + cloudName + " id: " + cloudID);
 				} catch (IOException e) {
