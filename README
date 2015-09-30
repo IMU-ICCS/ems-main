@@ -1,0 +1,47 @@
+This is a maven project incorporating java code which can be used to create a CDOClient and store models or run queries over the contents of a CDOStore/Server (the CDO server can be downloaded from git at: http://git.cetic.be/paasage/cdo-server where installation and execution instructions are provided or can be imported and executed in the Eclipse environment by following the instructions of the document available at the following URL: http://git.cetic.be/paasage/camel/blob/master/paasage_camel_cdo_tutorial.pdf). 
+
+FUNCTIONALITY: This CDO client exposes the following functionality: 
+(i) register the EPackage(s) that maps to the domain code to be manipulated
+(ii) store a model into a CDOResource with a particular name - here the model can reside in the file system, so it is first loaded, or can be in memory so it is just stored
+(iii) store a series of models situated in a zip file into the CDO Repository/Store. The storage takes care also of cross-references between these models. 
+(iv) run a particular query according to a specific dialect (OCL, SQL, HQL) over the contents of the CDO Server / Store - this depends on the type of store available in the CDO Server. If it is a HibernateStore, then HQL can be used. If it is a DBStore, then SQL can be used.  
+(v) open a view/transaction, get its contents in terms of one or more CDOResources (and probably process them - depends on the user's purposes) and finally close the view/transaction. Please remember that modifications should be performed under a transaction and not a view.
+(vi) load a model from a file with a specific path
+(vii) export a CDOResource or a part of it or the results of a query to a file with a specific path - Here there are 3 main options: (a) the resource/model/object is exported as it is with identifiers that are CDO-based and which need a CDO Transaction or View in order to view it (and also nothing has been changed in the meantime in the CDO Repository related to this model, e.g., its deletion or modification); (b) the model is exported with local and not CDO-based identifiers - models that are also cross-referenced by this model are exported again having local identifiers but their cross-references still map to CDO-identifiers; (c) starting with the model to be exported, a tree of models is actually exported with only local identifiers such that there are no cross-references pointing to the CDO Repository but just on elements of the exported models. 
+(viii) based on (vii-c), the whole content of CDO Repository can be exported for back up reasons as a zip file. In conjunction with (iii) then someone could recover this content provided that the repositiry is empty. 
+(ix) close the CDOSession which has been opened initially through the creation of the CDOClient object
+Note: first functionality (EPackage registering) should be initially invoked in order to exploit the rest. The CDO session
+created by instantiating the CDOClient should be closed in the end by calling the respective java method.
+Please see the main method of the CDOClient which indicates possible ways the CDOClient can be exploited, when no arguments are provided to it. 
+As you will see, the CDOClient needs to be created, then follows the main exploitation logic in terms of particular CDOClient methods that can be called with the appropriate parameters and finally the closeSession method must be called to close the CDOSession opened by the CDOClient initially when it was created.
+In case the CDOServer is configured with security on, then the CDOClient can be initiated with
+respective userName and password to be used for authentication. If authentication is successful, 
+then the respective session keeps the user credentials until the very end of the corresponding
+CDOClient object lifetime. This means that during the lifetime of the CDOClient instance/object, 
+the user or program will be granted access to those resources on which it has the respective 
+rights. The latter information is specified via the CDO security model and there is an administration API which can be exploited for this reason in order to not deal immediately with the midification of this quite critical and sensitive model as well as require to have the knowledge of its meta-model. There is no error to provide credential information even if CDOServer is not configured for security but this information is actually ignored. 
+
+REQUIREMENTS:
+- Java 7
+- maven
+
+BUILDING:
+run "mvn clean install" to compile the code and produce the respective jar file 
+
+CONFIGURATION:
+The code is accompanied with a .properties file (eu.paasage.wp4.client.properties) through which it can be specified:
+(a) the IP of the host on which the CDO Server runs.
+(b) the port on which the CDO Server listens.
+(c) the name of the CDO repository (default is "repo1")
+(d) whether logging messages should be printed or not (default is off)
+This .properties file should be placed in a particular directory whose path is denoted by the system variable PAASAGE_CONFIG_DIR. Alternatively, you can indicate in the command line used to run the client the following: "-Deu.paasage.configdir=<directory path where the properties file resides>".
+If none of the above is performed, then the  CDOClient will not be able to connect correctly to the CDO Server that is running. 
+
+USAGE:
+This component can be exploited/used through the following ways: 
+(1) via command line by running either: 
+ (a) "mvn exec:java" or
+ (b) going to the "target" directory and running "java -jar client-1.1-jar-with-dependencies.jar"  
+(2) importing the contents of the respective directory in the Application Development Environment of your choice and then running "mvn exec:java" to run the code's main method. This exploitation route should probably concern just testing that the CDOClient code runs smoothly. Towards this goal, the Sens_App_Scenario.xmi file has been created in the "examples" directory which can be used to load a particular CAMEL model and then store it in the CDOServer. This file is used by the main method of the code to show that the loading of XMI files is possible and then the CDOClient can be used to store the loaded models. If you desire to load another file, then you will have to either place it in the "examples" directory or another directory of your choice but of course also change the main method to point to the appropriate file path. The main method also produces as output one XMI file which maps to a model/object produced via a particular query; 
+(3) produce the jar of the code via "maven clean install" and incorporate it in the libraries of your code (obviously change pom.xml file to include the dependency if your code relies on maven). In this second way, probably you need to follow a particular process through which you can exploit the code as there is no sense any more in exploiting the main method. Actually, the main method can be used as a guide based on which you will be able to exploit the CDOClient. A more involved guide and detailed documentation is provided at the Documentation.doc file.(you can also run the code's main method at the command line by issuing.
+In case that first two ways are exploited, then there are two options: (a) run the CDOClient's main method with no arguments - this can be performed for checking that everything works correctly such that the CDOClient can establish a session with a CDOServer and perform a set of actions on the respective repository. It can of course also be performed for show-casing reasons or for playing around with and modifying the main method code in order to check the functionality exhibited; (b) run the CDOClient's main method with arguments - in this case, as you cannot use a main-memory object and those methods requiring as input such an object, you can actually call some CDOClient API methods which are mainly dedicated to the importing and exporting of models from/to the CDO Repository/Store, respectively. In this case, to run the code and depending also on whether you have selected way (1) or (2), you will have to specify the arguments to give to the CDOClient's main method. As far as the first way is concerned, you need to add to the command line in the very end the following String: "-Dexec.args=<method_name> <arg1> <arg2> ... <arg_n>". Thus, you have to provide as arguments the name of the method to call along with its input parameters where each of these arguments is separated in between with a space. In case you follow the second way, then the respective Application Development Environment will provide you with particular ways to specify the arguments to provide which again must conform to the aforementioned scheme (method name and input parameters).     
