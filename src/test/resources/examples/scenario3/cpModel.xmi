@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types">
+  <goals id="min_cost_0" goalType="min">
+    <expression xsi:type="cp:ComposedExpression" id="cost_function" expressions="//@auxExpressions.2 //@constants.4 //@variables.2" operator="times"/>
+  </goals>
+  <constants id="num_vm_for_app_component">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="min_num_vm">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="one_constant">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="cero_constant">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="vm_profile_cost_M_0" type="Double">
+    <value xsi:type="types:DoubleValueUpperware" value="0.74"/>
+  </constants>
+  <variables id="app_component_simpleApplicationWar_in_vm_M">
+    <domain xsi:type="cp:NumericListDomain" value="//@variables.0/@domain/@values.0">
+      <values xsi:type="types:IntegerValueUpperware"/>
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+    </domain>
+  </variables>
+  <variables id="app_component_Tomcat_in_vm_M">
+    <domain xsi:type="cp:NumericListDomain" value="//@variables.1/@domain/@values.0">
+      <values xsi:type="types:IntegerValueUpperware"/>
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+    </domain>
+  </variables>
+  <variables id="number_vm_M">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware" value="100"/>
+    </domain>
+  </variables>
+  <constraints id="c_0" exp1="//@variables.0" exp2="//@constants.0" comparator="equalTo"/>
+  <constraints id="c_1" exp1="//@variables.0" exp2="//@variables.1" comparator="equalTo"/>
+  <constraints id="c_2" exp1="//@variables.1" exp2="//@constants.0" comparator="equalTo"/>
+  <constraints id="c_3" exp1="//@auxExpressions.0" exp2="//@constants.3"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_0" expressions="//@variables.0 //@variables.1"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_1" expressions="//@variables.0 //@variables.1"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_2" expressions="//@auxExpressions.1 //@auxExpressions.3" operator="div"/>
+  <auxExpressions xsi:type="cp:Constant" id="aux_expression_3">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </auxExpressions>
+</cp:ConstraintProblem>
