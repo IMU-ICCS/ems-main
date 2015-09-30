@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ASCII"?>
+<typesPaasage:ProviderTypes
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
+    xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
+  <types id="amazonEC2"/>
+  <types id="Rackspace"/>
+  <types id="OVH"/>
+  <types id="elasticHosts"/>
+  <types id="PrivateCloud"/>
+  <types id="heroku"/>
+  <types id="windowsAzure"/>
+  <types id="flexiant"/>
+  <types id="grid5000"/>
+  <types id="GWDG"/>
+  <types id="nova"/>
+  <types id="Amazon"/>
+  <types id="Sintef-Nova"/>
+  <types id="Flexiant"/>
+  <types id="amazon-eu"/>
+  <types id="oslo-nova"/>
+</typesPaasage:ProviderTypes>
