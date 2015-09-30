@@ -40,27 +40,13 @@
 	<properties>
 		<log4j-version>1.2.16</log4j-version>
 		<compiler-version>3.1</compiler-version>
-		<!-- <common-logging-version>1.1.3</common-logging-version> <sl4j-version>1.7.5</sl4j-version> -->
 		<junit-version>4.11</junit-version>
 		<minimal-json-version>0.9.1</minimal-json-version>
-		<camel-version>${paasage.version}</camel-version>
-		<encoding>UTF-8</encoding>
 	</properties>
 	<build>
-		<!-- <finalName>${project.artifactId}</finalName> -->
 		<plugins>
-<!-- 			<plugin> -->
-<!-- 				<artifactId>maven-compiler-plugin</artifactId> -->
-<!-- 				<version>${compiler-version}</version> -->
-<!-- 				<configuration> -->
-<!-- 					<source>1.7</source> -->
-<!-- 					<target>1.7</target> -->
-<!-- 					<encoding>${encoding}</encoding> -->
-<!-- 				</configuration> -->
-<!-- 			</plugin> -->
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-<!-- 				<version>2.9.1</version> -->
 				<executions>
 					<execution>
 						<id>generate-javadoc</id>
@@ -118,56 +104,12 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-<!-- 	<repositories> -->
-<!-- 		<repository> -->
-<!-- 			<id>ow2.releases</id> -->
-<!-- 			<name>OW2 repository</name> -->
-<!-- 			<url>http://repository.ow2.org/nexus/content/repositories/releases/</url> -->
-<!-- 		</repository> -->
-<!-- 		<repository> -->
-<!-- 			<id>ow2.snapshots</id> -->
-<!-- 			<name>OW2 repository</name> -->
-<!-- 			<url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url> -->
-<!-- 		</repository> -->
-<!-- 		<repository> -->
-<!-- 			<id>paasage.repo</id> -->
-<!-- 			<name>PaaSage repository</name> -->
-<!-- 			<url>http://jenkins.paasage.cetic.be/repository/</url> -->
-<!-- 		</repository> -->
-<!-- 	</repositories> -->
-<!-- 	<distributionManagement> -->
-<!-- 		<repository> -->
-<!-- 			<id>deployment</id> -->
-<!-- 			<name>Internal Releases</name> -->
-<!-- 			<url>http://repository.ow2.org/nexus/content/repositories/releases/</url> -->
-<!-- 		</repository> -->
-<!-- 		<snapshotRepository> -->
-<!-- 			<id>deployment</id> -->
-<!-- 			<name>Internal Releases</name> -->
-<!-- 			<url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url> -->
-<!-- 		</snapshotRepository> -->
-<!-- 	</distributionManagement> -->
 	<dependencies>
-		<!-- <dependency> -->
-		<!-- <groupId>commons-logging</groupId> -->
-		<!-- <artifactId>commons-logging</artifactId> -->
-		<!-- <version>${common-logging-version}</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>${log4j-version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.slf4j</groupId> -->
-		<!-- <artifactId>slf4j-log4j12</artifactId> -->
-		<!-- <version>${sl4j-version}</version> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.slf4j</groupId> -->
-		<!-- <artifactId>slf4j-api</artifactId> -->
-		<!-- <version>${sl4j-version}</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -180,7 +122,6 @@
 			<version>${minimal-json-version}</version>
 		</dependency>
 		<dependency>
-			<!-- <groupId>eu.paasage</groupId> -->
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>camel</artifactId>
 			<version>${paasage.version}</version>

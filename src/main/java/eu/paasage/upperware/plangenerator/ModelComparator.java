@@ -277,7 +277,10 @@ public class ModelComparator {
 	/** The target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} */
 	private DeploymentModel targetDM = null;
 
-	/** Create an instance */
+	/** Create an instance 
+	 * @param current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+	 * @param target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+	 * */
 	public ModelComparator(DeploymentModel current, DeploymentModel target) {
 		this.currentDM = current;
 		this.targetDM = target;
@@ -287,6 +290,7 @@ public class ModelComparator {
 	/**
 	 * Set the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} and
 	 * reinitialise the result objects
+	 * @param target	the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 */
 	public void setTargetModel(DeploymentModel target) {
 		this.targetDM = target;
@@ -296,6 +300,7 @@ public class ModelComparator {
 	/**
 	 * Set the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} and
 	 * reinitialise the result objects
+	 * @param current 	the current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 */
 	public void setCurrentModel(DeploymentModel current) {
 		this.currentDM = current;
@@ -307,7 +312,7 @@ public class ModelComparator {
 	 * to the current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}.
 	 * <p>
 	 * It is assumed that the model only contains a single {@link eu.paasage.camel.deployment.DeploymentModel}.
-	 * @throws	@{link ModelComparatorException <em>ModelComparatorException</em>} on processing error
+	 * @throws ModelComparatorException on processing error
 	 */
 	public void compareModels() throws ModelComparatorException {
 		// compareModels is only called when there are current and target models
@@ -415,8 +420,7 @@ public class ModelComparator {
 	/**
 	 * Compares the {@link eu.paasage.camel.deployment.VMInstance <em>VMInstance</em>} in the
 	 * target and the current deployment models
-	 * <p>
-	 * @throws	@{link ModelComparatorException <em>ModelComparatorException</em>} on processing error
+	 * @throws ModelComparatorException on processing error
 	 */
 	public void compareVMInstances() throws ModelComparatorException {
 		LOGGER.info(">> Comparing vm instances ...");

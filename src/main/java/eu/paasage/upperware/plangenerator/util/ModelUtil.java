@@ -120,7 +120,7 @@ public final class ModelUtil {
     	
     }
     /**
-     * Utility to convert a {@link eu.paasage.camel.type.SingleValue <em>SingleValue</em>} object to {@link java.util.String <em>String</em>} 
+     * Utility to convert a {@link eu.paasage.camel.type.SingleValue <em>SingleValue</em>} object to {@link java.lang.String <em>String</em>} 
      * <p>
      * @param obj	the {@link org.eclipse.emf.ecore.EObject <em>EObject</em>} to switch
      * @return	a {@link java.lang.String <em>String</em>} representation of the object
@@ -160,6 +160,7 @@ public final class ModelUtil {
 	 * <p>
 	 * @param global global {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
 	 * @param local local {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
+	 * @return the combined {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
 	 */
 	public static VMRequirementSet addGlobalRequirements(VMRequirementSet global, VMRequirementSet local){
 		
@@ -188,7 +189,7 @@ public final class ModelUtil {
 	 * <p>
 	 * @param asArray	the source {@link com.eclipsesource.json.JsonArray <em>JsonArray</em>}
 	 * @return	a {@link java.util.List <em>List</em>} of {@link java.lang.String <em>String</em>} or an empty {@link java.util.List <em>List</em>}
-	 * @throws	{@link eu.paasage.upperware.plangenerator.exception.ModelUtilException <em>ModelUtilException</em>} on error 
+	 * @throws ModelUtilException on processing error 
 	 */
 	public static List<String> convertJsonArrayToList(JsonArray asArray) throws ModelUtilException  {
 		List<String> list = new ArrayList<String>();
