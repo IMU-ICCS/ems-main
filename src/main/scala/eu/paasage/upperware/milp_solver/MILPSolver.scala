@@ -1,0 +1,98 @@
+package eu.paasage.upperware.milp_solver
+
+import eu.paasage.upperware.metamodel.types.impl.TypesFactoryImpl
+import eu.paasage.upperware.metamodel.cp._
+import eu.paasage.upperware.metamodel.types._
+import scala.collection.JavaConversions._
+import jCMPL.{CmplSolElement, Cmpl}
+import com.typesafe.scalalogging.slf4j.LazyLogging
+
+class OptimizationFailed() extends Exception
+
+
+class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNames: Boolean = true) extends CmplCPGenerator with LazyLogging {
+  val reformulate: Boolean = true
+
+  val encodeVarName:(String) => String = if(encodeVarNames) VarNameEncoders.genNumber else VarNameEncoders.identity
+  val variablesMap: Map[String, Variable] = cp.getVariables.map(v => (encodeVarName(v.getId), v)).toMap
+  
+  object convertVal {
+    val faktoria = new TypesFactoryImpl
+    def apply(x: Any): NumericValueUpperware = {
+      x match {
+        case x: java.lang.Long => {
+          val modelVal = faktoria.createLongValueUpperware
+          modelVal.setValue(x)
+          return modelVal
+        }
+        case x: java.lang.Double => {
+          val modelVal = faktoria.createDoubleValueUpperware()
+          modelVal.setValue(x)
+          return modelVal
+        }
+      }
+    }
+  }
+
+  def createSolution(variables:Iterable[CmplSolElement]):Solution = {
+    val solution = CpFactory.eINSTANCE.createSolution()
+    solution.setTimestamp(System.currentTimeMillis)
+
+    val values = solution.getVariableValue
+
+    variables.foreach(v => {
+      if(variablesMap.isDefinedAt(v.name)) {
+        val vv = CpFactory.eINSTANCE.createVariableValue()
+        vv.setVariable(variablesMap(v.name))
+        vv.setValue(convertVal(v.activity))
+        values.add(vv)
+      }
+    })
+
+    return solution
+  }
+
+  def solve:Solution = {
+    val modelFile = scala.reflect.io.File.makeTemp("model", ".cmpl")
+    try {
+      val model = generate_model
+      modelFile.writeAll(model)
+
+      val cmpl = new Cmpl(modelFile.path)
+
+      if (debug) {
+        logger.debug("CMPL model file: " + modelFile.path)
+        logger.debug("Variables mapping: ")
+        variablesMap.foreach{ case (id, v) => logger.debug((id, v.getId).toString) }
+        logger.debug("Model: ")
+        logger.debug(model);
+        logger.debug("Running CMPL...")
+        cmpl.setOutput(true)
+      }
+
+      cmpl.solve
+
+      if (cmpl.solverStatus == Cmpl.SOLVER_OK) {
+        if (debug) cmpl.solutionReport
+
+        val solution = createSolution(cmpl.solution.variables)
+        cp.getSolution.add(solution)
+        return solution
+      } else {
+        (    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+          :: ""
+          :: "This is really bad!"
+          :: "Solver failed! Probably CP problem is infeasible. Please check the solver logs above."
+          :: ""
+          :: "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" :: Nil).foreach(l => logger.error(l))
+        throw new OptimizationFailed()
+      }
+    } finally {
+      if (!debug) modelFile.delete
+    }
+  }
+}
+
+object MILPSolver {
+  def default_solve(cp: ConstraintProblem, debug: Boolean = false, encodeVarNames: Boolean = true) = new MILPSolver(cp, debug, encodeVarNames).solve
+}

@@ -1,0 +1,32 @@
+outs/
+tmp/
+*.osol
+*.osil
+*.cFconf
+out.txt
+
+# Java/Scala/Eclipse ignores
+/target/
+/bin/
+/.cache
+/.settings/
+/.history/
+/.lib/
+
+*.class
+*.log
+
+# sbt specific
+/.lib/
+/dist/*
+/target/
+/lib_managed/
+/src_managed/
+/project/boot/
+/project/target
+/project/plugins/project/
+
+.idea
+/project
+/dupa
+.iml
