@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="ASCII"?>
+<camel:CamelModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://www.paasage.eu/2015/06/camel" xmlns:metric="http://www.paasage.eu/2015/06/camel/metric" xmlns:provider="http://www.paasage.eu/2015/06/camel/provider" xmlns:requirement="http://www.paasage.eu/2015/06/camel/requirement" xmlns:scalability="http://www.paasage.eu/2015/06/camel/scalability" xmlns:type="http://www.paasage.eu/2015/06/camel/type" xmlns:unit="http://www.paasage.eu/2015/06/camel/unit" xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/metric http://www.paasage.eu/2015/06/camel#//metric http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/requirement http://www.paasage.eu/2015/06/camel#//requirement http://www.paasage.eu/2015/06/camel/scalability http://www.paasage.eu/2015/06/camel#//scalability http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type http://www.paasage.eu/2015/06/camel/unit http://www.paasage.eu/2015/06/camel#//unit" name="ScalarmModel">
+  <applications name="ScalarmApplication" version="v1.0" owner="//@organisationModels.0/@users.0" deploymentModels="//@deploymentModels.0"/>
+  <deploymentModels name="ScalarmDeployment">
+    <internalComponents name="ExperimentManager">
+      <providedCommunications name="ExpManPort" portNumber="443"/>
+      <configurations name="Configuration14" downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage" installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_install.sh" startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_start.sh"/>
+      <requiredCommunications name="StoManPortReq" portNumber="20001" isMandatory="true"/>
+      <requiredCommunications name="InfSerPortReq" portNumber="11300"/>
+      <requiredHost name="CoreIntensiveUbuntuGermanyHostReq"/>
+    </internalComponents>
+    <internalComponents name="InformationService">
+      <providedCommunications name="InfSerPort" portNumber="1130"/>
+      <configurations name="Configuration15" downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage" installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./information_service_install.sh" startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./information_service_start.sh"/>
+      <requiredHost name="CoreIntensiveUbuntuGermanyHostReq"/>
+    </internalComponents>
+    <internalComponents name="SimulationManager">
+      <configurations name="Configuration16" downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage" installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./simulation_manager_install.sh" startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./simulation_manager_start.sh"/>
+      <requiredCommunications name="InfSerPortReq" portNumber="11300"/>
+      <requiredCommunications name="StoManPortReq" portNumber="20001"/>
+      <requiredCommunications name="ExpManPortReq" portNumber="44"/>
+      <requiredHost name="CPUIntensiveUbuntuGermanyHostReq"/>
+    </internalComponents>
+    <internalComponents name="StorageManager">
+      <providedCommunications name="StoManPort" portNumber="20001"/>
+      <configurations name="Configuration17" downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage" installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./storage_manager_install.sh" startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./storage_manager_start.sh"/>
+      <requiredCommunications name="InfSerPortReq" portNumber="11300"/>
+      <requiredHost name="StorageIntensiveUbuntuGermanyHostReq"/>
+    </internalComponents>
+    <internalComponentInstances name="StorageManagerInst" type="//@deploymentModels.0/@internalComponents.3">
+      <providedCommunicationInstances name="StoManPortInst" type="//@deploymentModels.0/@internalComponents.3/@providedCommunications.0"/>
+      <requiredCommunicationInstances name="InfSerPortReqInst" type="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"/>
+      <requiredHostInstance name="StorageIntensiveUbuntuGermanyHostReqInst" type="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances name="ExperimentManagerInst" type="//@deploymentModels.0/@internalComponents.0">
+      <providedCommunicationInstances name="ExpManPortInst" type="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"/>
+      <requiredCommunicationInstances name="StoManPortReqInst" type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"/>
+      <requiredCommunicationInstances name="InfSerPortReqInst" type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"/>
+      <requiredHostInstance name="CoreIntensiveUbuntuGermanyHostReqInst" type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
+    </internalComponentInstances>
+    <vms name="CoreIntensiveUbuntuGermany" vmRequirementSet="//@deploymentModels.0/@vmRequirementSets.0">
+      <providedHosts name="CoreIntensiveUbuntuGermanyHost"/>
+    </vms>
+    <vms name="CPUIntensiveUbuntuGermany" vmRequirementSet="//@deploymentModels.0/@vmRequirementSets.1">
+      <providedHosts name="CPUIntensiveUbuntuGermanyHost"/>
+    </vms>
+    <vms name="StorageIntensiveUbuntuGermany" vmRequirementSet="//@deploymentModels.0/@vmRequirementSets.2">
+      <providedHosts name="StorageIntensiveUbuntuGermanyHost"/>
+    </vms>
+    <vmInstances name="CoreIntensiveUbuntuGermanyInst" type="//@deploymentModels.0/@vms.0" vmType="//@providerModels.0/@rootFeature/@attributes.0" vmTypeValue="//@typeModels.1/@dataTypes.1/@values.4">
+      <providedHostInstances name="CoreIntensiveUbuntuGermanyHostInst" type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
+    </vmInstances>
+    <communications name="StorageManagerToInformationService" providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@internalComponents.3/@requiredCommunications.0"/>
+    <communications name="ExperimentManagerToStorageManager" type="REMOTE" providedCommunication="//@deploymentModels.0/@internalComponents.3/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"/>
+    <communications name="ExperimentManagerToInformationService" providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"/>
+    <communications name="SimulationManagerToStorageManager" providedCommunication="//@deploymentModels.0/@internalComponents.3/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@internalComponents.2/@requiredCommunications.1"/>
+    <communications name="SimulationManagerToExperimentManager" providedCommunication="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@internalComponents.2/@requiredCommunications.2"/>
+    <communications name="SimulationManagerToInformationService" providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@internalComponents.2/@requiredCommunications.0"/>
+    <communicationInstances name="ExperimentManagerToStorageManagerInst" type="//@deploymentModels.0/@communications.1" providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@providedCommunicationInstances.0" requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredCommunicationInstances.0"/>
+    <hostings name="StorageManagerToStorageIntensiveUbuntuGermany" providedHost="//@deploymentModels.0/@vms.2/@providedHosts.0" requiredHost="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
+    <hostings name="ExperimentManagerToCoreIntensiveUbuntuGermany" providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0" requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
+    <hostings name="InformationServiceToCoreIntensiveUbuntuGermany" providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0" requiredHost="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
+    <hostings name="SimulationManagerToCPUIntensiveUbuntuGermany" providedHost="//@deploymentModels.0/@vms.1/@providedHosts.0" requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
+    <hostingInstances name="ExperimentManagerToCoreIntensiveUbuntuGermanyInst" type="//@deploymentModels.0/@hostings.1" providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0" requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
+    <vmRequirementSets name="CoreIntensiveUbuntuGermanyRS" locationRequirement="//@requirementModels.0/@requirements.1" quantitativeHardwareRequirement="//@requirementModels.0/@requirements.4" osOrImageRequirement="//@requirementModels.0/@requirements.3"/>
+    <vmRequirementSets name="CPUIntensiveUbuntuGermanyRS" locationRequirement="//@requirementModels.0/@requirements.1" quantitativeHardwareRequirement="//@requirementModels.0/@requirements.5" osOrImageRequirement="//@requirementModels.0/@requirements.3"/>
+    <vmRequirementSets name="StorageIntensiveUbuntuGermanyRS" locationRequirement="//@requirementModels.0/@requirements.1" quantitativeHardwareRequirement="//@requirementModels.0/@requirements.6" osOrImageRequirement="//@requirementModels.0/@requirements.3"/>
+  </deploymentModels>
+  <locationModels name="ScalarmLocation">
+    <countries id="DE" name="Germany" parentRegions="//@locationModels.0/@regions.0"/>
+    <countries id="UK" name="United Kingdom" parentRegions="//@locationModels.0/@regions.0"/>
+    <regions id="EU" name="Europe"/>
+  </locationModels>
+  <locationModels name="GWDGLocation">
+    <countries id="DE" name="Germany"/>
+  </locationModels>
+  <metricModels name="ScalarmMetric">
+    <contexts xsi:type="metric:RawMetricContext" name="StorageManagerAvailabilityContext" component="//@deploymentModels.0/@internalComponents.3" metric="//@metricModels.0/@metrics.0" sensor="//@metricModels.0/@sensors.0"/>
+    <contexts xsi:type="metric:RawMetricContext" name="CPUMetricConditionContext" component="//@deploymentModels.0/@internalComponents.2" metric="//@metricModels.0/@metrics.1" sensor="//@metricModels.0/@sensors.1"/>
+    <contexts xsi:type="metric:RawMetricContext" name="ExperimentManagerResponseTimeContext" component="//@deploymentModels.0/@internalComponents.0" metric="//@metricModels.0/@metrics.2" sensor="//@metricModels.0/@sensors.2"/>
+    <contexts xsi:type="metric:RawMetricContext" name="InformationServiceResponseTimeContext" component="//@deploymentModels.0/@internalComponents.1" metric="//@metricModels.0/@metrics.2" sensor="//@metricModels.0/@sensors.2"/>
+    <contexts xsi:type="metric:RawMetricContext" name="ThroughputOfAWrokerContext" component="//@deploymentModels.0/@internalComponents.2" metric="//@metricModels.0/@metrics.3" sensor="//@metricModels.0/@sensors.4"/>
+    <contexts xsi:type="metric:RawMetricContext" name="NumberOfSimulationsLeftInExperimentsContext" component="//@deploymentModels.0/@internalComponents.0" metric="//@metricModels.0/@metrics.4" sensor="//@metricModels.0/@sensors.3"/>
+    <contexts xsi:type="metric:RawMetricContext" name="CPURawMetricContext" component="//@deploymentModels.0/@internalComponents.2" quantifier="ALL" metric="//@metricModels.0/@metrics.1" schedule="//@metricModels.0/@schedules.1" sensor="//@metricModels.0/@sensors.1"/>
+    <contexts xsi:type="metric:CompositeMetricContext" name="AllExperimentManagersResponseTimeContext" component="//@deploymentModels.0/@internalComponents.0" metric="//@metricModels.0/@metrics.5" composingMetricContexts="//@metricModels.0/@contexts.2"/>
+    <contexts xsi:type="metric:CompositeMetricContext" name="SumOfThroughputsOfAllWorkersContext" component="//@deploymentModels.0/@internalComponents.2" metric="//@metricModels.0/@metrics.6" composingMetricContexts="//@metricModels.0/@contexts.4"/>
+    <contexts xsi:type="metric:CompositeMetricContext" name="MakespanContext" component="//@deploymentModels.0/@internalComponents.0" metric="//@metricModels.0/@metrics.7" composingMetricContexts="//@metricModels.0/@contexts.5 //@metricModels.0/@contexts.8"/>
+    <contexts xsi:type="metric:CompositeMetricContext" name="CPUAvgMetricContextAll" component="//@deploymentModels.0/@internalComponents.2" quantifier="ALL" metric="//@metricModels.0/@metrics.8" window="//@metricModels.0/@windows.0" schedule="//@metricModels.0/@schedules.0" composingMetricContexts="//@metricModels.0/@contexts.6"/>
+    <contexts xsi:type="metric:CompositeMetricContext" name="CPUAvgMetricContextAny" component="//@deploymentModels.0/@internalComponents.2" metric="//@metricModels.0/@metrics.8" window="//@metricModels.0/@windows.1" schedule="//@metricModels.0/@schedules.0" composingMetricContexts="//@metricModels.0/@contexts.6"/>
+    <metrics xsi:type="metric:RawMetric" name="AvailabilityMetric" valueType="//@typeModels.0/@dataTypes.2" valueDirection="1" unit="//@unitModels.0/@units.3" property="//@metricModels.0/@properties.0"/>
+    <metrics xsi:type="metric:RawMetric" name="CPUMetric" valueType="//@typeModels.0/@dataTypes.0" unit="//@unitModels.0/@units.1" layer="IaaS" property="//@metricModels.0/@properties.1"/>
+    <metrics xsi:type="metric:RawMetric" name="ResponseTimeMetric" valueType="//@typeModels.0/@dataTypes.1" unit="//@unitModels.0/@units.2" property="//@metricModels.0/@properties.2"/>
+    <metrics xsi:type="metric:RawMetric" name="ThroughputOfAWrokerMetric" valueDirection="1" unit="//@unitModels.0/@units.4" property="//@metricModels.0/@properties.3"/>
+    <metrics xsi:type="metric:RawMetric" name="NumberOfSimulationsLeftInExperimentsMetric" unit="//@unitModels.0/@units.6" property="//@metricModels.0/@properties.4"/>
+    <metrics xsi:type="metric:CompositeMetric" name="MeanValueOfResponseTimeOfAllExprimentManagersMetric" unit="//@unitModels.0/@units.2" property="//@metricModels.0/@properties.2">
+      <formula name="MeanValueOfResponseTimeOfAllExprimentManagersFormula" function="MEAN" parameters="//@metricModels.0/@metrics.2"/>
+    </metrics>
+    <metrics xsi:type="metric:CompositeMetric" name="SumOfThroughputsOfAllWorkersMetric" valueDirection="1" unit="//@unitModels.0/@units.2" property="//@metricModels.0/@properties.3">
+      <formula name="SumOfThroughputsOfAllWorkersFormula" parameters="//@metricModels.0/@metrics.3"/>
+    </metrics>
+    <metrics xsi:type="metric:CompositeMetric" name="MakespanMetric" unit="//@unitModels.0/@units.5" property="//@metricModels.0/@properties.5">
+      <formula name="MakespanFormula" function="DIV" functionArity="BINARY" parameters="//@metricModels.0/@metrics.4 //@metricModels.0/@metrics.6"/>
+    </metrics>
+    <metrics xsi:type="metric:CompositeMetric" name="CPUAverage" description="Average of the CPU" valueDirection="1" unit="//@unitModels.0/@units.1" layer="PaaS" property="//@metricModels.0/@properties.1">
+      <formula name="Formula_Average" function="MEAN" functionPattern="REDUCE" parameters="//@metricModels.0/@metrics.1"/>
+    </metrics>
+    <conditions xsi:type="metric:MetricCondition" name="StorageManagerAvailabilityCondition" threshold="99.0" metricContext="//@metricModels.0/@contexts.0"/>
+    <conditions xsi:type="metric:MetricCondition" name="CPUMetricCondition" threshold="80.0" metricContext="//@metricModels.0/@contexts.1"/>
+    <conditions xsi:type="metric:MetricCondition" name="InformationServiceResponseCondition" comparisonOperator="LESS_THAN" threshold="700.0" metricContext="//@metricModels.0/@contexts.3"/>
+    <conditions xsi:type="metric:MetricCondition" name="ExperimentManagerResponseTimeCondition" threshold="0.3" metricContext="//@metricModels.0/@contexts.2"/>
+    <conditions xsi:type="metric:MetricCondition" name="CPUAvgMetricConditionAll" threshold="50.0" metricContext="//@metricModels.0/@contexts.10"/>
+    <conditions xsi:type="metric:MetricCondition" name="CPUAvgMetricConditionAny" threshold="80.0" metricContext="//@metricModels.0/@contexts.11"/>
+    <properties name="AvailabilityProperty" type="MEASURABLE" sensors="//@metricModels.0/@sensors.0"/>
+    <properties name="CPUProperty" type="MEASURABLE" sensors="//@metricModels.0/@sensors.1"/>
+    <properties name="ResponseTimeProperty" type="MEASURABLE" sensors="//@metricModels.0/@sensors.2"/>
+    <properties name="ThroughputInSimulationsPerSecondProperty" type="MEASURABLE" sensors="//@metricModels.0/@sensors.4"/>
+    <properties name="NumberOfSimulationsPerSecondProperty" type="MEASURABLE" sensors="//@metricModels.0/@sensors.3"/>
+    <properties name="MakespanProperty" type="MEASURABLE"/>
+    <windows name="Win5Min" unit="//@unitModels.0/@units.7" windowType="SLIDING" sizeType="TIME_ONLY" timeSize="5"/>
+    <windows name="Win1Min" unit="//@unitModels.0/@units.7" windowType="SLIDING" sizeType="TIME_ONLY" timeSize="1"/>
+    <schedules name="Schedule1Min" unit="//@unitModels.0/@units.7" interval="1"/>
+    <schedules name="Schedule1Sec" unit="//@unitModels.0/@units.8" interval="1"/>
+    <sensors name="AvailabilitySensor" isPush="true"/>
+    <sensors name="CPUSensor" configuration="de.uniulm.packagename.classname" isPush="true"/>
+    <sensors name="ResponseTimeSensor" isPush="true"/>
+    <sensors name="NumberOfSimulationsLeftInTheExperimentSensor" isPush="true"/>
+    <sensors name="ThroughputOfSimulationsExecutedByWorkerSensor" isPush="true"/>
+  </metricModels>
+  <organisationModels name="AGHOrganisation" securityLevel="HIGH">
+    <organisation name="AGH" www="http://www.agh.edu.pl/en/" postalAddress="al. Mickiewicza 30, 30-059 Krakow, Poland" email="morzech@agh.edu.pl"/>
+    <users name="morzech" email="morzech@agh.edu.pl" firstName="Michal" lastName="Orzechowski">
+      <paasageCredentials password="morzech_at_agh_dot_edu_dot_pl"/>
+    </users>
+  </organisationModels>
+  <organisationModels name="GWDGOrganisation" securityLevel="HIGH">
+    <provider name="GWDG" www="www.gwdg.de" postalAddress="GWDG, Am Fa&#xdf;berg 11, 37077 G&#xf6;ttingen, Germany" email="gwdg@gwdg.de" public="true" PaaS="true" IaaS="true" providerModel="//@providerModels.0"/>
+    <dataCentres name="GWDGDataCentre" codeName="gwdg" location="//@locationModels.1/@countries.0" cloudProvider="//@organisationModels.1/@provider"/>
+  </organisationModels>
+  <providerModels name="GWDGProvider">
+    <constraints xsi:type="provider:Implies" name="M1_MICRO_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_MICRO"/>
+        <toValue xsi:type="type:IntegerValue" value="256"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_MICRO"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_MICRO"/>
+        <toValue xsi:type="type:IntegerValue"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1_TINY_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_TINY"/>
+        <toValue xsi:type="type:IntegerValue" value="512"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_TINY"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_TINY"/>
+        <toValue xsi:type="type:IntegerValue"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1_SMALL_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="20"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1_MEDIUM_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="2"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="40"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1_LARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="80"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1_XLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16384"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M1_XXLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M1_XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="32768"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M1_XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M1_XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2_SMALL_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="1"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="20"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2_MEDIUM_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="2"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="40"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2_LARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16384"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="80"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="M2_XLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="M2_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="32768"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="M2_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="M2_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1_SMALL_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="2"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1_SMALL"/>
+        <toValue xsi:type="type:IntegerValue" value="20"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1_MEDIUM_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="4"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1_MEDIUM"/>
+        <toValue xsi:type="type:IntegerValue" value="40"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1_LARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="8"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1_LARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="80"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1_XLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16384"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1_XLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints xsi:type="provider:Implies" name="C1_XXLARGE_VM_Constraint_Mapping" from="//@providerModels.0/@rootFeature" to="//@providerModels.0/@rootFeature">
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.1">
+        <fromValue xsi:type="type:StringsValue" value="C1_XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="32768"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.3">
+        <fromValue xsi:type="type:StringsValue" value="C1_XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="16"/>
+      </attributeConstraints>
+      <attributeConstraints from="//@providerModels.0/@rootFeature/@attributes.0" to="//@providerModels.0/@rootFeature/@attributes.2">
+        <fromValue xsi:type="type:StringsValue" value="C1_XXLARGE"/>
+        <toValue xsi:type="type:IntegerValue" value="160"/>
+      </attributeConstraints>
+    </constraints>
+    <rootFeature name="VM">
+      <attributes name="vmType" valueType="//@typeModels.1/@dataTypes.1"/>
+      <attributes name="vmMemory" valueType="//@typeModels.1/@dataTypes.2"/>
+      <attributes name="vmStorage" valueType="//@typeModels.1/@dataTypes.3"/>
+      <attributes name="vmCores" valueType="//@typeModels.1/@dataTypes.4"/>
+      <attributes name="vmOS" valueType="//@typeModels.1/@dataTypes.0"/>
+      <featureCardinality cardinalityMin="1" cardinalityMax="8" value="1"/>
+    </rootFeature>
+  </providerModels>
+  <requirementModels name="ScalarmRequirement">
+    <requirements xsi:type="requirement:LocationRequirement" name="UKReq" locations="//@locationModels.0/@countries.1"/>
+    <requirements xsi:type="requirement:LocationRequirement" name="GermanyReq" locations="//@locationModels.0/@countries.0"/>
+    <requirements xsi:type="requirement:HorizontalScaleRequirement" name="HorizontalScaleSimulationManager" minInstances="1" maxInstances="5" component="//@deploymentModels.0/@internalComponents.2"/>
+    <requirements xsi:type="requirement:OSRequirement" name="UbuntuReq" os="Ubuntu"/>
+    <requirements xsi:type="requirement:QuantitativeHardwareRequirement" name="CoreIntensive" minCores="8" maxCores="32" minRAM="4096" maxRAM="8192"/>
+    <requirements xsi:type="requirement:QuantitativeHardwareRequirement" name="CPUIntensive" minCPU="1.0" minCores="1" minRAM="4096" maxRAM="8192"/>
+    <requirements xsi:type="requirement:QuantitativeHardwareRequirement" name="StorageIntensive" minStorage="1000"/>
+    <requirements xsi:type="requirement:ServiceLevelObjective" name="CPUMetricSLO" customServiceLevel="//@metricModels.0/@conditions.1"/>
+    <requirements xsi:type="requirement:OptimisationRequirement" name="MinimiseResponseTimeInformationService" priority="3.0" metric="//@metricModels.0/@metrics.2" component="//@deploymentModels.0/@internalComponents.1"/>
+    <requirements xsi:type="requirement:OptimisationRequirement" name="MaximiseAvailabilityStorageManager" priority="5.0" optimisationFunction="MAXIMISE" metric="//@metricModels.0/@metrics.0" component="//@deploymentModels.0/@internalComponents.3"/>
+    <requirements xsi:type="requirement:OptimisationRequirement" name="MinimisePerformanceDegradationOfExperimentManagers" priority="1.0" metric="//@metricModels.0/@metrics.5" component="//@deploymentModels.0/@internalComponents.0"/>
+    <requirements xsi:type="requirement:OptimisationRequirement" name="MinimiseDataFarmingExperimentMakespan" priority="1.0" metric="//@metricModels.0/@metrics.7" component="//@deploymentModels.0/@internalComponents.0"/>
+    <requirements xsi:type="requirement:RequirementGroup" name="ScalarmRequirementGroup" requirements="//@requirementModels.0/@requirements.9 //@requirementModels.0/@requirements.11 //@requirementModels.0/@requirements.10 //@requirementModels.0/@requirements.8 //@requirementModels.0/@requirements.7"/>
+  </requirementModels>
+  <scalabilityModels name="ScalarmScalability">
+    <rules name="RawCPUScalabilityRule" event="//@scalabilityModels.0/@events.2" actions="//@scalabilityModels.0/@actions.0" scaleRequirements="//@requirementModels.0/@requirements.2"/>
+    <events xsi:type="scalability:NonFunctionalEvent" name="CPUAvgMetricNFEAll" metricCondition="//@metricModels.0/@conditions.4" isViolation="true"/>
+    <events xsi:type="scalability:NonFunctionalEvent" name="CPUAvgMetricNFEAny" metricCondition="//@metricModels.0/@conditions.5" isViolation="true"/>
+    <events xsi:type="scalability:BinaryEventPattern" name="CPUAvgMetricBEPAnd" leftEvent="//@scalabilityModels.0/@events.0" rightEvent="//@scalabilityModels.0/@events.1"/>
+    <actions xsi:type="scalability:HorizontalScalingAction" name="HorizontalScalingSimulationManager" type="SCALE_OUT" vm="//@deploymentModels.0/@vms.1" internalComponent="//@deploymentModels.0/@internalComponents.2"/>
+  </scalabilityModels>
+  <typeModels name="ScalarmType">
+    <dataTypes xsi:type="type:Range" name="Range_0_100">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue"/>
+      </lowerLimit>
+      <upperLimit>
+        <value xsi:type="type:IntegerValue" value="100"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="Range_0_10000">
+      <lowerLimit>
+        <value xsi:type="type:IntegerValue"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="1000"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="DoubleRange_0_100" primitiveType="DoubleType">
+      <lowerLimit included="true">
+        <value xsi:type="type:DoublePrecisionValue"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:DoublePrecisionValue" value="100.0"/>
+      </upperLimit>
+    </dataTypes>
+  </typeModels>
+  <typeModels name="GWDGType">
+    <dataTypes xsi:type="type:Enumeration" name="OS_ENUMERATION">
+      <values name="Fedora 20 server x86_64"/>
+      <values name="Ubuntu 14.04 LTS Server x86_64" value="1"/>
+      <values name="Debian 7.8 Server x86_64" value="2"/>
+      <values name="Scientific Linux 6.6 Server x86_64" value="3"/>
+      <values name="openSUSE 13.1 Server x86_64" value="4"/>
+      <values name="CentOS 6.6 Server x86_64" value="5"/>
+      <values name="Ubuntu 12.04.5 LTS Server x86_64" value="6"/>
+      <values name="Fedora 20 Desktop Gnome x86_64" value="7"/>
+      <values name="openSUSE 13.1 Desktop Gnome x86_64" value="8"/>
+      <values name="Fedora 20 Desktop KDE x86_64" value="9"/>
+      <values name="openSUSE 13.1 Desktop KDE x86_64" value="10"/>
+      <values name="CentOS 7.1 Server x86_64" value="11"/>
+      <values name="Scientific Linux 7.1 Server x86_64" value="12"/>
+    </dataTypes>
+    <dataTypes xsi:type="type:Enumeration" name="VM_TYPE_ENUMERATION">
+      <values name="M1_MICRO"/>
+      <values name="M1_TINY" value="1"/>
+      <values name="M1_SMALL" value="2"/>
+      <values name="M1_MEDIUM" value="3"/>
+      <values name="M1_LARGE" value="4"/>
+      <values name="M1_XLARGE" value="5"/>
+      <values name="M1_XXLARGE" value="6"/>
+      <values name="M2_SMALL" value="7"/>
+      <values name="M2_MEDIUM" value="8"/>
+      <values name="M2_LARGE" value="9"/>
+      <values name="M2_XLARGE" value="10"/>
+      <values name="C1_SMALL" value="11"/>
+      <values name="C1_MEDIUM" value="12"/>
+      <values name="C1_LARGE" value="13"/>
+      <values name="C1_XLARGE" value="14"/>
+      <values name="C1_XXLARGE" value="15"/>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="MemoryRange">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue" value="256"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="32768"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="StorageRange">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="160"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes xsi:type="type:Range" name="CoresRange">
+      <lowerLimit included="true">
+        <value xsi:type="type:IntegerValue" value="1"/>
+      </lowerLimit>
+      <upperLimit included="true">
+        <value xsi:type="type:IntegerValue" value="16"/>
+      </upperLimit>
+    </dataTypes>
+  </typeModels>
+  <unitModels name="ScalarmUnit">
+    <units xsi:type="unit:MonetaryUnit" name="Euro" unit="EUROS"/>
+    <units xsi:type="unit:Dimensionless" name="CPUUnit" unit="PERCENTAGE"/>
+    <units xsi:type="unit:TimeIntervalUnit" name="ResponseTimeUnit" unit="MILLISECONDS"/>
+    <units xsi:type="unit:Dimensionless" name="AvailabilityUnit" unit="PERCENTAGE"/>
+    <units xsi:type="unit:ThroughputUnit" name="SimulationsPerSecondUnit" unit="TRANSACTIONS_PER_SECOND"/>
+    <units xsi:type="unit:TimeIntervalUnit" name="ExperimentMakespanInSecondsUnit" unit="SECONDS"/>
+    <units xsi:type="unit:TransactionUnit" name="NumberOfSimulationsLeftInExperimentUnit" unit="TRANSACTIONS"/>
+    <units xsi:type="unit:TimeIntervalUnit" name="minutes" unit="MINUTES"/>
+    <units xsi:type="unit:TimeIntervalUnit" name="seconds" unit="SECONDS"/>
+  </unitModels>
+</camel:CamelModel>
