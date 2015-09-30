@@ -1,0 +1,42 @@
+// Test model:
+// This is the same test as used in the NLopt example where the objective is to 
+// 
+// minimise sqrt( x2 )
+// 
+// Subject to the non-linear constraints
+//
+// x2 >= (2 x1)^3  AND x2 >= (1-x)^3
+// 
+// A slight modification of the problem is used here where the objecitive 
+// function is modified as
+//
+// minimise sqrt( x2 ) 
+//
+// Subject to the contstraints
+//
+// x2 >= (2 x1)^3 - (k-1)^2 AND x2 >= (sqrt(k) - x1)^3
+//
+// where k is an integer parameter in the range {1,...,5}. For k = 1 we will 
+// have the original problem, but the solution will be pushed towards the 
+// right, and higher values for both x1 and x2 as k grows. The solutions are
+// 
+// k=1 : Objective value = 0.544331, x1 = 0.333333, x2 = 0.296296
+// k=2 : Objective value = 0.75929,  x1 = 0.581929, x2 = 0.576522
+// k=3 : Objective value = 0.844862, x1 = 0.838353, x2 = 0.713793
+// k=4 : Objective value = 0.896665, x1 = 1.07013,  x2 = 0.804009
+// k=5 : Objective value = 0.931466, x1 = 1.2823,   x2 = 0.867629
+
+//#include "Interface.hpp"
+
+//using namespace Solver;
+
+Variable< Range<double> > x1("x1", false, 0.0, {0.0, 2.0} ), 
+			  x2("x2", false, 0.0, {0.0, 2.0} );
+
+// The variable k is assigned the value of the standard problem as default
+			  
+Variable< Range<unsigned int> > k("k", true, 1u, {1u,5u});
+
+Solver::ObjectiveFunction Solver::UtilityFunction( [&](void){ return
+  sqrt( x2.Value() );
+});

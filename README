@@ -1,0 +1,32 @@
+DEPENDENCIES
+============
+
+Packages that are part of standard Linux distributions and can be installed 
+with the package manager of the distribution
+
+0. gcc-c++ (version 4.8 or higher)
+1. Boost 
+[2. Armadrillo ]
+[3. ZeroMQ (Version 3 or higher)]
+4. NLopt 
+
+Must be compiled at VM set-up
+
+4. ZeroMQ C++ API to be cloned from https://github.com/zeromq/zmqpp
+5. Theron (makefiles on how to build library - statically)
+6. LA-Framework (a make must be made on the files in this directory)
+
+LAUNCH
+======
+
+8. The meta-solver generates two files
+      Variables.model
+      Constraints.model
+
+9. 'make LASolver' is done in LA-Reasoner directory
+
+11. Start the self-standing program with two IP addresses
+     [ LASolver <IP this machine> <IP metrics collector> ]
+     LASolver
+      
+

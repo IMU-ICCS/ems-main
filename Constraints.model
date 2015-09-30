@@ -1,0 +1,21 @@
+// Test model
+// 
+// These are the konstraints of the simple test model (see Variables.model) 
+// used to test the actor interaction. On normal form the first constraint is
+//
+// 0 >= (2 x1)^3 - (k-1)^2 -x2
+// 
+
+// #include <cmath>
+
+make_inequality_constraint( [&](void){ return
+    pow(2 * x1.Value(), 3.0) - pow( k.Value() - 1, 2) - x2.Value();
+});
+
+// and the second constraint is on normal form
+//
+// 0 >= (sqrt(k) - x1)^3 - x2
+
+make_inequality_constraint( [&](void){ return
+    pow( sqrt( k.Value() ) - x1.Value(), 3.0 ) - x2.Value();
+});
