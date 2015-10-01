@@ -2,7 +2,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ow2.paasage.metasolver</groupId>
   <artifactId>meta_solver</artifactId>
-  <version>2015.06-SNAPSHOT</version>
+  <version>2015.9.1-SNAPSHOT</version>
+  <parent>
+        <groupId>org.ow2.paasage</groupId>
+        <artifactId>paasage-pom</artifactId>
+        <version>2015.9.1-SNAPSHOT</version>
+    </parent>
   <distributionManagement>
   <repository>
     <id>deployment</id>
