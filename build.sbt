@@ -1,18 +1,10 @@
 name := "milp-solver"
 
-organization := "org.ow2.paasage"
+organization := "wp3"
 
-val suffix = SettingKey[String]("version-suffix", "Version suffix, i.e. branch name")
+version := "2015.04-SNAPSHOT"
 
-val paasageVersion = SettingKey[String]("paasage-version", "PaaSage version")
-
-paasageVersion := sys.props.getOrElse("paasage.version", default = "2015.9.1-SNAPSHOT")
-
-suffix := sys.props.getOrElse("suffix", default = "SNAPSHOT")
-
-version := "2015.9.1" + "-" + suffix.value
-
-mainClass := Some("eu.paasage.upperware.milp_solver.exec.MainCDO")
+mainClass := Some("eu.paasage.upperware.milp_solver.MainCDO")
 
 scalaVersion := "2.11.1"
 
@@ -37,14 +29,3 @@ libraryDependencies ++= Seq(
   "ch.qos.logback"              % "logback-classic"      % "1.1.2"
 )
 
-publishTo := {
-  if (isSnapshot.value)
-    Some("Sonatype Nexus Repository Manager" at "http://repository.ow2.org/nexus/content/repositories/snapshots/")
-  else
-    Some("Sonatype Nexus Repository Manager" at "http://repository.ow2.org/nexus/content/repositories/releases/")
-}
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-
-
-crossPaths := false

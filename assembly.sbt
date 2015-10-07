@@ -10,15 +10,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case ".api_description"      => MergeStrategy.discard
     case ".options"              => MergeStrategy.discard
     case ".DS_Store"             => MergeStrategy.discard
-    case "schema/dynamic_package.exsd"  => MergeStrategy.discard
-    case "schema/generated_package.exsd"  => MergeStrategy.discard
     case x                       => old(x)
   }
 }
-
-artifact in (Compile, assembly) := {
-  val art = (artifact in (Compile, assembly)).value
-  art.copy(`classifier` = Some("assembly"))
-}
-
-addArtifact(artifact in (Compile, assembly), assembly)
