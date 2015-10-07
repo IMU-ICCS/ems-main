@@ -14,6 +14,11 @@ object VarNameEncoders {
   /** Identity encoding – useful for debuging as generated models have human readable names */
   def identity(in: String) = in
   def no_special_chars(in: String): String = "[^a-zA-Z0-9\\s]".r.replaceAllIn(in, "_")
+
+  val map = scala.collection.mutable.Map[String, String]()
+  def genNumber(in: String):String = {
+    map.getOrElseUpdate(in, "v" + map.size.toString + "l")
+  }
 }
 
 /** CP to CMPL converter trait */
@@ -78,8 +83,12 @@ trait CmplCPGenerator {
 
   /** Generate objectives part of the model */
   private def objectives = {
-    val textGoals = cp.getGoals.map(g => s"${expression(g.getExpression)} -> ${g.getGoalType};")
-    textGoals.mkString("\n")
+    if(!cp.getGoals.isEmpty) {
+      val textGoals = cp.getGoals.map(g => s"${expression(g.getExpression)} -> ${g.getGoalType};")
+      textGoals.mkString("\n")
+    } else {
+      "1 -> min;"
+    }
   }
 
   /** Generate constraints part of the model */

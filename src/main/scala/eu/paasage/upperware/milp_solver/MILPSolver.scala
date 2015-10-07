@@ -13,7 +13,7 @@ class OptimizationFailed() extends Exception
 class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNames: Boolean = true) extends CmplCPGenerator with LazyLogging {
   val reformulate: Boolean = true
 
-  val encodeVarName:(String) => String = if(encodeVarNames) VarNameEncoders.no_special_chars else VarNameEncoders.identity
+  val encodeVarName:(String) => String = if(encodeVarNames) VarNameEncoders.genNumber else VarNameEncoders.identity
   val variablesMap: Map[String, Variable] = cp.getVariables.map(v => (encodeVarName(v.getId), v)).toMap
   
   object convertVal {

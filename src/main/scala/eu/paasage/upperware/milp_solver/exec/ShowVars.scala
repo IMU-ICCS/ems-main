@@ -18,7 +18,11 @@ object ShowVars extends App with LazyLogging {
   CDOClient.open_default(cdo => {
     logger.info(s"Retrieving CP $resourceName")
     cdo.retrieveModel[ConstraintProblem, Unit](resourceName, cp => {
-      cp.getSolution.sortBy(_.getTimestamp).foreach(solution => logger.info(Helpers.solutionToString(solution)))
+      if(cp.getSolution.isEmpty) {
+        logger.info(s"No solutions to display")
+      } else {
+        cp.getSolution.sortBy(_.getTimestamp).foreach(solution => logger.info(Helpers.solutionToString(solution)))
+      }
     })
   })
 }
