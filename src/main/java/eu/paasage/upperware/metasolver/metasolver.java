@@ -30,7 +30,8 @@ public static void main(String args[]) throws IOException, InterruptedException{
 	
 	try{
 	
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-2015.04-SNAPSHOT-assembly.jar " + args[1]);
+	//		Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-2015.04-SNAPSHOT-assembly.jar " + args[1]);
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + args[1]);
 			 
 		     // you can pass the system command or a script to exec command. here i used uname -a system command
 		             BufferedReader stdInput = new BufferedReader(new
