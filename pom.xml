@@ -43,6 +43,11 @@
 			<artifactId>camel</artifactId>
 			<version>${paasage.version}</version>
 		</dependency>
+		<dependency>
+    		<groupId>org.zeromq</groupId>
+    		<artifactId>jeromq</artifactId>
+    		<version>0.3.2</version>
+  		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
