@@ -51,16 +51,20 @@ public class FileSystemSender implements ISender
 	@Override
 	public void sendPaasageConfigurationFiles(String id) {
 		
+		
+		if(PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME)!=null && !PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME).equals(""))
+		{
+			String content=CDODatabaseProxy.CDO_SERVER_PATH+id;
 				
-		String content=CDODatabaseProxy.CDO_SERVER_PATH+id;
-		
-		
-		try {
-			FileTool.saveFile(PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME), content);
-		} catch (IOException e) {
-			e.printStackTrace();
-			logger.error("FileSystemSender - sendPaasageConfigurationFiles - Problems creating the file "+PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME));
+			try {
+				FileTool.saveFile(PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME), content);
+			} catch (IOException e) {
+				e.printStackTrace();
+				logger.error("FileSystemSender - sendPaasageConfigurationFiles - Problems creating the file "+PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME));
+			}
 		}
+		else
+			logger.warn("ileSystemSender - sendPaasageConfigurationFiles - The file for saving the model id was not specified");
 	}
 
 }
