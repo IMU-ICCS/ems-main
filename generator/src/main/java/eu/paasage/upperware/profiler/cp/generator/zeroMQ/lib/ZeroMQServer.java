@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.zeromq.ZMQ;
 
+import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.ModelFileInfo;
 
@@ -81,8 +82,8 @@ public class ZeroMQServer
 			System.out.println("CP Model Generated");
             
 			publisher.sendMore("CP_ID"); 
-            publisher.send(paasageConfigID);
-            System.out.println("CP Model Id sent "+paasageConfigID);
+            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+            System.out.println("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
         }
         subscriber.close();
         publisher.close();
