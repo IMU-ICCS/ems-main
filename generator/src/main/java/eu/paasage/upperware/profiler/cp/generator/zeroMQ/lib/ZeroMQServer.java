@@ -80,6 +80,7 @@ public class ZeroMQServer
 			String paasageConfigID= go.generateCPModel(modelInfos); 
 			System.out.println("CP Model Generated");
             
+			publisher.sendMore("CP_ID"); 
             publisher.send(paasageConfigID);
             System.out.println("CP Model Id sent "+paasageConfigID);
         }

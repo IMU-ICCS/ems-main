@@ -7,10 +7,11 @@ CP Generator is responsible for generating a Upperware or CP model, which repres
 
 * [Java](https://www.java.com/en/) 7 or higher
 * Maven dependencies (see [pom.xml](pom.xml))
+* [ZeroMQ Java Binding](http://zeromq.org/bindings:java)
 
 ## Building
 
-To build standalone JAR `target/cp-generator-service-jar-with-dependencies.jar` without executing tests:
+To build standalone JAR `target/cp-generator-service-jar-with-dependencies.jar` and `target/cp-generator-zmq-service-jar-with-dependencies.jar` without executing tests:
 
 ```shell
 $ mvn clean install -Dmaven.test.skip=true
@@ -31,7 +32,7 @@ CDO server host and port should be set in `$PAASAGE_CONFIG_DIR/eu.paasage.cdo.cl
 
 ## Usage
 
-Component provides CLI interface:
+The component provides a CLI interface:
 
 ```shell
 $ java -jar cp-generator-service-jar-with-dependencies.jar resourceName outputFile
@@ -40,6 +41,22 @@ $ java -jar cp-generator-service-jar-with-dependencies.jar resourceName outputFi
 **Input:** CP Generator reads CAMEL models directly from CDO resource. `resourceName` in CDO is a CAMEL model. `outputFile` is a file name where the output of the component will be stored.  
 
 **Output**: `outputFile` is updated with the identifier of the generated Upperware model. CAMEL model is not modified. 
+
+## Usage with ZeroMQ
+
+The component also provides a CLI interface for executions with ZeroMQ: 
+
+```shell
+java -Djava.library.path=pathToZmqLibraries -jar target/cp-generator-zmq-service-jar-with-dependencies.jar subscriberPort publisherPort
+```
+
+**Input:** CP Generator reads CAMEL models directly from CDO resource. To do that via ZeroMQ, the component subscribes to the "ID" topic via  by using `subscriberPort` and retrieves the resource name. If subscriber port is not specified, the component uses 5555 as default port.
+
+**Output:** CP Generator publishes the identifier of the generated Upperware model via ZeroMQ by using `publisherPort` and the "CP_ID" as topic. If publisher port is not specified, the component uses 5556 as default port.CAMEL model is not modified.
+
+ The `java.library.path` has to define the directory where the libzmq and libjzmq shared libraries were installed (normally /usr/local/lib on UNIX-like systems) 
+
+`subscriberPort`and `publisherPort` are optional. However, if you want to specify `publisherPort` you have also to define `subscriberPort`.    
 
 ### Example
  
