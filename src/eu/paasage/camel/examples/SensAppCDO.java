@@ -103,7 +103,6 @@ import eu.paasage.camel.metric.MetricFunctionType;
 import eu.paasage.camel.metric.MetricInstance;
 import eu.paasage.camel.metric.MetricModel;
 import eu.paasage.camel.metric.MetricObjectBinding;
-import eu.paasage.camel.metric.MetricType;
 import eu.paasage.camel.metric.MetricVMBinding;
 import eu.paasage.camel.metric.RawMetric;
 import eu.paasage.camel.metric.RawMetricContext;
