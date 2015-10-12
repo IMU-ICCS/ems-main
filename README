@@ -2,12 +2,18 @@ This is a maven project incorporating java code which can be used to create a CD
 
 FUNCTIONALITY: This CDO client exposes the following functionality: 
 (i) register the EPackage(s) that maps to the domain code to be manipulated
-(ii) store a model into a CDOResource with a particular name
-(iii) run a particular query according to a specific dialect (OCL, SQL, HQL) over the contents of the CDO Server / Store 
-(iv) open a view/transaction, get its contents in terms of one or more CDOResources (and probably process them - depends on the user's purposes) and finally close the view/transaction. Please remember that modifications should be performed under a transaction and not a view.
-(v) load a model from a file with a specific path
-(vi) export a CDOResource or a part of it or the results of a query to a file with a specific path
-(vii) close the CDOSession which has been opened initially through the creation of the CDOClient object
+(ii) store a textual or xmi model into a CDOResource with a particular name
+(iii) export a model from a CDOResource in both textual or xmi form. If the model
+references other models, then there are options to first export these models and then either
+finish or do export of the models these models reference in a recursive way. 
+(iv) export the whole content of the CDO repository into a zip file for back-up purposes
+(v) import a zip file with a previous repository content into CDO Repository
+(vi) transform a xmi model to a textual one
+(vii) run a particular query according to a specific dialect (OCL, SQL, HQL) over the contents of the CDO Server / Store 
+(viii) open a view/transaction, get its contents in terms of one or more CDOResources (and probably process them - depends on the user's purposes) and finally close the view/transaction. Please remember that modifications should be performed under a transaction and not a view.
+(ix) load a model from a file with a specific path in the file system or from a specific URL
+(x) validate a model according to Ecore semantics and the OCL constraints posed 
+(xi) close the CDOSession which has been opened initially through the creation of the CDOClient object
 Note: first functionality (EPackage registering) should be initially invoked in order to exploit the rest. The CDO session
 created by instantiating the CDOClient should be closed in the end by calling the respective java method.
 Please see the main method of the CDOClient which indicates possible ways the CDOClient can be exploited. 
@@ -40,9 +46,6 @@ USAGE:
 This component can be exploited/used through the following ways: 
 (1) via command line by running either: 
  (a) "mvn exec:java" or
- (b) going to the "target" directory and running "java -jar client-1.1-jar-with-dependencies.jar"  
+ (b) going to the "target" directory and running "java -jar client-2.0.0-SNAPSHOT-jar-with-dependencies.jar"  
 (2) importing the contents of the respective directory in the Application Development Environment of your choice and then running "mvn exec:java" to run the code's main method. This exploitation route should probably concern just testing that the CDOClient code runs smoothly. Towards this goal, the Sens_App_Scenario.xmi file has been created in the "examples" directory which can be used to load a particular CAMEL model and then store it in the CDOServer. This file is used by the main method of the code to show that the loading of XMI files is possible and then the CDOClient can be used to store the loaded models. If you desire to load another file, then you will have to either place it in the "examples" directory or another directory of your choice but of course also change the main method to point to the appropriate file path. The main method also produces as output one XMI file which maps to a model/object produced via a particular query; 
 (3) produce the jar of the code via "maven clean install" and incorporate it in the libraries of your code (obviously change pom.xml file to include the dependency if your code relies on maven). In this second way, probably you need to follow a particular process through which you can exploit the code as there is no sense any more in exploiting the main method. Actually, the main method can be used as a guide based on which you will be able to exploit the CDOClient. A more involved guide and detailed documentation is provided at the Documentation.doc file.(you can also run the code's main method at the command line by issuing .
-
-LIMITATIONS:
-- missing functionality for model validation
