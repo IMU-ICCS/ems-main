@@ -1,3 +1,10 @@
+/* Copyright (C) 2015 KYRIAKOS KRITIKOS <kritikos@ics.forth.gr> */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public 
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
+ */
+
 package eu.paasage.mddb.cdo.client;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -637,14 +644,12 @@ public class CDOClient
 		DataCenter dc1 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc1.setName("DC1");
 		dc1.setCodeName("DC1");
-		dc1.setCloudProvider(org1);
 		dc1.setLocation(l1);
 		dcs.add(dc1);
 		
 		DataCenter dc2 = OrganisationFactory.eINSTANCE.createDataCenter();
 		dc2.setName("DC2");
 		dc2.setCodeName("DC2");
-		dc2.setCloudProvider(org1);
 		dc2.setLocation(l2);
 		dcs.add(dc2);
 		
