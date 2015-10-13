@@ -372,10 +372,9 @@ public class RuleProcessor {
 				pc.setId(newPaaSageConfigId); // set a new resource ID for this
 												// clone version
 
-				Iterator<VirtualMachineProfile> it = pc.getVmProfiles()
-						.iterator();
+				Iterator<VirtualMachineProfile> it = pc.getVmProfiles().iterator();
 				while (it.hasNext()) {
-					// VirtualMachineProfile vmProfile = it.next();
+					VirtualMachineProfile vmProfile = it.next();
 					/*
 					 * TODO: check with the new changes ProviderCost pCost =
 					 * vmProfile.getProvider(); String pID =
@@ -677,8 +676,7 @@ public class RuleProcessor {
 						System.out.println("-- run this app on PUBLIC cloud\n");
 					} else {
 						providerType = "public";
-						System.out
-								.println("-- run this app on PRIVATE cloud\n");
+						System.out.println("-- run this app on PRIVATE cloud\n");
 					}
 					// System.out.println("-- Provider Name= " +
 					// provider.getName() + " --- type =" + providerType);
