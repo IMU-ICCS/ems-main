@@ -11,6 +11,9 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.zeromq.ZMQ;
+import org.zeromq.ZMQ.Context;
+import org.zeromq.ZMQ.Socket;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
@@ -60,26 +63,98 @@ public class SolverToDeployment {
 
 	}
 
+	private static String zmqServerddress = "tcp://127.0.0.1:5546";
+	private static void ZMQServerStart()
+	{
+	     
+	
+		log.info("lets go for a subscription .....");
+	
+		log.info("setting context ....");
+	
+	              
+	
+	        Context cntx = ZMQ.context(1);
+	
+	        log.info("context set .....");
+	
+	       
+	
+	        Socket subscriber = cntx.socket (ZMQ.SUB);
+	
+	        log.info("socket set .....");
+	        
+	        subscriber.connect (zmqServerddress);
+	
+	        log.info("connection set .....");
+	
+	        subscriber.subscribe("B3".getBytes());//listening to meessages on ...
+	
+	        log.info("subscription done .....");
+	
+	        while (!Thread.currentThread ().isInterrupted ()) {
+	
+	        		log.info("listening on " + zmqServerddress);
+	
+			      // Read envelope with address
+			
+			      String address = subscriber.recvStr();
+			
+			      // Read message contents
+			
+			      String contents = subscriber.recvStr();
+			      System.out.println(address + " : " + contents);
 
+			      String paasageConfigurationID = contents.split(" ")[0];
+			      String camelModelID = contents.split(" ")[1];
+					
+			
+			      try {
+						main(paasageConfigurationID, camelModelID);
+					} catch (S2DException e) {
+
+						e.printStackTrace();
+						log.info("Solver to deployment done with errors");
+					}
+	     }
+	}
+
+
+	private static void printUsage()
+	{
+		System.out.println("Bad usage : args1=paasageconfiguration, arg2=camelModel args3=deamon(optionnal)");
+		System.out.println("Or : args1=deamon, running in ZMQ mode");
+
+	}
+	//FIXME : doing something  with named args
 
 	public static void main(String[] args) {
-
-		if (args.length != 2) {
-			System.out.println("Bad usage : args1=paasageconfiguration, arg2=camelModel");
-		} 
-
-		String paasageConfigurationID = args[0];
-		String camelModelID = args[1];
-		try {
-			main(paasageConfigurationID, camelModelID);
-		} catch (S2DException e) {
-
-			e.printStackTrace();
-			log.info("Solver to deployment done");
-			System.exit(1);
+		if(args.length == 1)
+		{
+			ZMQServerStart();
 		}
-		log.info("Solver to deployment done");
-		System.exit(0);
+		else if (args.length == 2) {
+			String paasageConfigurationID = args[0];
+			String camelModelID = args[1];
+			
+			paasageConfigurationID = args[0];
+			camelModelID = args[1];
+			try {
+				main(paasageConfigurationID, camelModelID);
+			} catch (S2DException e) {
+				log.error("Solver to deployment done with errors :");
+				e.printStackTrace();
+				System.exit(1);
+			}
+			log.info("Solver to deployment done");
+			System.exit(0);
+
+			
+		} 
+		else{
+			printUsage();
+		}
+		
 
 	}
 }

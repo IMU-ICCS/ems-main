@@ -19,6 +19,13 @@
 	
 	
 	<dependencies>
+	
+	 <dependency>
+                 <groupId>org.zeromq</groupId>
+                 <artifactId>jeromq</artifactId>
+                 <version>0.3.2</version>
+         </dependency>
+	
 		<dependency>
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>upperware-metamodel</artifactId>
