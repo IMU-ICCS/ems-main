@@ -657,6 +657,11 @@ public class RuleProcessor {
 
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
 		CamelModel camelModel = proxy.getCamelModel(cModel);
+		if (camelModel == null) {
+			System.out.println("Error: The given CAMEL model (" + 
+					cModel + ") was found in the CDO database!");
+			return null;
+		}
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
 		EObject obj = null;
 		Hashtable<String, String> omProviders = new Hashtable<String, String>();
@@ -705,6 +710,9 @@ public class RuleProcessor {
 		RuleProcessor rp = new RuleProcessor();
 
 		providerType = getProviderFromOrganisationModel(args[0]);
+		if (providerType == null) {
+			System.exit(1);
+		}
 
 		if (providerType == "") {
 			System.out
