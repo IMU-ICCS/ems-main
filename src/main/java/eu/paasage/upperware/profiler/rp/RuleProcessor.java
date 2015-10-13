@@ -693,6 +693,53 @@ public class RuleProcessor {
 			// than one provider in the OM
 		return providerType;
 	}
+	
+	public int processRequest(String camelModel, String cdoIdentifier) {
+		String providerType = getProviderFromOrganisationModel(camelModel);
+
+		if (providerType == "") {
+			System.out.println("there is not provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
+		} else {
+			this.openCDOSession(cdoIdentifier);
+			this.cloneModel(cdoIdentifier); // clone the model
+			// List<EObject> objList = rp.getCloneModel(); // get the clone
+			// model
+			this.removeProvider(cdoIdentifier, providerType); // NOTE: move to
+													// checkSLA.java file ??
+
+			// commit or save the clone model to the CDO server
+			this.commitCloneModelToCDO();
+
+			// NOTE: debugging - check the result
+			CDOClientExtended cdoClient = this.getCDOClient();
+			CDOView cdoView = cdoClient.openView();
+
+			System.out.println("\n-------------------------------------------------------------------");
+			String newResId = this.getCloneResId();
+			ModelData data = this.getModelDataFromCDO(newResId, cdoView);
+			data.printPaasageConfiguration();
+			System.out.println("\n-------------------------------------------------------------------");
+			data.printConstraintProblem();
+			cdoClient.closeView(cdoView);
+
+			// finally, need to commit & close the CDO connection
+			// rp.commitAndCloseCDOSession();
+			this.closeCDOSession();
+		}
+
+		int success = 0; // 0 means sucess and pass the RP validation checks on the CP models
+		if (this.getValidationResult() == true) {
+			log.debug("\nRP_result: PASS - code: " + success);
+			System.out.println("\nRP_result: PASS - code: " + success);
+			success = 1;
+		} else {
+			log.debug("\nRP_result: FAIL - code: " + success);
+			System.out.println("\nRP_result: FAIL - code: " + success);
+			success = 0;
+		}
+		
+		return success;
+	}
 
 	// //////////////////////////////////////////////////////
 	public static void main(String[] args) throws Exception {
