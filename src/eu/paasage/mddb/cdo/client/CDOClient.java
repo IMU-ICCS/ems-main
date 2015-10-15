@@ -614,10 +614,10 @@ public class CDOClient
 		ra1.setUser(user1);
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
 		try{
-			ra1.setAssignedOn(ft.parse("1976-12-16"));
-			ra1.setStart(ft.parse("1977-12-16"));
-			ra1.setEnd(ft.parse("1978-12-16"));
-			logger.info("End date: " + ra1.getEnd());
+			ra1.setAssignmentTime(ft.parse("1976-12-16"));
+			ra1.setStartTime(ft.parse("1977-12-16"));
+			ra1.setEndTime(ft.parse("1978-12-16"));
+			logger.info("End date: " + ra1.getEndTime());
 		}
 		catch(Exception e){
 			e.printStackTrace();
