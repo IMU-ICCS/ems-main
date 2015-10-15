@@ -28,6 +28,34 @@ public class metasolver{
 //Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
 public static void main(String args[]) throws IOException, InterruptedException{
 	
+	
+	
+	//first we subscribe
+	
+	//Rule Processor
+	if (args[0].contains("withZEROMQ")){
+		RPListener rpl = new RPListener("metricID");
+		rpl.run();
+		}
+				
+	//Solvers
+	if (args[0].contains("withZEROMQ")){
+	solutionListener sl = new solutionListener("metricID");
+	sl.run();
+	}
+	
+	//Adaptor
+	if (args[0].contains("withZEROMQ")){
+		adaptorListener sl = new adaptorListener("metricID");
+		sl.run();
+		}
+	
+	//MetricsCollector
+	if (args[0].contains("withZEROMQ")){
+		metricsListener sl = new metricsListener("metricID");
+		sl.run();
+		}
+	
 	try{
 	
 	//		Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-2015.04-SNAPSHOT-assembly.jar " + args[1]);
