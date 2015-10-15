@@ -582,4 +582,9 @@ public class CamelModelProcessor extends ModelProcessor {
 
 				
 	}
+	
+	public CamelModel getCamelModel()
+	{
+		return model; 
+	}
 }

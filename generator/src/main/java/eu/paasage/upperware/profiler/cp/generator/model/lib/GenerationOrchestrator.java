@@ -204,93 +204,86 @@ public class GenerationOrchestrator
 		logger.info("************************************CP Generator Model To Solver************************************"); 
 		List<ModelProcessor> processors= loadModels(modelInfos); 
 		
-		PaasageConfiguration pc= ApplicationFactory.eINSTANCE.createPaasageConfiguration(); 
+		CamelModelProcessor camelProcessor= getCamelModelProcessorFromList(processors); 
 		
-		String id= PaasageModelTool.generatePaasageAppConfigurationId(); 
-		
-		pc.setId(id); 
-
-		
-		File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pc); 
-		
-		try {
-			paasageConfigurationDir= new File(paasageConfigurationDir.getCanonicalPath());
-		} catch (IOException e) {
-		
-			e.printStackTrace();
-		} 
-		
-		ResourceSet resSet= new ResourceSetImpl(); 
-		
-		database.saveRelatedModels(resSet, paasageConfigurationDir);
-		
-		PaaSageConfigurationWrapper pcw= new PaaSageConfigurationWrapper(pc);//, paasageConfigurationDir, resSet); 
-		
-		database.loadRelatedModels(resSet, paasageConfigurationDir, pcw);
-		
-		
-	
-		ModelProcessor camelProcessor= null; 
-		
-						
-		for(ModelProcessor processor: processors)
-		{
-			
-			if(processor instanceof CamelModelProcessor)
-				camelProcessor= processor; 
-		}
+		String id=""; 
 		
 		if(camelProcessor!=null)
-		{	logger.info("** Calling CamelModel Processor");
-			camelProcessor.parseModel(pcw);
-		}	
-		
-		
-		if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && pcw.hasCorrectHostingRelationships)
 		{
-			logger.info("** Calling CPModelDerivator");
-			ConstraintProblem cp= derivator.derivateConstraintProblem(pc, database); 
-			//pc.getId();
+			PaasageConfiguration pc= ApplicationFactory.eINSTANCE.createPaasageConfiguration(); 
 			
-/*			for(VirtualMachineProfile vmp:pc.getVmProfiles())
+			String appId= camelProcessor.getCamelModel().getName(); //By default the id of the application is the name of the camel model
+			
+			if(camelProcessor.getCamelModel().getApplications()!=null && camelProcessor.getCamelModel().getApplications().size()>0)
 			{
-				logger.debug(" VMP Id "+vmp.getCloudMLId());
-				logger.debug(" VMP container "+vmp.eContainer());
-				logger.debug(" CPU "+vmp.getCpu().eContainer());
-				logger.debug(" Image "+vmp.getImage());
-				logger.debug(" Location "+vmp.getLocation().eContainer());
-				logger.debug(" Memory "+vmp.getMemory().eContainer());
-				logger.debug(" OS "+vmp.getOs());
-				logger.debug(" Provider "+vmp.getProviderDimension().get(0).getProvider().eContainer());
-				logger.debug(" Storage "+vmp.getStorage().eContainer());
-			}*/
-			logger.debug("** Calling DatabseProxy");
-			database.saveModels(pc, cp, resSet); 
-			logger.debug("** Calling Sender");
-			sender.sendPaasageConfigurationFiles(id); 
-			
-			PrintStream outputFile= System.err; 
-			System.setErr(defaultErrOutput);
-			outputFile.close();
+				appId= camelProcessor.getCamelModel().getApplications().get(0).getName(); //The id is the name of the application 
+			}
+		
+			id= PaasageModelTool.generatePaasageAppConfigurationId(appId); 
+		
+			pc.setId(id); 
 
+		
+			File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pc); 
+		
+			try {
+				paasageConfigurationDir= new File(paasageConfigurationDir.getCanonicalPath());
+			} catch (IOException e) {
 			
-			logger.info("** CP Model Id: "+id); 
-		}
-		else if(pcw.hasUserSolution && pcw.isValidUserSolution())
-		{
-			logger.info("** The user already provided a solution for the deployment. The CP Model will be not generated!"); 
-		}
-		else if(pcw.getPaasageConfiguration().getProviders().size()==0)
-		{
-			logger.info("** There is not a suitable provider. The CP Model will be not generated!"); 
-		}
-		else if(!pcw.hasCorrectHostingRelationships)
-		{
-			logger.info("** There are missing hosting relationships in the deployment model. The CP Model will be not generated!"); 
+				e.printStackTrace();
+			} 
+		
+			ResourceSet resSet= new ResourceSetImpl(); 
+			
+			database.saveRelatedModels(resSet, paasageConfigurationDir);
+			
+			PaaSageConfigurationWrapper pcw= new PaaSageConfigurationWrapper(pc);//, paasageConfigurationDir, resSet); 
+			
+			database.loadRelatedModels(resSet, paasageConfigurationDir, pcw);
+					
+									
+			logger.info("** Calling CamelModel Processor");
+			camelProcessor.parseModel(pcw);
+				
+		
+			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && pcw.hasCorrectHostingRelationships)
+			{
+				logger.info("** Calling CPModelDerivator");
+				ConstraintProblem cp= derivator.derivateConstraintProblem(pc, database); 
+				//pc.getId();
+				
+				logger.debug("** Calling DatabseProxy");
+				database.saveModels(pc, cp, resSet); 
+				logger.debug("** Calling Sender");
+				sender.sendPaasageConfigurationFiles(id); 
+				
+				PrintStream outputFile= System.err; 
+				System.setErr(defaultErrOutput);
+				outputFile.close();
+	
+				
+				logger.info("** CP Model Id: "+id); 
+			}
+			else if(pcw.hasUserSolution && pcw.isValidUserSolution())
+			{
+				logger.info("** The user already provided a solution for the deployment. The CP Model will be not generated!"); 
+			}
+			else if(pcw.getPaasageConfiguration().getProviders().size()==0)
+			{
+				logger.info("** There is not a suitable provider. The CP Model will be not generated!"); 
+			}
+			else if(!pcw.hasCorrectHostingRelationships)
+			{
+				logger.info("** There are missing hosting relationships in the deployment model. The CP Model will be not generated!"); 
+			}
+			else
+			{
+				logger.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 
+			}
 		}
 		else
 		{
-			logger.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 
+			logger.error("** There is not Processor for Camel Models. The input model can not be processed");
 		}
 		
 		logger.info("****************************************************************************************************"); 
@@ -674,5 +667,27 @@ public class GenerationOrchestrator
 	protected static boolean isZipFile(File file)
 	{
 		return file.getName().endsWith(".zip"); 
+	}
+	
+	/**
+	 * Searches in a list a processor with type CamelModelProcessor
+	 * @param processors The list of processors
+	 * @return The camel model processor or null if it does not exist in the list
+	 */
+	protected CamelModelProcessor getCamelModelProcessorFromList(List<ModelProcessor> processors)
+	{
+		CamelModelProcessor cmp= null; 
+		
+		for(int i=0; i<processors.size() && cmp==null; i++)
+		{
+			ModelProcessor processor= processors.get(i); 
+			if(processor instanceof CamelModelProcessor)
+				cmp= (CamelModelProcessor) processor; 
+				
+		}
+		
+		return cmp; 
+		
+		
 	}
 }

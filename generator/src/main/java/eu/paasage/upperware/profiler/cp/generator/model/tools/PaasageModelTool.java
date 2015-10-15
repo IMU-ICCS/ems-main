@@ -917,9 +917,9 @@ public class PaasageModelTool
 	 * Generates an ID for a paasage Application Configuration
 	 * @return  System.currentTimeMillis()
 	 */
-	public static String generatePaasageAppConfigurationId()
+	public static String generatePaasageAppConfigurationId(String appId)
 	{
-		return System.currentTimeMillis()+""; 
+		return appId+System.currentTimeMillis(); 
 	}
 
 	/**
