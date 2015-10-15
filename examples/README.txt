@@ -1,1 +1,0 @@
-In order to load the SensApp example you need to copy the "camel.ecore" file into this folder.

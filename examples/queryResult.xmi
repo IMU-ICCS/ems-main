@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ASCII"?>
-<organisation:User xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:organisation="http://www.paasage.eu/camel/cerif" firstName="User1" lastName="User">
-  <worksFor href="cdo://repo1/cerif#lhttp://www.paasage.eu/camel/cerif#CloudProvider#1"/>
-  <hasExternalIdentifier identifier="ID1" name="ID1"/>
-  <hasExternalIdentifier identifier="ID2" name="ID2"/>
-</organisation:User>
