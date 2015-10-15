@@ -1053,7 +1053,12 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		CDOView view= cdoClient.openView();
 		
-		EList<EObject> res= view.getResource(modelPath).getContents();
+		EList<EObject> res;
+		try {
+			res= view.getResource(modelPath).getContents();
+		} catch (Exception e) {
+			return null;
+		}
 		//TODO THE VIEW REMAINS OPEN
 		
 		CamelModel cm= (CamelModel) res.get(0);
