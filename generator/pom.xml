@@ -170,8 +170,8 @@
                             <goal>single</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>make-assembly-zmq</id> <!-- this is used for inheritance merges -->
+                    <!-- execution>
+                        <id>make-assembly-zmq</id> 
                          <configuration>
 			                <archive>
 			                    <manifest>
@@ -183,11 +183,11 @@
 			                </descriptorRefs>
 			                <finalName>cp-generator-zmq-service</finalName>
 			            </configuration>
-                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
-                    </execution>
+                    </execution-->
               </executions>
         </plugin>
 	  </plugins>
