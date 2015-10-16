@@ -47,7 +47,7 @@ $ java -jar cp-generator-service-jar-with-dependencies.jar resourceName outputFi
 The component also provides a CLI interface for executions with ZeroMQ: 
 
 ```shell
-java -Djava.library.path=pathToZmqLibraries -jar target/cp-generator-zmq-service-jar-with-dependencies.jar subscriberPort publisherPort
+java -Djava.library.path=pathToZmqLibraries -cp cp-generator-service-jar-with-dependencies.jar eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib.ZeroMQServer subscriberPort publisherPort
 ```
 
 **Input:** CP Generator reads CAMEL models directly from CDO resource. To do that via ZeroMQ, the component subscribes to the "ID" topic via  by using `subscriberPort` and retrieves the resource name. If subscriber port is not specified, the component uses 5555 as default port.
