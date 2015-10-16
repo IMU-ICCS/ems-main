@@ -856,6 +856,60 @@ public class PaasageModelTool
 		
 	}
 	
+	
+	/**
+	 * Removes all the virtual machine profile with a given provide from a list
+	 * @param profiles The virtual machine profiles 
+	 * @param provider The provider 
+	 * @param components The list of application components
+	 */
+	public static void removeVirtualMahineProfilesByProvider(EList<VirtualMachineProfile> profiles, Provider provider, EList<ApplicationComponent> components)
+	{
+		int i=0; 
+		
+		while(i<profiles.size())
+		{
+			int j=0; 
+			while(j< profiles.get(i).getProviderDimension().size())
+			{	
+				ProviderDimension pc= profiles.get(i).getProviderDimension().get(j); 
+				logger.debug("Provider type "+pc.getProvider().getType().getId());
+				if(pc.getProvider().getId().equals(provider.getId()))
+				{
+					profiles.get(i).getProviderDimension().remove(j); 
+				}
+				else
+					j++; 		
+			}
+			
+			if(profiles.get(i).getProviderDimension().size()==0)
+			{
+				profiles.remove(i); 
+				 
+			}
+			
+			else
+				i++; 
+		}
+		
+		for(ApplicationComponent apc:components)
+		{
+			int j=0; 
+			
+			while(j<apc.getRequiredProfile().size())
+			{
+				if(apc.getRequiredProfile().get(j).getProviderDimension().size()==0)
+				{
+					apc.getRequiredProfile().remove(j); 
+				}
+				else
+					j++; 
+			}
+		}
+		
+	}
+	
+	
 	/**
 	 * Searches a provider in a given list
 	 * @param providers The list of providers
@@ -1284,5 +1338,19 @@ public class PaasageModelTool
 		}
 		
 		return providers; 
+	}
+	
+
+	public static boolean isProviderInListById(List<Provider> providers, Provider provider)
+	{
+		String providerId= provider.getId();
+		
+		for(Provider p: providers)
+		{
+			if(p.getId().equals(providerId))
+					return true; 
+		}
+				
+		return false; 
 	}
 }

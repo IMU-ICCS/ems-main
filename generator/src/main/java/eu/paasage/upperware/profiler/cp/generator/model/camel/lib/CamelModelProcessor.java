@@ -11,6 +11,7 @@
 
 package eu.paasage.upperware.profiler.cp.generator.model.camel.lib;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.ComponentMetricRelationship;
 import eu.paasage.upperware.metamodel.application.PaaSageGoal;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
+import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionType;
@@ -131,6 +133,7 @@ public class CamelModelProcessor extends ModelProcessor {
 		VMRequirementSet globalRequirements= model.getDeploymentModels().get(0).getGlobalVMRequirementSet(); 
 		
 		
+		List<Provider> candidates= new ArrayList<Provider>();
 		
 		for(VM vm: vms)
 		{
@@ -352,40 +355,44 @@ public class CamelModelProcessor extends ModelProcessor {
 					if(pmWithImage!=null)
 					{
 						logger.debug("CamelModelProcessor - parseModel - parseOntology with image");
-						providerModelParser.parseOntology(ontology, pc, pmWithImage, vm); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
+						providerModelParser.parseOntology(ontology, pc, pmWithImage, vm, candidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
 						logger.debug("CamelModelProcessor - parseModel - parseOntology with image ended");
 					}
 					else if(provReq!=null) //If there are provider requirements, only the specified providers are considered  
 					{
 						logger.debug("CamelModelProcessor - parseModel - processProviderRequirements");
-						processProviderRequirements(provReq, ontology, pc, vm);
+						processProviderRequirements(provReq, ontology, pc, vm, candidates);
 						logger.debug("CamelModelProcessor - parseModel - processProviderRequirements ended");
 					}
 					else //All the providers have to be considered
 					{
 						logger.debug("CamelModelProcessor - parseModel - processAllProviders with loc");
-						processAllProviders(ontology, pc, vm);
+						processAllProviders(ontology, pc, vm, candidates);
 						logger.debug("CamelModelProcessor - parseModel - processAllProviders with loc ended");
 					}
+					
+					concreteLocationConcept.setSelected(false);
 				}
 			
 			}
 			else if(pmWithImage!=null) //We only consider the provider with the related image
 			{
-				providerModelParser.parseOntology(ontology, pc, pmWithImage, vm); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
+				providerModelParser.parseOntology(ontology, pc, pmWithImage, vm,candidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
 			}
 			else if(provReq!=null) //We only consider the specified providers  
 			{
-				processProviderRequirements(provReq, ontology, pc, vm);
+				processProviderRequirements(provReq, ontology, pc, vm, candidates);
 			}
 			else //We have to process all the providers
 			{
 				logger.debug("CamelModelProcessor - parseModel - processAllProviders");
 			
-				processAllProviders(ontology, pc, vm);
+				processAllProviders(ontology, pc, vm, candidates);
 			}
 							
 		}
+		
+		providerModelParser.removeNoCandidateProviders(pc.getPaasageConfiguration(), candidates);
 		
 		logger.debug("CamelModelProcessor - parseModel - Checking solution existency ");
 		deploymentModelParser.checkExistencyOfValidUserSolution(model.getDeploymentModels().get(0), pc);
@@ -397,17 +404,17 @@ public class CamelModelProcessor extends ModelProcessor {
 		
 	}
 	
-	protected void processProviderRequirements(ProviderRequirement provReq, OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm)
+	protected void processProviderRequirements(ProviderRequirement provReq, OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm, List<Provider> candidates)
 	{
 		for(CloudProvider prov:provReq.getProviders())
 		{
 			ProviderModelDecorator pm= proxy.getPMsMap().get(prov.getName()); 
 			
-			providerModelParser.parseOntology(ontology, pc, pm, vm);
+			providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
 		}
 	}
 	
-	protected void processAllProviders(final OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm)
+	protected void processAllProviders(final OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm, List<Provider> candidates)
 	{
 		logger.debug("CamelModelProcessor - processAllProviders - Processing ontology ");
 		for(String key: proxy.getPMsMap().keySet()) 
@@ -415,7 +422,7 @@ public class CamelModelProcessor extends ModelProcessor {
 
 			ProviderModelDecorator pm= proxy.getPMsMap().get(key); 
 			logger.debug("CamelModelProcessor - processAllProviders - Selected concepts size "+ProviderModelParser.getSelectedConcepts(ontology.getConcepts()).size());
-			providerModelParser.parseOntology(ontology, pc, pm, vm);
+			providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
 		}
 		
 		logger.debug("CamelModelProcessor - processAllProviders - Ended ");

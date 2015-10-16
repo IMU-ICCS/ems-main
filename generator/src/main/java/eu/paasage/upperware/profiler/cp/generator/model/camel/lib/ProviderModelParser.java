@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -80,8 +81,9 @@ public class ProviderModelParser
 	 * @param configurationWrapper The configuration being created
 	 * @param pmd The decorator that contains the model provider
 	 * @param vm The virtual machine
+	 * @param alreadySelectedCandidates List of candidates that have already being selected and therefore have not to be removed
 	 */
-	public void parseOntology(final OntologyCamel ontology, PaaSageConfigurationWrapper configurationWrapper, ProviderModelDecorator pmd, VM vm)
+	public void parseOntology(final OntologyCamel ontology, PaaSageConfigurationWrapper configurationWrapper, ProviderModelDecorator pmd, VM vm, List<Provider> alreadySelectedCandidates)
 	{
 		
 		String vmName= vm.getName(); 
@@ -136,8 +138,10 @@ public class ProviderModelParser
 			if(candidates.size()==0)
 				logger.warn("ProviderModelParser- parseOntology- There is not cloud provider candidate!");
 			
+			alreadySelectedCandidates.add(candidate); 
+			
 		}
-		else //The candidate has to be deleted
+/*		else //The candidate has to be deleted
 		{
 			ProviderType pt= PaasageModelTool.searchProviderTypeById(pmd.getProviderId(), configurationWrapper); 
 			
@@ -161,6 +165,26 @@ public class ProviderModelParser
 			
 			logger.debug("ProviderModelParser - parseOntology -  3 parameters - Profiles after deleting "+configuration.getVmProfiles().size()); 
 								
+		}*/
+	}
+	
+	
+	public void removeNoCandidateProviders(PaasageConfiguration configuration, List<Provider> candidates)
+	{
+		for(int i=0; i<configuration.getProviders().size(); i++ )
+		{
+			Provider current= configuration.getProviders().get(i); 
+			if(!PaasageModelTool.isProviderInListById(candidates, current))
+			{
+				PaasageModelTool.removeVirtualMahineProfilesByProvider(configuration.getVmProfiles(), current, configuration.getComponents());
+				logger.info("** 		Removing candidate: "+current.getId()+" with type: "+current.getType().getId()); 
+				
+				configuration.getProviders().remove(current); 
+				
+				logger.info("** 		Candidate removed!");
+				
+				i--; 
+			}
 		}
 	}
 	
