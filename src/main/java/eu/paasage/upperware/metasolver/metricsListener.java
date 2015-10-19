@@ -30,6 +30,8 @@ import org.jeromq.*;
 
 public class metricsListener implements Runnable{
 
+	private Thread t;
+	private String threadName = "metricsListener";
 	private Context context1;
 	private Context context2;
 	private Context context3;
@@ -65,31 +67,41 @@ public class metricsListener implements Runnable{
 	public void run() {
 		while (run) {
 
-			System.out.println("lets go for a subscription .....");
-			System.out.println("setting context ....");	
+			System.out.println("ML: lets go for a ML subscription .....");
+			System.out.println("ML: setting  ML context ....");	
 			Context cntx1 = zmq.context(1);
 		
-			System.out.println("context set .....");
+			System.out.println("ML: context ML set .....");
 			Socket	subscriber1 = cntx1.socket (zmq.SUB);
 		
-			System.out.println("socket set .....");
+			System.out.println("ML: socket  ML set .....");
 			subscriber1.connect ("tcp://localhost:5545");
 		
 
-			System.out.println("connection set .....");
+			System.out.println("ML: connection ML set .....");
 			subscriber1.subscribe("B_2".getBytes());//listening to meessages on ...
-			System.out.println("subscription done .....");
-
+			System.out.println("ML: subscription ML done .....");
+			while (!Thread.currentThread ().isInterrupted () && subscriber1.recvStr() != null) {
+				
 					System.out.println("got1");
 				// Read envelope with address
 
 				String address1 = subscriber1.recvStr ();
 				String contents1 = subscriber1.recvStr ();
-				System.out.println(" bell1 " + address1 + " : " + contents1);  	            	
+				System.out.println(" bell1 " + address1 + " : " + contents1); 
+			}
 				subscriber1.close ();
 			cntx1.term ();
 		}
 	}
-
+	 public void start ()
+	   {
+	      System.out.println("Starting " +  threadName );
+	      if (t == null)
+	      {
+	         t = new Thread (this, threadName);
+	         t.start ();
+	      }
+	   }
 
 }
