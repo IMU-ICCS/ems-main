@@ -16,6 +16,8 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;
@@ -94,7 +96,6 @@ public class CDODatabaseProxy2 {
 
 	public static PaasageConfiguration findPC(CDODatabaseProxy cdoProxy,
 			String pcID) {
-		cdoProxy = CDODatabaseProxy.getInstance();
 
 		CDOView view = cdoProxy.getCdoClient().openView();
 
@@ -302,6 +303,19 @@ public class CDODatabaseProxy2 {
 			throw new S2DException("Unable to find provider model with name " + providerId + " . Is there something wrong in your original model ? The uri looking was : " + componentURI + 
 					". Message : "+ e.getMessage());
 		}
-}  
+}
+
+	public static ConstraintProblem findConstraintProblem(
+			CDODatabaseProxy cdoProxy, String paasageConfigurationCompleteID) {
+
+		CDOView view = cdoProxy.getCdoClient().openView();
+
+		CDOResource resource = view.getResource(paasageConfigurationCompleteID);
+		EList<EObject> content = resource.getContents();
+
+		
+		return (ConstraintProblem) content.get(1);	
+
+	}  
 
 }

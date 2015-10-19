@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
@@ -37,8 +38,9 @@ public class SolverToDeployment {
 			CamelModel camelModel= (CamelModel)contents2.get(0);
 			DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(0);
 
+			ConstraintProblem constraintProblem = (ConstraintProblem) contents.get(1);
 			try {
-				DataHolder dataholder  = DataUtils.computeDatasToRegister(paasageConfiguration, deploymentModel);
+				DataHolder dataholder  = DataUtils.computeDatasToRegister(paasageConfiguration, deploymentModel, constraintProblem);
 				DataUtils.registerDataHolderToCDO(camelModelID, dataholder);
 
 			} catch (S2DException e) {

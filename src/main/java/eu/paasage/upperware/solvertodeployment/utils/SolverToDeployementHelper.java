@@ -22,6 +22,10 @@ import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.cp.VariableValue;
+import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
@@ -62,13 +66,15 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	
 
 	public static void printVar(PaaSageVariable paaSageVariable) {
-		String logg = "";
+		String logg = "\n===================================================\n";
 		logg += "\n"+paaSageVariable.getRelatedVirtualMachineProfile().getCloudMLId() ;
 		logg += "\n"+paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId() ;
 			logg += "\n		"+paaSageVariable.getRelatedComponent().getCloudMLId();
 		logg += "\n		"+paaSageVariable.getRelatedProvider().getId();
 		logg += "\n		"+paaSageVariable.getPaasageType().getName();
 		logg += "\n		"+paaSageVariable.getCpVariableId();
+		logg += "\n===================================================\n\n";
+
 		log.error(logg);
 	}
 	
@@ -175,5 +181,26 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 			throw new S2DException("Unable to find hosting for application component name" + internalComponentInstance.getName());
 		}	
 		return hostingInstance;
+	}
+	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem) throws S2DException{		
+		for(Solution solution : _constraintProblem.getSolution()){
+			
+			EList<VariableValue> variables  = solution.getVariableValue();
+			
+			for (VariableValue variableValue : variables) {
+				log.debug("Compare " + paaSageVariable.getCpVariableId() + "  with " +  variableValue.getVariable().getId());
+				if(paaSageVariable.getCpVariableId().equals(variableValue.getVariable().getId()))
+				{
+					LongValueUpperware longValueUpperware = (LongValueUpperware) variableValue.getValue();
+					log.debug("Find !" + longValueUpperware.getValue());
+
+					return longValueUpperware.getValue();
+
+				}
+				
+			}			
+	
+		}	
+		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId() );
 	}
 }
