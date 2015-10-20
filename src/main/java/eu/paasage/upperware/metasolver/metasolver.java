@@ -98,9 +98,9 @@ public class metasolver{
 	}
 	public static void go(){
 
-		rpl.start();
+	//	rpl.start();
 		ml.start();
-		al.start();
+//		al.start();
 		sl.start();
 
 	}
