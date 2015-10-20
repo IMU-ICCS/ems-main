@@ -977,7 +977,7 @@ public class CPModelDerivator implements ICPModelDerivator
 				for(ProviderDimension pd: vmp.getProviderDimension())
 				{	
 				
-					createAppComponentVariable(ac, vmp, pd.getProvider(), cp, configuration, ac.getMin(), ac.getMax());
+					createAppComponentVariable(ac, vmp, pd.getProvider(), cp, configuration, 0, ac.getMax()); //The zero value is necessary as several providers are considered now
 				
 				
 				}
