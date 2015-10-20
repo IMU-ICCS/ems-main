@@ -2,6 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ow2.paasage.mddb.cdo</groupId>
   <artifactId>client</artifactId>
+  <version>2015.9.1-SNAPSHOT</version>
 
   <parent>
     <groupId>org.ow2.paasage</groupId>
@@ -85,12 +86,12 @@
   	  <dependency>
 		<groupId>org.ow2.paasage</groupId>
 		<artifactId>camel</artifactId>
-		<version>2015.9.1-SNAPSHOT</version>
+		<version>${paasage.version}</version>
 	  </dependency>
 	  <dependency>
 		<groupId>org.ow2.paasage.camel</groupId>
 		<artifactId>dsl</artifactId>
-		<version>2015.9.1-SNAPSHOT</version>
+		<version>${paasage.version}</version>
 	  </dependency>
   	  <dependency>
 		<groupId>org.eclipse.core</groupId>
