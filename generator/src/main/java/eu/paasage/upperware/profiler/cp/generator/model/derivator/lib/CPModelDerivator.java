@@ -406,7 +406,7 @@ public class CPModelDerivator implements ICPModelDerivator
 								logger.debug("CPModelDerivator - createConstraints - 43");
 								Variable v2= CPModelTool.searchVariableByVMName(requiredVariables, instance.getId()); 
 								logger.debug("CPModelDerivator - createConstraints - 44");
-								if(v1!=null && v2!=null)
+								if(v1!=null && v2!=null && !v1.getId().equals(v2.getId())) //The last condition is required when the component has self-references 
 								{
 									
 									ComposedExpression ne1= createSubstraction(v2, v1); //(i-j)
@@ -440,7 +440,7 @@ public class CPModelDerivator implements ICPModelDerivator
 									
 								}
 								
-								if(v1!=null && v2!=null)
+								if(v1!=null && v2!=null && !v1.getId().equals(v2.getId())) //The last condition is required when the component has self-references 
 								{
 
 									logger.debug("CPModelDerivator - createConstraints - 49");
