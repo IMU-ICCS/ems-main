@@ -106,7 +106,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	private static final String COST= "Cost"; 
 	
-	private static final int MAX_NUMBER_OF_VMS= 1028; 
+	private static final int MAX_NUMBER_OF_VMS= 1; 
 	
 	private static final int MIN_NUMBER_OF_VMS= 0; 
 	
@@ -977,7 +977,7 @@ public class CPModelDerivator implements ICPModelDerivator
 				for(ProviderDimension pd: vmp.getProviderDimension())
 				{	
 				
-					createAppComponentVariable(ac, vmp, pd.getProvider(), cp, configuration, ac.getMin(), ac.getMax());
+					createAppComponentVariable(ac, vmp, pd.getProvider(), cp, configuration, 0, ac.getMax()); //The zero value is necessary as several providers are considered now
 				
 				
 				}

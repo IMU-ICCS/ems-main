@@ -115,7 +115,7 @@ public class DeploymentModelParser
 	protected static IDatabaseProxy proxy= CDODatabaseProxy.getInstance(); 
 	
 	
-	private static int MAX_INSTANCE_NUMBER=128; 
+	private static int MAX_INSTANCE_NUMBER=1; 
 	
 	private static int MIN_INSTANCE_NUMBER=0; 
 	
