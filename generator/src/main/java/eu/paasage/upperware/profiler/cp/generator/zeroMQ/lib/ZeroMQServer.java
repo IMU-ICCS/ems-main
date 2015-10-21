@@ -15,7 +15,7 @@ public class ZeroMQServer
 	
 	private static String DEFAULT_SUBSCRIBER_PORT="5555"; 
 	
-	private static String DEFAULT_PUBLISHER_PORT="5556"; 
+	private static String DEFAULT_PUBLISHER_PORT="5544"; 
 	
 	private static String DEFAULT_PROTOCOL="tcp://*:"; 
 	
@@ -81,9 +81,12 @@ public class ZeroMQServer
 			String paasageConfigID= go.generateCPModel(modelInfos); 
 			System.out.println("CP Model Generated");
             
-			publisher.sendMore("CP_ID"); 
+			publisher.sendMore("startSolving"); 
             publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
             System.out.println("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+            
+            publisher.sendMore("camelModelId"); 
+            publisher.send(modelId); 
         }
         subscriber.close();
         publisher.close();
