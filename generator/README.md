@@ -11,7 +11,7 @@ CP Generator is responsible for generating a Upperware or CP model, which repres
 
 ## Building
 
-To build standalone JAR `target/cp-generator-service-jar-with-dependencies.jar` and `target/cp-generator-zmq-service-jar-with-dependencies.jar` without executing tests:
+To build standalone JAR `target/cp-generator-service-jar-with-dependencies.jar` without executing tests:
 
 ```shell
 $ mvn clean install -Dmaven.test.skip=true
@@ -52,7 +52,7 @@ java -Djava.library.path=pathToZmqLibraries -cp cp-generator-service-jar-with-de
 
 **Input:** CP Generator reads CAMEL models directly from CDO resource. To do that via ZeroMQ, the component subscribes to the "ID" topic via  by using `subscriberPort` and retrieves the resource name. If subscriber port is not specified, the component uses 5555 as default port.
 
-**Output:** CP Generator publishes the identifier of the generated Upperware model via ZeroMQ by using `publisherPort` and the "CP_ID" as topic. If publisher port is not specified, the component uses 5556 as default port.CAMEL model is not modified.
+**Output:** CP Generator publishes the identifier of the generated Upperware model via ZeroMQ by using `publisherPort` and the "startSolving" as topic. The component also publishes the identifer of the input Camel model by using the topic "camelModelId". If publisher port is not specified, the component uses 5544 as default port.CAMEL model is not modified.
 
  The `java.library.path` has to define the directory where the libzmq and libjzmq shared libraries were installed (normally /usr/local/lib on UNIX-like systems) 
 
