@@ -23,7 +23,17 @@ upperware-models_fms_1.xmi.  Manually edited to include cloudcredentials (userna
 upperware-models_fms_1.xmi - provider model associated with 
 test_1_reconfig.xmi.  The xmi is based on upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi  
 
-
 ----
 Shirley Crompton, STFC
 26/08/2015
+----
+1.  Please note that these models are getting out-of-date due to regular changes in CAMEL.   To enable the tests to run with minimal modifications, I have removed
+conflicting elements which do not impact on the plan generation scenarios.  So used these models at your own risks.
+
+2.  Also note that in cases when both a providerModel and the main camelModel are used, the tests won't be able to locate the 
+VMType values as the camelModel cross-references the providerModel.  The cross-reference only works if full absolute paths are provided when loading the models. 
+This is not possible when running on the Jenkins platform as I do not know the absolute paths in Jenkins.
+
+Shirley Crompton, STFC  
+20/10/2015
+----
