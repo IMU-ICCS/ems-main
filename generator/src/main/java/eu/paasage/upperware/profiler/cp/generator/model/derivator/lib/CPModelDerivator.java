@@ -106,7 +106,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	private static final String COST= "Cost"; 
 	
-	private static final int MAX_NUMBER_OF_VMS= 1; 
+	private static final int MAX_NUMBER_OF_VMS= 128; 
 	
 	private static final int MIN_NUMBER_OF_VMS= 0; 
 	
