@@ -15,7 +15,7 @@ class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNam
 
   val encodeVarName:(String) => String = if(encodeVarNames) VarNameEncoders.genNumber else VarNameEncoders.identity
   val variablesMap: Map[String, Variable] = cp.getVariables.map(v => (encodeVarName(v.getId), v)).toMap
-  
+
   object convertVal {
     val faktoria = new TypesFactoryImpl
     def apply(x: Any): NumericValueUpperware = {
@@ -79,12 +79,26 @@ class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNam
         cp.getSolution.add(solution)
         return solution
       } else {
-        (    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+        (    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
           :: ""
-          :: "This is really bad!"
-          :: "Solver failed! Probably CP problem is infeasible. Please check the solver logs above."
+          :: "Dear User,"
           :: ""
-          :: "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" :: Nil).foreach(l => logger.error(l))
+          :: "MILP solver was unable to find any solution,"
+          :: "because CP problem provided by upstream"
+          :: "components is either infeasible or is outside"
+          :: "MILP class."
+          :: ""
+          :: "If you ran the solver with debugging enabled,"
+          :: "you should see CP problem pretty-printed above."
+          :: ""
+          :: "As PaaSage in concerned, no solution means"
+          :: "no possible deployments."
+          :: ""
+          :: "Please review your CAMEL model and try again."
+          :: "If CP problem is outside MILP class, please use"
+          :: "more general solver (e.g. CP solver)."
+          :: ""
+          :: "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" :: Nil).foreach(l => logger.error(l))
         throw new OptimizationFailed()
       }
     } finally {
