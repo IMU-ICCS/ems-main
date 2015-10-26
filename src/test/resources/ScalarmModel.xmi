@@ -208,41 +208,7 @@
         locationRequirement="//@requirementModels.0/@requirements.1"
         quantitativeHardwareRequirement="//@requirementModels.0/@requirements.6"
         osOrImageRequirement="//@requirementModels.0/@requirements.3"/>
-  </deploymentModels>
-  <executionModels
-      name="ScalarmExecModel">
-    <executionContexts
-        name="EC1"
-        application="//@applications.0"
-        totalCost="10.0"
-        costUnit="//@unitModels.0/@units.0"
-        deploymentModel="//@deploymentModels.0"
-        requirementGroup="//@requirementModels.0/@requirements.12"/>
-    <measurements
-        xsi:type="execution:ResourceMeasurement"
-        name="RM1"
-        executionContext="EC1"
-        metricInstance="EC1_CPUMetric_CoreIntensiveUbuntuGermanyInst"
-        value="10.0"
-        reportedOn="2015-04-19T22:00:00.000+0100"
-        vmInstance="//@deploymentModels.0/@vmInstances.0"/>
-    <measurements
-        xsi:type="execution:ResourceMeasurement"
-        name="RM2"
-        executionContext="EC1"
-        metricInstance="EC1_CPUMetric_CoreIntensiveUbuntuGermanyInst"
-        value="20.0"
-        reportedOn="2015-04-20T22:00:00.000+0100"
-        vmInstance="//@deploymentModels.0/@vmInstances.0"/>
-    <measurements
-        xsi:type="execution:ResourceMeasurement"
-        name="RM3"
-        executionContext="EC1"
-        metricInstance="EC1_CPUMetric_CoreIntensiveUbuntuGermanyInst"
-        value="20.0"
-        reportedOn="2015-04-21T22:00:00.000+0100"
-        vmInstance="//@deploymentModels.0/@vmInstances.0"/>
-  </executionModels>
+  </deploymentModels>  
   <locationModels
       name="ScalarmLocation">
     <countries
@@ -510,21 +476,7 @@
     <sensors
         name="ThroughputOfSimulationsExecutedByWorkerSensor"
         isPush="true"/>
-  </metricModels>
-  <metricModels
-      name="ScalarmMetricInstanceModel">
-    <metricInstances
-        xsi:type="metric:RawMetricInstance"
-        name="EC1_CPUMetric_CoreIntensiveUbuntuGermanyInst"
-        metric="//@metricModels.0/@metrics.1"
-        objectBinding="//@metricModels.1/@bindings.0"
-        sensor="//@metricModels.0/@sensors.1"/>
-    <bindings
-        xsi:type="metric:MetricVMBinding"
-        name="ScalarmVMBinding"
-        executionContext="EC1"
-        vmInstance="//@deploymentModels.0/@vmInstances.0"/>
-  </metricModels>
+  </metricModels>  
   <organisationModels
       name="AGHOrganisation"
       securityLevel="HIGH">

@@ -89,7 +89,7 @@ public class PlanGenerator {
 	 * <p>
 	 * @param currentModel	the current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 * @param targetModel	the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
-	 * @return	the computed deployment {@link eu.paasage.upperware.plangenerator.model.Plan <em>Plan</em>} containing  
+	 * @return	the computed deployment {@link eu.paasage.upperware.plangenerator.model.Plan <em>Plan</em>} containing 
 	 * 			a list of deployment tasks to create/update a cloud application managed by PaaSage.
 	 * @throws  ModelComparatorException for error during models comparison
 	 * @throws	PlanGenerationException for error during dependencies generation

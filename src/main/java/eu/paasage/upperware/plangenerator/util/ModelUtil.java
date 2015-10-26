@@ -9,6 +9,7 @@
 package eu.paasage.upperware.plangenerator.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,12 +32,16 @@ import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.location.Location;
+import eu.paasage.camel.requirement.ImageRequirement;
 import eu.paasage.camel.requirement.LocationRequirement;
+import eu.paasage.camel.requirement.OSOrImageRequirement;
+import eu.paasage.camel.requirement.OSRequirement;
 import eu.paasage.camel.type.BoolValue;
 import eu.paasage.camel.type.DoublePrecisionValue;
 import eu.paasage.camel.type.EnumerateValue;
 import eu.paasage.camel.type.FloatsValue;
 import eu.paasage.camel.type.IntegerValue;
+import eu.paasage.camel.type.SingleValue;
 import eu.paasage.camel.type.StringsValue;
 import eu.paasage.upperware.plangenerator.exception.ModelUtilException;
 
@@ -155,7 +160,7 @@ public final class ModelUtil {
 	 * <p>
 	 * @param global global {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
 	 * @param local local {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
-	 * @return  the combined {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
+	 * @return the combined {@link eu.paasage.camel.deployment.VMRequirementSet <em>VMRequirementSet</em>}
 	 */
 	public static VMRequirementSet addGlobalRequirements(VMRequirementSet global, VMRequirementSet local){
 		
@@ -184,9 +189,9 @@ public final class ModelUtil {
 	 * <p>
 	 * @param asArray	the source {@link com.eclipsesource.json.JsonArray <em>JsonArray</em>}
 	 * @return	a {@link java.util.List <em>List</em>} of {@link java.lang.String <em>String</em>} or an empty {@link java.util.List <em>List</em>}
-	 * @throws ModelUtilException on processing error
+	 * @throws ModelUtilException on processing error 
 	 */
-	public static List<String> convertJsonArrayToList(JsonArray asArray) throws ModelUtilException {
+	public static List<String> convertJsonArrayToList(JsonArray asArray) throws ModelUtilException  {
 		List<String> list = new ArrayList<String>();
 		//
 		try{

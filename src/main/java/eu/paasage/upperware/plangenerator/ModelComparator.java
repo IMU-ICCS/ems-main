@@ -280,7 +280,6 @@ public class ModelComparator {
 	/** Create an instance 
 	 * @param current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 * @param target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
-	 * 
 	 * */
 	public ModelComparator(DeploymentModel current, DeploymentModel target) {
 		this.currentDM = current;
@@ -291,7 +290,6 @@ public class ModelComparator {
 	/**
 	 * Set the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} and
 	 * reinitialise the result objects
-	 * <p>
 	 * @param target	the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 */
 	public void setTargetModel(DeploymentModel target) {
@@ -302,7 +300,6 @@ public class ModelComparator {
 	/**
 	 * Set the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} and
 	 * reinitialise the result objects
-	 * <p>
 	 * @param current 	the current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 */
 	public void setCurrentModel(DeploymentModel current) {
@@ -313,6 +310,7 @@ public class ModelComparator {
 	/**
 	 * Compare the target {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
 	 * to the current {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}.
+	 * <p>
 	 * It is assumed that the model only contains a single {@link eu.paasage.camel.deployment.DeploymentModel}.
 	 * @throws ModelComparatorException on processing error
 	 */

@@ -911,7 +911,7 @@ public final class ModelToJsonConverter {
      * Get the owner credentials for the specified cloud.
      * <p>
      * @param cloudName		Name of the target cloud
-     * @param vmi			the target {@link eu.paasage.camel.deployment.VMInstance <em>VMInstance</em>} 
+     * @param vmi			the target {@link eu.paasage.camel.deployment.VMInstance <em>VMInstance</em>}
      * @return				the credentials as a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>}
      */
     public static JsonObject getCredentials(String cloudName, VMInstance vmi){
