@@ -27,16 +27,16 @@ import org.eclipse.emf.ecore.EObject;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 public class metasolver{
-	static metricsListener ml = new metricsListener("metricID");
-	static solutionsListener sl = new solutionsListener("metricID");
-	static adaptorListener al = new adaptorListener("metricID");
-	static RPListener rpl = new RPListener("metricID");
+//	static metricsListener ml = new metricsListener("metricID");
+//	static solutionsListener sl = new solutionsListener("metricID");
+//	static adaptorListener al = new adaptorListener("metricID");
+//	static RPListener rpl = new RPListener("metricID");
 	//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
 
 
 	public static void main(String args[]) throws IOException, InterruptedException{
 
-
+/*
 		if (args[0].contains("with ZeroMQ")){
 			go();
 
@@ -44,9 +44,12 @@ public class metasolver{
 			System.out.println("all subscriptions complete");
 		}
 		else{
+*/
 			try{
 
-				//		Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-2015.04-SNAPSHOT-assembly.jar " + args[1]);
+				//		Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-2015.04-
+
+//SNAPSHOT-assembly.jar " + args[1]);
 				Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + args[1]);
 
 				// you can pass the system command or a script to exec command. here i used uname -a system command
@@ -95,13 +98,13 @@ public class metasolver{
 				e.printStackTrace();
 			}
 		}
-	}
+//	}
 	public static void go(){
 
 	//	rpl.start();
-		ml.start();
+	//	ml.start();
 //		al.start();
-		sl.start();
+//		sl.start();
 
 	}
 
