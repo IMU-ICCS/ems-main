@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp"
+    xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types"
+    xsi:schemaLocation="cp cp.ecore#//inria/paasage/metamodel/cp types paasageTypes.ecore#//inria/paasage/metamodel/types">
+  <goals id="min_cost_goal"
+      goalType="min">
+    <expression
+        xsi:type="cp:ComposedExpression"
+        id="min_cost_goal_expression"
+        expressions="//@auxExpressions.4 //@auxExpressions.5 //@auxExpressions.6 //@auxExpressions.7 //@auxExpressions.8 //@auxExpressions.9 //@auxExpressions.10 //@auxExpressions.11"/>
+  </goals>
+  <constants
+      id="cost_vm1_in_elasticHost1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="50"/>
+  </constants>
+  <constants
+      id="cost_vm1_in_rackspace1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="60"/>
+  </constants>
+  <constants
+      id="cost_vm2_in_privateCloud1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="10"/>
+  </constants>
+  <constants
+      id="cost_vm2_in_OVH1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="30"/>
+  </constants>
+  <constants
+      id="cost_vm3_in_privateCloud1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="10"/>
+  </constants>
+  <constants
+      id="cost_vm3_in_OVH1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="30"/>
+  </constants>
+  <constants
+      id="cost_vm4_in_privateCloud1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="10"/>
+  </constants>
+  <constants
+      id="cost_vm4_in_OVH1">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="30"/>
+  </constants>
+  <constants
+      id="max_number_of_providers_by_vm">
+    <value xsi:type="types:IntegerValueUpperware"
+        value="1"/>
+  </constants>
+  <variables
+      id="vm1_in_elasticHost1">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm1_in_rackspace1">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm2_in_privateCloud">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm2_in_ovh">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm3_in_privateCloud">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm3_in_ovh">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm4_in_privateCloud">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <variables
+      id="vm4_in_ovh">
+    <domain
+        xsi:type="cp:RangeDomain">
+      <from
+          xsi:type="types:IntegerValueUpperware"/>
+      <to xsi:type="types:IntegerValueUpperware"
+          value="1"/>
+    </domain>
+  </variables>
+  <constraints
+      id="c1_vm1_only_one_provider"
+      exp1="//@auxExpressions.0"
+      exp2="//@constants.8"
+      comparator="equalTo"/>
+  <constraints
+      id="c2_vm2_only_one_provider"
+      exp1="//@auxExpressions.1"
+      exp2="//@constants.8"
+      comparator="equalTo"/>
+  <constraints
+      id="c3_vm3_only_one_provider"
+      exp1="//@auxExpressions.2"
+      exp2="//@constants.8"
+      comparator="equalTo"/>
+  <constraints
+      id="c4_vm4_only_one_provider"
+      exp1="//@auxExpressions.1"
+      exp2="//@constants.8"
+      comparator="equalTo"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="number_of_providers_for_vm1"
+      expressions="//@variables.0 //@variables.1"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="number_of_providers_for_vm2"
+      expressions="//@variables.2 //@variables.3"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="number_of_providers_for_vm3"
+      expressions="//@variables.4 //@variables.5"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="number_of_providers_for_vm4"
+      expressions="//@variables.6 //@variables.7"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="elasticHost1_selected_for_vm1"
+      expressions="//@constants.0 //@variables.0"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="rackspace1_selected_for_vm1"
+      expressions="//@constants.1 //@variables.1"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="privateCloud1_selected_for_vm2"
+      expressions="//@constants.2 //@variables.2"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="ovh1_selected_for_vm2"
+      expressions="//@constants.3 //@variables.3"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="privateCloud1_selected_for_vm3"
+      expressions="//@constants.4 //@variables.4"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="ovh1_selected_for_vm3"
+      expressions="//@constants.5 //@variables.5"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="privateCloud1_selected_for_vm4"
+      expressions="//@constants.6 //@variables.6"
+      operator="times"/>
+  <auxExpressions
+      xsi:type="cp:ComposedExpression"
+      id="ovh1_selected_for_vm4"
+      expressions="//@constants.7 //@variables.7"
+      operator="times"/>
+</cp:ConstraintProblem>
