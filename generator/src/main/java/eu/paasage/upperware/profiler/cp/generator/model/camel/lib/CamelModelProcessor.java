@@ -175,7 +175,7 @@ public class CamelModelProcessor extends ModelProcessor {
 					QuantifiableBoundedElementCamel storageConcept= (QuantifiableBoundedElementCamel) ProviderModelParser.getConceptByName("Disk", ontology.getConcepts()); 
 					logger.debug("CamelModelProcessor - parseModel - Disk concept retrieved!");
 					storageConcept.setSelected(true);
-					storageConcept.setUnit(mbUnit);
+					storageConcept.setUnit(gbUnit);
 					logger.debug("CamelModelProcessor - parseModel - Disk unit "+storageConcept.getUnit().getName());
 					storageConcept.setMinValue(0);
 					storageConcept.setMaxValue(0);
