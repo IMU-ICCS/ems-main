@@ -108,6 +108,9 @@ C1.MEDIUM;0.160
 C1.LARGE;0.165
 C1.XLARGE;0.170
 C1.XXLARGE;0.175
-Omistack;fr.inria.paasage.saloon.price.model.lib.OmistackPriceEstimator;2
-RegionOne1;0.054
-RegionOne2;0.095
+Omistack;fr.inria.paasage.saloon.price.model.lib.OmistackPriceEstimator;5
+m1.small;0.054
+m1.large;0.070
+m1.tiny;0.033
+m1.medium;0.060
+m1.xlarge;0.10
