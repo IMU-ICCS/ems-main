@@ -21,6 +21,7 @@ import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.LocationUpperware;
+import eu.paasage.upperware.metamodel.types.typesPaasage.OS;
 
 public class ModelData {
 	private String appId_;
@@ -257,14 +258,18 @@ public class ModelData {
 			int storage = ((IntegerValueUpperware) vmProfile.getStorage()
 					.getValue()).getValue();
 			System.out.println("  storage = " + storage);
-			System.out.println("  OS = " + vmProfile.getOs().getName());
-			System.out.println("  OS ver = " + vmProfile.getOs().getVers());
-			System.out.println("  OS arch = "
-					+ vmProfile.getOs().getArchitecture().getName() + " ("
-					+ vmProfile.getOs().getArchitecture().getValue()
-					+ ") - literal: "
-					+ vmProfile.getOs().getArchitecture().getLiteral());
-
+			
+			OS os = vmProfile.getOs();
+			if (os != null) {
+				System.out.println("  OS = " + os.getName());
+				System.out.println("  OS ver = " + os.getVers());
+				System.out.println("  OS arch = "
+						+ os.getArchitecture().getName() + " ("
+						+ os.getArchitecture().getValue()
+						+ ") - literal: "
+						+ os.getArchitecture().getLiteral());	
+			}
+			
 			System.out.println();
 		}
 
