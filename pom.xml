@@ -102,12 +102,24 @@
 	<groupId>org.jfree</groupId>
 	<artifactId>jfreechart</artifactId>
 	<version>1.0.17</version>
-</dependency>
-  <dependency>
-		    <groupId>org.ow2.paasage</groupId>
+  </dependency>
+    <dependency>
+	 <groupId>org.ow2.paasage</groupId>
 		    <artifactId>upperware-metamodel</artifactId>
 		    <version>2015.9.1-SNAPSHOT</version>
-		</dependency>
+	</dependency>
+	<!-- Zero MQ -->
+	<dependency>
+ 		<groupId>org.zeromq</groupId>
+ 		<artifactId>jeromq</artifactId>
+  		<version>0.3.2</version>
+  	</dependency>
+  	<!-- Logging -->
+  	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.17</version>
+	</dependency>
   </dependencies>
   <distributionManagement>
     <repository>
