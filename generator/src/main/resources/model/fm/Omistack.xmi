@@ -605,13 +605,13 @@
             name="LocationId"
             valueType="//@typeModels.0/@dataTypes.9"/>
         <attributes
-            name="longitude">
+            name="Longitude">
           <value
               xsi:type="type:FloatsValue"
               value="9.96291"/>
         </attributes>
         <attributes
-            name="latitude">
+            name="Latitude">
           <value
               xsi:type="type:FloatsValue"
               value="48.42599"/>
