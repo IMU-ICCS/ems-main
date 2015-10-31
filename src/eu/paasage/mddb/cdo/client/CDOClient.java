@@ -1717,7 +1717,6 @@ public class CDOClient
 		  cl.storeModel(model,"sensAppResource1",true);
 		  //Load a model from a XMI resource situated inside jar file
 		  URL url = cl.getClass().getResource("/Scalarm.xmi");
-		  //model = cl.loadModel("examples/Scalarm.xmi");
 		  model = cl.loadModel(url);
 		  //Store the model under a CDOResource with a particular name
 		  cl.storeModel(model,"scalarmResource1",true);
@@ -1763,7 +1762,7 @@ public class CDOClient
 		  logger.info("The objs stored are: " + objs);
 		  cl.closeView(view);
 		  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
-		  cl.exportModel("sensAppResource1", DeploymentModel.class, "examples/SensApp_DepModel.xmi");
+		  cl.exportModel("sensAppResource1", DeploymentModel.class, "output/SensApp_DepModel.xmi");
 		  //Remove listener as no longer needed
 		  cl.removeListener(listener);
 	  }
