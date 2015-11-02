@@ -20,18 +20,19 @@ object MainCDO extends App with LazyLogging {
     publisher.send(id.getBytes(), 0)
   }
 
-	if(args.length != 1) {
-		println(s"You need to provide resource name.")
+	if(args.length != 2) {
+		println(s"You need to provide resource name and metrics timestamp.")
 		sys.exit()
 	}
 
   val resourceName = args(0)
+  val timestamp    = args(1).toLong
   try {
     CDOClient.open_default(cdo => {
       logger.info(s"Retrieving CP $resourceName")
       cdo.processModel[ConstraintProblem](resourceName, cp => {
           logger.info("Solving with CMPL...")
-          val solution = MILPSolver.default_solve(cp, true, true)
+          val solution = MILPSolver.default_solve(cp, timestamp, true, true)
 
           logger.debug("CMPL done.")
           logger.debug("Results: ")

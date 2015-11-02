@@ -33,6 +33,8 @@ trait CmplCPGenerator {
   /** Whether apply distributive property of multiplication over addition */
   val reformulate: Boolean
 
+  def metricMap: Map[MetricVariable, NumericValueUpperware]
+
   private val comparisionOperators = Map(
     ComparatorEnum.GREATER_THAN        -> ">",
     ComparatorEnum.LESS_THAN           -> "<",
@@ -60,7 +62,7 @@ trait CmplCPGenerator {
 
   /** Recursively convert an Expression` into CMPL format */
   private def expression(o: Expression): String = {
-    val expression = expr.Expr.fromWP3(o)
+    val expression = expr.Expr.fromWP3(o, metricMap)
     val problem = if(reformulate) expression.flatten else expression
     expr.ExprSerializator(encodeVarName)(problem)
   }

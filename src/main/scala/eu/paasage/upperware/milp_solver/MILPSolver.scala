@@ -10,7 +10,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 class OptimizationFailed() extends Exception
 
 
-class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNames: Boolean = true) extends CmplCPGenerator with LazyLogging {
+class MILPSolver(val cp: ConstraintProblem, val timestamp: Long, debug: Boolean = false, encodeVarNames: Boolean = true) extends CmplCPGenerator with LazyLogging {
   val reformulate: Boolean = true
 
   val encodeVarName:(String) => String = if(encodeVarNames) VarNameEncoders.genNumber else VarNameEncoders.identity
@@ -37,7 +37,11 @@ class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNam
   def createSolution(variables:Iterable[CmplSolElement]):Solution = {
     val solution = CpFactory.eINSTANCE.createSolution()
     solution.setTimestamp(System.currentTimeMillis)
+    updateSolution(solution, variables)
+    return solution
+  }
 
+  def updateSolution(solution: Solution, variables:Iterable[CmplSolElement]) {
     val values = solution.getVariableValue
 
     variables.foreach(v => {
@@ -48,13 +52,31 @@ class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNam
         values.add(vv)
       }
     })
-
-    return solution
   }
+
+  val solution = {
+    val solution = cp.getSolution().find(_.getTimestamp == timestamp)
+
+    if(solution.isEmpty) {
+      (    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+        :: ""
+        :: "Solution with given timestamp was not found, failing!"
+        :: ""
+        :: "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" :: Nil).foreach(l => logger.error(l))
+      throw new OptimizationFailed()
+    }
+
+    solution.get
+  }
+
+  val metricMap = solution.getMetricVariableValue.map(m => (m.getVariable, m.getValue)).toMap
 
   def solve:Solution = {
     val modelFile = scala.reflect.io.File.makeTemp("model", ".cmpl")
     try {
+
+
+
       val model = generate_model
       modelFile.writeAll(model)
 
@@ -75,8 +97,8 @@ class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNam
       if (cmpl.solverStatus == Cmpl.SOLVER_OK) {
         if (debug) cmpl.solutionReport
 
-        val solution = createSolution(cmpl.solution.variables)
-        cp.getSolution.add(solution)
+        updateSolution(solution, cmpl.solution.variables)
+
         return solution
       } else {
         (    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -108,5 +130,5 @@ class MILPSolver(val cp: ConstraintProblem, debug: Boolean = false, encodeVarNam
 }
 
 object MILPSolver {
-  def default_solve(cp: ConstraintProblem, debug: Boolean = false, encodeVarNames: Boolean = true) = new MILPSolver(cp, debug, encodeVarNames).solve
+  def default_solve(cp: ConstraintProblem, timestamp: Long, debug: Boolean = false, encodeVarNames: Boolean = true) = new MILPSolver(cp, timestamp, debug, encodeVarNames).solve
 }

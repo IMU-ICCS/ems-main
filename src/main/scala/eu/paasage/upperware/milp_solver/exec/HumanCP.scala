@@ -1,7 +1,8 @@
 package eu.paasage.upperware.milp_solver.exec
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import eu.paasage.upperware.metamodel.cp.{ConstraintProblem, Variable}
+import eu.paasage.upperware.metamodel.cp.{NumericExpression, MetricVariable, ConstraintProblem, Variable}
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware
 import eu.paasage.upperware.milp_solver.{CDOClient, CmplCPGenerator, VarNameEncoders}
 
 import scala.collection.JavaConversions._
@@ -11,6 +12,7 @@ class StubSolver(val cp: ConstraintProblem) extends CmplCPGenerator with LazyLog
   val reformulate = false
   val debug = true
   val variablesMap: Map[String, Variable] = cp.getVariables.map(v => (encodeVarName(v.getId), v)).toMap
+  val metricMap: Map[MetricVariable, NumericValueUpperware] = Map()
 }
 
 object HumanCP extends App with LazyLogging {

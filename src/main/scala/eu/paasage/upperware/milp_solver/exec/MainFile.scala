@@ -11,7 +11,7 @@ object MainFile extends App with LazyLogging {
 		println("You need to provide input CP file name and output file name")
 		sys.exit()
 	}
-	
+
   val inFile = args(0)
   val outFile = args(1)
 
@@ -19,7 +19,7 @@ object MainFile extends App with LazyLogging {
   val cp = CpIO.load(inFile)
 
   logger.info("Solving with CMPL...")
-  var solution = MILPSolver.default_solve(cp, true, true);
+  var solution = MILPSolver.default_solve(cp, 0, true, true);
 
   logger.info("CMPL done, results:")
   logger.debug("Results: " + Helpers.solutionToString(solution))
