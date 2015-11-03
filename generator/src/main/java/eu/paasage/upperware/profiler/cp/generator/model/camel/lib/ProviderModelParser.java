@@ -23,6 +23,7 @@ import org.eclipse.emf.common.util.EList;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.provider.Feature;
+import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.Provider;
@@ -508,6 +509,22 @@ public class ProviderModelParser
 		return null; 
 	}
 	
-
+	public void checkExistSolution(PaaSageConfigurationWrapper pcw)
+	{
+		List<ApplicationComponent> componentsWithoutSolution= new ArrayList<>();
+		
+		for(ApplicationComponent ac:pcw.getPaasageConfiguration().getComponents())
+		{
+			if(ac.getRequiredProfile().size()==0)
+			{
+				ApplicationComponent copyAC= ApplicationFactory.eINSTANCE.createApplicationComponent(); 
+				copyAC.setCloudMLId(ac.getCloudMLId());
+				
+				componentsWithoutSolution.add(copyAC); 
+			}
+		}
+		
+		pcw.setComponentsWithoutVM(componentsWithoutSolution);
+	}
 
 }
