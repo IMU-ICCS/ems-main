@@ -394,6 +394,8 @@ public class CamelModelProcessor extends ModelProcessor {
 		
 		providerModelParser.removeNoCandidateProviders(pc.getPaasageConfiguration(), candidates);
 		
+		providerModelParser.checkExistSolution(pc);
+		
 		logger.debug("CamelModelProcessor - parseModel - Checking solution existency ");
 		deploymentModelParser.checkExistencyOfValidUserSolution(model.getDeploymentModels().get(0), pc);
 		logger.debug("CamelModelProcessor - parseModel - Checking solution existency ended ");
@@ -401,6 +403,7 @@ public class CamelModelProcessor extends ModelProcessor {
 		logger.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ");
 		deploymentModelParser.checkCorrectHostingRelationships(model.getDeploymentModels().get(0), pc);
 		logger.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ended ");
+
 		
 	}
 	

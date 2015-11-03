@@ -39,6 +39,7 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import eu.paasage.camel.type.TypePackage;
 import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
@@ -246,7 +247,7 @@ public class GenerationOrchestrator
 			camelProcessor.parseModel(pcw);
 				
 		
-			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && pcw.hasCorrectHostingRelationships)
+			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships)
 			{
 				logger.info("** Calling CPModelDerivator");
 				ConstraintProblem cp= derivator.derivateConstraintProblem(pc, database); 
@@ -276,6 +277,19 @@ public class GenerationOrchestrator
 			{
 				logger.info("** There are missing hosting relationships in the deployment model. The CP Model will be not generated!"); 
 			}
+			else if(pcw.getComponentsWithoutVM()!=null && pcw.getComponentsWithoutVM().size()>0)
+			{
+				logger.info("** There are not suitable providers for the following components: ");
+				
+				for(ApplicationComponent ac: pcw.getComponentsWithoutVM())
+				{
+					logger.info("** "+ac.getCloudMLId());
+				}
+				
+				logger.info("** The CP Model will be not generated! ");
+				
+			}
+			
 			else
 			{
 				logger.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 

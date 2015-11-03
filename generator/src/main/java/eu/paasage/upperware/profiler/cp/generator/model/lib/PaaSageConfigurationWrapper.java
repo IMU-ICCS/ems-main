@@ -13,6 +13,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.lib;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -23,6 +24,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import eu.paasage.camel.type.TypePackage;
+import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
@@ -75,6 +77,9 @@ public class PaaSageConfigurationWrapper
 	 * The function types related to the configuration
 	 */
 	protected FunctionTypes functionTypes; 
+	
+	
+	protected List<ApplicationComponent> componentsWithoutVM; 
 	
 	
 	protected boolean hasUserSolution; 
@@ -272,6 +277,15 @@ public class PaaSageConfigurationWrapper
 	public void setHasCorrectHostingRelationships(
 			boolean hasCorrectHostingRelationships) {
 		this.hasCorrectHostingRelationships = hasCorrectHostingRelationships;
+	}
+
+	public List<ApplicationComponent> getComponentsWithoutVM() {
+		return componentsWithoutVM;
+	}
+
+	public void setComponentsWithoutVM(
+			List<ApplicationComponent> componentsWithoutVM) {
+		this.componentsWithoutVM = componentsWithoutVM;
 	}
 	
 	
