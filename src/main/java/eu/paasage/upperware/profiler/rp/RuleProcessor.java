@@ -102,20 +102,20 @@ public class RuleProcessor {
 		return cdoClient_;
 	}
 
-	public void openCDOSession(String resId) {
+	public boolean openCDOSession(String resId) {
 		resId_ = resId;
-		this.openCDOSession();
+		return this.openCDOSession();
 	}
 
-	public void openCDOSession() {
+	public boolean openCDOSession() {
 		if (cdoClient_ != null) {
-			return;
+			return false;
 		}
 
 		cpCloner_ = new CPCloner();
-		cdoClient_ = CPCloner.createCDOClient();
+		cdoClient_ = CPCloner.createCDOClient(); 
 		log.debug("RuleProcessor.openCDOSession(): Opening a new CDO session.");
-
+		return cdoClient_.existResource(resId_);
 	}
 
 	public void commitCloneModelToCDO() {
@@ -659,7 +659,7 @@ public class RuleProcessor {
 		CamelModel camelModel = proxy.getCamelModel(cModel);
 		if (camelModel == null) {
 			System.out.println("Error: The given CAMEL model (" + 
-					cModel + ") was found in the CDO database!");
+					cModel + ") was not found in the CDO database!");
 			return null;
 		}
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
@@ -716,9 +716,14 @@ public class RuleProcessor {
 
 		if (providerType == "") {
 			System.out
-					.println("there is not provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
+					.println("there is no provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
 		} else {
-			rp.openCDOSession(resId);
+			if (!rp.openCDOSession(resId)) {
+				rp.closeCDOSession();
+				System.out.println("RuleProcessor.java: Error - Given CP Model ID (" + resId + ") could not be found in the database. Please check previous components for errors.");
+				log.error("RuleProcessor.java: Error - Given CP Model ID (" + resId + ") could not be found in the database. Please check previous components for errors.");
+				System.exit(1);
+			}
 			rp.cloneModel(resId); // clone the model
 			// List<EObject> objList = rp.getCloneModel(); // get the clone
 			// model
