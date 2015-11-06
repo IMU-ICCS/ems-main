@@ -24,7 +24,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.1</version><!--$NO-MVN-MAN-VER$-->
         <configuration>
           <source/>
           <target/>
@@ -98,6 +98,24 @@
 		<artifactId>camel</artifactId>
 		<version>2.0.0-SNAPSHOT</version>
 	  </dependency>
+	  <!-- 27Oct15 dependencies needed by metrics mapper -->
+	  <dependency>
+	  	<groupId>org.ow2.paasage</groupId>
+	  	<artifactId>cloner</artifactId>
+	  	<version>${paasage.version}</version>
+	  </dependency>
+	  <dependency>
+	  	<groupId>org.ow2.paasage</groupId>
+	  	<artifactId>generator</artifactId>
+	  	<version>${paasage.version}</version>
+	  </dependency>
+	  <dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	  <!-- end metric mapper dependencies -->
     <!--     <dependency>
       <groupId>wp3</groupId>
       <artifactId>wp3-cp-models</artifactId>

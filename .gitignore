@@ -1,1 +1,10 @@
-/target/
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Maven
+log/
+target/
+
+/Metasolver.log
