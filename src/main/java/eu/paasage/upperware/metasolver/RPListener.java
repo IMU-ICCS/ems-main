@@ -30,6 +30,10 @@ import org.jeromq.*;
 
 public class RPListener implements Runnable{
 
+	private Thread t;
+	private String threadName = "RPListener";
+
+	
 	private Context context1;
 	private Context context2;
 	private Context context3;
@@ -79,17 +83,27 @@ public class RPListener implements Runnable{
 			System.out.println("connection set .....");
 			subscriber1.subscribe("B_2".getBytes());//listening to meessages on ...
 			System.out.println("subscription done .....");
+	while (!Thread.currentThread ().isInterrupted () && subscriber1.recvStr() != null) {
 
 					System.out.println("got1");
 				// Read envelope with address
 
 				String address1 = subscriber1.recvStr ();
 				String contents1 = subscriber1.recvStr ();
-				System.out.println(" bell1 " + address1 + " : " + contents1);  	            	
+				System.out.println(" bell1 " + address1 + " : " + contents1);  	            	}
 				subscriber1.close ();
 			cntx1.term ();
 		}
 	}
+ public void start ()
+	   {
+	      System.out.println("Starting " +  threadName );
+	      if (t == null)
+	      {
+	         t = new Thread (this, threadName);
+	         t.start ();
+	      }
+	   }
 
 
 }
