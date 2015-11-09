@@ -98,7 +98,7 @@ public class metasolver{
 				e.printStackTrace();
 			}
 		}
-//	}
+	}
 	public static void go(){
 
 		rpl.start();
