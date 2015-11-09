@@ -88,7 +88,7 @@ public class metricsListener implements Runnable{
 
 				String address1 = subscriber1.recvStr ();
 				String contents1 = subscriber1.recvStr ();
-				System.out.println(" bell1 " + address1 + " : " + contents1); 
+				System.out.println(" message contents " + address1 + " : " + contents1); 
 			}
 				subscriber1.close ();
 			cntx1.term ();

@@ -41,25 +41,25 @@ public class metasolver{
 	public static void main(String args[]) throws IOException, InterruptedException, MetricMapperException{
 
 
-//		if (args[1].contains("with ZeroMQ")){
-//			go();
+		//		if (args[1].contains("with ZeroMQ")){
+		//			go();
 
 
-//			System.out.println("all subscriptions complete");
-//		}
-//		else{
+		//			System.out.println("all subscriptions complete");
+		//		}
+		//		else{
 
-			try{
-				String modID= args[1];
-				Mapper map = new Mapper();
-                long mapResult = map.mapMetricVariables(modID);
-                runMILPSolver("modID", mapResult);
-			}
-			catch(Exception e){
-				System.out.println("error starting metasolver " + e);
-			}
+		try{
+			String modID= args[1];
+			Mapper map = new Mapper();
+			long mapResult = map.mapMetricVariables(modID);
+			runMILPSolver("modID", mapResult);
+		}
+		catch(Exception e){
+			System.out.println("error starting metasolver " + e);
+		}
 	}
-//}
+	//}
 	public static void go(){
 
 		rpl.start();
@@ -68,61 +68,61 @@ public class metasolver{
 		sl.start();
 
 	}
-	
-public static void runMILPSolver(String input, long timestamp){
 
-try{	
-	Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input + timestamp);
-	
-	
-	// you can pass the system command or a script to exec command. here i used uname -a system command
-	BufferedReader stdInput = new BufferedReader(new
-			InputStreamReader(p1.getInputStream()));
+	public static void runMILPSolver(String input, long timestamp){
 
-	BufferedReader stdError = new BufferedReader(new
-			InputStreamReader(p1.getErrorStream()));
-
-	// read the output from the command
-	String s1="";
-	StringBuilder sb = new StringBuilder(); 
-	while ((s1 = stdInput.readLine()) != null) {
-
-		sb.append(s1);
-		sb.append("\n");
-	}
-
-	while ((s1 = stdError.readLine()) != null) {
-
-		sb.append(s1);
-		sb.append("\n");
-	}
+		try{	
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input + timestamp);
 
 
-	s1= sb.toString();
-	System.out.println(" output = " + s1);
-	
-	if (s1.length() > 1 || Integer.parseInt(s1) > 0){
+			// you can pass the system command or a script to exec command. here i used uname -a system command
+			BufferedReader stdInput = new BufferedReader(new
+					InputStreamReader(p1.getInputStream()));
 
-		//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
-		String s2 = "";
-		while ((s2 = stdInput.readLine()) != null) {
+			BufferedReader stdError = new BufferedReader(new
+					InputStreamReader(p1.getErrorStream()));
 
-			System.out.println("Std OUT: "+s2);
+			// read the output from the command
+			String s1="";
+			StringBuilder sb = new StringBuilder(); 
+			while ((s1 = stdInput.readLine()) != null) {
+
+				sb.append(s1);
+				sb.append("\n");
+			}
+
+			while ((s1 = stdError.readLine()) != null) {
+
+				sb.append(s1);
+				sb.append("\n");
+			}
+
+
+			s1= sb.toString();
+			System.out.println(" output = " + s1);
+
+			if (s1.length() > 1 || Integer.parseInt(s1) > 0){
+
+				//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
+				String s2 = "";
+				while ((s2 = stdInput.readLine()) != null) {
+
+					System.out.println("Std OUT: "+s2);
+				}
+
+				while ((s2 = stdError.readLine()) != null) {
+					System.out.println("Std ERROR : "+s2);
+				}
+
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
 		}
 
-		while ((s2 = stdError.readLine()) != null) {
-			System.out.println("Std ERROR : "+s2);
-		}
+
 
 	}
 
-} catch (IOException e) {
-
-	e.printStackTrace();
-}
-
-
-
-}
-	
 }
