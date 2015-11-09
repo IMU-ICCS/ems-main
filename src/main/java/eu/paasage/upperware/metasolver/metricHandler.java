@@ -13,7 +13,7 @@ public class metricHandler {
 	Hashtable time = new Hashtable();
 
 
-public int metricTable(String metricName, double metricVal, double timestamp){
+public int metricPush(String metricName, String metricVal, double timestamp){
 //add time comparison later
 	//int sep = gapCalc(metricName, timestamp);
 int comp = metricCompare(metricName, metricVal);
@@ -31,7 +31,8 @@ return 0;
 
 
 
-	public int metricCompare(String metricName, double metricVal){
+	public int metricCompare(String metricName, String metricVals){
+		int metricVal = Integer.parseInt(metricVals);
 		int res;
 			if (metric.isEmpty()){
 				

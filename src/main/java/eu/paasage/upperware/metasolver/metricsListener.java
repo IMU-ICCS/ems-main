@@ -89,6 +89,9 @@ public class metricsListener implements Runnable{
 				String address1 = subscriber1.recvStr ();
 				String contents1 = subscriber1.recvStr ();
 				System.out.println(" message contents " + address1 + " : " + contents1); 
+				metricHandler mh = new metricHandler();
+				mh.metricPush(address1, contents1, 0);
+				
 			}
 				subscriber1.close ();
 			cntx1.term ();
