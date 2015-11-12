@@ -52,12 +52,9 @@ import com.theoryinpractise.halbuilder.api.Representation;
 import com.theoryinpractise.halbuilder.api.RepresentationFactory;
 import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory;
 
-import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
-import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecutionwareError;
-import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer.User;
 import eu.paasage.upperware.adapter.adaptationmanager.core.AdaptationManager;
 
-public class ExecInterfacer {
+public class ExecInterfacer1 {
 
 	private final static Logger LOGGER = Logger.getLogger(ExecInterfacer.class
 			.getName());
@@ -1117,73 +1114,6 @@ public class ExecInterfacer {
 	}
 	
 	
-	public String createAPI(String name) throws ExecutionwareError{
-		
-		boolean status = false;
-		
-		HttpResponse resp = null;
-		
-		try{
-
-			JSONObject inBody = new JSONObject();
-			if(name.toLowerCase().contains("openstack")){
-				inBody.put("name", "openstack-nova");
-		        inBody.put("internalProviderName", "openstack-nova");
-			}else if(name.toLowerCase().contains("flexiant")){
-				inBody.put("name", "flexiant");
-		        inBody.put("internalProviderName", "flexiant");
-			}else if(name.toLowerCase().contains("amazon")){
-				inBody.put("name", "amazon");
-		        inBody.put("internalProviderName", "amazon");
-			}
-
-	        resp = postRequest(API_API, null, inBody);
-	        HttpEntity respEntity = resp.getEntity();
-
-	        String respString = EntityUtils.toString(respEntity);
-	        JSONParser parser = new JSONParser();
-	        Object obj = null;
-	        
-        	if(resp.getStatusLine().getStatusCode()==200){
-
-	            //JSONObject result = (JSONObject)parser.parse(respString);
-	            //execUser.setCreatedOn((long)result.get("createdOn"));
-
-        		try {
-        			obj = parser.parse(new String(respString));
-        		} catch (ParseException e) {
-        			// TODO Auto-generated catch block
-        			e.printStackTrace();
-        		}
-        		JSONObject jObj = (JSONObject) obj;
-        		
-        		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
-        		Iterator<JSONObject> iterator = links.iterator();
-        		while (iterator.hasNext()) {
-        			JSONObject factObj = (JSONObject) iterator.next();
-        			String href = (String) factObj.get("href");
-        			System.out.println("New API is located at " + href);
-        			return href;
-        		}
-        		//System.out.println("New cloud id is located at " + cloudId);
-        		status = true;
-
-        	}
-        }catch(Exception ex){ex.printStackTrace();}
-		
-		int responseCode = resp.getStatusLine().getStatusCode();
-		if ((responseCode < 200) || (responseCode >= 300)) {
-			LOGGER.log(Level.SEVERE,
-					"Adding API: Failed with response code "
-							+ responseCode);
-			throw new ExecutionwareError();
-		}
-		
-		//return cloudId;
-		return "";
-	}
-	
 	public JSONArray getAPIs() throws IOException, ParseException{
 
 		//Header inHeader = new BasicHeader(name, value);
@@ -1247,7 +1177,7 @@ public class ExecInterfacer {
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
         			String href = (String) factObj.get("href");
-        			System.out.println("New credential is located at " + href);
+        			System.out.println("New cloud is located at " + href);
         			return href;
         		}
         		//System.out.println("New cloud id is located at " + cloudId);
@@ -1259,7 +1189,7 @@ public class ExecInterfacer {
 		int responseCode = resp.getStatusLine().getStatusCode();
 		if ((responseCode < 200) || (responseCode >= 300)) {
 			LOGGER.log(Level.SEVERE,
-					"Adding credential: Failed with response code "
+					"Adding Cloud: Failed with response code "
 							+ responseCode);
 			throw new ExecutionwareError();
 		}
