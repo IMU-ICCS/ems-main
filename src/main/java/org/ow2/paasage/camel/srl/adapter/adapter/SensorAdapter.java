@@ -1,0 +1,37 @@
+/*
+ * Copyright (C) 2015 University of Ulm.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/
+ */
+
+package org.ow2.paasage.camel.srl.adapter.adapter;
+
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
+import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
+import eu.paasage.camel.metric.Sensor;
+
+/**
+ * Created by Frank on 03.09.2015.
+ */
+public class SensorAdapter extends AbstractAdapter {
+
+    private final Sensor sensor;
+
+    public SensorAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, Sensor sensor) {
+        super(config, fc);
+        this.sensor = sensor;
+    }
+
+    @Override
+    public void adapt() {
+        String _className = sensor.getConfiguration().split(";")[1];
+        String _metricName = sensor.getConfiguration().split(";")[0];
+        Boolean _isVmSensor = true;
+
+        logger.info("Save sensor to colosseum: " + sensor.getName());
+
+        getFc().saveSensorDescription(_className, _metricName, _isVmSensor);
+    }
+}
