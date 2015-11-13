@@ -350,28 +350,49 @@ public class CamelModelProcessor extends ModelProcessor {
 					concreteLocationConcept= ProviderModelParser.searchLocation(loc.getId(), locationConcept.getSubConcept()); 
 					logger.debug("CamelModelProcessor - parseModel - Loc concept: "+concreteLocationConcept);
 					concreteLocationConcept.setSelected(true);
+					
+					
 					logger.debug("CamelModelProcessor - parseModel - Loc concept: "+loc.getId()+ " selected!");
 					//If there is a Image requirement and the related provider was found, this is the only provider that will be considered
 					if(pmWithImage!=null)
 					{
+						List<Provider> currentCandidates= new ArrayList<>(); 
 						logger.debug("CamelModelProcessor - parseModel - parseOntology with image");
-						providerModelParser.parseOntology(ontology, pc, pmWithImage, vm, candidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
+						providerModelParser.parseOntology(ontology, pc, pmWithImage, vm, currentCandidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
 						logger.debug("CamelModelProcessor - parseModel - parseOntology with image ended");
+						
+						if(currentCandidates.isEmpty()) //Delete the provider with the given location
+						{
+							logger.debug("CamelModelProcessor - parseModel - Removing candidate with location "+concreteLocationConcept.getName());
+							providerModelParser.removeCandidatesWithLocationForVM(vm,pmWithImage.getProviderId(),concreteLocationConcept.getName(),pc);
+						}
+						else
+							candidates.addAll(currentCandidates);
+						
 					}
 					else if(provReq!=null) //If there are provider requirements, only the specified providers are considered  
 					{
 						logger.debug("CamelModelProcessor - parseModel - processProviderRequirements");
-						processProviderRequirements(provReq, ontology, pc, vm, candidates);
+						processProviderRequirementsLocation(provReq, ontology, pc, vm, candidates, concreteLocationConcept.getName());
 						logger.debug("CamelModelProcessor - parseModel - processProviderRequirements ended");
 					}
 					else //All the providers have to be considered
 					{
 						logger.debug("CamelModelProcessor - parseModel - processAllProviders with loc");
-						processAllProviders(ontology, pc, vm, candidates);
+						processAllProvidersLocation(ontology, pc, vm, candidates,concreteLocationConcept.getName());
 						logger.debug("CamelModelProcessor - parseModel - processAllProviders with loc ended");
 					}
 					
 					concreteLocationConcept.setSelected(false);
+					
+/*					logger.debug("CamelModelProcessor - parseModel - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
+					if(currentCandidates.isEmpty()) //Delete the provider with the given location
+					{
+						logger.debug("CamelModelProcessor - parseModel - Removing candidate with location "+concreteLocationConcept.getName());
+						providerModelParser.removeCandidatesWithLocationForVM(vm,concreteLocationConcept.getName(),pc);
+					}
+					else
+						candidates.addAll(currentCandidates); */
 				}
 			
 			}
@@ -417,6 +438,28 @@ public class CamelModelProcessor extends ModelProcessor {
 		}
 	}
 	
+	protected void processProviderRequirementsLocation(ProviderRequirement provReq, OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm, List<Provider> candidates, String locationId)
+	{
+		for(CloudProvider prov:provReq.getProviders())
+		{
+			List<Provider> currentCandidates= new ArrayList<Provider>(); 
+			
+			ProviderModelDecorator pm= proxy.getPMsMap().get(prov.getName()); 
+			
+			providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
+			
+			logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
+			
+			if(currentCandidates.isEmpty()) //Delete the provider with the given location
+			{
+				logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Removing candidate with location "+locationId);
+				providerModelParser.removeCandidatesWithLocationForVM(vm,pm.getProviderId(),locationId,pc);
+			}
+			else
+				candidates.addAll(currentCandidates); 
+		}
+	}
+	
 	protected void processAllProviders(final OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm, List<Provider> candidates)
 	{
 		logger.debug("CamelModelProcessor - processAllProviders - Processing ontology ");
@@ -431,6 +474,33 @@ public class CamelModelProcessor extends ModelProcessor {
 		logger.debug("CamelModelProcessor - processAllProviders - Ended ");
 	}
 
+	
+	protected void processAllProvidersLocation(final OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm, List<Provider> candidates, String locationId)
+	{
+		logger.debug("CamelModelProcessor - processAllProvidersLocation - Processing ontology ");
+		for(String key: proxy.getPMsMap().keySet()) 
+		{
+			
+			List<Provider> currentCandidates= new ArrayList<Provider>(); 
+			
+			ProviderModelDecorator pm= proxy.getPMsMap().get(key); 
+			logger.debug("CamelModelProcessor - processAllProvidersLocation - Selected concepts size "+ProviderModelParser.getSelectedConcepts(ontology.getConcepts()).size());
+			providerModelParser.parseOntology(ontology, pc, pm, vm, currentCandidates);
+			
+			logger.debug("CamelModelProcessor - processAllProvidersLocation - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
+			
+			if(currentCandidates.isEmpty()) //Delete the provider with the given location
+			{
+				logger.debug("CamelModelProcessor - processAllProvidersLocation - Removing candidate with location "+locationId);
+				providerModelParser.removeCandidatesWithLocationForVM(vm,pm.getProviderId(),locationId,pc);
+			}
+			else
+				candidates.addAll(currentCandidates); 
+		}
+		
+		logger.debug("CamelModelProcessor - processAllProvidersLocation - Ended ");
+	}
+	
 	protected void parseOptimisationRequirements(PaaSageConfigurationWrapper pc)
 	{
 		logger.debug("CamelModelProcessor - parseOptimisationRequirements 1");

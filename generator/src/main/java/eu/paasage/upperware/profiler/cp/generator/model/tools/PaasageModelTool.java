@@ -909,6 +909,106 @@ public class PaasageModelTool
 		
 	}
 	
+	/**
+	 * Removes all the virtual machine profile with a given provide from a list
+	 * @param profiles The virtual machine profiles 
+	 * @param provider The provider 
+	 * @param components The list of application components
+	 */
+	public static void removeVirtualMahineProfilesByProvider(List<VirtualMachineProfile> profiles, Provider provider, PaaSageConfigurationWrapper pcw)
+	{
+		int i=0; 
+		
+		while(i<profiles.size())
+		{
+			int j=0; 
+			while(j< profiles.get(i).getProviderDimension().size())
+			{	
+				ProviderDimension pc= profiles.get(i).getProviderDimension().get(j); 
+				logger.debug("Provider type "+pc.getProvider().getType().getId());
+				if(pc.getProvider().getId().equals(provider.getId()))
+				{
+					profiles.get(i).getProviderDimension().remove(j); 
+				}
+				else
+					j++; 		
+			}
+			
+			if(profiles.get(i).getProviderDimension().size()==0)
+			{
+				pcw.getPaasageConfiguration().getVmProfiles().remove(profiles.get(i)); 
+				 
+			}
+			
+			i++; 
+		}
+		
+		for(ApplicationComponent apc:pcw.getPaasageConfiguration().getComponents())
+		{
+			int j=0; 
+			
+			while(j<apc.getRequiredProfile().size())
+			{
+				if(apc.getRequiredProfile().get(j).getProviderDimension().size()==0)
+				{
+					apc.getRequiredProfile().remove(j); 
+				}
+				else
+					j++; 
+			}
+		}
+		
+	}
+	
+	/**
+	 * Removes all the virtual machine profile with a given provide from a list
+	 * @param profiles The virtual machine profiles 
+	 * @param provider The provider 
+	 * @param components The list of application components
+	 */
+	public static void removeVirtualMahineProfilesByProviderType(List<VirtualMachineProfile> profiles, ProviderType type, PaasageConfiguration pc)
+	{
+		int i=0; 
+		
+		while(i<profiles.size())
+		{
+			int j=0; 
+			while(j< profiles.get(i).getProviderDimension().size())
+			{	
+				ProviderDimension pd= profiles.get(i).getProviderDimension().get(j); 
+				if(pd.getProvider().getType().getId().equals(type.getId()))
+				{
+					profiles.get(i).getProviderDimension().remove(j); 
+				}
+				else
+					j++; 		
+			}
+			
+			if(profiles.get(i).getProviderDimension().size()==0)
+			{
+				pc.getVmProfiles().remove(profiles.get(i)); 
+				 
+			}
+			i++; 
+		}
+		
+		for(ApplicationComponent apc:pc.getComponents())
+		{
+			int j=0; 
+			
+			while(j<apc.getRequiredProfile().size())
+			{
+				if(apc.getRequiredProfile().get(j).getProviderDimension().size()==0)
+				{
+					apc.getRequiredProfile().remove(j); 
+				}
+				else
+					j++; 
+			}
+		}
+		
+	}
+	
 	
 	/**
 	 * Searches a provider in a given list

@@ -142,6 +142,7 @@ public class ProviderModelParser
 			alreadySelectedCandidates.add(candidate); 
 			
 		}
+
 /*		else //The candidate has to be deleted
 		{
 			ProviderType pt= PaasageModelTool.searchProviderTypeById(pmd.getProviderId(), configurationWrapper); 
@@ -187,6 +188,29 @@ public class ProviderModelParser
 				i--; 
 			}
 		}
+	}
+	
+	public void removeCandidatesWithLocationForVM(VM vm, String providerId, String locationId, PaaSageConfigurationWrapper pcw)
+	{
+		List<VirtualMachineProfile> vmProfiles= PaasageModelTool.searchRelatedVMProfiles(pcw.getPaasageConfiguration().getVmProfiles(), vm.getName());
+		
+		List<Provider> vmProviders= PaasageModelTool.getProvidersFromVirtualMachineProfiles(vmProfiles);
+		
+		LocationUpperware location= PaasageModelTool.getLocationFromName(locationId, pcw);
+		
+		for(Provider current: vmProviders)
+		{
+			if(current.getType().getId().equals(providerId) && current.getLocation()!=null)
+			{
+				if(location!=null && location.getName().equals(current.getLocation().getName()))
+				{
+					logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - removing candidates with location "+location.getName()+" and provider "+current.getId());
+					PaasageModelTool.removeVirtualMahineProfilesByProvider(vmProfiles, current, pcw);
+				}
+			}
+		}
+		
+		
 	}
 	
 	/**

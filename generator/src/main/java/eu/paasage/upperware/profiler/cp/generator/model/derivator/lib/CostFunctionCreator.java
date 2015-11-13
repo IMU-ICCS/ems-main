@@ -97,7 +97,7 @@ public class CostFunctionCreator implements IFunctionCreator {
 		String providerId= CPModelTool.getProviderRelatedToVariable(v);
 		
 		String vmId= CPModelTool.getVmProfileRelatedToVariable(v); 
-		
+		//System.out.print("appId: "+appId+" providerId "+providerId+" vmId "+vmId);
 		ProviderModel pm= database.loadPM(appId, providerId, vmId); 
 		
 		double rate= manager.estimatePrice(pm); 
