@@ -20,9 +20,7 @@ import com.eclipsesource.json.JsonObject;
 
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
-import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecutionwareError;
 import eu.paasage.upperware.adapter.adaptationmanager.core.Coordinator;
-import eu.paasage.upperware.adapter.adaptationmanager.mapping.CamelExecwareMapping;
 import eu.paasage.upperware.plangenerator.model.task.ConfigurationTask;
 import eu.paasage.upperware.plangenerator.type.TaskType;
 
@@ -88,15 +86,8 @@ public class VMInstanceAction implements Action {
 					
 					String tempCloudID = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloudName);
 					
-					if(tempCloudID.equalsIgnoreCase("")){//need to add the cloud provider
-						String driver = objParams.get("driver").asString();
-						String endpoint = objParams.get("endpoint").asString();
-						String uname = ((JsonObject) objParams.get("credential")).get("username").asString();
-						String pass = ((JsonObject) objParams.get("credential")).get("password").asString();
+					while(tempCloudID.equalsIgnoreCase("")){
 						
-						linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);
-						
-						tempCloudID = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloudName);
 					}
 					
 					cloudID = execInterfacer.trimResponseID(tempCloudID);
@@ -208,90 +199,5 @@ public class VMInstanceAction implements Action {
 	
 	public String getVMInstName(){
 		return this.vmInstName;
-	}
-	
-	private boolean linkCloudProvToExecWare(String cloud, String driver, String endpoint, String uname, String pass){
-		boolean status = false;
-		
-		while(CamelExecwareMapping.isCloudLookupInProgress() == false){
-			CamelExecwareMapping.cloudLookingUp();
-			
-			
-			//Check if already added then make status true and return
-			String cloudID = null;
-			try {
-				cloudID = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloud);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(!cloudID.equalsIgnoreCase("")){//cloud added by another thread
-				CamelExecwareMapping.CloudLookedUp();
-				status = true;
-				return status;
-			}
-			
-			String tempAPIid = null, APIid = null, tempCloudId = null, cloudId = null, cloudCred = null;
-			
-			try {
-				tempAPIid = execInterfacer.getJSONArrayHref(execInterfacer.getAPIs(), driver);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			if(tempAPIid.equalsIgnoreCase("")){
-				try {
-					tempAPIid = execInterfacer.createAPI(driver);
-					APIid = execInterfacer.trimResponseID(tempAPIid);
-				} catch (ExecutionwareError e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-			try {
-				tempCloudId = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloud);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (ParseException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			Integer tenantId = 1;
-			
-			if(tempCloudId.equalsIgnoreCase("")){
-				try {
-					tempCloudId = execInterfacer.createCloud(cloud, endpoint, Integer.parseInt(APIid));
-					cloudId = execInterfacer.trimResponseID(tempCloudId);
-					cloudCred = execInterfacer.createCloudCredential(uname, pass, Integer.parseInt(cloudId), tenantId);
-					if(cloudCred != null || !cloudCred.equalsIgnoreCase("")){
-						LOGGER.log(Level.INFO, "Wait for some minutes to make sure ExecutionWare finished the lookup of the cloud-related locations, etc.");
-						Thread.currentThread().wait(180000);
-						CamelExecwareMapping.CloudLookedUp();
-						status = true;
-					}
-				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionwareError e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return status;
 	}
 }
