@@ -42,13 +42,13 @@ import eu.paasage.upperware.profiler.rp.RuleProcessor;
 public class RuleProcessorService {
 
 	/** TCP connection used for subscribing (ZeroMQ) **/
-	public static final String SUB_TCP_CONNECT = "tcp://localhost:5544";
+	public static final String SUB_TCP_CONNECT = "tcp://127.0.0.1:5544";
 
 	/** ZeroMQ group we are subscribing to **/
 	public static final String SUB_GROUP = "startSolving";
 
 	/** TCP connection used for publishing (ZeroMQ) **/
-	public static final String PUB_TCP_CONNECT = "tcp://localhost:5545";
+	public static final String PUB_TCP_CONNECT = "tcp://127.0.0.1:5545";
 
 	/** ZeroMQ group we are publishing onto **/
 	public static final String PUB_GROUP = "RPsolutionAvailable";
@@ -88,6 +88,8 @@ public class RuleProcessorService {
 	 */
 	@SuppressWarnings("deprecation")
 	private static void processRequest(Socket subscriber, Socket publisher) {
+		logger.info("Waiting for incoming request ...");
+
 		if (subscriber == null) {
 			String error = "ZeroMQ subscriber socket not initialized";
 			publishError(publisher, error);
@@ -141,6 +143,7 @@ public class RuleProcessorService {
 		int success = rProcessor.processRequest(camelModel, cdoIdentifier);
 		if (success == 1) {
 			logger.info("RP passed. Publish onto topic " + PUB_GROUP);
+			System.out.println("RP passed. Publish onto topic " + PUB_GROUP);
 			publisher.sendMore(PUB_GROUP);
 			publisher.sendMore(camelModel);
 			publisher.send(cdoIdentifier);
@@ -148,6 +151,9 @@ public class RuleProcessorService {
 			String error = "An error occurred while validating the model with the Rule Processor";
 			publishError(publisher, error);
 		}
+		
+		logger.info("  > request processed.");
+		System.out.println("  > request processed.");
 	}
 
 	private static void publishError(Socket publisher, String errorMessage) {
@@ -173,9 +179,7 @@ public class RuleProcessorService {
 
 		// [3] Process incoming requests
 		while (!Thread.currentThread().isInterrupted()) {
-			logger.info("Processing incoming request ...");
 			processRequest(subscriber, publisher);
-			logger.info("  > request processed.");
 		}
 
 		subscriber.close();

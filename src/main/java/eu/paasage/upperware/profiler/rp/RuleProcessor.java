@@ -701,7 +701,7 @@ public class RuleProcessor {
 		String providerType = getProviderFromOrganisationModel(camelModel);
 
 		if (providerType == "") {
-			System.out.println("there is not provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
+			System.out.println("\nNo cloud provider requirements found in the CAMEL model. No rules were applied to the CP model.\n");
 		} else {
 			this.openCDOSession(cdoIdentifier);
 			this.cloneModel(cdoIdentifier); // clone the model
@@ -771,7 +771,7 @@ public class RuleProcessor {
 		}
 
 		if (providerType == "") {
-			System.out.println("there is no provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
+			System.out.println("\nNo cloud provider requirements found in the CAMEL model. No rules were applied to the CP model.\n ");
 		} else {
 			if (!rp.openCDOSession(cpModel)) {
 				rp.closeCDOSession();

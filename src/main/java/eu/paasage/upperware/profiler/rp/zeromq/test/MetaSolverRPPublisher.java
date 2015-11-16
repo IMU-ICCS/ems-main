@@ -21,11 +21,11 @@ public class MetaSolverRPPublisher {
 		publisher.bind("tcp://*:5544");
 
 		Thread.sleep(5000);
-		
+
 		while (!Thread.currentThread().isInterrupted()) {
 			publisher.sendMore("startSolving");
-			publisher.sendMore("mdhf2");
-			publisher.send("upperware-models/1444391197664");
+			publisher.sendMore("mdhf1611");
+			publisher.send("upperware-models/MDPlusHyperflow1447680950128");
 			return;
 		}
 
