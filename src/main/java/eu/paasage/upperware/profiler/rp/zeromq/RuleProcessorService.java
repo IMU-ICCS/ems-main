@@ -57,9 +57,28 @@ public class RuleProcessorService {
 	public static final String ERROR = "RP_ERROR";
 
 	/** Logging via Log4j **/
-	private final static Logger logger = Logger
-			.getLogger(RuleProcessorService.class);
+	private final static Logger logger = Logger.getLogger(RuleProcessorService.class);
 
+	/** Singleton instance **/
+    private static RuleProcessorService instance;
+
+    private RuleProcessorService() {
+    	// nothing to initialize
+    }
+
+    /**
+     * Returns a singleton-instance of the RuleProcessorService.
+     * 
+     * @return
+     */
+    public static RuleProcessorService getInstance() {
+        if (instance == null) {
+            instance = new RuleProcessorService();
+        }
+
+        return instance;
+    }
+    
 	/**
 	 * 
 	 * @param subscriber
@@ -67,6 +86,7 @@ public class RuleProcessorService {
 	 * @param publisher
 	 *            ZeroMQ publisher socket
 	 */
+	@SuppressWarnings("deprecation")
 	private static void processRequest(Socket subscriber, Socket publisher) {
 		if (subscriber == null) {
 			String error = "ZeroMQ subscriber socket not initialized";
@@ -140,8 +160,7 @@ public class RuleProcessorService {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
-
+    public void run() {
 		// [1] Create socket and subscribe to SUB_GROUP to receive new requests
 		ZMQ.Context context = ZMQ.context(1);
 		ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
