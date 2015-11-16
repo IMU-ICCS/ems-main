@@ -913,7 +913,7 @@ public class PaasageModelTool
 	 * Removes all the virtual machine profile with a given provide from a list
 	 * @param profiles The virtual machine profiles 
 	 * @param provider The provider 
-	 * @param components The list of application components
+	 * @param pcw The paasage configuration
 	 */
 	public static void removeVirtualMahineProfilesByProvider(List<VirtualMachineProfile> profiles, Provider provider, PaaSageConfigurationWrapper pcw)
 	{
@@ -963,8 +963,8 @@ public class PaasageModelTool
 	/**
 	 * Removes all the virtual machine profile with a given provide from a list
 	 * @param profiles The virtual machine profiles 
-	 * @param provider The provider 
-	 * @param components The list of application components
+	 * @param type The provider type
+	 * @param pc The paasage configuration
 	 */
 	public static void removeVirtualMahineProfilesByProviderType(List<VirtualMachineProfile> profiles, ProviderType type, PaasageConfiguration pc)
 	{
