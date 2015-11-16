@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -52,6 +53,8 @@ import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import eu.paasage.upperware.profiler.rp.util.PropertiesReader;
+import eu.paasage.upperware.profiler.rp.util.Utilities;
+import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
 
 public class RuleProcessor {
 	/** Log4j logger instance. */
@@ -743,39 +746,42 @@ public class RuleProcessor {
 
 	// //////////////////////////////////////////////////////
 	public static void main(String[] args) throws Exception {
-		// check for inputs
-		if (args.length < 2) {
-			System.out
-					.println("RuleProcessor.java: Error - empty argument. Please specify the camel & CP model IDs.");
-			log.error("RuleProcessor.java: Error - empty argument. Please specify the camel & CP model ID.");
-			return;
-		}
+		Map<String, String> arguments = Utilities.parseArguments(args);
 
-		String resId = args[1]; // arg[0] = camel model, arg[1] = resource ID
-								// that contains the CP model
-		String providerType;
+        if (arguments.get("d") != null) {
+            log.info("Starting as a service...");
+            RuleProcessorService.getInstance().run();
+            System.exit(0);
+        }
+        final String camelModel = arguments.get("m");
+        final String cpModel = arguments.get("c");
+
+        if (!Utilities.validateArguments(camelModel, cpModel)) {
+            System.exit(1);
+        }
+        
+        log.info("Parsing provider information...");    
+        
+ 		String providerType;
 		RuleProcessor rp = new RuleProcessor();
 
-		providerType = getProviderFromOrganisationModel(args[0]);
+		providerType = getProviderFromOrganisationModel(camelModel);
 		if (providerType == null) {
 			System.exit(1);
 		}
 
 		if (providerType == "") {
-			System.out
-					.println("there is no provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
+			System.out.println("there is no provider defined in the Organisation Model (CAMEL) nothing to do. RP Pass \n ");
 		} else {
-			if (!rp.openCDOSession(resId)) {
+			if (!rp.openCDOSession(cpModel)) {
 				rp.closeCDOSession();
-				System.out.println("RuleProcessor.java: Error - Given CP Model ID (" + resId + ") could not be found in the database. Please check previous components for errors.");
-				log.error("RuleProcessor.java: Error - Given CP Model ID (" + resId + ") could not be found in the database. Please check previous components for errors.");
+				System.out.println("RuleProcessor.java: Error - Given CP Model ID (" + cpModel + ") could not be found in the database. Please check previous components for errors.");
+				log.error("RuleProcessor.java: Error - Given CP Model ID (" + cpModel + ") could not be found in the database. Please check previous components for errors.");
 				System.exit(1);
 			}
-			rp.cloneModel(resId); // clone the model
-			// List<EObject> objList = rp.getCloneModel(); // get the clone
-			// model
-			rp.removeProvider(resId, providerType); // NOTE: move to
-													// checkSLA.java file ??
+			rp.cloneModel(cpModel); // clone the model
+			// List<EObject> objList = rp.getCloneModel(); // get the clone model
+			rp.removeProvider(cpModel, providerType); // NOTE: move to checkSLA.java file ??
 
 			// commit or save the clone model to the CDO server
 			rp.commitCloneModelToCDO();
@@ -784,13 +790,11 @@ public class RuleProcessor {
 			CDOClientExtended cdoClient = rp.getCDOClient();
 			CDOView cdoView = cdoClient.openView();
 
-			System.out
-					.println("\n-------------------------------------------------------------------");
+			System.out.println("\n-------------------------------------------------------------------");
 			String newResId = rp.getCloneResId();
 			ModelData data = rp.getModelDataFromCDO(newResId, cdoView);
 			data.printPaasageConfiguration();
-			System.out
-					.println("\n-------------------------------------------------------------------");
+			System.out.println("\n-------------------------------------------------------------------");
 			data.printConstraintProblem();
 			cdoClient.closeView(cdoView);
 
@@ -799,8 +803,7 @@ public class RuleProcessor {
 			rp.closeCDOSession();
 		}
 
-		int code = 0; // 0 means sucess and pass the RP validation checks on the
-						// CP models
+		int code = 0; // 0 means sucess and pass the RP validation checks on the CP models
 		if (rp.getValidationResult() == true) {
 			log.debug("\nRP_result: PASS - code: " + code);
 			System.out.println("\nRP_result: PASS - code: " + code);
