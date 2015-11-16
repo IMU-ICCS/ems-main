@@ -17,13 +17,14 @@ import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
  */
 public class MetaSolverRPSubscriber {
 
-    public static void main (String[] args) {
+    @SuppressWarnings("deprecation")
+	public static void main (String[] args) {
         ZMQ.Context context = ZMQ.context(1);
         ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
 
-        subscriber.connect("tcp://localhost:5545");
+        subscriber.connect("tcp://127.0.0.1:5545");
         subscriber.subscribe("RPsolutionAvailable".getBytes());
-        
+
         while (!Thread.currentThread ().isInterrupted ()) {
             String requestType = subscriber.recvStr();
             System.out.println("Received message on topic '" + requestType + "'");
