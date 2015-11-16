@@ -70,6 +70,18 @@ public class CommandLinePropertiesAccessorImpl
         options.addOption(
             Option.builder("visEndpoint").longOpt("visEndpoint").desc("Endpoint of visor to send to CDO.")
                 .hasArg().build());
+        options.addOption(
+                Option.builder("ExecutionMode").longOpt("ExecutionMode").desc("ExecutionMode of the Adapter.")
+                        .hasArg().build());
+        options.addOption(
+                Option.builder("ZeroMqPort").longOpt("ZeroMqPort").desc("Port of the ZeroMQ server to listen to.")
+                        .hasArg().build());
+        options.addOption(
+                Option.builder("ZeroMqUri").longOpt("ZeroMqUri").desc("Endpoint for the ZeroMQ server to listen to.")
+                        .hasArg().build());
+        options.addOption(
+                Option.builder("ZeroMqQueue").longOpt("ZeroMqQueue").desc("Name of the Queue of the ZeroMQ.")
+                        .hasArg().build());
     }
 
     public void printHelp() {
@@ -104,6 +116,10 @@ public class CommandLinePropertiesAccessorImpl
             case "createMetricInstances": return "true";
             //case "visEndpoint": return "134.60.64.43";
             case "visEndpoint": return "localhost";
+            case "ExecutionMode": return ExecutionMode.STATIC.toString();
+            case "ZeroMqPort": return "5563";
+            case "ZeroMqUri": return "tcp://localhost:5563";
+            case "ZeroMqQueue": return "newModelArrival";
             default : return null;
         }
     }
@@ -154,5 +170,25 @@ public class CommandLinePropertiesAccessorImpl
 
     @Override public String getVisorEndpoint() {
         return this.getCommandLineOption("visEndpoint");
+    }
+
+    @Override
+    public ExecutionMode getExecutionMode() {
+        return ExecutionMode.valueOf(this.getCommandLineOption("ExecutionMode"));
+    }
+
+    @Override
+    public int getZeroMqPort() {
+        return Integer.parseInt(this.getCommandLineOption("ZeroMqPort"));
+    }
+
+    @Override
+    public String getZeroMqUri() {
+        return this.getCommandLineOption("ZeroMqUri");
+    }
+
+    @Override
+    public String getZeroMqQueue() {
+        return this.getCommandLineOption("ZeroMqQueue");
     }
 }

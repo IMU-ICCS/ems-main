@@ -56,8 +56,15 @@ public class Instantiator {
             MI.setObjectBinding(mob);
             MI.setSchedule(context.getSchedule());
             //MI.setValueType(valueType);
-            if(resourceContents != null) resourceContents.add(MI);
-            model.getMetricModels().get(0).getMetricInstances().add(MI);
+
+            //only add metric instance to CDO resource if not already there:
+            RawMetricInstance duplicate = getDuplicate(model, MI);
+            if(duplicate == null) {
+                if(resourceContents != null) resourceContents.add(MI);
+                model.getMetricModels().get(0).getMetricInstances().add(MI);
+            } else {
+                MI = duplicate;
+            }
 
             metricInstances.add(MI);
             result = MI;
@@ -78,8 +85,15 @@ public class Instantiator {
 //            for(MetricContext composedMetricContext : ((CompositeMetricContext)context).getComposingMetricContexts()){
 //                MI.getComposingMetricInstances().add(createMetricInstance(model, resourceContents, composedMetricContext, instance, metricInstances));
 //            }
-            if(resourceContents != null) resourceContents.add(MI);
-            model.getMetricModels().get(0).getMetricInstances().add(MI);
+
+            //only add metric instance to CDO resource if not already there:
+            CompositeMetricInstance duplicate = getDuplicate(model, MI);
+            if(duplicate == null) {
+                if(resourceContents != null) resourceContents.add(MI);
+                model.getMetricModels().get(0).getMetricInstances().add(MI);
+            } else {
+                MI = duplicate;
+            }
 
             metricInstances.add(MI);
             result = MI;
@@ -89,6 +103,34 @@ public class Instantiator {
 
 
         return result;
+    }
+
+    private static RawMetricInstance getDuplicate(CamelModel model, RawMetricInstance mi) {
+        for(MetricModel mm : model.getMetricModels()){
+            for(MetricInstance tempMI : mm.getMetricInstances()){
+                if(tempMI.getName().equals(mi.getName())
+                        && tempMI instanceof RawMetricInstance
+                        && tempMI.getObjectBinding().equals(mi.getObjectBinding())){
+                    //TODO: identification satisfied by name?
+                    return (RawMetricInstance)tempMI;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static CompositeMetricInstance getDuplicate(CamelModel model, CompositeMetricInstance mi) {
+        for(MetricModel mm : model.getMetricModels()){
+            for(MetricInstance tempMI : mm.getMetricInstances()){
+                if(tempMI.getName().equals(mi.getName())
+                        && tempMI instanceof CompositeMetricInstance
+                        && tempMI.getObjectBinding().equals(mi.getObjectBinding())){
+                    //TODO: identification satisfied by name?
+                    return (CompositeMetricInstance)tempMI;
+                }
+            }
+        }
+        return null;
     }
 
     public static void createMetricInstances(CamelModel model, ExecutionContext ec, EList<EObject> resourceContents) {

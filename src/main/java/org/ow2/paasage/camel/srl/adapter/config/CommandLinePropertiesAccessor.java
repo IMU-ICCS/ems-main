@@ -12,16 +12,20 @@ package org.ow2.paasage.camel.srl.adapter.config;
  * Created by Frank on 09.08.2015.
  */
 public interface CommandLinePropertiesAccessor {
-    public String getCdoUser();
-    public String getCdoPassword();
-    public String getModelName();
-    public String getResourceName();
-    public String getExecutionContextName();
-    public String getColosseumUser();
-    public String getColosseumTenant();
-    public String getColosseumPassword();
-    public String getColosseumUrl();
-    public String getVisorEndpoint();
-    public boolean getSaveExample();
-    public boolean getCreateMetricInstances();
+    String getCdoUser();
+    String getCdoPassword();
+    String getModelName();
+    String getResourceName();
+    String getExecutionContextName();
+    String getColosseumUser();
+    String getColosseumTenant();
+    String getColosseumPassword();
+    String getColosseumUrl();
+    String getVisorEndpoint();
+    boolean getSaveExample();
+    boolean getCreateMetricInstances();
+    ExecutionMode getExecutionMode();
+    int getZeroMqPort();
+    String getZeroMqUri();
+    String getZeroMqQueue();
 }
