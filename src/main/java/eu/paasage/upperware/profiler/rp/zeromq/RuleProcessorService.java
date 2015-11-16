@@ -69,7 +69,7 @@ public class RuleProcessorService {
     /**
      * Returns a singleton-instance of the RuleProcessorService.
      * 
-     * @return
+     * @return the RuleProcessorService instance
      */
     public static RuleProcessorService getInstance() {
         if (instance == null) {
@@ -164,7 +164,7 @@ public class RuleProcessorService {
 	}
 
 	/**
-	 * @param args
+	 *
 	 */
     public void run() {
 		// [1] Create socket and subscribe to SUB_GROUP to receive new requests

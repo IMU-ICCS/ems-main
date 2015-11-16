@@ -86,7 +86,7 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.3.1</version>
 				<configuration>
-					<mainClass>eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService</mainClass>
+					<mainClass>eu.paasage.upperware.profiler.rp.RuleProcessor</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -96,7 +96,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService</mainClass>
+							<mainClass>eu.paasage.upperware.profiler.rp.RuleProcessor</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

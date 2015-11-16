@@ -350,9 +350,9 @@ public class RuleProcessor {
 
 		String[] strArray = resId.split("/"); // splitting
 												// upperware-models/1414751126815
-		String newPaaSageConfigId = strArray[1] + "v2"; // take the latter part:
+		String newPaaSageConfigId = strArray[1] + "v3"; // take the latter part:
 														// 1414751126815
-		cloneResId_ = resId + "v2";
+		cloneResId_ = resId + "v3";
 
 		EObject obj = null;
 		PaasageConfiguration pc = null;
@@ -378,6 +378,8 @@ public class RuleProcessor {
 				Iterator<VirtualMachineProfile> it = pc.getVmProfiles().iterator();
 				while (it.hasNext()) {
 					VirtualMachineProfile vmProfile = it.next();
+					//String prov = vmProfile.getProviderDimension();
+					
 					/*
 					 * TODO: check with the new changes ProviderCost pCost =
 					 * vmProfile.getProvider(); String pID =
@@ -694,6 +696,7 @@ public class RuleProcessor {
 		}// end for
 			// return omProviders; //It is not clear if the user can define more
 			// than one provider in the OM
+		providerType = "public";
 		return providerType;
 	}
 	

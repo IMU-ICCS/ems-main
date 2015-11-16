@@ -50,7 +50,8 @@ public class Utilities {
 	 * Parses given arguments, which are returned as key-value paris.
 	 * 
 	 * @param args
-	 * @return
+	 * 		command-line arguments
+	 * @return parsed arguments and values as key-value pairs
 	 */
 	public static Map<String, String> parseArguments(String[] args) {
 		Map<String, String> arguments = new HashMap<String, String>();
