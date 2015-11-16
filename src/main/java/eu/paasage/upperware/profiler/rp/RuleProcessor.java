@@ -696,7 +696,6 @@ public class RuleProcessor {
 		}// end for
 			// return omProviders; //It is not clear if the user can define more
 			// than one provider in the OM
-		providerType = "public";
 		return providerType;
 	}
 	
