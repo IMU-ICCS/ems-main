@@ -41,13 +41,7 @@ public class metasolver{
 	public static void main(String args[]) throws IOException, InterruptedException, MetricMapperException{
 
 
-		//		if (args[1].contains("with ZeroMQ")){
-		//			go();
-
-
-		//			System.out.println("all subscriptions complete");
-		//		}
-		//		else{
+		
 
 		try{
 			String modID= args[1];
@@ -60,7 +54,13 @@ public class metasolver{
 		}
 	}
 	//}
-	public static void go(){
+	public void startSolving(){
+					go();
+
+
+					System.out.println("all subscriptions complete");
+			}
+	public void go(){
 
 		rpl.start();
 		ml.start();
