@@ -35,11 +35,11 @@ public class ZeroMqServer {
         socket.bind("tcp://*:" + port);
     }
 
-    public synchronized void submitValue(String resourceName, String modelName, String executionContext){
+    public synchronized void submitValue(String queueName, String resourceName, String modelName, String executionContext){
         if (isRunning){
 
             // Content format: resource:model:executioncontext
-
+            socket.sendMore(queueName);
             socket.send(resourceName + ZeroMqSubscriber.SEPERATOR + modelName + ZeroMqSubscriber.SEPERATOR + executionContext);
         }
     }
