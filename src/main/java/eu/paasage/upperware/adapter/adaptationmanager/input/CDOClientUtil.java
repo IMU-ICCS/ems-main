@@ -230,7 +230,7 @@ public class CDOClientUtil {
 		return dm;
 	}
 	
-	public DeploymentModel tryLoadTwoFiles(String camel, String provider){
+	public static DeploymentModel tryLoadTwoFiles(String camel, String provider){
 		System.out.println("...inside tryLoadTwoFiles....");
 		CamelModel cModel;
 		CamelModel pModel;

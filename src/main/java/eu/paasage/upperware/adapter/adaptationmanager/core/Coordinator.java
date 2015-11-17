@@ -256,6 +256,7 @@ public class Coordinator {
 		DeploymentModel targetModel = reasonerInterfacer.getLiveDeploymentModel();//Comment to stop getting live model
 		
 		//CDOClientUtil mycdo = new CDOClientUtil(null);//comment not to load local files
+		//DeploymentModel targetModel = CDOClientUtil.tryLoadTwoFiles("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/PGexamples/test.xmi", "/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/PGexamples/upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi");
 		//DeploymentModel targetModel = mycdo.tryLoadTwoFiles("/home/asinha/git/paasadapterOW2/paasadapter/src/test/resources/ver2_0/test.xmi", "/home/asinha/git/paasadapterOW2/paasadapter/src/test/resources/ver2_0/upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi");
 		
 		//Integration for Shirley's plangenerator

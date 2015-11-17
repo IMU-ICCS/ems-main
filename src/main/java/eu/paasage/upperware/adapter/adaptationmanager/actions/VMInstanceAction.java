@@ -78,7 +78,7 @@ public class VMInstanceAction implements Action {
 				LOGGER.log(Level.INFO, "Found cloud name in the deployment model: " + cloudName);
 				
 				//cloudName = "GWDG";//hack for test
-				cloudName = "omistack";//hack for Belgium workshop test
+				//cloudName = "omistack";//hack for Belgium workshop test
 				
 				//cloudID = "/api/cloud/"+cloudName;//substitute with API call GET ID
 				try {
@@ -115,7 +115,7 @@ public class VMInstanceAction implements Action {
 				String cloudProviderId = objParams.get("locations").asArray().get(0).toString();
 				System.out.println("Locations fetched " + objParams.get("locations").asArray().toString());
 				
-				cloudProviderId = "regionOne";//hack for test
+				//cloudProviderId = "regionOne";//hack for test
 				try {
 					locationID = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderId) + "";
 				} catch (NumberFormatException e) {
@@ -131,7 +131,7 @@ public class VMInstanceAction implements Action {
 				//locationID = objParams.get("cloud").asString();//find the appropriate location ID satisfying cloudID & cloudUuid
 				
 				//cloudProviderId = "regionOne/acbc4b60-7b03-48bb-8352-faed4410eca3";//hack for test
-				cloudProviderId = "RegionOne/4";//hack for Belgium workshop test
+				//cloudProviderId = "RegionOne/4";//hack for Belgium workshop test
 				try {
 					hardwareID = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), cloudProviderId) + "";
 				} catch (NumberFormatException e) {
@@ -147,7 +147,7 @@ public class VMInstanceAction implements Action {
 				//hardwareID = "/api/hardware/3";//find the appropriate hardware ID satisfying cloudID & cloudUuid
 				
 				//cloudProviderId = "regionOne/c404edc0-0b8f-4749-bd94-dc65338c41f5";//hack for test
-				cloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";//hack for Belgium workshop test
+				//cloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";//hack for Belgium workshop test
 				try {
 					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), cloudProviderId, locationID) + "";
 				} catch (NumberFormatException e) {
