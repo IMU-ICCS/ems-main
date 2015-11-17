@@ -75,6 +75,13 @@ public class RuleProcessor {
 	private String resId_; // CDO's resource ID
 	private String cloneResId_; // the clone version of the original resource ID
 
+	public enum SOLUTION_STATUS {
+		ERROR,
+		NO_CHANGE_REQUIRED,
+		NO_SOLUTION_AVAILABLE,
+		MODEL_CHANGED
+	}
+	
 	public RuleProcessor() {
 		Properties paasageProperties = PropertiesReader.loadPropertyFile();
 
@@ -341,9 +348,9 @@ public class RuleProcessor {
 		return cloneList_;
 	}
 
-	public int removeProvider(String resId, String camelModel, String providerType) {
+	public SOLUTION_STATUS removeProvider(String resId, String camelModel, String providerType) {
 		if (providerType == null) {
-			return 0;
+			return SOLUTION_STATUS.ERROR;
 		}
 
 		List<EObject> objList = this.getCloneModel();
@@ -394,16 +401,14 @@ public class RuleProcessor {
 		if (willBeRemoved.isEmpty()) {
 			System.out.println("- None. No " + providerType
 					+ " cloud providers were selected by the CP generator for deployment.\n");
-			return 1;
+			return SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		} else {
 			for (String provider : willBeRemoved) {
 				System.out.println("  - " + provider);
 			}
 		}
 
-		// do the actual removal
-		int returnCode =  removeModelFromCDO(resId, camelModel, delTable, vmRemoveList, objList);
-		return returnCode;
+		return removeModelFromCDO(resId, camelModel, delTable, vmRemoveList, objList);
 	}
 	
 	private boolean isProviderPublic(String cpModelId, String cloudProviderId) {
@@ -416,7 +421,7 @@ public class RuleProcessor {
         return false;
 	}
 
-	private int removeModelFromCDO(String resId, String camelModel,
+	private SOLUTION_STATUS removeModelFromCDO(String resId, String camelModel,
 			HashMap<String, Boolean> delTable, ArrayList<String> vmRemoveList,
 			List<EObject> objList) {
 		EObject obj = null;
@@ -465,10 +470,10 @@ public class RuleProcessor {
 				System.out.println("  - " + cloudMLId);
 			}
 			System.out.println("> Please adapt the requirements in your CAMEL model.");
-			return 2;
+			return SOLUTION_STATUS.NO_SOLUTION_AVAILABLE;
 		}
 		
-		return 3;
+		return SOLUTION_STATUS.MODEL_CHANGED;
 	}
 
 	private void removeConfigurationFromCDO(PaasageConfiguration pc,
@@ -766,34 +771,38 @@ public class RuleProcessor {
 		this.openCDOSession(cdoIdentifier);
 		this.cloneModel(cdoIdentifier); // clone the model
 		
-		int providersToRemove = 1;
+		SOLUTION_STATUS status = SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		String detectedProvider = camelProviders.values().iterator().next();
 		if (detectedProvider.equalsIgnoreCase("public")) {
 			System.out.println("\n> Going to remove private cloud providers...");
-			providersToRemove = this.removeProvider(cdoIdentifier, camelModel, "private");
+			status = this.removeProvider(cdoIdentifier, camelModel, "private");
 		} else {
 			System.out.println("\n> Going to remove public cloud providers...");
-			providersToRemove = this.removeProvider(cdoIdentifier, camelModel, "public");
+			status = this.removeProvider(cdoIdentifier, camelModel, "public");
 		}
-		/* error occurred */
-		if (providersToRemove == 0) { 
-			int success = 0;
-			return success;
-		/* no changes required, because no cloud provider requirements are given */
-		} else if (providersToRemove == 1) {
-			int success = 1;
-			log.debug("\nRP_result: PASS - code: " + success);
-			System.out.println("\nRP_result: PASS - code: " + success);
-			return success;
-		/* no solution available */
-		} else if (providersToRemove == 2) {
-			int success = 0;
-			log.debug("\nRP_result: NO_SOLUTION - code: " + success);
-			System.out.println("\nRP_result: NO_SOLUTION - code: " + success);
-			return success;
+
+		int success = 0;
+		switch (status) {
+			case ERROR:
+				success = 0;
+				return success;
+
+			case MODEL_CHANGED:
+				/* cp model has to be modified and commited; continue */
+				break;
+				
+			case NO_CHANGE_REQUIRED:
+				success = 1;
+				log.debug("\nRP_result: PASS - code: " + success);
+				System.out.println("\nRP_result: PASS - code: " + success);
+				return success;
+
+			case NO_SOLUTION_AVAILABLE:
+				success = 0;
+				log.debug("\nRP_result: NO_SOLUTION - code: " + success);
+				System.out.println("\nRP_result: NO_SOLUTION - code: " + success);
+				return success;
 		}
-		/* cp model has to be modified; continue */
-		
 		
 		// commit or save the clone model to the CDO server
 		this.commitCloneModelToCDO();
@@ -816,7 +825,7 @@ public class RuleProcessor {
 		// rp.commitAndCloseCDOSession();
 		this.closeCDOSession();
 
-		int success = 0; // 0 means sucess and pass the RP validation checks on the CP models
+		success = 0; // 0 means sucess and pass the RP validation checks on the CP models
 		if (this.getValidationResult()) {
 			log.debug("\nRP_result: PASS - code: " + success);
 			System.out.println("\nRP_result: PASS - code: " + success);
