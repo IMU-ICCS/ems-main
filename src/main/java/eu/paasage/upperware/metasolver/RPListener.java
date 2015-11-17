@@ -68,7 +68,8 @@ public class RPListener implements Runnable{
 
 	public void run() {
 		while (run) {
-
+			String contents1 = null;
+            metasolver mslv = new metasolver();
 			System.out.println("lets go for a subscription .....");
 			System.out.println("setting context ....");	
 			Context cntx1 = zmq.context(1);
@@ -89,9 +90,11 @@ public class RPListener implements Runnable{
 				// Read envelope with address
 
 				String address1 = subscriber1.recvStr ();
-				String contents1 = subscriber1.recvStr ();
-				System.out.println(" bell1 " + address1 + " : " + contents1);  	            	}
-				subscriber1.close ();
+				contents1 = subscriber1.recvStr ();
+				System.out.println(" Rule Processor Notification " + address1 + " : " + contents1);  	            	}
+	//invoke MILP Solver
+	            mslv.invokeMILP(contents1);
+	subscriber1.close ();
 			cntx1.term ();
 		}
 	}

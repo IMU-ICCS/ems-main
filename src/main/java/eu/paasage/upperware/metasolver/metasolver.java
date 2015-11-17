@@ -53,6 +53,19 @@ public class metasolver{
 			System.out.println("error starting metasolver " + e);
 		}
 	}
+	public void invokeMILP(String modID){
+		
+		try{
+//			String modID= args[1];
+			Mapper map = new Mapper();
+			long mapResult = map.mapMetricVariables(modID);
+			runMILPSolver("modID", mapResult);
+		}
+		catch(Exception e){
+			System.out.println("error starting metasolver " + e);
+		}
+	}
+	
 	//}
 	public void startSolving(){
 					go();

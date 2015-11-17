@@ -1,6 +1,82 @@
 package eu.paasage.upperware.metasolver;
 
-public class App {
-//add method here to run metasolver with zeroMQ
 
+//import com.fasterxml.jackson.core.JsonGenerationException;
+//import com.fasterxml.jackson.databind.JsonMappingException;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import eu.paasage.upperware.metasolver.*;
+import org.apache.commons.daemon.Daemon;
+import org.apache.commons.daemon.DaemonContext;
+import org.apache.commons.daemon.DaemonInitException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zeromq.ZMQ;
+
+public class App implements Daemon {
+	 
+
+	   static Logger LOGGER = LoggerFactory.getLogger(App.class.getSimpleName());
+
+	    private Thread myThread;
+	    private static boolean stopped = false;
+
+	//add method here to run metasolver with zeroMQ
+
+	public static void main (String args[]){
+	    LOGGER.info("ExecWareBackend main method called !!!");
+        LOGGER.info("PAASAGE_CONFIG_DIR: {}", System.getenv("PAASAGE_CONFIG_DIR"));
+  
+       metasolver mslv = new metasolver();
+       mslv.startSolving();
+
+	}
+	  public void init(DaemonContext daemonContext) throws DaemonInitException {
+
+	        LOGGER.info("init method called !!!");
+
+	        myThread = new Thread() {
+
+	            @Override
+	            public synchronized void start() {
+	                App.stopped = false;
+	                super.start();
+	            }
+	      
+	            @Override
+	            public void run() {
+	                main(null);
+	            }
+	        };
+	    }
+
+	    @Override
+	    public void start() throws Exception {
+	        LOGGER.info("start method called !!!");
+	        myThread.start();
+	    }
+
+	    @Override
+	    public void stop() throws Exception {
+	        LOGGER.info("stop method called !!!");
+	        App.stopped = true;
+	        try {
+	            myThread.join(1000);
+	        } catch (InterruptedException e) {
+	            System.err.println(e.getMessage());
+	            throw e;
+	        }
+	    }
+
+	    @Override
+	    public void destroy() {
+	        LOGGER.info("destroy method called !!!");
+	        myThread = null;
+	    }
+	    
+	  
 }
