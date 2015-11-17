@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.utils;
 
 import java.util.List;
@@ -20,9 +18,6 @@ import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProducerConsumerDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
@@ -31,9 +26,8 @@ public class DataUtils {
 
 	private static Logger log = Logger.getLogger(DataUtils.class);
 
-
-/*<pre>
- * The Solver-to-deployement component is implemented in Java. It re-
+	/*<pre>
+	 * The Solver-to-deployement component is implemented in Java. It re-
 ceives the solution as a list of objects with the PaaSageVariable type. A
 PaaSageVariable object is described as follows:
 RelatedComponent It gives the ApplicationComponent of the UpperModel to
@@ -76,23 +70,24 @@ A HostingInstance must be created for each ProvidedHostInstance associ-
 ated to the VmInstance. Each HostingInstance must be associated to the
 current ProvidedHostInstance and to the RequiredHostInstance matching
 the InternalComponentInstance.
- * 4. Create CommunicationInstances
- *  
- *  * </pre>
- */
+
+4. Create CommunicationInstances
+
+ </pre>
+	 */
 	public static DataHolder computeDatasToRegister(PaasageConfiguration paasageConfiguration,
-			DeploymentModel deploymentModel,ConstraintProblem constraintProblem ) throws S2DException{
+			DeploymentModel deploymentModel,ConstraintProblem constraintProblem ) throws S2DException
+	{
 		PaaSageVariable paaSageVariableCurrent = null;
+
 		try{
 			DataHolder result = new DataHolder();
-	
-	
+
 			EList<PaaSageVariable> variables = paasageConfiguration.getVariables();
-	
-	
+
 			for (PaaSageVariable paaSageVariable : variables) {
 				if(SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem) > 0)
-					{
+				{
 					paaSageVariableCurrent = paaSageVariable;
 					try{
 						SolverToDeployementHelper.printVar(paaSageVariable);
@@ -102,7 +97,8 @@ the InternalComponentInstance.
 						result.getVmInstancesToRegister().add(vmInstanceToRegister);
 						HostingInstance hostingInstance  = SolverToDeployementHelper.createHostingInstance(vmInstanceToRegister, internalComponentInstanceToRegister, deploymentModel);
 						result.getHostingInstancesToRegisters().add(hostingInstance);
-					}catch(S2DException e)
+					}
+					catch(S2DException e)
 					{
 						SolverToDeployementHelper.printVar(paaSageVariable);
 						throw e;
@@ -115,50 +111,42 @@ the InternalComponentInstance.
 				result.getCommunicationInstances().add(communicationInstance);
 			}
 			return result;
-		}catch(Exception e)
+		}
+		catch(Exception e)
 		{
 			log.error("Error details : ", e);
 			log.error("Error when try to decode the input paramers : ");
-			if(paaSageVariableCurrent != null)
+			if (paaSageVariableCurrent != null)
 			{
 				SolverToDeployementHelper.printVar(paaSageVariableCurrent);	
-			}else{
+			}
+			else{
 				log.error("No parameters. Must never happened");
 			}
-			
-
-			
 		}
 		return null;
-		
 	}	
-	
-	
+
 	public static  void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
-		{
+		List<VMInstance> vmInstancesToRegister = dataholder.getVmInstancesToRegister();
+		for (VMInstance vmInstance : vmInstancesToRegister) {
+			CDODatabaseProxy2.registerVMInstance(vmInstance,camelModelID);
+		}
+		List<InternalComponentInstance> componentInstancesToRegister = dataholder.getComponentInstancesToRegister();
+		for (InternalComponentInstance internalComponentInstance : componentInstancesToRegister) {
+			CDODatabaseProxy2.registerInternalComponentInstance(internalComponentInstance ,camelModelID);
 
-			List<VMInstance> vmInstancesToRegister = dataholder.getVmInstancesToRegister();
-			for (VMInstance vmInstance : vmInstancesToRegister) {
-				CDODatabaseProxy2.registerVMInstance(vmInstance,camelModelID);
-			}
-			List<InternalComponentInstance> componentInstancesToRegister = dataholder.getComponentInstancesToRegister();
-			for (InternalComponentInstance internalComponentInstance : componentInstancesToRegister) {
-				CDODatabaseProxy2.registerInternalComponentInstance(internalComponentInstance ,camelModelID);
-
-			}
-			List<HostingInstance> hostingInstancesToRegister = dataholder.getHostingInstancesToRegisters();
-			for (HostingInstance hostingInstance : hostingInstancesToRegister) {
-				CDODatabaseProxy2.registerHostingInstance(hostingInstance ,camelModelID);
-			}
-
-			List<CommunicationInstance> communicationInstances = dataholder.getCommunicationInstances();
-			for (CommunicationInstance communicationInstance : communicationInstances) {
-				CDODatabaseProxy2.registerCommunicationInstance(communicationInstance,camelModelID);
-			}
+		}
+		List<HostingInstance> hostingInstancesToRegister = dataholder.getHostingInstancesToRegisters();
+		for (HostingInstance hostingInstance : hostingInstancesToRegister) {
+			CDODatabaseProxy2.registerHostingInstance(hostingInstance ,camelModelID);
 		}
 
+		List<CommunicationInstance> communicationInstances = dataholder.getCommunicationInstances();
+		for (CommunicationInstance communicationInstance : communicationInstances) {
+			CDODatabaseProxy2.registerCommunicationInstance(communicationInstance,camelModelID);
+		}
 	}
-
 
 }
 

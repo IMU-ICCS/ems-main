@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.lib;
 
 import java.util.List;
@@ -16,31 +14,24 @@ import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.CommunicationPort;
 import eu.paasage.camel.deployment.CommunicationPortInstance;
 import eu.paasage.camel.deployment.Component;
-import eu.paasage.camel.deployment.ComponentInstance;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.deployment.InternalComponentInstance;
 import eu.paasage.camel.deployment.ProvidedCommunicationInstance;
 import eu.paasage.camel.deployment.RequiredCommunicationInstance;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 
 
 public class CommunicationProducerConsumerDomain {
+	
 	private static Logger log = Logger.getLogger(CommunicationProducerConsumerDomain.class);
-
 
 	public Component producerComponent,consumerComponent;
 	public InternalComponentInstance producerComponentInstance,consumerComponentInstance;
 	public Communication communication;
 
-
-
-
-
 	static String computeConsumerName(String input)
 	{
-
 		return input.split("To")[1].replaceAll("Instance", "").replaceAll("Communication","");
 	}
 
@@ -83,28 +74,24 @@ public class CommunicationProducerConsumerDomain {
 	{
 		EList<InternalComponentInstance> internalComponentInstances = deployementModel.getInternalComponentInstances();
 
-
 		String logTxt = "";
 		for(int i = 0 ; i < internalComponentInstances.size(); i++)
 		{
 			logTxt += "Compare " +  internalComponentInstances.get(i).getType()  + " AND " + component;
 			if(internalComponentInstances.get(i).getType().toString().equals(component.toString()))
 			{
-
 				log.error("Ok Component Instance Find " + logTxt);
 				return internalComponentInstances.get(i);
 			}
-
 		}
 		log.error("ERROR. Component Instance not find for component : " + component.getName()  + logTxt);
 		return null;
 
 
 	}
+
 	static InternalComponentInstance findComponentInstanceFromComponent(Component component, List<InternalComponentInstance> internalComponentInstances)
 	{
-
-
 		String logTxt = "";
 		for (InternalComponentInstance internalComponentInstance : internalComponentInstances) {
 
@@ -119,20 +106,18 @@ public class CommunicationProducerConsumerDomain {
 		}
 		log.error("ERROR. Component Instance not find for component : " + component.getName()  + logTxt);
 		return null;
-
-
 	}
+	
 	public static CommunicationPortInstance findCommuniCationPortInstanceFor(
 			CommunicationPort communication,
-			EList<? extends CommunicationPortInstance> requiredCommunicationInstances) {
-
-
+			EList<? extends CommunicationPortInstance> requiredCommunicationInstances)
+	{
 		if(communication == null)
 		{
-			
 			log.error("Try to find Communication port instance with commmunication port equal to null !!");
 			return null;
 		}
+		
 		CommunicationPortInstance result = null;
 		for (CommunicationPortInstance requiredCommunicationInstance : requiredCommunicationInstances) {
 			if(requiredCommunicationInstance.getType() == communication){
@@ -156,19 +141,22 @@ public class CommunicationProducerConsumerDomain {
 		communicationInstance.setName(result.communication.getName() + "Instance");
 		InternalComponentInstance consumerInstance  = null;
 		InternalComponentInstance producerInstance = null;
-		if(internalComponentInstances == null)
+		if (internalComponentInstances == null)
 		{
 			consumerInstance  = findComponentInstanceFromComponent(result.consumerComponent, deployementModel);
 			producerInstance = findComponentInstanceFromComponent(result.producerComponent, deployementModel);
 		}
-		else{
+		else
+		{
 			consumerInstance  = findComponentInstanceFromComponent(result.consumerComponent, internalComponentInstances);
 			producerInstance = findComponentInstanceFromComponent(result.producerComponent, internalComponentInstances);
 		}
-		if(consumerInstance == null)
+		
+		if (consumerInstance == null)
 		{
 			throw new S2DException("Unable to find component Instance (consumer) associated to component " + result.consumerComponent.getName());
 		}
+		
 		if(producerInstance == null)
 		{
 			throw new S2DException("Unable to find component Instance (producer) associated to component " + result.producerComponent.getName());
@@ -176,6 +164,7 @@ public class CommunicationProducerConsumerDomain {
 
 		CommunicationPortInstance providedCommunicationPortInstance = findCommuniCationPortInstanceFor(result.communication.getProvidedCommunication(),consumerInstance.getProvidedCommunicationInstances());
 		CommunicationPortInstance requiredCommunicationPortInstance = findCommuniCationPortInstanceFor(result.communication.getRequiredCommunication(),producerInstance.getRequiredCommunicationInstances());
+
 		if(providedCommunicationPortInstance ==  null || requiredCommunicationPortInstance == null)
 		{
 			log.error("Unable to find providedCommunicationPortInstance or requiredCommunicationPortInstance for " + demand);
@@ -185,6 +174,5 @@ public class CommunicationProducerConsumerDomain {
 		communicationInstance.setType(result.communication);
 
 		return communicationInstance;
-
 	}
 }

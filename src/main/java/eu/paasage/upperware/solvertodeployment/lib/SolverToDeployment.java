@@ -2,10 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.lib;
-
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -21,11 +18,11 @@ import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
 
 public class SolverToDeployment {
+
 	private static Logger log = Logger.getLogger(SolverToDeployment.class);
 
 	public static void main(String paasageConfigurationID, String camelModelID) throws S2DException
 	{
-
 		try {
 
 			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
@@ -53,21 +50,16 @@ public class SolverToDeployment {
 			log.info("Camel contain " + deploymentModel.getHostingInstances().size() + " hosting instance");
 			log.info("Camel contain " + deploymentModel.getCommunicationInstances().size() + " communication instance");
 
-
-
 		} catch (RuntimeException exception) {
 			exception.printStackTrace();
 			System.exit(0);
 		}
-
 	}
-
-
 
 	public static void main(String[] args) {
 
 		if (args.length != 2) {
-			System.out.println("Bad usage : args1=paasageconfiguration, arg2=camelModel");
+			System.out.println("Wrong usage : args1=paasageconfiguration, arg2=camelModel");
 		} 
 
 		String paasageConfigurationID = args[0];

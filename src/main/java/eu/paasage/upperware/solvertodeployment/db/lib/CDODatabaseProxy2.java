@@ -16,8 +16,6 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;

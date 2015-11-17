@@ -10,21 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.EList;
 
-import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
-import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponentInstance;
 import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.upperware.metamodel.application.PaaSageVariable;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 
 public class DataHolder {
 
+	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(DataHolder.class);
 	
 	private List<InternalComponentInstance> componentInstancesToRegister = new ArrayList<>();

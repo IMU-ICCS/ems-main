@@ -2,10 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.utils;
-
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
@@ -32,7 +29,6 @@ import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 
 public class SolverToDeployementHelper {
 
-	
 	public static Logger log= Logger.getLogger(SolverToDeployementHelper.class);
 
 	/**
@@ -63,13 +59,12 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	 * 
 	 * 
 	 */
-	
 
 	public static void printVar(PaaSageVariable paaSageVariable) {
 		String logg = "\n===================================================\n";
 		logg += "\n"+paaSageVariable.getRelatedVirtualMachineProfile().getCloudMLId() ;
 		logg += "\n"+paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId() ;
-			logg += "\n		"+paaSageVariable.getRelatedComponent().getCloudMLId();
+		logg += "\n		"+paaSageVariable.getRelatedComponent().getCloudMLId();
 		logg += "\n		"+paaSageVariable.getRelatedProvider().getId();
 		logg += "\n		"+paaSageVariable.getPaasageType().getName();
 		logg += "\n		"+paaSageVariable.getCpVariableId();
@@ -77,19 +72,15 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 
 		log.error(logg);
 	}
-	
+
 	public static void printVar(PaasageConfiguration pc)
 	{
-		
-
 		EList<PaaSageVariable> paasageVar = pc.getVariables();
 		for (PaaSageVariable paaSageVariable : paasageVar) {
 			printVar(paaSageVariable);
 		}
-		
-
 	}
-	
+
 	public static InternalComponent findInternalComponentFromPaasageConfigurationApplicationComponent(DeploymentModel deploymentModel,String paasageConfigurationApplicationId) throws S2DException
 	{
 		EList<InternalComponent> components = deploymentModel.getInternalComponents();
@@ -99,25 +90,25 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		}
 		throw new S2DException("Unable to find "+ paasageConfigurationApplicationId+ " component in camel model");
 	}
-	
+
 	public static String providerModelToProviderModelId(String providerModelName)
 	{
 		String[] results = providerModelName.split("-");
 		String result = results[results.length -1 ];
 		return result;
 	}
-	
+
 	static VM findVM(EList<VM> vms, String vmIdentifier)
 	{
 		VM result = null;
 		String log = "";
 		for (VM vm : vms) {
-			
+
 			log += (" \nLooking vm " + vm.getName() + " in camel deployement model " + "compare to" +vm.getName()); 
 			//
-//						if(vms.get(i).getName().equals(computedVMProfileName))
-//						{
-						
+			//						if(vms.get(i).getName().equals(computedVMProfileName))
+			//						{
+
 			if(vm instanceof VM && vm.getName().equals(vmIdentifier))
 			{
 				log += "\n Find  vm for name" + vmIdentifier;
@@ -131,14 +122,14 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	public static InternalComponentInstance createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,DeploymentModel deploymentModel) throws S2DException
 	{
 		ApplicationComponent component = paaSageVariable.getRelatedComponent();
-				
+
 		InternalComponent internalComponent = null;
 		internalComponent = findInternalComponentFromPaasageConfigurationApplicationComponent(deploymentModel,component.getCloudMLId());
 		InternalComponentInstance internalComponentInstance =  CloudMLHelper.createICInstance(internalComponent);
 		return internalComponentInstance;
-		
+
 	}
-	
+
 	public static VMInstance searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, String passageConfigurationID) throws S2DException
 	{
 		EList<VM> vms = deploymentModel.getVms();
@@ -148,13 +139,13 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		VM result = findVM(vms, vmIdentifier);
 		String providerModelId =  paaSageVariable.getRelatedProvider().getId();
 		ProviderModel providerModel = null;
-	
-		
+
+
 		providerModel =  CDODatabaseProxy2.findProviderModel(passageConfigurationID, providerModelId);
-		
+
 		//Create now
 		VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result,providerModel);
-			
+
 		//Set VM Type/value 
 		Attribute attribute = CloudMLHelper.findVMType(providerModel);
 		vmInstanceResult.setVmType(attribute);
@@ -184,9 +175,9 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	}
 	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem) throws S2DException{		
 		for(Solution solution : _constraintProblem.getSolution()){
-			
+
 			EList<VariableValue> variables  = solution.getVariableValue();
-			
+
 			for (VariableValue variableValue : variables) {
 				log.debug("Compare " + paaSageVariable.getCpVariableId() + "  with " +  variableValue.getVariable().getId());
 				if(paaSageVariable.getCpVariableId().equals(variableValue.getVariable().getId()))
@@ -195,11 +186,8 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 					log.debug("Find !" + longValueUpperware.getValue());
 
 					return longValueUpperware.getValue();
-
 				}
-				
 			}			
-	
 		}	
 		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId() );
 	}
