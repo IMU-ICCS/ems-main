@@ -40,14 +40,11 @@ public class metasolver{
 
 	public static void main(String args[]) throws IOException, InterruptedException, MetricMapperException{
 
-
-		
-
 		try{
 			String modID= args[1];
 			Mapper map = new Mapper();
 			long mapResult = map.mapMetricVariables(modID);
-			runMILPSolver("modID", mapResult);
+			runMILPSolver(modID, mapResult);
 		}
 		catch(Exception e){
 			System.out.println("error starting metasolver " + e);
@@ -69,8 +66,6 @@ public class metasolver{
 	//}
 	public void startSolving(){
 					go();
-
-
 					System.out.println("all subscriptions complete");
 			}
 	public void go(){
