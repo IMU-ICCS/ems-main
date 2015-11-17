@@ -256,7 +256,7 @@ public class CPModelDerivator implements ICPModelDerivator
 			logger.debug("CPModelDerivator - createConstraints - 9"); 
 			Constant numOfVMForComponentConstant= oneConstant; //BY DEFAULT, JUST ONE VM BY COMPONENT - IF THERE HOSTING RELATIONSHIP WITH A VM IN CAMEL //TODO HOW TO DETERMINE THE NUMBER OF INSTANCE OF A COMPONENT THAT DOES NOT HAVE HOSTING RELATIOSHIP WITH A VM?? 
 			logger.debug("CPModelDerivator - createConstraints - 10"); 
-			Constant minVMNumberConstant= ceroConstant;
+			Constant minVMNumberConstant= oneConstant;
 			logger.debug("CPModelDerivator - createConstraints - 11"); 
 			if(numOfVMForComponent>1)
 				numOfVMForComponentConstant= CPModelTool.searchConstantByValue(cp.getConstants(), numOfVMForComponent);
@@ -272,8 +272,8 @@ public class CPModelDerivator implements ICPModelDerivator
 			logger.debug("CPModelDerivator - createConstraints - 13"); 
 			if(minVMNumber>1)
 				minVMNumberConstant= CPModelTool.searchConstantByValue(cp.getConstants(), minVMNumber); 
-			else if(minVMNumber==1)
-				minVMNumberConstant= oneConstant; 
+/*			else if(minVMNumber==1)
+				minVMNumberConstant= oneConstant; */
 			logger.debug("CPModelDerivator - createConstraints - 14"); 
 			if(minVMNumberConstant==null)
 			{
