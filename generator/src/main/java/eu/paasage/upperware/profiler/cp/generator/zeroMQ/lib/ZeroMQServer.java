@@ -9,9 +9,26 @@ import org.zeromq.ZMQ;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.ModelFileInfo;
+import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
 
 public class ZeroMQServer 
 {
+	
+	//PROPERTY NAMES
+	
+	private static String SUBSCRIBER_PORT_PROPERTY= "zeromqSubscriberPort";
+	
+	private static String HOST_SUSBSCRIBER_PROPERTY= "zeromqSubscriberHostName";
+	
+	private static String SUBSCRIBER_TOPIC_PROPERTY= "zeromqSubscriberTopicName";
+
+	private static String PUBLISHER_PORT_PROPERTY= "zeromqPublisherPort";
+	
+	private static String PUBLISHER_TOPIC_CP_MODEL_ID_PROPERTY=	"zeromqPublisherrCPModelID";
+	
+	private static String PUBLISHER_TOPIC_CAMEL_MODEL_ID_PROPERTY= "zeromqPublisherrCamelModelID";
+	
+	//DEFAULT VALUES
 	
 	private static String DEFAULT_SUBSCRIBER_PORT="5555"; 
 	
@@ -19,37 +36,82 @@ public class ZeroMQServer
 	
 	private static String DEFAULT_PROTOCOL="tcp://*:"; 
 	
-	private static String DEFAULT_PROTOCOL_SUBS="tcp://localhost:"; 
+	private static String DEFAULT_PROTOCOL_SUBS="tcp://"; 
+	
+	private static String DEFAULT_HOST_SUBS="localhost";
+	
+	private static String DEFAULT_TOPIC_SUBS="ID";
+	
+	private static String DEFAULT_CP_MODEL_ID_TOPIC="startSolving";
+	
+	private static String DEFAULT_CAMEL_MODEL_ID_TOPIC="camelModelId";
+	
+	
+	//Property Manager
+	private static PaaSagePropertyManager propertyManager= PaaSagePropertyManager.getInstance();
 	
 	
 	/**
-	 * Executes the Server. Arguments can be empty, specify the subscribe port or specify the subscribe port and the publisher port
-	 * @param args Arguments for running the Server. args[0]= subcriber port, args[1]= publisher port
+	 * Executes the Server. The arguments can be defined via the property file wp3_cp_generator.properties
 	 */
 	public static void main(String[] args) 
 	{
 		
-		String urlSubs= DEFAULT_PROTOCOL_SUBS+DEFAULT_SUBSCRIBER_PORT; 
+		String host= DEFAULT_HOST_SUBS;
 		
-		String urlPubs= DEFAULT_PROTOCOL+DEFAULT_PUBLISHER_PORT; 
+		String portSubs= DEFAULT_SUBSCRIBER_PORT;
 		
-		if(args.length>0)
+		String subsTopic= DEFAULT_TOPIC_SUBS;
+		
+		if(propertyManager.getCPGeneratorProperty(HOST_SUSBSCRIBER_PROPERTY)!=null && !propertyManager.getCPGeneratorProperty(HOST_SUSBSCRIBER_PROPERTY).equals(""))
 		{
-			urlSubs= DEFAULT_PROTOCOL+args[0]; 
-			
-			if(args.length>1)
-			{
-				//PaaSagePropertyManager.getInstance().addCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME, args[1]);
-				urlPubs= DEFAULT_PROTOCOL+args[1]; 
-			}
+			host= propertyManager.getCPGeneratorProperty(HOST_SUSBSCRIBER_PROPERTY);
 		}
+		
+		if(propertyManager.getCPGeneratorProperty(SUBSCRIBER_PORT_PROPERTY)!=null && !propertyManager.getCPGeneratorProperty(SUBSCRIBER_PORT_PROPERTY).equals(""))
+		{
+			portSubs= propertyManager.getCPGeneratorProperty(SUBSCRIBER_PORT_PROPERTY);
+		}
+		
+		if(propertyManager.getCPGeneratorProperty(SUBSCRIBER_TOPIC_PROPERTY)!=null && !propertyManager.getCPGeneratorProperty(SUBSCRIBER_TOPIC_PROPERTY).equals(""))
+		{
+			subsTopic= propertyManager.getCPGeneratorProperty(SUBSCRIBER_TOPIC_PROPERTY);
+		}
+		
+		String urlSubs= DEFAULT_PROTOCOL_SUBS+host+":"+portSubs;
+		
+		
+		String portPubs= DEFAULT_PUBLISHER_PORT;
+		
+		String cpModelIdTopic= DEFAULT_CP_MODEL_ID_TOPIC;
+		
+		String camelModelIdTopic= DEFAULT_CAMEL_MODEL_ID_TOPIC; 
+		
+		if(propertyManager.getCPGeneratorProperty(PUBLISHER_PORT_PROPERTY)!=null && !propertyManager.getCPGeneratorProperty(PUBLISHER_PORT_PROPERTY).equals(""))
+		{
+			portPubs= propertyManager.getCPGeneratorProperty(PUBLISHER_PORT_PROPERTY);
+		}
+		
+		if(propertyManager.getCPGeneratorProperty(PUBLISHER_TOPIC_CP_MODEL_ID_PROPERTY)!=null && !propertyManager.getCPGeneratorProperty(PUBLISHER_TOPIC_CP_MODEL_ID_PROPERTY).equals(""))
+		{
+			cpModelIdTopic= propertyManager.getCPGeneratorProperty(PUBLISHER_TOPIC_CP_MODEL_ID_PROPERTY);
+		}
+		
+		if(propertyManager.getCPGeneratorProperty(PUBLISHER_TOPIC_CAMEL_MODEL_ID_PROPERTY)!=null && !propertyManager.getCPGeneratorProperty(PUBLISHER_TOPIC_CAMEL_MODEL_ID_PROPERTY).equals(""))
+		{
+			camelModelIdTopic= propertyManager.getCPGeneratorProperty(PUBLISHER_TOPIC_CAMEL_MODEL_ID_PROPERTY);
+		}
+		
+		String urlPubs= DEFAULT_PROTOCOL+portPubs; 
+		
+
 		
 		ZMQ.Context context = ZMQ.context(1);
 
         //  Socket to receive info from publishers
         ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
         subscriber.connect(urlSubs);
-        subscriber.subscribe("ID".getBytes());
+        subscriber.subscribe(subsTopic.getBytes());
         // Socket to publish info
         ZMQ.Socket publisher = context.socket(ZMQ.PUB);
         publisher.bind(urlPubs);
@@ -81,11 +143,11 @@ public class ZeroMQServer
 			String paasageConfigID= go.generateCPModel(modelInfos); 
 			System.out.println("CP Model Generated");
             
-			publisher.sendMore("startSolving"); 
+			publisher.sendMore(cpModelIdTopic); 
             publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
             System.out.println("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
             
-            publisher.sendMore("camelModelId"); 
+            publisher.sendMore(camelModelIdTopic); 
             publisher.send(modelId); 
         }
         subscriber.close();
