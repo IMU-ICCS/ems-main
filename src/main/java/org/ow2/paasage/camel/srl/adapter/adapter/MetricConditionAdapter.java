@@ -149,11 +149,11 @@ public class MetricConditionAdapter extends AbstractAdapter {
         // TODO not save condition id, since it is never referenced furthermore?
         //fc.addExternalId(composedMonitor, condition.getName());
         // NFE:
-        String idNFE = event.getName();
+        String idNFE = event.cdoID().toString();
         getFc().addExternalId(conditionMonitor, idNFE);
         // Also stored it in these monitors to traceback in case of errors:
-        getFc().addExternalId(thresholdMonitor, idNFE + "threshold");
-        getFc().addExternalId(applyMonitor, idNFE + "apply");
+        getFc().addExternalId(thresholdMonitor, idNFE + "_threshold");
+        getFc().addExternalId(applyMonitor, idNFE + "_apply");
 
 
 

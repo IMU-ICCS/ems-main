@@ -152,7 +152,7 @@ public class CompositeMetricContextAdapter extends AbstractAdapter {
                     }
 
                     if (!isAlreadyTagged) {
-                        getFc().addExternalId(monitorInstance, metricInstance.getName());
+                        getFc().addExternalId(monitorInstance, metricInstance.cdoID().toString());
                         break; // go to next metric instance
                     }
                 }

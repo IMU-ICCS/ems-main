@@ -8,6 +8,7 @@
 
 package org.ow2.paasage.camel.srl.adapter;
 
+import org.ow2.paasage.camel.srl.adapter.communication.CdoConfigTuple;
 import org.ow2.paasage.camel.srl.adapter.communication.ZeroMqServer;
 import org.ow2.paasage.camel.srl.adapter.communication.ZeroMqSubscriber;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
@@ -48,6 +49,7 @@ public class App
                 subscriber = new ZeroMqSubscriber(conf);
                 executor = Executors.newCachedThreadPool();
                 executor.execute(subscriber);
+                logger.info("Subscribed to ZeroMQ server.");
 
                 break;
             case ZMQ_HOST:
@@ -58,6 +60,7 @@ public class App
                 subscriber = new ZeroMqSubscriber(conf, "tcp://localhost:" + conf.getZeroMqPort());
                 executor = Executors.newCachedThreadPool();
                 executor.execute(subscriber);
+                logger.info("Subscribed to ZeroMQ server.");
 
                 break;
         }

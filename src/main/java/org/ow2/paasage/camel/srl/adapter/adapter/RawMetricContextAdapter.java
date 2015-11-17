@@ -96,7 +96,7 @@ public class RawMetricContextAdapter extends AbstractAdapter {
                     VirtualMachine frontendVM = getFc().getVirtualMachineToIP(metricVMBinding
                             .getVmInstance().getIp());
 
-                    getFc().addExternalIdToMonitorInstance(rawMonitor, metricInstance.getName(), frontendVM);
+                    getFc().addExternalIdToMonitorInstance(rawMonitor, metricInstance.cdoID().toString(), frontendVM);
                 } else {
                     // TODO
                     logger.info("Raw metric is not bound to virtual machine - has to be implemented.");

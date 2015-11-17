@@ -73,7 +73,7 @@ public class HorizontalScalingActionAdapter extends AbstractAdapter {
         }
 
         for (ScalabilityRule rule : associatedRules) {
-                ComposedMonitor m = getFc().getComposedMonitorByExternalId(rule.getEvent().getName());
+                ComposedMonitor m = getFc().getComposedMonitorByExternalId(rule.getEvent().cdoID().toString());
                 getFc().addScalingActionToMonitor(m, componentHorizontalScalingAction);
                 /* TODO ADD LISTENER TO EVENT-MONITOR NOT DIRECTLY IN THE AGGREGATOR SERVICE, SINCE THIS WILL LATER NOT BE ACCESSIBLE LOCALLY */
                 //fc.addObserverToMonitor(m.getId(), 0.9 /*ungenauigkeit*/, FormulaOperator.GT); create: CliMetricObserver

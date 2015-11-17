@@ -48,10 +48,10 @@ public class Execution {
     }
 
     public void run(){
-        run(null, null);
+        run(null, null, null);
     }
 
-    public void run(String dynamicModelName, String dynamicExecutionContextName){
+    public void run(String dynamiceResourceName, String dynamicModelName, String dynamicExecutionContextName){
         boolean createNew = conf.getSaveExample();
         boolean createMetricInstances = conf.getCreateMetricInstances();
         String cdoUser = conf.getCdoUser();
@@ -69,6 +69,10 @@ public class Execution {
             createNew = false;
             createMetricInstances = true;
             modelName = dynamicModelName;
+        }
+
+        if(dynamiceResourceName != null){
+            resourceName = dynamiceResourceName;
         }
 
         if(dynamicExecutionContextName != null){

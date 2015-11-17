@@ -59,19 +59,32 @@ public class ZeroMqSubscriber implements Runnable {
             // Read message contents
             String contents = socket.recvStr ();
 
-            int indexOfSeperator = contents.indexOf(SEPERATOR);
-
-            String modelName = contents.substring(0, indexOfSeperator);
-            String executionContext = contents.substring(indexOfSeperator, contents.length() - 1);
-            if("".equals(executionContext)){
-                executionContext = null;
-            }
+            CdoConfigTuple converted = convertLine(contents);
 
             // TODO this is blocking - check if this is a problem for frequent requests
             Execution ex = new Execution(conf);
-            ex.run(modelName, executionContext);
+            ex.run(converted.getResourceName(), converted.getModelName(), converted.getExecutionContext());
         }
         socket.close ();
         context.term ();
+    }
+
+    public static CdoConfigTuple convertLine(String contents){
+
+        // Content format: resource:model:executioncontext
+
+        int indexOfSeperator1 = contents.indexOf(SEPERATOR);
+        int indexOfSeperator2 = indexOfSeperator1 + contents.substring(indexOfSeperator1 + 1).indexOf(SEPERATOR) + 1;
+
+        String resourceName = contents.substring(0, indexOfSeperator1);
+
+        String modelName = contents.substring(indexOfSeperator1 + 1, indexOfSeperator2);
+
+        String executionContext = contents.substring(indexOfSeperator2 + 1, contents.length());
+        if("".equals(executionContext)){
+            executionContext = null;
+        }
+
+        return new CdoConfigTuple(resourceName, modelName, executionContext);
     }
 }

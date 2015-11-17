@@ -62,6 +62,9 @@ public class CommandLinePropertiesAccessorImpl
             Option.builder("colPass").longOpt("colPass").desc("Password to access the colosseum")
                 .hasArg().build());
         options.addOption(
+                Option.builder("colUrl").longOpt("colUrl").desc("Url to access the colosseum")
+                        .hasArg().build());
+        options.addOption(
             Option.builder("writeExample").longOpt("writeExample").desc("Write example to CDO?")
                 .hasArg().build());
         options.addOption(
