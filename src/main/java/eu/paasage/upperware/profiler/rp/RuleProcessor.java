@@ -9,11 +9,13 @@ package eu.paasage.upperware.profiler.rp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -116,7 +118,7 @@ public class RuleProcessor {
 		}
 
 		cpCloner_ = new CPCloner();
-		cdoClient_ = CPCloner.createCDOClient(); 
+		cdoClient_ = CPCloner.createCDOClient();
 		log.debug("RuleProcessor.openCDOSession(): Opening a new CDO session.");
 		return cdoClient_.existResource(resId_);
 	}
@@ -136,8 +138,7 @@ public class RuleProcessor {
 			}
 		}
 		/*
-		 * // TODO: redundant?
-		 * catch(CommitException ce) {
+		 * // TODO: redundant? catch(CommitException ce) {
 		 * System.out.println("\n*** Storing the clone mode fails\n");
 		 * System.out.println(ce.toString()); }
 		 */
@@ -179,8 +180,10 @@ public class RuleProcessor {
 
 	/**
 	 * 
-	 * @param appId application identifier
-	 * @param cdoView CDO view
+	 * @param appId
+	 *            application identifier
+	 * @param cdoView
+	 *            CDO view
 	 * @return data model
 	 */
 	public ModelData getModelDataFromCDO(String appId, CDOView cdoView) {
@@ -219,7 +222,8 @@ public class RuleProcessor {
 	// <Sintef-Nova-Norway-1415008389864, Private>, etc
 	/**
 	 * 
-	 * @param appId application identifier
+	 * @param appId
+	 *            application identifier
 	 * @return deployment model represented through hashtable
 	 */
 	public Hashtable<String, String> getProviderDeploymentModel(String appId) {
@@ -332,9 +336,9 @@ public class RuleProcessor {
 		return cloneList_;
 	}
 
-	public void removeProvider(String resId, String providerType) {
+	public boolean removeProvider(String resId, String providerType) {
 		if (providerType == null) {
-			return;
+			return false;
 		}
 
 		// find out the type of each provider, i.e. private / public
@@ -350,9 +354,9 @@ public class RuleProcessor {
 
 		String[] strArray = resId.split("/"); // splitting
 												// upperware-models/1414751126815
-		String newPaaSageConfigId = strArray[1] + "v3"; // take the latter part:
+		String newPaaSageConfigId = strArray[1] + "v2"; // take the latter part:
 														// 1414751126815
-		cloneResId_ = resId + "v3";
+		cloneResId_ = resId + "v2";
 
 		EObject obj = null;
 		PaasageConfiguration pc = null;
@@ -375,11 +379,12 @@ public class RuleProcessor {
 				pc.setId(newPaaSageConfigId); // set a new resource ID for this
 												// clone version
 
-				Iterator<VirtualMachineProfile> it = pc.getVmProfiles().iterator();
+				Iterator<VirtualMachineProfile> it = pc.getVmProfiles()
+						.iterator();
 				while (it.hasNext()) {
 					VirtualMachineProfile vmProfile = it.next();
-					//String prov = vmProfile.getProviderDimension();
-					
+					// String prov = vmProfile.getProviderDimension();
+
 					/*
 					 * TODO: check with the new changes ProviderCost pCost =
 					 * vmProfile.getProvider(); String pID =
@@ -397,17 +402,16 @@ public class RuleProcessor {
 			}
 		}
 
-		System.out
-				.println("\nList of cloud providers to be REMOVED since they are "
-						+ providerType);
+		System.out.println("\nList of cloud providers to be REMOVED since they are " + providerType + ":");
 		if (vmRemoveList.size() == 0) {
-			System.out.println("- None. Can't find " + providerType
-					+ " cloud providers in the model.\n");
-			return;
+			System.out.println("- None. No " + providerType
+					+ " cloud providers were selected by the CP generator for deployment.\n");
+			return false;
 		}
 
 		// do the actual removal
 		removeModelFromCDO(resId, delTable, vmRemoveList, objList);
+		return true;
 	}
 
 	private void removeModelFromCDO(String resId,
@@ -658,82 +662,110 @@ public class RuleProcessor {
 
 	// get providers defined in the Organisation Model and identify the provider
 	// to be deleted.
-	public static String getProviderFromOrganisationModel(String cModel) {
+	public static Map<String, String> getProviderFromOrganisationModel(
+			String cModel) {
+		Map<String, String> foundProviders = new HashMap<String, String>();
 
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
 		CamelModel camelModel = proxy.getCamelModel(cModel);
 		if (camelModel == null) {
-			System.out.println("Error: The given CAMEL model (" + 
-					cModel + ") was not found in the CDO database!");
+			System.out.println("Error: The given CAMEL model (" + cModel + ") was not found in the CDO database!");
 			return null;
 		}
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
-		EObject obj = null;
-		Hashtable<String, String> omProviders = new Hashtable<String, String>();
-		String providerType = "";
-
 		for (int i = 0; i < orgModels.size(); i++) {
-			obj = orgModels.get(i);
+			EObject obj = orgModels.get(i);
 			if (obj instanceof eu.paasage.camel.organisation.impl.OrganisationModelImpl) {
 				OrganisationModelImpl omObj = (OrganisationModelImpl) obj;
 				CloudProvider provider = omObj.getProvider();
-				// System.out.println("-- Provider = " + provider);
 				if (provider != null) {
-					// get the list of the providers defined in the
-					// OrganisationModel with the type (public or private)
-					if (provider.isPublic() == true) {
-						providerType = "private"; // remove private providers
-						System.out.println("-- run this app on PUBLIC cloud\n");
+					if (provider.isPublic()) {
+						foundProviders.put(provider.getName(), "public");
 					} else {
-						providerType = "public";
-						System.out.println("-- run this app on PRIVATE cloud\n");
+						foundProviders.put(provider.getName(), "private");
 					}
-					// System.out.println("-- Provider Name= " +
-					// provider.getName() + " --- type =" + providerType);
-					omProviders.put(provider.getName(), providerType);
 				}
 			}
-		}// end for
-			// return omProviders; //It is not clear if the user can define more
-			// than one provider in the OM
-		return providerType;
-	}
-	
-	public int processRequest(String camelModel, String cdoIdentifier) {
-		String providerType = getProviderFromOrganisationModel(camelModel);
-
-		if (providerType == "") {
-			System.out.println("\nNo cloud provider requirements found in the CAMEL model. No rules were applied to the CP model.\n");
-		} else {
-			this.openCDOSession(cdoIdentifier);
-			this.cloneModel(cdoIdentifier); // clone the model
-			// List<EObject> objList = rp.getCloneModel(); // get the clone
-			// model
-			this.removeProvider(cdoIdentifier, providerType); // NOTE: move to
-													// checkSLA.java file ??
-
-			// commit or save the clone model to the CDO server
-			this.commitCloneModelToCDO();
-
-			// NOTE: debugging - check the result
-			CDOClientExtended cdoClient = this.getCDOClient();
-			CDOView cdoView = cdoClient.openView();
-
-			System.out.println("\n-------------------------------------------------------------------");
-			String newResId = this.getCloneResId();
-			ModelData data = this.getModelDataFromCDO(newResId, cdoView);
-			data.printPaasageConfiguration();
-			System.out.println("\n-------------------------------------------------------------------");
-			data.printConstraintProblem();
-			cdoClient.closeView(cdoView);
-
-			// finally, need to commit & close the CDO connection
-			// rp.commitAndCloseCDOSession();
-			this.closeCDOSession();
 		}
 
+		return foundProviders;
+	}
+
+	public int processRequest(String camelModel, String cdoIdentifier) {
+		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
+
+		/* (a) no cloud provider given in organisation model */
+		if (camelProviders.isEmpty()) {
+			System.out.println("\nNo cloud provider requirements found in the CAMEL model. No rules were applied.\n");
+			int success = 1;
+			log.debug("\nRP_result: PASS - code: " + success);
+			System.out.println("\nRP_result: PASS - code: " + success);
+			System.exit(success);
+		}
+
+		Set<String> distinctProviders = new HashSet<String>();
+		if (camelProviders.size() >= 1) {
+			System.out.println("\n> Cloud providers declared in the CAMEL model:");
+			for (String name : camelProviders.keySet()) {
+				String type = camelProviders.get(name);
+				System.out.println("  - " + name + " [" + type + "]");
+				distinctProviders.add(type);
+			}
+			System.out.println("\n");
+			
+			/* (b) both private and public providers are given */
+			if (distinctProviders.size() == 2) {
+				System.out.println("\nDetected both public and private cloud providers in Camel model. No rules were applied.\n");
+				int success = 1;
+				log.debug("\nRP_result: PASS - code: " + success);
+				System.out.println("\nRP_result: PASS - code: " + success);
+				System.exit(success);
+			}
+		}
+		
+		/* (c) either a public or private cloud provider is declared in the organisation model */
+		this.openCDOSession(cdoIdentifier);
+		this.cloneModel(cdoIdentifier); // clone the model
+		
+		boolean providersToRemove = false;
+		String detectedProvider = camelProviders.values().iterator().next();
+		if (detectedProvider.equalsIgnoreCase("public")) {
+			System.out.println("\n> Going to remove private cloud providers...");
+			providersToRemove = this.removeProvider(cdoIdentifier, "private");
+		} else {
+			System.out.println("\n> Going to remove public cloud providers...");
+			providersToRemove = this.removeProvider(cdoIdentifier, "public");
+		}
+		if (!providersToRemove) {
+			int success = 1;
+			log.debug("\nRP_result: PASS - code: " + success);
+			System.out.println("\nRP_result: PASS - code: " + success);
+			System.exit(success);
+		}
+
+		// commit or save the clone model to the CDO server
+		this.commitCloneModelToCDO();
+
+		// NOTE: debugging - check the result
+		CDOClientExtended cdoClient = this.getCDOClient();
+		CDOView cdoView = cdoClient.openView();
+
+		System.out
+				.println("\n-------------------------------------------------------------------");
+		String newResId = this.getCloneResId();
+		ModelData data = this.getModelDataFromCDO(newResId, cdoView);
+		data.printPaasageConfiguration();
+		System.out
+				.println("\n-------------------------------------------------------------------");
+		data.printConstraintProblem();
+		cdoClient.closeView(cdoView);
+
+		// finally, need to commit & close the CDO connection
+		// rp.commitAndCloseCDOSession();
+		this.closeCDOSession();
+
 		int success = 0; // 0 means sucess and pass the RP validation checks on the CP models
-		if (this.getValidationResult() == true) {
+		if (this.getValidationResult()) {
 			log.debug("\nRP_result: PASS - code: " + success);
 			System.out.println("\nRP_result: PASS - code: " + success);
 			success = 1;
@@ -742,80 +774,33 @@ public class RuleProcessor {
 			System.out.println("\nRP_result: FAIL - code: " + success);
 			success = 0;
 		}
-		
+
 		return success;
 	}
 
-	// //////////////////////////////////////////////////////
+	/**
+	 * @param args Command-line arguments
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		Map<String, String> arguments = Utilities.parseArguments(args);
 
-        if (arguments.get("d") != null) {
-            log.info("Starting as a service...");
-            RuleProcessorService.getInstance().run();
-            System.exit(0);
-        }
-        final String camelModel = arguments.get("m");
-        final String cpModel = arguments.get("c");
+		if (arguments.get("d") != null) {
+			log.info("Starting as a service...");
+			RuleProcessorService.getInstance().run();
+			System.exit(0);
+		}
+		final String camelModel = arguments.get("m");
+		final String cpModel = arguments.get("c");
 
-        if (!Utilities.validateArguments(camelModel, cpModel)) {
-            System.exit(1);
-        }
-        
-        log.info("Parsing provider information...");    
-        
- 		String providerType;
-		RuleProcessor rp = new RuleProcessor();
-
-		providerType = getProviderFromOrganisationModel(camelModel);
-		if (providerType == null) {
+		if (!Utilities.validateArguments(camelModel, cpModel)) {
 			System.exit(1);
 		}
 
-		if (providerType == "") {
-			System.out.println("\nNo cloud provider requirements found in the CAMEL model. No rules were applied to the CP model.\n ");
-		} else {
-			if (!rp.openCDOSession(cpModel)) {
-				rp.closeCDOSession();
-				System.out.println("RuleProcessor.java: Error - Given CP Model ID (" + cpModel + ") could not be found in the database. Please check previous components for errors.");
-				log.error("RuleProcessor.java: Error - Given CP Model ID (" + cpModel + ") could not be found in the database. Please check previous components for errors.");
-				System.exit(1);
-			}
-			rp.cloneModel(cpModel); // clone the model
-			// List<EObject> objList = rp.getCloneModel(); // get the clone model
-			rp.removeProvider(cpModel, providerType); // NOTE: move to checkSLA.java file ??
+		log.info("Parsing provider information...");
 
-			// commit or save the clone model to the CDO server
-			rp.commitCloneModelToCDO();
-
-			// NOTE: debugging - check the result
-			CDOClientExtended cdoClient = rp.getCDOClient();
-			CDOView cdoView = cdoClient.openView();
-
-			System.out.println("\n-------------------------------------------------------------------");
-			String newResId = rp.getCloneResId();
-			ModelData data = rp.getModelDataFromCDO(newResId, cdoView);
-			data.printPaasageConfiguration();
-			System.out.println("\n-------------------------------------------------------------------");
-			data.printConstraintProblem();
-			cdoClient.closeView(cdoView);
-
-			// finally, need to commit & close the CDO connection
-			// rp.commitAndCloseCDOSession();
-			rp.closeCDOSession();
-		}
-
-		int code = 0; // 0 means sucess and pass the RP validation checks on the CP models
-		if (rp.getValidationResult() == true) {
-			log.debug("\nRP_result: PASS - code: " + code);
-			System.out.println("\nRP_result: PASS - code: " + code);
-			code = 0;
-		} else {
-			log.debug("\nRP_result: FAIL - code: " + code);
-			System.out.println("\nRP_result: FAIL - code: " + code);
-			code = 1;
-		}
-		System.out.println();
-		System.exit(code);
+		RuleProcessor rp = new RuleProcessor();
+		int success = rp.processRequest(camelModel, cpModel);
+		System.exit(success);
 	}
 }
