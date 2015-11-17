@@ -28,7 +28,7 @@ public class App implements Daemon {
 	//add method here to run metasolver with zeroMQ
 
 	public static void main (String args[]){
-	    LOGGER.info("ExecWareBackend main method called !!!");
+	    LOGGER.info("MetaSolver main method called !!!");
         LOGGER.info("PAASAGE_CONFIG_DIR: {}", System.getenv("PAASAGE_CONFIG_DIR"));
   
        metasolver mslv = new metasolver();
@@ -37,7 +37,7 @@ public class App implements Daemon {
 	}
 	  public void init(DaemonContext daemonContext) throws DaemonInitException {
 
-	        LOGGER.info("init method called !!!");
+	        LOGGER.info("metasolver init method called !!!");
 
 	        myThread = new Thread() {
 
@@ -56,13 +56,13 @@ public class App implements Daemon {
 
 	    @Override
 	    public void start() throws Exception {
-	        LOGGER.info("start method called !!!");
+	        LOGGER.info("metasolver start method called !!!");
 	        myThread.start();
 	    }
 
 	    @Override
 	    public void stop() throws Exception {
-	        LOGGER.info("stop method called !!!");
+	        LOGGER.info("metasolver stop method called !!!");
 	        App.stopped = true;
 	        try {
 	            myThread.join(1000);
