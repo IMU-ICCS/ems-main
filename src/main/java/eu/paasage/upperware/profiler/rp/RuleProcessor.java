@@ -28,6 +28,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
@@ -37,11 +39,14 @@ import eu.paasage.camel.provider.impl.ProviderModelImpl;
 import eu.paasage.camel.type.impl.StringsValueImpl;
 import eu.paasage.upperware.cp.cloner.CDOClientExtended; // for cloning the CDO objects
 import eu.paasage.upperware.cp.cloner.CPCloner;
+import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.Provider;
+import eu.paasage.upperware.metamodel.application.ProviderDimension;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
+import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
@@ -336,39 +341,22 @@ public class RuleProcessor {
 		return cloneList_;
 	}
 
-	public boolean removeProvider(String resId, String providerType) {
+	public int removeProvider(String resId, String camelModel, String providerType) {
 		if (providerType == null) {
-			return false;
+			return 0;
 		}
 
-		// find out the type of each provider, i.e. private / public
-		// e.g. <Amazon-Ireland-1415008389854, Public>,
-		// <Sintef-Nova-Norway-1415008389864, Private>, etc
-		// Hashtable<String, String> resProvider =
-		// this.getProviderDeploymentModel(resId);
-
-		// clone the model and delete objects from this version NOT the original
-		// one, since it doesn't work
-		// this.cloneModel(resId); // clone the model
 		List<EObject> objList = this.getCloneModel();
-
-		String[] strArray = resId.split("/"); // splitting
-												// upperware-models/1414751126815
-		String newPaaSageConfigId = strArray[1] + "v2"; // take the latter part:
-														// 1414751126815
+		String[] strArray = resId.split("/"); // splitting upperware-models/1414751126815
+		String newPaaSageConfigId = strArray[1] + "v2"; // take the latter part: 1414751126815
 		cloneResId_ = resId + "v2";
 
 		EObject obj = null;
 		PaasageConfiguration pc = null;
-		HashMap<String, Boolean> delTable = new HashMap<String, Boolean>(); // allows
-																			// null
-																			// value
-																			// vs
-																			// hashtable
+		HashMap<String, Boolean> delTable = new HashMap<String, Boolean>();
 		ArrayList<String> vmRemoveList = new ArrayList<String>();
-		// queryVMProfile(providerType, resProvider, vmRemoveList); // CDO query
-		// version
-
+		Set<String> willBeRemoved = new HashSet<String>();
+		
 		// find out the exact VM profile ID for a particular resource provider
 		// e.g. for Amazon, it has VM profile with ID = "SL", in the xmi file:
 		// <vmProfiles cloudMLId="SL">
@@ -376,45 +364,59 @@ public class RuleProcessor {
 			obj = objList.get(i);
 			if (obj instanceof eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl) {
 				pc = (PaasageConfiguration) obj;
-				pc.setId(newPaaSageConfigId); // set a new resource ID for this
-												// clone version
+				pc.setId(newPaaSageConfigId); // set a new resource ID for this clone version
 
-				Iterator<VirtualMachineProfile> it = pc.getVmProfiles()
-						.iterator();
-				while (it.hasNext()) {
-					VirtualMachineProfile vmProfile = it.next();
-					// String prov = vmProfile.getProviderDimension();
-
-					/*
-					 * TODO: check with the new changes ProviderCost pCost =
-					 * vmProfile.getProvider(); String pID =
-					 * pCost.getProvider().getId(); // e.g. Amazon-Ireland-xxxx
-					 * 
-					 * String val = resProvider.get(pID); if
-					 * (providerType.equalsIgnoreCase(val) == true) {
-					 * vmRemoveList.add(vmID); // add to the to-be-removed list
-					 * System.out.println("- " + pID + " - vmID: " + vmID);
-					 * delTable.put(pID, null); // add the provider ID
-					 * delTable.put(vmID, null); // and its vm ID to the delete
-					 * list }
-					 */
-				} // end while
+				Iterator<VirtualMachineProfile> it = pc.getVmProfiles().iterator();
+                while (it.hasNext()) {
+                    VirtualMachineProfile vmProfile = it.next();
+                    String vmID = vmProfile.getCloudMLId();
+                    for (ProviderDimension provider : vmProfile.getProviderDimension()) {
+                    	String pId = provider.getProvider().getId();
+                    	if (isProviderPublic(strArray[1], pId)) {
+                    		if (providerType.equals("public")) {
+                    			willBeRemoved.add(pId);
+                    			vmRemoveList.add(vmID);
+                    			delTable.put(pId, null);
+                    			delTable.put(vmID, null);
+                    		}
+                    	} else if (providerType.equals("private")) {
+                    		willBeRemoved.add(pId);
+                    		vmRemoveList.add(vmID);
+                    		delTable.put(pId, null);
+                    		delTable.put(vmID, null);
+                    	}
+                    }
+                }
 			}
 		}
 
-		System.out.println("\nList of cloud providers to be REMOVED since they are " + providerType + ":");
-		if (vmRemoveList.size() == 0) {
+		System.out.println("\n> List of cloud providers to be REMOVED since they are " + providerType + ":");
+		if (willBeRemoved.isEmpty()) {
 			System.out.println("- None. No " + providerType
 					+ " cloud providers were selected by the CP generator for deployment.\n");
-			return false;
+			return 1;
+		} else {
+			for (String provider : willBeRemoved) {
+				System.out.println("  - " + provider);
+			}
 		}
 
 		// do the actual removal
-		removeModelFromCDO(resId, delTable, vmRemoveList, objList);
-		return true;
+		int returnCode =  removeModelFromCDO(resId, camelModel, delTable, vmRemoveList, objList);
+		return returnCode;
+	}
+	
+	private boolean isProviderPublic(String cpModelId, String cloudProviderId) {
+		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
+        CamelModel model = proxy.getCamelModel("upperware-models/fms/" + cpModelId + "/" + cloudProviderId);
+        for (OrganisationModel om : model.getOrganisationModels()) {
+          return om.getProvider().isPublic();
+        }
+        
+        return false;
 	}
 
-	private void removeModelFromCDO(String resId,
+	private int removeModelFromCDO(String resId, String camelModel,
 			HashMap<String, Boolean> delTable, ArrayList<String> vmRemoveList,
 			List<EObject> objList) {
 		EObject obj = null;
@@ -430,6 +432,43 @@ public class RuleProcessor {
 				removeConstraintFromCDO(cpModel, vmRemoveList, delTable);
 			}
 		}
+		
+		Set<String> requiredComponents = new HashSet<String>();
+		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
+		CamelModel cModel = proxy.getCamelModel(camelModel);
+		for (DeploymentModel dm : cModel.getDeploymentModels()) {
+			for (InternalComponent ic : dm.getInternalComponents()) {
+				requiredComponents.add(ic.getName());
+			}
+		}
+		
+		for (EObject eObj : objList) {
+			if (eObj instanceof eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl) {
+				PaasageConfiguration pc = (PaasageConfiguration) eObj;
+				for (PaaSageVariable ps : pc.getVariables()) {
+					ApplicationComponent ac = ps.getRelatedComponent();
+					if (ac != null) {
+						String componentName = ac.getCloudMLId();
+						requiredComponents.remove(componentName);
+					}
+					if (requiredComponents.isEmpty()) {
+						break;
+					}
+				}
+			}
+		}
+		
+		if (!requiredComponents.isEmpty()) {
+			System.out.println("\nRESULT: No solution available.");
+			System.out.println("> No suitable cloud provider found for the following components:");
+			for (String cloudMLId : requiredComponents) {
+				System.out.println("  - " + cloudMLId);
+			}
+			System.out.println("> Please adapt the requirements in your CAMEL model.");
+			return 2;
+		}
+		
+		return 3;
 	}
 
 	private void removeConfigurationFromCDO(PaasageConfiguration pc,
@@ -440,37 +479,35 @@ public class RuleProcessor {
 		while (it.hasNext()) {
 			PaaSageVariable pv = it.next();
 			String cpVarId = pv.getCpVariableId();
-			System.out.print("varId = " + cpVarId);
 			for (int n = 0; n < vmRemoveList.size(); n++) {
 				// if the variable is related to a particular vm ID, e.g.
 				// "*_vm_LL"
 				String vmName = vmRemoveList.get(n);
-				if (cpVarId.endsWith(vmName) == true) {
-					System.out.print(" --> is being REMOVED");
+				if (cpVarId.contains(vmName)) {
+					System.out.println("varId = " + cpVarId + "--> is being REMOVED");
 					delTable.put(cpVarId, null);
 					it.remove();
 					break;
 				}
 			} // end for
-			System.out.println();
 		} // end while
 
-		// Removing Providers that are not needed as defined in the SLA
 		System.out.println();
+		
+		// Removing Providers that are not needed as defined in the SLA
 		Iterator<Provider> pIt = pc.getProviders().iterator();
 		while (pIt.hasNext()) {
 			Provider p = pIt.next();
 			String providerId = p.getId();
-			System.out.print("Provider ID = " + providerId);
 			if (delTable.containsKey(providerId) == true) {
-				System.out.print(" --> is being REMOVED"); // + p.cdoID());
+				System.out.println("Provider ID = " + providerId + " --> is being REMOVED");
 				pIt.remove();
 			}
-			System.out.println();
 		}
 
-		// Removing VM Profiles that are not needed as defined in the SLA
 		System.out.println();
+
+		// Removing VM Profiles that are not needed as defined in the SLA		
 		VirtualMachineProfile vmProfile = null;
 		EList<VirtualMachineProfile> vmProfileList = pc.getVmProfiles();
 		for (int i = vmProfileList.size() - 1; i >= 0; i--) // deleting from
@@ -478,9 +515,8 @@ public class RuleProcessor {
 		{
 			vmProfile = vmProfileList.get(i);
 			String vmId = vmProfile.getCloudMLId();
-			System.out.print("vmProfileId = " + vmId);
-			if (delTable.containsKey(vmId) == true) {
-				System.out.print(" --> is being REMOVED"); // +
+			if (delTable.containsKey(vmId)) {
+				System.out.println("vmProfileId = " + vmId + " --> is being REMOVED"); // +
 															// vmProfile.cdoID());
 
 				// Removing the child elements first
@@ -490,13 +526,13 @@ public class RuleProcessor {
 				EcoreUtil.delete(vmProfile.getStorage(), true);
 				EcoreUtil.delete(vmProfile.getCpu().getValue(), true);
 				EcoreUtil.delete(vmProfile.getCpu(), true);
-				// EcoreUtil.delete(vmProfile.getOs(), false); // OS can't be
-				// removed
+				EcoreUtil.delete(vmProfile.getOs(), true);
 				// TODO: check with the new changes
-				// EcoreUtil.delete(vmProfile.getProvider(), true);
+				//for (ProviderDimension pdim : vmProfile.getProviderDimension()) {
+				//	EcoreUtil.delete(pdim.getMetricID(), true);
+				//}
 				EcoreUtil.delete(vmProfile, true);
 			}
-			System.out.println();
 		} // end while
 	}
 
@@ -507,41 +543,50 @@ public class RuleProcessor {
 		int SIZE = 50;
 		ArrayList<ComposedExpressionImpl> removeStack = new ArrayList<ComposedExpressionImpl>(
 				SIZE); // for CDO Client to remove
+		
+
+		System.out.println("\nDeleting constants...");
+		Iterator<Constant> constIt = cpModel.getConstants().iterator();
+		while (constIt.hasNext()) {
+			Constant c = constIt.next();
+			String id = c.getId();
+			for (String candidate : delTable.keySet()) {
+				if (id.contains(candidate)) {
+					System.out.println("* constant: " + id + " --> is being REMOVED.");
+					constIt.remove();
+				}
+			}
+		}
+		
+		System.out.println();
 
 		System.out.println("\nDeleting constraint variables: ");
 		Iterator<Variable> varIt = cpModel.getVariables().iterator();
 		while (varIt.hasNext()) {
 			Variable v = varIt.next();
 			String id = v.getId();
-			System.out.print("* varID: " + id);
-			if (delTable.containsKey(id) == true) {
-				System.out.print(" --> is being REMOVED.");
+			if (delTable.containsKey(id)) {
+				System.out.println("* varID: " + id + " --> is being REMOVED.");
 				if (v.getDomain() != null) {
-					System.out.print(" Deleting also its child object: "
-							+ v.getDomain());
+					System.out.println("  > Deleting also its child object: " + v.getDomain());
 					EcoreUtil.delete(v.getDomain(), true);
 				}
 
-				// if (v.getValue() != null)
-				// {
-				// System.out.println(" Deleting also its child object: " +
-				// v.getValue());
-				// EcoreUtil.delete(v.getValue(), true);
-				// }
 				EList<Solution> solutions = cpModel.getSolution();
 				Solution sol = CPModelTool.searchLastSolution(solutions);
-				VariableValue varValue = CPModelTool
-						.searchVariableValue(sol, v);
-				if (varValue != null) {
-					System.out.println(" Deleting also its child object: "
-							+ varValue.getValue());
-					EcoreUtil.delete(varValue.getValue(), true);
+				if (sol != null) {
+					VariableValue varValue = CPModelTool.searchVariableValue(sol, v);
+					if (varValue != null) {
+						System.out.println(" Deleting also its child object: " + varValue.getValue());
+						EcoreUtil.delete(varValue.getValue(), true);
+					}
 				}
 
 				varIt.remove();
 			}
-			System.out.println();
 		}
+
+		System.out.println();
 
 		// Marking the aux expressions for removal. However, the removal is done
 		// at the end
@@ -551,8 +596,8 @@ public class RuleProcessor {
 		while (auxExpIt.hasNext()) {
 			delete = false;
 			Expression ex = auxExpIt.next();
-			System.out.println("* " + ex.getId()
-					+ " has the following variables and/or expressions:");
+			//System.out.println("* " + ex.getId()
+			//		+ " has the following variables and/or expressions:");
 
 			if (ex instanceof eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl) {
 				ComposedExpressionImpl ceImpl = (ComposedExpressionImpl) ex;
@@ -561,18 +606,14 @@ public class RuleProcessor {
 				while (neIt.hasNext()) {
 					NumericExpression ne = neIt.next();
 					String neId = ne.getId();
-					System.out.print("  -- " + neId);
-					if (delTable.containsKey(neId) == true) {
-						System.out
-								.println(" --> is already marked for REMOVAL");
+					if (delTable.containsKey(neId)) {
+						System.out.println("  -- " + neId + " --> is already marked for REMOVAL");
 						delete = true; // no need to remove this since it is
 										// done above or already marked
-					} else {
-						System.out.println();
 					}
 				} // end while
 
-				if (delete == true) // remove at the end because it will be
+				if (delete) // remove at the end because it will be
 									// referenced by the constraints (below)
 				{
 					System.out.println("  >>> Thus, " + ceImpl.getId()
@@ -585,8 +626,6 @@ public class RuleProcessor {
 			} else {
 				System.out.println("  -- a constant expression.");
 			}
-
-			System.out.println();
 		} // end while
 
 		// Removing the constraints
@@ -700,7 +739,7 @@ public class RuleProcessor {
 			int success = 1;
 			log.debug("\nRP_result: PASS - code: " + success);
 			System.out.println("\nRP_result: PASS - code: " + success);
-			System.exit(success);
+			return success;
 		}
 
 		Set<String> distinctProviders = new HashSet<String>();
@@ -719,7 +758,7 @@ public class RuleProcessor {
 				int success = 1;
 				log.debug("\nRP_result: PASS - code: " + success);
 				System.out.println("\nRP_result: PASS - code: " + success);
-				System.exit(success);
+				return success;
 			}
 		}
 		
@@ -727,22 +766,35 @@ public class RuleProcessor {
 		this.openCDOSession(cdoIdentifier);
 		this.cloneModel(cdoIdentifier); // clone the model
 		
-		boolean providersToRemove = false;
+		int providersToRemove = 1;
 		String detectedProvider = camelProviders.values().iterator().next();
 		if (detectedProvider.equalsIgnoreCase("public")) {
 			System.out.println("\n> Going to remove private cloud providers...");
-			providersToRemove = this.removeProvider(cdoIdentifier, "private");
+			providersToRemove = this.removeProvider(cdoIdentifier, camelModel, "private");
 		} else {
 			System.out.println("\n> Going to remove public cloud providers...");
-			providersToRemove = this.removeProvider(cdoIdentifier, "public");
+			providersToRemove = this.removeProvider(cdoIdentifier, camelModel, "public");
 		}
-		if (!providersToRemove) {
+		/* error occurred */
+		if (providersToRemove == 0) { 
+			int success = 0;
+			return success;
+		/* no changes required, because no cloud provider requirements are given */
+		} else if (providersToRemove == 1) {
 			int success = 1;
 			log.debug("\nRP_result: PASS - code: " + success);
 			System.out.println("\nRP_result: PASS - code: " + success);
-			System.exit(success);
+			return success;
+		/* no solution available */
+		} else if (providersToRemove == 2) {
+			int success = 0;
+			log.debug("\nRP_result: NO_SOLUTION - code: " + success);
+			System.out.println("\nRP_result: NO_SOLUTION - code: " + success);
+			return success;
 		}
-
+		/* cp model has to be modified; continue */
+		
+		
 		// commit or save the clone model to the CDO server
 		this.commitCloneModelToCDO();
 
