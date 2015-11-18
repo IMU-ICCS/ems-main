@@ -33,6 +33,8 @@ public class SolutionPublisher {
 		publisher.close ();
 		context.term ();
 	}
+	
+	
 }
 
 
