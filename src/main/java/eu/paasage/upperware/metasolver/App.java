@@ -35,7 +35,7 @@ public class App implements Daemon {
 		if(args.length == 0)
 	    {
 	       arg = "nothing";
-	       System.exit(0);
+	 
 	    }
 		
 		else if (args[0].contains("daemon"))
