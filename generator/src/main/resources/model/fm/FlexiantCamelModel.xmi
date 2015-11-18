@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="ASCII"?>
-<!-- Copyright (C) 2015 INRIA, Universite Lille 1
-
-   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
-   - Date: 09/2015
-   - This Source Code Form is subject to the terms of the Mozilla Public 
-   - License, v. 2.0. If a copy of the MPL was not distributed with this 
-   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
 <camel:CamelModel
     xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI"
@@ -40,15 +33,113 @@
       name="FlexiantProvider">
     <constraints
         xsi:type="provider:Implies"
-        name="LOWEST_VM_Constraint_Mapping"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="LOWEST"/>
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="4096"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="4"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="100"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="1"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="1"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="2"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="1"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="21"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="1"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="1"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+            value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="512"/>
@@ -57,50 +148,49 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="LOWEST"/>
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+            value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="1"/>
       </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+            value="2"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="250"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+            value="2"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="2"/>
+      </attributeConstraints>
     </constraints>
     <constraints
         xsi:type="provider:Implies"
-        name="LOWER_VM_Constraint_Mapping"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="LOWER"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="1024"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="LOWER"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="1"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="LOW_VM_Constraint_Mapping"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="LOW"/>
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+            value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2048"/>
@@ -109,120 +199,40 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="LOW"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="1"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="MEDIUM_VM_Constraint_Mapping"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="MEDIUM"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="2048"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+            value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2"/>
       </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="HIGH_VM_Constraint_Mapping"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="HIGH"/>
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+            value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
-            value="4096"/>
+            value="20"/>
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="HIGH"/>
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+            value="3"/>
         <toValue
-            xsi:type="type:IntegerValue"
-            value="2"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="HIGHER_VM_Constraint_Mapping"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="HIGHER"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="4096"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="HIGHER"/>
-        <toValue
-            xsi:type="type:IntegerValue"
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
             value="3"/>
       </attributeConstraints>
     </constraints>
     <constraints
         xsi:type="provider:Implies"
-        name="HIGHEST_VM_Constraint_Mapping"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="HIGHEST"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="4096"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
-        <fromValue
-            xsi:type="type:StringsValue"
-            value="HIGHEST"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="4"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="IMAGE1_OS"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c_OS"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
@@ -230,85 +240,31 @@
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="Image1"/>
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c"/>
         <toValue
             xsi:type="type:EnumerateValue"
-            name="CentOS_6_2"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="IMAGE2_OS"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="Image2"
-            value="1"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="Ubuntu_12_04"
-            value="1"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="IMAGE3_OS"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="Image3"
-            value="2"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="Ubuntu_14_04"
-            value="2"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="IMAGE4_OS"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="Image4"
-            value="3"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="Windows_2008_R2"
-            value="2"/>
+            name="Ubuntu 14.04 (Cluster Two)"/>
       </attributeConstraints>
     </constraints>
     <rootFeature
         name="Flexiant">
       <attributes
           name="DeploymentModel"
-          valueType="//@typeModels.0/@dataTypes.8">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
             value="Public"/>
       </attributes>
       <attributes
           name="ServiceModel"
-          valueType="//@typeModels.0/@dataTypes.8">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
             value="IaaS"/>
       </attributes>
       <attributes
           name="Availability"
-          valueType="//@typeModels.0/@dataTypes.8"
+          valueType="//@typeModels.0/@dataTypes.5"
           unitType="PERCENTAGE">
         <value
             xsi:type="type:StringsValue"
@@ -316,17 +272,24 @@
       </attributes>
       <attributes
           name="Driver"
-          valueType="//@typeModels.0/@dataTypes.8">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
             value="flexiant"/>
       </attributes>
       <attributes
           name="EndPoint"
-          valueType="//@typeModels.0/@dataTypes.8">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
             value="https://api.sd1.flexiant.net:4442"/>
+      </attributes>
+      <attributes
+          name="Name"
+          valueType="//@typeModels.0/@dataTypes.5">
+        <value
+            xsi:type="type:StringsValue"
+            value="Flexiant"/>
       </attributes>
       <subFeatures
           name="VM">
@@ -335,33 +298,80 @@
             valueType="//@typeModels.0/@dataTypes.0"/>
         <attributes
             name="VMOS"
-            valueType="//@typeModels.0/@dataTypes.1"/>
+            valueType="//@typeModels.0/@dataTypes.10"/>
         <attributes
             name="VMImageId"
-            valueType="//@typeModels.0/@dataTypes.2"/>
+            valueType="//@typeModels.0/@dataTypes.11"/>
         <attributes
             name="VMMemory"
-            valueType="//@typeModels.0/@dataTypes.9"
+            valueType="//@typeModels.0/@dataTypes.6"
             unitType="MEGABYTES"/>
         <attributes
             name="VMStorage"
-            valueType="//@typeModels.0/@dataTypes.4"
+            valueType="//@typeModels.0/@dataTypes.8"
             unitType="GIGABYTES"/>
         <attributes
             name="VMCores"
-            valueType="//@typeModels.0/@dataTypes.5"/>
+            valueType="//@typeModels.0/@dataTypes.9"/>
         <attributes
             name="CostPerHour"
-            valueType="//@typeModels.0/@dataTypes.6"/>
+            valueType="//@typeModels.0/@dataTypes.3"/>
         <attributes
             name="BecnhmarkRate"
+            valueType="//@typeModels.0/@dataTypes.4"/>
+        <attributes
+            name="OSVendorType"
+            valueType="//@typeModels.0/@dataTypes.5">
+          <value
+              xsi:type="type:StringsValue"
+              value="1"/>
+        </attributes>
+        <attributes
+            name="OSArchitecture"
+            valueType="//@typeModels.0/@dataTypes.5">
+          <value
+              xsi:type="type:StringsValue"
+              value="AMD64"/>
+        </attributes>
+        <attributes
+            name="VMTypeCloudProviderId"
             valueType="//@typeModels.0/@dataTypes.7"/>
+        <attributes
+            name="DefaultLoginName"
+            valueType="//@typeModels.0/@dataTypes.5">
+          <value
+              xsi:type="type:StringsValue"
+              value="&quot;&quot;"/>
+        </attributes>
+        <attributes
+            name="DefaultLoginPassword"
+            valueType="//@typeModels.0/@dataTypes.5">
+          <value
+              xsi:type="type:StringsValue"
+              value="&quot;&quot;"/>
+        </attributes>
         <featureCardinality
             cardinalityMin="1"
             cardinalityMax="8"/>
       </subFeatures>
       <subFeatures
           name="Location">
+        <attributes
+            name="LocationId">
+          <value
+              xsi:type="type:StringsValue"
+              value="e92bb306-72cd-33a2-a952-908db2f47e98"/>
+        </attributes>
+        <attributes
+            name="Longitude">
+          <value
+              xsi:type="type:FloatsValue"/>
+        </attributes>
+        <attributes
+            name="Latitude">
+          <value
+              xsi:type="type:FloatsValue"/>
+        </attributes>
         <subFeatures
             name="Scotland">
           <featureCardinality
@@ -383,25 +393,16 @@
         xsi:type="type:Enumeration"
         name="VMTypeEnum">
       <values
-          name="LOWEST"/>
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
       <values
-          name="LOWER"
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
           value="1"/>
       <values
-          name="LOW"
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
           value="2"/>
       <values
-          name="MEDIUM"
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
           value="3"/>
-      <values
-          name="HIGH"
-          value="4"/>
-      <values
-          name="HIGHER"
-          value="5"/>
-      <values
-          name="HIGHEST"
-          value="6"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Enumeration"
@@ -419,21 +420,6 @@
           value="3"/>
     </dataTypes>
     <dataTypes
-        xsi:type="type:Enumeration"
-        name="VMImageIdEnum">
-      <values
-          name="Image1"/>
-      <values
-          name="Image2"
-          value="1"/>
-      <values
-          name="Image3"
-          value="2"/>
-      <values
-          name="Image4"
-          value="3"/>
-    </dataTypes>
-    <dataTypes
         xsi:type="type:Range"
         name="MemoryRange">
       <lowerLimit
@@ -447,38 +433,6 @@
         <value
             xsi:type="type:IntegerValue"
             value="4096"/>
-      </upperLimit>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Range"
-        name="StorageRange">
-      <lowerLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="1"/>
-      </lowerLimit>
-      <upperLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="1000"/>
-      </upperLimit>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Range"
-        name="CoresRange">
-      <lowerLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="1"/>
-      </lowerLimit>
-      <upperLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="4"/>
       </upperLimit>
     </dataTypes>
     <dataTypes
@@ -525,13 +479,66 @@
           value="512"/>
       <values
           xsi:type="type:IntegerValue"
-          value="1024"/>
-      <values
-          xsi:type="type:IntegerValue"
           value="2048"/>
       <values
           xsi:type="type:IntegerValue"
           value="4096"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="VMTypeCloudProviderIdEnum">
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+          value="1"/>
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+          value="2"/>
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+          value="3"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:List"
+        name="StorageList">
+      <values
+          xsi:type="type:IntegerValue"
+          value="20"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="21"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="100"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="250"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:List"
+        name="CoresList">
+      <values
+          xsi:type="type:IntegerValue"
+          value="1"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="2"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="4"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="VMOsEnum">
+      <values
+          name="Ubuntu 14.04 (Cluster Two)"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="VMImageIdEnum">
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c"/>
     </dataTypes>
   </typeModels>
 </camel:CamelModel>
