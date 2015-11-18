@@ -98,10 +98,10 @@ the InternalComponentInstance.
 				{
 					paaSageVariableCurrent = paaSageVariable;
 					try{
-						SolverToDeployementHelper.printVar(paaSageVariable);
 						// Print the value of the variable
-						Long val = SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem);
-						log.info("Value="+val);
+//						SolverToDeployementHelper.printVar(paaSageVariable);
+//						Long val = SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem);
+//						log.info("Value="+val);
 						// End Print the value of the variable
 						InternalComponentInstance internalComponentInstanceToRegister = SolverToDeployementHelper.createInternalComponentInstanceFromPaasageVariable(paaSageVariable, deploymentModel);
 						result.getComponentInstancesToRegister().add(internalComponentInstanceToRegister);
