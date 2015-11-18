@@ -9,7 +9,9 @@
 package eu.paasage.upperware.metasolver;
 
 //package org.ow2.paasage.upperware.metasolver;
-
+import org.zeromq.ZMQ;
+import org.zeromq.ZMQ.Context;
+import org.zeromq.ZMQ.Socket;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,9 +33,9 @@ import org.eclipse.emf.ecore.EObject;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 public class metasolver{
-	static metricsListener ml = new metricsListener("metricID");
+    static metricsListener ml = new metricsListener("metricID");
 	static solutionsListener sl = new solutionsListener("metricID");
-	static adaptorListener al = new adaptorListener("metricID");
+//	static adaptorListener al = new adaptorListener("metricID");
 	static RPListener rpl = new RPListener("metricID");
 	//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
 
@@ -65,14 +67,18 @@ public class metasolver{
 	
 	//}
 	public void startSolving(){
+		System.out.println("starting solving");
 					go();
 					System.out.println("all subscriptions complete");
 			}
 	public void go(){
-
+		System.out.println("go method");
+		System.out.println("rpl start");
 		rpl.start();
-		ml.start();
-		al.start();
+		System.out.println("rpl done");
+
+	    ml.start();
+	//	al.start();
 		sl.start();
 
 	}

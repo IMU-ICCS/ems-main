@@ -26,6 +26,8 @@ import org.zeromq.ZMQ.Socket;
 import org.jeromq.*;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
+import eu.paasage.upperware.metasolver.exception.MetricMapperException;
+
 
 
 public class RPListener implements Runnable{
@@ -92,8 +94,14 @@ public class RPListener implements Runnable{
 				String address1 = subscriber1.recvStr ();
 				contents1 = subscriber1.recvStr ();
 				System.out.println(" Rule Processor Notification " + address1 + " : " + contents1);  	            	}
-	//invoke MILP Solver
-	            mslv.invokeMILP(contents1);
+	//invoke MILP Solver -- hardwired as only solver present
+	         solutionPublisherMQ spq = new solutionPublisherMQ();
+	         try {
+				spq.MILPpubMQ(contents1);
+			} catch (MetricMapperException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	subscriber1.close ();
 			cntx1.term ();
 		}

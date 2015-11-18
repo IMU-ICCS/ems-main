@@ -26,6 +26,8 @@ import org.zeromq.ZMQ.Socket;
 import org.jeromq.*;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
+import eu.paasage.upperware.metasolver.exception.MetricMapperException;
+
 
 
 public class solutionListener implements Runnable{
@@ -83,41 +85,60 @@ public class solutionListener implements Runnable{
 			Socket	subscriber2 = cntx2.socket (zmq.SUB);
 			Socket	subscriber3 = cntx3.socket (zmq.SUB);
 			System.out.println("socket set .....");
-			subscriber1.connect ("tcp://localhost:5545");
-			subscriber2.connect ("tcp://localhost:5546");
-			subscriber3.connect ("tcp://localhost:5547");
+			subscriber1.connect ("tcp://localhost:5540");
+			subscriber2.connect ("tcp://localhost:5554");
+			subscriber3.connect ("tcp://localhost:5541");
 
 			System.out.println("connection set .....");
-			subscriber1.subscribe("B_2".getBytes());//listening to meessages on ...
-			subscriber2.subscribe("B_3".getBytes());//listening to meessages on ...
-			subscriber3.subscribe("B_4".getBytes());//listening to meessages on ...
+			subscriber1.subscribe("MILPsolutionAvailable".getBytes());//listening to meessages on ...
+			subscriber2.subscribe("CPsolutionAvailable".getBytes());//listening to meessages on ...
+			subscriber3.subscribe("SIMULATORsolutionAvailable".getBytes());//listening to meessages on ...
 			System.out.println("subscription done .....");
-
+			solutionPublisherMQ sp = new solutionPublisherMQ();
+			
 			while (!Thread.currentThread ().isInterrupted () && subscriber1.recvStr() != null) {
-				System.out.println("got1");
+				System.out.println("got MILP Solution");
 				// Read envelope with address
 
 				String address1 = subscriber1.recvStr ();
 				String contents1 = subscriber1.recvStr ();
-				System.out.println(" bell1 " + address1 + " : " + contents1);  	            	
+				System.out.println("MILP solution " + address1 + " : " + contents1);
+				try {
+					sp.S2D(contents1);
+				} catch (MetricMapperException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			while (!Thread.currentThread ().isInterrupted () && subscriber2.recvStr() != null) {
-				System.out.println("got2");
+				System.out.println("got CP Solution");
 				// Read envelope with address
 
 				String address2 = subscriber1.recvStr ();
 				String contents2 = subscriber1.recvStr ();
-				System.out.println(" bell2 " + address2 + " : " + contents2);  	            	
+				System.out.println(" CP solution " + address2 + " : " + contents2);  	            	
+				try {
+					sp.S2D(contents2);
+				} catch (MetricMapperException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			while (!Thread.currentThread ().isInterrupted () && subscriber1.recvStr() != null) {
-				System.out.println("listening");
+				System.out.println("got Simulation Solver Solution");
 				// Read envelope with address
 
 				String address3 = subscriber1.recvStr ();
 				String contents3 = subscriber1.recvStr ();
-				System.out.println(" bell3 " + address3 + " : " + contents3);  	            	
+				System.out.println("Simulated Solver Solution " + address3 + " : " + contents3);  	            	
+				try {
+					sp.S2D(contents3);
+				} catch (MetricMapperException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			subscriber1.close ();
 			subscriber2.close ();

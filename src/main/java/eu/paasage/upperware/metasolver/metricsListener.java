@@ -23,7 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
-import org.jeromq.*;
+//import org.jeromq.*;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 
@@ -32,9 +32,9 @@ public class metricsListener implements Runnable{
 
 	private Thread t;
 	private String threadName = "metricsListener";
-	private Context context1;
-	private Context context2;
-	private Context context3;
+	private Context context1 = null;
+	private Context context2 = null;
+	private Context context3 = null;
 	private Socket socket1;
 
 	private Socket socket2;

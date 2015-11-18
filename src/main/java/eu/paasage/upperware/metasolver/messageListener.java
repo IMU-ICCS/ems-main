@@ -29,6 +29,7 @@ public class messageListener {
             // Read message contents
             String contents = subscriber.recvStr ();
             System.out.println(address + " : " + contents);
+            //take contents and get new KPI
         }
         subscriber.close ();
         cntx.term ();
