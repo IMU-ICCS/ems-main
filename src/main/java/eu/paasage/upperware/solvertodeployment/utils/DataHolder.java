@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.utils;
 
 import java.util.ArrayList;
@@ -30,11 +28,9 @@ public class DataHolder {
 		return componentInstancesToRegister;
 	}
 	
-
 	public List<VMInstance> getVmInstancesToRegister() {
 		return vmInstancesToRegister;
 	}
-
 
 	public List<HostingInstance> getHostingInstancesToRegisters() {
 		return hostingInstancesToRegister;
@@ -42,9 +38,6 @@ public class DataHolder {
 	
 	public List<CommunicationInstance> getCommunicationInstances() {
 		return communicationInstances;
-	}
-		
-	
-	
+	}	
 }
 

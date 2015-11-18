@@ -7,6 +7,7 @@ package eu.paasage.upperware.solvertodeployment.utils;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
+import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
@@ -61,7 +62,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	 */
 
 	public static void printVar(PaaSageVariable paaSageVariable) {
-		String logg = "\n===================================================\n";
+		String logg = "Listing Variable:\n===================================================\n";
 		logg += "\n"+paaSageVariable.getRelatedVirtualMachineProfile().getCloudMLId() ;
 		logg += "\n"+paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId() ;
 		logg += "\n		"+paaSageVariable.getRelatedComponent().getCloudMLId();
@@ -70,7 +71,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		logg += "\n		"+paaSageVariable.getCpVariableId();
 		logg += "\n===================================================\n\n";
 
-		log.error(logg);
+		log.info(logg);
 	}
 
 	public static void printVar(PaasageConfiguration pc)
@@ -80,27 +81,68 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 			printVar(paaSageVariable);
 		}
 	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Internal Component Instance
+	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static InternalComponent findInternalComponentFromPaasageConfigurationApplicationComponent(DeploymentModel deploymentModel,String paasageConfigurationApplicationId) throws S2DException
+	public static InternalComponent findInternalComponentFromPaasageConfigurationApplicationComponent(DeploymentModel deploymentModel,
+			String paasageConfigurationApplicationId) throws S2DException
 	{
 		EList<InternalComponent> components = deploymentModel.getInternalComponents();
-		for (InternalComponent internalComponent : components) {
+		for (InternalComponent internalComponent : components)
+		{
 			if(internalComponent.getName().toLowerCase().equals(paasageConfigurationApplicationId.toLowerCase()))
 				return internalComponent;
 		}
 		throw new S2DException("Unable to find "+ paasageConfigurationApplicationId+ " component in camel model");
 	}
 
-	public static String providerModelToProviderModelId(String providerModelName)
+	public static InternalComponentInstance createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,DeploymentModel deploymentModel) throws S2DException
 	{
-		String[] results = providerModelName.split("-");
-		String result = results[results.length -1 ];
-		return result;
+		ApplicationComponent component = paaSageVariable.getRelatedComponent();
+
+		InternalComponent internalComponent = null;
+		internalComponent = findInternalComponentFromPaasageConfigurationApplicationComponent(deploymentModel,component.getCloudMLId());
+		InternalComponentInstance internalComponentInstance =  CloudMLHelper.createICInstance(internalComponent);
+		return internalComponentInstance;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Hosting Instance
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	static public Hosting findHosting(String applicationComponentName,DeploymentModel _deploymentModel) throws S2DException
+	{
+		Hosting hosting = CDODatabaseProxy2.getHostingContainString(_deploymentModel,applicationComponentName);
+		if(hosting == null)
+		{
+			throw new S2DException("Unable to find hosting for application component name :" + applicationComponentName + " . Seems to have error in original model");
+		}	
+		return hosting;
+	}
+
+	static public HostingInstance createHostingInstance(VMInstance vmInstance, InternalComponentInstance internalComponentInstance, DeploymentModel deploymentModel) throws S2DException 
+	{
+		Hosting hosting = findHosting(internalComponentInstance.getType().getName(),deploymentModel);
+
+		HostingInstance hostingInstance = CloudMLHelper.buildNewHostingInstance(internalComponentInstance.getType().getName(),vmInstance,internalComponentInstance,hosting);
+
+		if(hostingInstance == null)
+		{
+			throw new S2DException("Unable to find hosting for application component name" + internalComponentInstance.getName());
+		}	
+		return hostingInstance;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// VM Instance
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	static VM findVM(EList<VM> vms, String vmIdentifier)
 	{
 		VM result = null;
+		@SuppressWarnings("unused")
 		String log = "";
 		for (VM vm : vms) {
 
@@ -119,16 +161,6 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		return result;
 	}
 
-	public static InternalComponentInstance createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,DeploymentModel deploymentModel) throws S2DException
-	{
-		ApplicationComponent component = paaSageVariable.getRelatedComponent();
-
-		InternalComponent internalComponent = null;
-		internalComponent = findInternalComponentFromPaasageConfigurationApplicationComponent(deploymentModel,component.getCloudMLId());
-		InternalComponentInstance internalComponentInstance =  CloudMLHelper.createICInstance(internalComponent);
-		return internalComponentInstance;
-
-	}
 
 	public static VMInstance searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, String passageConfigurationID) throws S2DException
 	{
@@ -138,13 +170,22 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 
 		VM result = findVM(vms, vmIdentifier);
 		String providerModelId =  paaSageVariable.getRelatedProvider().getId();
+
+//		ProviderModel providerModel = CDODatabaseProxy2.getCloudProvider(providerModelId);
+//		ProviderModel providerModel =  CDODatabaseProxy2.findProviderModel(passageConfigurationID, providerModelId);
+
 		ProviderModel providerModel = null;
-
-
-		providerModel =  CDODatabaseProxy2.findProviderModel(passageConfigurationID, providerModelId);
-
+		CamelModel cm = (CamelModel) deploymentModel.eContainer();
+		for(ProviderModel p : cm.getProviderModels())
+		{
+			if (p.getName().equals(providerModelId)) {
+				providerModel = p;
+				break;
+			}
+		}
+		log.info("providerModel = "+providerModel);
 		//Create now
-		VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result,providerModel);
+		VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result, providerModel);
 
 		//Set VM Type/value 
 		Attribute attribute = CloudMLHelper.findVMType(providerModel);
@@ -153,27 +194,21 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		return vmInstanceResult;
 
 	}
-	static public Hosting findHosting(String applicationComponentName,DeploymentModel _deploymentModel) throws S2DException {
-		Hosting hosting = CDODatabaseProxy2.getHostingContainString(_deploymentModel,applicationComponentName);
-		if(hosting == null)
-		{
-			throw new S2DException("Unable to find hosting for application component name :" + applicationComponentName + " . Seems to have error in original model");
-		}	
-		return hosting;
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Helper
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	public static String providerModelToProviderModelId(String providerModelName)
+	{
+		String[] results = providerModelName.split("-");
+		String result = results[0];
+		return result;
 	}
 
-	static public HostingInstance createHostingInstance(VMInstance vmInstance, InternalComponentInstance internalComponentInstance, DeploymentModel deploymentModel) throws S2DException {
-		Hosting hosting = findHosting(internalComponentInstance.getType().getName(),deploymentModel);
-
-		HostingInstance hostingInstance = CloudMLHelper.buildNewHostingInstance(internalComponentInstance.getType().getName(),vmInstance,internalComponentInstance,hosting);
-
-		if(hostingInstance == null)
-		{
-			throw new S2DException("Unable to find hosting for application component name" + internalComponentInstance.getName());
-		}	
-		return hostingInstance;
-	}
-	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem) throws S2DException{		
+	
+	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem) throws S2DException
+	{		
 		for(Solution solution : _constraintProblem.getSolution()){
 
 			EList<VariableValue> variables  = solution.getVariableValue();
@@ -191,4 +226,5 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		}	
 		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId() );
 	}
+	
 }

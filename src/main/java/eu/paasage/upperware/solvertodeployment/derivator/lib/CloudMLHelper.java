@@ -56,6 +56,10 @@ public class CloudMLHelper {
 		return result;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Internal Component Instance
+	//////////////////////////////////////////////////////////////////////////////////////
+	
 	public static InternalComponentInstance createICInstance(InternalComponent ic1)
 	{
 		InternalComponentInstance internalComponentInstance = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
@@ -102,6 +106,10 @@ public class CloudMLHelper {
 
 		return internalComponentInstance;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// VM Instance
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static VMInstance createVMInstance(VM vm,ProviderModel providerModel)
 	{
@@ -150,6 +158,10 @@ public class CloudMLHelper {
 			throw new S2DException("Unable to find VMType . There is error in original model ! .Details :" + logTxt);
 		return result;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Hosting Instance
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static HostingInstance buildNewHostingInstance(String acName,VMInstance vmInstance, InternalComponentInstance internalComponentInstance, Hosting hosting) {
 		HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();

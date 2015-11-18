@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
@@ -28,6 +29,8 @@ public class SolverToDeployment {
 			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
 			CDOView cdoView = cdoProxy.getCdoClient().openView();
 
+			CDOClient client = new CDOClient();
+
 			EList<EObject> contents = cdoView.getResource(paasageConfigurationID).getContents();
 			PaasageConfiguration paasageConfiguration = (PaasageConfiguration) contents.get(0);
 
@@ -35,10 +38,27 @@ public class SolverToDeployment {
 			CamelModel camelModel= (CamelModel)contents2.get(0);
 			DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(0);
 
+//			log.info("Saving original CAMEL model to /tmp/Ori.xmi");
+//			client.exportModel (camelModelID, "/tmp/Ori.xmi");
+//			client.exportModelWithRefRec(camelModelID, "/tmp/Ori2.xmi", false);
+//			log.info("Saving original CAMEL model to /tmp/Ori.xmi done");
+
 			ConstraintProblem constraintProblem = (ConstraintProblem) contents.get(1);
 			try {
+				// copy provider to source camel doc
+				String results[] = paasageConfigurationID.split("/");
+				String fmsId = results[1];
+				DataUtils.copyCloudProviders(camelModelID, fmsId, paasageConfiguration, constraintProblem);
+
+				// Generate new stuff into camel
 				DataHolder dataholder  = DataUtils.computeDatasToRegister(paasageConfiguration, deploymentModel, constraintProblem);
 				DataUtils.registerDataHolderToCDO(camelModelID, dataholder);
+
+				// export to debug output
+				log.info("Saving modified CAMEL model to /tmp/Mod.xmi");
+				client.exportModelWithRefRec(camelModelID, "/tmp/Mod2.xmi", false);
+				client.exportModel(camelModelID, "/tmp/Mod.xmi");
+				log.info("Saving modified CAMEL model to /tmp/Mod.xmi done");
 
 			} catch (S2DException e) {
 				e.printStackTrace();

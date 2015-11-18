@@ -4,7 +4,10 @@
 
 package eu.paasage.upperware.solvertodeployment.utils;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
@@ -15,8 +18,10 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponentInstance;
 import eu.paasage.camel.deployment.VMInstance;
+import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
+import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProducerConsumerDomain;
@@ -27,7 +32,8 @@ public class DataUtils {
 	private static Logger log = Logger.getLogger(DataUtils.class);
 
 	/*<pre>
-	 * The Solver-to-deployement component is implemented in Java. It re-
+
+The Solver-to-deployement component is implemented in Java. It re-
 ceives the solution as a list of objects with the PaaSageVariable type. A
 PaaSageVariable object is described as follows:
 RelatedComponent It gives the ApplicationComponent of the UpperModel to
@@ -76,21 +82,27 @@ the InternalComponentInstance.
  </pre>
 	 */
 	public static DataHolder computeDatasToRegister(PaasageConfiguration paasageConfiguration,
-			DeploymentModel deploymentModel,ConstraintProblem constraintProblem ) throws S2DException
+			DeploymentModel deploymentModel, ConstraintProblem constraintProblem ) throws S2DException
 	{
 		PaaSageVariable paaSageVariableCurrent = null;
 
-		try{
+		try
+		{
 			DataHolder result = new DataHolder();
 
 			EList<PaaSageVariable> variables = paasageConfiguration.getVariables();
 
-			for (PaaSageVariable paaSageVariable : variables) {
+			for (PaaSageVariable paaSageVariable : variables)
+			{
 				if(SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem) > 0)
 				{
 					paaSageVariableCurrent = paaSageVariable;
 					try{
 						SolverToDeployementHelper.printVar(paaSageVariable);
+						// Print the value of the variable
+						Long val = SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem);
+						log.info("Value="+val);
+						// End Print the value of the variable
 						InternalComponentInstance internalComponentInstanceToRegister = SolverToDeployementHelper.createInternalComponentInstanceFromPaasageVariable(paaSageVariable, deploymentModel);
 						result.getComponentInstancesToRegister().add(internalComponentInstanceToRegister);
 						VMInstance vmInstanceToRegister = SolverToDeployementHelper.searchAndCreateVMInstance(deploymentModel,paaSageVariable, paasageConfiguration.getId());
@@ -106,7 +118,8 @@ the InternalComponentInstance.
 				}
 			}
 			EList<Communication> communications = deploymentModel.getCommunications();
-			for (Communication communication : communications) {
+			for (Communication communication : communications)
+			{
 				CommunicationInstance communicationInstance = CommunicationProducerConsumerDomain.createCommunicationInstanceFromDemand(communication.getName(),deploymentModel,result.getComponentInstancesToRegister());
 				result.getCommunicationInstances().add(communicationInstance);
 			}
@@ -127,7 +140,53 @@ the InternalComponentInstance.
 		return null;
 	}	
 
-	public static  void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
+	public static void copyCloudProviders(String camelModelID, String appId, PaasageConfiguration paasageConfiguration,
+			ConstraintProblem constraintProblem)
+	{
+		PaaSageVariable paaSageVariableCurrent = null;
+
+		try
+		{
+			// Set containing added PM
+			Set<String> pmList = new HashSet<String>(); 
+			
+			EList<PaaSageVariable> variables = paasageConfiguration.getVariables();
+
+			for (PaaSageVariable paaSageVariable : variables)
+			{
+				if (SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem) > 0)
+				{
+					paaSageVariableCurrent = paaSageVariable;
+//					SolverToDeployementHelper.printVar(paaSageVariable);
+					Provider upm = paaSageVariable.getRelatedProvider();
+					String pId = upm.getId();
+					log.info("Considering ProviderId: "+pId);
+					if (!pmList.contains(pId)) {
+						pmList.add(pId);
+						log.info("Adding clean ProviderId: "+pId);
+						
+						CDODatabaseProxy2.copyAllCloudProviderModel(pId, camelModelID, appId);
+					}
+				}
+			}
+
+		}	
+		catch(Exception e)
+		{
+			log.error("Error details : ", e);
+			log.error("Error when try to decode the input paramers : ");
+			if (paaSageVariableCurrent != null)
+			{
+				SolverToDeployementHelper.printVar(paaSageVariableCurrent);	
+			}
+			else{
+				log.error("No parameters. Must never happened");
+			}
+		}
+	}
+	
+	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder)
+	{
 		List<VMInstance> vmInstancesToRegister = dataholder.getVmInstancesToRegister();
 		for (VMInstance vmInstance : vmInstancesToRegister) {
 			CDODatabaseProxy2.registerVMInstance(vmInstance,camelModelID);

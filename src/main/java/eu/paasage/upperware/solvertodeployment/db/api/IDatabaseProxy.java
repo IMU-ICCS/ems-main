@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.db.api;
 
 import java.io.File;
@@ -19,10 +17,10 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.Locations;
 import eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes;
 
-
-
 public interface IDatabaseProxy 
 {
+
+	// UPPERWARE ELEMENTS ------------------------------------------
 	
 	/**
 	 * Retrieves an OperatingSystems object that contains a list of available operating systems in the database
@@ -34,8 +32,7 @@ public interface IDatabaseProxy
 	 * Retrieves a Locations object that contains a list of available locations in the database
 	 * @return List of locations
 	 */
-	public Locations getLocations(); 
-
+	public Locations getLocations();
 	
 	/**
 	 * Retrieves a ProviderTypes object that contains a list of available provider types in the database
@@ -56,7 +53,6 @@ public interface IDatabaseProxy
 	 */
 	public void saveRelatedModels(ResourceSet resSet, File dir); 
 	
-	
 	/**
 	 * Loads the related models (i.e., operating systems, locations, function types and provider types) of a configuration
 	 * @param resSet The resource set to load the models
@@ -65,10 +61,8 @@ public interface IDatabaseProxy
 	 */
 	public void loadRelatedModels(ResourceSet resSet, File dir, PaasageConfiguration wrapper); 
 	
-	
 	public void saveModels(PaasageConfiguration pc, ResourceSet resSet); 
 	
-		
 	/**
 	 * Verifies if there is a PaaSage Configuration model with the specified ID
 	 * @param paasageConfigurationId The configuration id
@@ -76,15 +70,12 @@ public interface IDatabaseProxy
 	 */
 	public boolean existPaaSageConfigurationModel(String paasageConfigurationId); 
 	
-	
 	/**
 	 * Loads the PaaSage Configuration model with the specified Id
 	 * @param paasageConfigurationId The configuration id
 	 * @return  PaaSage Configuration model 
 	 */
 	public PaasageConfiguration loadPaaSageConfigurationModel(String paasageConfigurationId); 
-	
-	
 	
 	/**
 	 * Closes the database session
@@ -95,7 +86,6 @@ public interface IDatabaseProxy
 	 * Opens the database session
 	 */
 	public void openSession(); 
-	
 		
 	/**
 	 * Loads a provider model
@@ -104,6 +94,8 @@ public interface IDatabaseProxy
 	 * @return The provider model
 	 */
 	public ProviderModel loadPM(PaasageConfiguration pc, Provider provider);
+
+	// CAMEL ELEMENTS ------------------------------------------
 
 	/**
 	 * Retrieves the camel model with the specified path
