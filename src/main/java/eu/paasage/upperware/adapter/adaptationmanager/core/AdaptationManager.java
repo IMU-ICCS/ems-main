@@ -94,10 +94,11 @@ public class AdaptationManager {
 
 		try {
 			//c.runStep();
-			//c.startThreaded();//threaded execution of plan
 			if (isDaemon || args[0].equals("daemon")){
 					runListener();
-				}
+			}else{
+				c.startThreaded();//threaded execution of plan
+			}
 		}catch(Exception ex){ 
 			if(ex instanceof ArrayIndexOutOfBoundsException)
 				System.out.println("Run as deamon if you want to run continuously");
