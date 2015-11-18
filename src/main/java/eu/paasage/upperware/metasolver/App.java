@@ -30,23 +30,16 @@ public class App implements Daemon {
 
 	public static void main (String args[]){
 		String arg = null;
+		System.out.println("in main");
 		if(args.length == 0)
 		{
 			arg = "nothing";
-			try{
-				String modID= args[1];
-				Mapper map = new Mapper();
-				long mapResult = map.mapMetricVariables(modID);
-				runMILPSolver(modID, mapResult);
-			}
-			catch(Exception e){
-				System.out.println("error starting metasolver " + e);
-			}
-
+		System.out.println(" args empty");
 		}
 
 		else if (args[0].contains("daemon"))
 		{
+		System.out.println("in daemon");
 			LOGGER.info("MetaSolver main method called !!!");
 			LOGGER.info("PAASAGE_CONFIG_DIR: {}", System.getenv("PAASAGE_CONFIG_DIR"));
 
@@ -56,6 +49,7 @@ public class App implements Daemon {
 
 		else {
 			try{
+				System.out.println("in normal");
 				String modID= args[1];
 				Mapper map = new Mapper();
 				long mapResult = map.mapMetricVariables(modID);
