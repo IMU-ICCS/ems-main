@@ -10,7 +10,9 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
@@ -168,7 +170,7 @@ public class MetricConditionAdapter extends AbstractAdapter {
         // Add Subscription to all conditions / nfe to send to CDO
         //
         ///////////////////////////////////////////////////////////////////////////
-        //fc.addMonitorSubscription(conditionMonitor.getId(), visorEndpoint,
-        //    SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+        getFc().addMonitorSubscription(conditionMonitor.getId(), getConfig().getVisorEndpoint(),
+                SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
     }
 }

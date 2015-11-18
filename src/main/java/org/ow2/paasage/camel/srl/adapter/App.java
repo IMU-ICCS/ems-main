@@ -61,6 +61,14 @@ public class App
                 executor = Executors.newCachedThreadPool();
                 executor.execute(subscriber);
                 logger.info("Subscribed to ZeroMQ server.");
+                // TEST:
+//                try {
+//                    logger.info("Sleep for two seconds to the Subscriber is set up, before we send messages:");
+//                    Thread.sleep(2000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                server.submitValue(conf.getZeroMqQueue(), "a", "b", "c");
 
                 break;
         }
