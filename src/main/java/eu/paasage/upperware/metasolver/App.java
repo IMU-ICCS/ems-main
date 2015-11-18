@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+
 import eu.paasage.upperware.metasolver.*;
+import eu.paasage.upperware.metasolver.metrics.Mapper;
+
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
@@ -28,13 +31,38 @@ public class App implements Daemon {
 	//add method here to run metasolver with zeroMQ
 
 	public static void main (String args[]){
-	    LOGGER.info("MetaSolver main method called !!!");
+	String arg = null;
+		if(args.length == 0)
+	    {
+	       arg = "nothing";
+	       System.exit(0);
+	    }
+		
+		else if (args[0].contains("daemon"))
+	   {
+		LOGGER.info("MetaSolver main method called !!!");
         LOGGER.info("PAASAGE_CONFIG_DIR: {}", System.getenv("PAASAGE_CONFIG_DIR"));
   
        metasolver mslv = new metasolver();
        mslv.startSolving();
+	   }
+	   
+	   else {
+		   try{
+				String modID= args[1];
+				Mapper map = new Mapper();
+				long mapResult = map.mapMetricVariables(modID);
+				 metasolver mslv = new metasolver();
+			      
+				mslv.runMILPSolver(modID, mapResult);
+			}
+			catch(Exception e){
+				System.out.println("error starting metasolver " + e);
+			}
+		}
+	   }
 
-	}
+	
 	  public void init(DaemonContext daemonContext) throws DaemonInitException {
 
 	        LOGGER.info("metasolver init method called !!!");
