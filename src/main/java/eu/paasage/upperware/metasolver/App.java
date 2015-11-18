@@ -77,7 +77,10 @@ public class App implements Daemon {
 	      
 	            @Override
 	            public void run() {
-	                main(null);
+	            	String[] dam = new String[2];
+	            	dam[0]="daemon";
+	            	dam[1]="daemon";
+	            	main(dam);
 	            }
 	        };
 	    }
