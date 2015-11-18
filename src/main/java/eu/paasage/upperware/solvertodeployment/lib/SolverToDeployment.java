@@ -55,10 +55,10 @@ public class SolverToDeployment {
 				DataUtils.registerDataHolderToCDO(camelModelID, dataholder);
 
 				// export to debug output
-				log.info("Saving modified CAMEL model to /tmp/Mod.xmi");
-				client.exportModelWithRefRec(camelModelID, "/tmp/Mod2.xmi", false);
-				client.exportModel(camelModelID, "/tmp/Mod.xmi");
-				log.info("Saving modified CAMEL model to /tmp/Mod.xmi done");
+//				log.info("Saving modified CAMEL model to /tmp/Mod.xmi");
+//				client.exportModelWithRefRec(camelModelID, "/tmp/Mod2.xmi", false);
+//				client.exportModel(camelModelID, "/tmp/Mod.xmi");
+//				log.info("Saving modified CAMEL model to /tmp/Mod.xmi done");
 
 			} catch (S2DException e) {
 				e.printStackTrace();
