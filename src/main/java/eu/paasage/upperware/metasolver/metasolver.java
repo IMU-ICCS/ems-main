@@ -33,12 +33,7 @@ import org.eclipse.emf.ecore.EObject;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 public class metasolver{
-    static metricsListener ml = new metricsListener("metricID");
-	static solutionsListener sl = new solutionsListener("metricID");
-//	static adaptorListener al = new adaptorListener("metricID");
-	static RPListener rpl = new RPListener("metricID");
-	//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
-
+   
 
 	public static void main(String args[]) throws IOException, InterruptedException, MetricMapperException{
 
@@ -72,6 +67,12 @@ public class metasolver{
 					System.out.println("all subscriptions complete");
 			}
 	public void go(){
+		  metricsListener ml = new metricsListener("metricID");
+			 solutionsListener sl = new solutionsListener("metricID");
+//			static adaptorListener al = new adaptorListener("metricID");
+		 RPListener rpl = new RPListener("metricID");
+			//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
+
 		System.out.println("go method");
 		System.out.println("rpl start");
 		rpl.start();
