@@ -18,4 +18,7 @@
       architecture="64bits"/>
   <oss name="Windows"
       architecture="64bits"/>
+  <oss name="Ubuntu"
+      vers="Ubuntu 14.04"
+      architecture="64bits"/>
 </typesPaasage:OperatingSystems>
