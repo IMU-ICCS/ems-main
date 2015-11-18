@@ -553,7 +553,7 @@
           valueType="//@typeModels.0/@dataTypes.4">
         <value
             xsi:type="type:StringsValue"
-            value="omnistack"/>
+            value="omistack"/>
       </attributes>
       <subFeatures
           name="VM">
