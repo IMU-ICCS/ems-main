@@ -36,6 +36,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -821,6 +824,7 @@ public class ExecInterfacer {
 	 *************************************************************************
 	*/
 	
+	@SuppressWarnings("deprecation")//for HttpParams & HttpConnectionParams
 	public void login(String name, String pass, String tenant) throws ExecutionwareError{
 
 		/*
@@ -847,9 +851,12 @@ public class ExecInterfacer {
 		}
 
         try{
+        	// set the connection timeout value to 30 seconds (30000 milliseconds)
+            final HttpParams httpParams = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
         	
 	        @SuppressWarnings({ "deprecation", "resource" })
-			HttpClient httpClient = new DefaultHttpClient();
+			HttpClient httpClient = new DefaultHttpClient(httpParams);
 	        HttpResponse resp = httpClient.execute(hur);
 	        HttpEntity respEntity = resp.getEntity();
 	        

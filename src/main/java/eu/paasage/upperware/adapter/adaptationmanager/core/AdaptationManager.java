@@ -55,6 +55,8 @@ public class AdaptationManager {
 	private final static Logger LOGGER = Logger
 			.getLogger(AdaptationManager.class.getName());
 
+	private static ZeromqServer zmqS = null;
+	
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
 		props.setProperty("java.util.logging.SimpleFormatter.format",
@@ -66,12 +68,12 @@ public class AdaptationManager {
 		if (resourceName == null)
 			resourceName = "test";
 		
-		//Runnig the 0MQ Server
+		/*//Running the 0MQ Server
 		try {
 			new ZeromqServer().start();
 		} catch (Exception e){
 			LOGGER.log(Level.SEVERE, "0MQ Server has failed");
-		}
+		}*/
 		
 		execInterfacer = new ExecInterfacer();
 		if (cleaning) {
@@ -92,7 +94,7 @@ public class AdaptationManager {
 
 		try {
 			//c.runStep();
-			c.startThreaded();//threaded execution of plan
+			//c.startThreaded();//threaded execution of plan
 			if (isDaemon || args[0].equals("daemon")){
 					runListener();
 				}
@@ -116,6 +118,18 @@ public class AdaptationManager {
 		LOGGER.log(Level.INFO, "Running in deamon mode");
 		flag = false;
 		//Need to rewrite the code here
+		
+		//Running the 0MQ Server
+		try {
+			zmqS = new ZeromqServer();
+			zmqS.start();
+			zmqS.join();
+		} catch (Exception e){
+			LOGGER.log(Level.SEVERE, "0MQ Server has failed");
+		}finally {
+			LOGGER.log(Level.INFO, "Adaptation manager: stopped");
+			System.exit(0);
+		}		
 		
 /*		System.out.println(properties.getProperty("CDO.host"));
 		MyCDOClient cdocl = new MyCDOClient(properties.getProperty("CDO.host"),properties.getProperty("CDO.port"), 
