@@ -112,10 +112,13 @@ public class ZeroMQServer
         ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
         subscriber.connect(urlSubs);
         subscriber.subscribe(subsTopic.getBytes());
+        System.out.println("Subscribed to "+urlSubs+" and topic "+subsTopic);
         // Socket to publish info
         ZMQ.Socket publisher = context.socket(ZMQ.PUB);
         publisher.bind(urlPubs);
 
+        System.out.println("Publishing to "+urlPubs+" and camel model id topic "+camelModelIdTopic+" and cp model id "+cpModelIdTopic);
+        
         while (!Thread.currentThread().isInterrupted()) {
             // Wait for next message from the publisher
         	System.out.println("Waiting for Model Id");
