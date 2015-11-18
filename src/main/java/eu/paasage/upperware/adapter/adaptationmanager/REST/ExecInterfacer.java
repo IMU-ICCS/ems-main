@@ -972,6 +972,7 @@ public class ExecInterfacer {
         if(inBody != null)
         	hur.setEntity(new StringEntity(inBody.toString()));
         
+        renewToken();
         //Providing token and the user id for authentication
         renewToken();
         hur.addHeader("X-Auth-Token", execUser.getToken());
@@ -1004,6 +1005,7 @@ public class ExecInterfacer {
         if(inBody != null)
         	hur.setEntity(new StringEntity(inBody.toString()));
         
+        renewToken();
         //Providing token and the user id for authentication
         hur.addHeader("X-Auth-Token", execUser.getToken());
         hur.addHeader("X-Auth-UserId", String.valueOf(execUser.getUserId()));
@@ -1033,6 +1035,7 @@ public class ExecInterfacer {
         if(inHeader != null)
         	hur.addHeader(inHeader);
         
+        renewToken();
         //Providing token and the user id for authentication
         hur.addHeader("X-Auth-Token", execUser.getToken());
         hur.addHeader("X-Auth-UserId", String.valueOf(execUser.getUserId()));
@@ -1062,6 +1065,7 @@ public class ExecInterfacer {
         if(inHeader != null)
         	hur.addHeader(inHeader);
 
+        renewToken();
         //Providing token and the user id for authentication
         hur.addHeader("X-Auth-Token", execUser.getToken());
         hur.addHeader("X-Auth-UserId", String.valueOf(execUser.getUserId()));
@@ -1081,6 +1085,24 @@ public class ExecInterfacer {
         finally{
         	return resp;
         }
+	}
+	
+	public String getMatchingJSONArrayHref(JSONArray jArr, String name){
+		
+		Iterator<JSONObject> jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			if(jObj.get("name").toString().toLowerCase().contains(name.toLowerCase()) ||
+					name.toLowerCase().contains(jObj.get("name").toString().toLowerCase())){
+				JSONArray links= (JSONArray) jObj.get("link");
+				Iterator<JSONObject> jArrLinksIt = links.iterator();
+				while (jArrLinksIt.hasNext()){
+					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
+					return (String) jObjLinks.get("href");
+				}
+			}
+		}
+		return "";
 	}
 	
 	public String getJSONArrayHref(JSONArray jArr, String name){

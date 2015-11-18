@@ -86,7 +86,7 @@ public class VMInstanceAction implements Action {
 					 * System.out.println("Hacking cloud name " + cloudName + " to omistack");
 					cloudName = "omistack";*/
 					
-					String tempCloudID = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloudName);
+					String tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
 					
 					if(tempCloudID.equalsIgnoreCase("")){//need to add the cloud provider
 						String driver = objParams.get("driver").asString();
@@ -96,7 +96,7 @@ public class VMInstanceAction implements Action {
 						
 						linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);
 						
-						tempCloudID = execInterfacer.getJSONArrayHref(execInterfacer.getClouds(), cloudName);
+						tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
 					}
 					
 					cloudID = execInterfacer.trimResponseID(tempCloudID);
