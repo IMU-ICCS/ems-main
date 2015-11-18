@@ -35,21 +35,15 @@ public class RPListener implements Runnable{
 	private Thread t;
 	private String threadName = "RPListener";
 
-	
+
 	private Context context1;
-	private Context context2;
-	private Context context3;
 	private Socket socket1;
 
-	private Socket socket2;
-
-	private Socket socket3;
 
 	private String metricId;
 	private boolean run = true;
 
 	static ZMQ zmq = new ZMQ();
-	static ZMQ ZMQ = new ZMQ();
 	public RPListener(String metricId){
 
 
@@ -57,9 +51,9 @@ public class RPListener implements Runnable{
 		context1 = ZMQ.context(1);
 		socket1 = context1.socket(ZMQ.SUB);
 		socket1.connect("tcp://localhost:5545");
-		socket1.subscribe("B_2".getBytes());
+		socket1.subscribe("RPsolutionAvailable".getBytes());
 
-	
+
 
 
 	}
@@ -71,50 +65,50 @@ public class RPListener implements Runnable{
 	public void run() {
 		while (run) {
 			String contents1 = null;
-            metasolver mslv = new metasolver();
+			metasolver mslv = new metasolver();
 			System.out.println("lets go for a subscription .....");
 			System.out.println("setting context ....");	
 			Context cntx1 = zmq.context(1);
-		
+
 			System.out.println("context set .....");
 			Socket	subscriber1 = cntx1.socket (zmq.SUB);
-		
+
 			System.out.println("socket set .....");
 			subscriber1.connect ("tcp://localhost:5545");
-		
+
 
 			System.out.println("connection set .....");
-			subscriber1.subscribe("B_2".getBytes());//listening to meessages on ...
+			subscriber1.subscribe("RPsolutionAvailable".getBytes());//listening to meessages on ...
 			System.out.println("subscription done .....");
-	while (!Thread.currentThread ().isInterrupted () && subscriber1.recvStr() != null) {
+			while (!Thread.currentThread ().isInterrupted () && subscriber1.recvStr() != null) {
 
-					System.out.println("got1");
+				System.out.println("got1");
 				// Read envelope with address
 
 				String address1 = subscriber1.recvStr ();
 				contents1 = subscriber1.recvStr ();
 				System.out.println(" Rule Processor Notification " + address1 + " : " + contents1);  	            	}
-	//invoke MILP Solver -- hardwired as only solver present
-	         solutionPublisherMQ spq = new solutionPublisherMQ();
-	         try {
+			//invoke MILP Solver -- hardwired as only solver present
+			solutionPublisherMQ spq = new solutionPublisherMQ();
+			try {
 				spq.MILPpubMQ(contents1);
 			} catch (MetricMapperException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	subscriber1.close ();
+			subscriber1.close ();
 			cntx1.term ();
 		}
 	}
- public void start ()
-	   {
-	      System.out.println("Starting " +  threadName );
-	      if (t == null)
-	      {
-	         t = new Thread (this, threadName);
-	         t.start ();
-	      }
-	   }
+	public void start ()
+	{
+		System.out.println("Starting " +  threadName );
+		if (t == null)
+		{
+			t = new Thread (this, threadName);
+			t.start ();
+		}
+	}
 
 
 }
