@@ -42,7 +42,7 @@
     		</execution>
         </executions>
   		<configuration>
-    		<mainClass>eu.paasage.upperware.metasolver.metasolver</mainClass>
+    		<mainClass>eu.paasage.upperware.metasolver.App</mainClass>
     			<arguments>
     			</arguments>
   		</configuration>
