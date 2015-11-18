@@ -842,7 +842,7 @@ public class RuleProcessor {
 	/**
 	 * @param args Command-line arguments
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		Map<String, String> arguments = Utilities.parseArguments(args);
 
 		if (arguments.get("d") != null) {
