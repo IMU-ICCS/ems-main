@@ -1,5 +1,9 @@
-/**
+/* 
+ * Copyright (C) 2014-2015 University of Stuttgart
  * 
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.profiler.rp.algebra;
 
@@ -31,7 +35,8 @@ public class Conditionals {
 			BiPredicate<Integer, Integer> conditions,
 			ComparisonExpression expression) {
 		Constant tmp = (Constant) expression.getExp2();
-		int c = Integer.valueOf(((IntegerValueUpperware) tmp.getValue()).getValue());
+		int c = Integer.valueOf(((IntegerValueUpperware) tmp.getValue())
+				.getValue());
 
 		switch (expression.getComparator()) {
 		case DIFFERENT:
@@ -64,7 +69,8 @@ public class Conditionals {
 			BiPredicate<Integer, Integer> conditions,
 			ComparisonExpression expression) {
 		Constant tmp = (Constant) expression.getExp2();
-		int c = Integer.valueOf(((IntegerValueUpperware) tmp.getValue()).getValue());
+		int c = Integer.valueOf(((IntegerValueUpperware) tmp.getValue())
+				.getValue());
 
 		switch (expression.getComparator()) {
 		case DIFFERENT:
@@ -92,11 +98,11 @@ public class Conditionals {
 
 		return conditions;
 	}
-	
+
 	private static BiPredicate<Integer, Integer> addCondition_xy(
 			BiPredicate<Integer, Integer> conditions,
 			ComparisonExpression expression) {
-		
+
 		switch (expression.getComparator()) {
 		case DIFFERENT:
 			conditions = (x, y) -> x != y;
@@ -176,28 +182,26 @@ public class Conditionals {
 
 		return exp;
 	}
-	
-	private static ComparisonExpression createRelation(String leftVariableName, String rightVariableName,
-			ComparatorEnum comparator) {
+
+	private static ComparisonExpression createRelation(String leftVariableName,
+			String rightVariableName, ComparatorEnum comparator) {
 		Variable left = factory.createVariable();
 		left.setId(leftVariableName);
-		
+
 		Variable right = factory.createVariable();
 		right.setId(rightVariableName);
-		
+
 		ComparisonExpression exp = factory.createComparisonExpression();
 		exp.setComparator(comparator);
 		exp.setExp1(left);
 		exp.setExp2(right);
-		
+
 		return exp;
 	}
 
-	public static BiPredicate<Integer, Integer> addCondition(
-			String var,
+	public static BiPredicate<Integer, Integer> addCondition(String var,
 			BiPredicate<Integer, Integer> conditions,
-			ComparisonExpression expression
-	) {
+			ComparisonExpression expression) {
 		if (expression.getExp2() instanceof Constant) {
 			if (var.equals("a")) {
 				conditions = addCondition_x(conditions, expression);
@@ -213,6 +217,7 @@ public class Conditionals {
 
 	/**
 	 * @param args
+	 *            no parameters are required
 	 */
 	public static void main(String[] args) {
 		List<Expression> expressions = new ArrayList<Expression>();
@@ -226,22 +231,27 @@ public class Conditionals {
 		List<String> userVariables = new ArrayList<String>();
 		userVariables.add("db");
 		userVariables.add("ws");
-		
+
 		int xmin = 1;
 		int xmax = 6;
 		int ymin = 1;
 		int ymax = 4;
 
 		// #db >= 1 && #db <= 6
-		expressions.add(createConstraint(userVariables.get(0), ComparatorEnum.GREATER_OR_EQUAL_TO, xmin));
-		expressions.add(createConstraint(userVariables.get(0), ComparatorEnum.LESS_OR_EQUAL_TO, xmax));
+		expressions.add(createConstraint(userVariables.get(0),
+				ComparatorEnum.GREATER_OR_EQUAL_TO, xmin));
+		expressions.add(createConstraint(userVariables.get(0),
+				ComparatorEnum.LESS_OR_EQUAL_TO, xmax));
 
 		// #ws >= 1 && #ws <= 4
-		expressions.add(createConstraint(userVariables.get(1), ComparatorEnum.GREATER_OR_EQUAL_TO, ymin));
-		expressions.add(createConstraint(userVariables.get(1), ComparatorEnum.LESS_OR_EQUAL_TO, ymax));
+		expressions.add(createConstraint(userVariables.get(1),
+				ComparatorEnum.GREATER_OR_EQUAL_TO, ymin));
+		expressions.add(createConstraint(userVariables.get(1),
+				ComparatorEnum.LESS_OR_EQUAL_TO, ymax));
 
 		// #ws < #db
-		expressions.add(createRelation(userVariables.get(0), userVariables.get(1), ComparatorEnum.LESS_OR_EQUAL_TO));
+		expressions.add(createRelation(userVariables.get(0),
+				userVariables.get(1), ComparatorEnum.LESS_OR_EQUAL_TO));
 
 		Map<String, String> variableMapping = new HashMap<String, String>();
 		for (int i = 0; i != userVariables.size(); ++i) {
@@ -254,21 +264,24 @@ public class Conditionals {
 			if (exp instanceof ComparisonExpression) {
 				ComparisonExpression ce = (ComparisonExpression) exp;
 				String var = variableMapping.get(ce.getExp1().getId());
-				conditions = addCondition(var, conditions, ce);				
+				conditions = addCondition(var, conditions, ce);
 			}
 		}
 
 		try {
 			System.out.println("\n> Validating rules (UtilityFunction)...");
 
-			Map<String, Integer> range = validateDomain(conditions, xmin, xmax, ymin, ymax);
+			Map<String, Integer> range = validateDomain(conditions, xmin, xmax,
+					ymin, ymax);
 
 			System.out.println("    Solution found:");
 			for (String variable : range.keySet()) {
-				System.out.println("        " + variable + " = " + range.get(variable));
+				System.out.println("        " + variable + " = "
+						+ range.get(variable));
 			}
 		} catch (UnsolvableException ue) {
-			System.out.println("    No solution found. Please update rules in the CAMEL model (UtilityFunction)");
+			System.out
+					.println("    No solution found. Please update rules in the CAMEL model (UtilityFunction)");
 		}
 	}
 
