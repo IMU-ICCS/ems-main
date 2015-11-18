@@ -5,6 +5,10 @@ package eu.paasage.upperware.metasolver;
 //import com.fasterxml.jackson.databind.JsonMappingException;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import eu.paasage.upperware.metasolver.metrics.Mapper;
 
 import org.apache.commons.daemon.Daemon;
@@ -33,9 +37,7 @@ public class App implements Daemon {
 				String modID= args[1];
 				Mapper map = new Mapper();
 				long mapResult = map.mapMetricVariables(modID);
-				metasolver mslv = new metasolver();
-
-				mslv.runMILPSolver(modID, mapResult);
+				runMILPSolver(modID, mapResult);
 			}
 			catch(Exception e){
 				System.out.println("error starting metasolver " + e);
@@ -112,6 +114,61 @@ public class App implements Daemon {
 	public void destroy() {
 		LOGGER.info("destroy method called !!!");
 		myThread = null;
+	}
+	public static void runMILPSolver(String input, long timestamp){
+
+		try{	
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input + timestamp);
+
+
+			// you can pass the system command or a script to exec command. here i used uname -a system command
+			BufferedReader stdInput = new BufferedReader(new
+					InputStreamReader(p1.getInputStream()));
+
+			BufferedReader stdError = new BufferedReader(new
+					InputStreamReader(p1.getErrorStream()));
+
+			// read the output from the command
+			String s1="";
+			StringBuilder sb = new StringBuilder(); 
+			while ((s1 = stdInput.readLine()) != null) {
+
+				sb.append(s1);
+				sb.append("\n");
+			}
+
+			while ((s1 = stdError.readLine()) != null) {
+
+				sb.append(s1);
+				sb.append("\n");
+			}
+
+
+			s1= sb.toString();
+			System.out.println(" output = " + s1);
+
+			if (s1.length() > 1 || Integer.parseInt(s1) > 0){
+
+				//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
+				String s2 = "";
+				while ((s2 = stdInput.readLine()) != null) {
+
+					System.out.println("Std OUT: "+s2);
+				}
+
+				while ((s2 = stdError.readLine()) != null) {
+					System.out.println("Std ERROR : "+s2);
+				}
+
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+
+
 	}
 
 
