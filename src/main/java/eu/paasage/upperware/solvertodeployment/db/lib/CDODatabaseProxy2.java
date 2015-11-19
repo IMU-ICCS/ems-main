@@ -4,7 +4,6 @@
 
 package eu.paasage.upperware.solvertodeployment.db.lib;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -16,7 +15,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;
@@ -31,7 +29,6 @@ import eu.paasage.camel.deployment.RequiredCommunication;
 import eu.paasage.camel.deployment.RequiredCommunicationInstance;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.provider.ProviderModel;
-import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
