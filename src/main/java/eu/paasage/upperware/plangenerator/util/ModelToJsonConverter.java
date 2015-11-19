@@ -817,7 +817,8 @@ public final class ModelToJsonConverter {
 			ProviderModel cloudPM = (ProviderModel) provider;
 			//System.out.println("cloudPM is : " + cloudPM.getName());
 			//
-			hm.put("cloud", cloudPM.getName()); //this is the cloud provider model name
+			//19Nov15 this is now retrieved from providerModel.rootfeature.attribute
+			//hm.put("cloud", cloudPM.getName()); //this is the cloud provider model name
 			//test
 			//System.out.println("cloudPM parent is :" + cloudPM.eContainer().getClass().getName());
 			//22July15 this may only work for model object obtained from a life transaction or both model files are loaded into memory 
@@ -827,18 +828,22 @@ public final class ModelToJsonConverter {
 				JsonArray locsStr = new JsonArray();
 				for(Feature sf : subFeatures){
 					if(sf.getName().equals("Location")){
+						/*19Nov15 model changed 
 						EList<Feature> locFeatures = sf.getSubFeatures();
 						for(Feature loc : locFeatures){
 							locsStr.add(loc.getName());
 							LOGGER.debug("the location subfeature is " + loc.getName());
+						}*/
+						EList<Attribute> attrs = sf.getAttributes(); 
+						if(attrs != null && !attrs.isEmpty()){
+							for(Attribute attr : attrs){
+								LOGGER.debug("Location current attribute : " + attr.getName());
+								if(attr.getName().equals("LocationId")){
+									locsStr.add(ModelUtil.switchValue(attr.getValue()));	//there should only be 1 value, save time keep JsonArray
+									break;
+								}
+							}
 						}
-//						Feature locationFeature = sf.getSubFeatures().get(0);{//just use the first one for the moment
-//							if(locationFeature.getName() != null){
-//								LOGGER.debug("the location subfeature is " + locationFeature.getName());
-//								System.out.println("the location subfeature is " + locationFeature.getName());
-//								hm.put("region", locationFeature.getName());
-//							}
-//						}
 					}
 					hm.put("locations", locsStr);
 				}
@@ -846,6 +851,7 @@ public final class ModelToJsonConverter {
 			//26 August, 2015 get driver and endpoint
 			String driver = "";	//can be null
 			String endpoint = "";
+			String cloudName = "";
 			EList<Attribute> attrs = cloudPM.getRootFeature().getAttributes(); 
 			if(attrs != null && !attrs.isEmpty()){
 				for(Attribute attr : attrs){
@@ -859,11 +865,16 @@ public final class ModelToJsonConverter {
 						//LOGGER.debug("found EndPoint attribute.....");
 						endpoint = ModelUtil.switchValue(attr.getValue());
 						//LOGGER.debug("endpoint is : " + endpoint);
+					}else if(attr.getName().equals("Name")){ //19Nov15 - get cloud name here now!
+						//LOGGER.debug("found cloud Name attribute....");
+						cloudName = ModelUtil.switchValue(attr.getValue());
+						LOGGER.debug("cloudname is : " + cloudName);
 					}
 				}
 			}
 			hm.put("driver", driver);
 			hm.put("endpoint", endpoint);
+			hm.put("cloud", cloudName); 
 			
 			/* commented out on 21/7/2015 as using cross referencer throws illegal op 114 and camel model seems to have changed
 			//find the cloud provider
