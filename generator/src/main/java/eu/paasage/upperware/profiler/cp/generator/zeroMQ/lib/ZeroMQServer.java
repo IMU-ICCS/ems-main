@@ -119,14 +119,18 @@ public class ZeroMQServer
 
         System.out.println("Publishing to "+urlPubs+" and camel model id topic "+camelModelIdTopic+" and cp model id "+cpModelIdTopic);
         
+        String modelId="";
+        
         while (!Thread.currentThread().isInterrupted()) {
+        	
+        	try{
             // Wait for next message from the publisher
         	System.out.println("Waiting for Model Id");
             byte[] request = subscriber.recv();
             
             request = subscriber.recv();
             
-            String modelId= new String(request,StandardCharsets.UTF_8); 
+            modelId= new String(request,StandardCharsets.UTF_8); 
             
             System.out.println("model id "+modelId);
 
@@ -152,6 +156,13 @@ public class ZeroMQServer
             
             publisher.sendMore(camelModelIdTopic); 
             publisher.send(modelId); 
+            
+        	}
+        	catch(Exception e)
+        	{
+        		System.out.println("Problems dealing with the camel model"+modelId+". Error Message "+e.getMessage());
+        		continue;
+        	}
         }
         subscriber.close();
         publisher.close();
