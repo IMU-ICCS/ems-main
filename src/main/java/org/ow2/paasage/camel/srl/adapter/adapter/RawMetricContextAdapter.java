@@ -56,11 +56,16 @@ public class RawMetricContextAdapter extends AbstractAdapter {
 
         Component component = null;
         if (rawMetricContext.getComponent() != null) {
-
-            component = getFc().getComponentByName(rawMetricContext.getComponent().getName());
+            String componentName = rawMetricContext.getComponent().getName();
+            component = getFc().getComponentByName(componentName);
         }
 
         eu.paasage.camel.metric.Schedule camelSchedule = rawMetricContext.getSchedule();
+
+        if(camelSchedule == null){
+            throw new RuntimeException("No schedule assigned for RawMetricContext " + rawMetricContext.getName());
+        }
+
         Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
         String _className =
                 rawMetricContext.getSensor().getConfiguration().split(";")[1];

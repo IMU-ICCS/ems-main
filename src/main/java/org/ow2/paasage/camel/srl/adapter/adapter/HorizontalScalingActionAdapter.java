@@ -11,6 +11,8 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Component;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.ComponentHorizontalScalingAction;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
@@ -73,10 +75,12 @@ public class HorizontalScalingActionAdapter extends AbstractAdapter {
         }
 
         for (ScalabilityRule rule : associatedRules) {
-                ComposedMonitor m = getFc().getComposedMonitorByExternalId(rule.getEvent().cdoID().toString());
-                getFc().addScalingActionToMonitor(m, componentHorizontalScalingAction);
-                /* TODO ADD LISTENER TO EVENT-MONITOR NOT DIRECTLY IN THE AGGREGATOR SERVICE, SINCE THIS WILL LATER NOT BE ACCESSIBLE LOCALLY */
-                //fc.addObserverToMonitor(m.getId(), 0.9 /*ungenauigkeit*/, FormulaOperator.GT); create: CliMetricObserver
+            ComposedMonitor m = getFc().getComposedMonitorByExternalId(rule.getEvent().cdoID().toString());
+            getFc().addScalingActionToMonitor(m, componentHorizontalScalingAction);
+            /* TODO ADD LISTENER TO EVENT-MONITOR NOT DIRECTLY IN THE AGGREGATOR SERVICE, SINCE THIS WILL LATER NOT BE ACCESSIBLE LOCALLY */
+
+            getFc().addMonitorSubscription(m.getId(), getConfig().getVisorEndpoint(),
+                    SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
         }
     }
 }

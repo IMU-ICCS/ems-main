@@ -396,6 +396,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override
     public MonitorSubscription addMonitorSubscription(Long monitor, String endpoint, SubscriptionType type,
         FilterType filterType, double filterValue) {
+        if(true)return null;
         // ONLY HERE create even if it exists: return factory.singleton(new MonitorSubscription(monitor, endpoint, type, filterType, filterValue));
         try{
             Thread.sleep(6000);

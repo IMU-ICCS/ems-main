@@ -19,7 +19,7 @@ public abstract class AbstractAdapter implements Adapter {
     protected static org.apache.log4j.Logger logger;
 
     static {
-        logger = org.apache.log4j.Logger.getLogger(CDOClient.class);
+        logger = org.apache.log4j.Logger.getLogger(AbstractAdapter.class);
     }
 
     private final CommandLinePropertiesAccessor config;

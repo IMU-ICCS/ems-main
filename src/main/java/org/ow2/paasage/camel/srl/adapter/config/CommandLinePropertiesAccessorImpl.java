@@ -123,6 +123,7 @@ public class CommandLinePropertiesAccessorImpl
             case "ZeroMqPort": return "5563";
             case "ZeroMqUri": return "tcp://localhost:5563";
             case "ZeroMqQueue": return "newModelArrival";
+            case "ModelSourceType": return ModelSourceType.CDO.toString();
             default : return null;
         }
     }
@@ -193,5 +194,10 @@ public class CommandLinePropertiesAccessorImpl
     @Override
     public String getZeroMqQueue() {
         return this.getCommandLineOption("ZeroMqQueue");
+    }
+
+    @Override
+    public ModelSourceType getModelSourceType() {
+        return ModelSourceType.valueOf(this.getCommandLineOption("ModelSourceType"));
     }
 }

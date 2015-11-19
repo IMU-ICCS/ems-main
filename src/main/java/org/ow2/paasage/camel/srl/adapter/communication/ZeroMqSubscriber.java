@@ -8,8 +8,10 @@
 
 package org.ow2.paasage.camel.srl.adapter.communication;
 
-import org.ow2.paasage.camel.srl.adapter.Execution;
+import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
+import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
+import org.ow2.paasage.camel.srl.adapter.execution.ImportModelSource;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
@@ -18,6 +20,11 @@ import org.zeromq.ZMQ.Socket;
  * Created by Frank on 16.11.2015.
  */
 public class ZeroMqSubscriber implements Runnable {
+    private static org.apache.log4j.Logger logger;
+
+    static {
+        logger = org.apache.log4j.Logger.getLogger(ZeroMqSubscriber.class);
+    }
 
     private final CommandLinePropertiesAccessor conf;
     private final String uri;
@@ -62,8 +69,13 @@ public class ZeroMqSubscriber implements Runnable {
             CdoConfigTuple converted = convertLine(contents);
 
             // TODO this is blocking - check if this is a problem for frequent requests
-            Execution ex = new Execution(conf);
-            ex.run(converted.getResourceName(), converted.getModelName(), converted.getExecutionContext());
+            try{
+                Execution ex = new Execution(conf);
+                ImportModelSource ims = ModelSourceType.mapToIms(conf);
+                ex.run(ims, converted.getResourceName(), converted.getModelName(), converted.getExecutionContext());
+            } catch(Exception ex){
+                logger.error("Error when executing Task: " + contents + ". Ignoring so far and continue listening to requests.", ex);
+            }
         }
         socket.close ();
         context.term ();

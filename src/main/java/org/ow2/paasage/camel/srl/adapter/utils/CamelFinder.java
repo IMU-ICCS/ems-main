@@ -237,8 +237,7 @@ public class CamelFinder {
                 HorizontalScaleRequirement horizontalScaleRequirement =
                         (HorizontalScaleRequirement) requirement;
                  /* TODO What if several requirements comply to the same component and are inconsistent? */
-                if (horizontalScaleRequirement.getComponent()
-                        == component) {
+                if (horizontalScaleRequirement.getComponent().equals(component)) {
                     result.add(horizontalScaleRequirement);
                 }
             }

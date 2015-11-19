@@ -6,27 +6,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-package org.ow2.paasage.camel.srl.adapter;
+package org.ow2.paasage.camel.srl.adapter.execution;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.metric.*;
 import eu.paasage.camel.scalability.EventPattern;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
-import eu.paasage.mddb.cdo.client.CDOClient;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.ow2.paasage.camel.srl.adapter.adapter.*;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.communication.RestFrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
-import org.ow2.paasage.camel.srl.adapter.test.CouchbaseExample;
+import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
 import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
-import org.ow2.paasage.camel.srl.adapter.utils.Instantiator;
 import org.ow2.paasage.camel.srl.adapter.utils.Printer;
 
 import java.util.List;
@@ -38,7 +34,7 @@ public class Execution {
     private static org.apache.log4j.Logger logger;
 
     static {
-        logger = org.apache.log4j.Logger.getLogger(CDOClient.class);
+        logger = org.apache.log4j.Logger.getLogger(Execution.class);
     }
 
     private final CommandLinePropertiesAccessor conf;
@@ -47,15 +43,13 @@ public class Execution {
         this.conf = conf;
     }
 
-    public void run(){
-        run(null, null, null);
+    public void run(ImportModelSource ims){
+        run(ims, null, null, null);
     }
 
-    public void run(String dynamiceResourceName, String dynamicModelName, String dynamicExecutionContextName){
+    public void run(ImportModelSource ims, String dynamiceResourceName, String dynamicModelName, String dynamicExecutionContextName){
         boolean createNew = conf.getSaveExample();
         boolean createMetricInstances = conf.getCreateMetricInstances();
-        String cdoUser = conf.getCdoUser();
-        String cdoPassword = conf.getCdoPassword();
         String modelName = conf.getModelName();
         String resourceName = conf.getResourceName();
         String executionContextName = conf.getExecutionContextName();
@@ -63,7 +57,7 @@ public class Execution {
         String colUser = conf.getColosseumUser();
         String colPassword = conf.getColosseumPassword();
         String colTenant = conf.getColosseumTenant();
-        String visorEndpoint = conf.getVisorEndpoint();
+
 
         if(dynamicModelName != null){
             createNew = false;
@@ -79,11 +73,6 @@ public class Execution {
             executionContextName = dynamicExecutionContextName;
         }
 
-        //Create the CDOClient
-        logger.info("Create CDO client...");
-        CDOClient cl = new CDOClient(cdoUser, cdoPassword);
-
-
         // Orchestrate SRL Engine
         logger.info("Connect to colosseum");
         ClientBuilder clientBuilder = ClientBuilder.getNew()
@@ -95,26 +84,16 @@ public class Execution {
         Client colosseumClient = clientBuilder.build();
         FrontendCommunicator fc = new RestFrontendCommunicator(colosseumClient);
 
-        // For testin purpose only:
-        //        fc.addMonitorSubscription(491544l, visorEndpoint, SubscriptionType.CDO_EVENT,
-        //            FilterType.GT, 0.99);
-        //        Thread.sleep(2000);
-        //        fc.addMonitorSubscription(491557l, visorEndpoint, SubscriptionType.CDO_EVENT,
-        //            FilterType.GT, 0.99);
-        //        if(true)return;
-
 
 
         // Save the Couchbase example:
         if (createNew) {
-            logger.info("Create new Couchbase-Example into the CDO");
-            cl.storeModel(CouchbaseExample.get(null), resourceName, false);
+            logger.info("Create new Couchbase-Example into the resources");
+            ims.createExampleModel(resourceName);
         }
 
 
-        CDOTransaction trans = cl.openTransaction();
-        EList<EObject> objs = trans.getResource(resourceName).getContents();
-
+        EList<EObject> objs = ims.getResources(resourceName);
 
         try {
 
@@ -133,21 +112,8 @@ public class Execution {
 
                 // Create MetricInstances
                 if (createMetricInstances) {
-                    Instantiator.createMetricInstances(model, ec, objs);
-
-                    // TODO THIS IS A HACK AND NOT MEANT TO BE HERE
-                    for(VMInstance instance : finder.getVMInstances()){
-                        if(instance.getIp() == null || "".equals(instance.getIp())){
-                            String ip = fc.getPublicIpOfVmByName(instance.getName());
-                            instance.setIp(ip);
-                        }
-                    }
-
-                    //trans.commit(); return;
+                    ims.createMetricInstances(fc, finder, ec, model, objs);
                 }
-
-                // Save them
-                trans.commit();
 
                 /*************************************************************************
                  *
@@ -265,14 +231,10 @@ public class Execution {
 
             }
 
-            cl.closeTransaction(trans);
-            cl.closeSession();
+            ims.terminate();
             System.out.println("The SRL adapter was executed.");
         } catch(Exception ex){
-            if(cl != null){
-                cl.closeTransaction(trans);
-                cl.closeSession();
-            }
+            ims.terminate();
             System.out.println("Error occurred during execution of the SRL adapter.");
             ex.printStackTrace();
         }
