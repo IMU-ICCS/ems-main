@@ -65,27 +65,30 @@ public class metasolver{
 	}
 	
 	//}
-	public void startSolving(){
+	public void startSolving(String CAMELmodel, String CPmodel) throws MetricMapperException{
 		System.out.println("starting solving");
-					go();
+					go(CAMELmodel, CPmodel);
 					System.out.println("all subscriptions complete");
 			}
-	public void go(){
-		  metricsListener ml = new metricsListener("metricID");
-			 solutionsListener sl = new solutionsListener("metricID");
-//			static adaptorListener al = new adaptorListener("metricID");
-		 RPListener rpl = new RPListener("metricID");
+	public void go(String CAMELmodel, String CPmodel) throws MetricMapperException{
+		Mapper map = new Mapper();
+		long mapResult = map.mapMetricVariables(CPmodel);
+		RPListener rpl = new RPListener();
+    	 metricsListener ml = new metricsListener("metricID");		
+		 solutionListener sl = new solutionListener(CAMELmodel, CPmodel, mapResult);
+		 
 			//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
 
-		System.out.println("go method");
-		System.out.println("rpl start");
+		
 		rpl.start();
 		System.out.println("rpl done");
-
-	    ml.start();
-	//	al.start();
 		sl.start();
+		System.out.println("sl done");
+	    ml.start();
+		System.out.println("ml done");
 
+	//	al.start();
+	
 	}
 
 	public static void runMILPSolver(String input, long timestamp){

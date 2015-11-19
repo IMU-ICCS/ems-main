@@ -40,14 +40,14 @@ public class RPListener implements Runnable{
 	private Socket socket1;
 
 
-	private String metricId;
+	//private String metricId;
 	private boolean run = true;
 
 	static ZMQ zmq = new ZMQ();
-	public RPListener(String metricId){
+	public RPListener(){
 
 
-		this.metricId = metricId;
+	//	this.metricId = metricId;
 		context1 = ZMQ.context(1);
 		socket1 = context1.socket(ZMQ.SUB);
 		socket1.connect("tcp://localhost:5545");

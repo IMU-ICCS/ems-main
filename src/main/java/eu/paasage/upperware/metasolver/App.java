@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import eu.paasage.upperware.metasolver.exception.MetricMapperException;
 import eu.paasage.upperware.metasolver.metrics.Mapper;
 
 import org.apache.commons.daemon.Daemon;
@@ -37,14 +38,19 @@ public class App implements Daemon {
 		System.out.println(" args empty");
 		}
 
-		else if (args[0].contains("daemon"))
+		else if (args[3].contains("daemon"))
 		{
 		System.out.println("in daemon");
 			LOGGER.info("MetaSolver main method called !!!");
 			LOGGER.info("PAASAGE_CONFIG_DIR: {}", System.getenv("PAASAGE_CONFIG_DIR"));
 
 			metasolver mslv = new metasolver();
-			mslv.startSolving();
+			try {
+				mslv.startSolving(args[0],args[1]);
+			} catch (MetricMapperException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		else {
