@@ -15,23 +15,17 @@ import eu.paasage.mddb.cdo.client.CDOClient;
 /**
  * Created by Frank on 03.09.2015.
  */
-public abstract class AbstractAdapter implements Adapter {
+public abstract class AbstractAdapter<T> implements Adapter<T> {
     protected static org.apache.log4j.Logger logger;
 
     static {
         logger = org.apache.log4j.Logger.getLogger(AbstractAdapter.class);
     }
 
-    private final CommandLinePropertiesAccessor config;
     private final FrontendCommunicator fc;
 
-    public AbstractAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc) {
-        this.config = config;
+    public AbstractAdapter(FrontendCommunicator fc) {
         this.fc = fc;
-    }
-
-    public CommandLinePropertiesAccessor getConfig() {
-        return config;
     }
 
     public FrontendCommunicator getFc() {

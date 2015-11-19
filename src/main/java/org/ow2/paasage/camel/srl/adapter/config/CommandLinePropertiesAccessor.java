@@ -24,6 +24,7 @@ public interface CommandLinePropertiesAccessor {
     String getVisorEndpoint();
     boolean getSaveExample();
     boolean getCreateMetricInstances();
+    boolean getCreateMonitorSubscriptions();
     ExecutionMode getExecutionMode();
     int getZeroMqPort();
     String getZeroMqUri();

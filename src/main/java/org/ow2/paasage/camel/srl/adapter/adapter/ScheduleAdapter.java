@@ -17,22 +17,24 @@ import eu.paasage.camel.metric.Schedule;
 /**
  * Created by Frank on 03.09.2015.
  */
-public class ScheduleAdapter extends AbstractAdapter {
+public class ScheduleAdapter extends AbstractAdapter<de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule> {
 
     private final Schedule schedule;
 
-    public ScheduleAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, Schedule schedule) {
-        super(config, fc);
+    public ScheduleAdapter(FrontendCommunicator fc, Schedule schedule) {
+        super(fc);
         this.schedule = schedule;
     }
 
     @Override
-    public void adapt() {
+    public de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule adapt() {
 
         /* TODO implement repetitions, etc. */
 
         logger.info("Save schedule to colosseum: " + schedule.getName());
 
-        getFc().saveSchedule(schedule.getInterval(), Convert.toJavaTimeUnit(schedule.getUnit()));
+        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule colosseumSchedule = getFc().saveSchedule(schedule.getInterval(), Convert.toJavaTimeUnit(schedule.getUnit()));
+
+        return colosseumSchedule;
     }
 }

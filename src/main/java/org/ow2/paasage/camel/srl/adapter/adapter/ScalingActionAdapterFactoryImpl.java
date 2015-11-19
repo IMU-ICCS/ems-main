@@ -19,17 +19,12 @@ import java.util.List;
  * Created by Frank on 09.09.2015.
  */
 public class ScalingActionAdapterFactoryImpl implements ScalingActionAdapterFactory {
-//    private final CamelModel model;
-//
-//    public EventPatternAdapterFactoryImpl(CamelModel model) {
-//        this.model = model;
-//    }
 
     @Override
-    public Adapter create(CommandLinePropertiesAccessor config, FrontendCommunicator fc, ScalingAction scalingAction,
+    public Adapter create(FrontendCommunicator fc, ScalingAction scalingAction,
                           List<ScalabilityRule> associatedRules, List<HorizontalScaleRequirement> associatedScaleRequirements) {
         if (scalingAction instanceof HorizontalScalingAction) {
-            return new HorizontalScalingActionAdapter(config, fc, (HorizontalScalingAction) scalingAction, associatedRules, associatedScaleRequirements);
+            return new HorizontalScalingActionAdapter(fc, (HorizontalScalingAction) scalingAction, associatedRules, associatedScaleRequirements);
         } else {
             throw new RuntimeException("ScalingAction not yet implemented!");
         }

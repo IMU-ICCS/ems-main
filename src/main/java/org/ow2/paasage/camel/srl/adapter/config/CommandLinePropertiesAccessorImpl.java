@@ -124,6 +124,7 @@ public class CommandLinePropertiesAccessorImpl
             case "ZeroMqUri": return "tcp://localhost:5563";
             case "ZeroMqQueue": return "newModelArrival";
             case "ModelSourceType": return ModelSourceType.CDO.toString();
+            case "CreateMonitorSubscriptions": return "true";
             default : return null;
         }
     }
@@ -199,5 +200,10 @@ public class CommandLinePropertiesAccessorImpl
     @Override
     public ModelSourceType getModelSourceType() {
         return ModelSourceType.valueOf(this.getCommandLineOption("ModelSourceType"));
+    }
+
+    @Override
+    public boolean getCreateMonitorSubscriptions() {
+        return this.getCommandLineOption("CreateMonitorSubscriptions").equals("true");
     }
 }

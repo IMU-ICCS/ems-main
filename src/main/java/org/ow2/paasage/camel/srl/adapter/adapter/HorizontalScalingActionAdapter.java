@@ -24,21 +24,21 @@ import java.util.List;
 /**
  * Created by Frank on 09.09.2015.
  */
-public class HorizontalScalingActionAdapter extends AbstractAdapter {
+public class HorizontalScalingActionAdapter extends AbstractAdapter<ComponentHorizontalScalingAction> {
     private final HorizontalScalingAction scalingAction;
     private final List<ScalabilityRule> associatedRules;
     private final List<HorizontalScaleRequirement> associatedScaleRequirements;
 
-    public HorizontalScalingActionAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, HorizontalScalingAction scalingAction,
+    public HorizontalScalingActionAdapter(FrontendCommunicator fc, HorizontalScalingAction scalingAction,
                                           List<ScalabilityRule> associatedRules, List<HorizontalScaleRequirement> associatedScaleRequirements) {
-        super(config, fc);
+        super(fc);
         this.scalingAction = scalingAction;
         this.associatedRules = associatedRules;
         this.associatedScaleRequirements = associatedScaleRequirements;
     }
 
     @Override
-    public void adapt() {
+    public ComponentHorizontalScalingAction adapt() {
         logger.info("Save ScalingAction to colosseum: " + scalingAction.getName());
 
         /* TODO implement VM scaling in the executionware */
@@ -74,13 +74,6 @@ public class HorizontalScalingActionAdapter extends AbstractAdapter {
                 throw new RuntimeException("Scaling Type not yet implemented!");
         }
 
-        for (ScalabilityRule rule : associatedRules) {
-            ComposedMonitor m = getFc().getComposedMonitorByExternalId(rule.getEvent().cdoID().toString());
-            getFc().addScalingActionToMonitor(m, componentHorizontalScalingAction);
-            /* TODO ADD LISTENER TO EVENT-MONITOR NOT DIRECTLY IN THE AGGREGATOR SERVICE, SINCE THIS WILL LATER NOT BE ACCESSIBLE LOCALLY */
-
-            getFc().addMonitorSubscription(m.getId(), getConfig().getVisorEndpoint(),
-                    SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
-        }
+        return componentHorizontalScalingAction;
     }
 }

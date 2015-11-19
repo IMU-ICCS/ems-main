@@ -28,19 +28,19 @@ import java.util.List;
 /**
  * Created by Frank on 03.09.2015.
  */
-public class CompositeMetricContextAdapter extends AbstractAdapter {
+public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
     private final CompositeMetricContext context;
     private final List<MetricInstance> metricInstances;
 
     public CompositeMetricContextAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc,
                                          CompositeMetricContext context, List<MetricInstance> metricInstances) {
-        super(config, fc);
+        super(fc);
         this.context = context;
         this.metricInstances = metricInstances;
     }
 
     @Override
-    public void adapt(){
+    public Monitor adapt(){
             logger.info("Save CompositeMetricContext to colosseum: " + context.getName());
 
 
@@ -171,12 +171,6 @@ public class CompositeMetricContextAdapter extends AbstractAdapter {
                     */
             }
 
-            ///////////////////////////////////////////////////////////////////////////
-            //
-            // Add Subscription to all composite monitor to send to CDO
-            //
-            ///////////////////////////////////////////////////////////////////////////
-            getFc().addMonitorSubscription(compositeMonitor.getId(), getConfig().getVisorEndpoint(),
-                    SubscriptionType.CDO, FilterType.ANY, 0);
+            return compositeMonitor;
         }
 }

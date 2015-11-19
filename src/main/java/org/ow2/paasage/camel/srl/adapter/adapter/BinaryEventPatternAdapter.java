@@ -24,16 +24,16 @@ import java.util.List;
 /**
  * Created by Frank on 06.09.2015.
  */
-public class BinaryEventPatternAdapter extends AbstractAdapter {
+public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> {
     private final BinaryEventPattern eventPattern;
 
-    public BinaryEventPatternAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, BinaryEventPattern eventPattern) {
-        super(config, fc);
+    public BinaryEventPatternAdapter(FrontendCommunicator fc, BinaryEventPattern eventPattern) {
+        super(fc);
         this.eventPattern = eventPattern;
     }
 
     @Override
-    public void adapt() {
+    public ComposedMonitor adapt() {
         logger.info("Save EventPattern to colosseum: " + eventPattern.getName());
 
         List<Monitor> composedMonitors = new ArrayList<Monitor>();
@@ -79,12 +79,6 @@ public class BinaryEventPatternAdapter extends AbstractAdapter {
         }
 
 
-        ///////////////////////////////////////////////////////////////////////////
-        //
-        // Add Subscription to all conditions / nfe to send to CDO
-        //
-        ///////////////////////////////////////////////////////////////////////////
-        getFc().addMonitorSubscription(composedMonitor.getId(), getConfig().getVisorEndpoint(),
-            SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+        return composedMonitor;
     }
 }

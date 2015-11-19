@@ -27,18 +27,18 @@ import java.util.List;
 /**
  * Created by Frank on 04.09.2015.
  */
-public class MetricConditionAdapter extends AbstractAdapter {
+public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
     private final MetricCondition metricCondition;
     private final NonFunctionalEvent event;
 
-    public MetricConditionAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, MetricCondition metricCondition, NonFunctionalEvent event) {
-        super(config, fc);
+    public MetricConditionAdapter(FrontendCommunicator fc, MetricCondition metricCondition, NonFunctionalEvent event) {
+        super(fc);
         this.metricCondition = metricCondition;
         this.event = event;
     }
 
     @Override
-    public void adapt() {
+    public ComposedMonitor adapt() {
         logger.info("Save Condition to colosseum: " + metricCondition.getName());
 
             /* TODO implement ... */
@@ -164,13 +164,6 @@ public class MetricConditionAdapter extends AbstractAdapter {
             getFc().addExternalId(monitorInstance, idNFE);
         }
 
-
-        ///////////////////////////////////////////////////////////////////////////
-        //
-        // Add Subscription to all conditions / nfe to send to CDO
-        //
-        ///////////////////////////////////////////////////////////////////////////
-        getFc().addMonitorSubscription(conditionMonitor.getId(), getConfig().getVisorEndpoint(),
-                SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+        return conditionMonitor;
     }
 }

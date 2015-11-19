@@ -20,6 +20,7 @@ import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.metric.*;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
+import eu.paasage.camel.requirement.Requirement;
 import eu.paasage.camel.requirement.ScaleRequirement;
 import eu.paasage.camel.scalability.*;
 import org.eclipse.emf.common.util.BasicEList;
@@ -233,6 +234,18 @@ public class CamelFinder {
         //TODO: check this: EList<Requirement> requirements = model.getRequirementModels().get(0).getRequirements();
         for (ScaleRequirement requirement : model.getScalabilityModels().get(0)
                 .getScaleRequirements()) {
+            if (requirement instanceof HorizontalScaleRequirement) {
+                HorizontalScaleRequirement horizontalScaleRequirement =
+                        (HorizontalScaleRequirement) requirement;
+                 /* TODO What if several requirements comply to the same component and are inconsistent? */
+                if (horizontalScaleRequirement.getComponent().equals(component)) {
+                    result.add(horizontalScaleRequirement);
+                }
+            }
+        }
+
+        for (Requirement requirement : model.getRequirementModels().get(0)
+                .getRequirements()) {
             if (requirement instanceof HorizontalScaleRequirement) {
                 HorizontalScaleRequirement horizontalScaleRequirement =
                         (HorizontalScaleRequirement) requirement;

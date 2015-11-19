@@ -16,5 +16,5 @@ import eu.paasage.camel.scalability.EventPattern;
  * Created by Frank on 06.09.2015.
  */
 public interface EventPatternAdapterFactory {
-    Adapter create(CommandLinePropertiesAccessor config, FrontendCommunicator fc, EventPattern eventPattern);
+    Adapter create(FrontendCommunicator fc, EventPattern eventPattern);
 }

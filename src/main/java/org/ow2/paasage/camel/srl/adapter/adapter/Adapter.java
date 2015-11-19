@@ -11,6 +11,6 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 /**
  * Created by Frank on 03.09.2015.
  */
-public interface Adapter {
-    void adapt();
+public interface Adapter<T> {
+    T adapt();
 }

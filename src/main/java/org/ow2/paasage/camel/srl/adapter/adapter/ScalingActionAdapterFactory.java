@@ -20,6 +20,6 @@ import java.util.List;
  * Created by Frank on 09.09.2015.
  */
 public interface ScalingActionAdapterFactory {
-    Adapter create(CommandLinePropertiesAccessor config, FrontendCommunicator fc, ScalingAction scalingAction,
+    Adapter create(FrontendCommunicator fc, ScalingAction scalingAction,
                    List<ScalabilityRule> associatedRules, List<HorizontalScaleRequirement> associatedScaleRequirements);
 }

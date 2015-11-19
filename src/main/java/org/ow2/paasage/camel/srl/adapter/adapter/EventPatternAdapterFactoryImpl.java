@@ -18,16 +18,11 @@ import eu.paasage.camel.scalability.UnaryEventPattern;
  * Created by Frank on 06.09.2015.
  */
 public class EventPatternAdapterFactoryImpl implements EventPatternAdapterFactory{
-//    private final CamelModel model;
-//
-//    public EventPatternAdapterFactoryImpl(CamelModel model) {
-//        this.model = model;
-//    }
 
     @Override
-    public Adapter create(CommandLinePropertiesAccessor config, FrontendCommunicator fc, EventPattern eventPattern){
+    public Adapter create(FrontendCommunicator fc, EventPattern eventPattern){
         if (eventPattern instanceof BinaryEventPattern) {
-            return new BinaryEventPatternAdapter(config, fc, (BinaryEventPattern)eventPattern);
+            return new BinaryEventPatternAdapter(fc, (BinaryEventPattern)eventPattern);
         } else if (eventPattern instanceof UnaryEventPattern) {
             throw new RuntimeException("UnaryEventPattern not yet implemented!");
         } else {

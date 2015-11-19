@@ -27,19 +27,19 @@ import java.util.List;
 /**
  * Created by Frank on 07.09.2015.
  */
-public class RawMetricContextAdapter extends AbstractAdapter {
+public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
     private final RawMetricContext rawMetricContext;
     private final List<MetricInstance> metricInstances;
 
-    public RawMetricContextAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, RawMetricContext rawMetricContext,
+    public RawMetricContextAdapter(FrontendCommunicator fc, RawMetricContext rawMetricContext,
                                    List<MetricInstance> metricInstances) {
-        super(config, fc);
+        super(fc);
         this.rawMetricContext = rawMetricContext;
         this.metricInstances = metricInstances;
     }
 
     @Override
-    public void adapt() {
+    public Monitor adapt() {
         logger.info("Save RawMetricContext to colosseum: " + rawMetricContext.getName());
 
 
@@ -108,5 +108,7 @@ public class RawMetricContextAdapter extends AbstractAdapter {
                 }
             }
         }
+
+        return rawMonitor;
     }
 }

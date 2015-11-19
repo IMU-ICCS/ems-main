@@ -21,13 +21,15 @@ import eu.paasage.camel.metric.WindowSizeType;
 public class WindowsAdapter extends AbstractAdapter {
     private final Window window;
 
-    public WindowsAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc, Window window) {
-        super(config, fc);
+    public WindowsAdapter(FrontendCommunicator fc, Window window) {
+        super(fc);
         this.window = window;
     }
 
     @Override
-    public void adapt() {
+    public de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window adapt() {
+        de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window colosseumWindow;
+
         /* TODO implement other types of windows, measurement sizes..., etc. */
         if (window.getSizeType().equals(WindowSizeType.TIME_ONLY) || window
                 .getSizeType().equals(WindowSizeType.BOTH_MATCH)) {
@@ -35,13 +37,15 @@ public class WindowsAdapter extends AbstractAdapter {
 
             logger.info("Save time window to colosseum: " + window.getName());
 
-            getFc().saveTimeWindow(window.getTimeSize(), Convert.toJavaTimeUnit(window.getUnit()));
+            colosseumWindow = getFc().saveTimeWindow(window.getTimeSize(), Convert.toJavaTimeUnit(window.getUnit()));
         } else if (window.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)) {
             MeasurementWindow mw = (MeasurementWindow) window;
 
-            getFc().saveMeasurementWindow(mw.getMeasurements());
+            colosseumWindow = getFc().saveMeasurementWindow(mw.getMeasurements());
         } else {
             throw new RuntimeException("WindowSizeType not implemented!");
         }
+
+        return colosseumWindow;
     }
 }
