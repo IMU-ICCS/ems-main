@@ -65,6 +65,7 @@ public class RPListener implements Runnable{
 	public void run() {
 		while (run) {
 			String contents1 = null;
+			String contents2 = null;
 			metasolver mslv = new metasolver();
 			System.out.println("lets go for a subscription .....");
 			System.out.println("setting context ....");	
@@ -87,11 +88,13 @@ public class RPListener implements Runnable{
 
 				String address1 = subscriber1.recvStr ();
 				contents1 = subscriber1.recvStr ();
-				System.out.println(" Rule Processor Notification " + address1 + " : " + contents1);  	            	}
+				contents2 = subscriber1.recvStr ();
+				System.out.println(" Rule Processor Notification " + address1 + " : " + contents1 + " " + contents2);  	            	}
 			//invoke MILP Solver -- hardwired as only solver present
 			solutionPublisherMQ spq = new solutionPublisherMQ();
 			try {
 				spq.MILPpubMQ(contents1);
+				spq.MILPpubMQ(contents2);
 			} catch (MetricMapperException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

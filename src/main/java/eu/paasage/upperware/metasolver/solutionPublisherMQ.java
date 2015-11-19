@@ -24,7 +24,8 @@ public class solutionPublisherMQ {
 			//contents
 			Mapper map = new Mapper();
 			long mapResult = map.mapMetricVariables(model);
-			publisher.send(model + " , " + mapResult);
+			publisher.send(model);
+		 //   publisher.send(mapResult);
 			System.out.println("done publishing .... ");
 		}
 		publisher.close ();
@@ -34,7 +35,7 @@ public class solutionPublisherMQ {
 
 		
 		
-	public String S2D (String model) throws MetricMapperException{
+	public String S2D (String CAMELmodel, String CPmodel, long timestamp) throws MetricMapperException{
 		
 		Context context = ZMQ.context(1);
 	Socket publisher = context.socket(ZMQ.PUB);
@@ -46,9 +47,9 @@ public class solutionPublisherMQ {
 		//topic
 		publisher.sendMore ("newDeploymentCAMELModel");
 		//contents
-		Mapper map = new Mapper();
-		long mapResult = map.mapMetricVariables(model);
-		publisher.send(model + " , " + mapResult);
+		publisher.send(CAMELmodel); //CP ID 
+		publisher.send(CPmodel);
+		publisher.send(Long.toString(timestamp));
 		System.out.println("done publishing to S2D.... ");
 	}
 	publisher.close ();
