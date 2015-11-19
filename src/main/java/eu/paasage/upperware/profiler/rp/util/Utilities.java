@@ -105,6 +105,7 @@ public class Utilities {
 		} catch (ParseException exp) {
 			log.error("Parsing failed, because " + exp.getMessage());
 			printHelp(cp, daemon, model);
+			System.exit(1);
 		}
 
 		return arguments;

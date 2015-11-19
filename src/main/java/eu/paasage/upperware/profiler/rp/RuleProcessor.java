@@ -7,6 +7,10 @@
  */
 package eu.paasage.upperware.profiler.rp;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,9 +39,11 @@ import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
+import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.impl.ProviderModelImpl;
+import eu.paasage.camel.type.StringsValue;
 import eu.paasage.camel.type.impl.StringsValueImpl;
-import eu.paasage.upperware.cp.cloner.CDOClientExtended; // for cloning the CDO objects
+import eu.paasage.upperware.cp.cloner.CDOClientExtended;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
@@ -60,6 +66,7 @@ import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import eu.paasage.upperware.profiler.rp.util.PropertiesReader;
+import eu.paasage.upperware.profiler.rp.util.RPOutput;
 import eu.paasage.upperware.profiler.rp.util.Utilities;
 import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
 
@@ -414,10 +421,18 @@ public class RuleProcessor {
 	private boolean isProviderPublic(String cpModelId, String cloudProviderId) {
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
         CamelModel model = proxy.getCamelModel("upperware-models/fms/" + cpModelId + "/" + cloudProviderId);
-        for (OrganisationModel om : model.getOrganisationModels()) {
-          return om.getProvider().isPublic();
+        for (ProviderModel pm : model.getProviderModels()) {
+        	Feature f = pm.getRootFeature();
+        	for (Attribute a : f.getAttributes()) {
+        		if (a.getName().equals("DeploymentModel")) {
+        			StringsValue sv = (StringsValue) a.getValue();
+        			if (sv.getValue().equalsIgnoreCase("public")) {
+            			return true;
+            		}
+        		}
+        	}
         }
-        
+
         return false;
 	}
 
@@ -735,7 +750,7 @@ public class RuleProcessor {
 		return foundProviders;
 	}
 
-	public int processRequest(String camelModel, String cdoIdentifier) {
+	public RPOutput processRequest(String camelModel, String cdoIdentifier) {
 		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
 
 		/* (a) no cloud provider given in organisation model */
@@ -744,7 +759,7 @@ public class RuleProcessor {
 			int success = 1;
 			log.debug("\nRP_result: PASS - code: " + success);
 			System.out.println("\nRP_result: PASS - code: " + success);
-			return success;
+			return new RPOutput(success, cdoIdentifier);
 		}
 
 		Set<String> distinctProviders = new HashSet<String>();
@@ -763,10 +778,10 @@ public class RuleProcessor {
 				int success = 1;
 				log.debug("\nRP_result: PASS - code: " + success);
 				System.out.println("\nRP_result: PASS - code: " + success);
-				return success;
+				return new RPOutput(success, cdoIdentifier);
 			}
 		}
-		
+
 		/* (c) either a public or private cloud provider is declared in the organisation model */
 		this.openCDOSession(cdoIdentifier);
 		this.cloneModel(cdoIdentifier); // clone the model
@@ -785,25 +800,31 @@ public class RuleProcessor {
 		switch (status) {
 			case ERROR:
 				success = 0;
-				return success;
+				return new RPOutput(success, cdoIdentifier);
 
 			case MODEL_CHANGED:
-				/* cp model has to be modified and commited; continue */
+				/* cp model has to be modified and committed; continue */
 				break;
-				
+
 			case NO_CHANGE_REQUIRED:
 				success = 1;
 				log.debug("\nRP_result: PASS - code: " + success);
 				System.out.println("\nRP_result: PASS - code: " + success);
-				return success;
+				
+				printFile(cdoIdentifier);
+				
+				return new RPOutput(success, cdoIdentifier);
 
 			case NO_SOLUTION_AVAILABLE:
 				success = 0;
 				log.debug("\nRP_result: NO_SOLUTION - code: " + success);
 				System.out.println("\nRP_result: NO_SOLUTION - code: " + success);
-				return success;
+				
+				printFile(cdoIdentifier);
+				
+				return new RPOutput(success, cdoIdentifier);
 		}
-		
+
 		// commit or save the clone model to the CDO server
 		this.commitCloneModelToCDO();
 
@@ -811,13 +832,11 @@ public class RuleProcessor {
 		CDOClientExtended cdoClient = this.getCDOClient();
 		CDOView cdoView = cdoClient.openView();
 
-		System.out
-				.println("\n-------------------------------------------------------------------");
+		System.out.println("\n-------------------------------------------------------------------");
 		String newResId = this.getCloneResId();
 		ModelData data = this.getModelDataFromCDO(newResId, cdoView);
 		data.printPaasageConfiguration();
-		System.out
-				.println("\n-------------------------------------------------------------------");
+		System.out.println("\n-------------------------------------------------------------------");
 		data.printConstraintProblem();
 		cdoClient.closeView(cdoView);
 
@@ -830,19 +849,33 @@ public class RuleProcessor {
 			log.debug("\nRP_result: PASS - code: " + success);
 			System.out.println("\nRP_result: PASS - code: " + success);
 			success = 1;
+
+			printFile(newResId);
+			
 		} else {
 			log.debug("\nRP_result: FAIL - code: " + success);
 			System.out.println("\nRP_result: FAIL - code: " + success);
 			success = 0;
 		}
 
-		return success;
+		return new RPOutput(success, newResId);
+	}
+	
+	public void printFile(String cpModelId) {
+		try {
+			OutputStream output = new FileOutputStream("rp_output");
+			PrintStream printer = new PrintStream(output);
+			printer.print(cpModelId);
+			printer.close();
+		} catch (IOException e) {
+			System.out.println("Could not write file rp_output!");
+		}
 	}
 
 	/**
 	 * @param args Command-line arguments
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		Map<String, String> arguments = Utilities.parseArguments(args);
 
 		if (arguments.get("d") != null) {
@@ -860,7 +893,8 @@ public class RuleProcessor {
 		log.info("Parsing provider information...");
 
 		RuleProcessor rp = new RuleProcessor();
-		int success = rp.processRequest(camelModel, cpModel);
-		System.exit(success);
+		RPOutput output = rp.processRequest(camelModel, cpModel);
+
+		System.exit(output.getErrorCode());
 	}
 }
