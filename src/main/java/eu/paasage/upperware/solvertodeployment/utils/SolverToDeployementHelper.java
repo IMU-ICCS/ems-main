@@ -207,9 +207,9 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	}
 
 	
-	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem) throws S2DException
+	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem, int solutionId) throws S2DException
 	{		
-		for(Solution solution : _constraintProblem.getSolution()){
+		Solution solution = _constraintProblem.getSolution().get(solutionId);
 
 			EList<VariableValue> variables  = solution.getVariableValue();
 
@@ -223,7 +223,6 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 					return longValueUpperware.getValue();
 				}
 			}			
-		}	
 		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId() );
 	}
 	

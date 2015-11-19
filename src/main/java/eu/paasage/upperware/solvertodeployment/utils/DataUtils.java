@@ -4,7 +4,6 @@
 
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +11,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
+import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.DeploymentModel;
@@ -33,56 +33,43 @@ public class DataUtils {
 
 	/*<pre>
 
-The Solver-to-deployement component is implemented in Java. It re-
-ceives the solution as a list of objects with the PaaSageVariable type. A
-PaaSageVariable object is described as follows:
-RelatedComponent It gives the ApplicationComponent of the UpperModel to
-instanciate in the CAMEL model.
-RelatedVirtualMachineProfile It enables determining the VM template to in-
-stanciate in the CAMEL model.
-RelatedProvider It gives the Provider from the UpperwareModel that allows
-finding in which provider the VM must be instanciated.
-The creation process comprises the following steps.
+The Solver-to-deployement component is implemented in Java. It receives the solution as a list of objects with the PaaSageVariable type.
+APaaSageVariable object is described as follows:
+- RelatedComponent:  It gives the ApplicationComponent of the UpperModel to instanciate in the CAMEL model.
+- RelatedVirtualMachineProfile: It enables determining the VM template to instanciate in the CAMEL model.
+- RelatedProvider: It gives the Provider from the UpperwareModel that allows finding in which provider the VM must be instanciated.
 
+The creation process comprises the following steps.
 
 1. Creation of the InternalComponentInstances.
 
-A PaaSageVariable’s relatedComponent is used to create one correspond-
-ing InternalComponentInstance. To do so, we need to find in the CAMEL
-model the associated InternalComponent. This InternalComponent is as-
-sociated to a list of ProvidedCommunications and a list of requiredCom-
-munications. For each item of these lists, we must create a corresponding
-instance, either ProvidedCommunicationInstance or RequiredCommuni-
-cationInstance (depending on the original type). The two resulting lists
-can then be associated to the InternalComponentInstance.
+A PaaSageVariable’s relatedComponent is used to create one corresponding InternalComponentInstance. To do so, we need to find in the CAMEL
+model the associated InternalComponent. This InternalComponent is associated to a list of ProvidedCommunications and a list of requiredCom-
+munications. For each item of these lists, we must create a corresponding instance, either ProvidedCommunicationInstance or RequiredCommuni-
+cationInstance (depending on the original type). The two resulting lists can then be associated to the InternalComponentInstance.
 
 
 2. Creation of the VmInstance.
 
-D3.1.2 - Product Upperware Report
-Page 74 of 98PaaSageVariable’s RelatedVirtualMachineProfile and RelatedProvider are
-used to create a vmInstance. Those two values allow finding the VM and
-the ProviderModel. From the VM, we create a ProvidedHostInstances that
-gets associated to the VmInstance. The ProviderModel is used to find the
+D3.1.2 - Product Upperware Report -- Page 74 of 98
+PaaSageVariable’s RelatedVirtualMachineProfile and RelatedProvider are used to create a vmInstance. Those two values allow finding the VM and
+the ProviderModel. From the VM, we create a ProvidedHostInstances that gets associated to the VmInstance. The ProviderModel is used to find the
 VMType and VMTypeValue of the VmInstance.
 
 
 3. Creation of the HostingInstances.
 
-The HostingInstances are created using the previously-created VmIn-
-stance and InternalComponentInstances, as well as the InternalComponent
+The HostingInstances are created using the previously-created VmInstance and InternalComponentInstances, as well as the InternalComponent
 associated to the ComponentInstance.
-A HostingInstance must be created for each ProvidedHostInstance associ-
-ated to the VmInstance. Each HostingInstance must be associated to the
-current ProvidedHostInstance and to the RequiredHostInstance matching
-the InternalComponentInstance.
+A HostingInstance must be created for each ProvidedHostInstance associated to the VmInstance. Each HostingInstance must be associated to the
+current ProvidedHostInstance and to the RequiredHostInstance matching the InternalComponentInstance.
 
 4. Create CommunicationInstances
 
  </pre>
 	 */
 	public static DataHolder computeDatasToRegister(PaasageConfiguration paasageConfiguration,
-			DeploymentModel deploymentModel, ConstraintProblem constraintProblem ) throws S2DException
+			DeploymentModel deploymentModel, ConstraintProblem constraintProblem, int solutionId ) throws S2DException
 	{
 		PaaSageVariable paaSageVariableCurrent = null;
 
@@ -94,7 +81,7 @@ the InternalComponentInstance.
 
 			for (PaaSageVariable paaSageVariable : variables)
 			{
-				if(SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem) > 0)
+				if(SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem, solutionId) > 0)
 				{
 					paaSageVariableCurrent = paaSageVariable;
 					try{
@@ -140,8 +127,8 @@ the InternalComponentInstance.
 		return null;
 	}	
 
-	public static void copyCloudProviders(String camelModelID, String appId, PaasageConfiguration paasageConfiguration,
-			ConstraintProblem constraintProblem)
+	public static void copyCloudProviders(CamelModel cm, String camelModelID, String appId, PaasageConfiguration paasageConfiguration,
+			ConstraintProblem constraintProblem, int solutionId)
 	{
 		PaaSageVariable paaSageVariableCurrent = null;
 
@@ -149,12 +136,18 @@ the InternalComponentInstance.
 		{
 			// Set containing added PM
 			Set<String> pmList = new HashSet<String>(); 
-			
-			EList<PaaSageVariable> variables = paasageConfiguration.getVariables();
 
+			// Register all know PM
+			for(ProviderModel pm : cm.getProviderModels())
+			{
+				pmList.add(pm.getName());
+			}
+			
+			// Look for new PM
+			EList<PaaSageVariable> variables = paasageConfiguration.getVariables();
 			for (PaaSageVariable paaSageVariable : variables)
 			{
-				if (SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem) > 0)
+				if (SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem, solutionId) > 0)
 				{
 					paaSageVariableCurrent = paaSageVariable;
 //					SolverToDeployementHelper.printVar(paaSageVariable);
