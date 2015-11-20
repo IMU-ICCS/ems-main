@@ -12,7 +12,7 @@ mvn clean install
 
 /** USE AS STANDALONE APPLICATION VIA MAVEN **/
 
-mvn exec:java -Dexec.args="ConfigurationCDOId CamelCDOId CloudProviderCDODirID [SolutionTimeStamp]"
+mvn exec:java -Dexec.args="[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] ConfigurationCDOId CamelCDOId CloudProviderCDODirID"
 
 /** USE AS STANDALONE APPLICATION - JAR FILE **/
 
@@ -34,6 +34,8 @@ The new DeploymentModel is a copy of the 1st DeploymentModel in the CAMEL docume
 - hosting instances
 - communication instances
 Those instances are computed from the Solution. 
+
+If -o is given, a deployment model whose number if DMid is overwritten. If DMis is -1, the last entry is overwritten.
 
 More information in the CP generator component, in particular how information is encoded in the name of the variables of the Solution.
 

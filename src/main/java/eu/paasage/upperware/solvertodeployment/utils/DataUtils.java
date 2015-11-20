@@ -23,6 +23,7 @@ import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.Provider;
+import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
@@ -150,11 +151,12 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		// Set containing added PM
 		Set<String> pmList = new HashSet<String>(); 
 
-		// Register all know PM
+		// Register all known PM
 		for(ProviderModel pm : cm.getProviderModels())
 		{
 			log.info("CloudProvider already known: "+pm.getName());
-			pmList.add(pm.getName());
+			String PMid = pm.getName();
+			pmList.add(PMid);
 		}
 
 		// Look for new PM
@@ -163,19 +165,21 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		{
 			if (SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem, solutionId) > 0)
 			{
-				//					SolverToDeployementHelper.printVar(paaSageVariable);
 				Provider upm = paaSageVariable.getRelatedProvider();
+				VirtualMachineProfile relVMprofile = paaSageVariable.getRelatedVirtualMachineProfile();
+				String cloudVMId = relVMprofile.getRelatedCloudVMId();
 				String pId = upm.getId();
-				log.debug("Considering ProviderId: "+pId);
-				if (!pmList.contains(pId)) {
-					pmList.add(pId);
-					log.info("Copying into CAMEL new ProviderId: "+pId);
+				log.info("New Cloud Provider?: "+pId+" CloudVMid:"+cloudVMId);
 
-					CDODatabaseProxy2.copyAllCloudProviderModel(pId, camelModelID, appId);
+				String fullVMid = pId+"#"+cloudVMId;
+				if (!pmList.contains(fullVMid)) {
+					pmList.add(fullVMid);
+					log.info("Copying into CAMEL new ProviderId: "+fullVMid);
+
+					CDODatabaseProxy2.copyAllCloudProviderModel(pId, cloudVMId, camelModelID, appId);
 				}
 			}
 		}
-
 	}	
 
 	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder)

@@ -68,7 +68,7 @@ public class CommunicationProvidedRequiredDomain {
 			}
 		}
 		if (internalCIs.isEmpty())
-			log.error("ERROR. Component Instance not find for component : " + component.getName()  + logTxt);
+			log.info("**WARNING. Component Instance not found for component : " + component.getName());
 		return internalCIs;
 	}
 
@@ -89,7 +89,7 @@ public class CommunicationProvidedRequiredDomain {
 			}
 		}
 		if (internalCIs.isEmpty())
-			log.error("ERROR. Component Instance not find for component : " + component.getName()  + logTxt);
+			log.info("WARNING. Component Instance not found for component : " + component.getName());
 		return internalCIs;
 	}
 	
@@ -139,12 +139,16 @@ public class CommunicationProvidedRequiredDomain {
 		
 		if ((reqInstances == null)||reqInstances.isEmpty())
 		{
-			throw new S2DException("Unable to find component Instance (consumer) associated to component " + result.reqComponent.getName());
+			log.info("WARNING: ignoring communication "+com.getName());
+//			throw new S2DException("Unable to find component Instance (consumer) associated to component " + result.reqComponent.getName());
+			return communicationInstances;
 		}
 		
 		if ((provInstances == null)||provInstances.isEmpty())
 		{
-			throw new S2DException("Unable to find component Instance (producer) associated to component " + result.provComponent.getName());
+			log.info("WARNING: ignoring communication "+com.getName());
+			return communicationInstances;
+//			throw new S2DException("Unable to find component Instance (producer) associated to component " + result.provComponent.getName());
 		}
 		
 		log.debug("Looking for ComPI...");

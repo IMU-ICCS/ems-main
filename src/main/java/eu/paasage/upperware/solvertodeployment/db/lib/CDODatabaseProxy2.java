@@ -12,6 +12,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -127,26 +128,30 @@ public class CDODatabaseProxy2 {
 		CamelModel camelModel;
 		CDOTransaction transaction;
 
-		public CamelAndProviderModelTransactionManager(String camelModelID) {
+		public CamelAndProviderModelTransactionManager(String camelModelID)
+		{
 			transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
 			camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
 			newCloudCamelModel=null;
 		}
 
-		public void commitAndClose() throws CommitException {
-
+		public void commitAndClose() throws CommitException
+		{
 			// TYPE
 			// val type.TypeModel[*] typeModels;
 			camelModel.getTypeModels().addAll(newCloudCamelModel.getTypeModels());
+
 			// LOCATIONS
 			// val location.LocationModel[*] locationModels;
 			camelModel.getLocationModels().addAll(newCloudCamelModel.getLocationModels());
-			// PROVIDER
-			// val provider.ProviderModel[*] providerModels;
-			camelModel.getProviderModels().add(newCloudCamelModel.getProviderModels().get(0));
+
 			// ORGANIZATION
 			// val organisation.OrganisationModel[*] organisationModels;
 			camelModel.getOrganisationModels().addAll(newCloudCamelModel.getOrganisationModels());
+
+			// PROVIDER -- ALWAYS
+			// val provider.ProviderModel[*] providerModels;
+			camelModel.getProviderModels().add(newCloudCamelModel.getProviderModels().get(0));
 
 			try {
 				transaction.commit();
@@ -247,27 +252,36 @@ public class CDODatabaseProxy2 {
 	// Copy Cloud Providers into CAMEL CDO + Helper function
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	public static void copyAllCloudProviderModel(String providerId, CamelModel cm, String camelModelID) throws CommitException {
+	public static void copyAllCloudProviderModel(String providerId, String cloudVMId, CamelModel cm, String camelModelID) throws CommitException {
 		
 		CamelAndProviderModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndProviderModelTransactionManager(camelModelID);
 
+		// CREATING A COPY
 		CamelModel cmcopy = (CamelModel) EcoreUtil.copy(cm);
 
-//		addCloudProvider(cmcopy, providerId);
-		cmcopy.getProviderModels().get(0).setName(providerId);
+		// FIXING ITS NAME TO BE UNIQUE
+		cmcopy.getProviderModels().get(0).setName(providerId+"#"+cloudVMId);
 		
 		transactionManager.newCloudCamelModel = cmcopy;
 		transactionManager.commitAndClose(); // COPY TO CDO!
 	}
 
-	public static void copyAllCloudProviderModel(String pmId, String camelModelID, String appId) throws S2DException, CommitException {
+	public static void copyAllCloudProviderModel(String pmId, String cloudVMid, String camelModelID, String appId) throws S2DException, CommitException {
 		try {
-			log.debug("appId="+appId);
-			log.debug("pmId="+pmId);
-			CamelModel cm = findCamelProviderModel(appId, pmId);
-			log.debug("Model loaded / Copying it");
-			copyAllCloudProviderModel(pmId, cm, camelModelID);
-			log.debug("Done");
+			log.info("appId="+appId);
+			log.info("pmId="+pmId);
+			log.info("cloudVMd="+cloudVMid);
+			EList<CamelModel> cms = findAllCamelProviderModel(appId, pmId);
+			log.info("#Camel CloudProvider Model(s) loaded: "+cms.size());
+			for(CamelModel cm : cms)
+			{
+				if (cloudVMid.equals(cm.getName()))
+				{
+					log.info("Copying "+cm.getName());
+					copyAllCloudProviderModel(pmId, cloudVMid, cm, camelModelID);					
+				}
+			}
+			log.info("Done");
 		} catch (S2DException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -276,15 +290,32 @@ public class CDODatabaseProxy2 {
 		}
 	}
 	
-	public static int copyDeploymentModel(String camelModelID, int srcId) throws CommitException
+	public static int copyDeploymentModel(String camelModelID, int srcId, boolean overwriteDM, int dstId) throws CommitException
 	{
 		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
 		CamelModel camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
 		DeploymentModel dm = camelModel.getDeploymentModels().get(srcId);
 		DeploymentModel dmcopy = (DeploymentModel) EcoreUtil.copy(dm);
 		
-		camelModel.getDeploymentModels().add(dmcopy);
-		int dmid = camelModel.getDeploymentModels().size()-1;
+		int dmid;
+		if (overwriteDM)
+		{
+			// Checking that dmId exists
+			try {
+				if (dstId==-1) dstId = camelModel.getDeploymentModels().size()-1; // LAST IF -1
+				log.info("Trying to overwrite DM entry "+dstId);
+				camelModel.getDeploymentModels().set(dstId, dmcopy);
+			} catch (IndexOutOfBoundsException e)
+			{
+				log.fatal("DemploymentModel dst id (overwriten) is not corect! #DM: "+camelModel.getDeploymentModels().size());
+			}
+			dmid = dstId;
+		}
+		else
+		{
+			camelModel.getDeploymentModels().add(dmcopy);
+			dmid = camelModel.getDeploymentModels().size()-1;
+		}
 
 		try {
 			transaction.commit();
@@ -340,14 +371,6 @@ public class CDODatabaseProxy2 {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Helper function
 	//////////////////////////////////////////////////////////////////////////////////////
-
-	/*
-	 * public static VMInfo getFirstVMInfo(CDODatabaseProxy cdoProxy,String
-	 * cloudMLId) { CamelModel cm = findCamelModel(cdoProxy,cloudMLId); return
-	 * cm.getVmInfos().get(0);
-	 * 
-	 * }
-	 */
 
 	public static Hosting getHostingContainString(DeploymentModel dm, String acName) {
 
@@ -440,8 +463,8 @@ public class CDODatabaseProxy2 {
 					". Message : "+ e.getMessage());
 		}
 	}
-	
-	static public CamelModel findCamelProviderModel(String appId, String providerId) throws S2DException 
+
+	static public EList<CamelModel> findAllCamelProviderModel(String appId, String providerId) throws S2DException 
 	{
 		String componentURI = FMS_APP_CDO_SERVER_PATH+getFMResourceId(appId, providerId);
 
@@ -452,11 +475,14 @@ public class CDODatabaseProxy2 {
 			CDOView view = cdoProxy.getCdoClient().openView();
 			EList<EObject> res= view.getResource(componentURI).getContents(); 
 
-			CamelModel pm = (CamelModel) res.get(0); 
-
-			System.err.println("CDODatabaseProxy- loadPM- CamelModel "+pm.getName());
-
-			return pm;
+			EList<CamelModel> cms = new BasicEList<CamelModel>();
+			for(EObject e : res)
+			{
+				CamelModel cm = (CamelModel) e;
+				System.err.println("CDODatabaseProxy- loadPM- CamelModel "+cm.getName());
+				cms.add(cm);
+			}
+			return cms;
 		}
 		catch(Exception e)
 		{

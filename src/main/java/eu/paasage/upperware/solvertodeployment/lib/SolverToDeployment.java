@@ -12,7 +12,6 @@ import org.eclipse.emf.ecore.EObject;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
-
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
@@ -26,8 +25,13 @@ public class SolverToDeployment {
 
 	private static Logger log = Logger.getLogger(SolverToDeployment.class);
 	
-	public static boolean doWorkTS(String paasageConfigurationID, String camelModelID, String CPDirID, long solutionTS, boolean TSavailable) throws S2DException
+	public static boolean doWorkTS(String paasageConfigurationID, String camelModelID, String CPDirID,
+			long solutionTS, boolean TSavailable, int dstDMId, boolean overwriteDM)
+					throws S2DException
 	{
+		log.info("CPID: "+paasageConfigurationID);
+		log.info("CamelID: "+camelModelID);
+		log.info("CPDirID: "+CPDirID);
 		try {
 
 			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
@@ -40,10 +44,6 @@ public class SolverToDeployment {
 			CamelModel camelModel= (CamelModel)contents2.get(0);
 //			DeploymentModel srcDm = camelModel.getDeploymentModels().get(0);
 
-//			log.info("Saving original CAMEL model to /tmp/Ori.xmi");
-//			client.exportModel (camelModelID, "/tmp/Ori.xmi");
-//			client.exportModelWithRefRec(camelModelID, "/tmp/Ori2.xmi", false);
-//			log.info("Saving original CAMEL model to /tmp/Ori.xmi done");
 
 			ConstraintProblem constraintProblem = (ConstraintProblem) contents.get(1);
 
@@ -92,7 +92,7 @@ public class SolverToDeployment {
 				DataUtils.copyCloudProviders(camelModel, camelModelID, fmsId, paasageConfiguration, constraintProblem, solutionId);
 
 				// Create a new DM to store the instances from solution
-				int newDmId = CDODatabaseProxy2.copyDeploymentModel(camelModelID, 0);
+				int newDmId = CDODatabaseProxy2.copyDeploymentModel(camelModelID, 0, overwriteDM, dstDMId);
 				newDm = (DeploymentModel) camelModel.getDeploymentModels().get(newDmId);
 				
 				// Generate new instances into this new DM of camel
@@ -102,12 +102,6 @@ public class SolverToDeployment {
 				dataholder.setDM(newDm);
 				dataholder.setDmId(camelModel.getDeploymentModels().size()-1);
 				DataUtils.registerDataHolderToCDO(camelModelID, dataholder); // COPY TO CDO
-
-				// export to debug output
-//				log.info("Saving modified CAMEL model to /tmp/Mod.xmi");
-////				new CDOClient().exportModelWithRefRec(camelModelID, "/tmp/Mod2.xmi", false);
-//				new CDOClient().exportModel(camelModelID, "/tmp/Mod.xmi");
-//				log.info("Saving modified CAMEL model to /tmp/Mod.xmi done");
 
 			} catch (S2DException | CommitException e) {
 				e.printStackTrace();
@@ -127,6 +121,7 @@ public class SolverToDeployment {
 		return true;
 	}
 
+	enum S2D_ARGS_CMD { DEFAULT, OVERVRITE_DM, TIMESTAMP };
 	public static void main(String[] args) {
 
 //		if ((args.length == 1)&&(args[0].equals("-d")))
@@ -134,30 +129,44 @@ public class SolverToDeployment {
 //			S2D_ZMQ_Service.getInstance().run();
 //		}
 		
-		if ((args.length < 3)||(args.length>4))
+		S2D_ARGS_CMD next_op=S2D_ARGS_CMD.DEFAULT;	
+		int dmID=-1;
+		boolean overwriteDM = false;
+		long solutionTS=-1;
+		boolean TSavailable=false;
+		String param[] = new String[3];
+		int param_idx=0;
+		for(int i=0; i<args.length; i++) 
 		{
-			System.out.println("Wrong usage: S2D CPCdoId CamelCdoId CloudProviderCdoDirID [SolutionTS]");
-			return ;
+			String a = args[i];
+			log.info("a: "+a);
+			switch (next_op) {
+			case OVERVRITE_DM: dmID = Integer.valueOf(a); overwriteDM = true; next_op = S2D_ARGS_CMD.DEFAULT; break;
+			case TIMESTAMP:    solutionTS = Integer.valueOf(a); TSavailable = true; next_op = S2D_ARGS_CMD.DEFAULT; break;
+			default:
+				if (a.substring(0, 2).equals("-o")) {
+					next_op = S2D_ARGS_CMD.OVERVRITE_DM;
+					log.info("Next op: "+next_op);
+				}
+				else if (a.equals("-t")) next_op = S2D_ARGS_CMD.TIMESTAMP;
+				else param[param_idx++] = a;
+			}
+		}
+		if (param_idx!=3)
+		{
+			System.out.println("[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] ConfigurationCDOId CamelCDOId CloudProviderCDODirID");
+			System.exit(-1);
 		} 
 
-		String paasageConfigurationID = args[0];
-		String camelModelID = args[1];
-		String CPDirId = args[2];
-		long solutionTS=-1;
-		boolean TSavailable;
-		if (args.length==4)
-		{
-			 solutionTS = Long.valueOf(args[3]);
-			 TSavailable=true;
-		} else
-		{
-			solutionTS=-1;
-			TSavailable=false;
-		}
+		// RETRIEVING VALUES
+		String paasageConfigurationID = param[0];
+		String camelModelID = param[1];
+		String CPDirId = param[2];
+
 		boolean res;
 		try
 		{
-			res = doWorkTS(paasageConfigurationID, camelModelID, CPDirId, solutionTS, TSavailable);
+			res = doWorkTS(paasageConfigurationID, camelModelID, CPDirId, solutionTS, TSavailable, dmID, overwriteDM);
 		} catch (S2DException e)
 		{
 			e.printStackTrace();

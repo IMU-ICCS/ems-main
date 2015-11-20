@@ -174,19 +174,23 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		String vmIdentifier = paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId();
 
 		VM result = findVM(vms, vmIdentifier);
-		String providerModelId =  paaSageVariable.getRelatedProvider().getId();
-
-//		ProviderModel providerModel = CDODatabaseProxy2.getCloudProvider(providerModelId);
-//		ProviderModel providerModel =  CDODatabaseProxy2.findProviderModel(passageConfigurationID, providerModelId);
+		String providerModelId =  paaSageVariable.getRelatedProvider().getId()+"#"+vmIdentifier;
 
 		ProviderModel providerModel = null;
 		CamelModel cm = (CamelModel) deploymentModel.eContainer();
+//		log.info("Looking for PM id:"+providerModelId);
 		for(ProviderModel p : cm.getProviderModels())
 		{
+//			log.info("Testing for PM id:"+p.getName());
 			if (p.getName().equals(providerModelId)) {
 				providerModel = p;
 				break;
 			}
+		}
+		if (providerModel==null)
+		{
+			log.fatal("Oops: no Provider model found:");
+			throw new S2DException("Provider not found: "+providerModelId);
 		}
 		log.debug("Creating VM instances providerModel = "+providerModel.getName());
 		//Create now
