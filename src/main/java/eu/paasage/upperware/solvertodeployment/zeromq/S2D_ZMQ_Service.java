@@ -128,7 +128,17 @@ public class S2D_ZMQ_Service {
 			logger.error(error);
 			return;
 		}
-
+		
+		String cpDirId = null;
+		if (subscriber.hasReceiveMore()) {
+			cpDirId = subscriber.recvStr();
+		} else {
+			String error = "ZeroMQ init error: Subscriber socket is missing";
+			publishError(publisher, error);
+			logger.error(error);
+			return;
+		}
+		
 		String msg;
 		if (subscriber.hasReceiveMore()) {
 			msg = subscriber.recvStr();
@@ -150,7 +160,7 @@ public class S2D_ZMQ_Service {
 		// Invoking actual S2D
 		boolean res;
 		try {
-			res = SolverToDeployment.doWorkTS(cdoIdentifier, camelModel, solutionTS);
+			res = SolverToDeployment.doWorkTS(cdoIdentifier, camelModel, cpDirId, solutionTS, false);
 		} catch (S2DException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

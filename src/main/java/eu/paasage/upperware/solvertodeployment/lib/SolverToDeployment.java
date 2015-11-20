@@ -12,7 +12,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.mddb.cdo.client.CDOClient;
+
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
@@ -26,7 +26,7 @@ public class SolverToDeployment {
 
 	private static Logger log = Logger.getLogger(SolverToDeployment.class);
 	
-	public static boolean doWorkTS(String paasageConfigurationID, String camelModelID, long solutionTS) throws S2DException
+	public static boolean doWorkTS(String paasageConfigurationID, String camelModelID, String CPDirID, long solutionTS, boolean TSavailable) throws S2DException
 	{
 		try {
 
@@ -56,24 +56,38 @@ public class SolverToDeployment {
 			
 			// Computing solutionId from solutionTS
 			int solutionId=-1;
+			Long maxTS= -1L;
+			int maxID=-1;
 			for(int i =0; i<constraintProblem.getSolution().size(); i++) {
 				Solution sol = constraintProblem.getSolution().get(i);
 				if (sol.getTimestamp() == solutionTS) {
 					solutionId = i;
 					break;
-				}	
+				} else if (sol.getTimestamp() > maxTS)
+				{
+					maxTS = sol.getTimestamp();
+					maxID=i;
+				}
 			}
-			if (solutionId==-1) {
-				log.info("Timestamp not found ... using last solution entry");
-				solutionId = constraintProblem.getSolution().size()-1;
+			if (TSavailable)
+			{
+				if (solutionId==-1)
+				{
+					log.info("Timestamp "+solutionTS+" not found");
+					return false;
+				}
+			} else 
+			{
+				log.info("Using the solution with highest TS: "+maxTS);
+				solutionId = maxID;
 			}
 			log.info("Using entry: "+solutionId);
-
+			
 			DeploymentModel newDm=null;				
 			// Do Work
 			try {
 				// copy provider to source camel doc
-				String results[] = paasageConfigurationID.split("/");
+				String results[] = CPDirID.split("/");
 				String fmsId = results[1];
 				DataUtils.copyCloudProviders(camelModel, camelModelID, fmsId, paasageConfiguration, constraintProblem, solutionId);
 
@@ -120,19 +134,30 @@ public class SolverToDeployment {
 //			S2D_ZMQ_Service.getInstance().run();
 //		}
 		
-		if (args.length != 3)
+		if ((args.length < 3)||(args.length>4))
 		{
-			System.out.println("Wrong usage : args1=paasageconfiguration arg2=camelModel arg3=SslutionTS");
+			System.out.println("Wrong usage: S2D CPCdoId CamelCdoId CloudProviderCdoDirID [SolutionTS]");
 			return ;
 		} 
 
 		String paasageConfigurationID = args[0];
 		String camelModelID = args[1];
-		long solutionTS = Long.valueOf(args[2]);
+		String CPDirId = args[2];
+		long solutionTS=-1;
+		boolean TSavailable;
+		if (args.length==4)
+		{
+			 solutionTS = Long.valueOf(args[3]);
+			 TSavailable=true;
+		} else
+		{
+			solutionTS=-1;
+			TSavailable=false;
+		}
 		boolean res;
 		try
 		{
-			res = doWorkTS(paasageConfigurationID, camelModelID, solutionTS);
+			res = doWorkTS(paasageConfigurationID, camelModelID, CPDirId, solutionTS, TSavailable);
 		} catch (S2DException e)
 		{
 			e.printStackTrace();
