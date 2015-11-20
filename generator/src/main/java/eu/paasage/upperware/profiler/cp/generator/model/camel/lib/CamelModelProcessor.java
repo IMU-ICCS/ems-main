@@ -451,7 +451,7 @@ public class CamelModelProcessor extends ModelProcessor {
 			
 			if(pm!=null)
 			{
-				providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
+				providerModelParser.parseOntology(ontology, pc, pm, vm, currentCandidates);
 				
 				logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
 				
