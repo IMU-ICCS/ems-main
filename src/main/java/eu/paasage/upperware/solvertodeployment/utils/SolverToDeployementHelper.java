@@ -5,6 +5,7 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.CamelModel;
@@ -98,14 +99,18 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		throw new S2DException("Unable to find "+ paasageConfigurationApplicationId+ " component in camel model");
 	}
 
-	public static InternalComponentInstance createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,DeploymentModel deploymentModel) throws S2DException
+	public static EList<InternalComponentInstance> createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,DeploymentModel deploymentModel, Long nb) throws S2DException
 	{
 		ApplicationComponent component = paaSageVariable.getRelatedComponent();
 
 		InternalComponent internalComponent = null;
 		internalComponent = findInternalComponentFromPaasageConfigurationApplicationComponent(deploymentModel,component.getCloudMLId());
-		InternalComponentInstance internalComponentInstance =  CloudMLHelper.createICInstance(internalComponent);
-		return internalComponentInstance;
+		EList<InternalComponentInstance> internalCIs = new BasicEList<InternalComponentInstance>();
+		for(int i=0; i<nb; i++)
+		{
+			internalCIs.add(CloudMLHelper.createICInstance(internalComponent));			
+		}
+		return internalCIs;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +167,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	}
 
 
-	public static VMInstance searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, String passageConfigurationID) throws S2DException
+	public static EList<VMInstance> searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, String passageConfigurationID, Long nb) throws S2DException
 	{
 		EList<VM> vms = deploymentModel.getVms();
 
@@ -183,15 +188,19 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 				break;
 			}
 		}
-		log.info("providerModel = "+providerModel);
+		log.debug("Creating VM instances providerModel = "+providerModel.getName());
 		//Create now
-		VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result, providerModel);
-
-		//Set VM Type/value 
-		Attribute attribute = CloudMLHelper.findVMType(providerModel);
-		vmInstanceResult.setVmType(attribute);
-		vmInstanceResult.setVmTypeValue(attribute.getValue());
-		return vmInstanceResult;
+		EList<VMInstance> vmInstances = new BasicEList<VMInstance>();
+		for(int i=0; i<nb; i++)
+		{
+			VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result, providerModel);
+			//Set VM Type/value 
+			Attribute attribute = CloudMLHelper.findVMType(providerModel);
+			vmInstanceResult.setVmType(attribute);
+			vmInstanceResult.setVmTypeValue(attribute.getValue());
+			vmInstances.add(vmInstanceResult);
+		}
+		return vmInstances;
 
 	}
 
