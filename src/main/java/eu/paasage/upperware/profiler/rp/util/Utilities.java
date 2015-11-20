@@ -1,5 +1,6 @@
 package eu.paasage.upperware.profiler.rp.util;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,6 +65,7 @@ public class Utilities {
 
 		Option model = null;
 		Option cp = null;
+		Option output = null;
 
 		CommandLineParser parser = new DefaultParser();
 		try {
@@ -87,16 +89,29 @@ public class Utilities {
 						.argName("cp_model")
 						.desc("CP model ID (e.g., upperware-models/MDPlusHyperflow1447237505755")
 						.build();
+				output = Option.builder("o")
+						.required(false)
+						.longOpt("output")
+						.hasArg()
+						.numberOfArgs(1)
+						.argName("output")
+						.desc("Output file to write current CP model ID")
+						.build();
 
 				Options cmdOptions = new Options();
 				cmdOptions.addOption(model);
 				cmdOptions.addOption(cp);
+				cmdOptions.addOption(output);
 				cmd = parser.parse(cmdOptions, args);
 				if (cmd.hasOption("m") && cmd.hasOption("c")) {
 					arguments.put("m", cmd.getOptionValue("m"));
-					arguments.put("c", cmd.getOptionValue("c"));
+					arguments.put("c", cmd.getOptionValue("c"));						
 					log.info("> INPUT [CAMEL model]: " + cmd.getOptionValue("m"));
 					log.info("> INPUT [CP model]: " + cmd.getOptionValue("c"));
+					if (cmd.hasOption("o")) {
+						arguments.put("o", cmd.getOptionValue("o"));
+						log.info("> INPUT [Output file]: " + cmd.getOptionValue("o"));
+					}
 				} else {
 					printHelp(cp, model);
 				}

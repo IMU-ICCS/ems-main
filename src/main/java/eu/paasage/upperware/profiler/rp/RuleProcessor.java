@@ -7,6 +7,7 @@
  */
 package eu.paasage.upperware.profiler.rp;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -721,8 +722,7 @@ public class RuleProcessor {
 
 	// get providers defined in the Organisation Model and identify the provider
 	// to be deleted.
-	public static Map<String, String> getProviderFromOrganisationModel(
-			String cModel) {
+	public static Map<String, String> getProviderFromOrganisationModel(String cModel) {
 		Map<String, String> foundProviders = new HashMap<String, String>();
 
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
@@ -750,10 +750,15 @@ public class RuleProcessor {
 		return foundProviders;
 	}
 
-	public RPOutput processRequest(String camelModel, String cdoIdentifier) {
+	public RPOutput processRequest(String camelModel, String cdoIdentifier, String outputFile, boolean runAsDaemon) {
 		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
+		
+		// fallback, if no filename was passed to this process
+		if (outputFile == null) {
+			outputFile = "rp_output";
+		}
 
-		/* (a) no cloud provider given in organisation model */
+		/* (a) no cloud provider given in organization model */
 		if (camelProviders.isEmpty()) {
 			System.out.println("\nNo cloud provider requirements found in the CAMEL model. No rules were applied.\n");
 			int success = 1;
@@ -810,18 +815,18 @@ public class RuleProcessor {
 				success = 1;
 				log.debug("\nRP_result: PASS - code: " + success);
 				System.out.println("\nRP_result: PASS - code: " + success);
-				
-				printFile(cdoIdentifier);
-				
+
+				printFile(outputFile, cdoIdentifier, runAsDaemon);
+
 				return new RPOutput(success, cdoIdentifier);
 
 			case NO_SOLUTION_AVAILABLE:
 				success = 0;
 				log.debug("\nRP_result: NO_SOLUTION - code: " + success);
 				System.out.println("\nRP_result: NO_SOLUTION - code: " + success);
-				
-				printFile(cdoIdentifier);
-				
+
+				printFile(outputFile, cdoIdentifier, runAsDaemon);
+
 				return new RPOutput(success, cdoIdentifier);
 		}
 
@@ -850,8 +855,7 @@ public class RuleProcessor {
 			System.out.println("\nRP_result: PASS - code: " + success);
 			success = 1;
 
-			printFile(newResId);
-			
+			printFile(outputFile, newResId,runAsDaemon);
 		} else {
 			log.debug("\nRP_result: FAIL - code: " + success);
 			System.out.println("\nRP_result: FAIL - code: " + success);
@@ -860,15 +864,26 @@ public class RuleProcessor {
 
 		return new RPOutput(success, newResId);
 	}
-	
-	public void printFile(String cpModelId) {
+
+	public void printFile(String filename, String cpModelId, boolean runAsDaemon) {
+		// no output when running in daemon mode
+		if (runAsDaemon) {
+			return;
+		}
+		
 		try {
-			OutputStream output = new FileOutputStream("rp_output");
+			new File(filename).delete();
+		} catch (Exception e) {
+			System.out.println("Could not delete given file: " + filename);
+		}
+		
+		try {
+			OutputStream output = new FileOutputStream(filename);
 			PrintStream printer = new PrintStream(output);
 			printer.print(cpModelId);
 			printer.close();
 		} catch (IOException e) {
-			System.out.println("Could not write file rp_output!");
+			System.out.println("Could not write to given file: " + filename);
 		}
 	}
 
@@ -885,6 +900,7 @@ public class RuleProcessor {
 		}
 		final String camelModel = arguments.get("m");
 		final String cpModel = arguments.get("c");
+		final String outputFile = arguments.get("o");
 
 		if (!Utilities.validateArguments(camelModel, cpModel)) {
 			System.exit(1);
@@ -893,7 +909,7 @@ public class RuleProcessor {
 		log.info("Parsing provider information...");
 
 		RuleProcessor rp = new RuleProcessor();
-		RPOutput output = rp.processRequest(camelModel, cpModel);
+		RPOutput output = rp.processRequest(camelModel, cpModel, outputFile, false);
 
 		System.exit(output.getErrorCode());
 	}

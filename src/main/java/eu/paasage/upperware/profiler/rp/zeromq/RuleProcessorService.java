@@ -141,7 +141,7 @@ public class RuleProcessorService {
 		}
 
 		RuleProcessor rProcessor = new RuleProcessor();
-		RPOutput output = rProcessor.processRequest(camelModel, cdoIdentifier);
+		RPOutput output = rProcessor.processRequest(camelModel, cdoIdentifier, null, true);
 		int success = output.getErrorCode();
 		if (success == 1) {
 			logger.info("RP passed. Publish onto topic " + PUB_GROUP);
