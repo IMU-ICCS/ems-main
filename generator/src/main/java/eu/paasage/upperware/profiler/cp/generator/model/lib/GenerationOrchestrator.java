@@ -316,13 +316,13 @@ public class GenerationOrchestrator
 		InputStream inpFile= selectExistingLog4File(); 
 		
 		PropertyConfigurator.configure(inpFile);
-		logger.setLevel(Level.ALL);
+		logger.setLevel(Level.INFO);
 		
 		//Configures the CDO Client logger
 		Logger templogger = org.apache.log4j.Logger.getLogger(CDOClient.class);
-		templogger.setLevel(Level.ALL);
+		templogger.setLevel(Level.OFF);
 	
-		org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+		org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
 		
 		OutputStream output;
 		try {
@@ -636,7 +636,7 @@ public class GenerationOrchestrator
 				}
 				catch(Exception e)
 				{
-					e.printStackTrace();
+					System.out.println("Problems processing the model "+e.getMessage());
 				}
 				
 				finally
