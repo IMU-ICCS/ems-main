@@ -1,6 +1,5 @@
 package eu.paasage.upperware.profiler.rp.util;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 

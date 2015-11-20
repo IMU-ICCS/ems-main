@@ -752,7 +752,10 @@ public class RuleProcessor {
 
 	public RPOutput processRequest(String camelModel, String cdoIdentifier, String outputFile, boolean runAsDaemon) {
 		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
-		
+		if (camelProviders == null) { // no CAMEL model was found
+			return new RPOutput(0, outputFile);
+		}
+
 		// fallback, if no filename was passed to this process
 		if (outputFile == null) {
 			outputFile = "rp_output";
