@@ -434,7 +434,10 @@ public class CamelModelProcessor extends ModelProcessor {
 		{
 			ProviderModelDecorator pm= proxy.getPMsMap().get(prov.getName()); 
 			
-			providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
+			if(pm!=null)
+				providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
+			else
+				logger.error("CamelModelProcessor - processProviderRequirements - Thre is not a Provider Model for "+prov.getName()+ "The provider will be not considered");
 		}
 	}
 	
@@ -446,17 +449,22 @@ public class CamelModelProcessor extends ModelProcessor {
 			
 			ProviderModelDecorator pm= proxy.getPMsMap().get(prov.getName()); 
 			
-			providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
-			
-			logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
-			
-			if(currentCandidates.isEmpty()) //Delete the provider with the given location
+			if(pm!=null)
 			{
-				logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Removing candidate with location "+locationId);
-				providerModelParser.removeCandidatesWithLocationForVM(vm,pm.getProviderId(),locationId,pc);
+				providerModelParser.parseOntology(ontology, pc, pm, vm, candidates);
+				
+				logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
+				
+				if(currentCandidates.isEmpty()) //Delete the provider with the given location
+				{
+					logger.debug("CamelModelProcessor - processProviderRequirementsLocation - Removing candidate with location "+locationId);
+					providerModelParser.removeCandidatesWithLocationForVM(vm,pm.getProviderId(),locationId,pc);
+				}
+				else
+					candidates.addAll(currentCandidates); 
 			}
 			else
-				candidates.addAll(currentCandidates); 
+				logger.error("CamelModelProcessor - processProviderRequirementsLocation - Thre is not a Provider Model for "+prov.getName()+ "The provider will be not considered");
 		}
 	}
 	
