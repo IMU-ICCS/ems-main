@@ -316,13 +316,13 @@ public class GenerationOrchestrator
 		InputStream inpFile= selectExistingLog4File(); 
 		
 		PropertyConfigurator.configure(inpFile);
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.ALL);
 		
 		//Configures the CDO Client logger
 		Logger templogger = org.apache.log4j.Logger.getLogger(CDOClient.class);
-		templogger.setLevel(Level.OFF);
+		templogger.setLevel(Level.ALL);
 	
-		org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
+		org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
 		
 		OutputStream output;
 		try {
@@ -633,7 +633,12 @@ public class GenerationOrchestrator
 					modelInfos.add(mfi); 
 						
 					String paasageConfigID= go.generateCPModel(modelInfos); 
-				}	
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+				
 				finally
 				{
 					
