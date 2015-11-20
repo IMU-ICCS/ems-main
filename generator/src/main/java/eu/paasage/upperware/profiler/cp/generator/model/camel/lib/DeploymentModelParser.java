@@ -850,12 +850,10 @@ public class DeploymentModelParser
 			
 			ProviderType pt= PaasageModelTool.searchProviderTypeById(providerTypeId, configurationWrapper); */
 			
-			String providerTypeId= pt.getId(); 
-			PaasageConfiguration configuration= configurationWrapper.getPaasageConfiguration(); 
-		
-		
 			if(pt!=null)
 			{
+				String providerTypeId= pt.getId(); 
+				PaasageConfiguration configuration= configurationWrapper.getPaasageConfiguration(); 
 				
 				//Look for the provider
 				Provider providerVO=  applicationFactory.createProvider(); 
@@ -903,7 +901,7 @@ public class DeploymentModelParser
 			}
 			
 			else
-				logger.error("DeploymentModelProcessor- buildVMProfile- The Provider with type "+providerTypeId+" does not exist in the DB. The VM profile can not be created!");
+				logger.error("DeploymentModelProcessor- buildVMProfile- The Provider does not exist in the DB. The VM profile can not be created!");
 		//}	
 		
 		//OS
