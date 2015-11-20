@@ -68,6 +68,7 @@ import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import eu.paasage.upperware.profiler.rp.util.PropertiesReader;
 import eu.paasage.upperware.profiler.rp.util.RPOutput;
+import eu.paasage.upperware.profiler.rp.util.UnavailableModelException;
 import eu.paasage.upperware.profiler.rp.util.Utilities;
 import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
 
@@ -387,18 +388,22 @@ public class RuleProcessor {
                     String vmID = vmProfile.getCloudMLId();
                     for (ProviderDimension provider : vmProfile.getProviderDimension()) {
                     	String pId = provider.getProvider().getId();
-                    	if (isProviderPublic(strArray[1], pId)) {
-                    		if (providerType.equals("public")) {
-                    			willBeRemoved.add(pId);
-                    			vmRemoveList.add(vmID);
-                    			delTable.put(pId, null);
-                    			delTable.put(vmID, null);
-                    		}
-                    	} else if (providerType.equals("private")) {
-                    		willBeRemoved.add(pId);
-                    		vmRemoveList.add(vmID);
-                    		delTable.put(pId, null);
-                    		delTable.put(vmID, null);
+                    	try {
+	                    	if (isProviderPublic(strArray[1], pId)) {
+	                    		if (providerType.equals("public")) {
+	                    			willBeRemoved.add(pId);
+	                    			vmRemoveList.add(vmID);
+	                    			delTable.put(pId, null);
+	                    			delTable.put(vmID, null);
+	                    		}
+	                    	} else if (providerType.equals("private")) {
+	                    		willBeRemoved.add(pId);
+	                    		vmRemoveList.add(vmID);
+	                    		delTable.put(pId, null);
+	                    		delTable.put(vmID, null);
+	                    	}
+                    	} catch (UnavailableModelException e) {
+                    		return SOLUTION_STATUS.ERROR;
                     	}
                     }
                 }
@@ -419,9 +424,14 @@ public class RuleProcessor {
 		return removeModelFromCDO(resId, camelModel, delTable, vmRemoveList, objList);
 	}
 	
-	private boolean isProviderPublic(String cpModelId, String cloudProviderId) {
+	private boolean isProviderPublic(String cpModelId, String cloudProviderId) throws UnavailableModelException {
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
         CamelModel model = proxy.getCamelModel("upperware-models/fms/" + cpModelId + "/" + cloudProviderId);
+        if (model == null) {
+        	String error = "> ERROR: Could not retrieve the following model: " + "upperware-models/fms/" + cpModelId + "/" + cloudProviderId;
+        	System.out.println(error);
+        	throw new UnavailableModelException(error);
+        }
         for (ProviderModel pm : model.getProviderModels()) {
         	Feature f = pm.getRootFeature();
         	for (Attribute a : f.getAttributes()) {
