@@ -118,7 +118,7 @@ public class App implements Daemon {
 	public static void runMILPSolver(String input, long timestamp){
 
 		try{	
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input + timestamp);
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input + ' ' + timestamp);
 
 
 			// you can pass the system command or a script to exec command. here i used uname -a system command

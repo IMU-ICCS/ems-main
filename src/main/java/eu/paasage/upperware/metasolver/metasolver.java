@@ -94,7 +94,8 @@ public class metasolver{
 	public static void runMILPSolver(String input, long timestamp){
 
 		try{	
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input + timestamp);
+			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input +' ' + timestamp);
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
 
 
 			// you can pass the system command or a script to exec command. here i used uname -a system command
@@ -151,7 +152,7 @@ public class metasolver{
 	public static void runS2D(String CAMELmodel, String CPmodel, long timestamp){
 
 		try{	
-			Process p1 = Runtime.getRuntime().exec("java -jar solver-to-deployment-2015.9.1-SNAPSHOT.jar-with-dependencies.jar " + CPmodel + CAMELmodel + timestamp);
+			Process p1 = Runtime.getRuntime().exec("java -jar solver-to-deployment-2015.9.1-SNAPSHOT.jar-with-dependencies.jar " + CPmodel + ' ' + CAMELmodel + ' ' +timestamp);
 		
 			// you can pass the system command or a script to exec command. here i used uname -a system command
 			BufferedReader stdInput = new BufferedReader(new
