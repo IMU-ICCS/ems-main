@@ -72,6 +72,8 @@ public class VMInstanceAction implements Action {
 			String imageName, imageID = null, cloudID = null, hardwareID=null, locationID=null, vmt;
 			imageName = dataShare.getImageNameFromVMT(vmType);//getting image value for the vmtype
 			
+			String OSVendorType = "NIX", login = "ubuntu", OSArchitecture = "AMD64", OSVersion = "14.04.2";//putting default values
+			
 			if((vmt=dataShare.getEntityVMTid(vmType))==null){//entity non existant in ExecWare
 				//To Do Exec API Call
 				String cloudName = objParams.get("cloud").asString();
@@ -150,6 +152,13 @@ public class VMInstanceAction implements Action {
 				//cloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";//hack for Belgium workshop test
 				try {
 					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), cloudProviderId, locationID) + "";
+					
+					boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
+					
+					if(status)
+						LOGGER.log(Level.INFO, "Updated OS/Default Login for image " + imageID);
+					else
+						LOGGER.log(Level.INFO, "NOT updated OS/Default Login for image " + imageID);
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

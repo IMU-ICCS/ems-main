@@ -137,6 +137,8 @@ public class ExecInterfacer {
 	public static final String API_HARDWARE = "/api/hardware";
 	//public static final String API_HARDWAREOFFER = "/api/hardwareOffer";
 	public static final String API_IMAGE = "/api/image";//DONE Need to do getter from multiple locations
+	public static final String API_OSVENDOR = "/api/osVendor";
+	public static final String API_OS = "/api/os";
 	public static final String API_INSTANCE = "/api/instance";//DONE
 	//public static final String API_IPADDRESS = "/api/ip";
 	public static final String API_LOCATION = "/api/location";//DONE search using /cloud and /cloudUuid => int getSpecificLocation(...)
@@ -2295,6 +2297,149 @@ public class ExecInterfacer {
     	
     	//System.out.println(respString);
     	//return jArr;
+	}
+	
+	public boolean updateOSandLoginForSpecificImage(String imgID, String OSVendorType, String login, String OSArchitecture, String OSVersion) throws IOException, ParseException{
+		boolean status = false;
+		
+		JSONObject imgJObj = null;
+		
+		String vendorID = "", defLogin = "", OSID = "";
+		
+		HttpResponse resp = getRequest(API_IMAGE + "/" + imgID, null);
+        HttpEntity respEntity = resp.getEntity();
+        
+        String respString = EntityUtils.toString(respEntity);
+        JSONParser parser = new JSONParser();
+        //JSONObject result = null;
+        JSONArray jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+		Iterator<JSONObject> jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			String imgOS = jObj.get("operatingSystem").toString();
+			
+			if((!imgOS.equalsIgnoreCase(null)) || (!imgOS.equalsIgnoreCase(""))){
+				status = true;
+				return status;
+			} else{
+				imgJObj = jObj;
+				status = true;
+			}
+		}
+		
+		//fetching the OS Vendor
+		
+		resp = getRequest(API_OSVENDOR, null);
+        respEntity = resp.getEntity();
+        
+        respString = EntityUtils.toString(respEntity);
+        parser = new JSONParser();
+        //JSONObject result = null;
+        jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+		jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			if(jObj.get("operatingSystemVendorType").toString().equalsIgnoreCase(OSVendorType)){
+				
+				JSONArray links= (JSONArray) jObj.get("link");
+				defLogin = jObj.get("defaultLoginName").toString();
+				
+				Iterator<JSONObject> jArrLinksIt = links.iterator();
+				while (jArrLinksIt.hasNext()){
+					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
+					String vend = (String) jObjLinks.get("href");
+					System.out.println("Found vendor " + OSVendorType + " id: " + vend);
+					vendorID = vend.substring(vend.lastIndexOf('/')+1);
+					status = status && true;
+				}
+			}
+		}
+		
+		//fetching the OS
+		resp = getRequest(API_OS, null);
+        respEntity = resp.getEntity();
+        
+        respString = EntityUtils.toString(respEntity);
+        parser = new JSONParser();
+        //JSONObject result = null;
+        jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+		jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			if(jObj.get("operatingSystemVendor").toString().equalsIgnoreCase(vendorID) && jObj.get("operatingSystemArchitecture").toString().equalsIgnoreCase(OSArchitecture) && jObj.get("version").toString().equalsIgnoreCase(OSVersion)){
+				
+				JSONArray links= (JSONArray) jObj.get("link");
+				
+				Iterator<JSONObject> jArrLinksIt = links.iterator();
+				while (jArrLinksIt.hasNext()){
+					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
+					String os = (String) jObjLinks.get("href");
+					System.out.println("Found OS for type: " + OSVendorType +" version: " + OSVersion + " Arch: " + OSArchitecture + " id: " + os);
+					OSID = os.substring(os.lastIndexOf('/')+1);
+					status = status && true;
+				}
+			}
+		}
+		
+		if(status == true){//update the image with OS and LoginUsername
+			
+			
+			JSONObject inBody = new JSONObject();
+			inBody.put("remoteId", imgJObj.get("remoteId"));
+			inBody.put("cloudProviderId", imgJObj.get("cloudProviderId"));
+			inBody.put("name", imgJObj.get("name"));
+			inBody.put("cloud", imgJObj.get("cloud"));
+			inBody.put("location", imgJObj.get("location"));
+			inBody.put("cloudCredentials", imgJObj.get("cloudCredentials"));
+			inBody.put("operatingSystem", OSID);
+			if(!login.equalsIgnoreCase(defLogin))
+				inBody.put("defaultLoginUsername", login);
+			
+			resp = putRequest(API_IMAGE + "/" + imgID, null, inBody);
+	        respEntity = resp.getEntity();
+	        
+	        respString = EntityUtils.toString(respEntity);
+	        parser = new JSONParser();
+	        JSONObject result = null;
+	        
+	    	if(resp.getStatusLine().getStatusCode()==200){
+	        	
+	            result = (JSONObject)parser.parse(respString);
+	            status = status && true;
+	            
+	    	} else{
+	    		status = false;
+	    	}
+		}
+		
+		return status;
 	}
 	
 	public boolean deleteImage(int imageId) throws IOException, ParseException{
