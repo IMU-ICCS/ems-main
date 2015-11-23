@@ -977,7 +977,7 @@ public class RuleProcessor {
 		if (this.getValidationResult()) {
 			log.debug("\nMODEL UPDATED (" + newResId + ")");
 			System.out.println();
-			System.out.println("PASSED");
+			System.out.println("MODEL UPDATED (" + newResId + ")");
 			success = 1;
 
 			printFile(outputFile, newResId, runAsDaemon);
