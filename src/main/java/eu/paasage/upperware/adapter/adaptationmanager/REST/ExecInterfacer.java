@@ -1000,6 +1000,7 @@ public class ExecInterfacer {
 	private HttpResponse putRequest(String apiExt, Header inHeader, JSONObject inBody) throws IOException{
 		
         HttpPut hur = new HttpPut(baseUrl + apiExt);
+        hur.addHeader("content-type", "application/json");
         
         if(inHeader != null)
         	hur.addHeader(inHeader);
@@ -1112,7 +1113,7 @@ public class ExecInterfacer {
 		Iterator<JSONObject> jArrIt = jArr.iterator();
 		while(jArrIt.hasNext()){
 			JSONObject jObj = (JSONObject) jArrIt.next();
-			if(jObj.get("name").equals(name)){
+			if(jObj.get("name").toString().equalsIgnoreCase(name)){
 				JSONArray links= (JSONArray) jObj.get("link");
 				Iterator<JSONObject> jArrLinksIt = links.iterator();
 				while (jArrLinksIt.hasNext()){
@@ -1189,7 +1190,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -1273,7 +1274,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -1333,7 +1334,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -2260,6 +2261,7 @@ public class ExecInterfacer {
 			JSONObject jObj = (JSONObject) jArrIt.next();
 			
 			boolean status = false;
+/*			Commented because location is a value and not array
 			JSONArray locations = (JSONArray) jObj.get("locations");
 			
 			for(int i=0; i<locations.size(); i++){
@@ -2269,7 +2271,11 @@ public class ExecInterfacer {
 				System.out.println("The object " + Loc);
 				if(Loc.equalsIgnoreCase(locationID.toString()))
 					status = true;
-			}
+			}*/
+			
+			String loctn = jObj.get("location").toString();
+			if(loctn.equalsIgnoreCase(locationID.toString()))
+				status = true;
 			
 			/*Iterator<JSONObject> jArrLocsIt = locations.iterator();
 			while (jArrLocsIt.hasNext()){
@@ -2311,17 +2317,38 @@ public class ExecInterfacer {
         
         String respString = EntityUtils.toString(respEntity);
         JSONParser parser = new JSONParser();
-        //JSONObject result = null;
+        JSONObject specImg = null;
         JSONArray jArr = null;
+        Iterator<JSONObject> jArrIt;
         
     	if(resp.getStatusLine().getStatusCode()==200){
         	
     		//result = new JSONObject(respString);
-//            result = (JSONObject)parser.parse(respString);
-    		jArr = (JSONArray)parser.parse(respString);
+    		specImg = (JSONObject)parser.parse(respString);
+//    		jArr = (JSONArray)parser.parse(respString);
     	}
     	
-		Iterator<JSONObject> jArrIt = jArr.iterator();
+    	if(specImg.get("operatingSystem")!=null && (!specImg.get("operatingSystem").toString().equalsIgnoreCase(""))){
+			status = true;
+			return status;
+		} else{
+			imgJObj = specImg;
+			status = true;
+		} 
+    	
+		/*String imgOS = specImg.get("operatingSystem").toString();
+		
+		if((!imgOS.equalsIgnoreCase(null)) || (!imgOS.equalsIgnoreCase(""))){
+			status = true;
+			return status;
+		} else{
+			imgJObj = specImg;
+			status = true;
+		}*/   	
+
+    	
+    	
+/*    	Iterator<JSONObject> jArrIt = jArr.iterator();
 		while(jArrIt.hasNext()){
 			JSONObject jObj = (JSONObject) jArrIt.next();
 			
@@ -2334,7 +2361,7 @@ public class ExecInterfacer {
 				imgJObj = jObj;
 				status = true;
 			}
-		}
+		}*/
 		
 		//fetching the OS Vendor
 		
@@ -2418,9 +2445,12 @@ public class ExecInterfacer {
 			inBody.put("cloud", imgJObj.get("cloud"));
 			inBody.put("location", imgJObj.get("location"));
 			inBody.put("cloudCredentials", imgJObj.get("cloudCredentials"));
-			inBody.put("operatingSystem", OSID);
+			inBody.put("operatingSystem", Integer.parseInt(OSID));
+			
 			if(!login.equalsIgnoreCase(defLogin))
 				inBody.put("defaultLoginUsername", login);
+			else
+				inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
 			
 			resp = putRequest(API_IMAGE + "/" + imgID, null, inBody);
 	        respEntity = resp.getEntity();
@@ -2517,11 +2547,22 @@ public class ExecInterfacer {
     		jArr = (JSONArray)parser.parse(respString);
     	}
     	
+    	cloudProviderId = cloudProviderId.substring(1, cloudProviderId.length()-1);//eliminating the leading and trailing quotes
+    	
 		Iterator<JSONObject> jArrIt = jArr.iterator();
 		while(jArrIt.hasNext()){
 			JSONObject jObj = (JSONObject) jArrIt.next();
 			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("cloudProviderId")==cloudProviderId){
-			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)){
+			
+			//debug lines to test if statement
+			int fetchedCloud = Integer.parseInt(jObj.get("cloud").toString());
+			String fetchedCloudProviderId = ((String) jObj.get("cloudProviderId")).trim();
+			if(fetchedCloud==cloud)
+				System.out.println("Fetched Cloud # equal");
+			if(fetchedCloudProviderId.equalsIgnoreCase(cloudProviderId.trim()))
+				System.out.println("Fetched CloudProviderId equal : " + fetchedCloudProviderId + " " + cloudProviderId.trim());
+			if(fetchedCloud==cloud && fetchedCloudProviderId.equalsIgnoreCase(cloudProviderId.trim())){
+			//if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)){
 				
 			//if(jObj.get("name").equals(name)){
 				JSONArray links= (JSONArray) jObj.get("link");

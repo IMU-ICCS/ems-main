@@ -96,6 +96,15 @@ public class VMInstanceAction implements Action {
 						String uname = ((JsonObject) objParams.get("credential")).get("username").asString();
 						String pass = ((JsonObject) objParams.get("credential")).get("password").asString();
 						
+						//setting credential defaults
+						if(cloudName.equalsIgnoreCase("Flexiant")){
+							uname = "flexiant-username";
+							pass = "flexiant-pass";
+						}else if(cloudName.equalsIgnoreCase("Omistack")){
+							uname = "omistack-username";
+							pass = "omistack-pass";
+						}
+						
 						linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);
 						
 						tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
@@ -114,12 +123,11 @@ public class VMInstanceAction implements Action {
 				}
 				
 				//String cloudUuid = objParams.get("region").asString();//"regionOne"
-				String cloudProviderId = objParams.get("locations").asArray().get(0).toString();
+				String cloudProviderIdLocation = objParams.get("locations").asArray().get(0).toString();
 				System.out.println("Locations fetched " + objParams.get("locations").asArray().toString());
 				
-				//cloudProviderId = "regionOne";//hack for test
 				try {
-					locationID = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderId) + "";
+					locationID = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation) + "";
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -132,10 +140,18 @@ public class VMInstanceAction implements Action {
 				}			
 				//locationID = objParams.get("cloud").asString();//find the appropriate location ID satisfying cloudID & cloudUuid
 				
-				//cloudProviderId = "regionOne/acbc4b60-7b03-48bb-8352-faed4410eca3";//hack for test
+				//String cloudProviderId = "regionOne/2";//hack for test
 				//cloudProviderId = "RegionOne/4";//hack for Belgium workshop test
+				
+				String hardwCloudProviderId = null;
+				//setting cloudProviderId defaults 
+				if(cloudName.equalsIgnoreCase("Omistack"))
+					hardwCloudProviderId = "RegionOne/3";
+				else if(cloudName.equalsIgnoreCase("Flexiant"))
+					hardwCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054";
+				
 				try {
-					hardwareID = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), cloudProviderId) + "";
+					hardwareID = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), hardwCloudProviderId) + "";
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -148,10 +164,15 @@ public class VMInstanceAction implements Action {
 				}
 				//hardwareID = "/api/hardware/3";//find the appropriate hardware ID satisfying cloudID & cloudUuid
 				
-				//cloudProviderId = "regionOne/c404edc0-0b8f-4749-bd94-dc65338c41f5";//hack for test
-				//cloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";//hack for Belgium workshop test
+				String imgCloudProviderId = null;
+				if(cloudName.equalsIgnoreCase("Omistack"))
+					imgCloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";
+				else if(cloudName.equalsIgnoreCase("Flexiant"))
+					imgCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c";
+
+
 				try {
-					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), cloudProviderId, locationID) + "";
+					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId, locationID) + "";
 					
 					boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
 					
@@ -275,6 +296,7 @@ public class VMInstanceAction implements Action {
 				e1.printStackTrace();
 			}
 			
+			//default tenant for ExecWare
 			Integer tenantId = 1;
 			
 			if(tempCloudId.equalsIgnoreCase("")){
@@ -284,7 +306,10 @@ public class VMInstanceAction implements Action {
 					cloudCred = execInterfacer.createCloudCredential(uname, pass, Integer.parseInt(cloudId), tenantId);
 					if(cloudCred != null || !cloudCred.equalsIgnoreCase("")){
 						LOGGER.log(Level.INFO, "Wait for some minutes to make sure ExecutionWare finished the lookup of the cloud-related locations, etc.");
-						Thread.currentThread().wait(180000);
+						Thread.sleep(90000);
+/*						synchronized (Thread.currentThread()) {
+							Thread.currentThread().wait(60000);
+						}*/
 						CamelExecwareMapping.CloudLookedUp();
 						status = true;
 					}
