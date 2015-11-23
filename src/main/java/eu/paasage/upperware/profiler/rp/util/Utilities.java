@@ -148,12 +148,18 @@ public class Utilities {
 		log.info("Checking parameters ...");
 		if (!isValidCamelModel(camelModel)) {
 			log.error("> ERROR: " + camelModel + " was not found in the CDO database!");
+			
+			System.out.println();
+			System.out.println("> ERROR: " + camelModel + " was not found in the CDO database!");
 			return false;
 		}
 		log.info("> " + camelModel + " is available in the CDO database");
 
 		if (!isValidCPModel(cpModel)) {
 			log.error("> ERROR: " + cpModel + " was not found in the CDO database!");
+			
+			System.out.println();
+			System.out.println("> ERROR: " + cpModel + " was not found in the CDO database!");
 			return false;
 		}
 		log.info("> " + cpModel + " is accessible through the CDO database");
