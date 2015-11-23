@@ -55,6 +55,7 @@ import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.Entity;
 import eu.paasage.camel.organisation.OrganisationModel;
+import eu.paasage.camel.organisation.PaaSageCredentials;
 import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
@@ -400,29 +401,34 @@ public final class ModelToJsonConverter {
 		//
 	    //LOGGER.debug("just before if(vmType != null....");
 		if(vmType.getName() != null && !vmType.getName().equals("null")){	//added 22/7/15 to guard against broken xmi file exported from CDO server
-		//get CloudProvider name and location (10/6/15 may be able to optimise it using typeValue.eContainer... check the xmi)	
+		//	
 			HashMap<String, Object> cloudProviderInfo = getCloudProviderInfo(vmType);	//get it from vmType
 			if(!cloudProviderInfo.isEmpty()){
 				Set keys = cloudProviderInfo.keySet();
 		        Iterator it = keys.iterator();
 		        while(it.hasNext()){// only 2 types of objects - String, JsonArray
 		        	String key = (String) it.next();
-		        	if(cloudProviderInfo.get(key) instanceof String){
-		        		result.add(key,cloudProviderInfo.get(key).toString());
-		        	}else if(cloudProviderInfo.get(key) instanceof JsonArray){
+		        	if(cloudProviderInfo.get(key) instanceof JsonArray){
 		        		result.add(key, (JsonArray) cloudProviderInfo.get(key));
+		        	}else if(cloudProviderInfo.get(key) instanceof String){ 
+		        		result.add(key,cloudProviderInfo.get(key).toString());
+		        	}else if(cloudProviderInfo.get(key) instanceof Integer){ //23Nov15, there are 3 integers
+		        		result.add(key, (Integer) cloudProviderInfo.get(key));
+		        	}else if(cloudProviderInfo.get(key) instanceof JsonObject){//23Nov15, there is 1 json object
+		        		result.add(key, (JsonObject) cloudProviderInfo.get(key));
 		        	}
-		            LOGGER.debug("Added " + key + ", " +  cloudProviderInfo.get(key) + " to Json model.");
+		            //LOGGER.debug("Added " + key + ", " +  cloudProviderInfo.get(key) + " to Json model.");
 		        }
 			}
-		}//end if VMType !=null
+		}//end if VMType !=null		
 		//26 Aug 2015 added cloud credentials (currently contain username/password).  These come from the main Camel Model OrganisationModel
 		//we need to match on cloud name, the method will check for null		
-		String temp = "";
-		if(result.get("cloud") != null){ //guard for NPE
-			temp = result.get("cloud").asString(); 
-		}
-		JsonObject credential = getCredentials(temp, vmi);
+		//String temp = "";
+		//if(result.get("cloud") != null){ //guard for NPE
+		//	temp = result.get("cloud").asString(); //e.g. Flexiant, 
+		//}
+		//JsonObject credential = getCredentials(temp, vmi); //23Nov15, the Camel model has changed again, use a different method to get username/password
+		JsonObject credential = getCredentials(vmi);
     	result.add("credential", credential);
 		//
 		//provided host instance names
@@ -761,7 +767,8 @@ public final class ModelToJsonConverter {
 				hm.put("osImage",((ImageRequirement) osReq).getImageId());
 			}else if(osReq instanceof OSRequirement){
 				hm.put("os", ((OSRequirement) osReq).getOs());
-				hm.put("os64bit", ((OSRequirement) osReq).isIs64os());
+				//23Nov15 obsolete
+				//hm.put("os64bit", ((OSRequirement) osReq).isIs64os());
 			}
 		}
 		//9June15 Alessandro said we only needs os/image and vmType, the followings should be left to ExecutionWare to decide at runtime
@@ -807,11 +814,12 @@ public final class ModelToJsonConverter {
 		//System.out.println("inside getCloudProviderInfo with vmType (cdoid) " + vmType.cdoID().toString());
     	//populate cloud,     	
     	HashMap<String, Object> hm = new HashMap<String, Object>();	   
-    	EObject provider = vmType.eContainer().eContainer().eContainer(); //21july15 adjust to current camelModel, needs to go up one more parent 
+    	EObject provider = vmType.eContainer().eContainer().eContainer(); //21July15 adjust to current camelModel, needs to go up one more parent 
     	//24July 2015 providerModel.rootFeature.subFeatures.attributes (one of the attributes is VM)
     	//debug
     	//System.out.println("provider is an instance of " + provider.getClass().getName()); //providerModelImpl 21/7/2015
-		if(provider instanceof ProviderModel){
+    	//    	
+		if(provider instanceof ProviderModel){ //23Nov15, we go straight for the VM Feature
 			LOGGER.debug("about to cast provider container to ProvderModel....");
 			//System.out.println("about to cast provider container to ProvderModel....");
 			ProviderModel cloudPM = (ProviderModel) provider;
@@ -826,6 +834,10 @@ public final class ModelToJsonConverter {
 			EList<Feature> subFeatures = cloudPM.getRootFeature().getSubFeatures();
 			if(subFeatures != null && !subFeatures.isEmpty()){
 				JsonArray locsStr = new JsonArray();
+				JsonObject defCredential = new JsonObject();
+		    	//set default empty strings
+				defCredential.add("defaultLoginName", "");
+				defCredential.add("defaultLoginPassword", "");
 				for(Feature sf : subFeatures){
 					if(sf.getName().equals("Location")){
 						/*19Nov15 model changed 
@@ -839,14 +851,63 @@ public final class ModelToJsonConverter {
 							for(Attribute attr : attrs){
 								LOGGER.debug("Location current attribute : " + attr.getName());
 								if(attr.getName().equals("LocationId")){
-									locsStr.add(ModelUtil.switchValue(attr.getValue()));	//there should only be 1 value, save time keep JsonArray
+									locsStr.add(ModelUtil.switchValue(attr.getValue()));	//19Nov15 there should only be 1 value now, save time keep JsonArray
 									break;
 								}
 							}
 						}
+						hm.put("locations", locsStr);
+					}else if(sf.getName().equals("VM")){
+						EList<Attribute> attrs = sf.getAttributes(); 
+						if(attrs != null && !attrs.isEmpty()){
+							for(Attribute attr : attrs){
+								LOGGER.debug("VM current attribute : " + attr.getName());
+								if(attr.getName().equals("VMOS")){
+									hm.put("VMOS",ModelUtil.switchValue(attr.getValue()));
+								}else if(attr.getName().equals("VMImageId")){
+									hm.put("VMImageId",ModelUtil.switchValue(attr.getValue()));
+								}else if(attr.getName().equals("VMMemory")){
+									int vmmInt = Integer.parseInt(ModelUtil.switchValue(attr.getValue()));
+									hm.put("VMMemory",vmmInt);
+								}else if(attr.getName().equals("VMStorage")){
+									int vmsInt = Integer.parseInt(ModelUtil.switchValue(attr.getValue()));
+									hm.put("VMStorage",vmsInt);
+								}else if(attr.getName().equals("VMCores")){
+									int vmcInt = Integer.parseInt(ModelUtil.switchValue(attr.getValue()));
+									hm.put("VMCores",vmcInt);
+								}else if(attr.getName().equals("OSVendorType")){
+									hm.put("OSVendorType",ModelUtil.switchValue(attr.getValue()));
+								}else if(attr.getName().equals("OSArchitecture")){
+									hm.put("OSArchitecture",ModelUtil.switchValue(attr.getValue()));
+								}else if(attr.getName().equals("VMTypeCloudProviderId")){
+									hm.put("VMTypeCloudProviderId",ModelUtil.switchValue(attr.getValue()));
+								}else if(attr.getName().equals("VMTypeCloudProviderId")){
+									hm.put("VMTypeCloudProviderId",ModelUtil.switchValue(attr.getValue()));
+								}else if(attr.getName().equals("DefaultLoginName")){
+									String dln = ModelUtil.switchValue(attr.getValue());
+									if(dln != null){
+										defCredential.remove("defaultLoginName");	//there is no update method, has to remove then add
+				    					defCredential.add("defaultLoginName", dln);
+				    					LOGGER.debug("defaultLoginName : " + dln);
+									}else{
+										LOGGER.error("failed to switch defaultLoginName!");
+									}
+								}else if(attr.getName().equals("DefaultLoginPassword")){
+									String dlp = ModelUtil.switchValue(attr.getValue());
+									if(dlp != null){
+										defCredential.remove("defaultLoginPassword");	//there is no update method, has to remove then add
+				    					defCredential.add("defaultLoginPassword", dlp);
+				    					LOGGER.debug("defaultLoginPassword : " + dlp);
+									}else{
+										LOGGER.error("failed to switch defaultLoginPassword!");
+									}
+								}
+							}
+						}//end if attrs is empty
+						//now add the default credential
+						hm.put("defaultCredential",defCredential);
 					}
-					hm.put("locations", locsStr);
-				}
+				}//end for sub-features
 			}
 			//26 August, 2015 get driver and endpoint
 			String driver = "";	//can be null
@@ -917,14 +978,61 @@ public final class ModelToJsonConverter {
 		}//end if instanceof ProviderModel
 		return hm;    
     }
+    /**
+     * Get the owner's {@link eu.paasage.camel.organisation.PaaSageCredentials <em>PaaSageCredentials</em>}.
+     * <p>
+     * @param vmi			the target {@link eu.paasage.camel.deployment.VMInstance <em>VMInstance</em>}
+     * @return				the username password credential as a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>}
+     */
+    public static JsonObject getCredentials(VMInstance vmi){
+    	//System.out.println("... inside get credentials with cloudName: " + cloudName);
+    	//
+    	//23Nov15 - this is a botch as we don't know how the username password is going to be stored in Camel 
+    	JsonObject credentials = new JsonObject();
+    	//set default empty strings
+		credentials.add("username", "");
+		credentials.add("password", "");
+		String username = "";
+		//
+    	//go ahead
+    	CamelModel model = (CamelModel) vmi.eContainer().eContainer(); //vmi parent is DeployomentModel whose parent is CamelModel
+    	int size = model.getApplications().size();
+    	Entity owner = model.getApplications().get(size-1).getOwner(); //get the ?latest? one.  Not sure if CDO returns the objects in the same order each time you get them
+    	PaaSageCredentials cc = null;
+    	// 
+    	if(owner instanceof OrganisationModel){
+    		cc = ((OrganisationModel) owner).getUsers().get(0).getPaasageCredentials(); //get the first one for now
+    		username = ((OrganisationModel) owner).getUsers().get(0).getName();
+    	}else if(owner instanceof User){
+    		cc = ((User) owner).getPaasageCredentials();
+    		username = ((User) owner).getName();
+    	}   
+    	if(username != ""){
+    		credentials.remove("username");	//there is no update method, has to remove then add
+			credentials.add("username", username);
+			LOGGER.debug("paasage credential user name : " + username);
+    	}
+    	if(cc != null){   
+			if(cc.getPassword() != null){ 
+				credentials.remove("password");
+				credentials.add("password", cc.getPassword());
+				LOGGER.debug("credential user password : " + cc.getPassword());
+			}
+    	}else{
+    		LOGGER.error("failed to retrieve the paasage credentials!");
+    	}
+    	return credentials;
+    }
     
     /**
+     * 23Nov2015 the camel model has changed yet again, this method is obsolete
+     * 
      * Get the owner credentials for the specified cloud.
      * <p>
      * @param cloudName		Name of the target cloud
      * @param vmi			the target {@link eu.paasage.camel.deployment.VMInstance <em>VMInstance</em>}
      * @return				the credentials as a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>}
-     */
+    
     public static JsonObject getCredentials(String cloudName, VMInstance vmi){
     	//System.out.println("... inside get credentials with cloudName: " + cloudName);
     	//
@@ -966,7 +1074,7 @@ public final class ModelToJsonConverter {
     		}
     	}
     	return credentials;
-    }
+    } */
     /**
      * Find the horizontal scaling information for a {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>}
      * @param internalComponent	the source {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>}

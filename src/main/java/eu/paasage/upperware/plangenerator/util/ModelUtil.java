@@ -77,6 +77,21 @@ public final class ModelUtil {
 			return model;
     }
     /**
+     * Utility to extract the {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+     * that matches the provided index from a model file
+     * <p>
+     * @param filePath		full path to the file
+     * @param index			index to the required {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+     * @return				the {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+     * @throws Exception	on error
+     */
+    public static DeploymentModel loadDeploymentModel(String filePath, int index) throws Exception {
+		
+			CamelModel cm = loadCamelModel(filePath);
+			DeploymentModel model = cm.getDeploymentModels().get(index); 
+			return model;
+    }
+    /**
      * Utility to extract the {@link eu.paasage.camel.CamelModel <em>CamelModel</em>}
      * <p>
      * @param inputFilePath	full path to the file
