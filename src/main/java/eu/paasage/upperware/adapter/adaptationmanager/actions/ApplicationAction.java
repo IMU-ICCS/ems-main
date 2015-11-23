@@ -8,10 +8,13 @@
 
 package eu.paasage.upperware.adapter.adaptationmanager.actions;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.json.simple.parser.ParseException;
 
 import com.eclipsesource.json.JsonObject;
 
@@ -62,7 +65,7 @@ public class ApplicationAction implements Action {
 		if(task.getTaskType()==TaskType.CREATE){
 			
 			this.appName = objParams.get("name").asString();
-			LOGGER.log(Level.INFO, "Application Type action thread : name " + appName);
+			LOGGER.log(Level.INFO, "Application Type action (create) thread : name " + appName);
 			
 			//test for passing name parameter to Application Instance
 			LOGGER.log(Level.INFO, this.appName);
@@ -99,10 +102,35 @@ public class ApplicationAction implements Action {
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			
+			
+			
 		} else if(task.getTaskType()==TaskType.DELETE){
 			
+			this.appName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Application Type action (delete) thread : name " + appName);
+			
+			//test for passing name parameter to Application Instance
+			LOGGER.log(Level.INFO, this.appName);
+			
+			String appID = dataShare.getApplicationId(this.appName);
+			
+			try {
+				int id = Integer.parseInt(appID);
+				
+				if(execInterfacer.deleteApp(id)){
+					
+					LOGGER.log(Level.INFO, "ExecWare API Action (delete App) : " + appID);
+					
+					dataShare.deleteApplication(this.appName);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
 	}
 
 	public ConfigurationTask getTask() {
