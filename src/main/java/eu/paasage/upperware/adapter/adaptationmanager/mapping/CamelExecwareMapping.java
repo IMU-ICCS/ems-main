@@ -51,7 +51,7 @@ public class CamelExecwareMapping {
 	
 	public void createApplication(String applicationId_Exec, String name_Camel){
 		appli = new Application(applicationId_Exec, name_Camel);
-		LOGGER.log(Level.INFO, "Application " + name_Camel);
+		LOGGER.log(Level.INFO, "Application created : " + name_Camel);
 	}
 	
 	public Application getApplication(String name_Camel){
@@ -72,6 +72,15 @@ public class CamelExecwareMapping {
 			return appli.getApplicationId_Exec();
 		} else
 			return null;
+	}
+	
+	public boolean deleteApplication(String name_Camel){
+		if(appli.name_Camel.equalsIgnoreCase(name_Camel)){
+			LOGGER.log(Level.INFO, "Application deleted : " + name_Camel);
+			appli = null;
+			return true;
+		} else
+			return false;
 	}
 	
 //------------------------------------------	
