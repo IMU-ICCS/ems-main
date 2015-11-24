@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.util;
 
@@ -25,14 +17,14 @@ import org.eclipse.emf.ecore.EObject;
  * It provides an adapter <code>createXXX</code> method for each class of the model.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpPackage
- * 
+ * @generated
  */
 public class CpAdapterFactory extends AdapterFactoryImpl {
 	/**
 	 * The cached model package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static CpPackage modelPackage;
 
@@ -40,7 +32,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * Creates an instance of the adapter factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CpAdapterFactory() {
 		if (modelPackage == null) {
@@ -54,7 +46,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
 	 * <!-- end-user-doc -->
 	 * @return whether this factory is applicable for the type of the object.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public boolean isFactoryForType(Object object) {
@@ -71,7 +63,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * The switch that delegates to the <code>createXXX</code> methods.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected CpSwitch<Adapter> modelSwitch =
 		new CpSwitch<Adapter>() {
@@ -183,7 +175,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @param target the object to adapt.
 	 * @return the adapter for the <code>target</code>.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Adapter createAdapter(Notifier target) {
@@ -199,7 +191,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.CPElement
-	 * 
+	 * @generated
 	 */
 	public Adapter createCPElementAdapter() {
 		return null;
@@ -213,7 +205,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem
-	 * 
+	 * @generated
 	 */
 	public Adapter createConstraintProblemAdapter() {
 		return null;
@@ -227,7 +219,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Expression
-	 * 
+	 * @generated
 	 */
 	public Adapter createExpressionAdapter() {
 		return null;
@@ -241,7 +233,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createNumericExpressionAdapter() {
 		return null;
@@ -255,7 +247,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable
-	 * 
+	 * @generated
 	 */
 	public Adapter createVariableAdapter() {
 		return null;
@@ -269,7 +261,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Domain
-	 * 
+	 * @generated
 	 */
 	public Adapter createDomainAdapter() {
 		return null;
@@ -283,7 +275,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericDomain
-	 * 
+	 * @generated
 	 */
 	public Adapter createNumericDomainAdapter() {
 		return null;
@@ -297,7 +289,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.RangeDomain
-	 * 
+	 * @generated
 	 */
 	public Adapter createRangeDomainAdapter() {
 		return null;
@@ -311,7 +303,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericListDomain
-	 * 
+	 * @generated
 	 */
 	public Adapter createNumericListDomainAdapter() {
 		return null;
@@ -325,7 +317,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Constant
-	 * 
+	 * @generated
 	 */
 	public Adapter createConstantAdapter() {
 		return null;
@@ -339,7 +331,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createComposedExpressionAdapter() {
 		return null;
@@ -353,7 +345,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparisonExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createComparisonExpressionAdapter() {
 		return null;
@@ -367,7 +359,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Goal
-	 * 
+	 * @generated
 	 */
 	public Adapter createGoalAdapter() {
 		return null;
@@ -381,7 +373,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.BooleanExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createBooleanExpressionAdapter() {
 		return null;
@@ -395,7 +387,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.ListDomain
-	 * 
+	 * @generated
 	 */
 	public Adapter createListDomainAdapter() {
 		return null;
@@ -409,7 +401,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.MultiRangeDomain
-	 * 
+	 * @generated
 	 */
 	public Adapter createMultiRangeDomainAdapter() {
 		return null;
@@ -423,7 +415,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.UnaryExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createUnaryExpressionAdapter() {
 		return null;
@@ -437,7 +429,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createSimpleUnaryExpressionAdapter() {
 		return null;
@@ -451,7 +443,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createComposedUnaryExpressionAdapter() {
 		return null;
@@ -465,7 +457,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.BooleanDomain
-	 * 
+	 * @generated
 	 */
 	public Adapter createBooleanDomainAdapter() {
 		return null;
@@ -479,7 +471,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariable
-	 * 
+	 * @generated
 	 */
 	public Adapter createMetricVariableAdapter() {
 		return null;
@@ -493,7 +485,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Solution
-	 * 
+	 * @generated
 	 */
 	public Adapter createSolutionAdapter() {
 		return null;
@@ -507,7 +499,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.VariableValue
-	 * 
+	 * @generated
 	 */
 	public Adapter createVariableValueAdapter() {
 		return null;
@@ -521,7 +513,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue
-	 * 
+	 * @generated
 	 */
 	public Adapter createMetricVariableValueAdapter() {
 		return null;
@@ -533,7 +525,7 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * This default implementation returns null.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * 
+	 * @generated
 	 */
 	public Adapter createEObjectAdapter() {
 		return null;

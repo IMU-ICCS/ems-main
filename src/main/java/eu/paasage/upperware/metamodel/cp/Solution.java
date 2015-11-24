@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -29,9 +21,9 @@ import org.eclipse.emf.common.util.EList;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSolution()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface Solution extends CDOObject {
 	/**
@@ -45,8 +37,8 @@ public interface Solution extends CDOObject {
 	 * @return the value of the '<em>Timestamp</em>' attribute.
 	 * @see #setTimestamp(long)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSolution_Timestamp()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	long getTimestamp();
 
@@ -56,7 +48,7 @@ public interface Solution extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Timestamp</em>' attribute.
 	 * @see #getTimestamp()
-	 * 
+	 * @generated
 	 */
 	void setTimestamp(long value);
 
@@ -71,8 +63,8 @@ public interface Solution extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Variable Value</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSolution_VariableValue()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<VariableValue> getVariableValue();
 
@@ -87,8 +79,8 @@ public interface Solution extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Metric Variable Value</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSolution_MetricVariableValue()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<MetricVariableValue> getMetricVariableValue();
 

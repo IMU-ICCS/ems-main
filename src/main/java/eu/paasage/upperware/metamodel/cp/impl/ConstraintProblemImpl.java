@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -43,13 +35,13 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintProblem {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ConstraintProblemImpl() {
 		super();
@@ -58,7 +50,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -68,7 +60,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -78,7 +70,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Goal> getGoals() {
@@ -88,7 +80,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Constant> getConstants() {
@@ -98,7 +90,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Variable> getVariables() {
@@ -108,7 +100,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<ComparisonExpression> getConstraints() {
@@ -118,7 +110,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Expression> getAuxExpressions() {
@@ -128,7 +120,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<MetricVariable> getMetricVariables() {
@@ -138,7 +130,7 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Solution> getSolution() {

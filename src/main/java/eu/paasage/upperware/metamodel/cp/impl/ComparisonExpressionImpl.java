@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -30,13 +22,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class ComparisonExpressionImpl extends BooleanExpressionImpl implements ComparisonExpression {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ComparisonExpressionImpl() {
 		super();
@@ -45,7 +37,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -55,7 +47,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Expression getExp1() {
 		return (Expression)eGet(CpPackage.Literals.COMPARISON_EXPRESSION__EXP1, true);
@@ -64,7 +56,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setExp1(Expression newExp1) {
 		eSet(CpPackage.Literals.COMPARISON_EXPRESSION__EXP1, newExp1);
@@ -73,7 +65,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Expression getExp2() {
 		return (Expression)eGet(CpPackage.Literals.COMPARISON_EXPRESSION__EXP2, true);
@@ -82,7 +74,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setExp2(Expression newExp2) {
 		eSet(CpPackage.Literals.COMPARISON_EXPRESSION__EXP2, newExp2);
@@ -91,7 +83,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComparatorEnum getComparator() {
 		return (ComparatorEnum)eGet(CpPackage.Literals.COMPARISON_EXPRESSION__COMPARATOR, true);
@@ -100,7 +92,7 @@ public class ComparisonExpressionImpl extends BooleanExpressionImpl implements C
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setComparator(ComparatorEnum newComparator) {
 		eSet(CpPackage.Literals.COMPARISON_EXPRESSION__COMPARATOR, newComparator);

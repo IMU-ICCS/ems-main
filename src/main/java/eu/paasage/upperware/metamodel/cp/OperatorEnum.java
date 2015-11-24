@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -22,8 +14,8 @@ import org.eclipse.emf.common.util.Enumerator;
  * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getOperatorEnum()
- * 
- * 
+ * @model
+ * @generated
  */
 public enum OperatorEnum implements Enumerator {
 	/**
@@ -31,7 +23,7 @@ public enum OperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #PLUS_VALUE
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	PLUS(0, "plus", "plus"),
@@ -41,7 +33,7 @@ public enum OperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #MINUS_VALUE
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	MINUS(1, "minus", "minus"),
@@ -51,7 +43,7 @@ public enum OperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #TIMES_VALUE
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	TIMES(2, "times", "times"),
@@ -61,10 +53,20 @@ public enum OperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #DIV_VALUE
-	 * 
+	 * @generated
 	 * @ordered
 	 */
-	DIV(3, "div", "div");
+	DIV(3, "div", "div"),
+
+	/**
+	 * The '<em><b>Mean</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MEAN_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MEAN(4, "mean", "mean");
 
 	/**
 	 * The '<em><b>Plus</b></em>' literal value.
@@ -75,8 +77,8 @@ public enum OperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #PLUS
-	 *  name="plus"
-	 * 
+	 * @model name="plus"
+	 * @generated
 	 * @ordered
 	 */
 	public static final int PLUS_VALUE = 0;
@@ -90,8 +92,8 @@ public enum OperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #MINUS
-	 *  name="minus"
-	 * 
+	 * @model name="minus"
+	 * @generated
 	 * @ordered
 	 */
 	public static final int MINUS_VALUE = 1;
@@ -105,8 +107,8 @@ public enum OperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #TIMES
-	 *  name="times"
-	 * 
+	 * @model name="times"
+	 * @generated
 	 * @ordered
 	 */
 	public static final int TIMES_VALUE = 2;
@@ -120,17 +122,32 @@ public enum OperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #DIV
-	 *  name="div"
-	 * 
+	 * @model name="div"
+	 * @generated
 	 * @ordered
 	 */
 	public static final int DIV_VALUE = 3;
 
 	/**
+	 * The '<em><b>Mean</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>Mean</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MEAN
+	 * @model name="mean"
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MEAN_VALUE = 4;
+
+	/**
 	 * An array of all the '<em><b>Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static final OperatorEnum[] VALUES_ARRAY =
 		new OperatorEnum[] {
@@ -138,13 +155,14 @@ public enum OperatorEnum implements Enumerator {
 			MINUS,
 			TIMES,
 			DIV,
+			MEAN,
 		};
 
 	/**
 	 * A public read-only list of all the '<em><b>Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static final List<OperatorEnum> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
@@ -152,7 +170,7 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Operator Enum</b></em>' literal with the specified literal value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static OperatorEnum get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -168,7 +186,7 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Operator Enum</b></em>' literal with the specified name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static OperatorEnum getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -184,7 +202,7 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Operator Enum</b></em>' literal with the specified integer value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static OperatorEnum get(int value) {
 		switch (value) {
@@ -192,6 +210,7 @@ public enum OperatorEnum implements Enumerator {
 			case MINUS_VALUE: return MINUS;
 			case TIMES_VALUE: return TIMES;
 			case DIV_VALUE: return DIV;
+			case MEAN_VALUE: return MEAN;
 		}
 		return null;
 	}
@@ -199,21 +218,21 @@ public enum OperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String literal;
 
@@ -221,7 +240,7 @@ public enum OperatorEnum implements Enumerator {
 	 * Only this class can construct instances.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private OperatorEnum(int value, String name, String literal) {
 		this.value = value;
@@ -232,7 +251,7 @@ public enum OperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public int getValue() {
 	  return value;
@@ -241,7 +260,7 @@ public enum OperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getName() {
 	  return name;
@@ -250,7 +269,7 @@ public enum OperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getLiteral() {
 	  return literal;
@@ -260,7 +279,7 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the literal value of the enumerator, which is its string representation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public String toString() {

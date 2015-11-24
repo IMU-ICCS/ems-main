@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -25,8 +17,8 @@ package eu.paasage.upperware.metamodel.cp;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getGoal()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface Goal extends CPElement {
 	/**
@@ -40,8 +32,8 @@ public interface Goal extends CPElement {
 	 * @return the value of the '<em>Expression</em>' containment reference.
 	 * @see #setExpression(NumericExpression)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getGoal_Expression()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	NumericExpression getExpression();
 
@@ -51,7 +43,7 @@ public interface Goal extends CPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Expression</em>' containment reference.
 	 * @see #getExpression()
-	 * 
+	 * @generated
 	 */
 	void setExpression(NumericExpression value);
 
@@ -68,8 +60,8 @@ public interface Goal extends CPElement {
 	 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
 	 * @see #setGoalType(GoalOperatorEnum)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getGoal_GoalType()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	GoalOperatorEnum getGoalType();
 
@@ -80,7 +72,7 @@ public interface Goal extends CPElement {
 	 * @param value the new value of the '<em>Goal Type</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
 	 * @see #getGoalType()
-	 * 
+	 * @generated
 	 */
 	void setGoalType(GoalOperatorEnum value);
 

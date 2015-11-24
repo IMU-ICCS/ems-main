@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -25,14 +17,14 @@ import org.eclipse.emf.ecore.plugin.EcorePlugin;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Factory</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * Creates the default factory implementation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static CpFactory init() {
 		try {
@@ -51,7 +43,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * Creates an instance of the factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CpFactoryImpl() {
 		super();
@@ -60,7 +52,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public EObject create(EClass eClass) {
@@ -89,7 +81,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Object createFromString(EDataType eDataType, String initialValue) {
@@ -112,7 +104,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public String convertToString(EDataType eDataType, Object instanceValue) {
@@ -135,7 +127,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ConstraintProblem createConstraintProblem() {
 		ConstraintProblemImpl constraintProblem = new ConstraintProblemImpl();
@@ -145,7 +137,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Variable createVariable() {
 		VariableImpl variable = new VariableImpl();
@@ -155,7 +147,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public NumericDomain createNumericDomain() {
 		NumericDomainImpl numericDomain = new NumericDomainImpl();
@@ -165,7 +157,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public RangeDomain createRangeDomain() {
 		RangeDomainImpl rangeDomain = new RangeDomainImpl();
@@ -175,7 +167,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public NumericListDomain createNumericListDomain() {
 		NumericListDomainImpl numericListDomain = new NumericListDomainImpl();
@@ -185,7 +177,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Constant createConstant() {
 		ConstantImpl constant = new ConstantImpl();
@@ -195,7 +187,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComposedExpression createComposedExpression() {
 		ComposedExpressionImpl composedExpression = new ComposedExpressionImpl();
@@ -205,7 +197,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComparisonExpression createComparisonExpression() {
 		ComparisonExpressionImpl comparisonExpression = new ComparisonExpressionImpl();
@@ -215,7 +207,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Goal createGoal() {
 		GoalImpl goal = new GoalImpl();
@@ -225,7 +217,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ListDomain createListDomain() {
 		ListDomainImpl listDomain = new ListDomainImpl();
@@ -235,7 +227,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public MultiRangeDomain createMultiRangeDomain() {
 		MultiRangeDomainImpl multiRangeDomain = new MultiRangeDomainImpl();
@@ -245,7 +237,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public BooleanDomain createBooleanDomain() {
 		BooleanDomainImpl booleanDomain = new BooleanDomainImpl();
@@ -255,7 +247,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public MetricVariable createMetricVariable() {
 		MetricVariableImpl metricVariable = new MetricVariableImpl();
@@ -265,7 +257,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Solution createSolution() {
 		SolutionImpl solution = new SolutionImpl();
@@ -275,7 +267,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VariableValue createVariableValue() {
 		VariableValueImpl variableValue = new VariableValueImpl();
@@ -285,7 +277,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public MetricVariableValue createMetricVariableValue() {
 		MetricVariableValueImpl metricVariableValue = new MetricVariableValueImpl();
@@ -295,7 +287,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public OperatorEnum createOperatorEnumFromString(EDataType eDataType, String initialValue) {
 		OperatorEnum result = OperatorEnum.get(initialValue);
@@ -306,7 +298,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertOperatorEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -315,7 +307,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public GoalOperatorEnum createGoalOperatorEnumFromString(EDataType eDataType, String initialValue) {
 		GoalOperatorEnum result = GoalOperatorEnum.get(initialValue);
@@ -326,7 +318,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertGoalOperatorEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -335,7 +327,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComparatorEnum createComparatorEnumFromString(EDataType eDataType, String initialValue) {
 		ComparatorEnum result = ComparatorEnum.get(initialValue);
@@ -346,7 +338,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertComparatorEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -355,7 +347,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public SimpleUnaryOperatorEnum createSimpleUnaryOperatorEnumFromString(EDataType eDataType, String initialValue) {
 		SimpleUnaryOperatorEnum result = SimpleUnaryOperatorEnum.get(initialValue);
@@ -366,7 +358,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertSimpleUnaryOperatorEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -375,7 +367,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComposedUnaryOperatorEnum createComposedUnaryOperatorEnumFromString(EDataType eDataType, String initialValue) {
 		ComposedUnaryOperatorEnum result = ComposedUnaryOperatorEnum.get(initialValue);
@@ -386,7 +378,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertComposedUnaryOperatorEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -395,7 +387,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CpPackage getCpPackage() {
 		return (CpPackage)getEPackage();
@@ -405,7 +397,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @deprecated
-	 * 
+	 * @generated
 	 */
 	@Deprecated
 	public static CpPackage getPackage() {

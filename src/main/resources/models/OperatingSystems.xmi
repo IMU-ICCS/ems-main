@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="ASCII"?>
-<!-- Copyright (C) 2015 INRIA, Universite Lille 1
-
-   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
-   - Date: 09/2015
-   - This Source Code Form is subject to the terms of the Mozilla Public 
-   - License, v. 2.0. If a copy of the MPL was not distributed with this 
-   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
 <typesPaasage:OperatingSystems
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
@@ -24,5 +17,8 @@
       vers="Ubuntu Server 12.04.3 LTS"
       architecture="64bits"/>
   <oss name="Windows"
+      architecture="64bits"/>
+  <oss name="Ubuntu"
+      vers="Ubuntu 14.04"
       architecture="64bits"/>
 </typesPaasage:OperatingSystems>

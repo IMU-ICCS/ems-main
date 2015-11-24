@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -30,13 +22,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class NumericDomainImpl extends DomainImpl implements NumericDomain {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected NumericDomainImpl() {
 		super();
@@ -45,7 +37,7 @@ public class NumericDomainImpl extends DomainImpl implements NumericDomain {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -55,7 +47,7 @@ public class NumericDomainImpl extends DomainImpl implements NumericDomain {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public BasicTypeEnum getType() {
 		return (BasicTypeEnum)eGet(CpPackage.Literals.NUMERIC_DOMAIN__TYPE, true);
@@ -64,7 +56,7 @@ public class NumericDomainImpl extends DomainImpl implements NumericDomain {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setType(BasicTypeEnum newType) {
 		eSet(CpPackage.Literals.NUMERIC_DOMAIN__TYPE, newType);
@@ -73,7 +65,7 @@ public class NumericDomainImpl extends DomainImpl implements NumericDomain {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public NumericValueUpperware getValue() {
 		return (NumericValueUpperware)eGet(CpPackage.Literals.NUMERIC_DOMAIN__VALUE, true);
@@ -82,7 +74,7 @@ public class NumericDomainImpl extends DomainImpl implements NumericDomain {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setValue(NumericValueUpperware newValue) {
 		eSet(CpPackage.Literals.NUMERIC_DOMAIN__VALUE, newValue);

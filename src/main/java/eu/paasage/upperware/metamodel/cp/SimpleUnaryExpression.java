@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -24,8 +16,8 @@ package eu.paasage.upperware.metamodel.cp;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSimpleUnaryExpression()
- *  abstract="true"
- * 
+ * @model abstract="true"
+ * @generated
  */
 public interface SimpleUnaryExpression extends UnaryExpression {
 	/**
@@ -41,8 +33,8 @@ public interface SimpleUnaryExpression extends UnaryExpression {
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum
 	 * @see #setOperator(SimpleUnaryOperatorEnum)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSimpleUnaryExpression_Operator()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	SimpleUnaryOperatorEnum getOperator();
 
@@ -53,7 +45,7 @@ public interface SimpleUnaryExpression extends UnaryExpression {
 	 * @param value the new value of the '<em>Operator</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum
 	 * @see #getOperator()
-	 * 
+	 * @generated
 	 */
 	void setOperator(SimpleUnaryOperatorEnum value);
 

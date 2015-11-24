@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -27,8 +19,8 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getNumericDomain()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface NumericDomain extends Domain {
 	/**
@@ -44,8 +36,8 @@ public interface NumericDomain extends Domain {
 	 * @see eu.paasage.upperware.metamodel.types.BasicTypeEnum
 	 * @see #setType(BasicTypeEnum)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getNumericDomain_Type()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	BasicTypeEnum getType();
 
@@ -56,7 +48,7 @@ public interface NumericDomain extends Domain {
 	 * @param value the new value of the '<em>Type</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.BasicTypeEnum
 	 * @see #getType()
-	 * 
+	 * @generated
 	 */
 	void setType(BasicTypeEnum value);
 
@@ -71,8 +63,8 @@ public interface NumericDomain extends Domain {
 	 * @return the value of the '<em>Value</em>' reference.
 	 * @see #setValue(NumericValueUpperware)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getNumericDomain_Value()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	NumericValueUpperware getValue();
 
@@ -82,7 +74,7 @@ public interface NumericDomain extends Domain {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Value</em>' reference.
 	 * @see #getValue()
-	 * 
+	 * @generated
 	 */
 	void setValue(NumericValueUpperware value);
 

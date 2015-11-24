@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -33,9 +25,9 @@ import org.eclipse.emf.common.util.EList;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface ConstraintProblem extends CDOObject {
 	/**
@@ -49,8 +41,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Goals</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Goals()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<Goal> getGoals();
 
@@ -65,8 +57,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Constants</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Constants()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<Constant> getConstants();
 
@@ -81,8 +73,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Variables</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Variables()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<Variable> getVariables();
 
@@ -97,8 +89,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Constraints</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Constraints()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<ComparisonExpression> getConstraints();
 
@@ -113,8 +105,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Aux Expressions</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_AuxExpressions()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<Expression> getAuxExpressions();
 
@@ -129,8 +121,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Metric Variables</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_MetricVariables()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<MetricVariable> getMetricVariables();
 
@@ -145,8 +137,8 @@ public interface ConstraintProblem extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Solution</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Solution()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<Solution> getSolution();
 

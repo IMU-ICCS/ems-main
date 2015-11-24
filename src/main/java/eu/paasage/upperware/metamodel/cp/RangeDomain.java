@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -26,8 +18,8 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getRangeDomain()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface RangeDomain extends NumericDomain {
 	/**
@@ -41,8 +33,8 @@ public interface RangeDomain extends NumericDomain {
 	 * @return the value of the '<em>From</em>' containment reference.
 	 * @see #setFrom(NumericValueUpperware)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getRangeDomain_From()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	NumericValueUpperware getFrom();
 
@@ -52,7 +44,7 @@ public interface RangeDomain extends NumericDomain {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>From</em>' containment reference.
 	 * @see #getFrom()
-	 * 
+	 * @generated
 	 */
 	void setFrom(NumericValueUpperware value);
 
@@ -67,8 +59,8 @@ public interface RangeDomain extends NumericDomain {
 	 * @return the value of the '<em>To</em>' containment reference.
 	 * @see #setTo(NumericValueUpperware)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getRangeDomain_To()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	NumericValueUpperware getTo();
 
@@ -78,7 +70,7 @@ public interface RangeDomain extends NumericDomain {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>To</em>' containment reference.
 	 * @see #getTo()
-	 * 
+	 * @generated
 	 */
 	void setTo(NumericValueUpperware value);
 

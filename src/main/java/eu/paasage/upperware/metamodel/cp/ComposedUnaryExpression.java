@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -25,8 +17,8 @@ package eu.paasage.upperware.metamodel.cp;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedUnaryExpression()
- *  abstract="true"
- * 
+ * @model abstract="true"
+ * @generated
  */
 public interface ComposedUnaryExpression extends UnaryExpression {
 	/**
@@ -42,8 +34,8 @@ public interface ComposedUnaryExpression extends UnaryExpression {
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum
 	 * @see #setOperator(ComposedUnaryOperatorEnum)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedUnaryExpression_Operator()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	ComposedUnaryOperatorEnum getOperator();
 
@@ -54,7 +46,7 @@ public interface ComposedUnaryExpression extends UnaryExpression {
 	 * @param value the new value of the '<em>Operator</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum
 	 * @see #getOperator()
-	 * 
+	 * @generated
 	 */
 	void setOperator(ComposedUnaryOperatorEnum value);
 
@@ -69,8 +61,8 @@ public interface ComposedUnaryExpression extends UnaryExpression {
 	 * @return the value of the '<em>Value</em>' attribute.
 	 * @see #setValue(int)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedUnaryExpression_Value()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	int getValue();
 
@@ -80,7 +72,7 @@ public interface ComposedUnaryExpression extends UnaryExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Value</em>' attribute.
 	 * @see #getValue()
-	 * 
+	 * @generated
 	 */
 	void setValue(int value);
 

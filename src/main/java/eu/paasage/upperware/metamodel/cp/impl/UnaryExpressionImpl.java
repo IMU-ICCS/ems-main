@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -27,13 +19,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public abstract class UnaryExpressionImpl extends NumericExpressionImpl implements UnaryExpression {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected UnaryExpressionImpl() {
 		super();
@@ -42,7 +34,7 @@ public abstract class UnaryExpressionImpl extends NumericExpressionImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -52,7 +44,7 @@ public abstract class UnaryExpressionImpl extends NumericExpressionImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public NumericExpression getExpression() {
 		return (NumericExpression)eGet(CpPackage.Literals.UNARY_EXPRESSION__EXPRESSION, true);
@@ -61,7 +53,7 @@ public abstract class UnaryExpressionImpl extends NumericExpressionImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setExpression(NumericExpression newExpression) {
 		eSet(CpPackage.Literals.UNARY_EXPRESSION__EXPRESSION, newExpression);

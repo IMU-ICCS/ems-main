@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -29,8 +21,8 @@ package eu.paasage.upperware.metamodel.cp;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface Variable extends NumericExpression {
 	/**
@@ -44,8 +36,8 @@ public interface Variable extends NumericExpression {
 	 * @return the value of the '<em>Domain</em>' containment reference.
 	 * @see #setDomain(Domain)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_Domain()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	Domain getDomain();
 
@@ -55,7 +47,7 @@ public interface Variable extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Domain</em>' containment reference.
 	 * @see #getDomain()
-	 * 
+	 * @generated
 	 */
 	void setDomain(Domain value);
 
@@ -70,8 +62,8 @@ public interface Variable extends NumericExpression {
 	 * @return the value of the '<em>Location Id</em>' attribute.
 	 * @see #setLocationId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_LocationId()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getLocationId();
 
@@ -81,7 +73,7 @@ public interface Variable extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Location Id</em>' attribute.
 	 * @see #getLocationId()
-	 * 
+	 * @generated
 	 */
 	void setLocationId(String value);
 
@@ -96,8 +88,8 @@ public interface Variable extends NumericExpression {
 	 * @return the value of the '<em>Provider Id</em>' attribute.
 	 * @see #setProviderId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_ProviderId()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getProviderId();
 
@@ -107,7 +99,7 @@ public interface Variable extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Provider Id</em>' attribute.
 	 * @see #getProviderId()
-	 * 
+	 * @generated
 	 */
 	void setProviderId(String value);
 
@@ -122,8 +114,8 @@ public interface Variable extends NumericExpression {
 	 * @return the value of the '<em>Vm Id</em>' attribute.
 	 * @see #setVmId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_VmId()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getVmId();
 
@@ -133,7 +125,7 @@ public interface Variable extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Vm Id</em>' attribute.
 	 * @see #getVmId()
-	 * 
+	 * @generated
 	 */
 	void setVmId(String value);
 
@@ -148,8 +140,8 @@ public interface Variable extends NumericExpression {
 	 * @return the value of the '<em>Os Image Id</em>' attribute.
 	 * @see #setOsImageId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_OsImageId()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getOsImageId();
 
@@ -159,7 +151,7 @@ public interface Variable extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Os Image Id</em>' attribute.
 	 * @see #getOsImageId()
-	 * 
+	 * @generated
 	 */
 	void setOsImageId(String value);
 
@@ -174,8 +166,8 @@ public interface Variable extends NumericExpression {
 	 * @return the value of the '<em>Hardware Id</em>' attribute.
 	 * @see #setHardwareId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_HardwareId()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getHardwareId();
 
@@ -185,7 +177,7 @@ public interface Variable extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Hardware Id</em>' attribute.
 	 * @see #getHardwareId()
-	 * 
+	 * @generated
 	 */
 	void setHardwareId(String value);
 

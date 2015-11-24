@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -26,8 +18,8 @@ import org.eclipse.emf.common.util.EList;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedExpression()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface ComposedExpression extends NumericExpression {
 	/**
@@ -41,8 +33,8 @@ public interface ComposedExpression extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Expressions</em>' reference list.
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedExpression_Expressions()
-	 *  lower="2"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	EList<NumericExpression> getExpressions();
 
@@ -59,8 +51,8 @@ public interface ComposedExpression extends NumericExpression {
 	 * @see eu.paasage.upperware.metamodel.cp.OperatorEnum
 	 * @see #setOperator(OperatorEnum)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedExpression_Operator()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	OperatorEnum getOperator();
 
@@ -71,7 +63,7 @@ public interface ComposedExpression extends NumericExpression {
 	 * @param value the new value of the '<em>Operator</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.cp.OperatorEnum
 	 * @see #getOperator()
-	 * 
+	 * @generated
 	 */
 	void setOperator(OperatorEnum value);
 

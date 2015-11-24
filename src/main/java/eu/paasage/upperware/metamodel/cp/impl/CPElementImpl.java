@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -28,13 +20,13 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public abstract class CPElementImpl extends CDOObjectImpl implements CPElement {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected CPElementImpl() {
 		super();
@@ -43,7 +35,7 @@ public abstract class CPElementImpl extends CDOObjectImpl implements CPElement {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -53,7 +45,7 @@ public abstract class CPElementImpl extends CDOObjectImpl implements CPElement {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -63,7 +55,7 @@ public abstract class CPElementImpl extends CDOObjectImpl implements CPElement {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getId() {
 		return (String)eGet(CpPackage.Literals.CP_ELEMENT__ID, true);
@@ -72,7 +64,7 @@ public abstract class CPElementImpl extends CDOObjectImpl implements CPElement {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setId(String newId) {
 		eSet(CpPackage.Literals.CP_ELEMENT__ID, newId);

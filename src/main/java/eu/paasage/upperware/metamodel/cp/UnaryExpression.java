@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -24,8 +16,8 @@ package eu.paasage.upperware.metamodel.cp;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getUnaryExpression()
- *  abstract="true"
- * 
+ * @model abstract="true"
+ * @generated
  */
 public interface UnaryExpression extends NumericExpression {
 	/**
@@ -39,8 +31,8 @@ public interface UnaryExpression extends NumericExpression {
 	 * @return the value of the '<em>Expression</em>' reference.
 	 * @see #setExpression(NumericExpression)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getUnaryExpression_Expression()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	NumericExpression getExpression();
 
@@ -50,7 +42,7 @@ public interface UnaryExpression extends NumericExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Expression</em>' reference.
 	 * @see #getExpression()
-	 * 
+	 * @generated
 	 */
 	void setExpression(NumericExpression value);
 

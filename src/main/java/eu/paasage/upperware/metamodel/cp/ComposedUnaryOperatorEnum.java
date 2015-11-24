@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -22,8 +14,8 @@ import org.eclipse.emf.common.util.Enumerator;
  * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedUnaryOperatorEnum()
- * 
- * 
+ * @model
+ * @generated
  */
 public enum ComposedUnaryOperatorEnum implements Enumerator {
 	/**
@@ -31,7 +23,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #EXPONENTIAL_VALUE_VALUE
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	EXPONENTIAL_VALUE(0, "exponentialValue", "exponentialValue"),
@@ -41,7 +33,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #LOG_VALUE_VALUE
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	LOG_VALUE(1, "logValue", "logValue");
@@ -55,8 +47,8 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #EXPONENTIAL_VALUE
-	 *  name="exponentialValue"
-	 * 
+	 * @model name="exponentialValue"
+	 * @generated
 	 * @ordered
 	 */
 	public static final int EXPONENTIAL_VALUE_VALUE = 0;
@@ -70,8 +62,8 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #LOG_VALUE
-	 *  name="logValue"
-	 * 
+	 * @model name="logValue"
+	 * @generated
 	 * @ordered
 	 */
 	public static final int LOG_VALUE_VALUE = 1;
@@ -80,7 +72,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * An array of all the '<em><b>Composed Unary Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static final ComposedUnaryOperatorEnum[] VALUES_ARRAY =
 		new ComposedUnaryOperatorEnum[] {
@@ -92,7 +84,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * A public read-only list of all the '<em><b>Composed Unary Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static final List<ComposedUnaryOperatorEnum> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
@@ -100,7 +92,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Composed Unary Operator Enum</b></em>' literal with the specified literal value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static ComposedUnaryOperatorEnum get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -116,7 +108,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Composed Unary Operator Enum</b></em>' literal with the specified name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static ComposedUnaryOperatorEnum getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -132,7 +124,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Composed Unary Operator Enum</b></em>' literal with the specified integer value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static ComposedUnaryOperatorEnum get(int value) {
 		switch (value) {
@@ -145,21 +137,21 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String literal;
 
@@ -167,7 +159,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * Only this class can construct instances.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private ComposedUnaryOperatorEnum(int value, String name, String literal) {
 		this.value = value;
@@ -178,7 +170,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public int getValue() {
 	  return value;
@@ -187,7 +179,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getName() {
 	  return name;
@@ -196,7 +188,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getLiteral() {
 	  return literal;
@@ -206,7 +198,7 @@ public enum ComposedUnaryOperatorEnum implements Enumerator {
 	 * Returns the literal value of the enumerator, which is its string representation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public String toString() {

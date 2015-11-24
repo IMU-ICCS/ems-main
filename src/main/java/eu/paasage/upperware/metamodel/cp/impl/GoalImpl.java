@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -29,13 +21,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class GoalImpl extends CPElementImpl implements Goal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected GoalImpl() {
 		super();
@@ -44,7 +36,7 @@ public class GoalImpl extends CPElementImpl implements Goal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -54,7 +46,7 @@ public class GoalImpl extends CPElementImpl implements Goal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public NumericExpression getExpression() {
 		return (NumericExpression)eGet(CpPackage.Literals.GOAL__EXPRESSION, true);
@@ -63,7 +55,7 @@ public class GoalImpl extends CPElementImpl implements Goal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setExpression(NumericExpression newExpression) {
 		eSet(CpPackage.Literals.GOAL__EXPRESSION, newExpression);
@@ -72,7 +64,7 @@ public class GoalImpl extends CPElementImpl implements Goal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public GoalOperatorEnum getGoalType() {
 		return (GoalOperatorEnum)eGet(CpPackage.Literals.GOAL__GOAL_TYPE, true);
@@ -81,7 +73,7 @@ public class GoalImpl extends CPElementImpl implements Goal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setGoalType(GoalOperatorEnum newGoalType) {
 		eSet(CpPackage.Literals.GOAL__GOAL_TYPE, newGoalType);

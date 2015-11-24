@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -29,15 +21,15 @@ import org.eclipse.emf.ecore.EReference;
  * </ul>
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpFactory
- *  kind="package"
- * 
+ * @model kind="package"
+ * @generated
  */
 public interface CpPackage extends EPackage {
 	/**
 	 * The package name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	String eNAME = "cp";
 
@@ -45,7 +37,7 @@ public interface CpPackage extends EPackage {
 	 * The package namespace URI.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	String eNS_URI = "http://www.paasage.eu/eu/paasage/upperware/metamodel/cp";
 
@@ -53,7 +45,7 @@ public interface CpPackage extends EPackage {
 	 * The package namespace name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	String eNS_PREFIX = "cp";
 
@@ -61,7 +53,7 @@ public interface CpPackage extends EPackage {
 	 * The singleton instance of the package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	CpPackage eINSTANCE = eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl.init();
 
@@ -71,7 +63,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CPElementImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCPElement()
-	 * 
+	 * @generated
 	 */
 	int CP_ELEMENT = 0;
 
@@ -79,7 +71,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CP_ELEMENT__ID = 0;
@@ -88,7 +80,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>CP Element</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CP_ELEMENT_FEATURE_COUNT = 1;
@@ -97,7 +89,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>CP Element</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CP_ELEMENT_OPERATION_COUNT = 0;
@@ -108,7 +100,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	int CONSTRAINT_PROBLEM = 1;
 
@@ -116,7 +108,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Goals</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__GOALS = 0;
@@ -125,7 +117,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Constants</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__CONSTANTS = 1;
@@ -134,7 +126,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Variables</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__VARIABLES = 2;
@@ -143,7 +135,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Constraints</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__CONSTRAINTS = 3;
@@ -152,7 +144,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Aux Expressions</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__AUX_EXPRESSIONS = 4;
@@ -161,7 +153,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Metric Variables</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__METRIC_VARIABLES = 5;
@@ -170,7 +162,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Solution</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM__SOLUTION = 6;
@@ -179,7 +171,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Constraint Problem</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM_FEATURE_COUNT = 7;
@@ -188,7 +180,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Constraint Problem</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTRAINT_PROBLEM_OPERATION_COUNT = 0;
@@ -199,7 +191,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getExpression()
-	 * 
+	 * @generated
 	 */
 	int EXPRESSION = 2;
 
@@ -207,7 +199,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int EXPRESSION__ID = CP_ELEMENT__ID;
@@ -216,7 +208,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int EXPRESSION_FEATURE_COUNT = CP_ELEMENT_FEATURE_COUNT + 0;
@@ -225,7 +217,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int EXPRESSION_OPERATION_COUNT = CP_ELEMENT_OPERATION_COUNT + 0;
@@ -236,7 +228,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.NumericExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNumericExpression()
-	 * 
+	 * @generated
 	 */
 	int NUMERIC_EXPRESSION = 3;
 
@@ -244,7 +236,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_EXPRESSION__ID = EXPRESSION__ID;
@@ -253,7 +245,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Numeric Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_EXPRESSION_FEATURE_COUNT = EXPRESSION_FEATURE_COUNT + 0;
@@ -262,7 +254,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Numeric Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_EXPRESSION_OPERATION_COUNT = EXPRESSION_OPERATION_COUNT + 0;
@@ -273,7 +265,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.VariableImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariable()
-	 * 
+	 * @generated
 	 */
 	int VARIABLE = 4;
 
@@ -281,7 +273,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__ID = NUMERIC_EXPRESSION__ID;
@@ -290,7 +282,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Domain</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__DOMAIN = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
@@ -299,7 +291,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Location Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__LOCATION_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
@@ -308,7 +300,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Provider Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__PROVIDER_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
@@ -317,7 +309,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Vm Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__VM_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 3;
@@ -326,7 +318,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Os Image Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__OS_IMAGE_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 4;
@@ -335,7 +327,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Hardware Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE__HARDWARE_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 5;
@@ -344,7 +336,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Variable</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 6;
@@ -353,7 +345,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Variable</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
@@ -364,7 +356,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.DomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getDomain()
-	 * 
+	 * @generated
 	 */
 	int DOMAIN = 5;
 
@@ -372,7 +364,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int DOMAIN_FEATURE_COUNT = 0;
@@ -381,7 +373,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int DOMAIN_OPERATION_COUNT = 0;
@@ -392,7 +384,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.NumericDomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNumericDomain()
-	 * 
+	 * @generated
 	 */
 	int NUMERIC_DOMAIN = 6;
 
@@ -400,7 +392,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_DOMAIN__TYPE = DOMAIN_FEATURE_COUNT + 0;
@@ -409,7 +401,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_DOMAIN__VALUE = DOMAIN_FEATURE_COUNT + 1;
@@ -418,7 +410,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Numeric Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_DOMAIN_FEATURE_COUNT = DOMAIN_FEATURE_COUNT + 2;
@@ -427,7 +419,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Numeric Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_DOMAIN_OPERATION_COUNT = DOMAIN_OPERATION_COUNT + 0;
@@ -438,7 +430,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getRangeDomain()
-	 * 
+	 * @generated
 	 */
 	int RANGE_DOMAIN = 7;
 
@@ -446,7 +438,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int RANGE_DOMAIN__TYPE = NUMERIC_DOMAIN__TYPE;
@@ -455,7 +447,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int RANGE_DOMAIN__VALUE = NUMERIC_DOMAIN__VALUE;
@@ -464,7 +456,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>From</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int RANGE_DOMAIN__FROM = NUMERIC_DOMAIN_FEATURE_COUNT + 0;
@@ -473,7 +465,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>To</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int RANGE_DOMAIN__TO = NUMERIC_DOMAIN_FEATURE_COUNT + 1;
@@ -482,7 +474,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Range Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int RANGE_DOMAIN_FEATURE_COUNT = NUMERIC_DOMAIN_FEATURE_COUNT + 2;
@@ -491,7 +483,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Range Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int RANGE_DOMAIN_OPERATION_COUNT = NUMERIC_DOMAIN_OPERATION_COUNT + 0;
@@ -502,7 +494,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.NumericListDomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNumericListDomain()
-	 * 
+	 * @generated
 	 */
 	int NUMERIC_LIST_DOMAIN = 8;
 
@@ -510,7 +502,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_LIST_DOMAIN__TYPE = NUMERIC_DOMAIN__TYPE;
@@ -519,7 +511,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_LIST_DOMAIN__VALUE = NUMERIC_DOMAIN__VALUE;
@@ -528,7 +520,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Values</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_LIST_DOMAIN__VALUES = NUMERIC_DOMAIN_FEATURE_COUNT + 0;
@@ -537,7 +529,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Numeric List Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_LIST_DOMAIN_FEATURE_COUNT = NUMERIC_DOMAIN_FEATURE_COUNT + 1;
@@ -546,7 +538,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Numeric List Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int NUMERIC_LIST_DOMAIN_OPERATION_COUNT = NUMERIC_DOMAIN_OPERATION_COUNT + 0;
@@ -557,7 +549,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ConstantImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConstant()
-	 * 
+	 * @generated
 	 */
 	int CONSTANT = 9;
 
@@ -565,7 +557,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTANT__ID = NUMERIC_EXPRESSION__ID;
@@ -574,7 +566,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTANT__TYPE = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
@@ -583,7 +575,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTANT__VALUE = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
@@ -592,7 +584,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Constant</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTANT_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
@@ -601,7 +593,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Constant</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int CONSTANT_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
@@ -612,7 +604,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedExpression()
-	 * 
+	 * @generated
 	 */
 	int COMPOSED_EXPRESSION = 10;
 
@@ -620,7 +612,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_EXPRESSION__ID = NUMERIC_EXPRESSION__ID;
@@ -629,7 +621,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_EXPRESSION__EXPRESSIONS = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
@@ -638,7 +630,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_EXPRESSION__OPERATOR = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
@@ -647,7 +639,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Composed Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_EXPRESSION_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
@@ -656,7 +648,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Composed Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_EXPRESSION_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
@@ -667,7 +659,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.BooleanExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getBooleanExpression()
-	 * 
+	 * @generated
 	 */
 	int BOOLEAN_EXPRESSION = 13;
 
@@ -675,7 +667,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int BOOLEAN_EXPRESSION__ID = EXPRESSION__ID;
@@ -684,7 +676,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Boolean Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int BOOLEAN_EXPRESSION_FEATURE_COUNT = EXPRESSION_FEATURE_COUNT + 0;
@@ -693,7 +685,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Boolean Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int BOOLEAN_EXPRESSION_OPERATION_COUNT = EXPRESSION_OPERATION_COUNT + 0;
@@ -704,7 +696,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ComparisonExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparisonExpression()
-	 * 
+	 * @generated
 	 */
 	int COMPARISON_EXPRESSION = 11;
 
@@ -712,7 +704,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPARISON_EXPRESSION__ID = BOOLEAN_EXPRESSION__ID;
@@ -721,7 +713,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Exp1</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPARISON_EXPRESSION__EXP1 = BOOLEAN_EXPRESSION_FEATURE_COUNT + 0;
@@ -730,7 +722,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Exp2</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPARISON_EXPRESSION__EXP2 = BOOLEAN_EXPRESSION_FEATURE_COUNT + 1;
@@ -739,7 +731,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Comparator</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPARISON_EXPRESSION__COMPARATOR = BOOLEAN_EXPRESSION_FEATURE_COUNT + 2;
@@ -748,7 +740,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Comparison Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPARISON_EXPRESSION_FEATURE_COUNT = BOOLEAN_EXPRESSION_FEATURE_COUNT + 3;
@@ -757,7 +749,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Comparison Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPARISON_EXPRESSION_OPERATION_COUNT = BOOLEAN_EXPRESSION_OPERATION_COUNT + 0;
@@ -768,7 +760,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.GoalImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoal()
-	 * 
+	 * @generated
 	 */
 	int GOAL = 12;
 
@@ -776,7 +768,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int GOAL__ID = CP_ELEMENT__ID;
@@ -785,7 +777,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Expression</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int GOAL__EXPRESSION = CP_ELEMENT_FEATURE_COUNT + 0;
@@ -794,7 +786,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Goal Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int GOAL__GOAL_TYPE = CP_ELEMENT_FEATURE_COUNT + 1;
@@ -803,7 +795,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Goal</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int GOAL_FEATURE_COUNT = CP_ELEMENT_FEATURE_COUNT + 2;
@@ -812,7 +804,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Goal</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int GOAL_OPERATION_COUNT = CP_ELEMENT_OPERATION_COUNT + 0;
@@ -823,7 +815,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ListDomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getListDomain()
-	 * 
+	 * @generated
 	 */
 	int LIST_DOMAIN = 14;
 
@@ -831,7 +823,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Values</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int LIST_DOMAIN__VALUES = DOMAIN_FEATURE_COUNT + 0;
@@ -840,7 +832,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int LIST_DOMAIN__VALUE = DOMAIN_FEATURE_COUNT + 1;
@@ -849,7 +841,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>List Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int LIST_DOMAIN_FEATURE_COUNT = DOMAIN_FEATURE_COUNT + 2;
@@ -858,7 +850,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>List Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int LIST_DOMAIN_OPERATION_COUNT = DOMAIN_OPERATION_COUNT + 0;
@@ -869,7 +861,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.MultiRangeDomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMultiRangeDomain()
-	 * 
+	 * @generated
 	 */
 	int MULTI_RANGE_DOMAIN = 15;
 
@@ -877,7 +869,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int MULTI_RANGE_DOMAIN__TYPE = NUMERIC_DOMAIN__TYPE;
@@ -886,7 +878,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int MULTI_RANGE_DOMAIN__VALUE = NUMERIC_DOMAIN__VALUE;
@@ -895,7 +887,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Ranges</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int MULTI_RANGE_DOMAIN__RANGES = NUMERIC_DOMAIN_FEATURE_COUNT + 0;
@@ -904,7 +896,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Multi Range Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int MULTI_RANGE_DOMAIN_FEATURE_COUNT = NUMERIC_DOMAIN_FEATURE_COUNT + 1;
@@ -913,7 +905,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Multi Range Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int MULTI_RANGE_DOMAIN_OPERATION_COUNT = NUMERIC_DOMAIN_OPERATION_COUNT + 0;
@@ -924,7 +916,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.UnaryExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	int UNARY_EXPRESSION = 16;
 
@@ -932,7 +924,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int UNARY_EXPRESSION__ID = NUMERIC_EXPRESSION__ID;
@@ -941,7 +933,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Expression</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int UNARY_EXPRESSION__EXPRESSION = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
@@ -950,7 +942,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Unary Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int UNARY_EXPRESSION_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
@@ -959,7 +951,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Unary Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int UNARY_EXPRESSION_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
@@ -970,7 +962,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.SimpleUnaryExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	int SIMPLE_UNARY_EXPRESSION = 17;
 
@@ -978,7 +970,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SIMPLE_UNARY_EXPRESSION__ID = UNARY_EXPRESSION__ID;
@@ -987,7 +979,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Expression</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SIMPLE_UNARY_EXPRESSION__EXPRESSION = UNARY_EXPRESSION__EXPRESSION;
@@ -996,7 +988,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SIMPLE_UNARY_EXPRESSION__OPERATOR = UNARY_EXPRESSION_FEATURE_COUNT + 0;
@@ -1005,7 +997,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Simple Unary Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SIMPLE_UNARY_EXPRESSION_FEATURE_COUNT = UNARY_EXPRESSION_FEATURE_COUNT + 1;
@@ -1014,7 +1006,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Simple Unary Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SIMPLE_UNARY_EXPRESSION_OPERATION_COUNT = UNARY_EXPRESSION_OPERATION_COUNT + 0;
@@ -1025,7 +1017,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.ComposedUnaryExpressionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	int COMPOSED_UNARY_EXPRESSION = 18;
 
@@ -1033,7 +1025,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_UNARY_EXPRESSION__ID = UNARY_EXPRESSION__ID;
@@ -1042,7 +1034,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Expression</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_UNARY_EXPRESSION__EXPRESSION = UNARY_EXPRESSION__EXPRESSION;
@@ -1051,7 +1043,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_UNARY_EXPRESSION__OPERATOR = UNARY_EXPRESSION_FEATURE_COUNT + 0;
@@ -1060,7 +1052,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_UNARY_EXPRESSION__VALUE = UNARY_EXPRESSION_FEATURE_COUNT + 1;
@@ -1069,7 +1061,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Composed Unary Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_UNARY_EXPRESSION_FEATURE_COUNT = UNARY_EXPRESSION_FEATURE_COUNT + 2;
@@ -1078,7 +1070,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Composed Unary Expression</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int COMPOSED_UNARY_EXPRESSION_OPERATION_COUNT = UNARY_EXPRESSION_OPERATION_COUNT + 0;
@@ -1089,7 +1081,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.BooleanDomainImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getBooleanDomain()
-	 * 
+	 * @generated
 	 */
 	int BOOLEAN_DOMAIN = 19;
 
@@ -1097,7 +1089,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Boolean Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int BOOLEAN_DOMAIN_FEATURE_COUNT = DOMAIN_FEATURE_COUNT + 0;
@@ -1106,7 +1098,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Boolean Domain</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int BOOLEAN_DOMAIN_OPERATION_COUNT = DOMAIN_OPERATION_COUNT + 0;
@@ -1117,7 +1109,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariable()
-	 * 
+	 * @generated
 	 */
 	int METRIC_VARIABLE = 20;
 
@@ -1125,7 +1117,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE__ID = NUMERIC_EXPRESSION__ID;
@@ -1134,7 +1126,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE__TYPE = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
@@ -1143,7 +1135,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Metric Variable</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
@@ -1152,7 +1144,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Metric Variable</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
@@ -1163,7 +1155,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.SolutionImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSolution()
-	 * 
+	 * @generated
 	 */
 	int SOLUTION = 21;
 
@@ -1171,7 +1163,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Timestamp</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SOLUTION__TIMESTAMP = 0;
@@ -1180,7 +1172,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Variable Value</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SOLUTION__VARIABLE_VALUE = 1;
@@ -1189,7 +1181,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Metric Variable Value</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SOLUTION__METRIC_VARIABLE_VALUE = 2;
@@ -1198,7 +1190,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Solution</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SOLUTION_FEATURE_COUNT = 3;
@@ -1207,7 +1199,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Solution</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int SOLUTION_OPERATION_COUNT = 0;
@@ -1218,7 +1210,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariableValue()
-	 * 
+	 * @generated
 	 */
 	int VARIABLE_VALUE = 22;
 
@@ -1226,7 +1218,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Variable</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE_VALUE__VARIABLE = 0;
@@ -1235,7 +1227,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE_VALUE__VALUE = 1;
@@ -1244,7 +1236,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Variable Value</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE_VALUE_FEATURE_COUNT = 2;
@@ -1253,7 +1245,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Variable Value</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int VARIABLE_VALUE_OPERATION_COUNT = 0;
@@ -1264,7 +1256,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariableValue()
-	 * 
+	 * @generated
 	 */
 	int METRIC_VARIABLE_VALUE = 23;
 
@@ -1272,7 +1264,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Variable</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE_VALUE__VARIABLE = 0;
@@ -1281,7 +1273,7 @@ public interface CpPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE_VALUE__VALUE = 1;
@@ -1290,7 +1282,7 @@ public interface CpPackage extends EPackage {
 	 * The number of structural features of the '<em>Metric Variable Value</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE_VALUE_FEATURE_COUNT = 2;
@@ -1299,7 +1291,7 @@ public interface CpPackage extends EPackage {
 	 * The number of operations of the '<em>Metric Variable Value</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 * @ordered
 	 */
 	int METRIC_VARIABLE_VALUE_OPERATION_COUNT = 0;
@@ -1310,7 +1302,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.OperatorEnum
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getOperatorEnum()
-	 * 
+	 * @generated
 	 */
 	int OPERATOR_ENUM = 24;
 
@@ -1320,7 +1312,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoalOperatorEnum()
-	 * 
+	 * @generated
 	 */
 	int GOAL_OPERATOR_ENUM = 25;
 
@@ -1330,7 +1322,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.ComparatorEnum
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparatorEnum()
-	 * 
+	 * @generated
 	 */
 	int COMPARATOR_ENUM = 26;
 
@@ -1340,7 +1332,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryOperatorEnum()
-	 * 
+	 * @generated
 	 */
 	int SIMPLE_UNARY_OPERATOR_ENUM = 27;
 
@@ -1350,7 +1342,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryOperatorEnum()
-	 * 
+	 * @generated
 	 */
 	int COMPOSED_UNARY_OPERATOR_ENUM = 28;
 
@@ -1361,7 +1353,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>CP Element</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.CPElement
-	 * 
+	 * @generated
 	 */
 	EClass getCPElement();
 
@@ -1372,7 +1364,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Id</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.CPElement#getId()
 	 * @see #getCPElement()
-	 * 
+	 * @generated
 	 */
 	EAttribute getCPElement_Id();
 
@@ -1382,7 +1374,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Constraint Problem</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem
-	 * 
+	 * @generated
 	 */
 	EClass getConstraintProblem();
 
@@ -1393,7 +1385,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Goals</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getGoals()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_Goals();
 
@@ -1404,7 +1396,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Constants</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getConstants()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_Constants();
 
@@ -1415,7 +1407,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Variables</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getVariables()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_Variables();
 
@@ -1426,7 +1418,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Constraints</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getConstraints()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_Constraints();
 
@@ -1437,7 +1429,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Aux Expressions</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getAuxExpressions()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_AuxExpressions();
 
@@ -1448,7 +1440,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Metric Variables</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_MetricVariables();
 
@@ -1459,7 +1451,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Solution</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getSolution()
 	 * @see #getConstraintProblem()
-	 * 
+	 * @generated
 	 */
 	EReference getConstraintProblem_Solution();
 
@@ -1469,7 +1461,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Expression
-	 * 
+	 * @generated
 	 */
 	EClass getExpression();
 
@@ -1479,7 +1471,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Numeric Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericExpression
-	 * 
+	 * @generated
 	 */
 	EClass getNumericExpression();
 
@@ -1489,7 +1481,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Variable</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable
-	 * 
+	 * @generated
 	 */
 	EClass getVariable();
 
@@ -1500,7 +1492,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable#getDomain()
 	 * @see #getVariable()
-	 * 
+	 * @generated
 	 */
 	EReference getVariable_Domain();
 
@@ -1511,7 +1503,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Location Id</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable#getLocationId()
 	 * @see #getVariable()
-	 * 
+	 * @generated
 	 */
 	EAttribute getVariable_LocationId();
 
@@ -1522,7 +1514,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Provider Id</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable#getProviderId()
 	 * @see #getVariable()
-	 * 
+	 * @generated
 	 */
 	EAttribute getVariable_ProviderId();
 
@@ -1533,7 +1525,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Vm Id</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable#getVmId()
 	 * @see #getVariable()
-	 * 
+	 * @generated
 	 */
 	EAttribute getVariable_VmId();
 
@@ -1544,7 +1536,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Os Image Id</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable#getOsImageId()
 	 * @see #getVariable()
-	 * 
+	 * @generated
 	 */
 	EAttribute getVariable_OsImageId();
 
@@ -1555,7 +1547,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Hardware Id</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Variable#getHardwareId()
 	 * @see #getVariable()
-	 * 
+	 * @generated
 	 */
 	EAttribute getVariable_HardwareId();
 
@@ -1565,7 +1557,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Domain
-	 * 
+	 * @generated
 	 */
 	EClass getDomain();
 
@@ -1575,7 +1567,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Numeric Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericDomain
-	 * 
+	 * @generated
 	 */
 	EClass getNumericDomain();
 
@@ -1586,7 +1578,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Type</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericDomain#getType()
 	 * @see #getNumericDomain()
-	 * 
+	 * @generated
 	 */
 	EAttribute getNumericDomain_Type();
 
@@ -1597,7 +1589,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericDomain#getValue()
 	 * @see #getNumericDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getNumericDomain_Value();
 
@@ -1607,7 +1599,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Range Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.RangeDomain
-	 * 
+	 * @generated
 	 */
 	EClass getRangeDomain();
 
@@ -1618,7 +1610,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>From</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.RangeDomain#getFrom()
 	 * @see #getRangeDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getRangeDomain_From();
 
@@ -1629,7 +1621,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>To</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.RangeDomain#getTo()
 	 * @see #getRangeDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getRangeDomain_To();
 
@@ -1639,7 +1631,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Numeric List Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericListDomain
-	 * 
+	 * @generated
 	 */
 	EClass getNumericListDomain();
 
@@ -1650,7 +1642,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Values</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.NumericListDomain#getValues()
 	 * @see #getNumericListDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getNumericListDomain_Values();
 
@@ -1660,7 +1652,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Constant</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Constant
-	 * 
+	 * @generated
 	 */
 	EClass getConstant();
 
@@ -1671,7 +1663,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Type</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Constant#getType()
 	 * @see #getConstant()
-	 * 
+	 * @generated
 	 */
 	EAttribute getConstant_Type();
 
@@ -1682,7 +1674,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Constant#getValue()
 	 * @see #getConstant()
-	 * 
+	 * @generated
 	 */
 	EReference getConstant_Value();
 
@@ -1692,7 +1684,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Composed Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedExpression
-	 * 
+	 * @generated
 	 */
 	EClass getComposedExpression();
 
@@ -1703,7 +1695,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference list '<em>Expressions</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedExpression#getExpressions()
 	 * @see #getComposedExpression()
-	 * 
+	 * @generated
 	 */
 	EReference getComposedExpression_Expressions();
 
@@ -1714,7 +1706,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Operator</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedExpression#getOperator()
 	 * @see #getComposedExpression()
-	 * 
+	 * @generated
 	 */
 	EAttribute getComposedExpression_Operator();
 
@@ -1724,7 +1716,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Comparison Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparisonExpression
-	 * 
+	 * @generated
 	 */
 	EClass getComparisonExpression();
 
@@ -1735,7 +1727,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Exp1</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparisonExpression#getExp1()
 	 * @see #getComparisonExpression()
-	 * 
+	 * @generated
 	 */
 	EReference getComparisonExpression_Exp1();
 
@@ -1746,7 +1738,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Exp2</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparisonExpression#getExp2()
 	 * @see #getComparisonExpression()
-	 * 
+	 * @generated
 	 */
 	EReference getComparisonExpression_Exp2();
 
@@ -1757,7 +1749,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Comparator</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparisonExpression#getComparator()
 	 * @see #getComparisonExpression()
-	 * 
+	 * @generated
 	 */
 	EAttribute getComparisonExpression_Comparator();
 
@@ -1767,7 +1759,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Goal</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Goal
-	 * 
+	 * @generated
 	 */
 	EClass getGoal();
 
@@ -1778,7 +1770,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Goal#getExpression()
 	 * @see #getGoal()
-	 * 
+	 * @generated
 	 */
 	EReference getGoal_Expression();
 
@@ -1789,7 +1781,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Goal Type</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Goal#getGoalType()
 	 * @see #getGoal()
-	 * 
+	 * @generated
 	 */
 	EAttribute getGoal_GoalType();
 
@@ -1799,7 +1791,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Boolean Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.BooleanExpression
-	 * 
+	 * @generated
 	 */
 	EClass getBooleanExpression();
 
@@ -1809,7 +1801,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>List Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ListDomain
-	 * 
+	 * @generated
 	 */
 	EClass getListDomain();
 
@@ -1820,7 +1812,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Values</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ListDomain#getValues()
 	 * @see #getListDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getListDomain_Values();
 
@@ -1831,7 +1823,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ListDomain#getValue()
 	 * @see #getListDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getListDomain_Value();
 
@@ -1841,7 +1833,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Multi Range Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MultiRangeDomain
-	 * 
+	 * @generated
 	 */
 	EClass getMultiRangeDomain();
 
@@ -1852,7 +1844,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Ranges</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MultiRangeDomain#getRanges()
 	 * @see #getMultiRangeDomain()
-	 * 
+	 * @generated
 	 */
 	EReference getMultiRangeDomain_Ranges();
 
@@ -1862,7 +1854,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Unary Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.UnaryExpression
-	 * 
+	 * @generated
 	 */
 	EClass getUnaryExpression();
 
@@ -1873,7 +1865,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.UnaryExpression#getExpression()
 	 * @see #getUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	EReference getUnaryExpression_Expression();
 
@@ -1883,7 +1875,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Simple Unary Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression
-	 * 
+	 * @generated
 	 */
 	EClass getSimpleUnaryExpression();
 
@@ -1894,7 +1886,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Operator</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression#getOperator()
 	 * @see #getSimpleUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	EAttribute getSimpleUnaryExpression_Operator();
 
@@ -1904,7 +1896,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Composed Unary Expression</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression
-	 * 
+	 * @generated
 	 */
 	EClass getComposedUnaryExpression();
 
@@ -1915,7 +1907,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Operator</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression#getOperator()
 	 * @see #getComposedUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	EAttribute getComposedUnaryExpression_Operator();
 
@@ -1926,7 +1918,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression#getValue()
 	 * @see #getComposedUnaryExpression()
-	 * 
+	 * @generated
 	 */
 	EAttribute getComposedUnaryExpression_Value();
 
@@ -1936,7 +1928,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Boolean Domain</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.BooleanDomain
-	 * 
+	 * @generated
 	 */
 	EClass getBooleanDomain();
 
@@ -1946,7 +1938,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Metric Variable</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariable
-	 * 
+	 * @generated
 	 */
 	EClass getMetricVariable();
 
@@ -1957,7 +1949,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Type</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariable#getType()
 	 * @see #getMetricVariable()
-	 * 
+	 * @generated
 	 */
 	EAttribute getMetricVariable_Type();
 
@@ -1967,7 +1959,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Solution</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Solution
-	 * 
+	 * @generated
 	 */
 	EClass getSolution();
 
@@ -1978,7 +1970,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Timestamp</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Solution#getTimestamp()
 	 * @see #getSolution()
-	 * 
+	 * @generated
 	 */
 	EAttribute getSolution_Timestamp();
 
@@ -1989,7 +1981,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Variable Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Solution#getVariableValue()
 	 * @see #getSolution()
-	 * 
+	 * @generated
 	 */
 	EReference getSolution_VariableValue();
 
@@ -2000,7 +1992,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference list '<em>Metric Variable Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.Solution#getMetricVariableValue()
 	 * @see #getSolution()
-	 * 
+	 * @generated
 	 */
 	EReference getSolution_MetricVariableValue();
 
@@ -2010,7 +2002,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Variable Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.VariableValue
-	 * 
+	 * @generated
 	 */
 	EClass getVariableValue();
 
@@ -2021,7 +2013,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Variable</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.VariableValue#getVariable()
 	 * @see #getVariableValue()
-	 * 
+	 * @generated
 	 */
 	EReference getVariableValue_Variable();
 
@@ -2032,7 +2024,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.VariableValue#getValue()
 	 * @see #getVariableValue()
-	 * 
+	 * @generated
 	 */
 	EReference getVariableValue_Value();
 
@@ -2042,7 +2034,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Metric Variable Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue
-	 * 
+	 * @generated
 	 */
 	EClass getMetricVariableValue();
 
@@ -2053,7 +2045,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the reference '<em>Variable</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue#getVariable()
 	 * @see #getMetricVariableValue()
-	 * 
+	 * @generated
 	 */
 	EReference getMetricVariableValue_Variable();
 
@@ -2064,7 +2056,7 @@ public interface CpPackage extends EPackage {
 	 * @return the meta object for the containment reference '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue#getValue()
 	 * @see #getMetricVariableValue()
-	 * 
+	 * @generated
 	 */
 	EReference getMetricVariableValue_Value();
 
@@ -2074,7 +2066,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for enum '<em>Operator Enum</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.OperatorEnum
-	 * 
+	 * @generated
 	 */
 	EEnum getOperatorEnum();
 
@@ -2084,7 +2076,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for enum '<em>Goal Operator Enum</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
-	 * 
+	 * @generated
 	 */
 	EEnum getGoalOperatorEnum();
 
@@ -2094,7 +2086,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for enum '<em>Comparator Enum</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparatorEnum
-	 * 
+	 * @generated
 	 */
 	EEnum getComparatorEnum();
 
@@ -2104,7 +2096,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for enum '<em>Simple Unary Operator Enum</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum
-	 * 
+	 * @generated
 	 */
 	EEnum getSimpleUnaryOperatorEnum();
 
@@ -2114,7 +2106,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for enum '<em>Composed Unary Operator Enum</em>'.
 	 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum
-	 * 
+	 * @generated
 	 */
 	EEnum getComposedUnaryOperatorEnum();
 
@@ -2123,7 +2115,7 @@ public interface CpPackage extends EPackage {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the factory that creates the instances of the model.
-	 * 
+	 * @generated
 	 */
 	CpFactory getCpFactory();
 
@@ -2138,7 +2130,7 @@ public interface CpPackage extends EPackage {
 	 *   <li>and each data type</li>
 	 * </ul>
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	interface Literals {
 		/**
@@ -2147,7 +2139,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CPElementImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCPElement()
-		 * 
+		 * @generated
 		 */
 		EClass CP_ELEMENT = eINSTANCE.getCPElement();
 
@@ -2155,7 +2147,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute CP_ELEMENT__ID = eINSTANCE.getCPElement_Id();
 
@@ -2165,7 +2157,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConstraintProblem()
-		 * 
+		 * @generated
 		 */
 		EClass CONSTRAINT_PROBLEM = eINSTANCE.getConstraintProblem();
 
@@ -2173,7 +2165,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Goals</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__GOALS = eINSTANCE.getConstraintProblem_Goals();
 
@@ -2181,7 +2173,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Constants</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__CONSTANTS = eINSTANCE.getConstraintProblem_Constants();
 
@@ -2189,7 +2181,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Variables</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__VARIABLES = eINSTANCE.getConstraintProblem_Variables();
 
@@ -2197,7 +2189,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Constraints</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__CONSTRAINTS = eINSTANCE.getConstraintProblem_Constraints();
 
@@ -2205,7 +2197,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Aux Expressions</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__AUX_EXPRESSIONS = eINSTANCE.getConstraintProblem_AuxExpressions();
 
@@ -2213,7 +2205,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Metric Variables</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__METRIC_VARIABLES = eINSTANCE.getConstraintProblem_MetricVariables();
 
@@ -2221,7 +2213,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Solution</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__SOLUTION = eINSTANCE.getConstraintProblem_Solution();
 
@@ -2231,7 +2223,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getExpression()
-		 * 
+		 * @generated
 		 */
 		EClass EXPRESSION = eINSTANCE.getExpression();
 
@@ -2241,7 +2233,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.NumericExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNumericExpression()
-		 * 
+		 * @generated
 		 */
 		EClass NUMERIC_EXPRESSION = eINSTANCE.getNumericExpression();
 
@@ -2251,7 +2243,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.VariableImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariable()
-		 * 
+		 * @generated
 		 */
 		EClass VARIABLE = eINSTANCE.getVariable();
 
@@ -2259,7 +2251,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Domain</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference VARIABLE__DOMAIN = eINSTANCE.getVariable_Domain();
 
@@ -2267,7 +2259,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Location Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute VARIABLE__LOCATION_ID = eINSTANCE.getVariable_LocationId();
 
@@ -2275,7 +2267,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Provider Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute VARIABLE__PROVIDER_ID = eINSTANCE.getVariable_ProviderId();
 
@@ -2283,7 +2275,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Vm Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute VARIABLE__VM_ID = eINSTANCE.getVariable_VmId();
 
@@ -2291,7 +2283,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Os Image Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute VARIABLE__OS_IMAGE_ID = eINSTANCE.getVariable_OsImageId();
 
@@ -2299,7 +2291,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Hardware Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute VARIABLE__HARDWARE_ID = eINSTANCE.getVariable_HardwareId();
 
@@ -2309,7 +2301,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.DomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getDomain()
-		 * 
+		 * @generated
 		 */
 		EClass DOMAIN = eINSTANCE.getDomain();
 
@@ -2319,7 +2311,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.NumericDomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNumericDomain()
-		 * 
+		 * @generated
 		 */
 		EClass NUMERIC_DOMAIN = eINSTANCE.getNumericDomain();
 
@@ -2327,7 +2319,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute NUMERIC_DOMAIN__TYPE = eINSTANCE.getNumericDomain_Type();
 
@@ -2335,7 +2327,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference NUMERIC_DOMAIN__VALUE = eINSTANCE.getNumericDomain_Value();
 
@@ -2345,7 +2337,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getRangeDomain()
-		 * 
+		 * @generated
 		 */
 		EClass RANGE_DOMAIN = eINSTANCE.getRangeDomain();
 
@@ -2353,7 +2345,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>From</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference RANGE_DOMAIN__FROM = eINSTANCE.getRangeDomain_From();
 
@@ -2361,7 +2353,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>To</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference RANGE_DOMAIN__TO = eINSTANCE.getRangeDomain_To();
 
@@ -2371,7 +2363,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.NumericListDomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNumericListDomain()
-		 * 
+		 * @generated
 		 */
 		EClass NUMERIC_LIST_DOMAIN = eINSTANCE.getNumericListDomain();
 
@@ -2379,7 +2371,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Values</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference NUMERIC_LIST_DOMAIN__VALUES = eINSTANCE.getNumericListDomain_Values();
 
@@ -2389,7 +2381,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ConstantImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConstant()
-		 * 
+		 * @generated
 		 */
 		EClass CONSTANT = eINSTANCE.getConstant();
 
@@ -2397,7 +2389,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute CONSTANT__TYPE = eINSTANCE.getConstant_Type();
 
@@ -2405,7 +2397,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference CONSTANT__VALUE = eINSTANCE.getConstant_Value();
 
@@ -2415,7 +2407,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedExpression()
-		 * 
+		 * @generated
 		 */
 		EClass COMPOSED_EXPRESSION = eINSTANCE.getComposedExpression();
 
@@ -2423,7 +2415,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Expressions</b></em>' reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference COMPOSED_EXPRESSION__EXPRESSIONS = eINSTANCE.getComposedExpression_Expressions();
 
@@ -2431,7 +2423,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Operator</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute COMPOSED_EXPRESSION__OPERATOR = eINSTANCE.getComposedExpression_Operator();
 
@@ -2441,7 +2433,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ComparisonExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparisonExpression()
-		 * 
+		 * @generated
 		 */
 		EClass COMPARISON_EXPRESSION = eINSTANCE.getComparisonExpression();
 
@@ -2449,7 +2441,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Exp1</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference COMPARISON_EXPRESSION__EXP1 = eINSTANCE.getComparisonExpression_Exp1();
 
@@ -2457,7 +2449,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Exp2</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference COMPARISON_EXPRESSION__EXP2 = eINSTANCE.getComparisonExpression_Exp2();
 
@@ -2465,7 +2457,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Comparator</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute COMPARISON_EXPRESSION__COMPARATOR = eINSTANCE.getComparisonExpression_Comparator();
 
@@ -2475,7 +2467,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.GoalImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoal()
-		 * 
+		 * @generated
 		 */
 		EClass GOAL = eINSTANCE.getGoal();
 
@@ -2483,7 +2475,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Expression</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference GOAL__EXPRESSION = eINSTANCE.getGoal_Expression();
 
@@ -2491,7 +2483,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Goal Type</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute GOAL__GOAL_TYPE = eINSTANCE.getGoal_GoalType();
 
@@ -2501,7 +2493,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.BooleanExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getBooleanExpression()
-		 * 
+		 * @generated
 		 */
 		EClass BOOLEAN_EXPRESSION = eINSTANCE.getBooleanExpression();
 
@@ -2511,7 +2503,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ListDomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getListDomain()
-		 * 
+		 * @generated
 		 */
 		EClass LIST_DOMAIN = eINSTANCE.getListDomain();
 
@@ -2519,7 +2511,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Values</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference LIST_DOMAIN__VALUES = eINSTANCE.getListDomain_Values();
 
@@ -2527,7 +2519,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference LIST_DOMAIN__VALUE = eINSTANCE.getListDomain_Value();
 
@@ -2537,7 +2529,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.MultiRangeDomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMultiRangeDomain()
-		 * 
+		 * @generated
 		 */
 		EClass MULTI_RANGE_DOMAIN = eINSTANCE.getMultiRangeDomain();
 
@@ -2545,7 +2537,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Ranges</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference MULTI_RANGE_DOMAIN__RANGES = eINSTANCE.getMultiRangeDomain_Ranges();
 
@@ -2555,7 +2547,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.UnaryExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getUnaryExpression()
-		 * 
+		 * @generated
 		 */
 		EClass UNARY_EXPRESSION = eINSTANCE.getUnaryExpression();
 
@@ -2563,7 +2555,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Expression</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference UNARY_EXPRESSION__EXPRESSION = eINSTANCE.getUnaryExpression_Expression();
 
@@ -2573,7 +2565,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.SimpleUnaryExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryExpression()
-		 * 
+		 * @generated
 		 */
 		EClass SIMPLE_UNARY_EXPRESSION = eINSTANCE.getSimpleUnaryExpression();
 
@@ -2581,7 +2573,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Operator</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute SIMPLE_UNARY_EXPRESSION__OPERATOR = eINSTANCE.getSimpleUnaryExpression_Operator();
 
@@ -2591,7 +2583,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.ComposedUnaryExpressionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryExpression()
-		 * 
+		 * @generated
 		 */
 		EClass COMPOSED_UNARY_EXPRESSION = eINSTANCE.getComposedUnaryExpression();
 
@@ -2599,7 +2591,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Operator</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute COMPOSED_UNARY_EXPRESSION__OPERATOR = eINSTANCE.getComposedUnaryExpression_Operator();
 
@@ -2607,7 +2599,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute COMPOSED_UNARY_EXPRESSION__VALUE = eINSTANCE.getComposedUnaryExpression_Value();
 
@@ -2617,7 +2609,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.BooleanDomainImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getBooleanDomain()
-		 * 
+		 * @generated
 		 */
 		EClass BOOLEAN_DOMAIN = eINSTANCE.getBooleanDomain();
 
@@ -2627,7 +2619,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariable()
-		 * 
+		 * @generated
 		 */
 		EClass METRIC_VARIABLE = eINSTANCE.getMetricVariable();
 
@@ -2635,7 +2627,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute METRIC_VARIABLE__TYPE = eINSTANCE.getMetricVariable_Type();
 
@@ -2645,7 +2637,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.SolutionImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSolution()
-		 * 
+		 * @generated
 		 */
 		EClass SOLUTION = eINSTANCE.getSolution();
 
@@ -2653,7 +2645,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Timestamp</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute SOLUTION__TIMESTAMP = eINSTANCE.getSolution_Timestamp();
 
@@ -2661,7 +2653,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Variable Value</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference SOLUTION__VARIABLE_VALUE = eINSTANCE.getSolution_VariableValue();
 
@@ -2669,7 +2661,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Metric Variable Value</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference SOLUTION__METRIC_VARIABLE_VALUE = eINSTANCE.getSolution_MetricVariableValue();
 
@@ -2679,7 +2671,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariableValue()
-		 * 
+		 * @generated
 		 */
 		EClass VARIABLE_VALUE = eINSTANCE.getVariableValue();
 
@@ -2687,7 +2679,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Variable</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference VARIABLE_VALUE__VARIABLE = eINSTANCE.getVariableValue_Variable();
 
@@ -2695,7 +2687,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference VARIABLE_VALUE__VALUE = eINSTANCE.getVariableValue_Value();
 
@@ -2705,7 +2697,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariableValue()
-		 * 
+		 * @generated
 		 */
 		EClass METRIC_VARIABLE_VALUE = eINSTANCE.getMetricVariableValue();
 
@@ -2713,7 +2705,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Variable</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference METRIC_VARIABLE_VALUE__VARIABLE = eINSTANCE.getMetricVariableValue_Variable();
 
@@ -2721,7 +2713,7 @@ public interface CpPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EReference METRIC_VARIABLE_VALUE__VALUE = eINSTANCE.getMetricVariableValue_Value();
 
@@ -2731,7 +2723,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.OperatorEnum
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getOperatorEnum()
-		 * 
+		 * @generated
 		 */
 		EEnum OPERATOR_ENUM = eINSTANCE.getOperatorEnum();
 
@@ -2741,7 +2733,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoalOperatorEnum()
-		 * 
+		 * @generated
 		 */
 		EEnum GOAL_OPERATOR_ENUM = eINSTANCE.getGoalOperatorEnum();
 
@@ -2751,7 +2743,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.ComparatorEnum
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparatorEnum()
-		 * 
+		 * @generated
 		 */
 		EEnum COMPARATOR_ENUM = eINSTANCE.getComparatorEnum();
 
@@ -2761,7 +2753,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryOperatorEnum()
-		 * 
+		 * @generated
 		 */
 		EEnum SIMPLE_UNARY_OPERATOR_ENUM = eINSTANCE.getSimpleUnaryOperatorEnum();
 
@@ -2771,7 +2763,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum
 		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryOperatorEnum()
-		 * 
+		 * @generated
 		 */
 		EEnum COMPOSED_UNARY_OPERATOR_ENUM = eINSTANCE.getComposedUnaryOperatorEnum();
 

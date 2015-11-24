@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -28,13 +20,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public abstract class ComposedUnaryExpressionImpl extends UnaryExpressionImpl implements ComposedUnaryExpression {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ComposedUnaryExpressionImpl() {
 		super();
@@ -43,7 +35,7 @@ public abstract class ComposedUnaryExpressionImpl extends UnaryExpressionImpl im
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -53,7 +45,7 @@ public abstract class ComposedUnaryExpressionImpl extends UnaryExpressionImpl im
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComposedUnaryOperatorEnum getOperator() {
 		return (ComposedUnaryOperatorEnum)eGet(CpPackage.Literals.COMPOSED_UNARY_EXPRESSION__OPERATOR, true);
@@ -62,7 +54,7 @@ public abstract class ComposedUnaryExpressionImpl extends UnaryExpressionImpl im
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setOperator(ComposedUnaryOperatorEnum newOperator) {
 		eSet(CpPackage.Literals.COMPOSED_UNARY_EXPRESSION__OPERATOR, newOperator);
@@ -71,7 +63,7 @@ public abstract class ComposedUnaryExpressionImpl extends UnaryExpressionImpl im
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public int getValue() {
 		return (Integer)eGet(CpPackage.Literals.COMPOSED_UNARY_EXPRESSION__VALUE, true);
@@ -80,7 +72,7 @@ public abstract class ComposedUnaryExpressionImpl extends UnaryExpressionImpl im
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setValue(int newValue) {
 		eSet(CpPackage.Literals.COMPOSED_UNARY_EXPRESSION__VALUE, newValue);

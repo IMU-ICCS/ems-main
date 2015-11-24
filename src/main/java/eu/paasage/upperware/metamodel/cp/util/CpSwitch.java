@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.util;
 
@@ -28,14 +20,14 @@ import org.eclipse.emf.ecore.util.Switch;
  * which is the result of the switch.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpPackage
- * 
+ * @generated
  */
 public class CpSwitch<T> extends Switch<T> {
 	/**
 	 * The cached model package
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static CpPackage modelPackage;
 
@@ -43,7 +35,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * Creates an instance of the switch.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CpSwitch() {
 		if (modelPackage == null) {
@@ -57,7 +49,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * <!-- end-user-doc -->
 	 * @parameter ePackage the package in question.
 	 * @return whether this is a switch for the given package.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected boolean isSwitchFor(EPackage ePackage) {
@@ -69,7 +61,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the first non-null result returned by a <code>caseXXX</code> call.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected T doSwitch(int classifierID, EObject theEObject) {
@@ -272,7 +264,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>CP Element</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseCPElement(CPElement object) {
 		return null;
@@ -287,7 +279,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Constraint Problem</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseConstraintProblem(ConstraintProblem object) {
 		return null;
@@ -302,7 +294,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseExpression(Expression object) {
 		return null;
@@ -317,7 +309,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Numeric Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseNumericExpression(NumericExpression object) {
 		return null;
@@ -332,7 +324,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Variable</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseVariable(Variable object) {
 		return null;
@@ -347,7 +339,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseDomain(Domain object) {
 		return null;
@@ -362,7 +354,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Numeric Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseNumericDomain(NumericDomain object) {
 		return null;
@@ -377,7 +369,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Range Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseRangeDomain(RangeDomain object) {
 		return null;
@@ -392,7 +384,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Numeric List Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseNumericListDomain(NumericListDomain object) {
 		return null;
@@ -407,7 +399,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Constant</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseConstant(Constant object) {
 		return null;
@@ -422,7 +414,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Composed Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseComposedExpression(ComposedExpression object) {
 		return null;
@@ -437,7 +429,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Comparison Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseComparisonExpression(ComparisonExpression object) {
 		return null;
@@ -452,7 +444,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Goal</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseGoal(Goal object) {
 		return null;
@@ -467,7 +459,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Boolean Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseBooleanExpression(BooleanExpression object) {
 		return null;
@@ -482,7 +474,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>List Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseListDomain(ListDomain object) {
 		return null;
@@ -497,7 +489,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Multi Range Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseMultiRangeDomain(MultiRangeDomain object) {
 		return null;
@@ -512,7 +504,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Unary Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseUnaryExpression(UnaryExpression object) {
 		return null;
@@ -527,7 +519,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Simple Unary Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseSimpleUnaryExpression(SimpleUnaryExpression object) {
 		return null;
@@ -542,7 +534,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Composed Unary Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseComposedUnaryExpression(ComposedUnaryExpression object) {
 		return null;
@@ -557,7 +549,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Boolean Domain</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseBooleanDomain(BooleanDomain object) {
 		return null;
@@ -572,7 +564,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Metric Variable</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseMetricVariable(MetricVariable object) {
 		return null;
@@ -587,7 +579,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Solution</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseSolution(Solution object) {
 		return null;
@@ -602,7 +594,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Variable Value</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseVariableValue(VariableValue object) {
 		return null;
@@ -617,7 +609,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Metric Variable Value</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseMetricVariableValue(MetricVariableValue object) {
 		return null;
@@ -632,7 +624,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>EObject</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject)
-	 * 
+	 * @generated
 	 */
 	@Override
 	public T defaultCase(EObject object) {

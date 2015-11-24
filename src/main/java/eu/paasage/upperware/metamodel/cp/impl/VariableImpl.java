@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
@@ -32,13 +24,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected VariableImpl() {
 		super();
@@ -47,7 +39,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -57,7 +49,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Domain getDomain() {
 		return (Domain)eGet(CpPackage.Literals.VARIABLE__DOMAIN, true);
@@ -66,7 +58,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setDomain(Domain newDomain) {
 		eSet(CpPackage.Literals.VARIABLE__DOMAIN, newDomain);
@@ -75,7 +67,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getLocationId() {
 		return (String)eGet(CpPackage.Literals.VARIABLE__LOCATION_ID, true);
@@ -84,7 +76,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setLocationId(String newLocationId) {
 		eSet(CpPackage.Literals.VARIABLE__LOCATION_ID, newLocationId);
@@ -93,7 +85,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getProviderId() {
 		return (String)eGet(CpPackage.Literals.VARIABLE__PROVIDER_ID, true);
@@ -102,7 +94,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setProviderId(String newProviderId) {
 		eSet(CpPackage.Literals.VARIABLE__PROVIDER_ID, newProviderId);
@@ -111,7 +103,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getVmId() {
 		return (String)eGet(CpPackage.Literals.VARIABLE__VM_ID, true);
@@ -120,7 +112,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setVmId(String newVmId) {
 		eSet(CpPackage.Literals.VARIABLE__VM_ID, newVmId);
@@ -129,7 +121,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getOsImageId() {
 		return (String)eGet(CpPackage.Literals.VARIABLE__OS_IMAGE_ID, true);
@@ -138,7 +130,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setOsImageId(String newOsImageId) {
 		eSet(CpPackage.Literals.VARIABLE__OS_IMAGE_ID, newOsImageId);
@@ -147,7 +139,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getHardwareId() {
 		return (String)eGet(CpPackage.Literals.VARIABLE__HARDWARE_ID, true);
@@ -156,7 +148,7 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setHardwareId(String newHardwareId) {
 		eSet(CpPackage.Literals.VARIABLE__HARDWARE_ID, newHardwareId);

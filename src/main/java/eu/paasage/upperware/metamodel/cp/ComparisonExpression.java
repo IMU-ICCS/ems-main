@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.cp;
 
@@ -26,8 +18,8 @@ package eu.paasage.upperware.metamodel.cp;
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComparisonExpression()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface ComparisonExpression extends BooleanExpression {
 	/**
@@ -41,8 +33,8 @@ public interface ComparisonExpression extends BooleanExpression {
 	 * @return the value of the '<em>Exp1</em>' reference.
 	 * @see #setExp1(Expression)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComparisonExpression_Exp1()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	Expression getExp1();
 
@@ -52,7 +44,7 @@ public interface ComparisonExpression extends BooleanExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Exp1</em>' reference.
 	 * @see #getExp1()
-	 * 
+	 * @generated
 	 */
 	void setExp1(Expression value);
 
@@ -67,8 +59,8 @@ public interface ComparisonExpression extends BooleanExpression {
 	 * @return the value of the '<em>Exp2</em>' reference.
 	 * @see #setExp2(Expression)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComparisonExpression_Exp2()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	Expression getExp2();
 
@@ -78,7 +70,7 @@ public interface ComparisonExpression extends BooleanExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Exp2</em>' reference.
 	 * @see #getExp2()
-	 * 
+	 * @generated
 	 */
 	void setExp2(Expression value);
 
@@ -95,8 +87,8 @@ public interface ComparisonExpression extends BooleanExpression {
 	 * @see eu.paasage.upperware.metamodel.cp.ComparatorEnum
 	 * @see #setComparator(ComparatorEnum)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComparisonExpression_Comparator()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	ComparatorEnum getComparator();
 
@@ -107,7 +99,7 @@ public interface ComparisonExpression extends BooleanExpression {
 	 * @param value the new value of the '<em>Comparator</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.cp.ComparatorEnum
 	 * @see #getComparator()
-	 * 
+	 * @generated
 	 */
 	void setComparator(ComparatorEnum value);
 
