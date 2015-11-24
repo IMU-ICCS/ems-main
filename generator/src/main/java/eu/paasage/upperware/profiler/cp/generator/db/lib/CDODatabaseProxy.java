@@ -437,7 +437,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 	 * Stores the cp and application models 
 	 * @param pc The PaaSage Configuration Model
 	 * @param cp The constraint problem model
-	 * @param resSet The reource set to save models
+	 * @param resSet The resource set to save models
 	 */
 	public void saveModels(PaasageConfiguration pc, ConstraintProblem cp, ResourceSet resSet)
 	{	

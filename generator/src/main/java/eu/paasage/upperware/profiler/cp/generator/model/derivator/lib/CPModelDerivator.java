@@ -29,6 +29,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
+import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.requirement.OptimisationRequirement;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.PaaSageGoal;
@@ -88,12 +90,6 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	private static final String COST_METRIC_PREFIX= "vm_profile_cost_"; 
 	
-	private static final String APP_COMPONENT_VAR_PREFIX= "U_app_component_"; 
-	
-	public static final String APP_COMPONENT_VAR_MID= "_vm_"; 
-	
-	public static final String APP_COMPONENT_VAR_SUFFIX= "_provider_"; 
-	
 	private static final String NAME_SEPARATOR= "_"; 
 	
 	
@@ -130,6 +126,8 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	protected Map<String,IFunctionCreator> creatorsMap; 
 	
+	protected DimensionDerivator dimensionsDerivator; 
+	
 	/*
 	 * Factory of Cp objects
 	 */
@@ -150,6 +148,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		cpFactory= CpFactory.eINSTANCE; 
 		createFunctionCreators(creatorsFile, database);
 		//createFactories(factoryFile); 
+		dimensionsDerivator= new DimensionDerivator(); 
 	}
 	
 	/*
@@ -160,14 +159,14 @@ public class CPModelDerivator implements ICPModelDerivator
 	 * (non-Javadoc)
 	 * @see eu.paasage.upperware.profiler.cp.generator.model.derivator.api.ICPModelDerivator#derivateConstraintProblem(eu.paasage.upperware.metamodel.application.PaasageConfiguration, eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy)
 	 */
-	public ConstraintProblem derivateConstraintProblem(PaasageConfiguration configuration, IDatabaseProxy database) 
+	public ConstraintProblem derivateConstraintProblem(CamelModel camel, PaasageConfiguration configuration, IDatabaseProxy database) 
 	{
 		logger.debug("CPModelDerivator - derivateConstraintProblem - Deriving CP "+configuration.getGoals().size()); 
 		logger.info("** 	Derivating Constraint Problem Model"); 
 		CPModelTool.auxExpressionCount= 0; 
 		CPModelTool.constantCount= 0; 
 
-		
+		List<OptimisationRequirement> complexOptRequirements= new ArrayList<OptimisationRequirement>(); 
 		
 		//CP creation
 		ConstraintProblem cp= cpFactory.createConstraintProblem(); 
@@ -175,15 +174,44 @@ public class CPModelDerivator implements ICPModelDerivator
 		logger.info("** 		Creating constants"); 
 		createConstants(cp, configuration); 
 		
-		logger.info("** 		Creating variables"); 
+		logger.info("** 		Creating default variables"); 
 		createVariables(cp, configuration); 
 		
-		logger.info("** 		Creating constraints"); 
+		logger.info("** 		Creating default constraints"); 
 		createConstraints(cp, configuration); 
 		
-		logger.info("** 		Creating objective functions "+configuration.getGoals().size()); 
+		logger.info("** 		Creating User objective functions "); 
 		
-		if(configuration.getGoals().size()>0)
+		dimensionsDerivator.createDimensions(camel, cp, complexOptRequirements);
+		
+		if(complexOptRequirements.size()==0) // A default objective function is created
+		{
+			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost! "); 
+			//By default a function the price is created
+			
+			PaaSageGoal goal= ApplicationFactory.eINSTANCE.createPaaSageGoal();
+
+			GoalOperatorEnum goalType= GoalOperatorEnum.MIN; 
+			
+			FunctionType ft= PaasageModelTool.getFunctionTypeByName(COST, database); 
+			goal.setFunction(ft); 
+			goal.setGoal(goalType); 
+			goal.setId(goalType.getName()+ft.getId());
+			
+			configuration.getGoals().add(goal); 
+			
+			//Create the Cost creator
+			CostFunctionCreator costCreator= new CostFunctionCreator(selectExistingPriceFile());
+			costCreator.setDatabaseProxy(database);
+			costCreator.createFunction(cp, goal);
+			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! "); 
+		}
+		
+		logger.info("** 		Creating User constraints "); 
+		
+		dimensionsDerivator.createConstraints(camel, cp);
+		
+/*		if(configuration.getGoals().size()>0)
 		{	
 			logger.debug("CPModelDerivator - derivateConstraintProblem - Goals! "); 
 			for(PaaSageGoal goal:configuration.getGoals())
@@ -219,7 +247,7 @@ public class CPModelDerivator implements ICPModelDerivator
 			costCreator.createFunction(cp, goal);
 			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! "); 
 			
-		}
+		}*/
 		
 		logger.debug("** 		CP Creation ended"); 
 		//createObjetiveFunction(cp, configuration); 
@@ -597,7 +625,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		}
 		
 		//At least one VM is selected
-		List<Variable> vmVars= getAllComponentInVMVariables(cp.getVariables()); 
+		List<Variable> vmVars= CPModelTool.getAllComponentInVMVariables(cp.getVariables()); 
 		
 		NumericExpression auxExp=null;
 		
@@ -810,24 +838,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	}
 
 
-	/**
-	 * Searches in a list all the variables related to virtual machine profiles
-	 * @param variables The list of variables
-	 * @return The list with the virtual machine profile variables
-	 */
-	protected List<Variable> getAllComponentInVMVariables(EList<Variable> variables)
-	{
-		List<Variable> vmVars= new ArrayList<Variable>(); 
-		
-		for(Variable var: variables)
-		{
-			if(var.getId().contains(APP_COMPONENT_VAR_PREFIX))
-				vmVars.add(var); 
-		}
-		
-		return vmVars; 
-		
-	}
+
 	
 	/**
 	 * Searches in a list all the virtual machine profiles related to a given provider 
@@ -922,7 +933,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		for(VirtualMachineProfile vmp:configuration.getVmProfiles())
 		{
 			logger.debug("CPModelDerivator - createVMProfileVariables  - Creating var "+VM_PROFILE_VAR_PREFIX+vmp.getCloudMLId()); 
-			Variable var= createIntegerVariableWithRangeDomain(getNumberOfVMName(vmp.getCloudMLId()), 0, MAX_NUMBER_OF_VMS); //TODO TO USE AS MAX THE NUMBER OF DEFINED INSTANCES FOR THE GIVEN PROFILE ??
+			Variable var= CPModelTool.createIntegerVariableWithRangeDomain(getNumberOfVMName(vmp.getCloudMLId()), 0, MAX_NUMBER_OF_VMS); //TODO TO USE AS MAX THE NUMBER OF DEFINED INSTANCES FOR THE GIVEN PROFILE ??
 			
 			cp.getVariables().add(var); 
 			
@@ -992,11 +1003,11 @@ public class CPModelDerivator implements ICPModelDerivator
 		
 		String providerId= provider.getId(); 
 		
-		String varName= generateApplicationComponentVarName(ac.getCloudMLId(), vmId, providerId);//APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
+		String varName= CPModelTool.generateApplicationComponentVarName(ac.getCloudMLId(), vmId, providerId);//APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
 		
 		logger.debug("CPModelDerivator - createAppComponentVariable  - Creating var "+varName+ " VM Profile/Instance "+vmId); 
 		
-		Variable var= createIntegerVariableWithRangeDomain(varName, min, max);//createBooleanVariable(varName); 
+		Variable var= CPModelTool.createIntegerVariableWithRangeDomain(varName, min, max);//createBooleanVariable(varName); 
 		
 		var.setVmId(vmId);
 		
@@ -1064,32 +1075,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		return domain; 
 	}
 	
-	/**
-	 * Creates a range domain with given limits
-	 * @param from From limit
-	 * @param to To limit
-	 * @return The range domain
-	 */
-	protected RangeDomain createRangeDomain(int from, int to)
-	{
-		RangeDomain rd= cpFactory.createRangeDomain();
-		
-		IntegerValueUpperware fromVal= TypesFactory.eINSTANCE.createIntegerValueUpperware(); 
-		
-		fromVal.setValue(from); 
-		
-		IntegerValueUpperware toVal= TypesFactory.eINSTANCE.createIntegerValueUpperware(); 
-		
-		toVal.setValue(to); 
-		
-		rd.setFrom(fromVal); 
-		
-		rd.setTo(toVal); 
-		
-		rd.setType(BasicTypeEnum.INTEGER); 
-		
-		return rd; 
-	}
+
 	
 	/**
 	 * Creates a boolean domain
@@ -1120,28 +1106,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		
 		return var; 
 	}
-	
-	/**
-	 * Creates a integer variable with a range domain
-	 * @param varName The name of the variable
-	 * @param lowerLimit From limit
-	 * @param upperLimit To limit
-	 * @return The variable with a range domain
-	 */
-	protected Variable createIntegerVariableWithRangeDomain(String varName, int lowerLimit, int upperLimit)
-	{
-		Variable var= cpFactory.createVariable(); 
 		
-		var.setId(varName); 
-		
-		NumericDomain nd= createRangeDomain(lowerLimit, upperLimit); 
-		
-		var.setDomain(nd); 
-		
-		
-		return var; 
-	}
-	
 	/**
 	 * Creates an integer domain
 	 * @return The integer domain
@@ -1314,19 +1279,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		}
 	}
 	
-	/**
-	 * Generates the name of a variable 
-	 * @param appComponentName Th related application component
-	 * @param vmpName The vm profile name
-	 * @param providerId The provider id
-	 * @return Id of the variable
-	 */
-	protected String generateApplicationComponentVarName(String appComponentName, String vmpName, String providerId)
-	{
-		String varName= APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
-		
-		return varName; 
-	}
+
 	
 
 	

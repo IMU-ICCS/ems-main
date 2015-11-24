@@ -11,6 +11,7 @@
 
 package eu.paasage.upperware.profiler.cp.generator.model.derivator.api;
 
+import eu.paasage.camel.CamelModel;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
@@ -25,10 +26,11 @@ public interface ICPModelDerivator
 	
 	/**
 	 * Derives a constraint problem model for the given configuration
+	 * @param camel The camel model related to the application
 	 * @param configuration The configuration
 	 * @param database The database proxt
 	 * @return The constraint problem model related to the configuration
 	 */
-	public ConstraintProblem derivateConstraintProblem(PaasageConfiguration configuration, IDatabaseProxy database); 
+	public ConstraintProblem derivateConstraintProblem(CamelModel camel, PaasageConfiguration configuration, IDatabaseProxy database); 
 
 }

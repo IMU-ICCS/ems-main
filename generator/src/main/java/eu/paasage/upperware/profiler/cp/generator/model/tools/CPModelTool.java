@@ -16,12 +16,25 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
 
+import eu.paasage.camel.deployment.InternalComponent;
+import eu.paasage.camel.metric.ComparisonOperatorType;
+import eu.paasage.camel.metric.CompositeMetric;
+import eu.paasage.camel.metric.Metric;
+import eu.paasage.camel.metric.MetricFormula;
+import eu.paasage.camel.metric.MetricFunctionType;
+import eu.paasage.camel.type.DoublePrecisionValue;
+import eu.paasage.camel.type.FloatsValue;
+import eu.paasage.camel.type.IntegerValue;
+import eu.paasage.camel.type.NumericValue;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.cp.BooleanDomain;
+import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
+import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
@@ -29,6 +42,7 @@ import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
 import eu.paasage.upperware.metamodel.cp.NumericDomain;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
+import eu.paasage.upperware.metamodel.cp.RangeDomain;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
@@ -55,6 +69,13 @@ public class CPModelTool {
 	public static final String CERO_CONSTANT ="cero_constant"; 
 	
 	private static final String VM_PROFILE_CONSTANT_PREFIX= "number_vm_"; 
+	
+	public static final String APP_COMPONENT_VAR_PREFIX= "U_app_component_";
+	
+	
+	public static final String APP_COMPONENT_VAR_MID= "_vm_"; 
+	
+	public static final String APP_COMPONENT_VAR_SUFFIX= "_provider_"; 
 	
 	
 	
@@ -90,6 +111,44 @@ public class CPModelTool {
 	}
 	
 	/**
+	 * Searches all the variables related to a given application component
+	 * @param acName The application component name
+	 * @param cp The constraint problem for searching the variables
+	 * @return A list of variables related to the application component
+	 */
+	public static List<Variable> getVariablesRelatedToAppComponent(String acName, ConstraintProblem cp)
+	{
+		List<Variable> vars= new ArrayList<Variable>(); 
+		
+		for(Variable var: cp.getVariables())
+		{
+			if(var.getId().contains(acName))
+				vars.add(var); 
+		}
+		
+		return vars; 
+	}
+	
+	/**
+	 * Searches all the variables related to a given application component
+	 * @param acName The application component name
+	 * @param variables The list of variables
+	 * @return A list of variables related to the application component
+	 */
+	public static List<Variable> getVariablesRelatedToAppComponent(String acName, List<Variable> variables)
+	{
+		List<Variable> vars= new ArrayList<Variable>(); 
+		
+		for(Variable var: variables)
+		{
+			if(var.getId().contains(acName))
+				vars.add(var); 
+		}
+		
+		return vars; 
+	}
+	
+	/**
 	 * Searches a constant in a list with a provided name
 	 * @param constants The list of constants
 	 * @param value The constant value
@@ -102,6 +161,28 @@ public class CPModelTool {
 			List<String> info =CPModelTool.getValueFromNumericValue(c.getValue()); 
 						
 			if(info.get(1).equals(Integer.class.getCanonicalName()) && Integer.parseInt(info.get(0))==value)		
+			{	
+				
+				return c; 
+			}	
+		}
+		
+		return null; 
+	}
+	
+	/**
+	 * Searches a constant in a list with a provided name
+	 * @param constants The list of constants
+	 * @param value The constant value
+	 * @return The constant or null if it does not exist
+	 */
+	public static Constant searchConstantByValue(EList<Constant> constants, double value)
+	{
+		for(Constant c: constants)
+		{
+			List<String> info =CPModelTool.getValueFromNumericValue(c.getValue()); 
+						
+			if(info.get(1).equals(Double.class.getCanonicalName()) && Double.parseDouble(info.get(0))==value)		
 			{	
 				
 				return c; 
@@ -149,10 +230,12 @@ public class CPModelTool {
 	
 		metric.setId(metricID); 
 		metric.setType(type); 
-		DoubleValueUpperware value= TypesFactory.eINSTANCE.createDoubleValueUpperware(); //TODO SET THE VALUE OF THE METRIC!!!
+/*		DoubleValueUpperware value= TypesFactory.eINSTANCE.createDoubleValueUpperware(); //TODO SET THE VALUE OF THE METRIC!!!
 		value.setValue(1); 
 	
-		CPModelTool.assignNumericValue(value, metric, cp);
+		CPModelTool.assignNumericValue(value, metric, cp);*/
+		
+		cp.getMetricVariables().add(metric); 
 		
 		return metric; 
 	}
@@ -358,6 +441,18 @@ public class CPModelTool {
 		
 	}
 	
+	public static void assignNumericValue(NumericValueUpperware val, MetricVariable var, Solution sol)
+	{
+		
+		MetricVariableValue varValue= CpFactory.eINSTANCE.createMetricVariableValue(); 
+		
+		varValue.setVariable(var);
+		
+		varValue.setValue(val);
+		
+		sol.getMetricVariableValue().add(varValue); 
+	}
+	
 	public static String getValueFromVar(Variable var, ConstraintProblem cp)
 	{
 		//Gets the last solution
@@ -463,6 +558,39 @@ public class CPModelTool {
 		return info; 
 	}
 	
+	/**
+	 * Gets the value from a given Numeric Value as a string
+	 * @param value The value
+	 * @return A list containing the value (0) and the canonical name of the type class (1)
+	 */
+	public static List<String> getValueFromNumericValue(NumericValue value)
+	{
+		List<String> info= new ArrayList<String>(); 
+		
+		String val= null; 
+		
+		if(value instanceof IntegerValue)
+		{
+			val= ((IntegerValueUpperware) value).getValue()+""; 
+			info.add(val); 
+			info.add(Integer.class.getCanonicalName()); 
+		}
+		else if(value instanceof FloatsValue)
+		{
+			val= ((FloatValueUpperware) value).getValue()+""; 
+			info.add(val); 
+			info.add(Float.class.getCanonicalName()); 
+		}
+		else if(value instanceof DoublePrecisionValue)
+		{
+			val= ((DoubleValueUpperware) value).getValue()+""; 
+			info.add(val); 
+			info.add(Double.class.getCanonicalName()); 
+		}
+		
+		return info; 
+	}
+	
 	public static Solution searchLastSolution(EList<Solution> solutions)
 	{
 		if(solutions.size()>0)
@@ -546,22 +674,333 @@ public class CPModelTool {
 	
 	public static String getProviderRelatedToVariable(Variable v)
 	{
-		int posSuffix= v.getId().indexOf(CPModelDerivator.APP_COMPONENT_VAR_SUFFIX); 
+		int posSuffix= v.getId().indexOf(APP_COMPONENT_VAR_SUFFIX); 
 		
-		String providerId= v.getId().substring(posSuffix+CPModelDerivator.APP_COMPONENT_VAR_SUFFIX.length()); 
+		String providerId= v.getId().substring(posSuffix+APP_COMPONENT_VAR_SUFFIX.length()); 
 		
 		return providerId; 
 	}
 	
 	public static String getVmProfileRelatedToVariable(Variable v)
 	{
-		int posPrefix= v.getId().indexOf(CPModelDerivator.APP_COMPONENT_VAR_MID); 
+		int posPrefix= v.getId().indexOf(APP_COMPONENT_VAR_MID); 
 		
-		int postSuffix= v.getId().indexOf(CPModelDerivator.APP_COMPONENT_VAR_SUFFIX); 
+		int postSuffix= v.getId().indexOf(APP_COMPONENT_VAR_SUFFIX); 
 		
-		String vmId= v.getId().substring(posPrefix+CPModelDerivator.APP_COMPONENT_VAR_MID.length(), postSuffix); 
+		String vmId= v.getId().substring(posPrefix+APP_COMPONENT_VAR_MID.length(), postSuffix); 
 		
 		return vmId; 
+	}
+	
+	public static String getUserVariableName(Metric metric, InternalComponent ic)
+	{
+		return metric.getName()+"_"+ic.getName();
+	}
+	
+	public static String getUserConstraintName(String sloName, String expressionName, String constraintSuffix)
+	{
+		return sloName+"_"+expressionName+constraintSuffix;
+	}
+	
+	/**
+	 * Creates a integer variable with a range domain
+	 * @param varName The name of the variable
+	 * @param lowerLimit From limit
+	 * @param upperLimit To limit
+	 * @return The variable with a range domain
+	 */
+	public static Variable createIntegerVariableWithRangeDomain(String varName, int lowerLimit, int upperLimit)
+	{
+		Variable var= CpFactory.eINSTANCE.createVariable(); 
+		
+		var.setId(varName); 
+		
+		NumericDomain nd= createRangeDomain(lowerLimit, upperLimit); 
+		
+		var.setDomain(nd); 
+		
+		
+		return var; 
+	}
+	
+	/**
+	 * Creates a integer variable with a range domain
+	 * @param varName The name of the variable
+	 * @param lowerLimit From limit
+	 * @param upperLimit To limit
+	 * @return The variable with a range domain
+	 */
+	public static Variable createDoubleVariableWithRangeDomain(String varName, double lowerLimit, double upperLimit)
+	{
+		Variable var= CpFactory.eINSTANCE.createVariable(); 
+		
+		var.setId(varName); 
+		
+		NumericDomain nd= createRangeDomain(lowerLimit, upperLimit); 
+		
+		var.setDomain(nd); 
+		
+		
+		return var; 
+	}
+	
+	/**
+	 * Creates a integer variable with a range domain
+	 * @param varName The name of the variable
+	 * @param lowerLimit From limit
+	 * @param upperLimit To limit
+	 * @return The variable with a range domain
+	 */
+	public static Variable createFloatVariableWithRangeDomain(String varName, float lowerLimit, float upperLimit)
+	{
+		Variable var= CpFactory.eINSTANCE.createVariable(); 
+		
+		var.setId(varName); 
+		
+		NumericDomain nd= createRangeDomain(lowerLimit, upperLimit); 
+		
+		var.setDomain(nd); 
+		
+		
+		return var; 
+	}
+	
+	/**
+	 * Creates a range domain with given limits
+	 * @param from From limit
+	 * @param to To limit
+	 * @return The range domain
+	 */
+	public static RangeDomain createRangeDomain(int from, int to)
+	{
+		RangeDomain rd= CpFactory.eINSTANCE.createRangeDomain();
+		
+		IntegerValueUpperware fromVal= TypesFactory.eINSTANCE.createIntegerValueUpperware(); 
+		
+		fromVal.setValue(from); 
+		
+		IntegerValueUpperware toVal= TypesFactory.eINSTANCE.createIntegerValueUpperware(); 
+		
+		toVal.setValue(to); 
+		
+		rd.setFrom(fromVal); 
+		
+		rd.setTo(toVal); 
+		
+		rd.setType(BasicTypeEnum.INTEGER); 
+		
+		return rd; 
+	}
+	
+	/**
+	 * Creates a range domain with given limits
+	 * @param from From limit
+	 * @param to To limit
+	 * @return The range domain
+	 */
+	public static RangeDomain createRangeDomain(double from, double to)
+	{
+		RangeDomain rd= CpFactory.eINSTANCE.createRangeDomain();
+		
+		DoubleValueUpperware fromVal= TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		
+		fromVal.setValue(from); 
+		
+		DoubleValueUpperware toVal= TypesFactory.eINSTANCE.createDoubleValueUpperware(); 
+		
+		toVal.setValue(to); 
+		
+		rd.setFrom(fromVal); 
+		
+		rd.setTo(toVal); 
+		
+		rd.setType(BasicTypeEnum.DOUBLE); 
+		
+		return rd; 
+	}
+	
+	/**
+	 * Creates a range domain with given limits
+	 * @param from From limit
+	 * @param to To limit
+	 * @return The range domain
+	 */
+	public static RangeDomain createRangeDomain(float from, float to)
+	{
+		RangeDomain rd= CpFactory.eINSTANCE.createRangeDomain();
+		
+		FloatValueUpperware fromVal= TypesFactory.eINSTANCE.createFloatValueUpperware();
+		
+		fromVal.setValue(from); 
+		
+		FloatValueUpperware toVal= TypesFactory.eINSTANCE.createFloatValueUpperware(); 
+		
+		toVal.setValue(to); 
+		
+		rd.setFrom(fromVal); 
+		
+		rd.setTo(toVal); 
+		
+		rd.setType(BasicTypeEnum.FLOAT); 
+		
+		return rd; 
+	}
+	
+	public static Variable searchVariableByName(String name, EList<Variable> variables)
+	{
+		
+		for(Variable v: variables)
+		{
+			if(v.getId().equals(name))
+				return v;
+		}
+		
+		return null;
+		
+	}
+	
+	public static MetricVariable searchMetricVariableByName(String name, EList<MetricVariable> metrics)
+	{
+		
+		for(MetricVariable v: metrics)
+		{
+			if(v.getId().equals(name))
+				return v;
+		}
+		
+		return null;
+		
+	}
+	
+	public static Expression searchExpressionByName(String name, EList<Expression> expressions)
+	{
+		
+		for(Expression e: expressions)
+		{
+			if(e.getId().equals(name))
+				return e;
+		}
+		
+		return null;
+		
+	}
+	
+	public static OperatorEnum getOperatorEnumFromMetricFunctionType(MetricFunctionType mft)
+	{
+		OperatorEnum op= null;
+		
+		if(mft.getValue()==MetricFunctionType.DIV_VALUE)
+		{
+			op= OperatorEnum.DIV;
+		}
+		else if(mft.getValue()==MetricFunctionType.PLUS_VALUE)
+		{
+			op= OperatorEnum.PLUS;
+		}
+		else if(mft.getValue()==MetricFunctionType.MINUS_VALUE)
+		{
+			op= OperatorEnum.MINUS;
+		}
+		else if(mft.getValue()==MetricFunctionType.TIMES_VALUE)
+		{
+			op= OperatorEnum.TIMES;
+		}
+		else if(mft.getValue()==MetricFunctionType.MEAN_VALUE)
+		{
+			op= OperatorEnum.MEAN;
+		}
+		return op;
+	}
+	
+	
+	public static ComparatorEnum getComparatorEnumFromComparisonOperatorType(ComparisonOperatorType opType)
+	{
+		ComparatorEnum op= null; 
+		
+		if(opType.getValue()==ComparisonOperatorType.EQUAL_VALUE)
+		{
+			op= ComparatorEnum.EQUAL_TO; 
+		}
+		else if(opType.getValue()==ComparisonOperatorType.GREATER_EQUAL_THAN_VALUE)
+		{
+			op= ComparatorEnum.GREATER_OR_EQUAL_TO; 
+		}
+		else if(opType.getValue()==ComparisonOperatorType.GREATER_THAN_VALUE)
+		{
+			op= ComparatorEnum.GREATER_THAN; 
+		}
+		else if(opType.getValue()==ComparisonOperatorType.LESS_EQUAL_THAN_VALUE)
+		{
+			op= ComparatorEnum.LESS_OR_EQUAL_TO; 
+		}
+		else if(opType.getValue()==ComparisonOperatorType.LESS_THAN_VALUE)
+		{
+			op= ComparatorEnum.LESS_THAN; 
+		}
+		else if(opType.getValue()==ComparisonOperatorType.NOT_EQUAL_VALUE)
+		{
+			op= ComparatorEnum.DIFFERENT; 
+		}
+		
+		return op; 
+		
+	}
+	
+	/**
+	 * Searches in a list all the variables related to virtual machine profiles
+	 * @param variables The list of variables
+	 * @return The list with the virtual machine profile variables
+	 */
+	public static List<Variable> getAllComponentInVMVariables(EList<Variable> variables)
+	{
+		List<Variable> vmVars= new ArrayList<Variable>(); 
+		
+		for(Variable var: variables)
+		{
+			if(var.getId().contains(APP_COMPONENT_VAR_PREFIX))
+				vmVars.add(var); 
+		}
+		
+		return vmVars; 
+		
+	}
+	
+	/**
+	 * Generates the name of a variable 
+	 * @param appComponentName Th related application component
+	 * @param vmpName The vm profile name
+	 * @param providerId The provider id
+	 * @return Id of the variable
+	 */
+	public static String generateApplicationComponentVarName(String appComponentName, String vmpName, String providerId)
+	{
+		String varName= CPModelTool.APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
+		
+		return varName; 
+	}
+	
+	public static ComparisonExpression createComparisonExpression(ComparatorEnum op, Expression exp1, Expression exp2, String id)
+	{
+		ComparisonExpression exp= CpFactory.eINSTANCE.createComparisonExpression();
+		
+		exp.setComparator(op);
+		exp.setExp1(exp1);
+		exp.setExp2(exp2);
+		exp.setId(id);
+		
+		return exp; 
+	}
+	
+	public static String getUserExpressionName(CompositeMetric metric, MetricFormula formula)
+	{
+		String formulaId= formula.getName(); 
+		
+		if(metric!=null)
+		{
+			return metric.getName()+"_"+formulaId; 
+		}
+		
+		return formulaId; 
 	}
 
 }

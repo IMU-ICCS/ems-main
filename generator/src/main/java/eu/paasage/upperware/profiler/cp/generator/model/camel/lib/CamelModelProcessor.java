@@ -55,10 +55,8 @@ import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
 import fr.inria.paasage.saloon.camel.SaloonCamelSolver;
 import fr.inria.paasage.saloon.camel.ontology.BoundedElementCamel;
 import fr.inria.paasage.saloon.camel.ontology.ConceptCamel;
-import fr.inria.paasage.saloon.camel.ontology.CountableElementCamel;
 import fr.inria.paasage.saloon.camel.ontology.OntologyCamel;
 import fr.inria.paasage.saloon.camel.ontology.QuantifiableBoundedElementCamel;
-import fr.inria.paasage.saloon.camel.ontology.QuantifiableElementCamel;
 
 /**
  * This class offers the functionality to deal with camel models
@@ -127,9 +125,9 @@ public class CamelModelProcessor extends ModelProcessor {
 		Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
 		
 		List<VM> vms=  DeploymentModelParser.getVMList(model.getDeploymentModels().get(0));
-		logger.info(" ** 	Processing Opt Rerqs");
-		parseOptimisationRequirements(pc);
-		logger.info(" ** 	Processing Opt Rerqs ended");
+		//logger.info(" ** 	Processing Opt Rerqs");
+		//parseOptimisationRequirements(pc);
+		//logger.info(" ** 	Processing Opt Rerqs ended");
 		VMRequirementSet globalRequirements= model.getDeploymentModels().get(0).getGlobalVMRequirementSet(); 
 		
 		
