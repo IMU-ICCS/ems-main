@@ -5,11 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package eu.paasage.upperware.profiler.rp.algebra;
+package eu.paasage.upperware.profiler.rp.algebra.exceptions;
 
-public class UnsolvableException extends Exception {
+public class NotSolvableException extends Exception {
 
-	/** serial version UID */
-	private static final long serialVersionUID = 2155681274303835137L;
+	/** */
+	private static final long serialVersionUID = -7215060544405143009L;
 
 }
