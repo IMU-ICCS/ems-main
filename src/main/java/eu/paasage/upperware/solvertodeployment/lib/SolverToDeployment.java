@@ -32,6 +32,9 @@ public class SolverToDeployment {
 		log.info("CPID: "+paasageConfigurationID);
 		log.info("CamelID: "+camelModelID);
 		log.info("CPDirID: "+CPDirID);
+		log.info("Timestamp: "+TSavailable+" ts="+solutionTS);
+		log.info("OverwriteDM: "+overwriteDM+" ts="+dstDMId);
+
 		try {
 
 			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
@@ -39,13 +42,11 @@ public class SolverToDeployment {
 
 			EList<EObject> contents = cdoView.getResource(paasageConfigurationID).getContents();
 			PaasageConfiguration paasageConfiguration = (PaasageConfiguration) contents.get(0);
+			ConstraintProblem constraintProblem = (ConstraintProblem) contents.get(1);
 
 			EList<EObject> contents2 = cdoView.getResource(camelModelID).getContents();
 			CamelModel camelModel= (CamelModel)contents2.get(0);
 //			DeploymentModel srcDm = camelModel.getDeploymentModels().get(0);
-
-
-			ConstraintProblem constraintProblem = (ConstraintProblem) contents.get(1);
 
 			// Checking if there is a solution
 			if (constraintProblem.getSolution().size()==0)
@@ -108,12 +109,17 @@ public class SolverToDeployment {
 				log.error("Unable to complete data model instances registration");
 				return false;
 			}
-
-			log.info("Camel doc contains " + newDm.getInternalComponentInstances().size() + " internal component instance");
-			log.info("Camel doc contains " + newDm.getVmInstances().size() + " vm instance");
-			log.info("Camel doc contains " + newDm.getHostingInstances().size() + " hosting instance");
-			log.info("Camel doc contains " + newDm.getCommunicationInstances().size() + " communication instance");
-
+			log.info("Camel doc contains " + camelModel.getDeploymentModels().size() + " Deployment Model");
+			for(int i=0; i<camelModel.getDeploymentModels().size(); i++) 
+			{
+				DeploymentModel dm = camelModel.getDeploymentModels().get(i);
+				log.info("  DM"+i+" :" +
+						" InternalComponentInstances: " + dm.getInternalComponentInstances().size()+
+						"  InternalVMInstances: " + dm.getInternalComponentInstances().size()+
+						"  VMInstance: "+ dm.getVmInstances().size() +
+						"  HostingInstances: "+ dm.getHostingInstances().size() +
+						"  CommInstances: " + dm.getCommunicationInstances().size());
+			}
 		} catch (RuntimeException exception) {
 			exception.printStackTrace();
 			return false;
@@ -139,7 +145,7 @@ public class SolverToDeployment {
 		for(int i=0; i<args.length; i++) 
 		{
 			String a = args[i];
-			log.info("a: "+a);
+			log.info("arg: "+a);
 			switch (next_op) {
 			case OVERVRITE_DM: dmID = Integer.valueOf(a); overwriteDM = true; next_op = S2D_ARGS_CMD.DEFAULT; break;
 			case TIMESTAMP:    solutionTS = Integer.valueOf(a); TSavailable = true; next_op = S2D_ARGS_CMD.DEFAULT; break;
