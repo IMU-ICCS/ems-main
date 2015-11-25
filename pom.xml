@@ -1,6 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ow2.paasage.upperware.solvers</groupId>
+  <artifactId>cp-solver</artifactId>
   
   <parent>
     <groupId>org.ow2.paasage</groupId>
@@ -96,7 +97,7 @@
   <dependency>
 		<groupId>org.ow2.paasage.mddb.cdo</groupId>
 		<artifactId>client</artifactId>
-		<version>2015.9.1-SNAPSHOT</version>
+		<version>${paasage.version}</version>
   </dependency>
   <dependency>
 	<groupId>org.jfree</groupId>
@@ -106,7 +107,7 @@
     <dependency>
 	 <groupId>org.ow2.paasage</groupId>
 		    <artifactId>upperware-metamodel</artifactId>
-		    <version>2015.9.1-SNAPSHOT</version>
+		    <version>${paasage.version}</version>
 	</dependency>
 	<!-- Zero MQ -->
 	<dependency>
@@ -133,5 +134,4 @@
       <url>http://repository.ow2.org/nexus/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
-  <artifactId>cp-solver</artifactId>
 </project>

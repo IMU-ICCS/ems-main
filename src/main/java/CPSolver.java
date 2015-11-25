@@ -16,7 +16,13 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
+import eu.paasage.camel.CamelPackage;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
 import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
@@ -121,6 +127,19 @@ public class CPSolver {
 		createGoals(goals);
 	}
 	
+	/* Returns the content of a Resource mapping to a specific file in the file system 
+	 * whose path is given as input in a form of a String
+	 * */
+	private EList<EObject> getResourceContents(String pathName){
+		final ResourceSet rs = new ResourceSetImpl();
+		rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+		Resource res = rs.getResource(URI.createFileURI(pathName), true);
+		logger.info("Got resource: " + res);
+		EList<EObject> contents = res.getContents();
+		logger.info("Contents are: " + contents);
+		return contents;
+	}
+	
 	/* Reads the CPModel from CDO provided that a correct CDO path or a file path 
 	 * name for this model is provided as input
 	 */
@@ -135,14 +154,27 @@ public class CPSolver {
 			CDOView view = cl.openView();
 			CDOResource res = view.getResource(cdoPath);
 			if (res != null){
-				cp = (ConstraintProblem)res.getContents().get(0);
+				//Checking of existence of many models in one resource
+				for (EObject obj: res.getContents()){
+					if (obj instanceof ConstraintProblem){
+						cp = (ConstraintProblem)obj;
+						break;
+					}
+				}
+				//cp = (ConstraintProblem)res.getContents().get(0);
 				readModel(cp);
 			}
 			view.close();
 		}
 		else if (pathName != null){
 			cdoMode = false;
-			cp = (ConstraintProblem)cl.loadModel(pathName);
+			//cp = (ConstraintProblem)cl.loadModel(pathName);
+			for (EObject obj: getResourceContents(pathName)){
+				if (obj instanceof ConstraintProblem){
+					cp = (ConstraintProblem)obj;
+					break;
+				}
+			}
 			readModel(cp);
 		}
 		logger.info("CDO Mode: " + cdoMode);
