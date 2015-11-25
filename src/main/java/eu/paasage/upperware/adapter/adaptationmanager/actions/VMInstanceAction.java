@@ -96,15 +96,15 @@ public class VMInstanceAction implements Action {
 						String uname = ((JsonObject) objParams.get("credential")).get("username").asString();
 						String pass = ((JsonObject) objParams.get("credential")).get("password").asString();
 						
-						//setting credential defaults
+						//fetching cloud credentials located in Property file 
 						if(cloudName.equalsIgnoreCase("Flexiant")){
-							//endpoint = "https://cp.sd1.flexiant.net/soap/user/current/";
-							uname = "flexiant-username";
-							pass = "flexiant-pass";
+							uname = execInterfacer.getCloudUname("Flexiant");
+							pass = execInterfacer.getCloudPass("Flexiant");
+							//endpoint = execInterfacer.getCloudEndpoint("Flexiant");
 						}else if(cloudName.equalsIgnoreCase("Omistack")){
-							//endpoint = "http://omistack-beta.e-technik.uni-ulm.de:5000/v2.0";
-							uname = "omistack-username";
-							pass = "omistack-pass";
+							uname = execInterfacer.getCloudUname("Omistack");
+							pass = execInterfacer.getCloudPass("Omistack");
+							//endpoint = execInterfacer.getCloudEndpoint("Omistack");
 						}
 						
 						linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);

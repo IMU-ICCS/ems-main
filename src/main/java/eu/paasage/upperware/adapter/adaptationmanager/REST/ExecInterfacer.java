@@ -13,8 +13,10 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,9 +119,10 @@ public class ExecInterfacer {
 //	public static final String API_VIRTUALMACHINETEMPLATE = "/api/virtualMachineTemplate";
 	
 	
-	//New API actions and class members (updated 17 June 2015)
+	//New API actions and class members (updated 25 November 2015)
 	//Not required ones are commented
 	private User execUser;
+	private ArrayList<Cloud> clouds = new ArrayList<Cloud>();
 	public static final String API_LOGIN = "/api/login";
 	public static final String API_API = "/api/api";
 	public static final String API_APPLICATION = "/api/application";//DONE
@@ -161,7 +164,7 @@ public class ExecInterfacer {
 		String uname = properties.getProperty("ExecutionwareUname");
 		String pass = properties.getProperty("ExecutionwarePwd");
 		String tenant = properties.getProperty("ExecutionwareTenant");
-		
+		setCloudCredentials(properties);
 		try {
 			login(uname, pass, tenant);
 		} catch (ExecutionwareError e) {
@@ -174,6 +177,85 @@ public class ExecInterfacer {
 		}
 	}
 	
+	
+	//Methods for reading Cloud Provider credentials from property file	
+    private Set<Object> getAllKeys(Properties prop){
+        Set<Object> keys = prop.keySet();
+        return keys;
+    }
+
+    public int setCloudCredentials(Properties prop){
+    	int count = 0;
+    	
+    	Set<Object> keys = getAllKeys(prop);
+        for(Object k:keys){        	
+            String CNameKey = (String)k;
+            
+            int CNamePos = CNameKey.toLowerCase().indexOf("-uname");            
+            if(CNamePos > -1){
+            	
+            	String cloudProvName = CNameKey.substring(0, CNamePos);
+            	String cloudUName = prop.getProperty(CNameKey);
+            	String cloudPass = null;
+            	String cloudEndpoint = null;
+            	
+            	for(Object l:keys){
+            		
+            		String key = (String)l;
+            		int CPassPos = key.toLowerCase().indexOf(cloudProvName.toLowerCase());
+            		if(CPassPos==0 && key.toLowerCase().indexOf("-pass")>-1)
+            			cloudPass = prop.getProperty(key);
+            		
+            		if(CPassPos==0 && key.toLowerCase().indexOf("-endpoint")>-1)
+            			cloudEndpoint = prop.getProperty(key);
+            	}
+            	
+            	if(!cloudProvName.equalsIgnoreCase("") && !cloudUName.equalsIgnoreCase("") && cloudPass!=null && cloudEndpoint!=null){
+            		clouds.add(new Cloud(cloudProvName, cloudUName, cloudPass, cloudEndpoint));
+            		LOGGER.log(Level.INFO, "Retrieved & stored from Adapter Property file " + cloudProvName + " " + cloudUName + " " + cloudPass + " " + cloudEndpoint);
+            		count++;
+            	}
+            }
+        }
+        LOGGER.log(Level.INFO, "Retrieved from Adapter Property file " + count + " cloud credentials");
+    	return count;
+    }
+    
+    public String getCloudUname(String provider){
+    	for (Cloud cld: clouds){
+    		if(((Cloud)cld).getCloudProvName().toLowerCase().equalsIgnoreCase(provider.toLowerCase())){
+    			String uname = ((Cloud)cld).getCloudUname();
+    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Username: " + uname);
+    			return uname;
+    		}
+    	}
+    	LOGGER.log(Level.WARNING, "Cloud Provider: " + provider + " NOT FOUND");
+    	return "";
+    }
+    
+    public String getCloudPass(String provider){
+    	for (Cloud cld: clouds){
+    		if(((Cloud)cld).getCloudProvName().toLowerCase().equalsIgnoreCase(provider.toLowerCase())){
+    			String pass = ((Cloud)cld).getCloudPass();
+    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Pass: " + pass);
+    			return pass;
+    		}
+    	}
+    	LOGGER.log(Level.WARNING, "Cloud Provider: " + provider + " NOT FOUND");
+    	return "";
+    }
+    
+    public String getCloudEndpoint(String provider){
+    	for (Cloud cld: clouds){
+    		if(((Cloud)cld).getCloudProvName().toLowerCase().equalsIgnoreCase(provider.toLowerCase())){
+    			String endpoint = ((Cloud)cld).getCloudEndpoint();
+    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Endpoint: " + endpoint);
+    			return endpoint;
+    		}
+    	}
+    	LOGGER.log(Level.WARNING, "Cloud Provider: " + provider + " NOT FOUND");
+    	return "";
+    }
 	
 
 	public JsonObject getDeployed() {
@@ -3455,6 +3537,38 @@ public class ExecInterfacer {
 		
 		public long getUserId(){
 			return userId;
+		}
+	}
+	
+	class Cloud{
+
+		String providerName;
+		String uname;
+		String pass;
+		String endpoint;
+		
+		Cloud(String providerName, String uname, String pass, String endpoint){
+			this.providerName = providerName;
+			this.uname = new String(uname);
+			this.pass = new String(pass);
+			if(endpoint.equalsIgnoreCase("optional"))
+				this.endpoint = endpoint;
+		}
+		
+		protected String getCloudProvName() {
+			return this.providerName;
+		}
+		
+		protected String getCloudUname() {
+			return this.uname;
+		}
+		
+		protected String getCloudPass(){
+			return this.pass;
+		}
+		
+		protected String getCloudEndpoint(){
+			return this.endpoint;
 		}
 	}
 }

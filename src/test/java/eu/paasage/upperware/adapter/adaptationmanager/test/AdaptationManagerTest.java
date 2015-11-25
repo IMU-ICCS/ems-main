@@ -207,6 +207,18 @@ public class AdaptationManagerTest
 //	}
 	
 	@Test
+	@Ignore
+	public void cloudCredentialsLoad(){
+		ExecInterfacer exec = new ExecInterfacer();
+		exec.getCloudUname("flexiant");
+		exec.getCloudPass("flexianT");
+		exec.getCloudEndpoint("flexIant");
+		exec.getCloudUname("OmiStack");
+		exec.getCloudPass("Omistack");
+		exec.getCloudEndpoint("OmistAk");
+	}
+	
+	@Test
 //	@Ignore
 	public void verifyNewPlanGenerator(){
 		
