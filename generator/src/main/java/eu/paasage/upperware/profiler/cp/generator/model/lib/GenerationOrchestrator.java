@@ -250,10 +250,10 @@ public class GenerationOrchestrator
 			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships)
 			{
 				logger.info("** Calling CPModelDerivator");
-				ConstraintProblem cp= derivator.derivateConstraintProblem(pc, database); 
+				ConstraintProblem cp= derivator.derivateConstraintProblem(camelProcessor.getCamelModel(),pc, database); 
 				//pc.getId();
 				
-				logger.debug("** Calling DatabseProxy");
+				logger.debug("** Calling DatabseProxy ");
 				database.saveModels(pc, cp, resSet); 
 				logger.debug("** Calling Sender");
 				sender.sendPaasageConfigurationFiles(id); 
