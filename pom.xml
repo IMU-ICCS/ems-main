@@ -2,7 +2,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ow2.paasage.mddb.cdo</groupId>
   <artifactId>client</artifactId>
-  <version>2015.9.1-SNAPSHOT</version>
   <parent>
     <groupId>org.ow2.paasage</groupId>
     <artifactId>paasage-pom</artifactId>

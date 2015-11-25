@@ -141,13 +141,12 @@ public class CDOClient
     //A static parameter that maps to the name of the properties file
     private static final String PROPERTY_FILENAME="eu.paasage.mddb.cdo.client.properties";
     
-    private static final String propertyFilePath;
+    private String propertyFilePath;
     
     private static HashMap<String, Object> opts = new HashMap<String, Object>();
     
     static {
     	logger = org.apache.log4j.Logger.getLogger(CDOClient.class);
-    	propertyFilePath = retrieveConfigurationDirectoryFullPath();
     	XMIResToResFact();
     	opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
     }
@@ -166,16 +165,25 @@ public class CDOClient
 		});
     }
 	
-    /*Default constructor for the client which initiates a CDO session*/
+    /* Default constructor for the client which initiates a CDO session*/
 	public CDOClient(){
+		propertyFilePath = retrieveConfigurationDirectoryFullPath();
 		initSession();
 	}
 	
-	/*Constructor for the client which initiates a CDO session with the authentication 
+	/* Constructor for the client which initiates a CDO session with the authentication 
 	 * information provided*/
 	public CDOClient(String userName,String password){
 		this.userName = userName;
 		this.password = password;
+		propertyFilePath = retrieveConfigurationDirectoryFullPath();
+		initSession();
+	}
+	
+	/* Constructor for the client which obtains the path to the properties file 
+	 * which will be used to read the necessary information for initiating a CDO session*/
+	public CDOClient(String propertyFilePath){
+		this.propertyFilePath = propertyFilePath;
 		initSession();
 	}
 	
@@ -183,7 +191,7 @@ public class CDOClient
 	 * configuration directory which contains the properties file of the 
 	 * CDOClient (which contains information to connect to the CDO Server)
 	 */
-	private static String retrieveConfigurationDirectoryFullPath()
+	private String retrieveConfigurationDirectoryFullPath()
     {
         String propertyFilePath = System.getenv(ENV_CONFIG);
         logger.info("Got path: " + propertyFilePath);

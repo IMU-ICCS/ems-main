@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.net4j;bundle-version="4.3.0",
  org.eclipse.emf.cdo;bundle-version="4.3.0",
  org.eclipse.emf.ecore,
  org.eclipse.net4j.tcp;bundle-version="4.1.200",
- eu.paasage.camel;bundle-version="2015.6.1"
+ camel;bundle-version="2015.9.1"
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.emf.cdo.internal.net4j.protocol;version="4.1.200",
  org.eclipse.emf.cdo.net4j;version="4.1.200",
