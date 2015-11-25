@@ -282,7 +282,7 @@
           valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
-            value="https://api.sd1.flexiant.net:4442"/>
+            value="https://cp.sd1.flexiant.net/soap/user/current/"/>
       </attributes>
       <attributes
           name="Name"
