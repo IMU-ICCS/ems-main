@@ -2232,12 +2232,12 @@ public class ExecInterfacer {
 	 * Gets image value based on params
 	 * @param cloud
 	 * @param cloudProviderId
-	 * @param locationID
+	 * @param locationID not required anymore
 	 * @return image value if found, else -1
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public int getSpecificImage(int cloud, String cloudProviderId, String locationID) throws IOException, ParseException{
+	public int getSpecificImage(int cloud, String cloudProviderId/*, String locationID*/) throws IOException, ParseException{
 
 		//Header inHeader = new BasicHeader(name, value);
 		
@@ -2260,7 +2260,8 @@ public class ExecInterfacer {
 		while(jArrIt.hasNext()){
 			JSONObject jObj = (JSONObject) jArrIt.next();
 			
-			boolean status = false;
+			/*boolean status = false;*/
+			
 /*			Commented because location is a value and not array
 			JSONArray locations = (JSONArray) jObj.get("locations");
 			
@@ -2273,9 +2274,10 @@ public class ExecInterfacer {
 					status = true;
 			}*/
 			
+/*			//Removed the location filtering - not required (parent & assignable)
 			String loctn = jObj.get("location").toString();
 			if(loctn.equalsIgnoreCase(locationID.toString()))
-				status = true;
+				status = true;*/
 			
 			/*Iterator<JSONObject> jArrLocsIt = locations.iterator();
 			while (jArrLocsIt.hasNext()){
@@ -2286,7 +2288,7 @@ public class ExecInterfacer {
 			}*/
 			
 			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("cloudProviderId")==cloudProviderId){
-			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId) && status){
+			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)/* && status*/){
 				
 			//if(jObj.get("name").equals(name)){
 				JSONArray links= (JSONArray) jObj.get("link");

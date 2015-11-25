@@ -98,9 +98,11 @@ public class VMInstanceAction implements Action {
 						
 						//setting credential defaults
 						if(cloudName.equalsIgnoreCase("Flexiant")){
+							//endpoint = "https://cp.sd1.flexiant.net/soap/user/current/";
 							uname = "flexiant-username";
 							pass = "flexiant-pass";
 						}else if(cloudName.equalsIgnoreCase("Omistack")){
+							//endpoint = "http://omistack-beta.e-technik.uni-ulm.de:5000/v2.0";
 							uname = "omistack-username";
 							pass = "omistack-pass";
 						}
@@ -125,6 +127,9 @@ public class VMInstanceAction implements Action {
 				//String cloudUuid = objParams.get("region").asString();//"regionOne"
 				String cloudProviderIdLocation = objParams.get("locations").asArray().get(0).toString();
 				System.out.println("Locations fetched " + objParams.get("locations").asArray().toString());
+				
+/*				if(cloudName.equalsIgnoreCase("Flexiant"))
+					cloudProviderIdLocation = "\"b15e1545-7ca3-361c-b6a7-b5cf2828cf28\"";*/
 				
 				try {
 					locationID = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation) + "";
@@ -172,7 +177,7 @@ public class VMInstanceAction implements Action {
 
 
 				try {
-					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId, locationID) + "";
+					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId/*, locationID*/) + "";
 					
 					boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
 					
@@ -306,7 +311,7 @@ public class VMInstanceAction implements Action {
 					cloudCred = execInterfacer.createCloudCredential(uname, pass, Integer.parseInt(cloudId), tenantId);
 					if(cloudCred != null || !cloudCred.equalsIgnoreCase("")){
 						LOGGER.log(Level.INFO, "Wait for some minutes to make sure ExecutionWare finished the lookup of the cloud-related locations, etc.");
-						Thread.sleep(90000);
+						Thread.sleep(120000);
 /*						synchronized (Thread.currentThread()) {
 							Thread.currentThread().wait(60000);
 						}*/

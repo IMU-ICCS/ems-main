@@ -250,7 +250,7 @@ public class Coordinator {
 		Map<String, Object> outputMap = new HashMap<String, Object>();
 		
 		
-		//DeploymentModel targetModel = reasonerInterfacer.getDeploymentModel(false);//Commented to replace live transaction below
+//		DeploymentModel targetModel = reasonerInterfacer.getDeploymentModel(false);//Commented to replace live transaction below
 		
 		reasonerInterfacer.openTransaction();
 		DeploymentModel targetModel = reasonerInterfacer.getLiveDeploymentModel();//Comment to stop getting live model
