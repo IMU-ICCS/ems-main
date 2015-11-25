@@ -12,7 +12,13 @@ mvn clean install
 
 /** USE AS STANDALONE APPLICATION VIA MAVEN **/
 
-mvn exec:java -Dexec.args="[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] ConfigurationCDOId CamelCDOId CloudProviderCDODirID"
+mvn exec:java -Dexec.args="[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] [-d level] ConfigurationCDOId CamelCDOId CloudProviderCDODirID"
+
+-d level: dump DM level
+  0 : no dump
+  1 : # of DM
+  2 : # of DM + # of instances for each DM entry
+  3 : like 2 + names of intances
 
 /** USE AS STANDALONE APPLICATION - JAR FILE **/
 

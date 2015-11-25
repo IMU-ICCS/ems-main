@@ -160,7 +160,7 @@ public class S2D_ZMQ_Service {
 		// Invoking actual S2D
 		boolean res;
 		try {
-			res = SolverToDeployment.doWorkTS(cdoIdentifier, camelModel, cpDirId, solutionTS, true, 0, false);
+			res = SolverToDeployment.doWorkTS(cdoIdentifier, camelModel, cpDirId, solutionTS, true, 0, false, 0);
 		} catch (S2DException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
