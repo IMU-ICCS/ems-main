@@ -180,7 +180,7 @@ public class CamelExecwareMapping {
 	
 	/**
 	 * returns an String array of ExecWare IDs for VM template, cloud, image, location, hardware
-	 * @param name_Camel
+	 * @param name_Camel is the VM type name from CAMEL
 	 * @return an String array of ExecWare IDs for VM template, cloud, image, location, hardware (as in ordered)
 	 */
 	public String[] getEntityVMTIDs(String name_Camel){

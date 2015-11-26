@@ -136,8 +136,8 @@ public final class GraphUtilities {
 	
 	/**
 	 * fetches the {@linkplain eu.paasage.upperware.plangenerator.model.task.ConfigurationTask} object from the graph using name 
-	 * @param graph
-	 * @param task
+	 * @param graph to be searched in
+	 * @param task to search
 	 * @return the object ConfigurationTask if found else null
 	 */
 	public static ConfigurationTask searchGraphTask(DirectedGraph<ConfigurationTask, DefaultEdge> graph, ConfigurationTask task){

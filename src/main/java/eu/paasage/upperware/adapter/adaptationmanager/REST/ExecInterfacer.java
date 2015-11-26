@@ -2163,11 +2163,11 @@ public class ExecInterfacer {
 	
 	/**
 	 * Gets hardware value based on params
-	 * @param cloud
-	 * @param cloudProviderId
+	 * @param cloud Id
+	 * @param cloudProviderId for the hardware to search
 	 * @return hardware value if found, else -1
-	 * @throws IOException
-	 * @throws ParseException
+	 * @throws IOException ioexception
+	 * @throws ParseException parseexception
 	 */
 	public int getSpecificHardware(int cloud, String cloudProviderId) throws IOException, ParseException{
 
@@ -2312,12 +2312,11 @@ public class ExecInterfacer {
 	
 	/**
 	 * Gets image value based on params
-	 * @param cloud
-	 * @param cloudProviderId
-	 * @param locationID not required anymore
+	 * @param cloud id of ExecWare
+	 * @param cloudProviderId of the image to search for
 	 * @return image value if found, else -1
-	 * @throws IOException
-	 * @throws ParseException
+	 * @throws IOException ioexception
+	 * @throws ParseException parseexception
 	 */
 	public int getSpecificImage(int cloud, String cloudProviderId/*, String locationID*/) throws IOException, ParseException{
 
@@ -2606,11 +2605,11 @@ public class ExecInterfacer {
 	
 	/**
 	 * Gets location value based on params
-	 * @param cloud
-	 * @param cloudProviderId
+	 * @param cloud id of ExecWare
+	 * @param cloudProviderId of the location to search for
 	 * @return location value if found, else -1
-	 * @throws IOException
-	 * @throws ParseException
+	 * @throws IOException ioexception
+	 * @throws ParseException parseexception
 	 */
 	public int getSpecificLocation(int cloud, String cloudProviderId) throws IOException, ParseException{
 		
