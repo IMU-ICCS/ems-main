@@ -35,6 +35,11 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.InternalComponent;
+import eu.paasage.camel.metric.CompositeMetric;
+import eu.paasage.camel.metric.Metric;
+import eu.paasage.camel.metric.MetricFormula;
+import eu.paasage.camel.metric.MetricFormulaParameter;
+import eu.paasage.camel.metric.impl.CompositeMetricImpl;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
@@ -42,6 +47,9 @@ import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.impl.ProviderModelImpl;
+import eu.paasage.camel.requirement.OptimisationRequirement;
+import eu.paasage.camel.requirement.Requirement;
+import eu.paasage.camel.requirement.RequirementModel;
 import eu.paasage.camel.type.StringsValue;
 import eu.paasage.camel.type.impl.StringsValueImpl;
 import eu.paasage.upperware.cp.cloner.CDOClientExtended;
@@ -54,6 +62,7 @@ import eu.paasage.upperware.metamodel.application.ProviderDimension;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl;
 import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
+import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Expression;
@@ -463,7 +472,11 @@ public class RuleProcessor {
 			HashMap<String, Boolean> delTable, ArrayList<String> vmRemoveList,
 			List<EObject> objList) {
 		EObject obj = null;
-		
+
+		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
+		CamelModel cModel = proxy.getCamelModel(camelModel);
+		CamelModel updatedCamelModel = null;
+
 		for (int i = 0; i < objList.size(); i++) {
 			obj = objList.get(i);
 			if (obj instanceof eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl) {
@@ -471,13 +484,12 @@ public class RuleProcessor {
 				removeConfigurationFromCDO(pc, vmRemoveList, delTable);
 			} else if (obj instanceof eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl) {
 				ConstraintProblem cpModel = (ConstraintProblem) obj;
+				updatedCamelModel = removeProvidersFromOptimisationRequirement(cModel, camelModel, cpModel, vmRemoveList, delTable);
 				removeConstraintFromCDO(cpModel, vmRemoveList, delTable);
 			}
 		}
 
 		Set<String> requiredComponents = new HashSet<String>();
-		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
-		CamelModel cModel = proxy.getCamelModel(camelModel);
 		for (DeploymentModel dm : cModel.getDeploymentModels()) {
 			for (InternalComponent ic : dm.getInternalComponents()) {
 				requiredComponents.add(ic.getName());
@@ -518,8 +530,121 @@ public class RuleProcessor {
 
 			return SOLUTION_STATUS.NO_SOLUTION_AVAILABLE;
 		}
+		
+		if (updatedCamelModel != null) { // update camel model if optimization requirement is obsolete
+			cdoClient_.storeModelOverwritten(updatedCamelModel, camelModel + "v2");
+		}
 
 		return SOLUTION_STATUS.MODEL_CHANGED;
+	}
+
+	private CamelModel removeProvidersFromOptimisationRequirement(
+			CamelModel camelModel,
+			String strCamelModelId,
+			ConstraintProblem cpModel,
+			ArrayList<String> vmRemoveList,
+			HashMap<String, Boolean> delTable) {
+		System.out.println();
+		System.out.println("*************************************************");
+		System.out.println("CHECKING OPTIMISATION REQUIREMENTS");
+		System.out.println("*************************************************");
+		System.out.println();
+		
+		List<Metric> metrics = new ArrayList<Metric>();
+		List<Requirement> requirements = new ArrayList<Requirement>();
+
+		List<RequirementModel> requirementModels = camelModel.getRequirementModels();
+		for (RequirementModel requirementModel : requirementModels) {
+			for (Requirement r : requirementModel.getRequirements()) {
+				if (r instanceof OptimisationRequirement) {
+					OptimisationRequirement optimisation = (OptimisationRequirement) r;
+					requirements.add(r);
+					metrics.add(optimisation.getMetric());
+				}
+			}
+		}
+		
+		if (metrics.isEmpty()) {
+			System.out.println("    -> DONE");
+			return null; // CAMEL model not updated
+		}
+		
+		Set<String> metricsOfInterest = new HashSet<String>();
+		Set<String> removedMetrics = new HashSet<String>();
+		
+		for (Metric metric : metrics) {
+			if (metric instanceof CompositeMetricImpl) {
+				CompositeMetricImpl compositeMetric = (CompositeMetricImpl) metric;
+				MetricFormula formula = compositeMetric.getFormula();
+				for (MetricFormulaParameter parameter : formula.getParameters()) {
+					metricsOfInterest.add(parameter.getName());
+				}
+			}
+			
+			if (!metricsOfInterest.isEmpty()) {
+				Iterator<Expression> iterExpression = cpModel.getAuxExpressions().iterator();
+				while (iterExpression.hasNext()) {
+					Expression expression = iterExpression.next();
+					if (metricsOfInterest.contains(expression.getId())) {
+						if (expression instanceof ComposedExpression) {
+							ComposedExpression composed = (ComposedExpression) expression;
+							Iterator<NumericExpression> iter = composed.getExpressions().iterator();
+							while (iter.hasNext()) {
+								NumericExpression numericExpression = iter.next();
+								if (numericExpression instanceof Variable) {
+									Variable variable = (Variable) numericExpression;
+									if (delTable.containsKey(variable.getId())) {
+										System.out.println("    -> REMOVE " + variable.getId());
+										iter.remove();
+									}
+								} else if (numericExpression instanceof ComposedExpression) {
+									// TODO
+								} else {
+									// TODO
+								}
+							}
+							
+							if (composed.getExpressions().isEmpty()) {
+								System.out.println("    -> ... all parameters were removed.");
+								System.out.println("    -> REMOVE " + expression.getId());
+								iterExpression.remove();
+								removedMetrics.add(expression.getId());
+							}
+						}
+					}
+				}
+			} else {
+				System.out.println("    -> DONE");
+				return null; // CAMEL model not updated
+			}
+		}
+
+		// Delete optimization requirement from CAMEL if some metric is deleted
+		if (!removedMetrics.isEmpty()) {
+			CamelModel obj = (CamelModel) EcoreUtil.copy(camelModel);
+			requirementModels = obj.getRequirementModels();
+			for (RequirementModel requirementModel : requirementModels) {
+				Iterator<Requirement> rIter = requirementModel.getRequirements().iterator();
+				while (rIter.hasNext()) {
+					Requirement r = rIter.next();
+					if (r instanceof OptimisationRequirement) {
+						Iterator<Requirement> iter = requirements.iterator();
+						while (iter.hasNext()) {
+							Requirement next = iter.next();
+							if (r.getName().equals(next.getName())) {
+								System.out.println("    -> REMOVE " + next.getName());
+								rIter.remove();
+								iter.remove();
+							}
+						}
+					}
+				}
+			}
+
+			return obj;
+		}
+
+		return null;
 	}
 
 	private void removeConfigurationFromCDO(PaasageConfiguration pc,
@@ -899,6 +1024,7 @@ public class RuleProcessor {
 
 		SOLUTION_STATUS status = SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		String detectedProvider = camelProviders.values().iterator().next();
+
 		if (detectedProvider.equalsIgnoreCase("public")) {
 			System.out.println();
 			System.out.println("*************************************************");
@@ -964,8 +1090,6 @@ public class RuleProcessor {
 		// NOTE: debugging - check the result
 		CDOClientExtended cdoClient = this.getCDOClient();
 		CDOView cdoView = cdoClient.openView();
-
-
 		String newResId = this.getCloneResId();
 		cdoClient.closeView(cdoView);
 
