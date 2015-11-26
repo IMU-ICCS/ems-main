@@ -582,6 +582,11 @@ public class DimensionDerivator
 				
 				Expression exp= CPModelTool.searchExpressionByName(expId, cp.getAuxExpressions());
 				
+				if(exp==null)
+				{
+					exp= CPModelTool.searchExpressionByNameInGoals(expId, cp.getGoals()); 
+				}
+				
 				if(exp!=null)
 				{
 					expressions.add((NumericExpression) exp);

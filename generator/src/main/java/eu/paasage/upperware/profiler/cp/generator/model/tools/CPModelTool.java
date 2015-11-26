@@ -885,6 +885,19 @@ public class CPModelTool {
 		
 	}
 	
+	public static Expression searchExpressionByNameInGoals(String name, EList<Goal> goals)
+	{
+		
+		for(Goal goal: goals)
+		{
+			if(goal.getExpression().getId().equals(name))
+				return goal.getExpression();
+		}
+		
+		return null;
+		
+	}
+	
 	public static OperatorEnum getOperatorEnumFromMetricFunctionType(MetricFunctionType mft)
 	{
 		OperatorEnum op= null;
