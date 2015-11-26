@@ -153,7 +153,7 @@ public class ReasonerInterfacer {
 			this.transaction = client.openTransaction();
 	}
 	
-	public DeploymentModel getLiveDeploymentModel(){
+	public DeploymentModel getLiveDeploymentModel(int dmIndex){
 		if(!usingCDOClientLib && client != null && transaction != null)
 			return null;
 		
@@ -171,7 +171,8 @@ public class ReasonerInterfacer {
 				e.printStackTrace();
 			}
 		}
-		DeploymentModel depModel = model.getDeploymentModels().get(0);
+		System.out.println("#Deployment_Models in CDO : " + model.getDeploymentModels().size() + ". Getting model# " + dmIndex);
+		DeploymentModel depModel = model.getDeploymentModels().get(dmIndex);
 		return depModel;
 	}
 	

@@ -252,8 +252,9 @@ public class Coordinator {
 		
 //		DeploymentModel targetModel = reasonerInterfacer.getDeploymentModel(false);//Commented to replace live transaction below
 		
+		int dmIndex = 1;//Simple deployment model location
 		reasonerInterfacer.openTransaction();
-		DeploymentModel targetModel = reasonerInterfacer.getLiveDeploymentModel();//Comment to stop getting live model
+		DeploymentModel targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);//Comment to stop getting live model
 		
 		//CDOClientUtil mycdo = new CDOClientUtil(null);//comment not to load local files
 		//DeploymentModel targetModel = CDOClientUtil.tryLoadTwoFiles("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/PGexamples/test.xmi", "/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/PGexamples/upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi");
