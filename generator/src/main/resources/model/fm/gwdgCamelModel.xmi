@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="ASCII"?>
-<!-- Copyright (C) 2015 INRIA, Universite Lille 1
-
-   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
-   - Date: 09/2015
-   - This Source Code Form is subject to the terms of the Mozilla Public 
-   - License, v. 2.0. If a copy of the MPL was not distributed with this 
-   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
 <camel:CamelModel
     xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI"
@@ -47,8 +40,8 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.MICRO"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.MICRO"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="256"/>
@@ -57,8 +50,8 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.MICRO"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.MICRO"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="1"/>
@@ -67,10 +60,20 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.MICRO"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.MICRO"/>
         <toValue
             xsi:type="type:IntegerValue"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.MICRO"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/1"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -82,8 +85,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.TINY"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.TINY"
+            value="1"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="512"/>
@@ -92,8 +96,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.TINY"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.TINY"
+            value="1"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="1"/>
@@ -102,10 +107,22 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.TINY"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.TINY"
+            value="1"/>
         <toValue
             xsi:type="type:IntegerValue"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.TINY"
+            value="1"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/1"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -117,8 +134,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.SMALL"
+            value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2048"/>
@@ -127,8 +145,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.SMALL"
+            value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="1"/>
@@ -137,11 +156,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.SMALL"
+            value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="20"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.SMALL"
+            value="2"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/2"
+            value="1"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -153,8 +185,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.MEDIUM"
+            value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4096"/>
@@ -163,8 +196,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.MEDIUM"
+            value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2"/>
@@ -173,11 +207,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.MEDIUM"
+            value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="40"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.MEDIUM"
+            value="3"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/4"
+            value="3"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -189,8 +236,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.LARGE"
+            value="4"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="8192"/>
@@ -199,8 +247,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.LARGE"
+            value="4"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4"/>
@@ -209,11 +258,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.LARGE"
+            value="4"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="80"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.LARGE"
+            value="4"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/5"
+            value="4"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -225,8 +287,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.XLARGE"
+            value="5"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="16384"/>
@@ -235,8 +298,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.XLARGE"
+            value="5"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="8"/>
@@ -245,11 +309,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.XLARGE"
+            value="5"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="160"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.XLARGE"
+            value="5"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/6"
+            value="5"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -261,8 +338,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.XXLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.XXLARGE"
+            value="6"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="32768"/>
@@ -271,8 +349,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.XXLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.XXLARGE"
+            value="6"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="8"/>
@@ -281,11 +360,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M1.XXLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M1.XXLARGE"
+            value="6"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="160"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M1.XXLARGE"
+            value="6"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/7"
+            value="6"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -297,8 +389,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.SMALL"
+            value="7"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4096"/>
@@ -307,8 +400,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.SMALL"
+            value="7"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="1"/>
@@ -317,11 +411,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.SMALL"
+            value="7"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="20"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.SMALL"
+            value="7"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/8"
+            value="7"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -333,8 +440,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.MEDIUM"
+            value="8"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="8192"/>
@@ -343,8 +451,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.MEDIUM"
+            value="8"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2"/>
@@ -353,11 +462,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.MEDIUM"
+            value="8"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="40"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.MEDIUM"
+            value="8"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/9"
+            value="8"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -369,8 +491,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.LARGE"
+            value="9"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="16384"/>
@@ -379,8 +502,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.LARGE"
+            value="9"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4"/>
@@ -389,11 +513,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.LARGE"
+            value="9"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="80"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.LARGE"
+            value="9"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/10"
+            value="9"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -405,8 +542,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.XLARGE"
+            value="10"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="32768"/>
@@ -415,8 +553,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.XLARGE"
+            value="10"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4"/>
@@ -425,11 +564,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="M2.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="M2.XLARGE"
+            value="10"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="160"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.XLARGE"
+            value="10"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/11"
+            value="10"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -441,8 +593,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.SMALL"
+            value="11"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2048"/>
@@ -451,8 +604,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.SMALL"
+            value="11"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="2"/>
@@ -461,11 +615,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.SMALL"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.SMALL"
+            value="11"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="20"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="C1.SMALL"
+            value="11"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/13"
+            value="12"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -477,8 +644,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.MEDIUM"
+            value="12"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4096"/>
@@ -487,8 +655,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.MEDIUM"
+            value="12"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4"/>
@@ -497,11 +666,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.MEDIUM"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.MEDIUM"
+            value="12"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="40"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="C1.MEDIUM"
+            value="12"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/14"
+            value="13"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -513,8 +695,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.LARGE"
+            value="13"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="8192"/>
@@ -523,8 +706,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.LARGE"
+            value="13"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="8"/>
@@ -533,11 +717,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.LARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.LARGE"
+            value="13"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="80"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="C1.LARGE"
+            value="13"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/15"
+            value="14"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -549,8 +746,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.XLARGE"
+            value="14"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="16384"/>
@@ -559,8 +757,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.XLARGE"
+            value="14"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="16"/>
@@ -569,11 +768,24 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.XLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.XLARGE"
+            value="14"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="160"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="C1.XLARGE"
+            value="14"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/16"
+            value="15"/>
       </attributeConstraints>
     </constraints>
     <constraints
@@ -585,8 +797,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.XXLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.XXLARGE"
+            value="15"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="32768"/>
@@ -595,8 +808,9 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.XXLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.XXLARGE"
+            value="15"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="16"/>
@@ -605,32 +819,480 @@
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
-            xsi:type="type:StringsValue"
-            value="C1.XXLARGE"/>
+            xsi:type="type:EnumerateValue"
+            name="C1.XXLARGE"
+            value="15"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="160"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="C1.XXLARGE"
+            value="15"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/17"
+            value="16"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="M2_XXLARGE_VM_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.XXLARGE"
+            value="16"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="65536"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.XXLARGE"
+            value="16"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="8"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.XXLARGE"
+            value="16"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="160"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="M2.XXLARGE"
+            value="16"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/12"
+            value="11"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS1_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS1"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Fedora 20 server x86_64"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS1"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-Fedora"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS2_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS2"
+            value="1"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Ubuntu 14.04 LTS Server x86_64"
+            value="1"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS2"
+            value="1"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-Ubuntu"
+            value="1"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS3_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS3"
+            value="2"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Debian 7.8 Server x86_64"
+            value="2"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS3"
+            value="2"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-Debian"
+            value="2"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS4_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS4"
+            value="3"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Scientific Linux 6.6 Server x86_64"
+            value="3"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS4"
+            value="3"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-ScientificLinux"
+            value="3"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS5_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS5"
+            value="4"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="openSUSE 13.1 Server x86_64"
+            value="4"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS5"
+            value="4"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-openSUSE"
+            value="4"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS6_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS6"
+            value="5"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="openSUSE 13.1 Server x86_64"
+            value="4"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS6"
+            value="5"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-openSUSE"
+            value="4"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS7_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS7"
+            value="6"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Ubuntu 14.04 LTS Server x86_64"
+            value="1"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS7"
+            value="6"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-Ubuntu"
+            value="1"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS8_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS8"
+            value="7"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Fedora 20 Desktop Gnome x86_64"
+            value="11"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS8"
+            value="7"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-Fedora"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS9_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS9"
+            value="8"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="openSUSE 13.1 Desktop Gnome x86_64"
+            value="12"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS9"
+            value="8"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-openSUSE"
+            value="4"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS10_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS10"
+            value="9"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Fedora 20 Desktop KDE x86_64"
+            value="7"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS10"
+            value="9"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-Fedora"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS11_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS11"
+            value="10"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="openSUSE 13.1 Desktop KDE x86_64"
+            value="8"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS11"
+            value="10"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-openSUSE"
+            value="4"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS12_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS12"
+            value="11"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="Scientific Linux 6.6 Server x86_64"
+            value="3"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS12"
+            value="11"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-ScientificLinux"
+            value="3"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="RegionOne/OS13_OS_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS13"
+            value="12"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="CentOS 6.6 Server x86_64"
+            value="5"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="RegionOne/OS13"
+            value="12"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="LINUX-CentOS"
+            value="5"/>
       </attributeConstraints>
     </constraints>
     <rootFeature
         name="GWDG">
       <attributes
           name="DeploymentModel"
-          valueType="//@typeModels.0/@dataTypes.5">
+          valueType="//@typeModels.0/@dataTypes.2">
         <value
             xsi:type="type:StringsValue"
             value="Private"/>
       </attributes>
       <attributes
           name="ServiceModel"
-          valueType="//@typeModels.0/@dataTypes.5">
+          valueType="//@typeModels.0/@dataTypes.2">
         <value
             xsi:type="type:StringsValue"
             value="IaaS"/>
       </attributes>
       <attributes
           name="Availability"
-          valueType="//@typeModels.0/@dataTypes.5"
+          valueType="//@typeModels.0/@dataTypes.2"
           unitType="PERCENTAGE">
         <value
             xsi:type="type:StringsValue"
@@ -638,24 +1300,31 @@
       </attributes>
       <attributes
           name="Driver"
-          valueType="//@typeModels.0/@dataTypes.5">
+          valueType="//@typeModels.0/@dataTypes.2">
         <value
             xsi:type="type:StringsValue"
             value="openstack-nova"/>
       </attributes>
       <attributes
           name="EndPoint"
-          valueType="//@typeModels.0/@dataTypes.5">
+          valueType="//@typeModels.0/@dataTypes.2">
         <value
             xsi:type="type:StringsValue"
             value="https://api.cloud.gwdg.de:5000/v2.0/"/>
       </attributes>
       <attributes
           name="ProviderID"
-          valueType="//@typeModels.0/@dataTypes.5">
+          valueType="//@typeModels.0/@dataTypes.2">
         <value
             xsi:type="type:StringsValue"
             value="RegionOne"/>
+      </attributes>
+      <attributes
+          name="Name"
+          valueType="//@typeModels.0/@dataTypes.2">
+        <value
+            xsi:type="type:StringsValue"
+            value="GWDGCloud"/>
       </attributes>
       <subFeatures
           name="VM">
@@ -667,14 +1336,43 @@
             valueType="//@typeModels.0/@dataTypes.1"/>
         <attributes
             name="VMMemory"
-            valueType="//@typeModels.0/@dataTypes.7"
+            valueType="//@typeModels.0/@dataTypes.4"
             unitType="MEGABYTES"/>
         <attributes
             name="VMStorage"
-            valueType="//@typeModels.0/@dataTypes.6"
+            valueType="//@typeModels.0/@dataTypes.3"
             unitType="GIGABYTES"/>
         <attributes
             name="VMCores"
+            valueType="//@typeModels.0/@dataTypes.5"/>
+        <attributes
+            name="VMImageId"
+            valueType="//@typeModels.0/@dataTypes.6"/>
+        <attributes
+            name="OSVendorType"
+            valueType="//@typeModels.0/@dataTypes.7"/>
+        <attributes
+            name="OSArchitecture">
+          <value
+              xsi:type="type:StringsValue"
+              value="x86_64"/>
+        </attributes>
+        <attributes
+            name="DefaultLoginName"
+            valueType="//@typeModels.0/@dataTypes.2">
+          <value
+              xsi:type="type:StringsValue"
+              value="root"/>
+        </attributes>
+        <attributes
+            name="DefaultLoginPassword"
+            valueType="//@typeModels.0/@dataTypes.2">
+          <value
+              xsi:type="type:StringsValue"
+              value="&quot;&quot;"/>
+        </attributes>
+        <attributes
+            name="VMTypeCloudProviderId"
             valueType="//@typeModels.0/@dataTypes.8"/>
         <featureCardinality
             cardinalityMin="1"
@@ -682,8 +1380,32 @@
       </subFeatures>
       <subFeatures
           name="Location">
+        <attributes
+            name="LocationId"
+            valueType="//@typeModels.0/@dataTypes.2">
+          <value
+              xsi:type="type:StringsValue"
+              value="RegionOne"/>
+        </attributes>
+        <attributes
+            name="Longitude">
+          <value
+              xsi:type="type:FloatsValue"
+              value="9.97114"/>
+        </attributes>
+        <attributes
+            name="Latitude">
+          <value
+              xsi:type="type:FloatsValue"
+              value="51.56301"/>
+        </attributes>
         <subFeatures
             name="Germany">
+          <subFeatures
+              name="G&#xf6;ttingen">
+            <featureCardinality
+                cardinalityMax="1"/>
+          </subFeatures>
           <featureCardinality
               cardinalityMin="1"
               cardinalityMax="1"/>
@@ -749,6 +1471,9 @@
       <values
           name="C1.XXLARGE"
           value="15"/>
+      <values
+          name="M2.XXLARGE"
+          value="16"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Enumeration"
@@ -759,79 +1484,38 @@
           name="Ubuntu 14.04 LTS Server x86_64"
           value="1"/>
       <values
-          name="Debian 7.6.0 Server x86_64"
+          name="Debian 7.8 Server x86_64"
           value="2"/>
       <values
-          name="Scientific Linux 6.5 Server x86_64"
+          name="Scientific Linux 6.6 Server x86_64"
           value="3"/>
       <values
           name="openSUSE 13.1 Server x86_64"
           value="4"/>
       <values
-          name="CentOS 6.5 Server x86_64"
+          name="CentOS 6.6 Server x86_64"
           value="5"/>
       <values
-          name="Ubuntu 13.10 Desktop Unity x86_64"
+          name="Ubuntu 12.04.5 Server x86_64"
           value="6"/>
       <values
-          name="Fedora 20 Desktop Gnome x86_64"
+          name="Fedora 20 Desktop KDE x86_64"
           value="7"/>
       <values
-          name="openSUSE 13.1 Desktop Gnome x86_64"
+          name="openSUSE 13.1 Desktop KDE x86_64"
           value="8"/>
       <values
-          name="Fedora 20 Desktop KDE x86_64"
+          name="Scientific Linux 7.1 Server x86_64"
           value="9"/>
       <values
-          name="openSUSE 13.1 Desktop KDE x86_64"
+          name="CentOS 7.1 Server x86_64"
           value="10"/>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Range"
-        name="MemoryRange">
-      <lowerLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="256"/>
-      </lowerLimit>
-      <upperLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="32768"/>
-      </upperLimit>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Range"
-        name="StorageRange">
-      <lowerLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"/>
-      </lowerLimit>
-      <upperLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="160"/>
-      </upperLimit>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Range"
-        name="CoresRange">
-      <lowerLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="1"/>
-      </lowerLimit>
-      <upperLimit
-          included="true">
-        <value
-            xsi:type="type:IntegerValue"
-            value="16"/>
-      </upperLimit>
+      <values
+          name="Fedora 20 Desktop Gnome x86_64"
+          value="11"/>
+      <values
+          name="openSUSE 13.1 Desktop Gnome x86_64"
+          value="12"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:StringValueType"
@@ -879,6 +1563,9 @@
       <values
           xsi:type="type:IntegerValue"
           value="32768"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="65536"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:List"
@@ -897,6 +1584,123 @@
           value="8"/>
       <values
           xsi:type="type:IntegerValue"
+          value="16"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="VMImageIdEnum">
+      <values
+          name="RegionOne/OS1"/>
+      <values
+          name="RegionOne/OS2"
+          value="1"/>
+      <values
+          name="RegionOne/OS3"
+          value="2"/>
+      <values
+          name="RegionOne/OS4"
+          value="3"/>
+      <values
+          name="RegionOne/OS5"
+          value="4"/>
+      <values
+          name="RegionOne/OS6"
+          value="5"/>
+      <values
+          name="RegionOne/OS7"
+          value="6"/>
+      <values
+          name="RegionOne/OS8"
+          value="7"/>
+      <values
+          name="RegionOne/OS9"
+          value="8"/>
+      <values
+          name="RegionOne/OS10"
+          value="9"/>
+      <values
+          name="RegionOne/OS11"
+          value="10"/>
+      <values
+          name="RegionOne/OS12"
+          value="11"/>
+      <values
+          name="RegionOne/OS13"
+          value="12"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="OSVendorTypeEnum">
+      <values
+          name="LINUX-Fedora"/>
+      <values
+          name="LINUX-Ubuntu"
+          value="1"/>
+      <values
+          name="LINUX-Debian"
+          value="2"/>
+      <values
+          name="LINUX-ScientificLinux"
+          value="3"/>
+      <values
+          name="LINUX-openSUSE"
+          value="4"/>
+      <values
+          name="LINUX-CentOS"
+          value="5"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="VMTypeCloudProviderIdEnum">
+      <values
+          name="RegionOne/1"/>
+      <values
+          name="RegionOne/2"
+          value="1"/>
+      <values
+          name="RegionOne/3"
+          value="2"/>
+      <values
+          name="RegionOne/4"
+          value="3"/>
+      <values
+          name="RegionOne/5"
+          value="4"/>
+      <values
+          name="RegionOne/6"
+          value="5"/>
+      <values
+          name="RegionOne/7"
+          value="6"/>
+      <values
+          name="RegionOne/8"
+          value="7"/>
+      <values
+          name="RegionOne/9"
+          value="8"/>
+      <values
+          name="RegionOne/10"
+          value="9"/>
+      <values
+          name="RegionOne/11"
+          value="10"/>
+      <values
+          name="RegionOne/12"
+          value="11"/>
+      <values
+          name="RegionOne/13"
+          value="12"/>
+      <values
+          name="RegionOne/14"
+          value="13"/>
+      <values
+          name="RegionOne/15"
+          value="14"/>
+      <values
+          name="RegionOne/16"
+          value="15"/>
+      <values
+          name="RegionOne/17"
           value="16"/>
     </dataTypes>
   </typeModels>

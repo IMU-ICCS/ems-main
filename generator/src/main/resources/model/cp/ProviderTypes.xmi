@@ -8,4 +8,5 @@
   <types id="Flexiant"/>
   <types id="GWDG"/>
   <types id="Omistack"/>
+  <types id="AmazonEC2"/>
 </typesPaasage:ProviderTypes>
