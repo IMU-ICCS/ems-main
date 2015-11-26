@@ -160,6 +160,11 @@ public class CpModelToolTest {
 		assertTrue(newSolution.getMetricVariableValue().size() == oldSolution.getMetricVariableValue().size());
 		assertTrue(newSolution.getTimestamp() != oldSolution.getTimestamp());	//timestamp should be different
 		assertTrue(newSolution.getVariableValue().size() == oldSolution.getVariableValue().size());
+		//debug
+//		List<MetricVariableValue> mvvs = newSolution.getMetricVariableValue();
+//		for(MetricVariableValue mv : mvvs){//get cdoid causes npe, and mv.getVariable().getId() returns null
+//			System.out.println("Variable: " + mv.getVariable().getId() + ": value = " + mv.getValue().toString()/* + ", cdoid = " + mv.cdoID().toString()*/ + "\n");
+//		}
 	}
 	/**
 	 * test create metric variable value method

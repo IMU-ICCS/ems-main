@@ -23,6 +23,7 @@ import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
@@ -31,7 +32,11 @@ import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.LongValueUpperware;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
+import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
 /**
  * A utiltiy to load a CP model from an xmi file.
@@ -49,17 +54,21 @@ public final class CpModelTool {
 	public static void init() {
 
 		log.debug("initialising model ....");
-		// initialise the model
+		// initialise the Upperware model packages
 		ApplicationPackage.eINSTANCE.eClass();
+		TypesPaasagePackage.eINSTANCE.eClass(); 
+		TypesPackage.eINSTANCE.eClass(); 
+		CpPackage.eINSTANCE.eClass();
+		OntologyPackage.eINSTANCE.eClass();
+		
+		
+		
 		// Register the XMI resource factory for the .xmi extension
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
 				new XMIResourceFactoryImpl());
-		// Resource.Factory.Registry registry =
-		// Resource.Factory.Registry.INSTANCE;
-		// Map<String, Object> map = registry.getExtensionToFactoryMap();
-		// map.put("*", new XMIResourceFactoryImpl());
-
+		
 	}
+	
 
 	/**
 	 * Load the provided xmi file
@@ -175,9 +184,39 @@ public final class CpModelTool {
 		return config;
 	}
 	/**
+	 * Extract the {@link eu.paasage.upperware.metamodel.application.PaasageConfiguration <em>PaasageConfiguration</em>}
+	 * entity from the provided model.
+	 * <p>
+	 * @param model
+	 *            the resource model represented by a {@link java.util.List
+	 *            <em>List</em>} of {@link org.eclipse.emf.ecore.EObject
+	 *            <em>EObject</em>}
+	 * @return	the extracted {@link eu.paasage.upperware.metamodel.application.PaasageConfiguration <em>PaasageConfiguration</em>}
+	 * 			entity or null
+	 */
+	public static PaasageConfiguration getAppConfig(List<EObject> model){
+		PaasageConfiguration config = null;
+		if (model.isEmpty()) {
+			log.error("Cannot get cofiguration from an empty model .....");
+			return config;
+		}
+		try {
+			for (EObject obj : model) {
+				if (obj instanceof eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl) {
+					config = (PaasageConfiguration) obj;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error getting paasage configuration from the EObject list : "
+					+ e.getMessage());
+		}
+		return config;
+	}
+	/**
 	 * Extract the {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem
 	 * <em>ConstraintProblem</em>} entity from the provided model.
-	 * 
+	 * <p>
 	 * @param model
 	 *            the resource model represented by a {@link java.util.List
 	 *            <em>List</em>} of {@link org.eclipse.emf.ecore.EObject
@@ -186,7 +225,7 @@ public final class CpModelTool {
 	 *         {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem
 	 *         <em>ConstraintProblem</em>} object if successful, else an empty
 	 *         {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem
-	 *         <em>ConstraintProblem</em>} object.
+	 *         <em>ConstraintProblem</em>} object or null.
 	 */
 	public static ConstraintProblem getCPModel(List<EObject> model) {
 		ConstraintProblem cpModel = null;
@@ -206,6 +245,56 @@ public final class CpModelTool {
 					+ e.getMessage());
 		}
 		return cpModel;
+	}
+	/**
+	 * Extract the identifier from the provided model.
+	 * <p>
+	 * @param model
+	 *            the resource model represented by a {@link java.util.List
+	 *            <em>List</em>} of {@link org.eclipse.emf.ecore.EObject
+	 *            <em>EObject</em>}
+	 * @return	the identifier {@link java.lang.String <em>String</em>} or null.
+	 */
+	public static String getAppId(List<EObject> model){
+		PaasageConfiguration config = getAppConfig(model);
+		if(config != null){
+			return config.getId();
+		}else{
+			return null;
+		}
+	}
+	/**
+	 * Get a identifier for the clone CP model by stripping the numeric suffix from the original
+	 * resId and then add 1 to it.  This method assumes that the resId is based on the paasage configuration id.
+	 * <p>
+	 * @param appId		the {@link eu.paasage.upperware.metamodel.application.PaasageConfiguration <em>PaasageConfiguration</em>} identifier
+	 * @param resId		the CP model resource path identifier in the CDO server
+	 * @return	a new resource path identifier for storing the model
+	 */
+	public static String getCloneId(String appId, String resId){
+		//this is for the cdo resource path, not the actual paasageConfiguration.id
+		String cloneId = "";
+		//e.g. appId = openFoam1448464846493 and resId = openFoam1448464846493V1, suffix = V1
+		String suffix = resId.substring(appId.length()); 
+		if(suffix != null && !suffix.isEmpty()){
+			//find the last portion which is only number, e.g. 1
+			for(int i = suffix.length()-1; i >=0; i--){
+				char character = suffix.charAt(i);
+				log.debug("suffix char at " + i + " is " + suffix.charAt(i));
+				if(Character.isLetter(character)){
+					//stop here
+					log.debug("The numeric part of the suffix is : " + suffix.substring(i+1));
+					int version = Integer.parseInt(suffix.substring(i+1))+1;
+					cloneId = appId + suffix.substring(0, i+1) + version;
+					log.debug("the computed cloneId is " + cloneId);
+					break;
+				}
+			}
+		}else{
+			//the two Strings are the same
+			cloneId = appId + "v1";
+		}
+		return cloneId;
 	}
 
 	/**
@@ -325,6 +414,52 @@ public final class CpModelTool {
 		}
 		return null;
 	}
+	/**
+	 * Create a {@link eu.paasage.upperware.metamodel.cp.MetricVariableValue
+	 * <em>MetricVariableValue</em>} for the provided
+	 * {@link eu.paasage.upperware.metamodel.cp.MetricVariable
+	 * <em>MetricVariable</em>} object.
+	 * <p> 
+	 * @param current
+	 *            the target
+	 *            {@link eu.paasage.upperware.metamodel.cp.MetricVariable
+	 *            <em>MetricVariable</em>} object.
+	 * @param value  the target value to set
+	 * @return the generated
+	 *         {@link eu.paasage.upperware.metamodel.cp.MetricVariableValue
+	 *         <em>MetricVariableValue</em>} object.
+	 */
+	public static MetricVariableValue createMVV(MetricVariable current, NumericValueUpperware value){		
+		//
+		MetricVariableValue mvv = CpFactory.eINSTANCE
+				.createMetricVariableValue();
+		mvv.setVariable(current);
+		//debug
+		log.debug("createMVV : the mvv variable: " + mvv.getVariable().getId());
+		// int, double, float or long	
+		if(value instanceof DoubleValueUpperware){
+			DoubleValueUpperware doubleValue = TypesFactory.eINSTANCE
+					.createDoubleValueUpperware();
+			doubleValue.setValue(((DoubleValueUpperware) value).getValue());
+			mvv.setValue(doubleValue);
+		}else if(value instanceof FloatValueUpperware){
+			FloatValueUpperware floatValue = TypesFactory.eINSTANCE
+					.createFloatValueUpperware();
+			floatValue.setValue(((FloatValueUpperware) value).getValue());
+			mvv.setValue(floatValue);
+		}else if(value instanceof LongValueUpperware){
+			LongValueUpperware longValue = TypesFactory.eINSTANCE
+					.createLongValueUpperware();
+			longValue.setValue(((LongValueUpperware) value).getValue());			
+			mvv.setValue(longValue);
+		}else{//default integer
+			IntegerValueUpperware intValue = TypesFactory.eINSTANCE
+					.createIntegerValueUpperware();
+			intValue.setValue(((IntegerValueUpperware) value).getValue());
+			mvv.setValue(intValue);
+		}		
+		return mvv;		
+	}
 
 	/**
 	 * Create a {@link eu.paasage.upperware.metamodel.cp.MetricVariableValue
@@ -353,7 +488,7 @@ public final class CpModelTool {
 				.createMetricVariableValue();
 		mvv.setVariable(current);
 		//debug
-		System.out.println("createMVV : the mvv variable: " + mvv.getVariable().getId());
+		log.debug("createMVV : the mvv variable: " + mvv.getVariable().getId());
 		// int, double, float or long
 		BasicTypeEnum type = current.getType();
 		switch (type) {
@@ -430,5 +565,8 @@ public final class CpModelTool {
 		}
 		return mvv;
 	}
+	////////////////////////private methods//////////////////////
+	
+
 
 }

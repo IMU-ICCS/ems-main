@@ -18,6 +18,8 @@ import org.apache.commons.daemon.DaemonInitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.eclipsesource.json.JsonObject;
+
 
 public class App implements Daemon {
 
@@ -58,10 +60,13 @@ public class App implements Daemon {
 				System.out.println("in normal");
 				String modID= args[1];
 				Mapper map = new Mapper();
+				/* syc17
+				26Nov15 aligned with updated mapper
 				long mapResult = map.mapMetricVariables(modID);
+				*/
 				metasolver mslv = new metasolver();
-
-				mslv.runMILPSolver(modID, mapResult);
+				JsonObject jObj = map.mapMetricVariables(modID);				
+				mslv.runMILPSolver(jObj.get("id").asString(), jObj.get("solution_timp").asLong());
 			}
 			catch(Exception e){
 				System.out.println("error starting metasolver " + e);

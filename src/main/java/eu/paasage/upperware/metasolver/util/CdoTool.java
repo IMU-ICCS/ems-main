@@ -10,11 +10,26 @@ package eu.paasage.upperware.metasolver.util;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+import eu.paasage.camel.CamelPackage;
+import eu.paasage.camel.type.TypePackage;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.cp.cloner.CDOClientExtended;
+import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
+import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
+import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
 /**
  * A singleton utility to help interact with the CDO server.
@@ -27,10 +42,12 @@ public final class CdoTool {
 	protected static Logger log = Logger.getLogger(CdoTool.class);
 	/** singleton instance of CDOUtils */
 	private static CdoTool instance = null;
-	/** cdo client */
-	private static CDOClientExtended client = null;
+	/** CP Cloner CDO client */
+	private static CDOClientExtended extendedClient = null;
 	/** CP Cloner */
 	private static CPCloner cloner = null;
+	/** CDO Client 
+	private static CDOClient cdoClient = null;*/
 	/**
 	private String resId = null;*/
 	
@@ -53,42 +70,70 @@ public final class CdoTool {
 		if(cloner == null){
 			cloner = new CPCloner();
 		}
+		ApplicationPackage.eINSTANCE.eClass();
+		log.info("Init ApplicationPackag");
+		TypesPaasagePackage.eINSTANCE.eClass(); 
+		log.info("Init TypesPaasagePackage");
+		TypesPackage.eINSTANCE.eClass(); 
+		log.info("Init TypesPackage");
+		CpPackage.eINSTANCE.eClass();
+		log.info("Init CpPackage");
+		OntologyPackage.eINSTANCE.eClass();
+		log.info("Init OntologyPackage");
+		MappingPackage.eINSTANCE.eClass();
+		log.info("Init MappingPackage");		
+		//CamelPackage.eINSTANCE.eClass();	this is done by the underlying cdo client
+		//log.info("Init CamelPackage");	
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+		//
 		return instance;
 	}
 	
 	
 	/**
-	 * An explicit method to get a client to work with CDO server
+	 * An explicit method to get a cp cloner client to work with CDO server
 	 */
 	public void openCDOSession(){
-		if(client != null){
+		if(extendedClient != null){
 			log.info("client already instantiated...");
 			return;
 		}
-		client = CPCloner.createCDOClient();
+		extendedClient = CPCloner.createCDOClient();
 	}
 	/**
-	 * An explicit method to close the client CDO session and
+	 * An explicit method to close the cloner client CDO session and
 	 * terminate the client.
 	 */
 	public void closeCDOSession(){
-		client.closeSession();
-		client = null;
-		log.info("closed client session and removed client...");
+		extendedClient.closeSession();
+		extendedClient = null;
+		log.info("closed cloner client session and removed client...");
 	}
 	/**
-	 * Get a copy of the CDO resource using the provided resource id.
+	 * Retrieve the resource from the cdo server
+	 * <p>
+	 * @param resId	resId	Identifier of the target CDO resource
+	 * @return the cloned resource as a {@link java.util.List <em>List</em>} of the 
+	 * 			{@link org.eclipse.emf.ecore.EObject <em>EObject</em>}
+	 */
+	public List<EObject> getResource(String resId){
+		return extendedClient.getResourceContents(mapCdoId(resId));
+	}
+	
+	/**
+	 * Get a copy of the CDO resource in memory using the provided resource id.
 	 * <p>
 	 * @param resId	Identifier of the target CDO resource
 	 * @return the cloned resource as a {@link java.util.List <em>List</em>} of the 
-	 * 			{@link org.eclipse.emf.ecore.EObject <em>EObject</em>}s
+	 * 			{@link org.eclipse.emf.ecore.EObject <em>EObject</em>}
 	 */
 	public List<org.eclipse.emf.ecore.EObject> cloneModel(String resId){
 		if(resId == null){
 			log.error("Cannot clone model without a resId....");
 			return null;
 		}
-		return cloner.cloneModel(resId);
+		//the model is contained in the upperware_models/ path		
+		return cloner.cloneModel(mapCdoId(resId));
 	}
 	/**
 	 * Commit the clone model to the CDO server.
@@ -106,10 +151,55 @@ public final class CdoTool {
 			log.error("Cannot clone model, no contents....");
 			return;
 		}
-		if(client == null){
+		if(extendedClient == null){
 			openCDOSession();
 		}
-		client.storeModels(contents, cloneResId);//cdo exception trapped by client		
+		extendedClient.storeModels(contents, mapCdoId(cloneResId));//cdo exception trapped by client	
+	}
+	/**
+	 * Overwrite the model in the CDO server.
+	 * <p>
+	 * @param contents	a {@link java.util.List <em>List</em>} of the 
+	 * 			{@link org.eclipse.emf.ecore.EObject <em>EObject</em>}s
+	 * @param resId	the target CDO resource id
+	 */
+	public void overwriteCPModelinCDO(List<EObject> contents, String resId){
+		//cloner client handles the transaction
+		if(resId == null){
+			log.error("Cannot overwrite model without a resId....");
+			return;			
+		}
+		if(contents.isEmpty()){
+			log.error("Cannot overwrite model in CDO, no contents....");
+			return;
+		}		
+		if(extendedClient == null){
+			openCDOSession();
+		}
+		//extended client method does not actually overwrites, it just add
+//		extendedClient.storeModelOverwritten(contents, mapCdoId(resId));
+		CDOTransaction trans = extendedClient.openTransaction();
+		CDOResource cdo = trans.getOrCreateResource(mapCdoId(resId));
+		EList<EObject> contents1 = cdo.getContents();
+		try{
+			if(contents1.size() > 0){
+				//do this via CDO id
+				CDOObject cdoObj = (CDOObject) contents1.get(0);
+				trans.getObject(cdoObj.cdoID());
+				extendedClient.deleteObject(cdoObj, trans, true);	
+				//the extendedClient will commit and close;
+			}
+			//now try to add the new one using a new transaction
+			trans = extendedClient.openTransaction();
+			cdo = trans.getOrCreateResource(mapCdoId(resId));
+			contents1 = cdo.getContents();
+			log.debug("retrieved " + contents1.size() + " objects in the new transaction session for " + resId);
+			contents1.addAll(contents);
+			trans.commit();
+			trans.close();			
+		}catch(Exception e){
+			log.error("Error overwriting "  + resId + ": " + e.getMessage());
+		}
 	}
 	/**
 	 * Create a cloned resource id based on the original resource id.  We 
@@ -142,13 +232,24 @@ public final class CdoTool {
 		
 		return clonedResourceID;	
 	}*/
-	
-//	public static List<MetricVariable> getMetricVariables(ConstraintProblem cpModel){
-//		return cpModel.getMetricVariables();
-//
-//		The CPModelTool provide loads of useful methods:
-//			searchLastSolution, createSolution, searchMetricValue, searchMetricVariableValue,
-//			and to create different types of constants (need to check variable domain)
-//		
-//	}
+	/**
+	 * CP models are stored in CDO server under the upperware_models/ resource path.
+	 * This function prefix model id with the required resource path.
+	 * <p>
+	 * @param current	the current CP model identifier {@link java.lang.String <em>String</em>}
+	 * @return	the cleaned identifier {@link java.lang.String <em>String</em>} 
+	 * 			or null if current is null or empty
+	 */
+	private String mapCdoId(String current){
+		if(current == null || current.isEmpty()){
+			log.error("cannot map Cdo Id, resId is null/empty!");
+			return null;
+		}
+		//
+		if(current.startsWith(CPCloner.CDO_SERVER_PATH)){
+			return current;
+		}else{
+			return CPCloner.CDO_SERVER_PATH + current;
+		}
+	}
 }

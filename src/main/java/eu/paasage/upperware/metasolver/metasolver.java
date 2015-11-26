@@ -12,6 +12,7 @@ package eu.paasage.upperware.metasolver;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,8 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
+import com.eclipsesource.json.JsonObject;
+
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 public class metasolver{
@@ -41,11 +44,14 @@ public class metasolver{
 			String CAMELmodID= args[0];
 			String CPmodID= args[1];
 			Mapper map = new Mapper();
+			/* syc17 26Nov15 aligned with updated mapper
 			long mapResult = map.mapMetricVariables(CPmodID);
-			runMILPSolver(CPmodID, mapResult);
+			*/
+			JsonObject jObj = map.mapMetricVariables(CPmodID);
+			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		    //now invoke S2D
-			runS2D(CAMELmodID, CPmodID, mapResult);
-			
+			//runS2D(CAMELmodID, CPmodID, mapResult);
+			runS2D(CAMELmodID, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		}
 		catch(Exception e){
 			System.out.println("error running metasolver " + e);
@@ -56,8 +62,12 @@ public class metasolver{
 		try{
 //			String modID= args[1];
 			Mapper map = new Mapper();
+			/* syc17 26Nov15 aligned with updated mapper
 			long mapResult = map.mapMetricVariables(modID);
-			runMILPSolver("modID", mapResult);
+			*/
+			JsonObject jObj = map.mapMetricVariables(modID);
+			//runMILPSolver("modID", mapResult);
+			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		}
 		catch(Exception e){
 			System.out.println("error starting metasolver " + e);
@@ -72,11 +82,13 @@ public class metasolver{
 			}
 	public void go(String CAMELmodel, String CPmodel) throws MetricMapperException{
 		Mapper map = new Mapper();
-		long mapResult = map.mapMetricVariables(CPmodel);
+		/* 26Nov15 syc17 aigned with uppdated Mapper code
+		long mapResult = map.mapMetricVariables(CPmodel); */
+		JsonObject jObj = map.mapMetricVariables(CPmodel);
 		RPListener rpl = new RPListener();
     	 metricsListener ml = new metricsListener("metricID");		
-		 solutionListener sl = new solutionListener(CAMELmodel, CPmodel, mapResult);
-		 
+		 //solutionListener sl = new solutionListener(CAMELmodel, CPmodel, mapResult);
+    	 solutionListener sl = new solutionListener(CAMELmodel, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 			//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
 
 		

@@ -4,6 +4,8 @@ import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
 
+import com.eclipsesource.json.JsonObject;
+
 import eu.paasage.upperware.metasolver.exception.MetricMapperException;
 import eu.paasage.upperware.metasolver.metrics.Mapper;
 
@@ -23,7 +25,9 @@ public class solutionPublisherMQ {
 			publisher.sendMore ("startDeployment");
 			//contents
 			Mapper map = new Mapper();
-			long mapResult = map.mapMetricVariables(model);
+			/* 26Nov15 syc17 aligned code with updated Mapper
+			long mapResult = map.mapMetricVariables(model); */
+			JsonObject jObj = map.mapMetricVariables(model);
 			publisher.send(model);
 		 //   publisher.send(mapResult);
 			System.out.println("done publishing .... ");
