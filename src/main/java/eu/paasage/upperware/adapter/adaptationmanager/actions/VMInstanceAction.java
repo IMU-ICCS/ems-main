@@ -72,7 +72,14 @@ public class VMInstanceAction implements Action {
 			String imageName, imageID = null, cloudID = null, hardwareID=null, locationID=null, vmt;
 			imageName = dataShare.getImageNameFromVMT(vmType);//getting image value for the vmtype
 			
-			String OSVendorType = "NIX", login = "ubuntu", OSArchitecture = "AMD64", OSVersion = "14.04.2";//putting default values
+			//String OSVendorType = "NIX", login = "ubuntu", OSArchitecture = "AMD64", OSVersion = "14.04.2";//putting default values
+			//getting values from plan generator
+			String OSVendorType = "NIX";//objParams.get("OSVendorType").asString();
+			JsonObject defaultCred = (JsonObject) objParams.get("defaultCredential");
+			String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
+			String OSArchitecture = objParams.get("OSArchitecture").asString();
+			String OSVersion = "14.04.2";//default value - to be provided in Model
+			
 			
 			if((vmt=dataShare.getEntityVMTid(vmType))==null){//entity non existant in ExecWare
 				//To Do Exec API Call
@@ -150,10 +157,11 @@ public class VMInstanceAction implements Action {
 				
 				String hardwCloudProviderId = null;
 				//setting cloudProviderId defaults 
-				if(cloudName.equalsIgnoreCase("Omistack"))
+/*				if(cloudName.equalsIgnoreCase("Omistack"))
 					hardwCloudProviderId = "RegionOne/3";
 				else if(cloudName.equalsIgnoreCase("Flexiant"))
-					hardwCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054";
+					hardwCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054";*/
+				hardwCloudProviderId = objParams.get("VMTypeCloudProviderId").asString();
 				
 				try {
 					hardwareID = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), hardwCloudProviderId) + "";
@@ -170,10 +178,11 @@ public class VMInstanceAction implements Action {
 				//hardwareID = "/api/hardware/3";//find the appropriate hardware ID satisfying cloudID & cloudUuid
 				
 				String imgCloudProviderId = null;
-				if(cloudName.equalsIgnoreCase("Omistack"))
+/*				if(cloudName.equalsIgnoreCase("Omistack"))
 					imgCloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";
 				else if(cloudName.equalsIgnoreCase("Flexiant"))
-					imgCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c";
+					imgCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c";*/
+				imgCloudProviderId = objParams.get("VMImageId").asString();
 
 
 				try {

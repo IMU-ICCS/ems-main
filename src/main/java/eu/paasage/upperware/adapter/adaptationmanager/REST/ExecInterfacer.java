@@ -2531,10 +2531,12 @@ public class ExecInterfacer {
 			inBody.put("cloudCredentials", imgJObj.get("cloudCredentials"));
 			inBody.put("operatingSystem", Integer.parseInt(OSID));
 			
-			if(!login.equalsIgnoreCase(defLogin))
-				inBody.put("defaultLoginUsername", login);
-			else
-				inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+			if(login != null){
+				if(!login.equalsIgnoreCase(defLogin))
+					inBody.put("defaultLoginUsername", login);
+				else
+					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+			}
 			
 			resp = putRequest(API_IMAGE + "/" + imgID, null, inBody);
 	        respEntity = resp.getEntity();
@@ -2641,10 +2643,10 @@ public class ExecInterfacer {
 			//debug lines to test if statement
 			int fetchedCloud = Integer.parseInt(jObj.get("cloud").toString());
 			String fetchedCloudProviderId = ((String) jObj.get("cloudProviderId")).trim();
-			if(fetchedCloud==cloud)
+/*			if(fetchedCloud==cloud)
 				System.out.println("Fetched Cloud # equal");
 			if(fetchedCloudProviderId.equalsIgnoreCase(cloudProviderId.trim()))
-				System.out.println("Fetched CloudProviderId equal : " + fetchedCloudProviderId + " " + cloudProviderId.trim());
+				System.out.println("Fetched CloudProviderId equal : " + fetchedCloudProviderId + " " + cloudProviderId.trim());*/
 			if(fetchedCloud==cloud && fetchedCloudProviderId.equalsIgnoreCase(cloudProviderId.trim())){
 			//if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)){
 				
