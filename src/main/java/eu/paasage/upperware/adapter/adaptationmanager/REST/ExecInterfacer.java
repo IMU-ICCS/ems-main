@@ -3509,13 +3509,13 @@ public class ExecInterfacer {
 	}
 	
 	/**
-	 * returns remoteState of a particular VM
-	 * @param virtualMachineId id of the VM for state query
+	 * returns the remoteState of a particular VM
+	 * @param virtualMachineId VM id for state query
 	 * @return true if OK else false
 	 */
-		public boolean queryStateOKVM(int virtualMachineId){
-			return queryStateOK(API_VIRTUALMACHINE + "/" + virtualMachineId);
-		}
+	public boolean queryStateOKVM(int virtualMachineId){
+		return queryStateOK(API_VIRTUALMACHINE + "/" + virtualMachineId);
+	}
 
 	
 	public boolean deleteVirtualMachine(int virtualMachineId) throws IOException, ParseException{
@@ -3615,7 +3615,7 @@ public class ExecInterfacer {
 	
 	/**
 	 * returns remoteState of a particular Instance
-	 * @param virtualMachineId id of the VM for state query
+	 * @param instanceId id of the VM for state query
 	 * @return true if OK else false
 	 */
 		public boolean queryStateOKInstance(int instanceId){
