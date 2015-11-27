@@ -102,10 +102,42 @@ public class ApplicationInstanceAction implements Action {
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			
+			this.appInstName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Application Instance action thread : name " + appInstName);
+			
+			//LOGGER.log(Level.INFO, "from Application Instance " + dataShare.getApplicationId());
+			
+			//To Do Exec API Call
+			String appType = objParams.get("type").asString();
+			String appExecId = dataShare.getApplicationId(appType);
+			int appExId = Integer.parseInt(appExecId);
+			//Application app = dataShare.getApplication(appType);
+			//String execWareAppInstID = "/api/applicationInstance/"+this.appInstName;//substitute with API call
+			String execWareAppInstID = dataShare.getApplicationInstanceId();
+			if(execInterfacer.updateApplicationInstance(Integer.parseInt(execWareAppInstID), appExId)){
+				LOGGER.log(Level.INFO, "ExecWare API Action (update App Inst) : " + execWareAppInstID);
+				dataShare.updateApplicationInstanceName(execWareAppInstID, this.appInstName);
+			}
+			
 		} else if(task.getTaskType()==TaskType.DELETE){
 			
+			this.appInstName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Application Instance action thread : name " + appInstName);
+			
+			//LOGGER.log(Level.INFO, "from Application Instance " + dataShare.getApplicationId());
+			
+			//To Do Exec API Call
+			String appType = objParams.get("type").asString();
+			String appExecId = dataShare.getApplicationId(appType);
+			int appExId = Integer.parseInt(appExecId);
+			//Application app = dataShare.getApplication(appType);
+			//String execWareAppInstID = "/api/applicationInstance/"+this.appInstName;//substitute with API call
+			String execWareAppInstID = dataShare.getApplicationInstanceId();
+			if(execInterfacer.deleteApplicationInstance(execWareAppInstID)){
+				LOGGER.log(Level.INFO, "ExecWare API Action (delete App Inst) : " + execWareAppInstID);
+				dataShare.deleteApplicationInstance(execWareAppInstID);
+			}
 		}
-		
 	}
 
 	public ConfigurationTask getTask() {

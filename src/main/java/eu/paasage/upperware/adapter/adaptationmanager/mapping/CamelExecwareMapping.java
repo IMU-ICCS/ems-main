@@ -74,6 +74,15 @@ public class CamelExecwareMapping {
 			return null;
 	}
 	
+	public String updateApplication(String applicationId_Exec, String name_Camel){
+		if(appli.getApplicationId_Exec().equalsIgnoreCase(applicationId_Exec)){
+			appli.setApplicationName(name_Camel);
+			LOGGER.log(Level.INFO, "Application name updated " + appli.getApplicationId_Exec());
+			return appli.getApplicationId_Exec();
+		} else
+			return null;
+	}
+	
 	public boolean deleteApplication(String name_Camel){
 		if(appli.name_Camel.equalsIgnoreCase(name_Camel)){
 			LOGGER.log(Level.INFO, "Application deleted : " + name_Camel);
@@ -102,12 +111,30 @@ public class CamelExecwareMapping {
 		return appliInst.getApplicationInstanceId_Exec();
 	}
 	
+	public boolean updateApplicationInstanceName(String ApplicationInstanceId, String name_Camel){
+		if(appliInst.getApplicationInstanceId_Exec().equalsIgnoreCase(ApplicationInstanceId)){
+			appliInst.setApplicationInstanceName(name_Camel);
+			LOGGER.log(Level.INFO, "Updated Application Instance name " + name_Camel);
+			return true;
+		}
+		return false;
+	}
+	
 	public String getApplicationInstanceId(String name_Camel){
 		if(appliInst.name_Camel.equalsIgnoreCase(name_Camel)){
 			LOGGER.log(Level.INFO, "Application " + appliInst.getApplicationInstanceId_Exec());
 			return appliInst.getApplicationInstanceId_Exec();
 		} else
 			return null;
+	}
+	
+	public boolean deleteApplicationInstance(String ApplicationInstanceId){
+		if(appliInst.getApplicationInstanceId_Exec().equalsIgnoreCase(ApplicationInstanceId)){
+			appliInst = null;
+			return true;
+		}
+		else
+			return false;
 	}
 	
 	//Stores all the VM type entities created
@@ -561,6 +588,10 @@ public class CamelExecwareMapping {
 			this.name_Camel = name_Camel;
 		}
 		
+		private void setApplicationName(String name_Camel){
+			this.name_Camel = name_Camel;
+		}
+		
 		public String getApplicationId_Exec(){
 			return id;
 		}
@@ -591,6 +622,8 @@ public class CamelExecwareMapping {
 		String getAppInstName(){return name_Camel;}
 		
 		String getApplicationInstanceId_Exec(){return this.id;}
+		
+		void setApplicationInstanceName(String name_Camel){this.name_Camel = name_Camel;}
 	}
 	
 /*	//Stores all the Communication entities created

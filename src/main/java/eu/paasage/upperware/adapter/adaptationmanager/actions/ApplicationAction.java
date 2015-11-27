@@ -102,7 +102,30 @@ public class ApplicationAction implements Action {
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			
+			this.appName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Application Type action (update) thread : name " + appName);
 			
+			//test for passing name parameter to Application Instance
+			LOGGER.log(Level.INFO, this.appName);
+			
+			String appID = dataShare.getApplicationId();
+			
+			try {
+				int id = Integer.parseInt(appID);
+				
+				if(execInterfacer.updateApp(id, this.appName)){
+					
+					LOGGER.log(Level.INFO, "ExecWare API Action (update App) : " + appID);
+					
+					dataShare.updateApplication(appID, this.appName);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		} else if(task.getTaskType()==TaskType.DELETE){
 			

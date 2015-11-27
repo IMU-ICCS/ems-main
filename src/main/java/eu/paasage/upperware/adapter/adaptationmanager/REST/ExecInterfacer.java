@@ -1588,6 +1588,29 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
+	public boolean updateApp(int applicationId,String newAppName) throws IOException, ParseException{
+		
+		boolean status = false;
+
+		Header inHeader = new BasicHeader("application_id", Integer.toString(applicationId));
+		
+		JSONObject inBody = new JSONObject();
+        inBody.put("name", newAppName);
+		
+		HttpResponse resp = putRequest(API_APPLICATION + "/" + Integer.toString(applicationId), inHeader, inBody);
+        HttpEntity respEntity = resp.getEntity();
+        
+        String respString = EntityUtils.toString(respEntity);
+        JSONParser parser = new JSONParser();
+        JSONObject result = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	System.out.println("Updated Application id " + applicationId);
+            status = true;
+    	}
+    	return status;
+	}
+	
 	public boolean deleteApp(int applicationId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -2712,6 +2735,55 @@ public class ExecInterfacer {
 		return "";
 		//return status;
 	}
+
+	public boolean updateApplicationInstance(int applicationInstanceId, int application){
+		
+		boolean status = false;
+		//String API_APPLICATIONINSTANCE = "/api/applicationInstance";
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("application", application);
+
+	        HttpResponse resp = putRequest(API_APPLICATIONINSTANCE + "/" + Integer.toString(applicationInstanceId), null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        //{"virtualMachineTemplate":["The virtual machine template is required."]}
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+	            //JSONObject result = (JSONObject)parser.parse(respString);
+	            //execUser.setCreatedOn((long)result.get("createdOn"));
+
+        		try {
+        			obj = parser.parse(new String(respString));
+        		} catch (ParseException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
+        		JSONObject jObj = (JSONObject) obj;
+        		
+        		// loop array
+        		JSONArray links = (JSONArray) jObj.get("link");
+        		Iterator<JSONObject> iterator = links.iterator();
+        		while (iterator.hasNext()) {
+        			JSONObject factObj = (JSONObject) iterator.next();
+        			String href = (String) factObj.get("href");
+        			System.out.println("Updated ApplicationInstanceComponent entity is located at " + href);
+        			//return href;
+        		}
+        		//System.out.println("New cloud id is located at " + cloudId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+
 	
 	public JSONArray getApplicationInstances() throws IOException, ParseException{
 
@@ -2736,19 +2808,36 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
-	public boolean deleteApplicationInstance(int applicationInstanceId) throws IOException, ParseException{
+	public boolean deleteApplicationInstance(String applicationInstanceId){
 		
 		boolean status = false;
 
-		Header inHeader = new BasicHeader("applicationInstance_id", Integer.toString(applicationInstanceId));
+		//Header inHeader = new BasicHeader("applicationInstance_id", Integer.toString(applicationInstanceId));
 		
 		//JSONObject inBody = new JSONObject();
 		//inBody.put("cloud_id", cloudId);
 		
-		HttpResponse resp = deleteRequest(API_APPLICATIONINSTANCE + "/" + Integer.toString(applicationInstanceId), inHeader);
+		HttpResponse resp = null;
+		try {
+			resp = deleteRequest(API_APPLICATIONINSTANCE + "/" + Integer.parseInt(applicationInstanceId), null);
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         HttpEntity respEntity = resp.getEntity();
         
-        String respString = EntityUtils.toString(respEntity);
+        try {
+			String respString = EntityUtils.toString(respEntity);
+		} catch (org.apache.http.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         JSONParser parser = new JSONParser();
         JSONObject result = null;
         
