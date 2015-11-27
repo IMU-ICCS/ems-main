@@ -587,6 +587,11 @@ public class DimensionDerivator
 					exp= CPModelTool.searchExpressionByNameInGoals(expId, cp.getGoals()); 
 				}
 				
+				if(exp==null)
+				{
+					exp= processCompositeMetric(theMetric, (CompositeMetricContext) context, camel, cp); 
+				}
+				
 				if(exp!=null)
 				{
 					expressions.add((NumericExpression) exp);
