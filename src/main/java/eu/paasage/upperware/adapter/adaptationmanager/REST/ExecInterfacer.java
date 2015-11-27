@@ -1230,6 +1230,61 @@ public class ExecInterfacer {
 		return resp.substring(resp.lastIndexOf('/')+1);
 	}
 	
+/**
+ * returns remoteState of a particular resource
+ * @param API_RESOURCE the url of a particular resource to query
+ * @return true if OK else false
+ */
+	private boolean queryStateOK(String API_RESOURCE){
+
+		boolean status = false;
+		
+		//Header inHeader = new BasicHeader(name, value);
+		
+		HttpResponse resp = null;
+		HttpEntity respEntity = null;
+		try {
+			resp = getRequest(API_RESOURCE, null);
+			respEntity = resp.getEntity();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch(NullPointerException npEx){
+			LOGGER.log(Level.SEVERE, "Could not get the resource " + API_RESOURCE);
+			npEx.printStackTrace();
+		}
+        
+        String respString;
+        JSONParser parser = new JSONParser();
+        JSONObject result = null;        
+        
+		try {
+			respString = EntityUtils.toString(respEntity);
+	    	if(resp.getStatusLine().getStatusCode()==200){
+	    		
+	    		result = (JSONObject)parser.parse(respString);
+	    		//result = new JSONObject(respString);
+//	    		jArr = (JSONArray)parser.parse(respString);
+	            
+	            String remoteState = (String)result.get("remoteState");
+	            
+	            if(remoteState != null && remoteState.toLowerCase().equalsIgnoreCase("OK"))
+	            	status = true;
+	    	}
+		} catch (org.apache.http.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+    	return status;
+	}
+	
 	
 	public String createAPI(String name) throws ExecutionwareError{
 		
@@ -1954,7 +2009,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -2049,7 +2104,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -2144,7 +2199,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -2293,7 +2348,7 @@ public class ExecInterfacer {
         		JSONObject jObj = (JSONObject) obj;
         		
         		// loop array
-        		JSONArray links = (JSONArray) jObj.get("links");
+        		JSONArray links = (JSONArray) jObj.get("link");
         		Iterator<JSONObject> iterator = links.iterator();
         		while (iterator.hasNext()) {
         			JSONObject factObj = (JSONObject) iterator.next();
@@ -3453,6 +3508,16 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
+	/**
+	 * returns remoteState of a particular VM
+	 * @param virtualMachineId id of the VM for state query
+	 * @return true if OK else false
+	 */
+		public boolean queryStateOKVM(int virtualMachineId){
+			return queryStateOK(API_VIRTUALMACHINE + "/" + virtualMachineId);
+		}
+
+	
 	public boolean deleteVirtualMachine(int virtualMachineId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -3479,7 +3544,7 @@ public class ExecInterfacer {
 	public String createInstance(int applicationInstance, int applicationComponent, int virtualMachine){
 		
 		boolean status = false;
-		String API_INSTANCE = "/api/instance";
+		//String API_INSTANCE = "/api/instance";
 		try{
 
 			JSONObject inBody = new JSONObject();
@@ -3548,6 +3613,16 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
+	/**
+	 * returns remoteState of a particular Instance
+	 * @param virtualMachineId id of the VM for state query
+	 * @return true if OK else false
+	 */
+		public boolean queryStateOKInstance(int instanceId){
+			return queryStateOK(API_INSTANCE + "/" + instanceId);
+		}
+	
+	
 	public boolean deleteInstance(int instanceId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -3557,7 +3632,7 @@ public class ExecInterfacer {
 		//JSONObject inBody = new JSONObject();
 		//inBody.put("cloud_id", cloudId);
 		
-		HttpResponse resp = deleteRequest("/api/instance/"+Integer.toString(instanceId), inHeader);
+		HttpResponse resp = deleteRequest(API_INSTANCE + Integer.toString(instanceId), inHeader);
         HttpEntity respEntity = resp.getEntity();
         
         String respString = EntityUtils.toString(respEntity);

@@ -230,8 +230,25 @@ public class VMInstanceAction implements Action {
 				//vmInstID = "/api/virtualMachine/" + vmInstName;//POST using parameters cloudID, imageID, locationID & hardwareID
 				vmInstID = execInterfacer.createVirtualMachine(this.vmInstName, Integer.parseInt(cloudID), Integer.parseInt(imageID), Integer.parseInt(hardwareID), Integer.parseInt(locationID));
 				
+				int temp = Integer.parseInt(execInterfacer.trimResponseID(vmInstID));
+				boolean status = false;
+				int timeout = 0;
+				while((!(status = execInterfacer.queryStateOKVM(temp))) && timeout < 4){
+					LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. VM Instance : ID " + vmInstID);
+					try {
+						Thread.sleep(30000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					timeout++;
+				}
+				
+				if(timeout >= 4)
+					status = true;
+				
 				LOGGER.log(Level.INFO, "Created VM Instance : ID " + vmInstID);
-				if(dataShare.setVMIID(this.vmInstName, execInterfacer.trimResponseID(vmInstID)))
+				if(dataShare.setVMIID(this.vmInstName, execInterfacer.trimResponseID(vmInstID)) && status)
 					LOGGER.log(Level.INFO, "Stored newly created VM Instance : ID " + vmInstID);
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created VM Instance : ID " + vmInstID);
@@ -320,7 +337,7 @@ public class VMInstanceAction implements Action {
 					cloudCred = execInterfacer.createCloudCredential(uname, pass, Integer.parseInt(cloudId), tenantId);
 					if(cloudCred != null || !cloudCred.equalsIgnoreCase("")){
 						LOGGER.log(Level.INFO, "Wait for some minutes to make sure ExecutionWare finished the lookup of the cloud-related locations, etc.");
-						Thread.sleep(120000);
+						Thread.sleep(180000);
 /*						synchronized (Thread.currentThread()) {
 							Thread.currentThread().wait(60000);
 						}*/
