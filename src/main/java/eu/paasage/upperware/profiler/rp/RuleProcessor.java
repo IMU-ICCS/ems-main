@@ -965,7 +965,7 @@ public class RuleProcessor {
 		}
 		
 		/* (z) checking user requirements (new feature) */
-		boolean updateCPModel = this.validateMetricConditions(cdoIdentifier, camelModel);
+		boolean updateCPModel = false;//this.validateMetricConditions(cdoIdentifier, camelModel);
 		
 
 		/* (a) no cloud provider given in organization model */
