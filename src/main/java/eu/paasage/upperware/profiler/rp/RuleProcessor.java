@@ -35,7 +35,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.InternalComponent;
-import eu.paasage.camel.metric.CompositeMetric;
+import eu.paasage.camel.metric.Condition;
 import eu.paasage.camel.metric.Metric;
 import eu.paasage.camel.metric.MetricFormula;
 import eu.paasage.camel.metric.MetricFormulaParameter;
@@ -47,9 +47,11 @@ import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.impl.ProviderModelImpl;
+import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.requirement.OptimisationRequirement;
 import eu.paasage.camel.requirement.Requirement;
 import eu.paasage.camel.requirement.RequirementModel;
+import eu.paasage.camel.requirement.ServiceLevelObjective;
 import eu.paasage.camel.type.StringsValue;
 import eu.paasage.camel.type.impl.StringsValueImpl;
 import eu.paasage.upperware.cp.cloner.CDOClientExtended;
@@ -65,17 +67,25 @@ import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;
+import eu.paasage.upperware.metamodel.cp.RangeDomain;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
 import eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl;
+import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
+import eu.paasage.upperware.profiler.rp.algebra.Algebra;
+import eu.paasage.upperware.profiler.rp.algebra.AlgebraVariable;
+import eu.paasage.upperware.profiler.rp.algebra.ExpressionUtils;
+import eu.paasage.upperware.profiler.rp.algebra.exceptions.MissingVariablesException;
+import eu.paasage.upperware.profiler.rp.algebra.exceptions.NotSolvableException;
+import eu.paasage.upperware.profiler.rp.algebra.exceptions.WrongStatementException;
 import eu.paasage.upperware.profiler.rp.util.PropertiesReader;
 import eu.paasage.upperware.profiler.rp.util.RPOutput;
 import eu.paasage.upperware.profiler.rp.util.UnavailableModelException;
@@ -155,21 +165,11 @@ public class RuleProcessor {
 		try {
 			// deleteResource(resId_);
 			if (cloneResId_ != null) {
-				cdoClient_.storeModels(cloneList_, cloneResId_); // copy the
-																	// clone
-																	// model to
-																	// CDO
-																	// server
+				cdoClient_.storeModels(cloneList_, cloneResId_);
 			} else {
-				System.out
-						.println("commitAndCloseCDOSession(): Warning - empty resource Id for the cloned model");
+				System.out.println("commitAndCloseCDOSession(): Warning - empty resource Id for the cloned model");
 			}
 		}
-		/*
-		 * // TODO: redundant? catch(CommitException ce) {
-		 * System.out.println("\n*** Storing the clone mode fails\n");
-		 * System.out.println(ce.toString()); }
-		 */
 		catch (Exception e) {
 			System.out
 					.println("commitAndCloseCDOSession(): Commit operation fails\n");
@@ -963,6 +963,10 @@ public class RuleProcessor {
 		if (outputFile == null) {
 			outputFile = "rp_output";
 		}
+		
+		/* (z) checking user requirements (new feature) */
+		boolean updateCPModel = this.validateMetricConditions(cdoIdentifier, camelModel);
+		
 
 		/* (a) no cloud provider given in organization model */
 		if (camelProviders.isEmpty()) {
@@ -972,13 +976,36 @@ public class RuleProcessor {
 			System.out.println("*************************************************");
 			
 			System.out.println();
+			String newResId = null;
+			if (updateCPModel) {
+				// commit or save the clone model to the CDO server
+				this.commitCloneModelToCDO();
+
+				// NOTE: debugging - check the result
+				CDOClientExtended cdoClient = this.getCDOClient();
+				CDOView cdoView = cdoClient.openView();
+				newResId = this.getCloneResId();
+				cdoClient.closeView(cdoView);
+
+				// finally, need to commit & close the CDO connection
+				// rp.commitAndCloseCDOSession();
+				this.closeCDOSession();
+
+				printFile(outputFile, newResId, runAsDaemon);
+
+				System.out.println("MODEL UPDATED (" + newResId + ")");
+			}
 			System.out.println("PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
 
 			System.out.println();
 			System.out.println("*************************************************");
 
 			int success = 1;
-			return new RPOutput(success, cdoIdentifier);
+			if (updateCPModel) {
+				return new RPOutput(success, newResId);
+			} else {
+				return new RPOutput(success, cdoIdentifier);
+			}
 		}
 
 		Set<String> distinctProviders = new HashSet<String>();
@@ -1006,18 +1033,39 @@ public class RuleProcessor {
 				System.out.println("RESULT");
 				System.out.println("*************************************************");
 				System.out.println();
+				String newResId = null;
+				if (updateCPModel) {
+					// commit or save the clone model to the CDO server
+					this.commitCloneModelToCDO();
+
+					// NOTE: debugging - check the result
+					CDOClientExtended cdoClient = this.getCDOClient();
+					CDOView cdoView = cdoClient.openView();
+					newResId = this.getCloneResId();
+					cdoClient.closeView(cdoView);
+
+					// finally, need to commit & close the CDO connection
+					this.closeCDOSession();
+
+					printFile(outputFile, newResId, runAsDaemon);
+
+					System.out.println("MODEL UPDATED (" + newResId + ")");
+				}
 				System.out.println("WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
 				System.out.println();
 				System.out.println("*************************************************");
 				
 				int success = 1;
-				return new RPOutput(success, cdoIdentifier);
+				if (updateCPModel) {
+					return new RPOutput(success, newResId);
+				} else {
+					return new RPOutput(success, cdoIdentifier);
+				}
 			}
 		}
 
 		/*
-		 * (c) either a public or private cloud provider is declared in the
-		 * organisation model
+		 * (c) either a public or private cloud provider is declared
 		 */
 		this.openCDOSession(cdoIdentifier);
 		this.cloneModel(cdoIdentifier); // clone the model
@@ -1116,6 +1164,297 @@ public class RuleProcessor {
 		System.out.println("*************************************************");
 
 		return new RPOutput(success, newResId);
+	}
+
+	private boolean validateMetricConditions(
+			String cdoIdentifier,
+			String camelModel) {
+		
+		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
+		CamelModel cModel = proxy.getCamelModel(camelModel);
+		if (camelModel == null) {
+			StringBuilder message = new StringBuilder();
+			message.append("Error: The given CAMEL model (");
+			message.append(camelModel);
+			message.append(") was not found in the CDO database!");
+			System.out.println(message.toString());
+			return false;
+		}
+		
+		/* detect available SLOs in the CAMEL model */
+		Set<String> metricConditions = new HashSet<String>();
+		List<AlgebraVariable> varList = new ArrayList<AlgebraVariable>();
+		
+		for (RequirementModel requirementModel : cModel.getRequirementModels()) {
+			for (Requirement requirement: requirementModel.getRequirements()) {
+				if (requirement instanceof ServiceLevelObjective) {
+					ServiceLevelObjective slo = (ServiceLevelObjective) requirement;
+					Condition condition = slo.getCustomServiceLevel();
+					metricConditions.add(condition.getName());
+				} else if (requirement instanceof HorizontalScaleRequirement) {
+					HorizontalScaleRequirement hsr = (HorizontalScaleRequirement) requirement;
+					String name = hsr.getComponent().getName();
+					int min = hsr.getMinInstances();
+					int max = hsr.getMaxInstances();
+					AlgebraVariable av = new AlgebraVariable(name, min, max);
+					varList.add(av);
+				}
+			}
+		}
+		
+		/* (a) nothing defined */
+		if (metricConditions.isEmpty()) {
+			System.out.println();
+			System.out.println("*************************************************");
+			System.out.println("VALIDATING USER REQUIREMENTS");
+			System.out.println("*************************************************");
+			System.out.println();
+			System.out.println("No SLO found. DONE.");
+			System.out.println();
+			System.out.println("*************************************************");
+			return false;
+		}
+		if (varList.isEmpty()) {
+			System.out.println();
+			System.out.println("*************************************************");
+			System.out.println("VALIDATING USER REQUIREMENTS");
+			System.out.println("*************************************************");
+			System.out.println();
+			System.out.println("No metric conditions defined. DONE.");
+			System.out.println();
+			System.out.println("*************************************************");
+			return false;
+		}
+		
+		/* (b) */
+		openCDOSession(cdoIdentifier);
+		List<EObject> objList = this.getCloneModel();
+		cloneResId_ = cdoIdentifier + "v2";
+		
+		System.out.println();
+		System.out.println("*************************************************");
+		System.out.println("VALIDATING USER REQUIREMENTS");
+		System.out.println("*************************************************");
+		System.out.println();
+
+		Map<AlgebraVariable, Integer> varLeftMap = new HashMap<AlgebraVariable, Integer>();
+		Map<AlgebraVariable, Integer> varRightMap = new HashMap<AlgebraVariable, Integer>();
+		Set<String> slos = new HashSet<String>();
+		
+		ConstraintProblem cpModel = null;
+		for (EObject eObject : objList) {
+			if (eObject instanceof ConstraintProblem) {
+				cpModel = (ConstraintProblem) eObject;
+				for (ComparisonExpression cExpression : cpModel.getConstraints()) {
+					for (String metricCondition : metricConditions) {
+						if (cExpression.getId().startsWith(metricCondition)) {
+							String sloExpression = ExpressionUtils.toString(cExpression, varList, varLeftMap, varRightMap);
+							slos.add(sloExpression);
+						}
+					}
+				}
+			}
+		}
+		
+		StringBuilder expression = new StringBuilder();
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		
+		System.out.println("GIVEN:");
+		for (String slo : slos) {
+			System.out.println("    -> SLO: " + slo);
+			expression.append(slo);
+		}
+		for (AlgebraVariable av : varLeftMap.keySet()) {
+			String from = av.getVariable() + " >= " + av.getFrom();
+			String to = av.getVariable() + " <= " + av.getTo();
+			expression.append(" && ");
+			expression.append(from);
+			expression.append(" && ");
+			expression.append(to);
+			variables.add(av);
+			System.out.println("    -> " + from);
+			System.out.println("    -> " + to);
+		}
+		for (AlgebraVariable av : varRightMap.keySet()) {
+			String from = av.getVariable() + " >= " + av.getFrom();
+			String to = av.getVariable() + " <= " + av.getTo();
+			variables.add(av);
+			expression.append(" && ");
+			expression.append(from);
+			expression.append(" && ");
+			expression.append(to);
+			System.out.println("    -> " + from);
+			System.out.println("    -> " + to);
+		}
+		
+		System.out.println();
+		
+		// evaluate expressions
+		System.out.println("EVALUATE:");
+		System.out.println("    -> " + expression.toString());
+		System.out.println();
+		
+		
+		Set<Integer> domain = new HashSet<Integer>();
+		Map<AlgebraVariable, AlgebraVariable> replaceMap = new HashMap<AlgebraVariable, AlgebraVariable>();
+
+		List<AlgebraVariable> ranges;
+		try {
+			ranges = Algebra.getInstance().test(expression.toString(), variables);
+			System.out.println("RESULT:");
+			System.out.println("    -> CP model will be updated to comply with new domain ranges.");
+			System.out.println();
+
+			for (AlgebraVariable av : ranges) {
+				domain.add(av.getFrom());
+				domain.add(av.getTo());
+
+				String from = av.getVariable() + " >= " + av.getFrom();
+				String to = av.getVariable() + " <= " + av.getTo();
+				System.out.println("    -> " + from);
+				System.out.println("    -> " + to);
+			}
+			
+			for (int i = 0; i != variables.size(); ++i) {
+				replaceMap.put(variables.get(i), ranges.get(i));
+			}
+			
+			System.out.println();
+			
+			/* update CP model */
+			int nextId = 0;
+			Set<Integer> availableDomain = new HashSet<Integer>();
+			if (cpModel != null) {
+				/* modify/add constants */
+				Map<Integer, Constant> newConstants = new HashMap<Integer, Constant>();
+
+				for (Constant c : cpModel.getConstants()) {
+					if (c.getValue() instanceof IntegerValueUpperware) {
+						IntegerValueUpperware ivu = (IntegerValueUpperware) c.getValue();
+						availableDomain.add(ivu.getValue());
+
+						newConstants.put(ivu.getValue(), c);
+					}
+					if (c.getId().startsWith("constant_")) {
+						nextId = Integer.valueOf(c.getId().split("_")[1]);
+					}
+				}
+				domain.removeAll(availableDomain);
+				for (Integer value : domain) {
+					Constant c = CPModelTool.createIntegerConstant(value, "constant_" + ++nextId);
+					cpModel.getConstants().add(c);
+					newConstants.put(value, c);
+					System.out.println("    -> ADDED " + c.getId());
+				}
+
+				/* check comparison expressions */
+				for (ComparisonExpression comp : cpModel.getConstraints()) {
+					Set<String> unique = new HashSet<String>();
+					if (comp.getExp1() instanceof ComposedExpression) {
+						ComposedExpression composed = (ComposedExpression) comp.getExp1();
+						for (Expression exp : composed.getExpressions()) {
+							if (exp instanceof Variable) {
+								Variable v = (Variable) exp;
+								String id = v.getId();
+								if (id.startsWith("U_app_component_")) {
+									String var = id.split("_")[3];
+									unique.add(var);
+								}
+							}
+						}
+					}
+					
+					if (unique.size() != 1) {
+						continue;
+					}
+					
+					String component = unique.iterator().next();
+					AlgebraVariable oldVariable = null;
+					for (AlgebraVariable av : variables) {
+						if (av.getVariable().equals(component)) {
+							oldVariable = av;
+							break;
+						}
+					}
+					
+					if (oldVariable == null) {
+						continue;
+					}
+
+					String comparator = ExpressionUtils.comparatorToString(comp.getComparator());
+					
+					if (comp.getExp2() instanceof Constant) {
+						Constant old = (Constant) comp.getExp2();
+						if (old.getValue() instanceof IntegerValueUpperware) {
+							IntegerValueUpperware ivu = (IntegerValueUpperware) old.getValue();
+							int value = ivu.getValue();
+							
+							if (comparator.equals(">=")) {
+								if (value == oldVariable.getFrom()) {
+									AlgebraVariable replaceVar = replaceMap.get(oldVariable);
+									if (replaceVar.getFrom() != value) {
+										//System.out.println(">= " + value + " with " + replaceVar.getFrom());
+										System.out.println("    -> UPDATED " + comp.getId());
+										Constant replaceConstant = newConstants.get(replaceVar.getFrom());
+										comp.setExp2(replaceConstant);
+									}
+								}
+							} else if (comparator.equals("<=")) {
+								if (value == oldVariable.getTo()) {
+									AlgebraVariable replaceVar = replaceMap.get(oldVariable);
+									if (replaceVar.getTo() != value) {
+										//System.out.println(">= " + value + " with " + replaceVar.getTo());
+										System.out.println("    -> UPDATED " + comp.getId());
+										Constant replaceConstant = newConstants.get(replaceVar.getTo());
+										comp.setExp2(replaceConstant);
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				/* update variables */
+				for (Variable variable : cpModel.getVariables()) {
+					String id = variable.getId();
+					if (id.startsWith("U_app_component_")) {
+						id = id.split("_")[3];
+						for (AlgebraVariable av : ranges) {
+							if (av.getVariable().equals(id)) {
+								Domain d = variable.getDomain();
+								if (d instanceof RangeDomain) {
+									RangeDomain rd = (RangeDomain) d;
+									// Don't update minInstances, because its set to 0 by CP generator
+									//IntegerValueUpperware from = (IntegerValueUpperware) rd.getFrom();
+									//from.setValue(av.getFrom());
+									IntegerValueUpperware to = (IntegerValueUpperware) rd.getTo();
+									if (to.getValue() != av.getTo()) {
+										System.out.println("    -> UPDATED " + variable.getId());
+										to.setValue(av.getTo());
+									}
+								}
+							}
+						}
+					}
+				}
+			} else {
+				System.out.println("ERROR: CP Model not found: " + cdoIdentifier);
+				return false;
+			}
+
+		} catch (MissingVariablesException e) {
+			System.out.println("ERROR:\n    -> Missing variables: " + e.getMessage());
+			return false;
+		} catch (WrongStatementException e) {
+			System.out.println("ERROR:\n    -> Invalid statement. Please check the model.");
+			return false;
+		} catch (NotSolvableException e) {
+			System.out.println("RESULT:");
+			System.out.println("    -> The equation is not solvable. Please adapt your conditions and/or SLOs.");
+			return false;
+		}
+		
+		return true;
 	}
 
 	public void printFile(String filename, String cpModelId, boolean runAsDaemon) {

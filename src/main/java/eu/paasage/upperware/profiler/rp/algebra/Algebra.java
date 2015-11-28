@@ -70,12 +70,12 @@ public class Algebra {
 		}
 	}
 
-	public List<Variable> test(String expression, List<Variable> constraints)
+	public List<AlgebraVariable> test(String expression, List<AlgebraVariable> constraints)
 			throws MissingVariablesException,
 				   WrongStatementException,
 				   NotSolvableException
 	{
-		List<Variable> answer = new ArrayList<Variable>(constraints);
+		List<AlgebraVariable> answer = AlgebraVariable.cloneList(constraints);
 		boolean solvable = false;
 		
 		if (answer.size() > 2) {

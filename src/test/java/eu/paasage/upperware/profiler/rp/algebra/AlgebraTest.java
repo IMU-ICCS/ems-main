@@ -126,11 +126,11 @@ public class AlgebraTest {
 	public void testSimplify() throws MissingVariablesException, WrongStatementException, NotSolvableException {
 		String expression = "x >= 2 && x <= 6 && y >= 1 && y <= 4 && x < y";
 		
-		List<Variable> variables = new ArrayList<Variable>();
-		variables.add(0, new Variable("x", 2, 6));
-		variables.add(1, new Variable("y", 1, 4));
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		variables.add(0, new AlgebraVariable("x", 2, 6));
+		variables.add(1, new AlgebraVariable("y", 1, 4));
 		
-		List<Variable> ranges = Algebra.getInstance().test(expression, variables);
+		List<AlgebraVariable> ranges = Algebra.getInstance().test(expression, variables);
 		// 2 <= x <= 3
 		assertTrue(ranges.get(0).getFrom() == 2);
 		assertTrue(ranges.get(0).getTo() == 3);
@@ -143,11 +143,11 @@ public class AlgebraTest {
 	public void testSimplify_2() throws MissingVariablesException, WrongStatementException, NotSolvableException {
 		String expression = "x >= 2 && x <= 6 && y >= 1 && y <= 4 && x <= y";
 		
-		List<Variable> variables = new ArrayList<Variable>();
-		variables.add(0, new Variable("x", 2, 6));
-		variables.add(1, new Variable("y", 1, 4));
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		variables.add(0, new AlgebraVariable("x", 2, 6));
+		variables.add(1, new AlgebraVariable("y", 1, 4));
 		
-		List<Variable> ranges = Algebra.getInstance().test(expression, variables);
+		List<AlgebraVariable> ranges = Algebra.getInstance().test(expression, variables);
 		// 2 <= x <= 3
 		assertTrue(ranges.get(0).getFrom() == 2);
 		assertTrue(ranges.get(0).getTo() == 4);
@@ -160,11 +160,11 @@ public class AlgebraTest {
 	public void testSimplify_3() throws MissingVariablesException, WrongStatementException, NotSolvableException {
 		String expression = "db <= 6 && db >= 2 && ws >= 2 && ws >= 2*db";
 		
-		List<Variable> variables = new ArrayList<Variable>();
-		variables.add(0, new Variable("db", 2, 6));
-		variables.add(1, new Variable("ws", 2, 12));
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		variables.add(0, new AlgebraVariable("db", 2, 6));
+		variables.add(1, new AlgebraVariable("ws", 2, 12));
 		
-		List<Variable> ranges = Algebra.getInstance().test(expression, variables);
+		List<AlgebraVariable> ranges = Algebra.getInstance().test(expression, variables);
 		// 2 <= db <= 6
 		assertTrue(ranges.get(0).getFrom() == 2);
 		assertTrue(ranges.get(0).getTo() == 6);
@@ -177,11 +177,11 @@ public class AlgebraTest {
 	public void testSimplify_5() throws MissingVariablesException, WrongStatementException, NotSolvableException {
 		String expression = "x >= 1 && x <= 6 && y >= 1 && y <= 4 && x <= y";
 		
-		List<Variable> variables = new ArrayList<Variable>();
-		variables.add(0, new Variable("x", 1, 6));
-		variables.add(1, new Variable("y", 1, 4));
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		variables.add(0, new AlgebraVariable("x", 1, 6));
+		variables.add(1, new AlgebraVariable("y", 1, 4));
 		
-		List<Variable> ranges = Algebra.getInstance().test(expression, variables);
+		List<AlgebraVariable> ranges = Algebra.getInstance().test(expression, variables);
 		// 2 <= x <= 3
 		assertTrue(ranges.get(0).getFrom() == 1);
 		assertTrue(ranges.get(0).getTo() == 4);
@@ -194,11 +194,11 @@ public class AlgebraTest {
 	public void testSimplify_6() throws MissingVariablesException, WrongStatementException, NotSolvableException {
 		String expression = "x >= 1 && x <= 6 && y >= 1 && y <= 4 && x < y";
 		
-		List<Variable> variables = new ArrayList<Variable>();
-		variables.add(0, new Variable("x", 1, 6));
-		variables.add(1, new Variable("y", 1, 4));
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		variables.add(0, new AlgebraVariable("x", 1, 6));
+		variables.add(1, new AlgebraVariable("y", 1, 4));
 		
-		List<Variable> ranges = Algebra.getInstance().test(expression, variables);
+		List<AlgebraVariable> ranges = Algebra.getInstance().test(expression, variables);
 		// 2 <= x <= 3
 		assertTrue(ranges.get(0).getFrom() == 1);
 		assertTrue(ranges.get(0).getTo() == 3);
@@ -211,9 +211,9 @@ public class AlgebraTest {
 	public void testSimplify_4() throws MissingVariablesException, WrongStatementException, NotSolvableException {
 		String expression = "db <= 6 && db >= 2 && ws >= 2 && ws >= 2*db && db + ws <= 5";
 		
-		List<Variable> variables = new ArrayList<Variable>();
-		variables.add(0, new Variable("db", 2, 6));
-		variables.add(1, new Variable("ws", 2, 12));
+		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
+		variables.add(0, new AlgebraVariable("db", 2, 6));
+		variables.add(1, new AlgebraVariable("ws", 2, 12));
 		
 		Algebra.getInstance().test(expression, variables);
 	}
