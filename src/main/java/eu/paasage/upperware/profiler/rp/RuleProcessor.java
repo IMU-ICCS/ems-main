@@ -532,7 +532,7 @@ public class RuleProcessor {
 		}
 		
 		if (updatedCamelModel != null) { // update camel model if optimization requirement is obsolete
-			cdoClient_.storeModelOverwritten(updatedCamelModel, camelModel + "v2");
+			cdoClient_.storeModelOverwritten(updatedCamelModel, camelModel);
 		}
 
 		return SOLUTION_STATUS.MODEL_CHANGED;
@@ -620,8 +620,9 @@ public class RuleProcessor {
 		}
 
 		// Delete optimization requirement from CAMEL if some metric is deleted
+		// testing
+		CamelModel obj = (CamelModel) EcoreUtil.copy(camelModel);
 		if (!removedMetrics.isEmpty()) {
-			CamelModel obj = (CamelModel) EcoreUtil.copy(camelModel);
 			requirementModels = obj.getRequirementModels();
 			for (RequirementModel requirementModel : requirementModels) {
 				Iterator<Requirement> rIter = requirementModel.getRequirements().iterator();
@@ -643,8 +644,10 @@ public class RuleProcessor {
 
 			return obj;
 		}
-
-		return null;
+		
+		obj.setName("Foobar");
+		return obj;
+		//return null;
 	}
 
 	private void removeConfigurationFromCDO(PaasageConfiguration pc,
@@ -965,8 +968,40 @@ public class RuleProcessor {
 		}
 		
 		/* (z) checking user requirements (new feature) */
-		boolean updateCPModel = this.validateMetricConditions(cdoIdentifier, camelModel);
-		
+		SOLUTION_STATUS sloStatus = this.validateMetricConditions(cdoIdentifier, camelModel);
+		// don't continue cloud provider checking if there is an error in SLOs
+		switch (sloStatus) {
+		case ERROR:
+			System.out.println("*************************************************");
+			System.out.println("RESULT");
+			System.out.println("*************************************************");
+			System.out.println();
+			System.out.println("User requirements:");
+			System.out.println("    -> ERROR: Please read the log output for more information.");
+			System.out.println();
+			System.out.println("*************************************************");
+			
+			int success = 0;
+			return new RPOutput(success, cdoIdentifier);
+		case MODEL_CHANGED:
+			break;
+		case NO_CHANGE_REQUIRED:
+			break;
+		case NO_SOLUTION_AVAILABLE:
+			System.out.println("*************************************************");
+			System.out.println("RESULT");
+			System.out.println("*************************************************");
+			System.out.println();
+			System.out.println("User requirements:");
+			System.out.println("    -> ERROR: The equation is not solvable. Please adapt your conditions and/or SLOs.");
+			System.out.println();
+			System.out.println("*************************************************");
+			
+			success = 0;
+			return new RPOutput(success, cdoIdentifier);
+		default:
+			break;
+		}
 
 		/* (a) no cloud provider given in organization model */
 		if (camelProviders.isEmpty()) {
@@ -976,36 +1011,67 @@ public class RuleProcessor {
 			System.out.println("*************************************************");
 			
 			System.out.println();
-			String newResId = null;
-			if (updateCPModel) {
+			
+			switch (sloStatus) {
+			case ERROR:
+				System.out.println("User requirements:");
+				System.out.println("    -> ERROR: Please read the log output for more information.");
+				System.out.println("Cloud Provider:");
+				System.out.println("    -> PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
+				System.out.println();
+				System.out.println("*************************************************");
+				
+				int success = 0;
+				return new RPOutput(success, cdoIdentifier);
+			case MODEL_CHANGED:
 				// commit or save the clone model to the CDO server
 				this.commitCloneModelToCDO();
 
 				// NOTE: debugging - check the result
 				CDOClientExtended cdoClient = this.getCDOClient();
 				CDOView cdoView = cdoClient.openView();
-				newResId = this.getCloneResId();
+				String newResId = this.getCloneResId();
 				cdoClient.closeView(cdoView);
 
 				// finally, need to commit & close the CDO connection
-				// rp.commitAndCloseCDOSession();
 				this.closeCDOSession();
 
 				printFile(outputFile, newResId, runAsDaemon);
 
-				System.out.println("MODEL UPDATED (" + newResId + ")");
-			}
-			System.out.println("PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
+				System.out.println("User requirements:");
+				System.out.println("    -> PASSED: MODEL UPDATED (" + newResId + ")");
+				System.out.println("Cloud Provider:");
+				System.out.println("    -> PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
+				System.out.println();
+				System.out.println("*************************************************");
 
+				success = 1;
+				return new RPOutput(success, newResId);
+			case NO_CHANGE_REQUIRED:
+				System.out.println("User requirements:");
+				System.out.println("    -> No changes to apply. OK.");
+				break;
+			case NO_SOLUTION_AVAILABLE:
+				System.out.println("User requirements:");
+				System.out.println("    -> ERROR: The equation is not solvable. Please adapt your conditions and/or SLOs.");
+				System.out.println("Cloud Provider:");
+				System.out.println("    -> PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
+				System.out.println();
+				System.out.println("*************************************************");
+				
+				success = 0;
+				return new RPOutput(success, cdoIdentifier);
+			default:
+				break;
+			}
+			
+			System.out.println("Cloud Provider:");
+			System.out.println("    -> PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
 			System.out.println();
 			System.out.println("*************************************************");
 
 			int success = 1;
-			if (updateCPModel) {
-				return new RPOutput(success, newResId);
-			} else {
-				return new RPOutput(success, cdoIdentifier);
-			}
+			return new RPOutput(success, cdoIdentifier);
 		}
 
 		Set<String> distinctProviders = new HashSet<String>();
@@ -1033,15 +1099,26 @@ public class RuleProcessor {
 				System.out.println("RESULT");
 				System.out.println("*************************************************");
 				System.out.println();
-				String newResId = null;
-				if (updateCPModel) {
+				
+				switch (sloStatus) {
+				case ERROR:
+					System.out.println("User requirements:");
+					System.out.println("    -> ERROR: Please read the log output for more information.");
+					System.out.println("Cloud Provider:");
+					System.out.println("    -> WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
+					System.out.println();
+					System.out.println("*************************************************");
+					
+					int success = 0;
+					return new RPOutput(success, cdoIdentifier);
+				case MODEL_CHANGED:
 					// commit or save the clone model to the CDO server
 					this.commitCloneModelToCDO();
 
 					// NOTE: debugging - check the result
 					CDOClientExtended cdoClient = this.getCDOClient();
 					CDOView cdoView = cdoClient.openView();
-					newResId = this.getCloneResId();
+					String newResId = this.getCloneResId();
 					cdoClient.closeView(cdoView);
 
 					// finally, need to commit & close the CDO connection
@@ -1049,21 +1126,43 @@ public class RuleProcessor {
 
 					printFile(outputFile, newResId, runAsDaemon);
 
-					System.out.println("MODEL UPDATED (" + newResId + ")");
+					System.out.println("User requirements:");
+					System.out.println("    -> PASSED: MODEL UPDATED (" + newResId + ")");
+					System.out.println("Cloud Provider:");
+					System.out.println("    -> WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
+					System.out.println();
+					System.out.println("*************************************************");
+
+					success = 1;
+					return new RPOutput(success, newResId);
+				case NO_CHANGE_REQUIRED:
+					System.out.println("User requirements:");
+					System.out.println("    -> No changes to apply. OK.");
+					break;
+				case NO_SOLUTION_AVAILABLE:
+					System.out.println("User requirements:");
+					System.out.println("    -> ERROR: The equation is not solvable. Please adapt your conditions and/or SLOs.");
+					System.out.println("Cloud Provider:");
+					System.out.println("    -> WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
+					System.out.println();
+					System.out.println("*************************************************");
+					
+					success = 0;
+					return new RPOutput(success, cdoIdentifier);
+				default:
+					break;
 				}
-				System.out.println("WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
+				
+				System.out.println("Cloud Provider:");
+				System.out.println("    -> WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
 				System.out.println();
 				System.out.println("*************************************************");
 				
 				int success = 1;
-				if (updateCPModel) {
-					return new RPOutput(success, newResId);
-				} else {
-					return new RPOutput(success, cdoIdentifier);
-				}
+				return new RPOutput(success, cdoIdentifier);
 			}
-		}
-
+		}	
+		
 		/*
 		 * (c) either a public or private cloud provider is declared
 		 */
@@ -1110,7 +1209,46 @@ public class RuleProcessor {
 			System.out.println("RESULT");
 			System.out.println("*************************************************");
 			System.out.println();
-			System.out.println("PASSED");
+			
+			switch (sloStatus) {
+			case ERROR:
+				break;
+			case MODEL_CHANGED:
+				// commit or save the clone model to the CDO server
+				this.commitCloneModelToCDO();
+
+				// NOTE: debugging - check the result
+				CDOClientExtended cdoClient = this.getCDOClient();
+				CDOView cdoView = cdoClient.openView();
+				String newResId = this.getCloneResId();
+				cdoClient.closeView(cdoView);
+
+				// finally, need to commit & close the CDO connection
+				this.closeCDOSession();
+
+				printFile(outputFile, newResId, runAsDaemon);
+
+				System.out.println("User requirements:");
+				System.out.println("    -> PASSED: MODEL UPDATED (" + newResId + ")");
+				System.out.println("Cloud Provider:");
+				System.out.println("    -> PASSED.");
+				System.out.println();
+				System.out.println("*************************************************");
+
+				success = 1;
+				return new RPOutput(success, newResId);
+			case NO_CHANGE_REQUIRED:
+				System.out.println("User requirements:");
+				System.out.println("    -> PASSED.");
+				break;
+			case NO_SOLUTION_AVAILABLE:
+				break;
+			default:
+				break;
+			}
+			
+			System.out.println("Cloud Provider:");
+			System.out.println("    -> PASSED.");
 			System.out.println();
 			System.out.println("*************************************************");
 
@@ -1121,6 +1259,28 @@ public class RuleProcessor {
 		case NO_SOLUTION_AVAILABLE:
 			success = 0;
 			log.debug("\nNO SOLUTION");
+			
+			switch (sloStatus) {
+			case ERROR:
+				break;
+			case MODEL_CHANGED:
+				System.out.println("User requirements:");
+				System.out.println("    -> WARNING: Model not updated due to error in cloud provider processing.");
+				break;
+			case NO_CHANGE_REQUIRED:
+				System.out.println("User requirements:");
+				System.out.println("    -> PASSED.");
+				break;
+			case NO_SOLUTION_AVAILABLE:
+				break;
+			default:
+				break;
+			}
+			
+			System.out.println("Cloud Provider:");
+			System.out.println("    -> ERROR: NO SOLUTION.");
+			System.out.println();
+			System.out.println("*************************************************");
 
 			printFile(outputFile, cdoIdentifier, runAsDaemon);
 
@@ -1144,19 +1304,39 @@ public class RuleProcessor {
 		// finally, need to commit & close the CDO connection
 		// rp.commitAndCloseCDOSession();
 		this.closeCDOSession();
-
+		
 		success = 0; // 0 means success and pass the RP validation checks on the CP models
 		if (this.getValidationResult()) {
 			log.debug("\nMODEL UPDATED (" + newResId + ")");
 			System.out.println();
-			System.out.println("MODEL UPDATED (" + newResId + ")");
+			
+			switch (sloStatus) {
+			case ERROR:
+				break;
+			case MODEL_CHANGED:
+				System.out.println("User requirements:");
+				System.out.println("    -> PASSED. MODEL UPDATED (" + newResId + ")");
+				break;
+			case NO_CHANGE_REQUIRED:
+				System.out.println("User requirements:");
+				System.out.println("    -> PASSED.");
+				break;
+			case NO_SOLUTION_AVAILABLE:
+				break;
+			default:
+				break;
+			}
+			
+			System.out.println("Cloud Provider:");
+			System.out.println("    -> PASSED. MODEL UPDATED (" + newResId + ")");
 			success = 1;
 
 			printFile(outputFile, newResId, runAsDaemon);
 		} else {
 			log.debug("\nERROR");
 			System.out.println();
-			System.out.println("ERROR");
+			System.out.println("Cloud Provider:");
+			System.out.println("    -> ERROR");
 			success = 0;
 		}
 		
@@ -1166,7 +1346,7 @@ public class RuleProcessor {
 		return new RPOutput(success, newResId);
 	}
 
-	private boolean validateMetricConditions(
+	private SOLUTION_STATUS validateMetricConditions(
 			String cdoIdentifier,
 			String camelModel) {
 		
@@ -1174,11 +1354,12 @@ public class RuleProcessor {
 		CamelModel cModel = proxy.getCamelModel(camelModel);
 		if (camelModel == null) {
 			StringBuilder message = new StringBuilder();
-			message.append("Error: The given CAMEL model (");
+			message.append("User requirements:");
+			message.append("    -> Error: The given CAMEL model (");
 			message.append(camelModel);
 			message.append(") was not found in the CDO database!");
 			System.out.println(message.toString());
-			return false;
+			return SOLUTION_STATUS.ERROR;
 		}
 		
 		/* detect available SLOs in the CAMEL model */
@@ -1212,7 +1393,7 @@ public class RuleProcessor {
 			System.out.println("No SLO found. DONE.");
 			System.out.println();
 			System.out.println("*************************************************");
-			return false;
+			return SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		}
 		if (varList.isEmpty()) {
 			System.out.println();
@@ -1223,7 +1404,7 @@ public class RuleProcessor {
 			System.out.println("No metric conditions defined. DONE.");
 			System.out.println();
 			System.out.println("*************************************************");
-			return false;
+			return SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		}
 		
 		/* (b) */
@@ -1393,7 +1574,6 @@ public class RuleProcessor {
 								if (value == oldVariable.getFrom()) {
 									AlgebraVariable replaceVar = replaceMap.get(oldVariable);
 									if (replaceVar.getFrom() != value) {
-										//System.out.println(">= " + value + " with " + replaceVar.getFrom());
 										System.out.println("    -> UPDATED " + comp.getId());
 										Constant replaceConstant = newConstants.get(replaceVar.getFrom());
 										comp.setExp2(replaceConstant);
@@ -1403,7 +1583,6 @@ public class RuleProcessor {
 								if (value == oldVariable.getTo()) {
 									AlgebraVariable replaceVar = replaceMap.get(oldVariable);
 									if (replaceVar.getTo() != value) {
-										//System.out.println(">= " + value + " with " + replaceVar.getTo());
 										System.out.println("    -> UPDATED " + comp.getId());
 										Constant replaceConstant = newConstants.get(replaceVar.getTo());
 										comp.setExp2(replaceConstant);
@@ -1438,23 +1617,24 @@ public class RuleProcessor {
 					}
 				}
 			} else {
-				System.out.println("ERROR: CP Model not found: " + cdoIdentifier);
-				return false;
+				System.out.println("User requirements:");
+				System.out.println("    -> ERROR: CP Model not found: " + cdoIdentifier);
+				return SOLUTION_STATUS.ERROR;
 			}
 
 		} catch (MissingVariablesException e) {
-			System.out.println("ERROR:\n    -> Missing variables: " + e.getMessage());
-			return false;
+			System.out.println("User requirements:");
+			System.out.println("    -> ERROR: Missing variables: " + e.getMessage());
+			return SOLUTION_STATUS.ERROR;
 		} catch (WrongStatementException e) {
-			System.out.println("ERROR:\n    -> Invalid statement. Please check the model.");
-			return false;
+			System.out.println("User requirements:");
+			System.out.println("    -> ERROR: Invalid statement. Please check the model.");
+			return SOLUTION_STATUS.ERROR;
 		} catch (NotSolvableException e) {
-			System.out.println("RESULT:");
-			System.out.println("    -> The equation is not solvable. Please adapt your conditions and/or SLOs.");
-			return false;
+			return SOLUTION_STATUS.NO_SOLUTION_AVAILABLE;
 		}
 		
-		return true;
+		return SOLUTION_STATUS.MODEL_CHANGED;
 	}
 
 	public void printFile(String filename, String cpModelId, boolean runAsDaemon) {
