@@ -1763,6 +1763,38 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
+	public boolean updateLifecycleComponent(int LCId, String compName, String download, String install, String start, String stop){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("name", compName);
+	        inBody.put("download", download);
+	        inBody.put("install", install);
+	        inBody.put("start", start);
+	        inBody.put("stop", stop);
+
+	        HttpResponse resp = putRequest(API_LIFECYCLECOMPONENT + "/" + LCId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("Updated lifecycle Component is located at " + API_LIFECYCLECOMPONENT + "/" + LCId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+	
+	
 	public boolean deleteLifecycleComponent(int lifecycleComponentId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -2953,6 +2985,38 @@ public class ExecInterfacer {
 		//return status;
 	}
 	
+	
+	public boolean updateApplicationComponent(int ACId, int application, int lifeCycleComponent, int virtualMachineTemplate){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("application", application);
+	        inBody.put("component", lifeCycleComponent);
+	        inBody.put("virtualMachineTemplate", virtualMachineTemplate);
+
+	        HttpResponse resp = putRequest(API_APPLICATIONCOMPONENT + "/" + ACId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        //{"virtualMachineTemplate":["The virtual machine template is required."]}
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("Updated ApplicationComponent entity is located at " + API_APPLICATIONCOMPONENT + "/" + ACId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+	
+	
 	public JSONArray getApplicationComponents() throws IOException, ParseException{
 
 		//Header inHeader = new BasicHeader(name, value);
@@ -3072,6 +3136,35 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
+	public boolean updateProviderPort(int provPortId, String portName, int providerAppComponent, int providerPort){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+			inBody.put("name", portName);
+	        inBody.put("applicationComponent", providerAppComponent);
+	        inBody.put("port", providerPort);
+
+	        HttpResponse resp = putRequest(API_PORTPROV + "/" + provPortId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("Updated provider port entity is located at " + API_PORTPROV + "/" + provPortId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+	
 	public boolean deleteProviderPort(int providerPortId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -3168,6 +3261,35 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
+	public boolean updateConsumerPort(int consPortId, String portName, int consumerAppComponent, int consumerPort){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+			inBody.put("name", portName);
+	        inBody.put("applicationComponent", consumerAppComponent);
+	        inBody.put("port", consumerPort);
+
+	        HttpResponse resp = putRequest(API_PORTREQ + "/" + consPortId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("Updated consumer port entity is located at " + API_PORTREQ + "/" + consPortId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+	
 	public boolean deleteConsumerPort(int consumerPortId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -3240,6 +3362,34 @@ public class ExecInterfacer {
 		//return status;
 	}
 	
+	public boolean updateCommunication(int commId, int providedPort, int requiredPort){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("providedPort", providedPort);
+	        inBody.put("requiredPort", requiredPort);
+
+	        HttpResponse resp = postRequest(API_COMMUNICATION + "/" + commId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("New communication entity is located at " + API_COMMUNICATION + "/" + commId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+	
 	public String createCommunication(int providerAppComponent, int consumerAppComponent, int port){
 		
 		boolean status = false;
@@ -3310,6 +3460,36 @@ public class ExecInterfacer {
     	
     	System.out.println(respString);
     	return jArr;
+	}
+	
+	
+	public boolean updateCommunication(int commId, int providerAppComponent, int consumerAppComponent, int port){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("provider", providerAppComponent);
+	        inBody.put("consumer", consumerAppComponent);
+	        inBody.put("port", port);
+
+	        HttpResponse resp = postRequest(API_COMMUNICATION + "/" + commId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("New communication entity is located at " + API_COMMUNICATION + "/" + commId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
 	}
 	
 	public boolean deleteCommunication(int communicationId) throws IOException, ParseException{
@@ -3485,6 +3665,43 @@ public class ExecInterfacer {
 		//return status;
 	}
 	
+	
+	public boolean updateVirtualMachine(int virtualMachineId, String name, int cloud, int image, int hardware, int location){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+			inBody.put("name", name);
+	        inBody.put("cloud", cloud);
+	        inBody.put("image", image);
+	        inBody.put("hardware", hardware);
+	        inBody.put("location", location);
+	        
+	        //delete after bugfix by Daniel
+	        //inBody.put("remoteId", name);
+	        //inBody.put("cloudProviderId", "regionOne");	        	
+
+	        HttpResponse resp = postRequest(API_VIRTUALMACHINE + "/" + Integer.toString(virtualMachineId), null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("Updated virtual machine entity is located at " + API_VIRTUALMACHINE + "/" + Integer.toString(virtualMachineId));
+        		status = true;
+        		
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
+	
+	
 	public JSONArray getVirtualMachines() throws IOException, ParseException{
 
 		//Header inHeader = new BasicHeader(name, value);
@@ -3618,10 +3835,38 @@ public class ExecInterfacer {
 	 * @param instanceId id of the VM for state query
 	 * @return true if OK else false
 	 */
-		public boolean queryStateOKInstance(int instanceId){
-			return queryStateOK(API_INSTANCE + "/" + instanceId);
-		}
+	public boolean queryStateOKInstance(int instanceId){
+		return queryStateOK(API_INSTANCE + "/" + instanceId);
+	}
 	
+	
+	public boolean updateInstance(int instanceId, int applicationInstance, int applicationComponent, int virtualMachine){
+		
+		boolean status = false;
+		//String API_INSTANCE = "/api/instance";
+		try{
+
+			JSONObject inBody = new JSONObject();
+			inBody.put("applicationInstance", Integer.toString(applicationInstance));
+	        inBody.put("applicationComponent", Integer.toString(applicationComponent));
+	        inBody.put("virtualMachine", Integer.toString(virtualMachine));
+
+	        HttpResponse resp = putRequest(API_INSTANCE + "/" + instanceId, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		System.out.println("Updated instance entity is located at " + API_INSTANCE + "/" + instanceId);
+        		status = true;
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		//return "";
+		return status;
+	}
 	
 	public boolean deleteInstance(int instanceId) throws IOException, ParseException{
 		

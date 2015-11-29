@@ -8,11 +8,14 @@
 
 package eu.paasage.upperware.adapter.adaptationmanager.actions;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.json.simple.parser.ParseException;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -64,7 +67,7 @@ public class InternalComponentInstanceAction implements Action {
 		if(task.getTaskType()==TaskType.CREATE){
 			
 			this.iCompInstName = objParams.get("name").asString();
-			LOGGER.log(Level.INFO, "Internal Component Instance action thread : name " + iCompInstName);
+			LOGGER.log(Level.INFO, "Internal Component Instance action (create) thread : name " + iCompInstName);
 			
 			//Fetching data for linked Application Instance, Application Component & VM Instance 
 			
@@ -84,7 +87,7 @@ public class InternalComponentInstanceAction implements Action {
 				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 				Collection<Action> depActions = Coordinator.getDependentActions(this);
-				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst--- " + depActions.size());
+				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Create)--- " + depActions.size());
 				for(Object obj : depActions){
 					System.out.println("-- " + obj.toString() + " ");
 					if(obj.getClass()==ApplicationInstanceAction.class){
@@ -147,10 +150,147 @@ public class InternalComponentInstanceAction implements Action {
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			
+			
+			this.iCompInstName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Internal Component Instance action (update) thread : name " + iCompInstName);
+			
+			//Fetching data for linked Application Instance, Application Component & VM Instance 
+			
+			//getting Camel Name from dependent Actions
+			String appliInstCamelName = "";
+			String appCompTypeName = "";
+			String vmiCamelName = "";
+			int appliInstID = -1;
+			int appCompTypeID = -1;
+			int vmiID = -1;
+			
+			String iCompInstID = null;
+			
+			boolean status = true;
+			
+			try{
+				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+				Collection<Action> depActions = Coordinator.getDependentActions(this);
+				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Update)--- " + depActions.size());
+				for(Object obj : depActions){
+					System.out.println("-- " + obj.toString() + " ");
+					if(obj.getClass()==ApplicationInstanceAction.class){
+						appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
+					}else if(obj.getClass()==VMInstanceAction.class){
+						vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
+					}else if(obj.getClass()==InternalComponentAction.class){
+						appCompTypeName = ((InternalComponentAction)obj).getCompName();
+					}
+				}
+				
+				System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
+			} catch(Exception e){/*
+				try {
+				throw new ActionError();
+			} catch (ActionError ae) {
+				// TODO Auto-generated catch block
+				ae.printStackTrace();
+			}*/
+				e.printStackTrace();
+			}
+			
+			appliInstID = Integer.parseInt(dataShare.getApplicationInstanceId(appliInstCamelName));
+			String appCompTID = dataShare.getAppCompID(appCompTypeName);
+			appCompTypeID = Integer.parseInt(appCompTID);
+			String vmInstID = dataShare.getEntityVMIid(vmiCamelName);
+			vmiID = Integer.parseInt(vmInstID);
+			
+			LOGGER.log(Level.INFO, "To update Component Instance. Fetched appliInstID " + appliInstID + " appCompTypeID " + appCompTypeID + " vmiID " + vmiID);
+			
+			iCompInstID = dataShare.getCompInstID(iCompInstName);
+			int iCompInstID_temp = Integer.parseInt(iCompInstID);
+			
+			//To Do Exec API Call
+			//iCompInstID = "/api/instance/" + iCompInstName;//POST using parameters appliInstID, appCompTypeID & vmiID
+			if(status = execInterfacer.updateInstance(iCompInstID_temp, appliInstID, appCompTypeID, vmiID)){
+				LOGGER.log(Level.INFO, "Updated Component Instance : ID " + iCompInstID);
+				status = status && dataShare.updateCompInst(iCompInstName, dataShare.getApplicationInstance(appliInstCamelName), dataShare.getEntityLCAppComponent(appCompTypeName), dataShare.getEntityVMInstance(vmiCamelName));
+				if(status)
+					LOGGER.log(Level.INFO, "Mapping Updated for Component Instance : ID " + iCompInstID);
+			}			
+			
 		} else if(task.getTaskType()==TaskType.DELETE){
 			
+			
+			this.iCompInstName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Internal Component Instance action (delete) thread : name " + iCompInstName);
+			
+			//Fetching data for linked Application Instance, Application Component & VM Instance 
+			
+			//getting Camel Name from dependent Actions
+			String appliInstCamelName = "";
+			String appCompTypeName = "";
+			String vmiCamelName = "";
+			int appliInstID = -1;
+			int appCompTypeID = -1;
+			int vmiID = -1;
+			
+			String iCompInstID = null;
+			
+			boolean status = true;
+			
+			try{
+				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+				Collection<Action> depActions = Coordinator.getDependentActions(this);
+				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Delete)--- " + depActions.size());
+				for(Object obj : depActions){
+					System.out.println("-- " + obj.toString() + " ");
+					if(obj.getClass()==ApplicationInstanceAction.class){
+						appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
+					}else if(obj.getClass()==VMInstanceAction.class){
+						vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
+					}else if(obj.getClass()==InternalComponentAction.class){
+						appCompTypeName = ((InternalComponentAction)obj).getCompName();
+					}
+				}
+				
+				System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
+			} catch(Exception e){/*
+				try {
+				throw new ActionError();
+			} catch (ActionError ae) {
+				// TODO Auto-generated catch block
+				ae.printStackTrace();
+			}*/
+				e.printStackTrace();
+			}
+			
+			appliInstID = Integer.parseInt(dataShare.getApplicationInstanceId(appliInstCamelName));
+			String appCompTID = dataShare.getAppCompID(appCompTypeName);
+			appCompTypeID = Integer.parseInt(appCompTID);
+			String vmInstID = dataShare.getEntityVMIid(vmiCamelName);
+			vmiID = Integer.parseInt(vmInstID);
+			
+			LOGGER.log(Level.INFO, "To update Component Instance. Fetched appliInstID " + appliInstID + " appCompTypeID " + appCompTypeID + " vmiID " + vmiID);
+			
+			iCompInstID = dataShare.getCompInstID(iCompInstName);
+			int iCompInstID_temp = Integer.parseInt(iCompInstID);
+			
+			//To Do Exec API Call
+			//iCompInstID = "/api/instance/" + iCompInstName;//POST using parameters appliInstID, appCompTypeID & vmiID
+			try {
+				status = execInterfacer.deleteInstance(iCompInstID_temp);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(status){
+				LOGGER.log(Level.INFO, "Updated Component Instance : ID " + iCompInstID);
+				status = status && dataShare.deleteCompInst(iCompInstName);
+				if(status)
+					LOGGER.log(Level.INFO, "Mapping Updated for Component Instance : ID " + iCompInstID);
+			}
 		}
-		
 	}
 
 	public ConfigurationTask getTask() {

@@ -9,6 +9,7 @@
 package eu.paasage.upperware.adapter.adaptationmanager.mapping;
 
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -148,6 +149,19 @@ public class CamelExecwareMapping {
 		}
 	}
 	
+	public void removeVMT(String name_Camel){
+		synchronized(VMTs){
+			ListIterator<VirtualMachineTemplate> it = VMTs.listIterator();
+			while(it.hasNext()){
+				VirtualMachineTemplate temp = it.next();
+				if(temp.getVMType().equalsIgnoreCase(name_Camel)){
+					it.remove();
+					LOGGER.log(Level.INFO, "Removed VMT with name_Camel " + name_Camel);
+				}
+			}
+		}
+	}
+	
 	public void addImageNametoVMT(String name_Camel, String imageName){
 		synchronized(VMTs){
 			for(VirtualMachineTemplate VMtemplate : VMTs){
@@ -250,6 +264,21 @@ public class CamelExecwareMapping {
 		}
 	}
 	
+	public boolean deleteVMI(String name_Camel){
+		boolean status = false;
+		synchronized(VMIs){
+			ListIterator<VirtualMachineInstance> it = VMIs.listIterator();
+			while (it.hasNext()) {
+				VirtualMachineInstance vmi = it.next();
+				if(vmi.getVMIname().equalsIgnoreCase(name_Camel)){
+					it.remove();
+					status = true;
+				}
+			}
+		}
+		return status;
+	}
+	
 	public boolean setVMIID(String name_Camel, String id){
 		
 		synchronized(VMIs){
@@ -338,6 +367,24 @@ public class CamelExecwareMapping {
 		return false;
 	}
 	
+	public boolean updateLCAC(String intCompId_Camel, String download, String install, String start, String stop){
+		boolean status = false;
+		LCAppComponent lcac = getEntityLCAppComponent(intCompId_Camel);
+		synchronized (LCACs) {
+			status = lcac.setLCParams(download, install, start, stop);
+		}
+		return status;
+	}
+	
+	public boolean updateACAC(String intCompId_Camel, Application app, VirtualMachineTemplate vmt){
+		boolean status = false;
+		LCAppComponent lcac = getEntityLCAppComponent(intCompId_Camel);
+		synchronized (LCACs) {
+			status = lcac.setACParams(app, vmt);
+		}
+		return status;
+	}
+	
 	public LCAppComponent getEntityLCAppComponent(String intCompId_Camel){
 		synchronized (LCACs) {
 			for(LCAppComponent lcac : LCACs){
@@ -356,6 +403,32 @@ public class CamelExecwareMapping {
 					return lcac.getAppCompID();
 		}
 		return null;
+	}
+	
+	
+	public String getLCCompID(String intCompId_Camel){
+		synchronized (LCACs) {
+			for(LCAppComponent lcac : LCACs)
+				if(lcac.getLCACType().equalsIgnoreCase(intCompId_Camel))
+					return lcac.getLifeCycleCompId();
+		}
+		return null;
+	}
+	
+	public boolean deleteLCAC(String intCompId_Camel){
+		boolean status = false;
+		synchronized (LCACs) {
+			
+			ListIterator<LCAppComponent> it = LCACs.listIterator();
+			while(it.hasNext()){
+				LCAppComponent lcac = it.next();
+				if(lcac.getLCACType().equalsIgnoreCase(intCompId_Camel)){
+					it.remove();
+					status = true;
+				}
+			}
+		}
+		return status;
 	}
 	
 	
@@ -412,6 +485,20 @@ public class CamelExecwareMapping {
 		String getLCACType(){return this.intCompId_Camel;}
 		
 		String getVMTemplateType(){return this.vmt.getVMType();}
+		
+		boolean setLCParams(String download, String install, String start, String stop){
+			this.download = download;
+			this.install = install;
+			this.start = start;
+			this.stop = stop;
+			return true;
+		}
+		
+		boolean setACParams(Application app, VirtualMachineTemplate vmt){
+			this.app = app;
+			this.vmt = vmt;
+			return true;
+		}
 		
 		/*private void setLifeCycleCompId(String intCompId_Camel, String lifeCycleCompId_Exec){
 			this.lifeCycleCompId_Exec = lifeCycleCompId_Exec;
@@ -804,6 +891,36 @@ public class CamelExecwareMapping {
 		return null;
 	}
 	
+	public boolean updateComm(String CommType_Camel, ProvidedPort prvPort, RequiredPort reqPort){
+		boolean status = false;
+		Communication commEntity = null;
+		synchronized (Comms) {
+			for(Communication comm : Comms){
+				if(comm.getCommType().equalsIgnoreCase(CommType_Camel) && prvPort != null && reqPort != null){
+					status = true;
+					commEntity = comm;
+					LOGGER.log(Level.INFO, "Found Communication Component " + CommType_Camel +" already exists");
+				}
+			}
+			
+			if(prvPort == null){
+				LOGGER.log(Level.WARNING, "Communication provider port entity is NULL! Could not create " + CommType_Camel);
+				return status;
+			}
+			
+			if(reqPort == null){
+				LOGGER.log(Level.WARNING, "Communication consumer port entity is NULL! Could not create " + CommType_Camel);
+				return status;
+			}
+			
+			if(status && prvPort != null && reqPort != null){
+				commEntity.setCommunicationParams(prvPort, reqPort);
+				LOGGER.log(Level.INFO, "Updated Communication Name " + CommType_Camel + " provPort " + prvPort.getProvidedPortName() + " consPort " + reqPort.getRequiredPortName());
+			}
+		}
+		return status;
+	}
+	
 	public String getCommID(String commId_Camel){
 		synchronized (Comms) {
 			for(Communication comm : Comms)
@@ -811,6 +928,22 @@ public class CamelExecwareMapping {
 					return comm.getCommID();
 		}
 		return null;
+	}
+	
+	public boolean deleteComm(String commId_Camel){
+		boolean status = false;
+		
+		synchronized (Comms) {
+			ListIterator<Communication> it = Comms.listIterator();
+			while(it.hasNext()){
+				Communication comm = it.next();
+				if(comm.getCommType().equalsIgnoreCase(commId_Camel)){
+					it.remove();
+					status = true;
+				}
+			}
+		}
+		return status;
 	}
 	
 	private class Communication{
@@ -851,6 +984,12 @@ public class CamelExecwareMapping {
 		private String getCommType(){return CommType_Camel;}
 		
 		private String getCommID(){return this.id;}
+		
+		public boolean setCommunicationParams(ProvidedPort prvPort, RequiredPort reqPort){
+			this.prvPort = prvPort;
+			this.reqPort = reqPort;
+			return true;
+		}
 	}
 	
 	//Stores all the Provided Port entities created
@@ -902,6 +1041,38 @@ public class CamelExecwareMapping {
 		return status;
 	}
 	
+	public boolean updateProvPort(String providedPortName_Camel, LCAppComponent appCompPrv, String provPortNum){
+		boolean status = false;
+		
+		ProvidedPort provPortEntity = null;
+		
+		synchronized (provPorts) {
+			for(ProvidedPort pPort : provPorts){
+				if(pPort.getProvidedPortName().equalsIgnoreCase(providedPortName_Camel) && appCompPrv != null && provPortNum != null){
+					status = true;
+					provPortEntity = pPort;
+					LOGGER.log(Level.INFO, "Provided Port Component " + providedPortName_Camel +" located");
+				}
+			}
+			
+			if(appCompPrv == null){
+				LOGGER.log(Level.WARNING, "Provider Application Component is NULL! Could not update " + providedPortName_Camel);
+				return status;
+			}
+			
+			if(provPortNum == null){
+				LOGGER.log(Level.WARNING, "Communication provider port is NULL! Could not update " + providedPortName_Camel);
+				return status;
+			}
+			
+			if(status && appCompPrv != null && provPortNum != null){
+				status = status && provPortEntity.setProvidedPortParams(appCompPrv, provPortNum);
+				LOGGER.log(Level.INFO, "Provided Port Name " + providedPortName_Camel + " Prov: " + appCompPrv.getLCACType() + " provPort " + provPortNum);
+			}
+		}
+		return status;
+	}
+	
 	public boolean setProvPortID(String providedPortName_Camel, String id){
 		synchronized (provPorts) {
 			for(ProvidedPort pPort : provPorts){
@@ -934,6 +1105,24 @@ public class CamelExecwareMapping {
 		return null;
 	}
 	
+	public boolean deleteProvPort(String providedPortName_Camel){
+		boolean status = false;
+		
+		synchronized (provPorts) {
+			
+			ListIterator<ProvidedPort> it = provPorts.listIterator();
+			
+			while(it.hasNext()){
+				ProvidedPort pPort = it.next();
+				if(pPort.getProvidedPortName().equalsIgnoreCase(providedPortName_Camel) && pPort.getProvidedPortId()!=null){
+					it.remove();status = true;
+				}
+			}
+		}
+		return status;
+	}
+	
+	
 	private class ProvidedPort{
 		String id;
 		String provPortNum;
@@ -946,6 +1135,12 @@ public class CamelExecwareMapping {
 			this.appliCompPrv = appCompPrv;
 			this.provPortNum = provPortNum;
 			this.id = null;
+		}
+		
+		public boolean setProvidedPortParams(LCAppComponent appCompPrv, String provPortNum){
+			this.appliCompPrv = appCompPrv;
+			this.provPortNum = provPortNum;
+			return true;
 		}
 		
 		public void setProvidedPortId(String id){
@@ -1007,6 +1202,38 @@ public class CamelExecwareMapping {
 		return status;
 	}
 	
+	public boolean updateReqPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum){
+		boolean status = false;
+		
+		RequiredPort reqPortEntity = null;
+		
+		synchronized (reqPorts) {
+			for(RequiredPort rPort : reqPorts){
+				if(rPort.getRequiredPortName().equalsIgnoreCase(requiredPortName_Camel) && appCompCons != null && reqPortNum != null){
+					status = true;
+					reqPortEntity = rPort;
+					LOGGER.log(Level.INFO, "Port Component " + requiredPortName_Camel +" already exists");
+				}
+			}
+			
+			if(appCompCons == null){
+				LOGGER.log(Level.WARNING, "Required Application Component is NULL! Could not create " + requiredPortName_Camel);
+				return status;
+			}
+			
+			if(reqPortNum == null){
+				LOGGER.log(Level.WARNING, "Communication consumer port is NULL! Could not create " + requiredPortName_Camel);
+				return status;
+			}
+			
+			if(status && appCompCons != null && reqPortNum != null){
+				status = status && reqPortEntity.setRequiredPort(appCompCons, reqPortNum);
+				LOGGER.log(Level.INFO, "Required Port Name " + requiredPortName_Camel + " Cons: " + appCompCons.getLCACType() + " reqPort " + reqPortNum);
+			}
+		}
+		return status;
+	}
+	
 	public boolean setReqPortID(String requiredPortName_Camel, String id){
 		synchronized (reqPorts) {
 			for(RequiredPort rPort : reqPorts){
@@ -1039,6 +1266,24 @@ public class CamelExecwareMapping {
 		return null;
 	}
 	
+	public boolean deleteReqPort(String requiredPortName_Camel){
+		boolean status = false;
+		
+		synchronized (reqPorts) {
+			
+			ListIterator<RequiredPort> it = reqPorts.listIterator();
+			
+			while(it.hasNext()){
+				RequiredPort rPort = it.next();
+				if(rPort.getRequiredPortName().equalsIgnoreCase(requiredPortName_Camel) && rPort.getRequiredPortId()!=null){
+					it.remove();
+					status = true;
+				}
+			}
+		}
+		return status;
+	}
+	
 	private class RequiredPort{
 		String id;
 		String reqPortNum;
@@ -1051,6 +1296,12 @@ public class CamelExecwareMapping {
 			this.appliCompCons = appCompCons;
 			this.reqPortNum = reqPortNum;
 			this.id = null;
+		}
+		
+		public boolean setRequiredPort(LCAppComponent appCompCons, String reqPortNum){
+			this.appliCompCons = appCompCons;
+			this.reqPortNum = reqPortNum;
+			return true;
 		}
 		
 		public void setRequiredPortId(String id){
@@ -1133,6 +1384,38 @@ public class CamelExecwareMapping {
 		return false;
 	}
 	
+	public boolean updateCompInst(String intCompId_Camel, ApplicationInstance appInstance, LCAppComponent appComp, VirtualMachineInstance vmi){
+		synchronized (CompInsts) {
+			for(ComponentInstance compInst : CompInsts){
+				if(compInst.getCompInstType().equalsIgnoreCase(intCompId_Camel) && compInst.getCompInstID()==null){
+					compInst.setComponentInstanceParams(appInstance, appComp, vmi);
+					LOGGER.log(Level.INFO, "Updated Component Instance : " + intCompId_Camel);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean deleteCompInst(String intCompId_Camel){
+		boolean status = false;
+		ListIterator<ComponentInstance> it = CompInsts.listIterator();
+		
+		synchronized (CompInsts) {
+			
+			while(it.hasNext()){
+				ComponentInstance compInst = it.next();
+				if(compInst.getCompInstType().equalsIgnoreCase(intCompId_Camel)){
+					it.remove();
+					LOGGER.log(Level.INFO, "Deleted Component Instance : " + intCompId_Camel);
+					status = true;
+				}			
+			}
+		}
+		return status;
+	}
+	
+	
 	private class ComponentInstance{
 
 		String id;
@@ -1156,6 +1439,13 @@ public class CamelExecwareMapping {
 		private String getCompInstType(){return this.compInstName_Camel;}
 		
 		private String getCompInstID(){return this.id;}
+		
+		boolean setComponentInstanceParams(ApplicationInstance appInstance, LCAppComponent appComp, VirtualMachineInstance vmi) {
+			this.appInstance = appInstance;
+			this.appComp = appComp;
+			this.vmi = vmi;
+			return true;
+		}
 	}
 	
 	

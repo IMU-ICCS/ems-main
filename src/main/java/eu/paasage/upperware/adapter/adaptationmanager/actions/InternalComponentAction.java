@@ -65,7 +65,7 @@ public class InternalComponentAction implements Action {
 		if(task.getTaskType()==TaskType.CREATE){
 			
 			this.iCompName = objParams.get("name").asString();
-			LOGGER.log(Level.INFO, "Internal Component Type action thread : name " + iCompName);
+			LOGGER.log(Level.INFO, "Internal Component Type action (create) thread : name " + iCompName);
 			
 			//Preparation for Lifecycle Comp params
 			JsonValue jval;
@@ -105,7 +105,7 @@ public class InternalComponentAction implements Action {
 				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 				Collection<Action> depActions = Coordinator.getDependentActions(this);
-				LOGGER.log(Level.INFO, "--------------Breakpoint IntComp--- " + depActions.size());
+				LOGGER.log(Level.INFO, "--------------Breakpoint IntComp (Create)--- " + depActions.size());
 				for(Object obj : depActions){
 					System.out.println("-- " + obj.toString() + " ");
 					if(obj.getClass()==ApplicationAction.class){
@@ -194,7 +194,163 @@ public class InternalComponentAction implements Action {
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			
+			
+			this.iCompName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Internal Component Type action (update) thread : name " + iCompName);
+			
+			//Preparation for Lifecycle Comp params
+			JsonValue jval;
+			String downloadCmd = "", installCmd = "", startCmd = "", StopCmd = "";		
+			try{
+				if((jval = objParams.get("downloadCmd"))!=null)
+					downloadCmd = jval.asString();
+
+				if((jval = objParams.get("installCmd")) != null)
+					installCmd = jval.asString();
+
+				if((jval = objParams.get("startCmd")) != null)
+					startCmd = jval.asString();
+
+				if((jval = objParams.get("StopCmd"))!=null)
+					StopCmd = jval.asString();
+
+				LOGGER.log(Level.INFO, "downloadCmd " + downloadCmd.toString() + " installCmd " + installCmd.toString() + " startCmd " + startCmd.toString() + " StopCmd " + StopCmd.toString());
+
+			} catch(NullPointerException npe){//objParams.get("") throws NullPointerException if key not found
+				npe.printStackTrace();
+			}
+			
+			//Fetching data for linked Application & VM Template 
+			
+			//getting Camel Name from dependent Actions
+			String appliCamelName = "";
+			int applID = -1;
+			String vmtCamelName = "";
+			int vmtID = -1;
+			String LCcompID = null;
+			int LCcompID_temp = -1;
+			boolean status = true;
+			String AppCompID = null;
+			int AppCompID_temp = -1;
+			
+			try{
+				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+				Collection<Action> depActions = Coordinator.getDependentActions(this);
+				LOGGER.log(Level.INFO, "--------------Breakpoint IntComp (Update)--- " + depActions.size());
+				for(Object obj : depActions){
+					System.out.println("-- " + obj.toString() + " ");
+					if(obj.getClass()==ApplicationAction.class){
+						appliCamelName = ((ApplicationAction) obj).getAppName();
+					}else if(obj.getClass()==VMAction.class){
+						vmtCamelName = ((VMAction)obj).getVMName();
+					}
+				}
+				
+				System.out.println("AppName:: " + appliCamelName + " VMT name: " + vmtCamelName);
+			
+				LCcompID = dataShare.getAppCompID(iCompName);
+				LCcompID_temp = Integer.parseInt(LCcompID);
+				LOGGER.log(Level.INFO, "Retreived LC Comp Instance " + iCompName + " : ID " + LCcompID);
+				if(status = (status && execInterfacer.updateLifecycleComponent(LCcompID_temp, iCompName, downloadCmd, installCmd, startCmd, StopCmd))){
+					LOGGER.log(Level.INFO, "Updated LC Comp Instance " + iCompName + " : ID " + LCcompID);
+					
+					status = (status && dataShare.updateLCAC(iCompName, downloadCmd, installCmd, startCmd, StopCmd));
+					
+					//To Do Exec API Call
+					applID = Integer.parseInt(dataShare.getApplicationId(appliCamelName));
+					vmtID = Integer.parseInt(dataShare.getEntityVMTid(vmtCamelName));
+					//AppCompID = "/api/ac/" + iCompName;//POST using parameters LCcompID, dataShare.getApplicationId(appliCamelName)
+					AppCompID = dataShare.getAppCompID(iCompName);
+					AppCompID_temp = Integer.parseInt(AppCompID);
+					if(status = (status && execInterfacer.updateApplicationComponent(AppCompID_temp, applID, LCcompID_temp, vmtID))){
+						LOGGER.log(Level.INFO, "Updated App Comp Instance : ID " + AppCompID);
+						status = (status && dataShare.updateACAC(iCompName, dataShare.getApplication(appliCamelName), dataShare.getEntityVMT(vmtCamelName)));
+					}else
+							LOGGER.log(Level.WARNING, "Could not update App Comp Instance : ID " + AppCompID);
+				}
+				if(!status)
+					LOGGER.log(Level.WARNING, "Could not completely update LC Comp Instance : ID " + LCcompID);
+				
+			
+			} catch(Exception e){/*
+				try {
+					throw new ActionError();
+				} catch (ActionError ae) {
+					// TODO Auto-generated catch block
+					ae.printStackTrace();
+				}*/
+				e.printStackTrace();
+			}
+			
 		} else if(task.getTaskType()==TaskType.DELETE){
+			
+			
+			this.iCompName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "Internal Component Type action (delete) thread : name " + iCompName);
+			
+			//Fetching data for linked Application & VM Template 
+			
+			//getting Camel Name from dependent Actions
+			String appliCamelName = "";
+			int applID = -1;
+			String vmtCamelName = "";
+			int vmtID = -1;
+			String LCcompID = null;
+			int LCcompID_temp = -1;
+			boolean status = true;
+			String AppCompID = null;
+			int AppCompID_temp = -1;
+			
+			try{
+				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+				Collection<Action> depActions = Coordinator.getDependentActions(this);
+				LOGGER.log(Level.INFO, "--------------Breakpoint IntComp (Delete)--- " + depActions.size());
+				for(Object obj : depActions){
+					System.out.println("-- " + obj.toString() + " ");
+					if(obj.getClass()==ApplicationAction.class){
+						appliCamelName = ((ApplicationAction) obj).getAppName();
+					}else if(obj.getClass()==VMAction.class){
+						vmtCamelName = ((VMAction)obj).getVMName();
+					}
+				}
+				
+				System.out.println("AppName:: " + appliCamelName + " VMT name: " + vmtCamelName);
+			
+				
+				AppCompID = dataShare.getAppCompID(iCompName);
+				AppCompID_temp = Integer.parseInt(AppCompID);
+				LOGGER.log(Level.INFO, "Retreived App Comp Instance " + iCompName + " : ID " + AppCompID);
+				if(status = (status && execInterfacer.deleteApplicationComponent(AppCompID_temp)))
+					LOGGER.log(Level.INFO, "Deleted App Comp Instance : ID " + AppCompID);
+				else
+					LOGGER.log(Level.WARNING, "Could not delete App Comp Instance : ID " + AppCompID);
+				
+				
+				LCcompID = dataShare.getLCCompID(iCompName);
+				LCcompID_temp = Integer.parseInt(LCcompID);
+				LOGGER.log(Level.INFO, "Retreived LC Comp Instance " + iCompName + " : ID " + LCcompID);
+				if(status = (status && execInterfacer.deleteLifecycleComponent(LCcompID_temp)));
+					LOGGER.log(Level.INFO, "Deleted LC Comp Instance " + iCompName + " : ID " + LCcompID);
+					
+				if(status){
+					dataShare.deleteLCAC(iCompName);
+					LOGGER.log(Level.INFO, "Removed from Mapping LC Comp Instance " + iCompName + " : ID " + LCcompID);
+				}else
+					LOGGER.log(Level.WARNING, "Could not completely delete LC Comp Instance : ID " + LCcompID);
+				
+			} catch(Exception e){/*
+				try {
+					throw new ActionError();
+				} catch (ActionError ae) {
+					// TODO Auto-generated catch block
+					ae.printStackTrace();
+				}*/
+				e.printStackTrace();
+			}
+			
+			
 			
 		}
 		

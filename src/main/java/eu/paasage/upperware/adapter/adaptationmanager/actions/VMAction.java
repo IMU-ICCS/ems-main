@@ -61,7 +61,7 @@ public class VMAction implements Action {
 		if(task.getTaskType()==TaskType.CREATE){
 			
 			this.vmName = objParams.get("name").asString();
-			LOGGER.log(Level.INFO, "VM Type action thread : name " + this.vmName);
+			LOGGER.log(Level.INFO, "VM Type action (create) thread : name " + this.vmName);
 			
 			/*NO Exec API Call!!
 			 * Passing and storing the VM name and image to be created in VMInstanceAction when having cloud, hardware and location params */
@@ -74,22 +74,70 @@ public class VMAction implements Action {
 			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
-			LOGGER.log(Level.INFO, "--------------Breakpoint VMAction--- " + depOnActions.size());
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMAction (create)--- " + depOnActions.size());
 			
 			for(Object obj : depOnActions){
 				System.out.println("-- " + obj.toString() + " ");
 				if(obj.getClass()==VMInstanceAction.class){
 					((VMInstanceAction) obj).run();
-					LOGGER.log(Level.INFO, "Forced " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
+					LOGGER.log(Level.INFO, "Forced (creation) " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
 				}
 			}
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			
+			boolean status = true;
+			
+			this.vmName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "VM Type action (update) thread : name " + this.vmName);
+			
+			/**
+			 * Force dependent VMInstAct to execute deletion before VMType deletion
+			 */
+			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMAction (Update)--- " + depOnActions.size());
+			
+			for(Object obj : depOnActions){
+				System.out.println("-- " + obj.toString() + " ");
+				if(obj.getClass()==VMInstanceAction.class){
+					((VMInstanceAction) obj).run();
+					LOGGER.log(Level.INFO, "Forced (update) " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
+				} else
+					status = false;
+			}
+			
 		} else if(task.getTaskType()==TaskType.DELETE){
 			
+			boolean status = true;
+			
+			this.vmName = objParams.get("name").asString();
+			LOGGER.log(Level.INFO, "VM Type action (delete) thread : name " + this.vmName);
+			
+			/**
+			 * Force dependent VMInstAct to execute deletion before VMType deletion
+			 */
+			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMAction (Delete)--- " + depOnActions.size());
+			
+			for(Object obj : depOnActions){
+				System.out.println("-- " + obj.toString() + " ");
+				if(obj.getClass()==VMInstanceAction.class){
+					((VMInstanceAction) obj).run();
+					LOGGER.log(Level.INFO, "Forced (deletion) " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
+				} else
+					status = false;
+			}
+			
+			/*NO Exec API Call!!
+			 * Passing and storing the VM name and image to be created in VMInstanceAction when having cloud, hardware and location params */
+			if(status){//there exists no instance of this VMType
+				dataShare.removeVMT(this.vmName);//deleted the VMType
+			}
 		}
-		
 	}
 
 	public ConfigurationTask getTask() {
