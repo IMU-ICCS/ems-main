@@ -532,7 +532,7 @@ public class RuleProcessor {
 		}
 		
 		if (updatedCamelModel != null) { // update camel model if optimization requirement is obsolete
-			cdoClient_.storeModelOverwritten(updatedCamelModel, camelModel);
+			cdoClient_.storeModelOverwritten(updatedCamelModel, camelModel + "v2");
 		}
 
 		return SOLUTION_STATUS.MODEL_CHANGED;
@@ -621,8 +621,8 @@ public class RuleProcessor {
 
 		// Delete optimization requirement from CAMEL if some metric is deleted
 		// testing
-		CamelModel obj = (CamelModel) EcoreUtil.copy(camelModel);
 		if (!removedMetrics.isEmpty()) {
+			CamelModel obj = (CamelModel) EcoreUtil.copy(camelModel);
 			requirementModels = obj.getRequirementModels();
 			for (RequirementModel requirementModel : requirementModels) {
 				Iterator<Requirement> rIter = requirementModel.getRequirements().iterator();
@@ -645,9 +645,7 @@ public class RuleProcessor {
 			return obj;
 		}
 		
-		obj.setName("Foobar");
-		return obj;
-		//return null;
+		return null;
 	}
 
 	private void removeConfigurationFromCDO(PaasageConfiguration pc,
@@ -1347,6 +1345,8 @@ public class RuleProcessor {
 		return new RPOutput(success, newResId);
 	}
 
+	
+	@SuppressWarnings("unused")
 	private SOLUTION_STATUS validateMetricConditions(
 			String cdoIdentifier,
 			String camelModel) {
