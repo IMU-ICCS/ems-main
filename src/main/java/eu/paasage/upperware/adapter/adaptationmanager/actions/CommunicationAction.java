@@ -115,7 +115,7 @@ public class CommunicationAction implements Action {
 				
 				LOGGER.log(Level.INFO, "Created provider port : ID " + provPortID);
 				
-				if(provPortID != null && provPortID != "" && dataShare.setProvPortID(provPortName, provPortID))
+				if(provPortID != null && !provPortID.equals("")  && dataShare.setProvPortID(provPortName, provPortID))
 					LOGGER.log(Level.INFO, "Stored newly created provider port Instance : ID " + provPortID);
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created provider port Instance : ID " + provPortID);
@@ -133,7 +133,7 @@ public class CommunicationAction implements Action {
 				
 				LOGGER.log(Level.INFO, "Created required port : ID " + consPortID);
 				
-				if(consPortID != null && consPortID != "" && dataShare.setReqPortID(consPortName, consPortID))
+				if(consPortID != null && !consPortID.equals("") && dataShare.setReqPortID(consPortName, consPortID))
 					LOGGER.log(Level.INFO, "Stored newly created required port Instance : ID " + consPortID);
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created required port Instance : ID " + consPortID);
@@ -148,7 +148,7 @@ public class CommunicationAction implements Action {
 				
 				LOGGER.log(Level.INFO, "Created Communication : ID " + commExecID);
 				
-				if(commExecID != null && commExecID != "" && dataShare.setCommID(communicationName, execInterfacer.trimResponseID(commExecID)))
+				if(commExecID != null && !commExecID.equals("") && dataShare.setCommID(communicationName, execInterfacer.trimResponseID(commExecID)))
 					LOGGER.log(Level.INFO, "Stored newly created Communication Type Instance : ID " + commExecID);
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created Communication Type Instance : ID " + commExecID);
