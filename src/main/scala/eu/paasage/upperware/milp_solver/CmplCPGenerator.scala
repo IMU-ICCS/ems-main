@@ -3,6 +3,7 @@ package eu.paasage.upperware.milp_solver
 import eu.paasage.upperware.metamodel.cp._
 import eu.paasage.upperware.metamodel.types._
 import scala.collection.JavaConversions._
+import eu.paasage.upperware.milp_solver.expr.Expr._
 
 /** Variable name encoder functions
   *
@@ -67,6 +68,26 @@ trait CmplCPGenerator {
     expr.ExprSerializator(encodeVarName)(problem)
   }
 
+  /** Recursively convert an Expression` into CMPL format */
+  private def expressionObjective(o: Expression, g: GoalOperatorEnum): String = {
+    val expression = expr.Expr.fromWP3(o, metricMap)
+    val problem = if(reformulate) expression.flatten else expression
+
+    problem match {
+      case (expr.Divide(a, b)) if a.isConstant => {
+        val ex = expr.ExprSerializator(encodeVarName)(b)
+        val invGoal = if (g == GoalOperatorEnum.MIN) "max" else "min"
+        s"${ex} -> ${invGoal};"
+      }
+      case _ => {
+        val ex = expr.ExprSerializator(encodeVarName)(problem);
+        s"${ex} -> ${g};"
+      }
+    }
+
+
+  }
+
   /** Get CMPL represenation of variable domain */
   private def domain(o: Domain): String = o match {
     case x: RangeDomain if ((x.getType == BasicTypeEnum.INTEGER || x.getType == BasicTypeEnum.LONG) && x.getFrom.asInstanceOf[IntegerValueUpperware].getValue == 0 && x.getTo.asInstanceOf[IntegerValueUpperware].getValue == 1) => "binary"
@@ -86,7 +107,7 @@ trait CmplCPGenerator {
   /** Generate objectives part of the model */
   private def objectives = {
     if(!cp.getGoals.isEmpty) {
-      val textGoals = cp.getGoals.map(g => s"${expression(g.getExpression)} -> ${g.getGoalType};")
+      val textGoals = cp.getGoals.map(g => expressionObjective(g.getExpression, g.getGoalType))
       textGoals.mkString("\n")
     } else {
       "1 -> min;"
@@ -109,7 +130,7 @@ trait CmplCPGenerator {
   def generate_model = s"""
 variables:
 ${variables}
-    
+
 objectives:
 ${objectives}
 

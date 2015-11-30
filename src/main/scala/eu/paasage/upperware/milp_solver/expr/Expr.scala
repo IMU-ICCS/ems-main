@@ -24,6 +24,7 @@ object Expr {
         case OperatorEnum.MINUS => Subtract(acc, fromWP3(elem, variableMap))
         case OperatorEnum.TIMES => Multiply(acc, fromWP3(elem, variableMap))
         case OperatorEnum.DIV   => Divide(acc, fromWP3(elem, variableMap))
+        case OperatorEnum.MEAN  => throw new Exception(x.getOperator + " operator is not supported")
       })
     }
     case x: cp.Variable => Variable(x.getId)
@@ -73,8 +74,17 @@ abstract class Expr {
       val b_flat = b.flatten
       (a_flat, b_flat) match {
         case (Add(a,b), Add(c,d)) => Add(Add(Multiply(a,c).flatten, Multiply(b,c).flatten), Add(Multiply(a,d).flatten, Multiply(b,d).flatten))
+        case (Subtract(a,b), Subtract(c,d)) => Subtract(Subtract(Multiply(a,c).flatten, Multiply(b,c).flatten), Subtract(Multiply(a,d).flatten, Multiply(b,d).flatten))
+
+        case (Add(a,b), Subtract(c,d)) => Subtract(Add(Multiply(a,c).flatten, Multiply(b,c).flatten), Add(Multiply(a,d).flatten, Multiply(b,d).flatten))
+        case (Subtract(a,b), Add(c,d)) => Add(Subtract(Multiply(a,c).flatten, Multiply(b,c).flatten), Subtract(Multiply(a,d).flatten, Multiply(b,d).flatten))
+
         case (Add(a,b), c) => Add(Multiply(a,c).flatten, Multiply(b,c).flatten)
+        case (Subtract(a,b), c) => Subtract(Multiply(a,c).flatten, Multiply(b,c).flatten)
+
         case (c, Add(a,b)) => Add(Multiply(c,a).flatten, Multiply(c,b).flatten)
+        case (c, Subtract(a,b)) => Subtract(Multiply(c,a).flatten, Multiply(c,b).flatten)
+
         case (a,b) => Multiply(a,b)
       }
     }
@@ -82,12 +92,19 @@ abstract class Expr {
       val a_flat = a.flatten
       val b_flat = b.flatten
       (a_flat, b_flat) match {
-        case (Add(a,b), Add(c,d)) => Add(Add(Divide(a,c).flatten, Divide(b,c).flatten), Add(Divide(a,d).flatten, Divide(b,d).flatten))
         case (Add(a,b), c) => Add(Divide(a,c).flatten, Divide(b,c).flatten)
-        case (c, Add(a,b)) => Add(Divide(c,a).flatten, Divide(c,b).flatten)
         case (a,b) => Divide(a,b)
       }
     }
     case _ => this
+  }
+
+  def isConstant:Boolean = this match {
+    case Add(a, b)      => a.isConstant && b.isConstant
+    case Subtract(a, b) => a.isConstant && b.isConstant
+    case Multiply(a, b) => a.isConstant && b.isConstant
+    case Divide(a, b)   => a.isConstant && b.isConstant
+    case Const(_)       => true
+    case Variable(_)    => false
   }
 }
