@@ -163,16 +163,20 @@ public class PlanGeneratorTest {
 			//vm instance tasks
 			assertEquals("incorrect number of vmInstanceTasks generated!", 4, vmInstances.size());
 			for(VMInstanceTask vmi : vmInstances){ //there should only be 1
-				assertEquals("incorrect dependency for vm instance task(" + vmi.getName() + ")",1, vmi.getDependencies().size()); //depends on type
+				assertEquals("incorrect dependency for vm instance task(" + vmi.getName() + ")",7, vmi.getDependencies().size()); //depends on type
 				assertTrue("vmInstance task type is incorrect!", vmi.getTaskType().equals(TaskType.CREATE));
-				VMTypeTask type = (VMTypeTask) vmi.getDependencies().iterator().next();
-				if(vmi.getName().startsWith("Core")){
-					assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", type.getName().equals("CoreIntensiveUbuntuGermany"));
-				}else if(vmi.getName().startsWith("CPU")){
-					assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", type.getName().equals("CPUIntensiveUbuntuGermany"));
-				}else if(vmi.getName().startsWith("Storage")){
-					assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", type.getName().equals("StorageIntensiveUbuntuGermany"));
+				if(vmi.getDependencies().iterator().next() instanceof VMTypeTask){
+					VMTypeTask type = (VMTypeTask) vmi.getDependencies().iterator().next();
+					if(vmi.getName().startsWith("Core")){
+						assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", type.getName().equals("CoreIntensiveUbuntuGermany"));
+					}else if(vmi.getName().startsWith("CPU")){
+						assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", type.getName().equals("CPUIntensiveUbuntuGermany"));
+					}else if(vmi.getName().startsWith("Storage")){
+						assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", type.getName().equals("StorageIntensiveUbuntuGermany"));
+					}
 				}
+				
+				
 				
 			}
 			//Internal Component tasks
@@ -448,6 +452,9 @@ public class PlanGeneratorTest {
 			fail("ModelComparatorException generating a simple deployment plan :" + me.getMessage());
 		}
 	}
+	
+	
+	
 	//@Ignore
 	@Test
 	public void testBBuildRedeploymentPlan() {
@@ -581,7 +588,10 @@ public class PlanGeneratorTest {
 				}//end for comm instance				
 			}else{
 				fail("failed to generate a reconfiguration plan with tasks!");
-			}			
+			}
+			//for visual inspection
+			//printTasks(reconfigPlan.getTasks());
+			//
 		} catch (PlanGenerationException e) {
 			fail("Error generating a reconfiguration plan :" + e.getMessage());
 		} catch (ModelComparatorException me){

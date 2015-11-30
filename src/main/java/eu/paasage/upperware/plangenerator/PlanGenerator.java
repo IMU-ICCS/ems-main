@@ -22,7 +22,6 @@ import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.Component;
 import eu.paasage.camel.deployment.ComponentInstance;
 import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponent;
@@ -193,7 +192,7 @@ public class PlanGenerator {
 		}else{
 			LOG.info("No hosting instances to remove ....");
 		}
-		//internalComponent instances ??these depends on the binding tasks
+		//internalComponent instances ??these depends on the binding tasks?? 
 		if(!mc.getRemovedComInstances().isEmpty()){
 			LOG.debug(mc.getRemovedComInstances().size() + " number of internal component instances to remove....");
 			for(InternalComponentInstance ici : mc.getRemovedInternalComponentInstances()){
@@ -264,6 +263,7 @@ public class PlanGenerator {
 			LOG.debug(mc.getAddedInternalComponents().size() + " number of internal components to add....");
 			for(InternalComponent comp : mc.getAddedInternalComponents()){
 				compTypeTasks.add(getComponentTypeTask(comp, TaskType.CREATE));
+				//app should already exist, app can only be updated, so ignore dependency
 			}
 		}else{
 			LOG.info("No internal component to create ....");
@@ -282,6 +282,7 @@ public class PlanGenerator {
 			LOG.debug(mc.getAddedHostings().size() + " number of hosting to add....");
 			for(Hosting hosting : mc.getAddedHostings()){
 				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.CREATE));
+				//27Nov15 ExecutionWare doesn't care about hosting type, so ignore dependencies
 			}
 		}else{
 			LOG.info("No hosting object to create ....");
@@ -290,8 +291,8 @@ public class PlanGenerator {
 		//VM Instance		
 		if(!mc.getAddedVMInstances().isEmpty()){
 			LOG.debug(mc.getAddedVMInstances().size() + " number of VM instances to add ....");
-			for(VMInstance avm : mc.getAddedVMInstances()){
-				vmInsTasks.add(getVMInsTask(avm, TaskType.CREATE));
+			for(VMInstance avm : mc.getAddedVMInstances()){				
+				vmInsTasks.add(getVMInsTask(avm, TaskType.CREATE));	//create the VMinstanceTask for create
 			}		
 		}else{
 			LOG.info("No VM instances to add ....");
@@ -325,7 +326,8 @@ public class PlanGenerator {
 		if(!mc.getAddedComInstances().isEmpty()){
 			LOG.debug(mc.getAddedComInstances().size() + " number of communication instances to add ....");
 			for(CommunicationInstance aci : mc.getAddedComInstances()){
-				communicationInsTasks.add(getCommunicationInsTask(aci, TaskType.CREATE));				
+				communicationInsTasks.add(getCommunicationInsTask(aci, TaskType.CREATE));	
+				//27Nov15 ExecutionWare doesn't care about hosting type, so ignore dependencies
 			}//end for each com instance
 		}else{
 			LOG.info("No communication instances to add ....");
@@ -415,7 +417,7 @@ public class PlanGenerator {
 		//basic assumption : 
 		//1. removal tasks can be process at any time (assuming EW does not enforce dependency)
 		//2. update application/instance tasks can also be done at any time as it only got the name attribute
-		//3. update and create tasks can be depends on each other.  Instances depend on Types (definition), bindings depends on the consumer/dependent.
+		//3. update and create tasks can be dependent on each other.  Instances depend on Types (definition), bindings depends on the consumer/dependent.
 		//4. update will not change the existing identifier, create will change the identifier.  Therefore update and create tasks do not depend on delete task.
 		//
 		//VM Types
@@ -440,16 +442,21 @@ public class PlanGenerator {
 						LOG.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
 					}
 					//if no parent, the type must be already 'deployed'
+					//27Nov15 add dependencies to new comm type
+					if(vmit.getTaskType().equals(TaskType.CREATE)){
+						setComTypeDependencies(vmit, getNewTask(communicationTypeTasks));//second method returns an empty list if no new tasks
+					}
+					//27Nov15 
 				}//end if not delete
 				this.plan.getTasks().add(vmit);
 			}//end for each vmInsTask				
 		}else{
-			LOG.info("No VM instance tasks to add ....");
+			LOG.info("No VM instance tasks to add dependencies ....");
 		}
 		//comp type 
 		if(!compTypeTasks.isEmpty()){
 			LOG.debug(compTypeTasks.size() + " number of create/update/delete comp type tasks to add to plan ....");
-			//add the application dependencies
+			//add the application dependencies, VMType dependency processed in hosting type
 			if(appTask != null){
 				for(ComponentTypeTask compTypeTask : compTypeTasks){
 					compTypeTask.getDependencies().add(appTask);
@@ -929,6 +936,9 @@ public class PlanGenerator {
 					vmit.getDependencies().add(parent);
 					LOG.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
 				}
+				//27Nov2015 - add all communicationType Tasks.  ExecutionWare requires that all com types are processed before VMInstances
+				setComTypeDependencies(vmit, communicationTypeTasks);
+				//end 27Nov2015
 				this.plan.getTasks().add(vmit);
 			}//end for each vmInsTask				
 		}else{
@@ -1421,5 +1431,44 @@ public class PlanGenerator {
 			}
 		}
 		return null;
+	}
+	/**
+	 * Add the provided {@link java.util.List <em>List</em>} of {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}
+	 * as dependencies to the target {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
+	 * <p>
+	 * @param targetTask	a generic {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
+	 * @param tasks  the {@link java.util.List <em>List</em>} of generic {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
+	 * @return	the target {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
+	 */
+	private ConfigurationTask setComTypeDependencies(ConfigurationTask targetTask, List<? extends ConfigurationTask> tasks){
+		//
+		if(!tasks.isEmpty()){
+			for(ConfigurationTask ctt : tasks){
+				targetTask.getDependencies().add(ctt);
+				LOG.debug("...added task dependency(" + ctt.getName() + ") to the target task : " + targetTask.getName());
+			}
+		}else{
+			LOG.debug("...No task dependencies to add to target task(" + targetTask.getName() + ")");
+		}		
+		return targetTask;
+	}
+	/**
+	 * Extract new {@link java.util.List <em>List</em>} of {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}
+	 * from a generic {@link java.util.List <em>List</em>} of {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
+	 * <p>
+	 * @param allTask	the {@link java.util.List <em>List</em>} of {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>} to process.
+	 * @return	a {@link java.util.List <em>List</em>} of selected {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
+	 */
+	private List<? extends ConfigurationTask> getNewTask(List<? extends ConfigurationTask> allTask){
+		List<ConfigurationTask> newTasks = new ArrayList<ConfigurationTask>();
+		if(!allTask.isEmpty()){
+			for(ConfigurationTask ctt : allTask){
+				if(ctt.getTaskType().equals(TaskType.CREATE)){
+					newTasks.add(ctt);
+					LOG.debug("... added " + ctt.getName() + "  to new task list....");
+				}
+			}
+		}
+		return newTasks;
 	}
 }
