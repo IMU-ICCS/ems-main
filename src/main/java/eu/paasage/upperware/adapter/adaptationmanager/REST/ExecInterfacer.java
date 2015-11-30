@@ -3188,7 +3188,7 @@ public class ExecInterfacer {
     	return status;
 	}
 	
-	public String createConsumerPort(String portName, int consumerAppComponent, int consumerPort){
+	public String createConsumerPort(String portName, int consumerAppComponent, int consumerPort, String isMandatory, String requiredPortstartCmd){
 		
 		boolean status = false;
 		
@@ -3197,7 +3197,9 @@ public class ExecInterfacer {
 			JSONObject inBody = new JSONObject();
 			inBody.put("name", portName);
 	        inBody.put("applicationComponent", consumerAppComponent);
-	        inBody.put("port", consumerPort);
+	        //inBody.put("port", consumerPort);//NOT required - replicated from provider port by ExecWare
+	        inBody.put("isMandatory", isMandatory);
+	        inBody.put("updateAction", requiredPortstartCmd);
 
 	        HttpResponse resp = postRequest(API_PORTREQ, null, inBody);
 	        HttpEntity respEntity = resp.getEntity();
@@ -3261,7 +3263,7 @@ public class ExecInterfacer {
     	return jArr;
 	}
 	
-	public boolean updateConsumerPort(int consPortId, String portName, int consumerAppComponent, int consumerPort){
+	public boolean updateConsumerPort(int consPortId, String portName, int consumerAppComponent, int consumerPort, String isMandatory, String requiredPortstartCmd){
 		
 		boolean status = false;
 		
@@ -3270,7 +3272,9 @@ public class ExecInterfacer {
 			JSONObject inBody = new JSONObject();
 			inBody.put("name", portName);
 	        inBody.put("applicationComponent", consumerAppComponent);
-	        inBody.put("port", consumerPort);
+	        //inBody.put("port", consumerPort);//NOT required - replicated from provider port by ExecWare
+	        inBody.put("isMandatory", isMandatory);
+	        inBody.put("updateAction", requiredPortstartCmd);
 
 	        HttpResponse resp = putRequest(API_PORTREQ + "/" + consPortId, null, inBody);
 	        HttpEntity respEntity = resp.getEntity();

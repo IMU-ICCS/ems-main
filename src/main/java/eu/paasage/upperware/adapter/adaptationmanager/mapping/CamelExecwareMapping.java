@@ -1169,7 +1169,7 @@ public class CamelExecwareMapping {
 		return status;
 	}
 	
-	public boolean addReqPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum){
+	public boolean addReqPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum, String isMandatory, String requiredPortstartCmd){
 		boolean status = false;
 		
 		RequiredPort reqPortEntity;
@@ -1194,7 +1194,7 @@ public class CamelExecwareMapping {
 			}
 			
 			if(!status && appCompCons != null && reqPortNum != null){
-				reqPortEntity = new RequiredPort(requiredPortName_Camel, appCompCons, reqPortNum);
+				reqPortEntity = new RequiredPort(requiredPortName_Camel, appCompCons, reqPortNum, isMandatory, requiredPortstartCmd);
 				status = reqPorts.add(reqPortEntity);
 				LOGGER.log(Level.INFO, "Required Port Name " + requiredPortName_Camel + " Cons: " + appCompCons.getLCACType() + " reqPort " + reqPortNum);
 			}
@@ -1202,7 +1202,7 @@ public class CamelExecwareMapping {
 		return status;
 	}
 	
-	public boolean updateReqPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum){
+	public boolean updateReqPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum, String isMandatory, String requiredPortstartCmd){
 		boolean status = false;
 		
 		RequiredPort reqPortEntity = null;
@@ -1226,8 +1226,8 @@ public class CamelExecwareMapping {
 				return status;
 			}
 			
-			if(status && appCompCons != null && reqPortNum != null){
-				status = status && reqPortEntity.setRequiredPort(appCompCons, reqPortNum);
+			if(status && appCompCons != null && reqPortNum != null && isMandatory != null){
+				status = status && reqPortEntity.setRequiredPort(appCompCons, reqPortNum, isMandatory, requiredPortstartCmd);
 				LOGGER.log(Level.INFO, "Required Port Name " + requiredPortName_Camel + " Cons: " + appCompCons.getLCACType() + " reqPort " + reqPortNum);
 			}
 		}
@@ -1287,20 +1287,26 @@ public class CamelExecwareMapping {
 	private class RequiredPort{
 		String id;
 		String reqPortNum;
+		String isMandatory;
+		String requiredPortstartCmd;
 		
 		LCAppComponent appliCompCons;
 		String requiredPortName_Camel;
 		
-		public RequiredPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum){
+		public RequiredPort(String requiredPortName_Camel, LCAppComponent appCompCons, String reqPortNum, String isMandatory, String requiredPortstartCmd){
 			this.requiredPortName_Camel = requiredPortName_Camel;
 			this.appliCompCons = appCompCons;
 			this.reqPortNum = reqPortNum;
+			this.isMandatory = isMandatory;
+			this.requiredPortstartCmd = requiredPortstartCmd;
 			this.id = null;
 		}
 		
-		public boolean setRequiredPort(LCAppComponent appCompCons, String reqPortNum){
+		public boolean setRequiredPort(LCAppComponent appCompCons, String reqPortNum, String isMandatory, String requiredPortstartCmd){
 			this.appliCompCons = appCompCons;
 			this.reqPortNum = reqPortNum;
+			this.isMandatory = isMandatory;
+			this.requiredPortstartCmd = requiredPortstartCmd;
 			return true;
 		}
 		

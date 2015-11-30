@@ -79,10 +79,13 @@ public class CommunicationAction implements Action {
 			String consumer = objParams.get("consumer").asString();
 			String consCompName = null;
 			String consCompID = null;
-			
+
+			//Required port params
 			String consPort = objParams.get("consumerPort").toString();
 			String consPortName = null;
 			String consPortID = null;
+			String isMandatory = objParams.get("isMandatory").toString();
+			String requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
 			
 			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
@@ -125,11 +128,11 @@ public class CommunicationAction implements Action {
 				
 				consPortID = dataShare.getReqPortID(consPortName);
 				
-			}else if(dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort)){
+			}else if(dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd)){
 				consCompID = dataShare.getAppCompID(consCompName);
 				//To Do Exec API Call
 				//provPortID = "/api/communication/" + communicationName;//POST using parameters consPortName, consCompID, consPort
-				consPortID = execInterfacer.createConsumerPort(consPortName, Integer.parseInt(consCompID), Integer.parseInt(consPort));
+				consPortID = execInterfacer.createConsumerPort(consPortName, Integer.parseInt(consCompID), Integer.parseInt(consPort), isMandatory, requiredPortstartCmd);
 				
 				LOGGER.log(Level.INFO, "Created required port : ID " + consPortID);
 				
@@ -191,9 +194,12 @@ public class CommunicationAction implements Action {
 			String consCompName = null;
 			String consCompID = null;
 			
+			//Required port params
 			String consPort = objParams.get("consumerPort").toString();
 			String consPortName = null;
 			String consPortID = null;
+			String isMandatory = objParams.get("isMandatory").toString();
+			String requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
 			
 			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
@@ -237,14 +243,14 @@ public class CommunicationAction implements Action {
 			if(dataShare.existsReqPort(consPortName)){
 				
 				consPortID = dataShare.getReqPortID(consPortName);
-				status = status && execInterfacer.updateConsumerPort(Integer.parseInt(consPortID), consPortName, Integer.parseInt(consCompID), Integer.parseInt(consPort));
-				dataShare.updateReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort);
+				status = status && execInterfacer.updateConsumerPort(Integer.parseInt(consPortID), consPortName, Integer.parseInt(consCompID), Integer.parseInt(consPort), isMandatory, requiredPortstartCmd);
+				dataShare.updateReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd);
 				
-			}else if(dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort)){
+			}else if(dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd)){
 				consCompID = dataShare.getAppCompID(consCompName);
 				//To Do Exec API Call
 				//provPortID = "/api/communication/" + communicationName;//POST using parameters consPortName, consCompID, consPort
-				consPortID = execInterfacer.createConsumerPort(consPortName, Integer.parseInt(consCompID), Integer.parseInt(consPort));
+				consPortID = execInterfacer.createConsumerPort(consPortName, Integer.parseInt(consCompID), Integer.parseInt(consPort), isMandatory, requiredPortstartCmd);
 				
 				LOGGER.log(Level.INFO, "Created required port : ID " + consPortID);
 				
