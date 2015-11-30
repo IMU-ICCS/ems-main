@@ -106,6 +106,8 @@ public class metasolver{
 	public static void runMILPSolver(String input, long timestamp){
 
 		try{	
+			
+			System.out.println("... about to call milp-solver : java -jar milp-solver-assembly.jar " + input +' ' + timestamp + "....");
 			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input +' ' + timestamp);
 			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
 
@@ -163,7 +165,8 @@ public class metasolver{
 
 	public static void runS2D(String CAMELmodel, String CPmodel, long timestamp){
 
-		try{	
+		try{
+			System.out.println("... about to call s2D : java -jar solver-to-deployment-2015.9.1-SNAPSHOT.jar-with-dependencies.jar " + CPmodel + ' ' + CAMELmodel + ' ' +timestamp);
 			Process p1 = Runtime.getRuntime().exec("java -jar solver-to-deployment-2015.9.1-SNAPSHOT.jar-with-dependencies.jar " + CPmodel + ' ' + CAMELmodel + ' ' +timestamp);
 		
 			// you can pass the system command or a script to exec command. here i used uname -a system command

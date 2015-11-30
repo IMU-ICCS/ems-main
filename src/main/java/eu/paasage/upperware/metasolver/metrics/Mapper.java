@@ -188,6 +188,8 @@ public class Mapper {
 				jObj.add("id", resId);
 			}
 			jObj.add("solution_tmp", timestamp); // milp-solver needs this
+			System.out.println("adding solution timestamp :" + timestamp);
+			log.debug("adding solution timestamp :" + timestamp);
 			// explicitly stop the cdo client
 			this.utils.closeCDOSession();
 			//
