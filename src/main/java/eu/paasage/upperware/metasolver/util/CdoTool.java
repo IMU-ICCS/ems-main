@@ -183,6 +183,7 @@ public final class CdoTool {
 		EList<EObject> contents1 = cdo.getContents();
 		try{
 			if(contents1.size() > 0){
+				log.debug(" ... there are contents, will be deleting.....");
 				//do this via CDO id
 				CDOObject cdoObj = (CDOObject) contents1.get(0);
 				trans.getObject(cdoObj.cdoID());

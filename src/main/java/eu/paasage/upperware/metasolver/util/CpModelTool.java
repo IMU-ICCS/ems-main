@@ -236,6 +236,7 @@ public final class CpModelTool {
 		try {
 			for (EObject obj : model) {
 				if (obj instanceof eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl) {
+					log.debug("found constraint problem....");
 					cpModel = (ConstraintProblem) obj;
 					break;
 				}
@@ -281,10 +282,11 @@ public final class CpModelTool {
 			for(int i = suffix.length()-1; i >=0; i--){
 				char character = suffix.charAt(i);
 				log.debug("suffix char at " + i + " is " + suffix.charAt(i));
-				if(Character.isLetter(character)){
+				if(Character.isLetter(character) || character == '_'){
 					//stop here
 					log.debug("The numeric part of the suffix is : " + suffix.substring(i+1));
 					int version = Integer.parseInt(suffix.substring(i+1))+1;
+					log.debug("the version is : " + version);
 					cloneId = appId + suffix.substring(0, i+1) + version;
 					log.debug("the computed cloneId is " + cloneId);
 					break;

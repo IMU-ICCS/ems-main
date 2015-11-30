@@ -116,8 +116,9 @@ public class Mapper {
 			//to hold the metricVariableValues
 			// go ahead
 			List<MetricVariable> mvs = cp.getMetricVariables();
+			log.debug("...about to get metric variables....");
 			//
-			if (mvs.isEmpty()) {
+			if (mvs == null || mvs.isEmpty()) {
 				log.debug("CP model in " + resId
 						+ " has no Metric Variable entities...");
 			} else {
@@ -139,6 +140,8 @@ public class Mapper {
 						solution = CpModelTool.setConstantValue(mv, solution);
 					}
 				} else {// cp generator has created the solution
+					log.debug("CP model in " + resId
+							+ " already has a Solution entity...");
 						// match the metricVariables
 					for (MetricVariable mv : mvs) {
 						if (CPModelTool.searchMetricValue(solution, mv) == null) {
@@ -151,11 +154,15 @@ public class Mapper {
 				jObj.add("solution_tmp", solution.getTimestamp()); // milp-solver needs this
 			}
 			if (updateCP) {
+				log.debug("updating CP Model( " + resId
+						+ ") in CDO...");
 				//get a new resource id
 				String newId = CpModelTool.getCloneId(CpModelTool.getAppId(model_contents), resId);
 				this.utils.overwriteCPModelinCDO(model_contents, newId);
 				jObj.add("id", newId);
 			}else{
+				log.debug("no change to CP Model(" + resId
+						+ ") ...");
 				//we are using the same model
 				jObj.add("id", resId);
 			}
@@ -254,6 +261,9 @@ public class Mapper {
 			}	
 			//ready to save to CDO, get a new resource id
 			String newId = CpModelTool.getCloneId(CpModelTool.getAppId(model_contents), resId);
+			//debug
+			//System.out.println("I am here ... ");
+			//this.utils.overwriteCPModelinCDO(model_contents, newId);
 			this.utils.overwriteCPModelinCDO(model_contents, newId);
 			jObj.add("id", newId);
 			// explicitly stop the cdo client

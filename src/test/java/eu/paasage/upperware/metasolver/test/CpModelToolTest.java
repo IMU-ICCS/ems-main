@@ -243,4 +243,10 @@ public class CpModelToolTest {
 		}
 		assertTrue("Failed to add the metric variable",found);
 	}
+	
+	@Test
+	public void testIGetCloneId(){
+		String cloneId = CpModelTool.getCloneId("upperware-models/OpenFoamApplication1447777579963", "upperware-models/OpenFoamApplication1447777579963_2");
+		assertEquals("Error getting cloned id, got : " + cloneId, "upperware-models/OpenFoamApplication1447777579963_3", cloneId );
+	}
 }
