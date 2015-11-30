@@ -118,7 +118,10 @@ public class Mapper {
 			//16Nov15 - Daniel R. only supports 3 types of metrics (cost, availability and response time).  He should have created the empty solution
 			//to hold the metricVariableValues
 			// go ahead
-			List<MetricVariable> mvs = cp.getMetricVariables();
+			// 30Nv 15 we always get a solution, now get the solution				
+			Solution solution = CPModelTool.searchLastSolution(cp.getSolution());
+			// now get the solution
+			List<MetricVariable> mvs = cp.getMetricVariables();			
 			System.out.println("...about to get metric variables....");
 			log.debug("...about to get metric variables....");
 			//
@@ -127,6 +130,8 @@ public class Mapper {
 						+ " has no Metric Variable entities...");
 				log.debug("CP model in " + resId
 						+ " has no Metric Variable entities...");
+				//30Nov15 just need to get the empty solution timestamp
+				timestamp = solution.getTimestamp();
 			} else {//there are metric variables
 				System.out.println(mvs.size()
 						+ " metric variables retrived from CP model in " + resId
@@ -134,34 +139,24 @@ public class Mapper {
 				log.debug(mvs.size()
 						+ " metric variables retrived from CP model in " + resId
 						+ "...");
-				// now get the solution
-				Solution solution = null;
-				EList<Solution> solutions = cp.getSolution();
-				if(solutions == null || solutions.isEmpty()){
-					System.out.println("there is no solution in the CP Model(" + resId + ")");
-					log.debug("there is no solution in the CP Model(" + resId + ")");
-				}else{
-					solution = CPModelTool
-							.searchLastSolution(solutions);
-				} 
-				if (solution == null) {
-					// no last solution in model, create one now
-					System.out.println("CP model in " + resId
-							+ " has no Solution entities...");
-					log.debug("CP model in " + resId
-							+ " has no Solution entities...");
-					updateCP = true;
-					solution = CPModelTool.createSolution(cp);
-					// now add the metricVariable with constant value
-					for (MetricVariable mv : mvs) {
-						//
-						solution = CpModelTool.setConstantValue(mv, solution);
-					}
-				} else {// cp generator has created the solution
-					System.out.println("CP model in " + resId
-							+ " already has a Solution entity...");
-					log.debug("CP model in " + resId
-							+ " already has a Solution entity...");
+//				if (solution == null) {
+//					// no last solution in model, create one now
+//					System.out.println("CP model in " + resId
+//							+ " has no Solution entities...");
+//					log.debug("CP model in " + resId
+//							+ " has no Solution entities...");
+//					updateCP = true;
+//					solution = CPModelTool.createSolution(cp);
+//					// now add the metricVariable with constant value
+//					for (MetricVariable mv : mvs) {
+//						//
+//						solution = CpModelTool.setConstantValue(mv, solution);
+//					}
+//				} else {// cp generator has created the solution
+//					System.out.println("CP model in " + resId
+//							+ " already has a Solution entity...");
+//					log.debug("CP model in " + resId
+//							+ " already has a Solution entity...");
 						// match the metricVariables
 					for (MetricVariable mv : mvs) {
 						if (CPModelTool.searchMetricValue(solution, mv) == null) {
@@ -170,7 +165,7 @@ public class Mapper {
 							updateCP = true;
 						}// solution got it already, continue
 					}
-				}
+				//}
 				timestamp = solution.getTimestamp();
 				//jObj.add("solution_tmp", solution.getTimestamp()); // milp-solver needs this
 			}//end if there are metric variables
@@ -253,7 +248,7 @@ public class Mapper {
 			Solution lastSolution = CPModelTool.searchLastSolution(cp.getSolution()); //there should be old solutions
 			//Solution newSolution = CpModelTool.copySolution(solution); //old solution got variableValues which we don't want
 			List<MetricVariable> cp_MVs = cp.getMetricVariables();
-			//if there is no app-spec metrics, the mapper wouldn't have been called
+			//if there is no app-spec metrics, the mapper wouldn't have been called with new metric value/s
 			if (cp_MVs == null || cp_MVs.isEmpty()) {
 				throw new MetricMapperException(					
 						"there is no metric variables in the cpModel(" + resId
