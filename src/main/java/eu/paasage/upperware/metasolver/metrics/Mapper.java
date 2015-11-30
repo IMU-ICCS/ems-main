@@ -105,6 +105,7 @@ public class Mapper {
 		List<EObject> model_contents = null;		
 		// start the cdo-client
 		try{
+			Long timestamp = 0l;
 			this.utils.openCDOSession();
 			// clone the resource in memory and get the cp model 
 			model_contents = this.utils.cloneModel(resId); // cloner may return an empty list		
@@ -126,7 +127,7 @@ public class Mapper {
 						+ " has no Metric Variable entities...");
 				log.debug("CP model in " + resId
 						+ " has no Metric Variable entities...");
-			} else {
+			} else {//there are metric variables
 				System.out.println(mvs.size()
 						+ " metric variables retrived from CP model in " + resId
 						+ "...");
@@ -144,7 +145,7 @@ public class Mapper {
 							.searchLastSolution(solutions);
 				} 
 				if (solution == null) {
-					// no solution in model, create one now
+					// no last solution in model, create one now
 					System.out.println("CP model in " + resId
 							+ " has no Solution entities...");
 					log.debug("CP model in " + resId
@@ -170,8 +171,9 @@ public class Mapper {
 						}// solution got it already, continue
 					}
 				}
-				jObj.add("solution_tmp", solution.getTimestamp()); // milp-solver needs this
-			}
+				timestamp = solution.getTimestamp();
+				//jObj.add("solution_tmp", solution.getTimestamp()); // milp-solver needs this
+			}//end if there are metric variables
 			if (updateCP) {
 				System.out.println("updating CP Model( " + resId
 						+ ") in CDO...");
@@ -179,7 +181,8 @@ public class Mapper {
 						+ ") in CDO...");
 				//get a new resource id
 				String newId = CpModelTool.getCloneId(CpModelTool.getAppId(model_contents), resId);
-				this.utils.overwriteCPModelinCDO(model_contents, newId);
+				//this.utils.overwriteCPModelinCDO(model_contents, newId);
+				this.utils.commitCloneModelToCDO(model_contents, newId);
 				jObj.add("id", newId);
 			}else{
 				System.out.println("no change to CP Model(" + resId
@@ -189,6 +192,7 @@ public class Mapper {
 				//we are using the same model
 				jObj.add("id", resId);
 			}
+			jObj.add("solution_tmp", timestamp); // milp-solver needs this
 			// explicitly stop the cdo client
 			this.utils.closeCDOSession();
 			//
