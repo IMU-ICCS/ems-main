@@ -89,6 +89,11 @@ public class CommunicationAction implements Action {
 			
 			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
+			//check if created forcibly from VMType action
+			boolean commTypeExists = false;
+			if(dataShare.getCommID(communicationName)!=null)
+				commTypeExists = true;			
+			
 			Collection<Action> depActions = Coordinator.getDependentActions(this);
 			LOGGER.log(Level.INFO, "--------------Breakpoint CommAct--- " + depActions.size());
 			for(Object obj : depActions){
@@ -143,7 +148,7 @@ public class CommunicationAction implements Action {
 			}
 			
 			
-			if(provPortID != null && consPortID != null && dataShare.addComm(communicationName, dataShare.getEntityProvPort(provPortName), dataShare.getEntityReqPort(consPortName))){
+			if(!commTypeExists && provPortID != null && consPortID != null && dataShare.addComm(communicationName, dataShare.getEntityProvPort(provPortName), dataShare.getEntityReqPort(consPortName))){
 
 				//To Do Exec API Call
 				//commExecID = "/api/communication/" + communicationName;//POST using parameters communicationName, provCompID, consCompID, port
@@ -357,5 +362,9 @@ public class CommunicationAction implements Action {
 	public ConfigurationTask getTask() {
 		// TODO Auto-generated method stub
 		return this.task;
+	}
+	
+	public String getCommTypeName(){
+		return this.communicationName;
 	}
 }

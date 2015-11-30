@@ -222,6 +222,21 @@ public class VMInstanceAction implements Action {
 				locationID = ids[3];
 				hardwareID = ids[4];
 			}
+			
+			//Forcing the CommunicationAction to run after creating VMType but before creating its VMInstances
+			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMInstanceAction (create)--- " + depOnActions.size());
+			
+			//Forcing the CommunicationAction to run before its VMInstances
+			for(Object obj : depOnActions){
+				System.out.println("-- " + obj.toString() + " ");
+				if(obj.getClass()==CommunicationAction.class){
+					((CommunicationAction) obj).run();
+					LOGGER.log(Level.INFO, "Forced (creation) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
+				}
+			}
 
 			//Now steps for VM instance entity
 			String vmInstID;
@@ -414,6 +429,21 @@ public class VMInstanceAction implements Action {
 				locationID = ids[3];
 				hardwareID = ids[4];
 			}
+			
+			//Forcing the CommunicationAction to run after updating VMType but before updating its VMInstances
+			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMInstanceAction (update)--- " + depOnActions.size());
+			
+			//Forcing the CommunicationAction to run before its VMInstances
+			for(Object obj : depOnActions){
+				System.out.println("-- " + obj.toString() + " ");
+				if(obj.getClass()==CommunicationAction.class){
+					((CommunicationAction) obj).run();
+					LOGGER.log(Level.INFO, "Forced (update) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
+				}
+			}
 
 			//Now steps for VM instance entity
 			String vmInstID;
@@ -525,6 +555,22 @@ public class VMInstanceAction implements Action {
 						LOGGER.log(Level.INFO, "Removed from Mapper VM Instance : ID " + vmiId);
 					else
 						LOGGER.log(Level.WARNING, "Could not remove from Mapper VM Instance : ID " + vmiId);
+				}
+			}
+			
+			
+			//Forcing the CommunicationAction to run before deleting VMType but after deleting its VMInstances
+			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
+			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMInstanceAction (delete)--- " + depOnActions.size());
+			
+			//Forcing the CommunicationAction to run before its VMInstances
+			for(Object obj : depOnActions){
+				System.out.println("-- " + obj.toString() + " ");
+				if(obj.getClass()==CommunicationAction.class){
+					((CommunicationAction) obj).run();
+					LOGGER.log(Level.INFO, "Forced (delete) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
 				}
 			}
 		}
