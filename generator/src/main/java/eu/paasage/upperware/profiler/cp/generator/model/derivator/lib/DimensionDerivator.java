@@ -74,6 +74,8 @@ public class DimensionDerivator
 		logger.debug("DimensionDerivator - createDimensions 2");
 		
 		//List<OptimisationRequirement> complexOptRequirements= new ArrayList<>();
+		
+		CPModelTool.createSolution(cp); //Creating a solution even if is not necessary
 		 
 		for(Requirement req: reqs.getRequirements())
 		{
