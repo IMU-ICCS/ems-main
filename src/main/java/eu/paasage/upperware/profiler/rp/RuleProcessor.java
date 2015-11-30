@@ -966,7 +966,7 @@ public class RuleProcessor {
 		}
 		
 		/* (z) checking user requirements (new feature) */
-		SOLUTION_STATUS sloStatus = SOLUTION_STATUS.NO_CHANGE_REQUIRED;//this.validateMetricConditions(cdoIdentifier, camelModel);
+		SOLUTION_STATUS sloStatus = this.validateMetricConditions(cdoIdentifier, camelModel);
 		
 		// don't continue cloud provider checking if there is an error in SLOs
 		switch (sloStatus) {
@@ -1346,7 +1346,6 @@ public class RuleProcessor {
 	}
 
 	
-	@SuppressWarnings("unused")
 	private SOLUTION_STATUS validateMetricConditions(
 			String cdoIdentifier,
 			String camelModel) {
