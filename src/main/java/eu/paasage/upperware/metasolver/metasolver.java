@@ -51,7 +51,7 @@ public class metasolver{
 			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		    //now invoke S2D
 			//runS2D(CAMELmodID, CPmodID, mapResult);
-			runS2D(CAMELmodID, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
+			//runS2D(CAMELmodID, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		}
 		catch(Exception e){
 			System.out.println("error running metasolver " + e);
