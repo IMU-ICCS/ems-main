@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import com.eclipsesource.json.JsonObject;
+
 
 
 //import eu.paasage.upperware.cp.cloner.CDOClientExtended;
@@ -132,8 +134,15 @@ public class Mapper {
 						+ " metric variables retrived from CP model in " + resId
 						+ "...");
 				// now get the solution
-				Solution solution = CPModelTool
-						.searchLastSolution(cp.getSolution());
+				Solution solution = null;
+				EList<Solution> solutions = cp.getSolution();
+				if(solutions == null || solutions.isEmpty()){
+					System.out.println("there is no solution in the CP Model(" + resId + ")");
+					log.debug("there is no solution in the CP Model(" + resId + ")");
+				}else{
+					solution = CPModelTool
+							.searchLastSolution(solutions);
+				} 
 				if (solution == null) {
 					// no solution in model, create one now
 					System.out.println("CP model in " + resId
