@@ -126,8 +126,8 @@ public class ExpressionUtils {
 		switch (operator) {
 		case DIV:
 			return "/";
-		case MEAN:
-			throw new UnsupportedOperationException();
+		//case MEAN:
+		//	throw new UnsupportedOperationException();
 		case MINUS:
 			return "-";
 		case PLUS:
