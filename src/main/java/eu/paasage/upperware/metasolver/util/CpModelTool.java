@@ -230,18 +230,22 @@ public final class CpModelTool {
 	public static ConstraintProblem getCPModel(List<EObject> model) {
 		ConstraintProblem cpModel = null;
 		if (model.isEmpty()) {
+			System.out.println("Cannot get CPModel from an empty model .....");
 			log.error("Cannot get CPModel from an empty model .....");
 			return cpModel;
 		}
 		try {
 			for (EObject obj : model) {
 				if (obj instanceof eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl) {
+					System.out.println("found constraint problem....");
 					log.debug("found constraint problem....");
 					cpModel = (ConstraintProblem) obj;
 					break;
 				}
 			}
 		} catch (Exception e) {
+			System.out.println("Error getting CP Model from the EObject list : "
+					+ e.getMessage());
 			log.error("Error getting CP Model from the EObject list : "
 					+ e.getMessage());
 		}

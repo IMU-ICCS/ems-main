@@ -116,12 +116,18 @@ public class Mapper {
 			//to hold the metricVariableValues
 			// go ahead
 			List<MetricVariable> mvs = cp.getMetricVariables();
+			System.out.println("...about to get metric variables....");
 			log.debug("...about to get metric variables....");
 			//
 			if (mvs == null || mvs.isEmpty()) {
+				System.out.println("CP model in " + resId
+						+ " has no Metric Variable entities...");
 				log.debug("CP model in " + resId
 						+ " has no Metric Variable entities...");
 			} else {
+				System.out.println(mvs.size()
+						+ " metric variables retrived from CP model in " + resId
+						+ "...");
 				log.debug(mvs.size()
 						+ " metric variables retrived from CP model in " + resId
 						+ "...");
@@ -130,6 +136,8 @@ public class Mapper {
 						.searchLastSolution(cp.getSolution());
 				if (solution == null) {
 					// no solution in model, create one now
+					System.out.println("CP model in " + resId
+							+ " has no Solution entities...");
 					log.debug("CP model in " + resId
 							+ " has no Solution entities...");
 					updateCP = true;
@@ -140,6 +148,8 @@ public class Mapper {
 						solution = CpModelTool.setConstantValue(mv, solution);
 					}
 				} else {// cp generator has created the solution
+					System.out.println("CP model in " + resId
+							+ " already has a Solution entity...");
 					log.debug("CP model in " + resId
 							+ " already has a Solution entity...");
 						// match the metricVariables
@@ -154,6 +164,8 @@ public class Mapper {
 				jObj.add("solution_tmp", solution.getTimestamp()); // milp-solver needs this
 			}
 			if (updateCP) {
+				System.out.println("updating CP Model( " + resId
+						+ ") in CDO...");
 				log.debug("updating CP Model( " + resId
 						+ ") in CDO...");
 				//get a new resource id
@@ -161,6 +173,8 @@ public class Mapper {
 				this.utils.overwriteCPModelinCDO(model_contents, newId);
 				jObj.add("id", newId);
 			}else{
+				System.out.println("no change to CP Model(" + resId
+						+ ") ...");
 				log.debug("no change to CP Model(" + resId
 						+ ") ...");
 				//we are using the same model
