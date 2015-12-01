@@ -1,7 +1,7 @@
 MVN CLEAN INSTALL
 MVN EXEC:JAVA
 
-To run the metasolver it requires 3 command line arguments camelModelID, CPModelID, UseCaseRef
+To run the metasolver it requires 3 command line arguments camelModelID, CPModelID, Solver Ref
 
-UseCaseRef is a number. Use 1 for Bewan and 2 for LS. 
+Solver ref is a number. Use 1 for MILP and 2 for CP. 
 
