@@ -476,23 +476,29 @@ public final class ModelToJsonConverter {
     	result.add("providerPort", com.getProvidedCommunication().getPortNumber());//provided port number
     	//configuration
     	HashMap<String, String> phConfig = convertConfiguration(com.getProvidedPortConfiguration());
+    	System.out.println("....just before calling if phConfig is empty.....");
     	if(!phConfig.isEmpty()){
     		Set keys = phConfig.keySet();
 	        Iterator it = keys.iterator();
 	        while(it.hasNext()){
-	        	String key = "providedPort" + (String) it.next();
-	            result.add(key, phConfig.get(key));	            
+	        	String key = (String) it.next();
+	        	LOGGER.debug("the current config key : " + key);
+	        	String jKey = "providedPort" + key;
+	            result.add(jKey, phConfig.get(key));
 	        }
     	}
     	result.add("consumer", com.getRequiredCommunication().getName());
     	result.add("consumerPort", com.getRequiredCommunication().getPortNumber());
     	HashMap<String, String> rpConfig = convertConfiguration(com.getRequiredPortConfiguration());
+    	System.out.println("....just before calling if rpConfig is empty.....");
     	if(!rpConfig.isEmpty()){
     		Set keys = rpConfig.keySet();
 	        Iterator it = keys.iterator();
 	        while(it.hasNext()){
-	        	String key = "requiredPort" + (String) it.next();
-	            result.add(key, rpConfig.get(key));	            
+	        	String key = (String) it.next();
+	        	LOGGER.debug("the current req com config key : " + key);
+	        	String jKey = "requiredPort" + key;
+	            result.add(jKey, rpConfig.get(key));	            
 	        }
     	}
     	return result;
