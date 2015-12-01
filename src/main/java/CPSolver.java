@@ -1209,7 +1209,9 @@ public class CPSolver {
 		String mode = args[0];
 		//CDO or file path
 		String path = args[1];
-		String timestampStr = args[2];
+		String timestampStr = null;
+		if (args.length == 3)
+			timestampStr = args[2];
 		long timestamp = 0;
 		if (timestampStr != null){
 			timestamp = new Long(timestampStr);
