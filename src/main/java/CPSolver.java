@@ -16,13 +16,8 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
-import eu.paasage.camel.CamelPackage;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
 import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
@@ -38,6 +33,7 @@ import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
+import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
 import eu.paasage.upperware.metamodel.cp.NumericDomain;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
@@ -123,21 +119,63 @@ public class CPSolver {
 		createMetricVariables(metricVars);
 		EList<ComparisonExpression> constraints = cp.getConstraints();
 		createConstraints(constraints);
+		//Checking if metric-based solution exists
+		EList<Solution> sols = cp.getSolution();
+		if (sols != null && !sols.isEmpty()) checkSolution(sols);
+		//Create optimisation goal
 		EList<Goal> goals = cp.getGoals();
 		createGoals(goals);
 	}
 	
-	/* Returns the content of a Resource mapping to a specific file in the file system 
-	 * whose path is given as input in a form of a String
-	 * */
-	private EList<EObject> getResourceContents(String pathName){
-		final ResourceSet rs = new ResourceSetImpl();
-		rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
-		Resource res = rs.getResource(URI.createFileURI(pathName), true);
-		logger.info("Got resource: " + res);
-		EList<EObject> contents = res.getContents();
-		logger.info("Contents are: " + contents);
-		return contents;
+	private void checkSolution(EList<Solution> sols){
+		Solution sol = sols.get(0);
+		for (MetricVariableValue mvv: sol.getMetricVariableValue()){
+			MetricVariable mv = mvv.getVariable();
+			NumericValueUpperware val = mvv.getValue();
+			String mvName = mv.getId();
+			IntVar intVar = idToIntVar.get(mvName);
+			if (intVar != null){
+				int actualVal = 1;
+				if (val instanceof IntegerValueUpperware){
+					IntegerValueUpperware intVal = (IntegerValueUpperware)val;
+					actualVal = intVal.getValue();
+				}
+				else if (val instanceof DoubleValueUpperware){
+					DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
+					actualVal = (int)doubleVal.getValue();
+				}
+				else if (val instanceof FloatValueUpperware){
+					FloatValueUpperware floatVal = (FloatValueUpperware)val;
+					actualVal = (int)floatVal.getValue();
+				}
+				solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
+			}
+			else{
+				RealVar realVar = idToRealVar.get(mvName);
+				if (realVar != null){
+					double actualVal = 1.0;
+					if (val instanceof IntegerValueUpperware){
+						IntegerValueUpperware intVal = (IntegerValueUpperware)val;
+						actualVal = intVal.getValue();
+					}
+					else if (val instanceof DoubleValueUpperware){
+						DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
+						actualVal = doubleVal.getValue();
+					}
+					else if (val instanceof FloatValueUpperware){
+						FloatValueUpperware floatVal = (FloatValueUpperware)val;
+						actualVal = (double)floatVal.getValue();
+					}
+					try{
+						realVar.updateLowerBound(actualVal,null);
+						realVar.updateUpperBound(actualVal,null);
+					}
+					catch(Exception e){
+						e.printStackTrace();
+					}
+				}
+			}
+		}
 	}
 	
 	/* Reads the CPModel from CDO provided that a correct CDO path or a file path 
@@ -154,27 +192,14 @@ public class CPSolver {
 			CDOView view = cl.openView();
 			CDOResource res = view.getResource(cdoPath);
 			if (res != null){
-				//Checking of existence of many models in one resource
-				for (EObject obj: res.getContents()){
-					if (obj instanceof ConstraintProblem){
-						cp = (ConstraintProblem)obj;
-						break;
-					}
-				}
-				//cp = (ConstraintProblem)res.getContents().get(0);
+				cp = (ConstraintProblem)res.getContents().get(0);
 				readModel(cp);
 			}
 			view.close();
 		}
 		else if (pathName != null){
 			cdoMode = false;
-			//cp = (ConstraintProblem)cl.loadModel(pathName);
-			for (EObject obj: getResourceContents(pathName)){
-				if (obj instanceof ConstraintProblem){
-					cp = (ConstraintProblem)obj;
-					break;
-				}
-			}
+			cp = (ConstraintProblem)cl.loadModel(pathName);
 			readModel(cp);
 		}
 		logger.info("CDO Mode: " + cdoMode);
@@ -230,7 +255,13 @@ public class CPSolver {
 		if (cdoMode){
 			trans = cl.openTransaction();
 			CDOResource resource = trans.getResource(cdoPath);
-			cp = (ConstraintProblem)resource.getContents().get(0);
+			EList<EObject> contents = resource.getContents();
+			for (EObject obj: contents){
+				if (obj instanceof ConstraintProblem){
+					cp = (ConstraintProblem)obj;
+					break;
+				}
+			}
 		}
 		else{
 			cp = (ConstraintProblem)cl.loadModel(pathName);
@@ -1114,11 +1145,12 @@ public class CPSolver {
 			CDOClient cl = new CDOClient();
 			cl.registerPackage(CpPackage.eINSTANCE);
 			cl.registerPackage(TypesPackage.eINSTANCE);
-			cl.importModel("input/PaaSageConfiguration1ConstraintProblem.xmi", "cps/model1", false);
+			cl.registerPackage(eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage.eINSTANCE);
+			cl.importModel("input/LsyCP.xmi", "cps/model2", false);
 			cl.closeSession();
 			ExecutorService thr = Executors.newFixedThreadPool(2);
 			thr.submit(new CPSolverDaemon());
-			thr.submit(new FakeAdapterPublisher());
+			thr.submit(new FakeAdapterPublisher("cps/model2"));
 			try{
 				Thread.sleep(20000);
 			}

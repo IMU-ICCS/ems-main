@@ -19,14 +19,16 @@ public class FakeAdapterPublisher implements Runnable{
 	private Context context;
 	private Socket socket;
 	private boolean run = true;
+	private String modelId;
 	
 	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FakeAdapterPublisher.class);
 	
 	//Creates receiving and sending sockets on different ports
-	public FakeAdapterPublisher(){      
+	public FakeAdapterPublisher(String modelId){      
         context = ZMQ.context(1);
         socket = context.socket(ZMQ.PUB);
         socket.bind("tcp://*:5550");
+        this.modelId = modelId;
         logger.info("Init call finished for FakeAdapterPublisher");
 	}
 	
@@ -37,7 +39,7 @@ public class FakeAdapterPublisher implements Runnable{
 	public void run() {
 		while (run) {
             socket.sendMore("startSolving");
-			socket.send("cps/model1");
+			socket.send(modelId);
 			logger.info("Have sent the model for solving");
 			try{
 				Thread.sleep(5000);
