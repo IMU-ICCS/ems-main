@@ -56,25 +56,23 @@ public class AdaptationManager {
 			.getLogger(AdaptationManager.class.getName());
 
 	private static ZeromqServer zmqS = null;
-	
+
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
 		props.setProperty("java.util.logging.SimpleFormatter.format",
 				"[%1$tH:%1$tM:%1$tS] %4$s: %5$s%6$s (%3$s)%n%n");
 
 		properties = loadProperties(args);
-		
+
 		String resourceName = properties.getProperty("CDO.resourceName");
 		if (resourceName == null)
 			resourceName = "test";
-		
-		/*//Running the 0MQ Server
-		try {
-			new ZeromqServer().start();
-		} catch (Exception e){
-			LOGGER.log(Level.SEVERE, "0MQ Server has failed");
-		}*/
-		
+
+		/*
+		 * //Running the 0MQ Server try { new ZeromqServer().start(); } catch
+		 * (Exception e){ LOGGER.log(Level.SEVERE, "0MQ Server has failed"); }
+		 */
+
 		execInterfacer = new ExecInterfacer();
 		if (cleaning) {
 			try {
@@ -84,95 +82,89 @@ public class AdaptationManager {
 			}
 			return;
 		}
-		//reasonerInterfacer = new ReasonerInterfacer();
+		// reasonerInterfacer = new ReasonerInterfacer();
 		reasonerInterfacer = new ReasonerInterfacer(resourceName, false);
 		validator = new ValidatorImpl();
 		planGenerator = new PlanGenerator();
-		//c = new Coordinator(reasonerInterfacer, execInterfacer, validator, planGenerator);
+		// c = new Coordinator(reasonerInterfacer, execInterfacer, validator,
+		// planGenerator);
 		c = new Coordinator(reasonerInterfacer, execInterfacer, validator);
 		LOGGER.log(Level.INFO, "Adaptation manager: starting");
 
 		try {
-			//c.runStep();
-			if (isDaemon || args[0].equals("daemon")){
-					runListener();
-			}else{
-				c.startThreaded();//threaded execution of plan
+			// c.runStep();
+			if (isDaemon || args[0].equals("daemon")) {
+				runListener();
+			} else {
+				c.startThreaded();// threaded execution of plan
 			}
-		}catch(Exception ex){ 
-			if(ex instanceof ArrayIndexOutOfBoundsException)
-				System.out.println("Run as deamon if you want to run continuously");
+		} catch (Exception ex) {
+			if (ex instanceof ArrayIndexOutOfBoundsException)
+				System.out
+						.println("Run as deamon if you want to run continuously");
 			else
 				ex.printStackTrace();
-		}finally {
+		} finally {
 			LOGGER.log(Level.INFO, "Adaptation manager: stopping");
-			//c.terminate(); 
+			// c.terminate();
 			LOGGER.log(Level.INFO, "Adaptation manager: stopped");
 			System.exit(0);
 		}
-		//System.exit(1);
+		// System.exit(1);
 	}
 
-
-	public static void runListener(){
+	public static void runListener() {
 		LOGGER.log(Level.INFO, "Listener: starting");
 		LOGGER.log(Level.INFO, "Running in deamon mode");
 		flag = false;
-		//Need to rewrite the code here
-		
-		//Running the 0MQ Server
+		// Need to rewrite the code here
+
+		// Running the 0MQ Server
 		try {
 			zmqS = new ZeromqServer();
 			zmqS.start();
 			zmqS.join();
-		} catch (Exception e){
+		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, "0MQ Server has failed");
-		}finally {
+		} finally {
 			LOGGER.log(Level.INFO, "Adaptation manager: stopped");
 			System.exit(0);
-		}		
-		
-/*		System.out.println(properties.getProperty("CDO.host"));
-		MyCDOClient cdocl = new MyCDOClient(properties.getProperty("CDO.host"),properties.getProperty("CDO.port"), 
-					properties.getProperty("CDO.repositoryName"));
-		CDOView view = cdocl.openView();
-		view.getSession().addListener(
-			new IListener(){
-				public void notifyEvent(IEvent arg0){
-						System.out.println("***EVENT: " + arg0);
-						flag = true;
-						try {
-							c.getCurrentFromCDO();
-							//c.runStep();
-							c.startThreaded();//threaded execution of plan
-						} finally {
-							LOGGER.log(Level.INFO, "Adaptation manager: stopping");
-							//c.terminate();
-							LOGGER.log(Level.INFO, "Adaptation manager: stopped");
-						}
-				}
-			}
-		);*/
+		}
+
+		/*
+		 * System.out.println(properties.getProperty("CDO.host")); MyCDOClient
+		 * cdocl = new
+		 * MyCDOClient(properties.getProperty("CDO.host"),properties.
+		 * getProperty("CDO.port"),
+		 * properties.getProperty("CDO.repositoryName")); CDOView view =
+		 * cdocl.openView(); view.getSession().addListener( new IListener(){
+		 * public void notifyEvent(IEvent arg0){ System.out.println("***EVENT: "
+		 * + arg0); flag = true; try { c.getCurrentFromCDO(); //c.runStep();
+		 * c.startThreaded();//threaded execution of plan } finally {
+		 * LOGGER.log(Level.INFO, "Adaptation manager: stopping");
+		 * //c.terminate(); LOGGER.log(Level.INFO,
+		 * "Adaptation manager: stopped"); } } } );
+		 */
 	}
-	
-	public static void zMQResponder(String command){
-		if (command.equals("event")){
+
+	public static void zMQResponder(String command) {
+		if (command.equals("event")) {
 			try {
 				c.getCurrentFromCDO();
-				c.runStep();			
+				c.runStep();
 			} finally {
 				LOGGER.log(Level.INFO, "Adaptation manager: stopping");
 				c.terminate();
 				LOGGER.log(Level.INFO, "Adaptation manager: stopped");
-			}			
-		} else if (command.equals("terminate")){
+			}
+		} else if (command.equals("terminate")) {
 			LOGGER.log(Level.INFO, "Adaptation manager: stopping");
 			c.terminate();
 			LOGGER.log(Level.INFO, "Adaptation manager: stopped");
 			System.exit(0);
-		}		
+		}
 	}
-	
+
 	private static final String ENV_CONFIG = "PAASAGE_CONFIG_DIR";
 	private static final String DEFAULT_PAASAGE_CONFIG_DIR = ".paasage";
 
@@ -197,7 +189,7 @@ public class AdaptationManager {
 	public static Properties getProperties() {
 		return properties;
 	}
-	
+
 	public static Properties loadAndGetProperties() {
 		String propertyPath = retrievePropertiesFilePath("eu.paasage.upperware.adapter.properties");
 		Properties fileprops = new Properties();
@@ -235,19 +227,22 @@ public class AdaptationManager {
 		CommandLine cmd = null;
 		try {
 			cmd = parser.parse(options, args);
+			if (cmd.hasOption("help")) {
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp("adaptationmanager", options);
+				System.exit(0);
+			} else if (cmd.hasOption("clean")) {
+				cleaning = true;
+			} else if (cmd.hasOption("daemon")) {
+				isDaemon = true;
+			}
+			;
 		} catch (ParseException e) {
 			System.err.println("Parsing failed. Reason: " + e.getMessage());
-		}
-		if (cmd.hasOption("help")) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("adaptationmanager", options);
 			System.exit(0);
-		} else if (cmd.hasOption("clean")) {
-			cleaning = true;
-		} else if (cmd.hasOption("daemon")){
-			isDaemon = true;
 		}
-		;
 
 		Properties commandlineprops = cmd.getOptionProperties("c");
 		Properties result = new Properties();
