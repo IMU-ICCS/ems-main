@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
+import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -197,7 +198,7 @@ public final class CpModelTool {
 	public static PaasageConfiguration getAppConfig(List<EObject> model){
 		PaasageConfiguration config = null;
 		if (model.isEmpty()) {
-			log.error("Cannot get cofiguration from an empty model .....");
+			log.error("Cannot get configuration from an empty model .....");
 			return config;
 		}
 		try {
@@ -263,6 +264,7 @@ public final class CpModelTool {
 	public static String getAppId(List<EObject> model){
 		PaasageConfiguration config = getAppConfig(model);
 		if(config != null){
+			log.debug("the appid is : " + config.getId());
 			return config.getId();
 		}else{
 			return null;
@@ -277,16 +279,27 @@ public final class CpModelTool {
 	 * @return	a new resource path identifier for storing the model
 	 */
 	public static String getCloneId(String appId, String resId){
+		System.out.println("appId: " + appId + ", resId: " + resId + "...");
+		log.debug("appId: " + appId + ", resId: " + resId + "...");
+		String temp = "";
+		//get rid of the generic 'upperware-models/' path segment
+		if(resId.startsWith(CPCloner.CDO_SERVER_PATH)){
+			temp = resId.substring(CPCloner.CDO_SERVER_PATH.length());
+			log.debug("got rid of the server path, id is now : " + temp);
+		}else{
+			temp = resId;
+		}
 		//this is for the cdo resource path, not the actual paasageConfiguration.id
 		String cloneId = "";
 		//e.g. appId = openFoam1448464846493 and resId = openFoam1448464846493V1, suffix = V1
-		String suffix = resId.substring(appId.length()); 
-		if(suffix != null && !suffix.isEmpty()){
+		String suffix = temp.substring(appId.length()); 
+		//if(suffix != null && !suffix.isEmpty()){
+		if(suffix.length() > 0){
 			//find the last portion which is only number, e.g. 1
 			for(int i = suffix.length()-1; i >=0; i--){
 				char character = suffix.charAt(i);
 				log.debug("suffix char at " + i + " is " + suffix.charAt(i));
-				if(Character.isLetter(character) || character == '_'){
+				if(Character.isLetter(character) || character == '_' || character == '-'){
 					//stop here
 					log.debug("The numeric part of the suffix is : " + suffix.substring(i+1));
 					int version = Integer.parseInt(suffix.substring(i+1))+1;
@@ -295,9 +308,16 @@ public final class CpModelTool {
 					log.debug("the computed cloneId is " + cloneId);
 					break;
 				}
-			}
+				if(i == 0){
+					//trap index out of bound error
+					log.error("failed to extract version number, now at " + i + ".  Will use the existing ID");
+					cloneId = resId;
+					break;
+				}
+			}//end reverse for loop
 		}else{
 			//the two Strings are the same
+			log.debug("no suffix, just appending v1...");
 			cloneId = appId + "v1";
 		}
 		return cloneId;
@@ -494,35 +514,39 @@ public final class CpModelTool {
 				.createMetricVariableValue();
 		mvv.setVariable(current);
 		//debug
-		log.debug("createMVV : the mvv variable: " + mvv.getVariable().getId());
+		log.debug("createMVV : the mvv variable: " + mvv.getVariable().getId() + ", new value: " + string);
 		// int, double, float or long
 		BasicTypeEnum type = current.getType();
 		switch (type) {
 		case DOUBLE:
+			log.debug("...case double(" + Double.parseDouble(string) + ")");
 			DoubleValueUpperware doubleValue = TypesFactory.eINSTANCE
 					.createDoubleValueUpperware();
 			doubleValue.setValue(Double.parseDouble(string));
 			mvv.setValue(doubleValue);
 			break;
 		case FLOAT:
+			log.debug("...case float(" + Float.parseFloat(string) + ")");
 			FloatValueUpperware floatValue = TypesFactory.eINSTANCE
 					.createFloatValueUpperware();
 			floatValue.setValue(Float.parseFloat(string));
 			mvv.setValue(floatValue);
 			break;
 		case LONG:
+			log.debug("...case long(" + Long.parseLong(string) + ")");
 			LongValueUpperware longValue = TypesFactory.eINSTANCE
 					.createLongValueUpperware();
 			longValue.setValue(Long.parseLong(string));			
 			mvv.setValue(longValue);
 			break;
 		default: // integer
+			log.debug("...case int(" + Integer.parseInt(string) + ")");
 			IntegerValueUpperware intValue = TypesFactory.eINSTANCE
 					.createIntegerValueUpperware();
 			intValue.setValue(Integer.parseInt(string));
 			mvv.setValue(intValue);
 			break;
-		}
+		}		
 		return mvv;
 	}
 	/**

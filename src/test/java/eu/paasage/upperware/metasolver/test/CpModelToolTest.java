@@ -243,10 +243,14 @@ public class CpModelToolTest {
 		}
 		assertTrue("Failed to add the metric variable",found);
 	}
-	
+	/**
+	 * Test parsing the existing resource id to get the version number portion and increment that.
+	 */
 	@Test
 	public void testIGetCloneId(){
-		String cloneId = CpModelTool.getCloneId("upperware-models/OpenFoamApplication1447777579963", "upperware-models/OpenFoamApplication1447777579963_2");
-		assertEquals("Error getting cloned id, got : " + cloneId, "upperware-models/OpenFoamApplication1447777579963_3", cloneId );
+		String cloneId = CpModelTool.getCloneId("OpenFoamApplication1447777579963", "upperware-models/OpenFoamApplication1447777579963_2");
+		assertEquals("Error getting cloned id 1, got : " + cloneId, "OpenFoamApplication1447777579963_3", cloneId );
+		cloneId =  CpModelTool.getCloneId("OpenFoamApplication1447777579963", "upperware-models/OpenFoamApplication1447777579963");
+		assertEquals("Error getting cloned id 2, got : " + cloneId, "OpenFoamApplication1447777579963v1", cloneId );
 	}
 }

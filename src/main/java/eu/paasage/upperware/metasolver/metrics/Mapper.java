@@ -188,8 +188,8 @@ public class Mapper {
 				jObj.add("id", resId);
 			}
 			jObj.add("solution_tmp", timestamp); // milp-solver needs this
-			System.out.println("adding solution timestamp :" + timestamp);
-			log.debug("adding solution timestamp :" + timestamp);
+			System.out.println("adding solution timestamp :" + timestamp + " to json object....");
+			log.debug("adding solution timestamp :" + timestamp + " to json object....");
 			// explicitly stop the cdo client
 			this.utils.closeCDOSession();
 			//
@@ -243,12 +243,14 @@ public class Mapper {
 								+ resId + ")");
 			}
 			// the application has been running, so there would be at least one solution
+			Solution lastSolution = CPModelTool.searchLastSolution(cp.getSolution()); //there should be old solutions
+			log.debug("the last solution timestamp : " + lastSolution.getTimestamp());
 			// create an empty solution
 			Solution newSolution = CPModelTool.createSolution(cp);
 			jObj.add("solution_tmp", newSolution.getTimestamp());
+			log.debug("the new solution timestamp : " + newSolution.getTimestamp());
 			// find the latest solution, may need to copy the values
-			Solution lastSolution = CPModelTool.searchLastSolution(cp.getSolution()); //there should be old solutions
-			//Solution newSolution = CpModelTool.copySolution(solution); //old solution got variableValues which we don't want
+			//Solution newSolution = CpModelTool.copySolution(solution); //util method doesn't work
 			List<MetricVariable> cp_MVs = cp.getMetricVariables();
 			//if there is no app-spec metrics, the mapper wouldn't have been called with new metric value/s
 			if (cp_MVs == null || cp_MVs.isEmpty()) {
@@ -259,6 +261,7 @@ public class Mapper {
 			// process the incoming metric variable values
 			Set<String> metricVariables = metrics.keySet();
 			for (String mvName : metricVariables) { 
+				log.debug("the current metric variable is : " + mvName + "...");
 				//look for the owner - the metric variable
 				MetricVariable currentMV = CpModelTool.getMetricVariable(mvName, cp_MVs);				
 				// create the new value using the incoming version
@@ -268,6 +271,7 @@ public class Mapper {
 			//need to copy the existing values for those not included in the update
 			if(cp_MVs.size() > metrics.size()){ //if there are more metric variables than those provided
 				for(MetricVariable cp_mv : cp_MVs){
+					//System.out.println("current metricVariable id is : " + cp_mv.getId() + "....");
 					log.debug("current metricVariable id is : " + cp_mv.getId() + "....");
 					//is the current cp metric variable in the incoming set
 					if(!metricVariables.contains(cp_mv.getId())){
@@ -276,6 +280,7 @@ public class Mapper {
 						MetricVariableValue oldValue = CPModelTool.searchMetricValue(lastSolution, cp_mv);
 						//
 						if(oldValue != null){
+							log.debug("... trying to copy old value to new solution for : " + cp_mv.getId());
 							//needs to clone a new MetricVariableValue ob
 							MetricVariableValue newValueObj = CpModelTool.createMVV(cp_mv, oldValue.getValue());
 							newSolution.getMetricVariableValue().add(newValueObj);
@@ -288,7 +293,7 @@ public class Mapper {
 			//debug
 			//System.out.println("I am here ... ");
 			//this.utils.overwriteCPModelinCDO(model_contents, newId);
-			this.utils.overwriteCPModelinCDO(model_contents, newId);
+			this.utils.commitCloneModelToCDO(model_contents, newId);
 			jObj.add("id", newId);
 			// explicitly stop the cdo client
 			this.utils.closeCDOSession();
