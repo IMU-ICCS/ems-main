@@ -36,26 +36,36 @@ import com.eclipsesource.json.JsonObject;
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 public class metasolver{
-   
+
 
 	public static void main(String args[]) throws IOException, InterruptedException, MetricMapperException{
 
 		try{
 			String CAMELmodID= args[0];
 			String CPmodID= args[1];
-			int jobID = Integer.parseInt(args[2]);;
 			Mapper map = new Mapper();
 			/* syc17 26Nov15 aligned with updated mapper
 			long mapResult = map.mapMetricVariables(CPmodID);
-			*/
+			 */
 			JsonObject jObj = map.mapMetricVariables(CPmodID);
-			if(jobID == 1){
-			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
-			}
+
+			if(args.length > 2){
+				if (Integer.parseInt(args[2]) <= 1){
+					runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
+				}
+				if(Integer.parseInt(args[2]) >= 2){
+					runCPSolver(CPmodID, jObj.get("solution_tmp").asLong());
+
+				}
+			}	 
+
+
 			else{
-				runCPSolver(CPmodID, jObj.get("solution_tmp").asLong());
-		}
-				//now invoke S2D
+				runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
+
+			}
+
+			//now invoke S2D
 			//runS2D(CAMELmodID, CPmodID, mapResult);
 			//runS2D(CAMELmodID, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		}
@@ -64,13 +74,13 @@ public class metasolver{
 		}
 	}
 	public void invokeMILP(String modID){
-		
+
 		try{
-//			String modID= args[1];
+			//			String modID= args[1];
 			Mapper map = new Mapper();
 			/* syc17 26Nov15 aligned with updated mapper
 			long mapResult = map.mapMetricVariables(modID);
-			*/
+			 */
 			JsonObject jObj = map.mapMetricVariables(modID);
 			//runMILPSolver("modID", mapResult);
 			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
@@ -79,34 +89,34 @@ public class metasolver{
 			System.out.println("error starting metasolver " + e);
 		}
 	}
-	
+
 	//}
 	public void startSolving(String CAMELmodel, String CPmodel) throws MetricMapperException{
 		System.out.println("starting solving");
-					go(CAMELmodel, CPmodel);
-					System.out.println("all subscriptions complete");
-			}
+		go(CAMELmodel, CPmodel);
+		System.out.println("all subscriptions complete");
+	}
 	public void go(String CAMELmodel, String CPmodel) throws MetricMapperException{
 		Mapper map = new Mapper();
 		/* 26Nov15 syc17 aigned with uppdated Mapper code
 		long mapResult = map.mapMetricVariables(CPmodel); */
 		JsonObject jObj = map.mapMetricVariables(CPmodel);
 		RPListener rpl = new RPListener();
-    	 metricsListener ml = new metricsListener("metricID");		
-		 //solutionListener sl = new solutionListener(CAMELmodel, CPmodel, mapResult);
-    	 solutionListener sl = new solutionListener(CAMELmodel, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
-			//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
+		metricsListener ml = new metricsListener("metricID");		
+		//solutionListener sl = new solutionListener(CAMELmodel, CPmodel, mapResult);
+		solutionListener sl = new solutionListener(CAMELmodel, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
+		//Currently we only have one solver and this is invoked taking in the ResourceID from the masterscript	
 
-		
+
 		rpl.start();
 		System.out.println("rpl done");
 		sl.start();
 		System.out.println("sl done");
-	    ml.start();
+		ml.start();
 		System.out.println("ml done");
 
-	//	al.start();
-	
+		//	al.start();
+
 	}
 
 	public static void runMILPSolver(String input, long timestamp){
@@ -143,8 +153,8 @@ public class metasolver{
 
 			s1= sb.toString();
 			System.out.println(" output = " + s1);
-         
-			
+
+
 			if (s1.length() > 1 || Integer.parseInt(s1) > 0){
 
 				//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
@@ -173,7 +183,7 @@ public class metasolver{
 	public static void runCPSolver(String input, long timestamp){
 
 		try{	
-			
+
 			String cmd = "java -jar cp-solver-assembly.jar CDO " + input + ' ' + timestamp;
 			System.out.println("... about to call cp-solver: "+cmd);
 			Process p1 = Runtime.getRuntime().exec(cmd);
@@ -205,8 +215,8 @@ public class metasolver{
 
 			s1= sb.toString();
 			System.out.println(" output = " + s1);
-         
-			
+
+
 			if (s1.length() > 1 || Integer.parseInt(s1) > 0){
 
 				//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
@@ -231,13 +241,13 @@ public class metasolver{
 
 	}
 
-	
+
 	public static void runS2D(String CAMELmodel, String CPmodel, long timestamp){
 
 		try{
 			System.out.println("... about to call s2D : java -jar solver-to-deployment-2015.9.1-SNAPSHOT.jar-with-dependencies.jar " + CPmodel + ' ' + CAMELmodel + ' ' +timestamp);
 			Process p1 = Runtime.getRuntime().exec("java -jar solver-to-deployment-2015.9.1-SNAPSHOT.jar-with-dependencies.jar " + CPmodel + ' ' + CAMELmodel + ' ' +timestamp);
-		
+
 			// you can pass the system command or a script to exec command. here i used uname -a system command
 			BufferedReader stdInput = new BufferedReader(new
 					InputStreamReader(p1.getInputStream()));
@@ -263,8 +273,8 @@ public class metasolver{
 
 			s1= sb.toString();
 			System.out.println(" output = " + s1);
-         
-			
+
+
 			if (s1.length() > 1 || Integer.parseInt(s1) > 0){
 
 				//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
