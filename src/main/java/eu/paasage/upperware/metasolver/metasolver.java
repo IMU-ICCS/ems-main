@@ -112,9 +112,9 @@ public class metasolver{
 	public static void runMILPSolver(String input, long timestamp){
 
 		try{	
-			
-			System.out.println("... about to call milp-solver : java -jar milp-solver-assembly.jar " + input +' ' + timestamp + "....");
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input +' ' + timestamp);
+			String cmd="java -jar milp-solver-assembly.jar " + input +' ' + timestamp;
+			System.out.println("... about to call milp-solver: "+cmd);
+			Process p1 = Runtime.getRuntime().exec(cmd);
 			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
 
 
@@ -174,8 +174,9 @@ public class metasolver{
 
 		try{	
 			
-			System.out.println("... about to call cp-solver : java -jar cp-solver.jar $PAASAGE_CONFIG_DIR" + input +" ");
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar CDO " + input + ' ' + timestamp);
+			String cmd = "java -jar cp-solver-assembly.jar CDO " + input + ' ' + timestamp;
+			System.out.println("... about to call cp-solver: "+cmd);
+			Process p1 = Runtime.getRuntime().exec(cmd);
 			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
 
 
