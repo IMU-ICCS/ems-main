@@ -88,6 +88,7 @@ public class CPSolver {
 	private int realVarNum = 0;
 	private int constNum = 0;
 	private boolean cdoMode = false;
+	private long timestamp = 0;
 	
 	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(CPSolver.class);
  	
@@ -98,6 +99,17 @@ public class CPSolver {
 		solver = new Solver();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
+		readCPModel(cdoPath,pathName);
+	}
+	
+	/* Constructor which also reads the CP Model either from CDO via 
+	 * a CDO path given as String or from file system via a String path 
+	 */
+	public CPSolver(String cdoPath, String pathName, long timestamp){
+		solver = new Solver();
+		this.cdoPath = cdoPath;
+		this.pathName = pathName;
+		this.timestamp = timestamp;
 		readCPModel(cdoPath,pathName);
 	}
 	
@@ -120,62 +132,74 @@ public class CPSolver {
 		EList<ComparisonExpression> constraints = cp.getConstraints();
 		createConstraints(constraints);
 		//Checking if metric-based solution exists
-		EList<Solution> sols = cp.getSolution();
-		if (sols != null && !sols.isEmpty()) checkSolution(sols);
+		if (timestamp != 0){
+			EList<Solution> sols = cp.getSolution();
+			if (sols != null && !sols.isEmpty()) checkSolution(sols);
+		}
 		//Create optimisation goal
 		EList<Goal> goals = cp.getGoals();
 		createGoals(goals);
 	}
 	
+	//Get solution mapping to the timestamp given
 	private void checkSolution(EList<Solution> sols){
-		Solution sol = sols.get(0);
-		for (MetricVariableValue mvv: sol.getMetricVariableValue()){
-			MetricVariable mv = mvv.getVariable();
-			NumericValueUpperware val = mvv.getValue();
-			String mvName = mv.getId();
-			IntVar intVar = idToIntVar.get(mvName);
-			if (intVar != null){
-				int actualVal = 1;
-				if (val instanceof IntegerValueUpperware){
-					IntegerValueUpperware intVal = (IntegerValueUpperware)val;
-					actualVal = intVal.getValue();
-				}
-				else if (val instanceof DoubleValueUpperware){
-					DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
-					actualVal = (int)doubleVal.getValue();
-				}
-				else if (val instanceof FloatValueUpperware){
-					FloatValueUpperware floatVal = (FloatValueUpperware)val;
-					actualVal = (int)floatVal.getValue();
-				}
-				solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
-			}
-			else{
-				RealVar realVar = idToRealVar.get(mvName);
-				if (realVar != null){
-					double actualVal = 1.0;
-					if (val instanceof IntegerValueUpperware){
-						IntegerValueUpperware intVal = (IntegerValueUpperware)val;
-						actualVal = intVal.getValue();
-					}
-					else if (val instanceof DoubleValueUpperware){
-						DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
-						actualVal = doubleVal.getValue();
-					}
-					else if (val instanceof FloatValueUpperware){
-						FloatValueUpperware floatVal = (FloatValueUpperware)val;
-						actualVal = (double)floatVal.getValue();
-					}
-					try{
-						realVar.updateLowerBound(actualVal,null);
-						realVar.updateUpperBound(actualVal,null);
-					}
-					catch(Exception e){
-						e.printStackTrace();
-					}
+			Solution sol = null;
+			for (Solution s: sols){
+				if (s.getTimestamp() == timestamp){
+					sol = s;
+					break;
 				}
 			}
-		}
+			if (sol != null){
+				System.out.println("Found solution with the timestamp given");
+				for (MetricVariableValue mvv: sol.getMetricVariableValue()){
+					MetricVariable mv = mvv.getVariable();
+					NumericValueUpperware val = mvv.getValue();
+					String mvName = mv.getId();
+					IntVar intVar = idToIntVar.get(mvName);
+					if (intVar != null){
+						int actualVal = 1;
+						if (val instanceof IntegerValueUpperware){
+							IntegerValueUpperware intVal = (IntegerValueUpperware)val;
+							actualVal = intVal.getValue();
+						}
+						else if (val instanceof DoubleValueUpperware){
+							DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
+							actualVal = (int)doubleVal.getValue();
+						}
+						else if (val instanceof FloatValueUpperware){
+							FloatValueUpperware floatVal = (FloatValueUpperware)val;
+							actualVal = (int)floatVal.getValue();
+						}
+						solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
+					}
+					else{
+						RealVar realVar = idToRealVar.get(mvName);
+						if (realVar != null){
+							double actualVal = 1.0;
+							if (val instanceof IntegerValueUpperware){
+								IntegerValueUpperware intVal = (IntegerValueUpperware)val;
+								actualVal = intVal.getValue();
+							}
+							else if (val instanceof DoubleValueUpperware){
+								DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
+								actualVal = doubleVal.getValue();
+							}
+							else if (val instanceof FloatValueUpperware){
+								FloatValueUpperware floatVal = (FloatValueUpperware)val;
+								actualVal = (double)floatVal.getValue();
+							}
+							try{
+								realVar.updateLowerBound(actualVal,null);
+								realVar.updateUpperBound(actualVal,null);
+							}
+							catch(Exception e){
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			}
 	}
 	
 	/* Reads the CPModel from CDO provided that a correct CDO path or a file path 
@@ -271,11 +295,22 @@ public class CPSolver {
 		else{
 			cp = (ConstraintProblem)cl.loadModel(pathName);
 		}
-		Solution solution = CpFactory.eINSTANCE.createSolution();
-		solution.setTimestamp(new Date().getTime());
-		cp.getSolution().add(solution);
-		EList<VariableValue> varValues = solution.getVariableValue();
+		Solution solution = null;
+		if (timestamp == 0){
+			solution = CpFactory.eINSTANCE.createSolution();
+			solution.setTimestamp(new Date().getTime());
+			cp.getSolution().add(solution);
+		}
+		else{
+			for (Solution s: cp.getSolution()){
+				if (s.getTimestamp() == timestamp){
+					solution = s;
+					break;
+				}
+			}
+		}
 		
+		EList<VariableValue> varValues = solution.getVariableValue();
 		try{
 			EList<Variable> vars = cp.getVariables();
 			for (Variable var: vars){
