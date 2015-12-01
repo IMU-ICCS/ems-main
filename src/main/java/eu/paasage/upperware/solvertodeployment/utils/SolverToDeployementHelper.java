@@ -24,7 +24,9 @@ import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
+import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.LongValueUpperware;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
@@ -230,10 +232,22 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 				log.debug("Compare " + paaSageVariable.getCpVariableId() + "  with " +  variableValue.getVariable().getId());
 				if(paaSageVariable.getCpVariableId().equals(variableValue.getVariable().getId()))
 				{
-					LongValueUpperware longValueUpperware = (LongValueUpperware) variableValue.getValue();
-					log.debug("Find !" + longValueUpperware.getValue());
+					NumericValueUpperware value = variableValue.getValue();
+					Long result;
+					if (value instanceof LongValueUpperware) {
+						LongValueUpperware longValueUpperware = (LongValueUpperware) value;
+						result = longValueUpperware.getValue();
+					} else if (value instanceof IntegerValueUpperware) {
+						IntegerValueUpperware intValueUpperware = (IntegerValueUpperware) value;
+						result = (long) intValueUpperware.getValue();
+					}
+					else {
+						String msg ="Did not support type for: "+value;
+						throw new S2DException(msg);
+					}
+					log.debug("Find !" + result);
 
-					return longValueUpperware.getValue();
+					return result;
 				}
 			}			
 		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId() );
