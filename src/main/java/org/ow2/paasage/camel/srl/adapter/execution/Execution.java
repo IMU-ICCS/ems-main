@@ -134,7 +134,7 @@ public class Execution {
                 // Get Couchbase Camel Model
                 CamelModel model = (CamelModel) obj;
                 CamelFinder finder = new CamelFinder(model);
-                ExecutionContext ec = finder.getExecutionContext(executionContextName);
+                ExecutionContext ec = finder.getExecutionContext(executionContextName, objs);
 
                 // Create MetricInstances
                 if (createMetricInstances) {

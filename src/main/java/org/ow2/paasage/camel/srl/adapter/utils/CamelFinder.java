@@ -14,6 +14,7 @@ import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.execution.ExecutionContext;
+import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.metric.*;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
@@ -143,11 +144,38 @@ public class CamelFinder {
         return result;
     }
 
-    public ExecutionContext getRandomExecutionContext() {
+    public DeploymentModel getRandomDeploymentModel() {
+        if(!model.getDeploymentModels().isEmpty()){
+            return model.getDeploymentModels().get(model.getDeploymentModels().size()-1);
+        }
+
+        throw new RuntimeException("No DeploymentModels available!");
+    }
+
+    public ExecutionContext getRandomExecutionContext(String executionContextName, EList<EObject> resourceContent) {
         ExecutionContext result = null;
 
-        for(ExecutionContext ec : model.getExecutionModels().get(0).getExecutionContexts()){
-            result = ec;
+        if(model.getExecutionModels().isEmpty()){
+            ExecutionModel em = ExecutionFactory.eINSTANCE.createExecutionModel();
+            em.setName("RandomExecutionModel");
+            if(resourceContent != null)
+                resourceContent.add(em);
+        }
+
+        for(ExecutionModel em : model.getExecutionModels()){
+            if(em.getExecutionContexts().isEmpty()){
+                ExecutionContext ec = ExecutionFactory.eINSTANCE.createExecutionContext();
+                ec.setName(executionContextName);
+                ec.setApplication(getRandomApplication());
+                ec.setDeploymentModel(getRandomDeploymentModel());
+                em.getExecutionContexts().add(ec);
+                if(resourceContent != null)
+                    resourceContent.add(ec);
+
+                result = ec;
+            } else {
+                result = em.getExecutionContexts().get(0);
+            }
         }
 
         return result;
@@ -187,7 +215,7 @@ public class CamelFinder {
         return result;
     }
 
-    public ExecutionContext getExecutionContext(String executionContextName) {
+    public ExecutionContext getExecutionContext(String executionContextName, EList<EObject> resourceContent) {
         for(ExecutionModel em : model.getExecutionModels()){
             for(ExecutionContext ec : em.getExecutionContexts()){
                 if(ec.getName().equals(executionContextName)){
@@ -197,7 +225,7 @@ public class CamelFinder {
         }
 
         //TODO only so that it works....
-        return getRandomExecutionContext();
+        return getRandomExecutionContext(executionContextName, resourceContent);
     }
 
     public List<Schedule> getSchedules(){
