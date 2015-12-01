@@ -61,8 +61,7 @@ public class metasolver{
 
 
 			else{
-				runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
-
+				runCPSolver(CPmodID, jObj.get("solution_tmp").asLong());
 			}
 
 			//now invoke S2D
