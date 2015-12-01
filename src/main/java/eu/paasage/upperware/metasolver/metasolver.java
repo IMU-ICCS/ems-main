@@ -175,7 +175,7 @@ public class metasolver{
 		try{	
 			
 			System.out.println("... about to call cp-solver : java -jar cp-solver.jar $PAASAGE_CONFIG_DIR" + input +" ");
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar $PAASAGE_CONFIG_DIR" + input + "");
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar CDO " + input + "");
 			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
 
 
