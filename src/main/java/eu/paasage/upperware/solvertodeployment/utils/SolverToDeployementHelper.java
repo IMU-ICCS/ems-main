@@ -27,7 +27,6 @@ import eu.paasage.upperware.metamodel.cp.VariableValue;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 
@@ -119,19 +118,26 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	// Hosting Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	static public Hosting findHosting(String applicationComponentName,DeploymentModel _deploymentModel) throws S2DException
+	static public Hosting findHosting(InternalComponent component,DeploymentModel _deploymentModel) throws S2DException
 	{
-		Hosting hosting = CDODatabaseProxy2.getHostingContainString(_deploymentModel,applicationComponentName);
-		if(hosting == null)
+//		log.info("=> Looking for an hosting for component: "+component.getName()+ " of name "+component.getRequiredHost().getName());
+		for(Hosting h : _deploymentModel.getHostings())
 		{
-			throw new S2DException("Unable to find hosting for application component name :" + applicationComponentName + " . Seems to have error in original model");
-		}	
-		return hosting;
+//			log.info("  ? "+h.getProvidedHost().getName());
+			if (h.getRequiredHost().getName().equals(component.getRequiredHost().getName()))
+			{
+//				log.info("  returns  "+h.getProvidedHost().getName());
+				return h;
+			}
+		}
+		throw new S2DException("Unable to find hosting for application component name :" + component.getName() + " . Seems to have error in original model");
+
 	}
 
 	static public HostingInstance createHostingInstance(VMInstance vmInstance, InternalComponentInstance internalComponentInstance, DeploymentModel deploymentModel) throws S2DException 
 	{
-		Hosting hosting = findHosting(internalComponentInstance.getType().getName(),deploymentModel);
+		InternalComponent internalComponent = (InternalComponent) internalComponentInstance.getType();
+		Hosting hosting = findHosting(internalComponent, deploymentModel);
 
 		HostingInstance hostingInstance = CloudMLHelper.buildNewHostingInstance(internalComponentInstance.getType().getName(),vmInstance,internalComponentInstance,hosting);
 
