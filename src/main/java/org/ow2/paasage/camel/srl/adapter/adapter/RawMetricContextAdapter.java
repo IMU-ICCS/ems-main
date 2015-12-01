@@ -14,13 +14,10 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.SensorDescription;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Component;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
+import eu.paasage.camel.metric.*;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
-import eu.paasage.camel.metric.MetricInstance;
-import eu.paasage.camel.metric.MetricVMBinding;
-import eu.paasage.camel.metric.RawMetric;
-import eu.paasage.camel.metric.RawMetricContext;
 
 import java.util.List;
 
@@ -102,9 +99,23 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
                             .getVmInstance().getIp());
 
                     getFc().addExternalIdToMonitorInstance(rawMonitor, metricInstance.cdoID().toString(), frontendVM);
+                } else if(metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
+                    logger.info("Raw metric is bound to a component - add to linked VM.");
+                    MetricComponentBinding metricComponentBinding = (MetricComponentBinding) metricInstance.getObjectBinding();
+
+                    if(metricComponentBinding.getVmInstance() == null){
+                        getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, metricInstance.cdoID().toString());
+                    } else {
+                        VirtualMachine frontendVM = getFc().getVirtualMachineToIP(metricComponentBinding
+                                .getVmInstance().getIp());
+
+                        getFc().addExternalIdToMonitorInstance(rawMonitor, metricInstance.cdoID().toString(), frontendVM);
+                    }
+                } else if(metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
+                    getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, metricInstance.cdoID().toString());
+                    logger.error("Raw metric is bound to an application - just add any cdo id.");
                 } else {
-                    // TODO
-                    logger.info("Raw metric is not bound to virtual machine - has to be implemented.");
+                    logger.error("Raw metric is bound to something else. NOT IMPLEMENTED.");
                 }
             }
         }

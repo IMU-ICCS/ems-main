@@ -125,6 +125,7 @@ public class CommandLinePropertiesAccessorImpl
             case "ZeroMqQueue": return "newModelArrival";
             case "ModelSourceType": return ModelSourceType.CDO.toString();
             case "CreateMonitorSubscriptions": return "true";
+            case "ZeroMqTestmessage": return "resourceName:modelName:executionContextName";
             default : return null;
         }
     }
@@ -205,5 +206,10 @@ public class CommandLinePropertiesAccessorImpl
     @Override
     public boolean getCreateMonitorSubscriptions() {
         return this.getCommandLineOption("CreateMonitorSubscriptions").equals("true");
+    }
+
+    @Override
+    public String getZeroMqTestmessage() {
+        return this.getCommandLineOption("ZeroMqTestmessage");
     }
 }

@@ -41,136 +41,136 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
 
     @Override
     public Monitor adapt(){
-            logger.info("Save CompositeMetricContext to colosseum: " + context.getName());
+        logger.info("Save CompositeMetricContext to colosseum: " + context.getName());
 
 
-            CompositeMetric compositeMetric = (CompositeMetric) context.getMetric();
+        CompositeMetric compositeMetric = (CompositeMetric) context.getMetric();
 
-            FormulaQuantifier quantifier = null;
+        FormulaQuantifier quantifier = null;
 
-            switch (context.getQuantifier()) {
-                case ALL:
+        switch (context.getQuantifier()) {
+            case ALL:
+                quantifier = getFc().saveFormulaQuantifier(true, 1.0);
+                break;
+            case SOME:
+                    /* TODO implement max and min quantity in execware */
+                quantifier = getFc().saveFormulaQuantifier(context.isIsRelative(),
+                        context.getMinQuantity());
+                break;
+            case ANY:
+                if (compositeMetric.getFormula().getFunctionPattern() == FunctionPatternType.MAP) {
+                    // same as all, since we use this value in conditions only:
                     quantifier = getFc().saveFormulaQuantifier(true, 1.0);
                     break;
-                case SOME:
-                        /* TODO implement max and min quantity in execware */
-                    quantifier = getFc().saveFormulaQuantifier(context.isIsRelative(),
-                            context.getMinQuantity());
+                } else {
+                    quantifier = getFc().saveFormulaQuantifier(false, 1.0);
                     break;
-                case ANY:
-                    if (compositeMetric.getFormula().getFunctionPattern() == FunctionPatternType.MAP) {
-                        // same as all, since we use this value in conditions only:
-                        quantifier = getFc().saveFormulaQuantifier(true, 1.0);
-                        break;
-                    } else {
-                        quantifier = getFc().saveFormulaQuantifier(false, 1.0);
-                        break;
-                    }
-                default:
-                    throw new RuntimeException("Quantifier is not implemented!");
-            }
-
-
-
-            eu.paasage.camel.metric.Schedule camelSchedule = context.getSchedule();
-
-            if(camelSchedule == null){
-                throw new RuntimeException("Composite metrics needs schedule!");
-            }
-
-            Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
-
-            eu.paasage.camel.metric.Window camelWindow = context.getWindow(); /*TODO implement other units and window types */
-
-            de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window window = null;
-
-            if(camelWindow == null){
-                throw new RuntimeException("Composite metrics needs window!");
-            } else {
-                if(camelWindow.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)){
-                    window = getFc().saveMeasurementWindow(camelWindow.getMeasurementSize());
-                } else if (camelWindow.getSizeType().equals(WindowSizeType.TIME_ONLY)){
-                    window = getFc().saveTimeWindow(camelWindow.getTimeSize(), Convert.toJavaTimeUnit(camelWindow.getUnit()));
-                } else if (camelWindow.getSizeType().equals(WindowSizeType.BOTH_MATCH)){
-                    throw new RuntimeException("WindowSizeType.BOTH_MATCH not implemented in Adapter"); //TODO which window type to choose?
-                } else if (camelWindow.getSizeType().equals(WindowSizeType.FIRST_MATCH)){
-                    throw new RuntimeException("WindowSizeType.FIRST_MATCH not implemented in Adapter"); //TODO which window type to choose?
                 }
-            }
-
-
-
-            FormulaOperator operator = Transform.operator(compositeMetric.getFormula().getFunction());
-
-            FunctionPatternType functionPattern =
-                    compositeMetric.getFormula().getFunctionPattern();
-
-            List<Monitor> composedMonitors = new ArrayList<>();
-            for (Monitor monitor : getFc().getMonitors()) {
-                for (MetricContext mc : context
-                        .getComposingMetricContexts()) {
-                    for (String s : monitor.getExternalReferences()) {
-                        if (s.equals(mc.getName())) {
-                            composedMonitors.add(monitor);
-                        }
-                    }
-                }
-            }
-
-            Monitor compositeMonitor = null;
-
-            logger.info("Add aggregator.");
-            if (functionPattern == FunctionPatternType.MAP) {
-                compositeMonitor = (ComposedMonitor) getFc()
-                        .mapAggregatedMonitors(quantifier, schedule, window, operator,
-                                composedMonitors);
-            } else if (functionPattern == FunctionPatternType.REDUCE) {
-                compositeMonitor = (ComposedMonitor) getFc()
-                        .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                                composedMonitors);
-            } else {
-                throw new RuntimeException("FunctionPatternType is not implemented!");
-            }
-
-            getFc().addExternalId(compositeMonitor, context.getName());
-
-            for (MetricInstance metricInstance : metricInstances) {
-
-                // Not VM specific, so add all just another one /* TODO THIS IS SEMANTICALLY WRONG */
-                for (MonitorInstance monitorInstance : getFc()
-                        .getMonitorInstances(compositeMonitor.getId())) {
-
-                    Boolean isAlreadyTagged = false;
-
-                    for (MetricInstance tempMetricInstance : metricInstances) {
-                        for (String s : monitorInstance.getExternalReferences()) {
-                            if (s.equals(tempMetricInstance.getName())) {
-                                isAlreadyTagged = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!isAlreadyTagged) {
-                        getFc().addExternalId(monitorInstance, metricInstance.cdoID().toString());
-                        break; // go to next metric instance
-                    }
-                }
-
-                    /*
-                    TODO correlate the metric instances together with the composed metric instances
-                    TODO curently not possible, since the IP is not stored with the monitor instance
-
-                    if(metricInstance.getObjectBinding() instanceof MetricVMBinding){
-                        VirtualMachine frontendVM = fc.getVirtualMachineToIP(((MetricVMBinding) metricInstance.getObjectBinding()).getVmInstance().getIp());
-                        fc.addExternalIdToMonitorInstance(compositeMonitor,
-                            metricInstance.getName(), frontendVM);
-                    } else if(metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
-                    } else if(metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
-                    }
-                    */
-            }
-
-            return compositeMonitor;
+            default:
+                throw new RuntimeException("Quantifier is not implemented!");
         }
+
+
+
+        eu.paasage.camel.metric.Schedule camelSchedule = context.getSchedule();
+
+        if(camelSchedule == null){
+            throw new RuntimeException("Composite metrics needs schedule!");
+        }
+
+        Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
+
+        eu.paasage.camel.metric.Window camelWindow = context.getWindow(); /*TODO implement other units and window types */
+
+        de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window window = null;
+
+        if(camelWindow == null){
+            throw new RuntimeException("Composite metrics needs window!");
+        } else {
+            if(camelWindow.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)){
+                window = getFc().saveMeasurementWindow(camelWindow.getMeasurementSize());
+            } else if (camelWindow.getSizeType().equals(WindowSizeType.TIME_ONLY)){
+                window = getFc().saveTimeWindow(camelWindow.getTimeSize(), Convert.toJavaTimeUnit(camelWindow.getUnit()));
+            } else if (camelWindow.getSizeType().equals(WindowSizeType.BOTH_MATCH)){
+                throw new RuntimeException("WindowSizeType.BOTH_MATCH not implemented in Adapter"); //TODO which window type to choose?
+            } else if (camelWindow.getSizeType().equals(WindowSizeType.FIRST_MATCH)){
+                throw new RuntimeException("WindowSizeType.FIRST_MATCH not implemented in Adapter"); //TODO which window type to choose?
+            }
+        }
+
+
+
+        FormulaOperator operator = Transform.operator(compositeMetric.getFormula().getFunction());
+
+        FunctionPatternType functionPattern =
+                compositeMetric.getFormula().getFunctionPattern();
+
+        List<Monitor> composedMonitors = new ArrayList<>();
+        for (Monitor monitor : getFc().getMonitors()) {
+            for (MetricContext mc : context
+                    .getComposingMetricContexts()) {
+                for (String s : monitor.getExternalReferences()) {
+                    if (s.equals(mc.cdoID().toString())) { // instead of checking by name mc.getName()
+                        composedMonitors.add(monitor);
+                    }
+                }
+            }
+        }
+
+        Monitor compositeMonitor = null;
+
+        logger.info("Add aggregator.");
+        if (functionPattern == FunctionPatternType.MAP) {
+            compositeMonitor = (ComposedMonitor) getFc()
+                    .mapAggregatedMonitors(quantifier, schedule, window, operator,
+                            composedMonitors);
+        } else if (functionPattern == FunctionPatternType.REDUCE) {
+            compositeMonitor = (ComposedMonitor) getFc()
+                    .reduceAggregatedMonitors(quantifier, schedule, window, operator,
+                            composedMonitors);
+        } else {
+            throw new RuntimeException("FunctionPatternType is not implemented!");
+        }
+
+        getFc().addExternalId(compositeMonitor, context.getName());
+
+        for (MetricInstance metricInstance : metricInstances) {
+
+            // Not VM specific, so add all just another one /* TODO THIS IS SEMANTICALLY WRONG */
+            for (MonitorInstance monitorInstance : getFc()
+                    .getMonitorInstances(compositeMonitor.getId())) {
+
+                Boolean isAlreadyTagged = false;
+
+                for (MetricInstance tempMetricInstance : metricInstances) {
+                    for (String s : monitorInstance.getExternalReferences()) {
+                        if (s.equals(tempMetricInstance.getName())) {
+                            isAlreadyTagged = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isAlreadyTagged) {
+                    getFc().addExternalId(monitorInstance, metricInstance.cdoID().toString());
+                    break; // go to next metric instance
+                }
+            }
+
+                /*
+                TODO correlate the metric instances together with the composed metric instances
+                TODO curently not possible, since the IP is not stored with the monitor instance
+
+                if(metricInstance.getObjectBinding() instanceof MetricVMBinding){
+                    VirtualMachine frontendVM = fc.getVirtualMachineToIP(((MetricVMBinding) metricInstance.getObjectBinding()).getVmInstance().getIp());
+                    fc.addExternalIdToMonitorInstance(compositeMonitor,
+                        metricInstance.getName(), frontendVM);
+                } else if(metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
+                } else if(metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
+                }
+                */
+        }
+
+        return compositeMonitor;
+    }
 }

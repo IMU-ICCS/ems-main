@@ -85,6 +85,7 @@ public interface FrontendCommunicator {
     void addExternalId(Monitor monitor, String externalId);
     void addExternalId(MonitorInstance monitorInstance, String externalId);
     void addExternalIdToMonitorInstance(Monitor monitor, String externalId, VirtualMachine virtualMachine);
+    void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalId);
 
     /** Initializing */
     void clearAllMonitoringAgents();

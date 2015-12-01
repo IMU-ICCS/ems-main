@@ -63,12 +63,12 @@ public class CdoModelSource implements ImportModelSource {
         Instantiator.createMetricInstances(model, ec, objs);
 
         // TODO THIS IS A HACK AND NOT MEANT TO BE HERE
-        for(VMInstance instance : finder.getVMInstances()){
-            if(instance.getIp() == null || "".equals(instance.getIp())){
-                String ip = fc.getPublicIpOfVmByName(instance.getName());
-                instance.setIp(ip);
-            }
-        }
+        //for(VMInstance instance : finder.getVMInstances(ec)){
+        //    if(instance.getIp() == null || "".equals(instance.getIp())){
+        //        String ip = fc.getPublicIpOfVmByName(instance.getName());
+        //        instance.setIp(ip);
+        //    }
+        //}
 
         // Save them
         try {

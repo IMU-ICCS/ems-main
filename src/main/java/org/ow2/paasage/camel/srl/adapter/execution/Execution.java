@@ -10,14 +10,18 @@ package org.ow2.paasage.camel.srl.adapter.execution;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.ComposedMonitor;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.ScalingAction;
+import de.uniulm.omi.cloudiator.colosseum.client.SingletonFactory;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FlowOperator;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.metric.*;
+import eu.paasage.camel.metric.Schedule;
+import eu.paasage.camel.metric.Window;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.scalability.EventPattern;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
@@ -32,7 +36,9 @@ import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
 import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
 import org.ow2.paasage.camel.srl.adapter.utils.Printer;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Frank on 16.11.2015.
@@ -186,6 +192,43 @@ public class Execution {
                     List<MetricInstance> mis = finder.getMetricInstances(rmc, ec);
                     Adapter adapter = new RawMetricContextAdapter(fc, rmc, mis);
                     adapter.adapt();
+                    Object o = adapter.adapt();
+                    Monitor rawMonitor = (Monitor) o;
+
+                    ///////////////////////////////////////////////////////////////////////////
+                    //
+                    // Add Subscription to all composite monitor to send to CDO
+                    //
+                    ///////////////////////////////////////////////////////////////////////////
+                    if(createMonitorSubscriptions) {
+                        List<Long> rawMonitors = new ArrayList<>();
+                        rawMonitors.add(rawMonitor.getId());
+
+                        SingletonFactory factory = new SingletonFactory(colosseumClient);
+                        de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window in5minutes = factory.singleton(new TimeWindow(5l, TimeUnit.MINUTES));
+                        FormulaQuantifier quantifier = factory.singleton(new FormulaQuantifier(true, 1.0));
+
+                        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule secondly = factory.singleton(new de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule(1l, TimeUnit.SECONDS));
+                        Long schedule;
+                        if(rawMonitor instanceof RawMonitor){
+                            schedule = ((RawMonitor) rawMonitor).getSchedule();
+                        } else {
+                            schedule = secondly.getId();
+                        }
+                        ComposedMonitor identityMonitor = factory.singleton(
+                                new ComposedMonitor(
+                                        FlowOperator.MAP,
+                                        FormulaOperator.IDENTITY,
+                                        quantifier.getId(),
+                                        in5minutes.getId(),
+                                        rawMonitors,
+                                        null,
+                                        schedule));
+
+
+                        fc.addMonitorSubscription(identityMonitor.getId(), conf.getVisorEndpoint(),
+                                SubscriptionType.CDO, FilterType.ANY, 0);
+                    }
                 }
 
                 /*************************************************************************

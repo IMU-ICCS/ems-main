@@ -12,10 +12,7 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.ComposedMonitor;
 import eu.paasage.camel.Action;
 import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.Component;
-import eu.paasage.camel.deployment.InternalComponent;
-import eu.paasage.camel.deployment.InternalComponentInstance;
-import eu.paasage.camel.deployment.VMInstance;
+import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.metric.*;
@@ -47,10 +44,11 @@ public class CamelFinder {
         return null; /*TODO*/
     }
 
-    public EList<InternalComponentInstance> getInternalComponentInstances(Application application, Component component){
+    public EList<InternalComponentInstance> getInternalComponentInstances(Application application, Component component, ExecutionContext ec){
         EList<InternalComponentInstance> result = new BasicEList<InternalComponentInstance>();
 
-        for(InternalComponentInstance instance : model.getDeploymentModels().get(0).getInternalComponentInstances()){
+        for(InternalComponentInstance instance : ec.getDeploymentModel().getInternalComponentInstances()){
+        //for(InternalComponentInstance instance : model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getInternalComponentInstances()){
             if ((component == null || instance.getType() == component)){
                 /** TODO check for application:   && (application == null || instance.getType(). == application)){ */
                 result.add(instance);
@@ -60,17 +58,67 @@ public class CamelFinder {
         return result;
     }
 
-    public EList<VMInstance> getVMInstances(Application application, Component component){
+    public EList<VMInstance> getVMInstances(Application application, Component component, ExecutionContext ec){
         EList<VMInstance> result = new BasicEList<VMInstance>();
 
-        for(VMInstance instance : model.getDeploymentModels().get(0).getVmInstances()){
-            if ((component == null || instance.getType() == component)){
+        for(VMInstance instance : ec.getDeploymentModel().getVmInstances()){
+        //for(VMInstance instance : model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getVmInstances()){
+            if ((component == null || instance.getType() == component
+                || ((component instanceof InternalComponent) &&
+                    isInternalComponentInstalledOnVM(instance, (InternalComponent)component, ec.getDeploymentModel())))){
                 /** TODO check for application:   && (application == null || instance.getType(). == application)){ */
                 result.add(instance);
             }
         }
 
         return result;
+    }
+
+    private boolean isInternalComponentInstalledOnVM(VMInstance instance, InternalComponent component, DeploymentModel deploymentModel) {
+        HostingInstance hiOfVM = getHostingInstanceToVM(instance, deploymentModel);
+        List<RequiredHostInstance> rhis = getRequiredHostInstancesToInternalComponent(component, deploymentModel);
+        for(RequiredHostInstance rhiComp : rhis){
+            if(hiOfVM.getRequiredHostInstance().equals(rhiComp)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<RequiredHostInstance> getRequiredHostInstancesToInternalComponent(InternalComponent component, DeploymentModel deploymentModel) {
+        List<RequiredHostInstance> result = new ArrayList<>();
+
+        List<InternalComponentInstance> cis = getInstancesToInternalComponent(component, deploymentModel);
+
+        for(InternalComponentInstance ci : cis){
+            result.add(ci.getRequiredHostInstance());
+        }
+
+        return result;
+    }
+
+    private List<InternalComponentInstance> getInstancesToInternalComponent(InternalComponent component, DeploymentModel deploymentModel) {
+        List<InternalComponentInstance> result = new ArrayList<>();
+
+        for(InternalComponentInstance ici : deploymentModel.getInternalComponentInstances()){
+            if(ici.getType().equals(component)){
+                result.add(ici);
+            }
+        }
+
+        return result;
+    }
+
+    private HostingInstance getHostingInstanceToVM(VMInstance instance, DeploymentModel deploymentModel) {
+        for(HostingInstance hi : deploymentModel.getHostingInstances()){
+            for(ProvidedHostInstance phi : instance.getProvidedHostInstances()){
+                if(hi.getProvidedHostInstance().equals(phi)){
+                    return hi;
+                }
+            }
+        }
+
+        return null;
     }
 
     public EList<MetricInstance> getAllMetricInstancesToContext(MetricContext metricContext){
@@ -273,6 +321,26 @@ public class CamelFinder {
     }
 
     public List<VMInstance> getVMInstances() {
-        return model.getDeploymentModels().get(0).getVmInstances();
+        return model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getVmInstances();
+    }
+
+    public List<VMInstance> getVMInstances(ExecutionContext ec) {
+        return ec.getDeploymentModel().getVmInstances();
+    }
+
+    public Component getEquivalentComponent(Component component, DeploymentModel deploymentModel) {
+        for(InternalComponent ic : deploymentModel.getInternalComponents()){
+            if(ic.getName().equals(component.getName())){
+                return ic;
+            }
+        }
+
+        for(VM vm : deploymentModel.getVms()){
+            if(vm.getName().equals(component.getName())){
+                return vm;
+            }
+        }
+
+        return null;
     }
 }

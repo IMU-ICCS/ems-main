@@ -44,6 +44,11 @@ public class ZeroMqServer {
         }
     }
 
+    public synchronized void submitValue(String queueName, String message){
+        final CdoConfigTuple cdoConfigTuple = ZeroMqSubscriber.convertLine(message);
+        this.submitValue(queueName, cdoConfigTuple.getResourceName(), cdoConfigTuple.getModelName(), cdoConfigTuple.getExecutionContext());
+    }
+
     public synchronized void stop(){
         isRunning = false;
         socket.close();

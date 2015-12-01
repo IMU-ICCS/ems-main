@@ -181,11 +181,17 @@ public class Instantiator {
             EList<CompositeMetricContext> compositeMetricContexts = new BasicEList<CompositeMetricContext>();
 
             if(context instanceof RawMetricContext) {
-                List<VMInstance> vmInstances = camelFinder.getVMInstances(context.getApplication(), context.getComponent());
+                /**
+                 * This is wrong! Actually the solver should create a new metric model along with a new
+                 * deployment model, if they do not re-use the entities on type level!
+                 */
+                Component equivalentComponent = camelFinder.getEquivalentComponent(context.getComponent(), ec.getDeploymentModel());
+
+                List<VMInstance> vmInstances = camelFinder.getVMInstances(context.getApplication(), equivalentComponent, ec);
 
                 for (VMInstance vmInstance : vmInstances) {
                     MetricObjectBinding mob;
-                    Application randomApp = camelFinder.getRandomApplication(); /* TODO insufficient*/
+                    Application randomApp = (context.getApplication() == null? camelFinder.getRandomApplication() : context.getApplication()); /* TODO insufficient*/
                     mob = SingleFactory.getOrCreateNewMetricVMBinding(model, ec, resourceContents, vmInstance, randomApp);
 
                     createMetricInstance(model, resourceContents, context, mob, metricInstances);

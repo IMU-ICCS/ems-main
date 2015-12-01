@@ -358,6 +358,22 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         }
     }
 
+    @Override public void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalId) {
+        List<MonitorInstance> instances = getMonitorInstances(monitor.getId());
+        for(MonitorInstance mi : instances){
+            boolean hasCdoReference = false;
+            for(String er : mi.getExternalReferences()){
+                if(er.startsWith("OID")){
+                    hasCdoReference = true;
+                }
+            }
+            if(!hasCdoReference){
+                _addExternalId(mi, externalId);
+                return;
+            }
+        }
+    }
+
     private <T extends ExternalReferencedEntity> void _addExternalId(T t, String externalId){
         ClientController<T> ctrlr = client.controller((Class<T>)t.getClass());
         for(T onlineObj : ctrlr.getList()){

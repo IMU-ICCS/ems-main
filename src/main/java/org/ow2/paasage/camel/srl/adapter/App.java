@@ -66,12 +66,13 @@ public class App
                 logger.info("Subscribed to ZeroMQ server.");
                 // TEST:
                 try {
-                    logger.info("Sleep for two seconds to the Subscriber is set up, before we send messages:");
-                    Thread.sleep(2000);
+                    logger.info("Sleep for two seconds so the Subscriber is set up, before we send messages...");
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                server.submitValue(conf.getZeroMqQueue(), "CAMEL_7f9bd23c8779f929b68554e00c187aae", "BewanCamelModel", "ExecutionContext1");
+                server.submitValue(conf.getZeroMqQueue(), conf.getResourceName(), conf.getModelName(), conf.getExecutionContextName());
+                // could also read raw message: server.submitValue(conf.getZeroMqQueue(), conf.getZeroMqTestmessage());
 
                 break;
         }

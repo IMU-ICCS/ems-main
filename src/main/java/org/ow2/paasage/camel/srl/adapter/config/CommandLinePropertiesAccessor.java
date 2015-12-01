@@ -29,5 +29,6 @@ public interface CommandLinePropertiesAccessor {
     int getZeroMqPort();
     String getZeroMqUri();
     String getZeroMqQueue();
+    String getZeroMqTestmessage();
     ModelSourceType getModelSourceType();
 }
