@@ -250,6 +250,7 @@ public class CPSolver {
 	 * initial position, either in CDO repository or the file system
 	 */
 	private void saveSolution(){
+		logger.info("Saving solution .....");
 		CDOTransaction trans = null;
 		ConstraintProblem cp = null;
 		CDOClient cl = new CDOClient();
@@ -358,6 +359,7 @@ public class CPSolver {
 			else{
 				cl.saveModel(cp, pathName);
 			}
+			logger.info("..... Solution saved");
 		}
 		catch(Exception e){
 			logger.error("Something went wrong while storing the solution",e);
