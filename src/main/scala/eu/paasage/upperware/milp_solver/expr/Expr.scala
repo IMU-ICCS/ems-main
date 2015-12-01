@@ -88,14 +88,7 @@ abstract class Expr {
         case (a,b) => Multiply(a,b)
       }
     }
-    case Divide(a, b) => {
-      val a_flat = a.flatten
-      val b_flat = b.flatten
-      (a_flat, b_flat) match {
-        case (Add(a,b), c) => Add(Divide(a,c).flatten, Divide(b,c).flatten)
-        case (a,b) => Divide(a,b)
-      }
-    }
+    case Divide(a, b) => Divide(a.flatten, b.flatten)
     case _ => this
   }
 
