@@ -1209,13 +1209,18 @@ public class CPSolver {
 		String mode = args[0];
 		//CDO or file path
 		String path = args[1];
+		String timestampStr = args[2];
+		long timestamp = 0;
+		if (timestampStr != null){
+			timestamp = new Long(timestampStr);
+		}
 		CPSolver solver = null;
 		try{
 			if (mode.toLowerCase().equals("cdo")){
-				solver = new CPSolver(path,null);
+				solver = new CPSolver(path,null,timestamp);
 			}
 			else{
-				solver = new CPSolver(null,path);
+				solver = new CPSolver(null,path,timestamp);
 			}
 			solver.solve();
 		}
