@@ -1437,6 +1437,11 @@ public class RuleProcessor {
 			}
 		}
 		
+		if (slos.isEmpty()) {
+			System.out.println("NO SLOs detected. Continue.");
+			return SOLUTION_STATUS.NO_CHANGE_REQUIRED;
+		}
+		
 		StringBuilder expression = new StringBuilder();
 		List<AlgebraVariable> variables = new ArrayList<AlgebraVariable>();
 		
