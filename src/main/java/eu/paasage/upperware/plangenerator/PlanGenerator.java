@@ -26,6 +26,7 @@ import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.deployment.InternalComponentInstance;
+import eu.paasage.camel.deployment.ProvidedCommunication;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.upperware.plangenerator.exception.ModelComparatorException;
@@ -855,6 +856,9 @@ public class PlanGenerator {
 		List<HostingInstanceTask> hostingInsTasks = new ArrayList<HostingInstanceTask>();
 		List<CommunicationTypeTask> communicationTypeTasks = new ArrayList<CommunicationTypeTask>();
 		List<CommunicationInstanceTask> communicationInsTasks = new ArrayList<CommunicationInstanceTask>();
+		//1Dec2015
+		List<ProvidedCommunication> pcs = new ArrayList<ProvidedCommunication>();
+		//end 1Dec2015
 		//
 		//the root application.  
 		CamelModel camelModel = (CamelModel) this.targetDM.eContainer();
@@ -883,8 +887,10 @@ public class PlanGenerator {
 		if(newInternalComponents != null && !newInternalComponents.isEmpty()){
 			for(InternalComponent ic : newInternalComponents){
 				compTypeTasks.add(getComponentTypeTask(ic, TaskType.CREATE));
+				//1Dec2015 blotch, trap all the provided communications objects from InternalComponents
+				pcs.addAll(ic.getProvidedCommunications());
 			}
-		}
+		}		
 		//create the ComponentInstanceTasks
 		if(newInternalComponentIns != null && !newInternalComponentIns.isEmpty()){
 			for(InternalComponentInstance ici : newInternalComponentIns){
@@ -908,8 +914,35 @@ public class PlanGenerator {
 			for(Communication com : newCommunications){
 				//flag if this communication is mandatory
 				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.CREATE));
+				//1Dec2015 blotch to create hanging provided communication which is not explicitly declared in CAMEL
+				//apparently InternalComponent can provide a communication which is not explicitly consumed by a CAMEL object but
+				//by the abstract public (a concept not included in CAMEL)
+				LOG.debug("the current communication.providedCommunication.name is :" + com.getProvidedCommunication().getName());
+				//check if the providedCom matches the cached one 
+				for(int i = 0; i < pcs.size(); i++){
+					if(ModelComparator.equalProvidedCommunication(pcs.get(i), com.getProvidedCommunication())){
+						//get rid of this, so we will end up with only pcs that not linked to any com type
+						LOG.debug("..removing provided communication(" + pcs.get(i).getName() + " from the orphan list...." );
+						pcs.remove(i);
+						break;
+					}
+				}
 			}
 		}
+		//1Dec2015, now the blotch.  At this stage, we have processed all the comm types 
+		if(!pcs.isEmpty()){
+			System.out.println("...there are " + pcs.size() + " orphan provided communication objects....");
+			LOG.debug("...there are " + pcs.size() + " orphan provided communication objects....");
+			for(int i = 0; i < pcs.size(); i++){
+				//the dependency is processed further downstream
+				communicationTypeTasks.add(getOrphanComTask("OrphanCommunication" + i, pcs.get(i), TaskType.CREATE));
+			}
+		}else{
+			System.out.println("...there aren't any orphan provided communication objects....");
+			LOG.info("...there aren't any orphan provided communication objects....");
+		}
+		
+		
 		//create the CommunicationInsTasks
 		if(newCommunicationIns != null && !newCommunicationIns.isEmpty()){
 			for(CommunicationInstance ci : newCommunicationIns){
@@ -1082,53 +1115,64 @@ public class PlanGenerator {
 		//communication
 		if(!communicationTypeTasks.isEmpty()){
 			LOG.debug(communicationTypeTasks.size() + " number of communication type tasks to add ....");
-			//
-			for(CommunicationTypeTask commTypeTask : communicationTypeTasks){
+			//			
+			for(CommunicationTypeTask commTypeTask : communicationTypeTasks){				
 				//communication depends on components, but not the other way around to avoid cyclic dependency
 				LOG.debug("...inside communication type task : " + commTypeTask.getName());
 				//communication depends on components, but not the other way around to avoid cyclic dependency
-				Component commProvider = null;	//initialised for each commTypeTask
-				Component commConsumer = null;
-				ConfigurationTask commProviderTask = null;
-				ConfigurationTask commConsumerTask = null;
-				//need the communication type objects 
-				for(Communication communication : newCommunications){
-					if(commTypeTask.getName().equals(communication.getName())){
-						//got the original camel communication type
-						commProvider = (Component) communication.getProvidedCommunication().eContainer();
-						commConsumer = (Component) communication.getRequiredCommunication().eContainer();
-						break;
-					}					
-				}
-				//now locate the config tasks for these components
-				if(commProvider instanceof VM){
-					commProviderTask = getDepended(vmTypeTasks, commProvider.getName(), TaskType.CREATE);
-				}else if(commProvider instanceof InternalComponent){
-					commProviderTask = getDepended(compTypeTasks, commProvider.getName(), TaskType.CREATE);
-				}
-				if(commProviderTask != null){
-					//8July15 : added owner task as requested by Adapter
-					commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());
-					commTypeTask.getDependencies().add(commProviderTask);
-				}else{
-					LOG.error("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
-					//throw new PlanGenerationException("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
-				}
-				commConsumerTask = getDepended(compTypeTasks, commConsumer.getName(), TaskType.CREATE);
-				if(commConsumerTask != null){
-					//8July15 : added owner task as requested by Adapter
-					commTypeTask.getJsonModel().add("consumerCompTypeTask", commConsumerTask.getName());
-					commTypeTask.getDependencies().add(commConsumerTask);
-					//if mandatory, the consumer depends on the provider
-					//if(commTypeTask.isMandatory() && commProviderTask != null){
-						//4August2015, needs to break this up into two ifs, otherwise returning error for non isMandatory
-					if(commTypeTask.isMandatory()){
-						if(commProviderTask != null){
-							commConsumerTask.getDependencies().add(commProviderTask);
-						}else{
-							LOG.error("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
-						//throw new PlanGenerationException("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
+				//1Dec2015 blotch, need to treats the orphan differently
+				if(!commTypeTask.getName().startsWith("OrphanCommunication")){
+					Component commProvider = null;	//initialised for each commTypeTask
+					Component commConsumer = null;
+					ConfigurationTask commProviderTask = null;
+					ConfigurationTask commConsumerTask = null;
+					//need the communication type objects 
+					for(Communication communication : newCommunications){
+						if(commTypeTask.getName().equals(communication.getName())){
+							//got the original camel communication type
+							commProvider = (Component) communication.getProvidedCommunication().eContainer();
+							commConsumer = (Component) communication.getRequiredCommunication().eContainer();
+							break;
 						}
+					}
+					//now locate the config tasks for these components
+					if(commProvider instanceof VM){
+						commProviderTask = getDepended(vmTypeTasks, commProvider.getName(), TaskType.CREATE);
+					}else if(commProvider instanceof InternalComponent){
+						commProviderTask = getDepended(compTypeTasks, commProvider.getName(), TaskType.CREATE);
+					}
+					if(commProviderTask != null){
+						//8July15 : added owner task as requested by Adapter
+						commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());
+						commTypeTask.getDependencies().add(commProviderTask);
+					}else{
+						LOG.error("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
+						//throw new PlanGenerationException("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
+					}
+					commConsumerTask = getDepended(compTypeTasks, commConsumer.getName(), TaskType.CREATE);
+					if(commConsumerTask != null){
+						//8July15 : added owner task as requested by Adapter
+						commTypeTask.getJsonModel().add("consumerCompTypeTask", commConsumerTask.getName());
+						commTypeTask.getDependencies().add(commConsumerTask);
+						//if mandatory, the consumer depends on the provider
+						//if(commTypeTask.isMandatory() && commProviderTask != null){
+							//4August2015, needs to break this up into two ifs, otherwise returning error for non isMandatory
+						if(commTypeTask.isMandatory()){
+							if(commProviderTask != null){
+								commConsumerTask.getDependencies().add(commProviderTask);
+							}else{
+								LOG.error("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
+							//throw new PlanGenerationException("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
+							}
+						}
+					}
+				}else{//find the parent component type task for the orphan
+					ConfigurationTask parentCompTask = getDepended(compTypeTasks, commTypeTask.getJsonModel().get("providerCompTypeTask").asString(), TaskType.CREATE);
+					if(parentCompTask != null){
+						commTypeTask.getDependencies().add(parentCompTask);
+					}else{
+						System.out.println("Failed to find the parent comp type task for orphan(" + commTypeTask.getName() + "!!!");
+						LOG.error("Failed to find the parent comp type task for orphan(" + commTypeTask.getName() + "!!!");
 					}
 				}
 				this.plan.getTasks().add(commTypeTask);	
@@ -1387,6 +1431,28 @@ public class PlanGenerator {
 		}
 		return ct;
 	}
+	/**
+	 * Create a {@link eu.paasage.upperware.plangenerator.model.task.CommunicationTypeTask <em>CommunicationTypeTask</em>}
+	 * object to hold an orphan {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>}
+	 * object.  The orphan is not mapped to any concrete {@link eu.paasage.camel.deployment.Communication <em>Communication</em>}
+	 * object.
+	 * <p>
+	 * @param name		name of the orphan communication type
+	 * @param target	the target {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} object
+	 * @param type		the {@link eu.paasage.upperware.plangenerator.type.TaskType <em>TaskType</em>} to set	
+	 * @return			the created {@link eu.paasage.upperware.plangenerator.model.task.CommunicationTypeTask <em>CommunicationTypeTask</em>}
+	 */
+	private CommunicationTypeTask getOrphanComTask(String name, ProvidedCommunication target, TaskType type){
+		//1Dec2015 blotch
+		CommunicationTypeTask ct = new CommunicationTypeTask(name, type);
+		JsonObject jo = ModelToJsonConverter.convertOrphanCommunication(target);
+		jo.add("name", name);
+		ct.setJsonModel(jo);
+		//the dependency is fixed further downstream...but check !!!!
+		//
+		return ct;
+	}
+	
 	/**
 	 * Create a {@link eu.paasage.upperware.plangenerator.model.task.CommunicationInstanceTask <em>CommunicationInstanceTask</em>}, set the
 	 * the {@link eu.paasage.upperware.plangenerator.type.TaskType <em>TaskType</em>} and populate 

@@ -1123,6 +1123,30 @@ public class ModelComparator {
 	public List<Configuration> getUpdatedConfigurations() {
 		return this.updatedConfigurations;
 	}*/
+	
+	/**
+	 * A utiltiy to check if two {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>}
+	 * object are the same based on comparing name, port number and the parent container's name.
+	 * <p>
+	 * @param pc1	first {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>}
+	 * @param pc2	second {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>}
+	 * @return	true if considered the same, else false
+	 */
+	public static boolean equalProvidedCommunication(ProvidedCommunication pc1, ProvidedCommunication pc2){
+		//1Dec2015, this is a blotch to fix the orphan provided communication objects so that execution ware would work
+		//see PlanGenerator.buildSimpleDeploymentPlan for more details
+		boolean match = false;
+		if(pc1.getName().equals(pc2.getName()) && pc1.getPortNumber() == pc2.getPortNumber()){
+			InternalComponent ic1 = (InternalComponent) pc1.eContainer();
+			LOGGER.debug("pc1 parent component is: " + ic1);
+			InternalComponent ic2 = (InternalComponent) pc2.eContainer();
+			LOGGER.debug("pc2 parent component is: " + ic2);
+			if(ic1.getName().equals(ic2.getName())){
+				match = true;
+			}
+		}
+		return match;
+	}
 
 	//////////////////////////////////////////////private methods////////////////////////////////////////////////////////
 	/**

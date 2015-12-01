@@ -60,7 +60,7 @@ public class ModelToJsonConverterTest {
 	private final static Logger LOG = Logger.getLogger(ModelToJsonConverterTest.class);	
 	/** target camel xmi file */
 	//private static String TARGET_IN = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "Scalarm_V2.xmi";
-	private static String TARGET_IN = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "ScalarmModel.xmi"; //kyriakos' version
+	private static String TARGET_IN = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "ScalarmModel.xmi"; //kyriakos' version	
 	//updated on 26 August 2015 to use 2 separate files : 1 for main camel model, 1 for the crossed ref'ed provider model
 	//private static String TARGET_IN = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "test.xmi"; //
 	//private static String TARGET_PM_IN = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi"; //

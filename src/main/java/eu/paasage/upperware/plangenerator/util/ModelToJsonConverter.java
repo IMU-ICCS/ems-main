@@ -498,6 +498,33 @@ public final class ModelToJsonConverter {
     	return result;
     }
     /**
+     * Generate a snapshot in {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} of an orphaned
+     * {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} object
+     * to populate an artificial {@link eu.paasage.camel.deployment.Communication <em>Communication</em>} object
+     * not defined in the {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}.
+     * <p> 
+     * @param pc	the source {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} object
+     * @return		the {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} information object
+     */
+    public static JsonObject convertOrphanCommunication(ProvidedCommunication pc){
+    	//1Dec2015 - this is a blotch required by the execution ware
+    	JsonObject result = new JsonObject();
+    	//
+    	LOGGER.debug("processing orphan communication for " + pc.getName());
+    	//basic metadata    	
+    	result.add("objType","communication");
+    	result.add("provider", pc.getName());
+    	//
+    	result.add("providerPort", pc.getPortNumber());//provided port number
+    	//this is a runtime attribute that should be removed downstream
+    	String parent = ((InternalComponent) pc.eContainer()).getName();
+    	LOGGER.debug("...just added orphan provided communication's providerCompTypeTask name :  " + parent);
+    	result.add("providerCompTypeTask", parent);
+    	//
+		return result;
+    }
+    
+    /**
      * Generate a snapshot in {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} of a 
      * {@link eu.paasage.camel.deployment.CommunicationInstance <em>CommunicationInstance</em>}
      * <p> 
@@ -712,6 +739,7 @@ public final class ModelToJsonConverter {
     	//LOGGER.debug("just before populating config....");
     	HashMap<String, String> result = new HashMap<String, String>();    	
     	if(config != null){
+    		LOGGER.debug("converting configuration object " + config.getName() + "...");
     		result.put("configName",config.getName());
     		if(config.getDownloadCommand() != null){
     			result.put("downloadCmd", config.getDownloadCommand());
@@ -723,6 +751,7 @@ public final class ModelToJsonConverter {
     			result.put("installCmd", config.getInstallCommand());
     		}
     		if(config.getStartCommand() != null){
+    			LOGGER.debug("..getting start command : " + config.getStartCommand());
     			result.put("startCmd", config.getStartCommand());
     		}
     		if(config.getStopCommand() != null){
