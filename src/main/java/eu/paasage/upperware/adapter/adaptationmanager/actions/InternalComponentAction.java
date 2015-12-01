@@ -117,9 +117,13 @@ public class InternalComponentAction implements Action {
 				
 				System.out.println("AppName:: " + appliCamelName + " VMT name: " + vmtCamelName);
 				
+				boolean exists = false;
+				if(dataShare.getLCCompID(iCompName)!=null)
+					exists = true;
+				
 				//dataShare.getApplication(appliCamelName);//fetching Application object from dependency
 				//dataShare.getEntityVMT(vmtCamelName);//fetching VM Template object from dependency
-				if(dataShare.addLCAC(iCompName, downloadCmd, installCmd, startCmd, StopCmd, dataShare.getApplication(appliCamelName), dataShare.getEntityVMT(vmtCamelName))){
+				if(!exists && dataShare.addLCAC(iCompName, downloadCmd, installCmd, startCmd, StopCmd, dataShare.getApplication(appliCamelName), dataShare.getEntityVMT(vmtCamelName))){
 					//To Do Exec API Call
 					//LCcompID = "/api/lifecycleComponent/" + iCompName;//POST using parameters iCompName, downloadCmd, installCmd, startCmd, StopCmd
 					LCcompID = execInterfacer.createLifecycleComponent(iCompName, downloadCmd, installCmd, startCmd, StopCmd);
@@ -139,7 +143,7 @@ public class InternalComponentAction implements Action {
 					LOGGER.log(Level.INFO, "Retreived LC Comp Instance " + iCompName + " : ID " + LCcompID);
 				}
 				
-				if(status){
+				if(!exists && status){
 					//To Do Exec API Call
 					applID = Integer.parseInt(dataShare.getApplicationId(appliCamelName));
 					vmtID = Integer.parseInt(dataShare.getEntityVMTid(vmtCamelName));
@@ -150,6 +154,15 @@ public class InternalComponentAction implements Action {
 						LOGGER.log(Level.INFO, "Stored newly created App Comp Instance : ID " + AppCompID);
 					else
 						LOGGER.log(Level.WARNING, "Could not store newly created App Comp Instance : ID " + AppCompID);
+				}
+				
+				Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+				//InternalComponentAction should be completed
+				for(Object obj : depOnActions){
+					System.out.println("-- " + obj.toString() + " ");
+					if(obj.getClass()==CommunicationAction.class){
+						((CommunicationAction) obj).run();
+					}
 				}
 				
 			} catch(Exception e){/*

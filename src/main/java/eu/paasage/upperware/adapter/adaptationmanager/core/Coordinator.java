@@ -283,7 +283,7 @@ public class Coordinator {
 		
 		int cpus = Runtime.getRuntime().availableProcessors();
 
-		executor = new ThreadExecutor(cpus, 60, new LinkedBlockingQueue());
+		executor = new ThreadExecutor(cpus, 60, new LinkedBlockingQueue<Runnable>());
 		
 		graph = g;
 		
@@ -325,7 +325,7 @@ public class Coordinator {
     		try {
     				//executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     				//executor.awaitTermination(1, TimeUnit.SECONDS);
-    				executor.awaitTermination(10000, TimeUnit.MICROSECONDS);
+    				executor.awaitTermination(100000000, TimeUnit.MICROSECONDS);
     			} catch (InterruptedException e) {
     				e.printStackTrace();
     				System.out.println("Tasks not completed successfully");
@@ -364,6 +364,10 @@ public class Coordinator {
 				return true;
 			
 			int count = graph.outgoingEdgesOf(task).size();
+			
+			System.out.println("Dependency count " + count);
+			printDependencies(task);
+			
 			if(count == 0)
 				return true;
 		}
@@ -419,7 +423,7 @@ public class Coordinator {
  
 		@Override
 		protected void beforeExecute(Thread thread, Runnable runTask) {
-			super.beforeExecute(thread, runTask);
+			
  
 			//Task task = (Task) runTask;
 			Action task = (Action) runTask;
@@ -428,10 +432,11 @@ public class Coordinator {
 //			LOG.info("Starting task: " + task.getName());
 			
 			while(!completedDependencies(task))
-				;
+				System.out.println("Task " + task.toString() + " waiting to complete dependencies");
 			
 			//System.out.println(task.toString() + " dependencies complete");
 			LOGGER.log(Level.INFO, task.toString() + " dependencies complete");
+			super.beforeExecute(thread, runTask);
 		}
 		
 		@Override
@@ -449,12 +454,12 @@ public class Coordinator {
 			if (e == null) {
 				//completed((Task) runTask);
 			//	completed((DefaultAction) runTask);
-		//		System.out.println("In afterExecute e is null");
+				System.out.println("In afterExecute e is null");
 				deleteTask((Action) runTask);
 			} else {
 				//failed((Task) runTask, e);
 			//	failed((DefaultAction) runTask, e);
-//				System.out.println("In afterExecute e is not null");
+				System.out.println("In afterExecute e is not null");
 			}
 		}
  

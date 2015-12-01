@@ -44,7 +44,7 @@ public class CommunicationAction implements Action {
 	private JsonObject objParams;
 	private ConfigurationTask task;
 	private ExecInterfacer execInterfacer;
-	private boolean actionDone = false;
+//	private boolean actionDone = false;
 
 	public void execute(Map<String, Object> input, Map<String, Object> output) throws ActionError {
 		LOGGER.log(Level.INFO, "Application creation action");
@@ -110,15 +110,18 @@ public class CommunicationAction implements Action {
 			
 			LOGGER.log(Level.INFO, "providerComp consumerComp: " + provCompName + " " + consCompName);
 			
-			provPortName = "prov-" + provCompName + "-" + provPort;
-			consPortName = "cons-" + consCompName + "-" + consPort;
+			//provPortName = "prov-" + provCompName + "-" + provPort;//To put exact name
+			//consPortName = "cons-" + consCompName + "-" + consPort;
+			provPortName = provider;
+			consPortName = consumer;
+			
 			LOGGER.log(Level.INFO, "provPortName consPortName: " + provPortName + " " + consPortName);
 			
 			if(dataShare.existsProvPort(provPortName)){
 				
 				provPortID = dataShare.getProvPortID(provPortName);
 			
-			}else if(dataShare.addProvPort(provPortName, dataShare.getEntityLCAppComponent(provCompName), provPort)){
+			}else if(dataShare.getEntityLCAppComponent(provCompName)!= null && dataShare.addProvPort(provPortName, dataShare.getEntityLCAppComponent(provCompName), provPort)){
 				provCompID = dataShare.getAppCompID(provCompName);
 				//To Do Exec API Call
 				//provPortID = "/api/communication/" + communicationName;//POST using parameters provPortName, provCompID, provPort
@@ -136,7 +139,7 @@ public class CommunicationAction implements Action {
 				
 				consPortID = dataShare.getReqPortID(consPortName);
 				
-			}else if(dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd)){
+			}else if(dataShare.getEntityLCAppComponent(consCompName) != null && dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd)){
 				consCompID = dataShare.getAppCompID(consCompName);
 				//To Do Exec API Call
 				//provPortID = "/api/communication/" + communicationName;//POST using parameters consPortName, consCompID, consPort
@@ -359,7 +362,7 @@ public class CommunicationAction implements Action {
 			else
 				LOGGER.log(Level.WARNING, "Could not completely delete Communication Type Instance : ID " + commExecID);
 		}
-		actionDone = true;
+//		actionDone = true;
 	}
 
 	public ConfigurationTask getTask() {
@@ -371,7 +374,7 @@ public class CommunicationAction implements Action {
 		return this.communicationName;
 	}
 	
-	public boolean getActionDone(){
+/*	public boolean getActionDone(){
 		return this.actionDone;
-	}
+	}*/
 }
