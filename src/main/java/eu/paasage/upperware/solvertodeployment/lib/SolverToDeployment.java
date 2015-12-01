@@ -189,7 +189,7 @@ public class SolverToDeployment {
 			log.info("arg: "+a);
 			switch (next_op) {
 			case OVERVRITE_DM:	dmID = Integer.valueOf(a); overwriteDM = true; next_op = S2D_ARGS_CMD.DEFAULT; continue;
-			case TIMESTAMP:   	solutionTS = Integer.valueOf(a); TSavailable = true; next_op = S2D_ARGS_CMD.DEFAULT; continue;
+			case TIMESTAMP:   	solutionTS = Long.valueOf(a); TSavailable = true; next_op = S2D_ARGS_CMD.DEFAULT; continue;
 			case DUMPDM:   		dumpDMLevel = Integer.valueOf(a); next_op = S2D_ARGS_CMD.DEFAULT; continue;
 			default:
 				if (a.substring(0, 2).equals("-o")) {
