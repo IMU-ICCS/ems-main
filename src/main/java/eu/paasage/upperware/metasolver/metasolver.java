@@ -53,7 +53,7 @@ public class metasolver{
 			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 			}
 			else{
-				runCPSolver(CPmodID);
+				runCPSolver(CPmodID, jObj.get("solution_tmp").asLong());
 		}
 				//now invoke S2D
 			//runS2D(CAMELmodID, CPmodID, mapResult);
@@ -170,12 +170,12 @@ public class metasolver{
 	}
 
 
-	public static void runCPSolver(String input){
+	public static void runCPSolver(String input, long timestamp){
 
 		try{	
 			
 			System.out.println("... about to call cp-solver : java -jar cp-solver.jar $PAASAGE_CONFIG_DIR" + input +" ");
-			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar CDO " + input + "");
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar CDO " + input + ' ' + timestamp);
 			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
 
 
