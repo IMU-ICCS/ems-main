@@ -43,13 +43,19 @@ public class metasolver{
 		try{
 			String CAMELmodID= args[0];
 			String CPmodID= args[1];
+			int jobID = Integer.parseInt(args[2]);;
 			Mapper map = new Mapper();
 			/* syc17 26Nov15 aligned with updated mapper
 			long mapResult = map.mapMetricVariables(CPmodID);
 			*/
 			JsonObject jObj = map.mapMetricVariables(CPmodID);
+			if(jobID == 1){
 			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
-		    //now invoke S2D
+			}
+			else{
+				runCPSolver(CPmodID);
+		}
+				//now invoke S2D
 			//runS2D(CAMELmodID, CPmodID, mapResult);
 			//runS2D(CAMELmodID, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		}
@@ -163,6 +169,68 @@ public class metasolver{
 
 	}
 
+
+	public static void runCPSolver(String input){
+
+		try{	
+			
+			System.out.println("... about to call cp-solver : java -jar cp-solver.jar $PAASAGE_CONFIG_DIR" + input +" ");
+			Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar $PAASAGE_CONFIG_DIR" + input + "");
+			//Process p1 = Runtime.getRuntime().exec("java -jar milp-solver-assembly.jar " + input);
+
+
+			// you can pass the system command or a script to exec command. here i used uname -a system command
+			BufferedReader stdInput = new BufferedReader(new
+					InputStreamReader(p1.getInputStream()));
+
+			BufferedReader stdError = new BufferedReader(new
+					InputStreamReader(p1.getErrorStream()));
+
+			// read the output from the command
+			String s1="";
+			StringBuilder sb = new StringBuilder(); 
+			while ((s1 = stdInput.readLine()) != null) {
+
+				sb.append(s1);
+				sb.append("\n");
+			}
+
+			while ((s1 = stdError.readLine()) != null) {
+
+				sb.append(s1);
+				sb.append("\n");
+			}
+
+
+			s1= sb.toString();
+			System.out.println(" output = " + s1);
+         
+			
+			if (s1.length() > 1 || Integer.parseInt(s1) > 0){
+
+				//		Process p2 = Runtime.getRuntime().exec("./LAStart " + args[1]);
+				String s2 = "";
+				while ((s2 = stdInput.readLine()) != null) {
+
+					System.out.println("Std OUT: "+s2);
+				}
+
+				while ((s2 = stdError.readLine()) != null) {
+					System.out.println("Std ERROR : "+s2);
+				}
+
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+
+
+	}
+
+	
 	public static void runS2D(String CAMELmodel, String CPmodel, long timestamp){
 
 		try{
