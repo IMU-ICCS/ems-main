@@ -44,6 +44,7 @@ public class CommunicationAction implements Action {
 	private JsonObject objParams;
 	private ConfigurationTask task;
 	private ExecInterfacer execInterfacer;
+	private boolean actionDone = false;
 
 	public void execute(Map<String, Object> input, Map<String, Object> output) throws ActionError {
 		LOGGER.log(Level.INFO, "Application creation action");
@@ -85,7 +86,9 @@ public class CommunicationAction implements Action {
 			String consPortName = null;
 			String consPortID = null;
 			String isMandatory = objParams.get("isMandatory").toString();
-			String requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
+			String requiredPortstartCmd = "null";
+			if(objParams.get("requiredPortstartCmd") != null)
+				requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
 			
 			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
@@ -356,7 +359,7 @@ public class CommunicationAction implements Action {
 			else
 				LOGGER.log(Level.WARNING, "Could not completely delete Communication Type Instance : ID " + commExecID);
 		}
-		
+		actionDone = true;
 	}
 
 	public ConfigurationTask getTask() {
@@ -366,5 +369,9 @@ public class CommunicationAction implements Action {
 	
 	public String getCommTypeName(){
 		return this.communicationName;
+	}
+	
+	public boolean getActionDone(){
+		return this.actionDone;
 	}
 }

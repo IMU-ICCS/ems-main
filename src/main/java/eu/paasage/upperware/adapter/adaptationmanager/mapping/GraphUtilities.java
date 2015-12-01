@@ -305,6 +305,7 @@ public final class GraphUtilities {
 				if(depAction != null && node != null){//ERROR IN LOGIC HERE.... CHECK...
 					//actionGraph.addVertex(depAction);//ERROR IN LOGIC HERE.... CHECK...
 					actionGraph.addEdge(node, depAction);
+					LOGGER.log(Level.INFO, "Added dependency : " + node.toString() + " " + depAction.toString());
 				}
 			}
 		}

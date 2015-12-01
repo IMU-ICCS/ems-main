@@ -82,136 +82,136 @@ public class VMInstanceAction implements Action {
 			
 			
 			if((vmt=dataShare.getEntityVMTid(vmType))==null){//entity non existant in ExecWare
-				//To Do Exec API Call
-				String cloudName = objParams.get("cloud").asString();
-				LOGGER.log(Level.INFO, "Found cloud name in the deployment model: " + cloudName);
-				
-				//cloudName = "GWDG";//hack for test
-				//cloudName = "omistack";//hack for Belgium workshop test
-				
-				//cloudID = "/api/cloud/"+cloudName;//substitute with API call GET ID
-				try {
-					/* Changed cloud name to GWDG - so no hacking reqd
-					 * System.out.println("Hacking cloud name " + cloudName + " to omistack");
-					cloudName = "omistack";*/
-					
-					String tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
-					
-					if(tempCloudID.equalsIgnoreCase("")){//need to add the cloud provider
-						String driver = objParams.get("driver").asString();
-						String endpoint = objParams.get("endpoint").asString();
-						String uname = ((JsonObject) objParams.get("credential")).get("username").asString();
-						String pass = ((JsonObject) objParams.get("credential")).get("password").asString();
-						
-						//fetching cloud credentials located in Property file 
-						if(cloudName.equalsIgnoreCase("Flexiant")){
-							uname = execInterfacer.getCloudUname("Flexiant");
-							pass = execInterfacer.getCloudPass("Flexiant");
-							//endpoint = execInterfacer.getCloudEndpoint("Flexiant");
-						}else if(cloudName.equalsIgnoreCase("Omistack")){
-							uname = execInterfacer.getCloudUname("Omistack");
-							pass = execInterfacer.getCloudPass("Omistack");
-							//endpoint = execInterfacer.getCloudEndpoint("Omistack");
-						}
-						
-						linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);
-						
-						tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
-					}
-					
-					cloudID = execInterfacer.trimResponseID(tempCloudID);
-					LOGGER.log(Level.INFO, "Found cloud name: " + cloudName + " id: " + cloudID);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					LOGGER.log(Level.WARNING, "Cloud name: " + cloudName + " not found. IOException");
-					e.printStackTrace();
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					LOGGER.log(Level.WARNING, "Cloud name: " + cloudName + " not found. ParseException");
-					e.printStackTrace();
-				}
-				
-				//String cloudUuid = objParams.get("region").asString();//"regionOne"
-				String cloudProviderIdLocation = objParams.get("locations").asArray().get(0).toString();
-				System.out.println("Locations fetched " + objParams.get("locations").asArray().toString());
-				
-/*				if(cloudName.equalsIgnoreCase("Flexiant"))
-					cloudProviderIdLocation = "\"b15e1545-7ca3-361c-b6a7-b5cf2828cf28\"";*/
-				
-				try {
-					locationID = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation) + "";
-				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}			
-				//locationID = objParams.get("cloud").asString();//find the appropriate location ID satisfying cloudID & cloudUuid
-				
-				//String cloudProviderId = "regionOne/2";//hack for test
-				//cloudProviderId = "RegionOne/4";//hack for Belgium workshop test
-				
-				String hardwCloudProviderId = null;
-				//setting cloudProviderId defaults 
-/*				if(cloudName.equalsIgnoreCase("Omistack"))
-					hardwCloudProviderId = "RegionOne/3";
-				else if(cloudName.equalsIgnoreCase("Flexiant"))
-					hardwCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054";*/
-				hardwCloudProviderId = objParams.get("VMTypeCloudProviderId").asString();
-				
-				try {
-					hardwareID = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), hardwCloudProviderId) + "";
-				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//hardwareID = "/api/hardware/3";//find the appropriate hardware ID satisfying cloudID & cloudUuid
-				
-				String imgCloudProviderId = null;
-/*				if(cloudName.equalsIgnoreCase("Omistack"))
-					imgCloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";
-				else if(cloudName.equalsIgnoreCase("Flexiant"))
-					imgCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c";*/
-				imgCloudProviderId = objParams.get("VMImageId").asString();
-
-
-				try {
-					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId/*, locationID*/) + "";
-					
-					boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
-					
-					if(status)
-						LOGGER.log(Level.INFO, "Updated OS/Default Login for image " + imageID);
-					else
-						LOGGER.log(Level.INFO, "NOT updated OS/Default Login for image " + imageID);
-				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//imageID = "/api/image/2";//find the appropriate hardware ID satisfying imageName, cloudID & locationID
-				
-				//vmt = "/api/vmt/" + vmType;//POST using parameters cloudID, imageID, locationID & hardwareID
-				vmt = execInterfacer.createVirtualMachineTemplate(Integer.parseInt(cloudID), Integer.parseInt(imageID), Integer.parseInt(locationID), Integer.parseInt(hardwareID));
-				
-				LOGGER.log(Level.INFO, "Created VM type " + vmType + " : instance ID " + vmt);
-				LOGGER.log(Level.INFO, "IDs cloud location hardware image " + cloudID + " | " + locationID + " | " + hardwareID + " | " + imageID);
-				dataShare.setVMTIDs(vmType, execInterfacer.trimResponseID(vmt), cloudID, imageID, locationID, hardwareID);
+//				//To Do Exec API Call
+//				String cloudName = objParams.get("cloud").asString();
+//				LOGGER.log(Level.INFO, "Found cloud name in the deployment model: " + cloudName);
+//				
+//				//cloudName = "GWDG";//hack for test
+//				//cloudName = "omistack";//hack for Belgium workshop test
+//				
+//				//cloudID = "/api/cloud/"+cloudName;//substitute with API call GET ID
+//				try {
+//					/* Changed cloud name to GWDG - so no hacking reqd
+//					 * System.out.println("Hacking cloud name " + cloudName + " to omistack");
+//					cloudName = "omistack";*/
+//					
+//					String tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
+//					
+//					if(tempCloudID.equalsIgnoreCase("")){//need to add the cloud provider
+//						String driver = objParams.get("driver").asString();
+//						String endpoint = objParams.get("endpoint").asString();
+//						String uname = ((JsonObject) objParams.get("credential")).get("username").asString();
+//						String pass = ((JsonObject) objParams.get("credential")).get("password").asString();
+//						
+//						//fetching cloud credentials located in Property file 
+//						if(cloudName.equalsIgnoreCase("Flexiant")){
+//							uname = execInterfacer.getCloudUname("Flexiant");
+//							pass = execInterfacer.getCloudPass("Flexiant");
+//							//endpoint = execInterfacer.getCloudEndpoint("Flexiant");
+//						}else if(cloudName.equalsIgnoreCase("Omistack")){
+//							uname = execInterfacer.getCloudUname("Omistack");
+//							pass = execInterfacer.getCloudPass("Omistack");
+//							//endpoint = execInterfacer.getCloudEndpoint("Omistack");
+//						}
+//						
+//						linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);
+//						
+//						tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
+//					}
+//					
+//					cloudID = execInterfacer.trimResponseID(tempCloudID);
+//					LOGGER.log(Level.INFO, "Found cloud name: " + cloudName + " id: " + cloudID);
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					LOGGER.log(Level.WARNING, "Cloud name: " + cloudName + " not found. IOException");
+//					e.printStackTrace();
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					LOGGER.log(Level.WARNING, "Cloud name: " + cloudName + " not found. ParseException");
+//					e.printStackTrace();
+//				}
+//				
+//				//String cloudUuid = objParams.get("region").asString();//"regionOne"
+//				String cloudProviderIdLocation = objParams.get("locations").asArray().get(0).toString();
+//				System.out.println("Locations fetched " + objParams.get("locations").asArray().toString());
+//				
+///*				if(cloudName.equalsIgnoreCase("Flexiant"))
+//					cloudProviderIdLocation = "\"b15e1545-7ca3-361c-b6a7-b5cf2828cf28\"";*/
+//				
+//				try {
+//					locationID = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation) + "";
+//				} catch (NumberFormatException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}			
+//				//locationID = objParams.get("cloud").asString();//find the appropriate location ID satisfying cloudID & cloudUuid
+//				
+//				//String cloudProviderId = "regionOne/2";//hack for test
+//				//cloudProviderId = "RegionOne/4";//hack for Belgium workshop test
+//				
+//				String hardwCloudProviderId = null;
+//				//setting cloudProviderId defaults 
+///*				if(cloudName.equalsIgnoreCase("Omistack"))
+//					hardwCloudProviderId = "RegionOne/3";
+//				else if(cloudName.equalsIgnoreCase("Flexiant"))
+//					hardwCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054";*/
+//				hardwCloudProviderId = objParams.get("VMTypeCloudProviderId").asString();
+//				
+//				try {
+//					hardwareID = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), hardwCloudProviderId) + "";
+//				} catch (NumberFormatException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				//hardwareID = "/api/hardware/3";//find the appropriate hardware ID satisfying cloudID & cloudUuid
+//				
+//				String imgCloudProviderId = null;
+///*				if(cloudName.equalsIgnoreCase("Omistack"))
+//					imgCloudProviderId = "RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97";
+//				else if(cloudName.equalsIgnoreCase("Flexiant"))
+//					imgCloudProviderId = "e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c";*/
+//				imgCloudProviderId = objParams.get("VMImageId").asString();
+//
+//
+//				try {
+//					imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId/*, locationID*/) + "";
+//					
+//					boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
+//					
+//					if(status)
+//						LOGGER.log(Level.INFO, "Updated OS/Default Login for image " + imageID);
+//					else
+//						LOGGER.log(Level.INFO, "NOT updated OS/Default Login for image " + imageID);
+//				} catch (NumberFormatException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				//imageID = "/api/image/2";//find the appropriate hardware ID satisfying imageName, cloudID & locationID
+//				
+//				//vmt = "/api/vmt/" + vmType;//POST using parameters cloudID, imageID, locationID & hardwareID
+//				vmt = execInterfacer.createVirtualMachineTemplate(Integer.parseInt(cloudID), Integer.parseInt(imageID), Integer.parseInt(locationID), Integer.parseInt(hardwareID));
+//				
+//				LOGGER.log(Level.INFO, "Created VM type " + vmType + " : instance ID " + vmt);
+//				LOGGER.log(Level.INFO, "IDs cloud location hardware image " + cloudID + " | " + locationID + " | " + hardwareID + " | " + imageID);
+//				dataShare.setVMTIDs(vmType, execInterfacer.trimResponseID(vmt), cloudID, imageID, locationID, hardwareID);
 				
 			}else{//the VM template entity already exists
 				
@@ -226,15 +226,18 @@ public class VMInstanceAction implements Action {
 			//Forcing the CommunicationAction to run after creating VMType but before creating its VMInstances
 			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
-			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
-			LOGGER.log(Level.INFO, "--------------Breakpoint VMInstanceAction (create)--- " + depOnActions.size());
+			//Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
+			Collection<Action> depOnActions = Coordinator.getDependentActions(this);
+			LOGGER.log(Level.INFO, "--------------Breakpoint VMInstanceAction (create)--- " + this.toString() + " " + depOnActions.size());
 			
 			//Forcing the CommunicationAction to run before its VMInstances
 			for(Object obj : depOnActions){
 				System.out.println("-- " + obj.toString() + " ");
 				if(obj.getClass()==CommunicationAction.class){
-					((CommunicationAction) obj).run();
-					LOGGER.log(Level.INFO, "Forced (creation) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
+					//((CommunicationAction) obj).run();
+					//LOGGER.log(Level.INFO, "Forced (creation) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
+/*					boolean status = ((CommunicationAction) obj).getActionDone());
+						LOGGER.log(Level.INFO, "Waiting for " + ((CommunicationAction) obj).getCommTypeName());*/
 				}
 			}
 
@@ -584,6 +587,10 @@ public class VMInstanceAction implements Action {
 	
 	public String getVMInstName(){
 		return this.vmInstName;
+	}
+	
+	public JsonObject getParams(){
+		return this.objParams;
 	}
 	
 	private boolean linkCloudProvToExecWare(String cloud, String driver, String endpoint, String uname, String pass){

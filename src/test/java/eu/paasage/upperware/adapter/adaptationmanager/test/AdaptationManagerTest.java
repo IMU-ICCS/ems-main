@@ -257,7 +257,8 @@ public class AdaptationManagerTest
 		//currentReasonerInterfacer = new ReasonerInterfacer("test", false);
 		//currentReasonerInterfacer = new ReasonerInterfacer("enterprise-service-application.xmi_1442302901", false);
 		
-		currentReasonerInterfacer = new ReasonerInterfacer("CAMEL_7eb47c883d9d43bc32beebb80f93950c", false);
+		currentReasonerInterfacer = new ReasonerInterfacer("CAMEL_8aeb840bb3383780806771b0fbf34b1b", false);
+		//currentReasonerInterfacer = new ReasonerInterfacer("CAMEL_7eb47c883d9d43bc32beebb80f93950c", false);
 		//currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/ver2_0/ScalarmModelInstance_Alessandro.xmi", true);
 		//currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/FullDeploymentBewan-Y3Rev-Christian.xmi", true);
 //		currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/BeWan_Deployment034553.xmi", true);
