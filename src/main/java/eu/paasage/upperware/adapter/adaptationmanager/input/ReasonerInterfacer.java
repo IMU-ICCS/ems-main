@@ -167,13 +167,32 @@ public class ReasonerInterfacer {
 			try {
 				throw new Exception("Failed to get camel model");
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		System.out.println("#Deployment_Models in CDO : " + model.getDeploymentModels().size() + ". Getting model# " + dmIndex);
 		DeploymentModel depModel = model.getDeploymentModels().get(dmIndex);
 		return depModel;
+	}
+	
+	public int getDeploymentModelsSize(){
+		if(!usingCDOClientLib && client != null && transaction != null)
+			return 0;
+		
+		CDOResource cdoRes = null;
+		if(resourceName != null)
+			cdoRes = transaction.getOrCreateResource(resourceName);
+		List<EObject> results = cdoRes.getContents();
+		System.out.println("The results of the query are:" + results); //CamelModel@OID:http://www.paasage.eu/2015/06/camel#CamelModel#1
+		CamelModel model = (CamelModel) results.get(0);
+		if(model == null){
+			try {
+				throw new Exception("Failed to get camel model");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return model.getDeploymentModels().size();
 	}
 	
 	public void closeTransaction(){

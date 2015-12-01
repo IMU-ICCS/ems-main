@@ -1073,9 +1073,7 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
-        finally{
-        	return resp;
-        }
+        return resp;
         
 	}
 	
@@ -1107,10 +1105,8 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
-        finally{
-        	return resp;
-        }
         
+        return resp;
 	}
 	
 	private HttpResponse getRequest(String apiExt, Header inHeader) throws IOException{
@@ -1137,10 +1133,7 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
-        finally{
-        	return resp;
-        }
-        
+        return resp;
 	}
 
 	private HttpResponse deleteRequest(String apiExt, Header inHeader) throws IOException{
@@ -1167,9 +1160,7 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
-        finally{
-        	return resp;
-        }
+        return resp;
 	}
 	
 	public String getMatchingJSONArrayHref(JSONArray jArr, String name){
