@@ -191,10 +191,14 @@ public class CPSolver {
 			cdoMode = true;
 			CDOView view = cl.openView();
 			CDOResource res = view.getResource(cdoPath);
-			if (res != null){
-				cp = (ConstraintProblem)res.getContents().get(0);
-				readModel(cp);
+			EList<EObject> objs = res.getContents();
+			for (EObject obj: objs){
+				if (obj instanceof ConstraintProblem){
+					cp = (ConstraintProblem)obj;
+					break;
+				}
 			}
+			readModel(cp);
 			view.close();
 		}
 		else if (pathName != null){
