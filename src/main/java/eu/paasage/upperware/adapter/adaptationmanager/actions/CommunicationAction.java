@@ -77,18 +77,30 @@ public class CommunicationAction implements Action {
 			String provPortName = null;
 			String provPortID = null;
 			
-			String consumer = objParams.get("consumer").asString();
+			String consumer = null;
 			String consCompName = null;
 			String consCompID = null;
 
 			//Required port params
-			String consPort = objParams.get("consumerPort").toString();
+			String consPort = null;
 			String consPortName = null;
 			String consPortID = null;
-			String isMandatory = objParams.get("isMandatory").toString();
+			String isMandatory = null;
 			String requiredPortstartCmd = "null";
-			if(objParams.get("requiredPortstartCmd") != null)
+			if(objParams.get("requiredPortstartCmd") != null){
 				requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
+				LOGGER.log(Level.INFO, "START cmd : " + requiredPortstartCmd);
+			}
+			
+			//setting the params when not relevant to the public port
+			boolean containsOrphan = communicationName.toLowerCase().contains("orphan");
+			System.out.println("Consumer for orphan? " + containsOrphan);
+			if(!containsOrphan){
+				consumer = objParams.get("consumer").asString();
+				consPort = objParams.get("consumerPort").toString();
+				isMandatory = objParams.get("isMandatory").toString();
+			}
+			System.out.println("Communication name: " + communicationName);
 			
 			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
@@ -116,6 +128,11 @@ public class CommunicationAction implements Action {
 			consPortName = consumer;
 			
 			LOGGER.log(Level.INFO, "provPortName consPortName: " + provPortName + " " + consPortName);
+			
+			if(communicationName.toLowerCase().contains("orphan")){
+				LOGGER.log(Level.INFO, "Orphan port detected : " + communicationName);
+				commTypeExists = true;
+			}
 			
 			if(dataShare.existsProvPort(provPortName)){
 				

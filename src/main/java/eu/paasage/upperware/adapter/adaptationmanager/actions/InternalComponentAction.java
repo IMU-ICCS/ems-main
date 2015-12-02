@@ -151,7 +151,7 @@ public class InternalComponentAction implements Action {
 					AppCompID = execInterfacer.createApplicationComponent(applID, Integer.parseInt(LCcompID_temp), vmtID);
 					
 					if(AppCompID != null && dataShare.setAppCompID(iCompName, execInterfacer.trimResponseID(AppCompID)))
-						LOGGER.log(Level.INFO, "Stored newly created App Comp Instance : ID " + AppCompID);
+						LOGGER.log(Level.INFO, "Stored newly created App Comp Instance : ID " + AppCompID + " name: " + iCompName);
 					else
 						LOGGER.log(Level.WARNING, "Could not store newly created App Comp Instance : ID " + AppCompID);
 				}
