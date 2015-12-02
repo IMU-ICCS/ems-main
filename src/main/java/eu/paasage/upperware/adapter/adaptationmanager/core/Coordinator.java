@@ -51,12 +51,15 @@ import org.eclipse.emf.cdo.common.revision.*;
 import org.eclipse.net4j.util.event.INotifier;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.DirectedNeighborIndex;
 import org.jgrapht.alg.NeighborIndex;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.jgrapht.traverse.GraphIterator;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -93,6 +96,7 @@ public class Coordinator {
 	private static DirectedNeighborIndex<Action, DefaultEdge> neigh = null;
 
 	private static ThreadExecutor executor;// for parallel execution
+	private static DirectedGraph<Action, DefaultEdge> invGraph;
 
 	public Map<String, Object> getState() {
 		return state;
@@ -375,6 +379,34 @@ public class Coordinator {
 		}
 
 	}
+	
+	
+	private static void scheduleSerial() {
+
+		LOGGER.log(Level.INFO, "Scheduling serial Action execution");
+
+		invGraph = new DefaultDirectedGraph<Action, DefaultEdge>(
+				DefaultEdge.class);
+		synchronized (graph) {
+			Graphs.addGraphReversed(invGraph, graph);
+		}
+		GraphIterator<Action, DefaultEdge> iterator = new TopologicalOrderIterator<Action, DefaultEdge>(
+				invGraph);
+
+		int i=1;
+		while (iterator.hasNext()) {
+			Action task = (Action) iterator.next();
+			task.run();
+			LOGGER.log(Level.INFO, "Run task #" + i + " : "+ task.toString());
+			i++;
+		}
+
+		LOGGER.log(Level.INFO, "End of serial execution");
+
+	}
+
+
+	
 
 	public void getCurrentFromCDO() {
 		currentModel = reasonerInterfacer.getDeploymentModel(true);
@@ -497,7 +529,7 @@ public class Coordinator {
 			} else {
 				// failed((Task) runTask, e);
 				// failed((DefaultAction) runTask, e);
-				// System.out.println("In afterExecute e is not null");
+				System.out.println("In afterExecute e is not null");
 			}
 		}
 
