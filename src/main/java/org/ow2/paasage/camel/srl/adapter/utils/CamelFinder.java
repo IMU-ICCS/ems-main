@@ -158,8 +158,8 @@ public class CamelFinder {
         if(model.getExecutionModels().isEmpty()){
             ExecutionModel em = ExecutionFactory.eINSTANCE.createExecutionModel();
             em.setName("RandomExecutionModel");
-            if(resourceContent != null)
-                resourceContent.add(em);
+            //if(resourceContent != null)
+            //    resourceContent.add(em);
         }
 
         for(ExecutionModel em : model.getExecutionModels()){
@@ -169,8 +169,8 @@ public class CamelFinder {
                 ec.setApplication(getRandomApplication());
                 ec.setDeploymentModel(getRandomDeploymentModel());
                 em.getExecutionContexts().add(ec);
-                if(resourceContent != null)
-                    resourceContent.add(ec);
+                //if(resourceContent != null)
+                //    resourceContent.add(ec);
 
                 result = ec;
             } else {

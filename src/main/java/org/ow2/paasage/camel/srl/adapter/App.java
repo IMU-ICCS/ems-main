@@ -66,8 +66,8 @@ public class App
                 logger.info("Subscribed to ZeroMQ server.");
                 // TEST:
                 try {
-                    logger.info("Sleep for two seconds so the Subscriber is set up, before we send messages...");
-                    Thread.sleep(5000);
+                    logger.info("Sleep for ten seconds so the Subscriber is set up, before we send messages...");
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
