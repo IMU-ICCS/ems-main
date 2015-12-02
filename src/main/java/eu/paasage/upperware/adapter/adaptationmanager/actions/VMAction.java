@@ -89,6 +89,14 @@ public class VMAction implements Action {
 					//((VMInstanceAction) obj).run();
 				}
 			}
+			
+			//InternalComponentAction should be completed
+			for(Object obj : depOnActions){
+				System.out.println("-- " + obj.toString() + " ");
+				if(obj.getClass()==InternalComponentAction.class){
+					((InternalComponentAction) obj).run();
+				}
+			}
 
 		} else if(task.getTaskType()==TaskType.UPDATE){
 			

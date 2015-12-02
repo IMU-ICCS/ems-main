@@ -44,7 +44,7 @@ public class CommunicationAction implements Action {
 	private JsonObject objParams;
 	private ConfigurationTask task;
 	private ExecInterfacer execInterfacer;
-	private boolean actionDone = false;
+//	private boolean actionDone = false;
 
 	public void execute(Map<String, Object> input, Map<String, Object> output) throws ActionError {
 		LOGGER.log(Level.INFO, "Application creation action");
@@ -77,18 +77,30 @@ public class CommunicationAction implements Action {
 			String provPortName = null;
 			String provPortID = null;
 			
-			String consumer = objParams.get("consumer").asString();
+			String consumer = null;
 			String consCompName = null;
 			String consCompID = null;
 
 			//Required port params
-			String consPort = objParams.get("consumerPort").toString();
+			String consPort = null;
 			String consPortName = null;
 			String consPortID = null;
-			String isMandatory = objParams.get("isMandatory").toString();
+			String isMandatory = null;
 			String requiredPortstartCmd = "null";
-			if(objParams.get("requiredPortstartCmd") != null)
+			if(objParams.get("requiredPortstartCmd") != null){
 				requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
+				LOGGER.log(Level.INFO, "START cmd : " + requiredPortstartCmd);
+			}
+			
+			//setting the params when not relevant to the public port
+			boolean containsOrphan = communicationName.toLowerCase().contains("orphan");
+			System.out.println("Consumer for orphan? " + containsOrphan);
+			if(!containsOrphan){
+				consumer = objParams.get("consumer").asString();
+				consPort = objParams.get("consumerPort").toString();
+				isMandatory = objParams.get("isMandatory").toString();
+			}
+			System.out.println("Communication name: " + communicationName);
 			
 			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
@@ -110,15 +122,23 @@ public class CommunicationAction implements Action {
 			
 			LOGGER.log(Level.INFO, "providerComp consumerComp: " + provCompName + " " + consCompName);
 			
-			provPortName = "prov-" + provCompName + "-" + provPort;
-			consPortName = "cons-" + consCompName + "-" + consPort;
+			//provPortName = "prov-" + provCompName + "-" + provPort;//To put exact name
+			//consPortName = "cons-" + consCompName + "-" + consPort;
+			provPortName = provider;
+			consPortName = consumer;
+			
 			LOGGER.log(Level.INFO, "provPortName consPortName: " + provPortName + " " + consPortName);
+			
+			if(communicationName.toLowerCase().contains("orphan")){
+				LOGGER.log(Level.INFO, "Orphan port detected : " + communicationName);
+				commTypeExists = true;
+			}
 			
 			if(dataShare.existsProvPort(provPortName)){
 				
 				provPortID = dataShare.getProvPortID(provPortName);
 			
-			}else if(dataShare.addProvPort(provPortName, dataShare.getEntityLCAppComponent(provCompName), provPort)){
+			}else if(dataShare.getEntityLCAppComponent(provCompName)!= null && dataShare.addProvPort(provPortName, dataShare.getEntityLCAppComponent(provCompName), provPort)){
 				provCompID = dataShare.getAppCompID(provCompName);
 				//To Do Exec API Call
 				//provPortID = "/api/communication/" + communicationName;//POST using parameters provPortName, provCompID, provPort
@@ -136,7 +156,7 @@ public class CommunicationAction implements Action {
 				
 				consPortID = dataShare.getReqPortID(consPortName);
 				
-			}else if(dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd)){
+			}else if(dataShare.getEntityLCAppComponent(consCompName) != null && dataShare.addReqPort(consPortName, dataShare.getEntityLCAppComponent(consCompName), consPort, isMandatory, requiredPortstartCmd)){
 				consCompID = dataShare.getAppCompID(consCompName);
 				//To Do Exec API Call
 				//provPortID = "/api/communication/" + communicationName;//POST using parameters consPortName, consCompID, consPort
@@ -359,7 +379,7 @@ public class CommunicationAction implements Action {
 			else
 				LOGGER.log(Level.WARNING, "Could not completely delete Communication Type Instance : ID " + commExecID);
 		}
-		actionDone = true;
+//		actionDone = true;
 	}
 
 	public ConfigurationTask getTask() {
@@ -371,7 +391,7 @@ public class CommunicationAction implements Action {
 		return this.communicationName;
 	}
 	
-	public boolean getActionDone(){
+/*	public boolean getActionDone(){
 		return this.actionDone;
-	}
+	}*/
 }

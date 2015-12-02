@@ -282,8 +282,7 @@ public class Coordinator {
 			LOGGER.log(Level.INFO, "Reconfiguration between two deployment models");
 		}
 
-		LOGGER.log(Level.INFO, "End of Scheduling thread actions");
-
+		
 //	DeploymentModel targetModel = reasonerInterfacer
 //				.getLiveDeploymentModel(dmIndex);// Comment to stop getting live
 													// model
@@ -322,8 +321,8 @@ public class Coordinator {
 
 		int cpus = Runtime.getRuntime().availableProcessors();
 
-		executor = new ThreadExecutor(cpus, 60, new LinkedBlockingQueue());
-
+		executor = new ThreadExecutor(cpus, 60, new LinkedBlockingQueue<Runnable>());
+		
 		graph = g;
 
 		synchronized (graph) {
@@ -362,20 +361,18 @@ public class Coordinator {
 
 			executor.shutdown();
 
-			try {
-				// executor.awaitTermination(Long.MAX_VALUE,
-				// TimeUnit.NANOSECONDS);
-				// executor.awaitTermination(1, TimeUnit.SECONDS);
-				executor.awaitTermination(10000, TimeUnit.MICROSECONDS);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				System.out.println("Tasks not completed successfully");
-			} finally {
-				// System.exit(0);
-				executor.shutdown();
-				LOGGER.log(Level.INFO, "Shutdown Executor thread");
-			}
-
+    		try {
+    				//executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+    				//executor.awaitTermination(1, TimeUnit.SECONDS);
+    				executor.awaitTermination(100000000, TimeUnit.MICROSECONDS);
+    			} catch (InterruptedException e) {
+    				e.printStackTrace();
+    				System.out.println("Tasks not completed successfully");
+    			} finally{
+    				//System.exit(0);
+    				executor.shutdown();
+    				LOGGER.log(Level.INFO, "Shutdown Executor thread");
+    			}
 		}
 
 	}
@@ -432,7 +429,11 @@ public class Coordinator {
 				return true;
 
 			int count = graph.outgoingEdgesOf(task).size();
-			if (count == 0)
+			
+			System.out.println("Dependency count " + count);
+			printDependencies(task);
+			
+			if(count == 0)
 				return true;
 		}
 		return false;
@@ -492,21 +493,20 @@ public class Coordinator {
 
 		@Override
 		protected void beforeExecute(Thread thread, Runnable runTask) {
-			super.beforeExecute(thread, runTask);
-
-			// Task task = (Task) runTask;
+ 
+			//Task task = (Task) runTask;
 			Action task = (Action) runTask;
-			// System.out.println("Task " + task.toString() + " by processor " +
-			// thread.getId());
-			LOGGER.log(Level.INFO, "Task " + task.toString() + " by processor "
-					+ thread.getId());
-			// LOG.info("Starting task: " + task.getName());
+			//System.out.println("Task " + task.toString() + " by processor " + thread.getId());
+			LOGGER.log(Level.INFO, "Task " + task.toString() + " by processor " + thread.getId());
+//			LOG.info("Starting task: " + task.getName());
+			
+			while(!completedDependencies(task))
+				System.out.println("Task " + task.toString() + " waiting to complete dependencies");
+			
+			//System.out.println(task.toString() + " dependencies complete");
 
-			while (!completedDependencies(task))
-				;
-
-			// System.out.println(task.toString() + " dependencies complete");
 			LOGGER.log(Level.INFO, task.toString() + " dependencies complete");
+			super.beforeExecute(thread, runTask);
 		}
 
 		@Override
@@ -522,9 +522,9 @@ public class Coordinator {
 			super.afterExecute(runTask, e);
 
 			if (e == null) {
-				// completed((Task) runTask);
-				// completed((DefaultAction) runTask);
-				// System.out.println("In afterExecute e is null");
+				//completed((Task) runTask);
+			//	completed((DefaultAction) runTask);
+				System.out.println("In afterExecute e is null");
 				deleteTask((Action) runTask);
 			} else {
 				// failed((Task) runTask, e);
