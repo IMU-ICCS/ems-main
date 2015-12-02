@@ -130,7 +130,7 @@ public class metasolver{
 	}
 	public void go(String CAMELmodel, String CPmodel) throws MetricMapperException{
 		Mapper map = new Mapper();
-		/* 26Nov15 syc17 aigned with uppdated Mapper code
+		/* 26Nov15 syc17 aligned with updated Mapper code
 		long mapResult = map.mapMetricVariables(CPmodel); */
 		JsonObject jObj = map.mapMetricVariables(CPmodel);
 		RPListener rpl = new RPListener();
@@ -367,6 +367,9 @@ public class metasolver{
 			}
 		}catch (Exception e){
 			System.out.println("error" + e);	
+		}finally{
+			//2Dec15, always close session
+			utils.closeCDOSession();
 		}
 
 		return metricId;
