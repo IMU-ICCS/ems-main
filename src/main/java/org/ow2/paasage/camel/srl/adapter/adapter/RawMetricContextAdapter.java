@@ -19,6 +19,7 @@ import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,12 +74,14 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
         SensorDescription sensorDescription = getFc().saveSensorDescription(_className, _metricName, _isVmSensor);
 
         Monitor rawMonitor = null;
+        List<String> externalReferences = new ArrayList<>();
+        externalReferences.add(rawMetricContext.getName());
 
         if (app == null && component != null) {
             rawMonitor = getFc().doMonitorVms(null, /*TODO*/ component, schedule,
-                    sensorDescription);
+                    sensorDescription, externalReferences);
         } else if (app != null && component != null) {
-            rawMonitor = getFc().doMonitorVms(app, component, schedule, sensorDescription);
+            rawMonitor = getFc().doMonitorVms(app, component, schedule, sensorDescription, externalReferences);
         } else {
             /**
              * TODO: implement other Monitor filters
@@ -87,7 +90,13 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
         }
 
 
-        getFc().addExternalId(rawMonitor, rawMetricContext.getName());
+
+        try {
+            // Just for debugging reasons and wait for monitor instance creation
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         for (MetricInstance metricInstance : metricInstances) {
             if (metricInstance.getMetricContext() == rawMetricContext) {

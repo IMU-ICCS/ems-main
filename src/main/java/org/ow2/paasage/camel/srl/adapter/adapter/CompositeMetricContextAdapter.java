@@ -18,7 +18,9 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
+import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
+import org.ow2.paasage.camel.srl.adapter.utils.Finder;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 import eu.paasage.camel.metric.*;
 
@@ -118,21 +120,30 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
         }
 
         Monitor compositeMonitor = null;
+        List<String> externalReferences = new ArrayList<>();
+        externalReferences.add(context.getName());
 
         logger.info("Add aggregator.");
         if (functionPattern == FunctionPatternType.MAP) {
             compositeMonitor = (ComposedMonitor) getFc()
                     .mapAggregatedMonitors(quantifier, schedule, window, operator,
-                            composedMonitors);
+                            composedMonitors, Execution.getScalingActionById(context.getName()), externalReferences);
         } else if (functionPattern == FunctionPatternType.REDUCE) {
             compositeMonitor = (ComposedMonitor) getFc()
                     .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                            composedMonitors);
+                            composedMonitors, Execution.getScalingActionById(context.getName()), externalReferences);
         } else {
             throw new RuntimeException("FunctionPatternType is not implemented!");
         }
 
-        getFc().addExternalId(compositeMonitor, context.getName());
+
+
+        try {
+            // Just for debugging reasons and wait for monitor instance creation
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         for (MetricInstance metricInstance : metricInstances) {
 

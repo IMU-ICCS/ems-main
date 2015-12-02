@@ -40,85 +40,91 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     @Override
     public Monitor doMonitorComponents(Application app, Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, null, null, null, schedule, desc);
+        return doMonitor(app, null, null, null, schedule, desc, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Component component, Schedule schedule,
         SensorDescription desc) {
-        return doMonitor(app, component, null, null, schedule, desc);
+        return doMonitor(app, component, null, null, schedule, desc, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Component component, Instance instance,
         Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, component, instance, null, schedule, desc);
+        return doMonitor(app, component, instance, null, schedule, desc, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Component component, Cloud cloud,
         Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, component, null, cloud, schedule, desc);
+        return doMonitor(app, component, null, cloud, schedule, desc, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Cloud cloud, Schedule schedule,
         SensorDescription desc) {
-        return doMonitor(app, null, null, cloud, schedule, desc);
+        return doMonitor(app, null, null, cloud, schedule, desc, null);
     }
 
     @Override
     public Monitor doMonitorVms(Application app, Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, null, null, null, schedule, desc);
+        return doMonitor(app, null, null, null, schedule, desc, null);
     }
 
     @Override public Monitor doMonitorVms(Application app, Cloud cloud, Schedule schedule,
         SensorDescription desc) {
-        return doMonitor(app, null, null, cloud, schedule, desc);
+        return doMonitor(app, null, null, cloud, schedule, desc, null);
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Schedule schedule,
-        SensorDescription desc) {
-        return doMonitor(app, component, null, null, schedule, desc);
+        SensorDescription desc, List<String> externalReferences) {
+        return doMonitor(app, component, null, null, schedule, desc, externalReferences);
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Cloud cloud,
         Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, component, null, cloud, schedule, desc);
+        return doMonitor(app, component, null, cloud, schedule, desc, null);
     }
 
     @Override public Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc){
+        Schedule schedule, SensorDescription desc, List<String> externalReferences){
 
-        return client.controller(RawMonitor.class).create(
-            new RawMonitor((app == null ? null : app.getId()),
+        RawMonitor rm = new RawMonitor((app == null ? null : app.getId()),
                 (component == null ? null : component.getId()),
                 (instance == null ? null : instance.getId()),
-                (cloud == null ? null : cloud.getId()), desc.getId(), schedule.getId()));
+                (cloud == null ? null : cloud.getId()), desc.getId(), schedule.getId());
+        rm.setExternalReferences(externalReferences);
+
+        return client.controller(RawMonitor.class).create(rm);
     }
 
     @Override public Monitor mapAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule,
-        Window window, FormulaOperator formulaOperator, List<Monitor> monitors) {
+        Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences) {
         return this.doAggregateMonitor(FlowOperator.MAP, quantifier, schedule, window,
-            formulaOperator, monitors);
+            formulaOperator, monitors, scalingActions, externalReferences);
     }
 
     @Override
     public Monitor reduceAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule,
-        Window window, FormulaOperator formulaOperator, List<Monitor> monitors) {
+        Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences) {
         return this.doAggregateMonitor(FlowOperator.REDUCE, quantifier, schedule, window,
-            formulaOperator, monitors);
+            formulaOperator, monitors, scalingActions, externalReferences);
     }
 
     private Monitor doAggregateMonitor(FlowOperator flowOperator, FormulaQuantifier quantifier, Schedule schedule,
-        Window window, FormulaOperator formulaOperator, List<Monitor> monitors){
+        Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences){
         List<Long> monitorIds = new ArrayList<>();
         for(Monitor monitor : monitors){
             monitorIds.add(monitor.getId());
         }
-        return client.controller(ComposedMonitor.class).create(
-            new ComposedMonitor(flowOperator, formulaOperator, quantifier.getId(), window.getId(),
-                monitorIds, null, schedule.getId()));
+
+        ComposedMonitor cm = new ComposedMonitor(flowOperator, formulaOperator, quantifier.getId(), window.getId(),
+                monitorIds, scalingActions, schedule.getId());
+
+        cm.setExternalReferences(externalReferences);
+
+        return client.controller(ComposedMonitor.class).create(cm);
     }
 
     @Override public void removeMonitor(Monitor monitor) {
@@ -412,15 +418,14 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override
     public MonitorSubscription addMonitorSubscription(Long monitor, String endpoint, SubscriptionType type,
         FilterType filterType, double filterValue) {
-        if(true)return null;
-        // ONLY HERE create even if it exists: return factory.singleton(new MonitorSubscription(monitor, endpoint, type, filterType, filterValue));
         try{
             Thread.sleep(6000);
         } catch(Exception ex){
             System.out.println("error with monitorsubscription");
         }
         MonitorSubscription ms = new MonitorSubscription(monitor, endpoint, type, filterType, filterValue);
-        return client.controller(MonitorSubscription.class).create(ms);
+        return factory.singleton(ms);
+        //return client.controller(MonitorSubscription.class).create(ms);
     }
 
     @Override public void removeMonitorSubscription(Long id) {

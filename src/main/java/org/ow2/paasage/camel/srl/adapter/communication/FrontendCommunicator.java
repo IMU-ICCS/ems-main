@@ -39,13 +39,13 @@ public interface FrontendCommunicator {
     /** all vms of this application in this cloud */
     Monitor doMonitorVms(Application app, Cloud component, Schedule schedule, SensorDescription desc);
     /** all vms of this application running a component instance of this component */
-    Monitor doMonitorVms(Application app, Component component, Schedule schedule, SensorDescription desc);
+    Monitor doMonitorVms(Application app, Component component, Schedule schedule, SensorDescription desc, List<String> externalReferences);
     /** all vms of this application running a component instance of this component in this cloud */
     Monitor doMonitorVms(Application app, Component component, Cloud cloud, Schedule schedule, SensorDescription desc);
 
     /** most simple map and reduce **/
-    Monitor mapAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule, Window window, FormulaOperator formulaOperator, List<Monitor> monitors);
-    Monitor reduceAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule, Window window, FormulaOperator formulaOperator, List<Monitor> monitors);
+    Monitor mapAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule, Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences);
+    Monitor reduceAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule, Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences);
 
     /** remove a monitor */
     void removeMonitor(Monitor monitor);
@@ -94,7 +94,7 @@ public interface FrontendCommunicator {
         SubscriptionType type, FilterType filterType, double filterValue);
 
     Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc);
+        Schedule schedule, SensorDescription desc, List<String> externalReferences);
 
     public void removeMonitorSubscription(Long id);
     public void removeAllMonitorSubscriptions();

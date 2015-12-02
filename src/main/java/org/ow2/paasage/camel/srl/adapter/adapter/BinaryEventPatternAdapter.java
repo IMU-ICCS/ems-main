@@ -15,6 +15,7 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
+import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 import eu.paasage.camel.scalability.BinaryEventPattern;
 
@@ -63,15 +64,22 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         FormulaQuantifier quantifier = getFc().saveFormulaQuantifier(true, 1.0); /* TODO implement occurrences as quantifier */
 
 
+        List<String> externalReferences = new ArrayList<>();
+        externalReferences.add(eventPattern.getName());
 
         ComposedMonitor composedMonitor = (ComposedMonitor) getFc()
                 .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                        composedMonitors);
+                        composedMonitors, Execution.getScalingActionById(eventPattern.getName()), externalReferences);
 
 
-        getFc().addExternalId(composedMonitor, eventPattern.getName());
 
 
+        try {
+            // Just for debugging reasons and wait for monitor instance creation
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         for (MonitorInstance monitorInstance : getFc()
                 .getMonitorInstances(composedMonitor.getId())) {

@@ -34,16 +34,20 @@ import org.ow2.paasage.camel.srl.adapter.communication.RestFrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
 import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
+import org.ow2.paasage.camel.srl.adapter.utils.Finder;
 import org.ow2.paasage.camel.srl.adapter.utils.Printer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Frank on 16.11.2015.
  */
 public class Execution {
+    private static final Map<Long, String> mapScalingActionEventName = new HashMap<>(); /* Cache for Scaling Actions */
     private static org.apache.log4j.Logger logger;
 
     static {
@@ -184,6 +188,35 @@ public class Execution {
 
                 /*************************************************************************
                  *
+                 *  TRANSFORM SCALING ACTIONS
+                 *
+                 *
+                 *************************************************************************/
+                for (eu.paasage.camel.scalability.HorizontalScalingAction sa : finder.getScalingActions()){
+                    ScalingActionAdapterFactory factory = new ScalingActionAdapterFactoryImpl();
+
+                    List<ScalabilityRule> associatedRules = finder.getAssociatedRules(sa);
+                    List<HorizontalScaleRequirement> associatedHorizontalScaleRequirements = finder.getAssociatedHorizontalScaleRequirements(sa.getInternalComponent());
+
+                    Adapter adapter = factory.create(fc, sa, associatedRules, associatedHorizontalScaleRequirements);
+                    Object o = adapter.adapt();
+
+                    ScalingAction componentHorizontalScalingAction = (ScalingAction) o;
+
+
+                    ///////////////////////////////////////////////////////////////////////////
+                    //
+                    // Add Subscription to all rules by the generated composed monitor
+                    // (events are mapped to composed monitors)
+                    //
+                    ///////////////////////////////////////////////////////////////////////////
+                    for (ScalabilityRule rule : associatedRules) {
+                        mapScalingActionEventName.put(componentHorizontalScalingAction.getId(), rule.getEvent().cdoID().toString());
+                    }
+                }
+
+                /*************************************************************************
+                 *
                  *  TRANSFORM RAW METRIC CONTEXTS
                  *
                  *
@@ -191,7 +224,6 @@ public class Execution {
                 for (RawMetricContext rmc : finder.getRawMetricContexts()){
                     List<MetricInstance> mis = finder.getMetricInstances(rmc, ec);
                     Adapter adapter = new RawMetricContextAdapter(fc, rmc, mis);
-                    adapter.adapt();
                     Object o = adapter.adapt();
                     Monitor rawMonitor = (Monitor) o;
 
@@ -224,6 +256,15 @@ public class Execution {
                                         rawMonitors,
                                         null,
                                         schedule));
+
+                        for(MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())){
+                            for(MetricInstance metricInstance : mis){
+                                if(mi.getExternalReferences().isEmpty()){
+                                    fc.addExternalId(mi, metricInstance.cdoID().toString());
+                                    break; // only one CDOID per monitor instance
+                                }
+                            }
+                        }
 
 
                         fc.addMonitorSubscription(identityMonitor.getId(), conf.getVisorEndpoint(),
@@ -301,41 +342,28 @@ public class Execution {
                     }
                 }
 
+
+
                 /*************************************************************************
                  *
-                 *  TRANSFORM SCALING ACTIONS
+                 *  Subscribe to SCALING ACTIONS
                  *
                  *
                  *************************************************************************/
-                for (eu.paasage.camel.scalability.HorizontalScalingAction sa : finder.getScalingActions()){
-                    ScalingActionAdapterFactory factory = new ScalingActionAdapterFactoryImpl();
-
-                    List<ScalabilityRule> associatedRules = finder.getAssociatedRules(sa);
-                    List<HorizontalScaleRequirement> associatedHorizontalScaleRequirements = finder.getAssociatedHorizontalScaleRequirements(sa.getInternalComponent());
-
-                    Adapter adapter = factory.create(fc, sa, associatedRules, associatedHorizontalScaleRequirements);
-                    Object o = adapter.adapt();
-
-                    ScalingAction componentHorizontalScalingAction = (ScalingAction) o;
-
-
+                for (Map.Entry<Long, String> entrySet : mapScalingActionEventName.entrySet()){
                     ///////////////////////////////////////////////////////////////////////////
                     //
                     // Add Subscription to all rules by the generated composed monitor
                     // (events are mapped to composed monitors)
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    for (ScalabilityRule rule : associatedRules) {
-                        ComposedMonitor m = fc.getComposedMonitorByExternalId(rule.getEvent().cdoID().toString());
-                        fc.addScalingActionToMonitor(m, componentHorizontalScalingAction);
+                    ComposedMonitor m = fc.getComposedMonitorByExternalId(entrySet.getValue());
 
-                        if(createMonitorSubscriptions) {
-                            fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
-                                    SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
-                        }
+                    if(createMonitorSubscriptions) {
+                        fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
+                                SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
                 }
-
 
                 // Printing
                 Printer printer = new Printer(fc);
@@ -354,5 +382,9 @@ public class Execution {
             System.out.println("Error occurred during execution of the SRL adapter.");
             ex.printStackTrace();
         }
+    }
+
+    public static List<Long> getScalingActionById(String eventId){
+        return Finder.getScalingActionsByEventId(mapScalingActionEventName, eventId);
     }
 }

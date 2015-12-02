@@ -15,6 +15,7 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
+import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 import eu.paasage.camel.metric.MetricCondition;
@@ -116,18 +117,30 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
          *
          *************************************************/
 
+
+        // Condition:
+        // TODO not save condition id, since it is never referenced furthermore?
+        //fc.addExternalId(composedMonitor, condition.getName());
+        // NFE:
+        String idNFE = event.cdoID().toString();
+
+
         //1. compute which apply:
+        List<String> externalReferencesThreshold = new ArrayList<>();
+        externalReferencesThreshold.add(idNFE + "_threshold");
         ComposedMonitor thresholdMonitor = (ComposedMonitor) getFc()
                 .mapAggregatedMonitors(quantifierAll /* quantifier TODO currently only ALL is implemented, minimum applies is used for constant monitor*/,
-                        schedule, window_1_measurment, operator, composedMonitors);
+                        schedule, window_1_measurment, operator, composedMonitors, null, externalReferencesThreshold);
 
         List<Monitor> thresholdMonitors = new ArrayList();
         thresholdMonitors.add(thresholdMonitor);
 
         //2. sum all applied up
+        List<String> externalReferencesApply = new ArrayList<>();
+        externalReferencesApply.add(idNFE + "_apply");
         ComposedMonitor applyMonitor = (ComposedMonitor) getFc()
                 .reduceAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                        FormulaOperator.SUM, thresholdMonitors);
+                        FormulaOperator.SUM, thresholdMonitors, null, externalReferencesApply);
 
         List<Monitor> applyMonitors = new ArrayList();
         applyMonitors.add(applyMonitor);
@@ -136,9 +149,11 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         applyMonitors.add(quantifierMonitor);
 
         //3. compute with condition is violated
+        List<String> externalReferencesCondition = new ArrayList<>();
+        externalReferencesCondition.add(idNFE);
         ComposedMonitor conditionMonitor = (ComposedMonitor) getFc()
                 .mapAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                        FormulaOperator.GTE, applyMonitors);
+                        FormulaOperator.GTE, applyMonitors, Execution.getScalingActionById(event.cdoID().toString()), externalReferencesCondition);
 
 
             /* Do it with FormulaQunatifier as "minimumApplied"
@@ -147,17 +162,15 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
             */
 
 
-        // Condition:
-        // TODO not save condition id, since it is never referenced furthermore?
-        //fc.addExternalId(composedMonitor, condition.getName());
-        // NFE:
-        String idNFE = event.cdoID().toString();
-        getFc().addExternalId(conditionMonitor, idNFE);
-        // Also stored it in these monitors to traceback in case of errors:
-        getFc().addExternalId(thresholdMonitor, idNFE + "_threshold");
-        getFc().addExternalId(applyMonitor, idNFE + "_apply");
 
 
+
+        try {
+            // Just for debugging reasons
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         for (MonitorInstance monitorInstance : getFc()
                 .getMonitorInstances(conditionMonitor.getId())) {
