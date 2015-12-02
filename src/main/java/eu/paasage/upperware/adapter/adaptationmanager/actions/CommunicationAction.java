@@ -88,7 +88,7 @@ public class CommunicationAction implements Action {
 			String isMandatory = null;
 			String requiredPortstartCmd = "null";
 			if(objParams.get("requiredPortstartCmd") != null){
-				requiredPortstartCmd = objParams.get("requiredPortstartCmd").toString();
+				requiredPortstartCmd = objParams.get("requiredPortstartCmd").asString();
 				LOGGER.log(Level.INFO, "START cmd : " + requiredPortstartCmd);
 			}
 			

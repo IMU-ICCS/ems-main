@@ -69,9 +69,19 @@ public class InternalComponentAction implements Action {
 			
 			//Preparation for Lifecycle Comp params
 			JsonValue jval;
-			String downloadCmd = "", installCmd = "", startCmd = "", StopCmd = "";		
+			String preInstallCmd = "", postInstallCmd = "", downloadCmd = "", installCmd = "", startCmd = "", StopCmd = "";		
 			try{
 				if((jval = objParams.get("downloadCmd"))!=null)
+					preInstallCmd = jval.asString();
+				
+				if((jval = objParams.get("installCmd"))!=null)
+					postInstallCmd = jval.asString();
+				
+				if((jval = objParams.get("startCmd"))!=null)
+					startCmd = jval.asString();
+								
+				//not required by ExecWare anymore (demo Y3)
+/*				if((jval = objParams.get("downloadCmd"))!=null)
 					downloadCmd = jval.asString();
 
 				if((jval = objParams.get("installCmd")) != null)
@@ -81,9 +91,10 @@ public class InternalComponentAction implements Action {
 					startCmd = jval.asString();
 
 				if((jval = objParams.get("StopCmd"))!=null)
-					StopCmd = jval.asString();
+					StopCmd = jval.asString();*/
 
-				LOGGER.log(Level.INFO, "downloadCmd " + downloadCmd.toString() + " installCmd " + installCmd.toString() + " startCmd " + startCmd.toString() + " StopCmd " + StopCmd.toString());
+				//LOGGER.log(Level.INFO, "downloadCmd " + downloadCmd.toString() + " installCmd " + installCmd.toString() + " startCmd " + startCmd.toString() + " StopCmd " + StopCmd.toString());
+				LOGGER.log(Level.INFO, "preInstallCmd " + preInstallCmd.toString() + " postInstallCmd " + postInstallCmd.toString() + " startCmd " + startCmd.toString());
 
 			} catch(NullPointerException npe){//objParams.get("") throws NullPointerException if key not found
 				npe.printStackTrace();
@@ -123,10 +134,12 @@ public class InternalComponentAction implements Action {
 				
 				//dataShare.getApplication(appliCamelName);//fetching Application object from dependency
 				//dataShare.getEntityVMT(vmtCamelName);//fetching VM Template object from dependency
-				if(!exists && dataShare.addLCAC(iCompName, downloadCmd, installCmd, startCmd, StopCmd, dataShare.getApplication(appliCamelName), dataShare.getEntityVMT(vmtCamelName))){
+				//if(!exists && dataShare.addLCAC(iCompName, downloadCmd, installCmd, startCmd, StopCmd, dataShare.getApplication(appliCamelName), dataShare.getEntityVMT(vmtCamelName))){
+				if(!exists && dataShare.addLCAC(iCompName, preInstallCmd, postInstallCmd, startCmd, dataShare.getApplication(appliCamelName), dataShare.getEntityVMT(vmtCamelName))){//new requirements for ExecWare
 					//To Do Exec API Call
 					//LCcompID = "/api/lifecycleComponent/" + iCompName;//POST using parameters iCompName, downloadCmd, installCmd, startCmd, StopCmd
-					LCcompID = execInterfacer.createLifecycleComponent(iCompName, downloadCmd, installCmd, startCmd, StopCmd);
+					//LCcompID = execInterfacer.createLifecycleComponent(iCompName, downloadCmd, installCmd, startCmd, StopCmd);
+					LCcompID = execInterfacer.createLifecycleComponent(iCompName, preInstallCmd, postInstallCmd, startCmd);//new API requirements for ExecWare - Y3 demo
 					
 					LOGGER.log(Level.INFO, "Created LC Component : ID " + LCcompID);
 					LCcompID_temp = execInterfacer.trimResponseID(LCcompID);				

@@ -355,19 +355,36 @@ public class Coordinator {
 			// executor.getKeepAliveTime(TimeUnit.MINUTES);
 			// executor.allowCoreThreadTimeOut(true);
 
-			executor.shutdown();
+			//executor.shutdown();
 
     		try {
     				//executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     				//executor.awaitTermination(1, TimeUnit.SECONDS);
-    				executor.awaitTermination(100000000, TimeUnit.MICROSECONDS);
+    			
+    				//Wait for 30 minutes to finish
+    				int i = 10;
+    				boolean status = false;
+    				while(!(status = executor.awaitTermination(3, TimeUnit.MINUTES)) && i>0){
+    					LOGGER.log(Level.INFO, "Awaiting termination of threads");
+    					i--;
+    				}
+    				
+    				if(status)
+    					LOGGER.log(Level.INFO, "Adapter completed execution");
+    				else{
+    					LOGGER.log(Level.WARNING, "Executor did not terminate within the specified time.");
+    		            List<Runnable> droppedTasks = executor.shutdownNow();
+    		            LOGGER.log(Level.WARNING, "Executor was abruptly shut down. " + droppedTasks.size() + " tasks were not executed.");
+    				}
+    					
+    				//executor.awaitTermination(100000000, TimeUnit.MICROSECONDS);
     			} catch (InterruptedException e) {
     				e.printStackTrace();
     				System.out.println("Tasks not completed successfully");
     			} finally{
     				//System.exit(0);
-    				executor.shutdown();
-    				LOGGER.log(Level.INFO, "Shutdown Executor thread");
+    				//executor.shutdown();
+    				//LOGGER.log(Level.INFO, "Shutdown Executor thread");
     			}
 		}
 

@@ -1731,6 +1731,57 @@ public class ExecInterfacer {
 		//return status;
 	}
 	
+	//new params requirement for the ExecWare
+	public String createLifecycleComponent(String compName, String preInstall, String postInstall, String start){
+		
+		boolean status = false;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("name", compName);
+	        inBody.put("preInstall", preInstall);
+	        inBody.put("postInstall", postInstall);
+	        inBody.put("start", start);
+
+	        HttpResponse resp = postRequest(API_LIFECYCLECOMPONENT, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+	            //JSONObject result = (JSONObject)parser.parse(respString);
+	            //execUser.setCreatedOn((long)result.get("createdOn"));
+
+        		try {
+        			obj = parser.parse(new String(respString));
+        		} catch (ParseException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
+        		JSONObject jObj = (JSONObject) obj;
+        		
+        		// loop array
+        		JSONArray links = (JSONArray) jObj.get("link");
+        		Iterator<JSONObject> iterator = links.iterator();
+        		while (iterator.hasNext()) {
+        			JSONObject factObj = (JSONObject) iterator.next();
+        			String href = (String) factObj.get("href");
+        			System.out.println("New lifecycle Component is located at " + href);
+        			return href;
+        		}
+        		//System.out.println("New cloud id is located at " + cloudId);
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		return "";
+		//return status;
+	}
+	
 	public JSONArray getLifecycleComponents() throws IOException, ParseException{
 
 		//Header inHeader = new BasicHeader(name, value);
