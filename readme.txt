@@ -26,6 +26,17 @@ mvn clean compile assembly:single
 
 java -jar ./target/solver-to-deployment-0.0.2-SNAPSHOT-jar-with-dependencies.jar ConfigurationCDOId CamelCDOId
 
+/** Helper Applications **/
+
+==> SolutionManager
+
+List and create new Solution in an existing ConstraintProblem (with id <CPID> in the CDO)
+
+java -cp solver-to-deployment.jar eu.paasage.upperware.solvertodeployment.utils.SolutionManager <CPID> <command with parameter>
+
+Usage: SolutionManager CPid [add timeStamp / new ]* [del timeStamp / all / last]* [list level (0-2)]* [ls == list 2]*
+
+
 
 /** S2D OVERVIEW **/
 
