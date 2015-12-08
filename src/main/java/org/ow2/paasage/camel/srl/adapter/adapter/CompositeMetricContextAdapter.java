@@ -34,7 +34,7 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
     private final CompositeMetricContext context;
     private final List<MetricInstance> metricInstances;
 
-    public CompositeMetricContextAdapter(CommandLinePropertiesAccessor config, FrontendCommunicator fc,
+    public CompositeMetricContextAdapter(FrontendCommunicator fc,
                                          CompositeMetricContext context, List<MetricInstance> metricInstances) {
         super(fc);
         this.context = context;

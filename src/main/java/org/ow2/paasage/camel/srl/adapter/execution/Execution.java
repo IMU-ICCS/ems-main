@@ -280,7 +280,7 @@ public class Execution {
                  *************************************************************************/
                 for (CompositeMetricContext cmc : finder.getCompositeMetricContexts()){
                     List<MetricInstance> mis = finder.getMetricInstances(cmc, ec);
-                    CompositeMetricContextAdapter adapter = new CompositeMetricContextAdapter(conf, fc, cmc, mis);
+                    CompositeMetricContextAdapter adapter = new CompositeMetricContextAdapter(fc, cmc, mis);
                     Object o = adapter.adapt();
                     Monitor compositeMonitor = (Monitor) o;
 
