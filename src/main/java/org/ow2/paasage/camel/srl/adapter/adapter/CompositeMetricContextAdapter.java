@@ -132,14 +132,21 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
         externalReferences.add(context.getName());
 
         logger.info("Add aggregator.");
+        final String externalContextId;
+        if(context.cdoID() != null){
+            externalContextId = context.cdoID().toString();
+        } else {
+            externalContextId = context.getName(); /* TODO if CDO is not available this ID might not by
+                                                        TODO unique through different model instances */
+        }
         if (functionPattern == FunctionPatternType.MAP) {
             compositeMonitor = (ComposedMonitor) getFc()
                     .mapAggregatedMonitors(quantifier, schedule, window, operator,
-                            composedMonitors, Execution.getScalingActionById(context.getName()), externalReferences);
+                            composedMonitors, Execution.getScalingActionById(externalContextId), externalReferences);
         } else if (functionPattern == FunctionPatternType.REDUCE) {
             compositeMonitor = (ComposedMonitor) getFc()
                     .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                            composedMonitors, Execution.getScalingActionById(context.getName()), externalReferences);
+                            composedMonitors, Execution.getScalingActionById(externalContextId), externalReferences);
         } else {
             throw new RuntimeException("FunctionPatternType is not implemented!");
         }

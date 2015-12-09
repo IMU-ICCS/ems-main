@@ -372,9 +372,9 @@ public class Execution {
                     // (events are mapped to composed monitors)
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    ComposedMonitor m = fc.getComposedMonitorByExternalId(entrySet.getValue());
-
                     if(createMonitorSubscriptions) {
+                        ComposedMonitor m = fc.getComposedMonitorByExternalId(entrySet.getValue());
+
                         fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
                                 SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
