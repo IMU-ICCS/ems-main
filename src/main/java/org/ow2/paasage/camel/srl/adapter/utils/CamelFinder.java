@@ -125,9 +125,11 @@ public class CamelFinder {
     public EList<MetricInstance> getAllMetricInstancesToContext(MetricContext metricContext){
         EList<MetricInstance> result = new BasicEList<MetricInstance>();
 
-        for(MetricInstance mi : model.getMetricModels().get(0).getMetricInstances()){
-            if (mi.getMetricContext() == metricContext){
-                result.add(mi);
+        for(MetricModel mm : model.getMetricModels()) {
+            for (MetricInstance mi : mm.getMetricInstances()) {
+                if (mi.getMetricContext() == metricContext) {
+                    result.add(mi);
+                }
             }
         }
 
@@ -182,11 +184,14 @@ public class CamelFinder {
     }
 
     public NonFunctionalEvent getNfeToCondition(Condition condition) {
-        for(Event ev : model.getScalabilityModels().get(0).getEvents()){
-            if(ev instanceof NonFunctionalEvent && ((NonFunctionalEvent)ev).getMetricCondition() == condition){
-                return (NonFunctionalEvent)ev; // insteaad of only the Name .getName();
+        if(!model.getScalabilityModels().isEmpty()) {
+            for (Event ev : model.getScalabilityModels().get(0).getEvents()) {
+                if (ev instanceof NonFunctionalEvent && ((NonFunctionalEvent) ev).getMetricCondition() == condition) {
+                    return (NonFunctionalEvent) ev; // insteaad of only the Name .getName();
+                }
             }
         }
+
 
         return null;
     }
@@ -255,9 +260,11 @@ public class CamelFinder {
     public List<MetricCondition> getMetricConditions() {
         List<MetricCondition> result = new ArrayList<>();
 
-        for (Condition condition : model.getMetricModels().get(0).getConditions()) {
-            if (condition instanceof MetricCondition) {
-                result.add((MetricCondition)condition);
+        if(!model.getMetricModels().isEmpty()) {
+            for (Condition condition : model.getMetricModels().get(0).getConditions()) {
+                if (condition instanceof MetricCondition) {
+                    result.add((MetricCondition) condition);
+                }
             }
         }
 
@@ -265,14 +272,26 @@ public class CamelFinder {
     }
 
     public List<EventPattern> getEventPatterns() {
-        return model.getScalabilityModels().get(0).getPatterns();
+        if(!model.getScalabilityModels().isEmpty()) {
+            return model.getScalabilityModels().get(0).getPatterns();
+        } else {
+            return new ArrayList<EventPattern>();
+        }
     }
 
     public List<Window> getWindows() {
-        return model.getMetricModels().get(0).getWindows();
+        if(!model.getMetricModels().isEmpty()) {
+            return model.getMetricModels().get(0).getWindows();
+        } else {
+            return new ArrayList<Window>();
+        }
     }
 
     public List<RawMetricContext> getRawMetricContexts() {
+        if(model.getMetricModels().isEmpty()){
+            return new ArrayList<>();
+        }
+
         List<RawMetricContext> result = model.getMetricModels().get((0)).getContexts().stream().filter(cc -> cc instanceof RawMetricContext).map(cc -> (RawMetricContext) cc).collect(Collectors.toList());
         return result;
     }
@@ -280,9 +299,11 @@ public class CamelFinder {
     public EList<MetricContext> getMetricContexts() {
         EList<MetricContext> result = new BasicEList<>();
 
-        for(ConditionContext context : model.getMetricModels().get(0).getContexts()){
-            if(context instanceof MetricContext) {
-                result.add((MetricContext) context);
+        if(!model.getMetricModels().isEmpty()) {
+            for (ConditionContext context : model.getMetricModels().get(0).getContexts()) {
+                if (context instanceof MetricContext) {
+                    result.add((MetricContext) context);
+                }
             }
         }
 
@@ -291,6 +312,10 @@ public class CamelFinder {
 
     public List<ScalabilityRule> getAssociatedRules(Action scalingAction){
         List<ScalabilityRule> result = new ArrayList<>();
+
+        if(model.getScalabilityModels().isEmpty()){
+            return result;
+        }
 
         for (ScalabilityRule rule : model.getScalabilityModels().get(0)
                 .getRules()) {
@@ -307,27 +332,33 @@ public class CamelFinder {
     public List<HorizontalScaleRequirement> getAssociatedHorizontalScaleRequirements(InternalComponent component){
         List<HorizontalScaleRequirement> result = new ArrayList<>();
 
-        //TODO: check this: EList<Requirement> requirements = model.getRequirementModels().get(0).getRequirements();
-        for (ScaleRequirement requirement : model.getScalabilityModels().get(0)
-                .getScaleRequirements()) {
-            if (requirement instanceof HorizontalScaleRequirement) {
-                HorizontalScaleRequirement horizontalScaleRequirement =
-                        (HorizontalScaleRequirement) requirement;
+        if(!model.getScalabilityModels().isEmpty()) {
+
+            //TODO: check this: EList<Requirement> requirements = model.getRequirementModels().get(0).getRequirements();
+            for (ScaleRequirement requirement : model.getScalabilityModels().get(0)
+                    .getScaleRequirements()) {
+                if (requirement instanceof HorizontalScaleRequirement) {
+                    HorizontalScaleRequirement horizontalScaleRequirement =
+                            (HorizontalScaleRequirement) requirement;
                  /* TODO What if several requirements comply to the same component and are inconsistent? */
-                if (horizontalScaleRequirement.getComponent().equals(component)) {
-                    result.add(horizontalScaleRequirement);
+                    if (horizontalScaleRequirement.getComponent().equals(component)) {
+                        result.add(horizontalScaleRequirement);
+                    }
                 }
             }
         }
 
-        for (Requirement requirement : model.getRequirementModels().get(0)
-                .getRequirements()) {
-            if (requirement instanceof HorizontalScaleRequirement) {
-                HorizontalScaleRequirement horizontalScaleRequirement =
-                        (HorizontalScaleRequirement) requirement;
+        if(!model.getRequirementModels().isEmpty()) {
+
+            for (Requirement requirement : model.getRequirementModels().get(0)
+                    .getRequirements()) {
+                if (requirement instanceof HorizontalScaleRequirement) {
+                    HorizontalScaleRequirement horizontalScaleRequirement =
+                            (HorizontalScaleRequirement) requirement;
                  /* TODO What if several requirements comply to the same component and are inconsistent? */
-                if (horizontalScaleRequirement.getComponent().equals(component)) {
-                    result.add(horizontalScaleRequirement);
+                    if (horizontalScaleRequirement.getComponent().equals(component)) {
+                        result.add(horizontalScaleRequirement);
+                    }
                 }
             }
         }
