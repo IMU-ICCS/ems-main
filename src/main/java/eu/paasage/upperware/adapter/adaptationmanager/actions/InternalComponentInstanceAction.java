@@ -127,8 +127,8 @@ public class InternalComponentInstanceAction implements Action {
 				
 				int temp = Integer.parseInt(execInterfacer.trimResponseID(iCompInstID));
 				boolean stat = false;
-				int timeout = 0;
-				while((!(stat = execInterfacer.queryStateOKInstance(temp))) && timeout < 4){
+				int timeout = 60;
+				while((!(stat = execInterfacer.queryStateOKInstance(temp))) && timeout > 0){
 					LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. Instance : ID " + iCompInstID);
 					try {
 						Thread.sleep(30000);
@@ -139,8 +139,10 @@ public class InternalComponentInstanceAction implements Action {
 					timeout++;
 				}
 				
-				if(timeout >= 4)
+				if(timeout > 0)
 					status = true;
+				else
+					LOGGER.log(Level.WARNING, "Newly created Internal Comp Instance : ID " + iCompInstID + " has ERROR state");
 				
 				if(iCompInstID != null && dataShare.setCompInstID(iCompInstName, execInterfacer.trimResponseID(iCompInstID)) && stat)
 					LOGGER.log(Level.INFO, "Stored newly created Internal Comp Instance : ID " + iCompInstID);

@@ -1277,6 +1277,61 @@ public class ExecInterfacer {
 	}
 	
 	
+	/**
+	 * returns if remoteState is ERROR for a particular resource
+	 * @param API_RESOURCE the url of a particular resource to query
+	 * @return true if ERROR else false i.e. null or INPROGRESS or OK
+	 */
+		private boolean queryRemoteStateError(String API_RESOURCE){
+
+			boolean status = false;
+			
+			//Header inHeader = new BasicHeader(name, value);
+			
+			HttpResponse resp = null;
+			HttpEntity respEntity = null;
+			try {
+				resp = getRequest(API_RESOURCE, null);
+				respEntity = resp.getEntity();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch(NullPointerException npEx){
+				LOGGER.log(Level.SEVERE, "Could not get the resource " + API_RESOURCE);
+				npEx.printStackTrace();
+			}
+	        
+	        String respString;
+	        JSONParser parser = new JSONParser();
+	        JSONObject result = null;        
+	        
+			try {
+				respString = EntityUtils.toString(respEntity);
+		    	if(resp.getStatusLine().getStatusCode()==200){
+		    		
+		    		result = (JSONObject)parser.parse(respString);
+		    		//result = new JSONObject(respString);
+//		    		jArr = (JSONArray)parser.parse(respString);
+		            
+		            String remoteState = (String)result.get("remoteState");
+		            
+		            if(remoteState != null && remoteState.equalsIgnoreCase("ERROR"))
+		            	status = true;
+		    	}
+			} catch (org.apache.http.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	    	return status;
+		}
+	
 	public String createAPI(String name) throws ExecutionwareError{
 		
 		boolean status = false;
