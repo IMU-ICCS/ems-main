@@ -54,7 +54,7 @@ public class Transform {
     public static FormulaOperator condition(ComparisonOperatorType comparisonOperator) {
         switch (comparisonOperator) {
             case GREATER_THAN: return FormulaOperator.GT;
-            case GREATER_EQUAL_THAN: return FormulaOperator.GT; /*TODO*/
+            case GREATER_EQUAL_THAN: return FormulaOperator.GTE;
             case LESS_THAN: return FormulaOperator.LT;
             case LESS_EQUAL_THAN: return FormulaOperator.LTE;
             case EQUAL: return FormulaOperator.EQ;
