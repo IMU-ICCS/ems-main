@@ -19,7 +19,34 @@ import eu.paasage.camel.scalability.BinaryPatternOperatorType;
 public class Transform {
     public static FormulaOperator operator(MetricFunctionType mft) {
         switch (mft) {
-            case MEAN: return FormulaOperator.AVG;
+            case PLUS:
+                return FormulaOperator.SUM;
+            case MINUS:
+                return FormulaOperator.MINUS;
+            case TIMES:
+                return FormulaOperator.MULTIPLY;
+            case DIV:
+                return FormulaOperator.DIV;
+            case MODULO:
+                return FormulaOperator.MODULO;
+            case MEAN:
+                return FormulaOperator.AVG;
+            case STD:
+                return FormulaOperator.STD;
+            case COUNT:
+                return FormulaOperator.COUNT;
+            case MIN:
+                return FormulaOperator.MIN;
+            case MAX:
+                return FormulaOperator.MAX;
+            case PERCENTILE:
+                return FormulaOperator.PERCENTILE;
+            case DERIVATIVE:
+                return FormulaOperator.DERIVATIVE;
+            case MODE:
+                return FormulaOperator.MODE;
+            case MEDIAN:
+                return FormulaOperator.MEDIAN;
             default: throw new RuntimeException("MetricFunctionType is not implemented");
         }
     }

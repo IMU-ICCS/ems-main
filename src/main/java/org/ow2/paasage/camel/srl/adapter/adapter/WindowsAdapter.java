@@ -39,9 +39,7 @@ public class WindowsAdapter extends AbstractAdapter {
 
             colosseumWindow = getFc().saveTimeWindow(window.getTimeSize(), Convert.toJavaTimeUnit(window.getUnit()));
         } else if (window.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)) {
-            MeasurementWindow mw = (MeasurementWindow) window;
-
-            colosseumWindow = getFc().saveMeasurementWindow(mw.getMeasurements());
+            colosseumWindow = getFc().saveMeasurementWindow(window.getMeasurementSize());
         } else {
             throw new RuntimeException("WindowSizeType not implemented!");
         }
