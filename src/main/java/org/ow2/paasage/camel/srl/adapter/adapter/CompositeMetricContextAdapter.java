@@ -13,14 +13,10 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.FormulaQuantifier;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.MonitorInstance;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
-import org.ow2.paasage.camel.srl.adapter.utils.Finder;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 import eu.paasage.camel.metric.*;
 
@@ -141,12 +137,28 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
         }
         if (functionPattern == FunctionPatternType.MAP) {
             compositeMonitor = (ComposedMonitor) getFc()
-                    .mapAggregatedMonitors(quantifier, schedule, window, operator,
-                            composedMonitors, Execution.getScalingActionById(externalContextId), externalReferences);
+                    .mapAggregatedMonitors(
+                            quantifier,
+                            schedule,
+                            window,
+                            operator,
+                            composedMonitors,
+                            Execution.getScalingActionByEventId(externalContextId)
+                            /*TODO this will never return an action, since no scaling action
+                              TODO is ever directly added to a composed monitor context */,
+                            externalReferences);
         } else if (functionPattern == FunctionPatternType.REDUCE) {
             compositeMonitor = (ComposedMonitor) getFc()
-                    .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                            composedMonitors, Execution.getScalingActionById(externalContextId), externalReferences);
+                    .reduceAggregatedMonitors(
+                            quantifier,
+                            schedule,
+                            window,
+                            operator,
+                            composedMonitors,
+                            Execution.getScalingActionByEventId(externalContextId)
+                            /*TODO this will never return an action, since no scaling action
+                              TODO is ever directly added to a composed monitor context */,
+                            externalReferences);
         } else {
             throw new RuntimeException("FunctionPatternType is not implemented!");
         }

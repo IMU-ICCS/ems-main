@@ -10,11 +10,8 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 import eu.paasage.camel.scalability.BinaryEventPattern;
@@ -76,7 +73,7 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         }
         ComposedMonitor composedMonitor = (ComposedMonitor) getFc()
                 .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                        composedMonitors, Execution.getScalingActionById(externalEventPatternId), externalReferences);
+                        composedMonitors, Execution.getScalingActionByEventId(externalEventPatternId), externalReferences);
 
 
 

@@ -10,11 +10,8 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
@@ -159,7 +156,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         externalReferencesCondition.add(idNFE);
         ComposedMonitor conditionMonitor = (ComposedMonitor) getFc()
                 .mapAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                        FormulaOperator.GTE, applyMonitors, Execution.getScalingActionById(idNFE), externalReferencesCondition);
+                        FormulaOperator.GTE, applyMonitors, Execution.getScalingActionByEventId(idNFE), externalReferencesCondition);
 
 
             /* Do it with FormulaQunatifier as "minimumApplied"

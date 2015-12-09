@@ -399,7 +399,7 @@ public class Execution {
         }
     }
 
-    public static List<Long> getScalingActionById(String eventId){
+    public static List<Long> getScalingActionByEventId(String eventId){
         return Finder.getScalingActionsByEventId(mapScalingActionEventName, eventId);
     }
 }
