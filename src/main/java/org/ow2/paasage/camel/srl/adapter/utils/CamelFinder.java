@@ -338,10 +338,12 @@ public class CamelFinder {
     public List<HorizontalScalingAction> getScalingActions() {
         List<HorizontalScalingAction> result = new ArrayList<>();
 
-        for (eu.paasage.camel.scalability.ScalingAction scalingAction : model
-                .getScalabilityModels().get(0).getActions()) {
-            if (scalingAction instanceof HorizontalScalingAction) {
-                result.add((HorizontalScalingAction)scalingAction);
+        if(!model.getScalabilityModels().isEmpty()) {
+            for (eu.paasage.camel.scalability.ScalingAction scalingAction : model
+                    .getScalabilityModels().get(0).getActions()) {
+                if (scalingAction instanceof HorizontalScalingAction) {
+                    result.add((HorizontalScalingAction) scalingAction);
+                }
             }
         }
 
