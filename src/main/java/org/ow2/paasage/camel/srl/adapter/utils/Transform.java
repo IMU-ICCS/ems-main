@@ -47,7 +47,7 @@ public class Transform {
                 return FormulaOperator.MODE;
             case MEDIAN:
                 return FormulaOperator.MEDIAN;
-            default: throw new RuntimeException("MetricFunctionType is not implemented");
+            default: throw new AssertionError("MetricFunctionType is not implemented");
         }
     }
 
@@ -55,7 +55,11 @@ public class Transform {
         switch (comparisonOperator) {
             case GREATER_THAN: return FormulaOperator.GT;
             case GREATER_EQUAL_THAN: return FormulaOperator.GT; /*TODO*/
-            default: throw new RuntimeException("ComparisonOperatorType is not imlpemented");
+            case LESS_THAN: return FormulaOperator.LT;
+            case LESS_EQUAL_THAN: return FormulaOperator.LTE;
+            case EQUAL: return FormulaOperator.EQ;
+            case NOT_EQUAL: return FormulaOperator.NEQ;
+            default: throw new AssertionError("ComparisonOperatorType is not imlpemented");
         }
     }
 
@@ -63,7 +67,10 @@ public class Transform {
         switch (operator) {
             case AND: return FormulaOperator.AND;
             case OR: return FormulaOperator.OR;
-            default: throw new RuntimeException("BinaryPatternOperator is not implemented");
+            case XOR: return FormulaOperator.XOR;
+            case PRECEDES: /*TODO*/
+            case REPEAT_UNTIL: /*TODO*/
+            default: throw new AssertionError("BinaryPatternOperator is not implemented");
         }
     }
 }
