@@ -24,10 +24,10 @@ public class solutionPublisherMQ {
 			//topic
 			publisher.sendMore ("startDeployment");
 			//contents
-			Mapper map = new Mapper();
+			Mapper map = new Mapper(model);
 			/* 26Nov15 syc17 aligned code with updated Mapper
 			long mapResult = map.mapMetricVariables(model); */
-			JsonObject jObj = map.mapMetricVariables(model);
+			JsonObject jObj = map.mapMetricVariables();
 			publisher.send(model);
 		 //   publisher.send(mapResult);
 			System.out.println("done publishing .... ");

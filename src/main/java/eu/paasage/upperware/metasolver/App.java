@@ -59,13 +59,13 @@ public class App implements Daemon {
 			try{
 				System.out.println("in normal");
 				String modID= args[1];
-				Mapper map = new Mapper();
+				Mapper map = new Mapper(modID);
 				/* syc17
 				26Nov15 aligned with updated mapper
 				long mapResult = map.mapMetricVariables(modID);
 				*/
 				metasolver mslv = new metasolver();
-				JsonObject jObj = map.mapMetricVariables(modID);				
+				JsonObject jObj = map.mapMetricVariables();
 				mslv.runMILPSolver(jObj.get("id").asString(), jObj.get("solution_timp").asLong());
 			}
 			catch(Exception e){

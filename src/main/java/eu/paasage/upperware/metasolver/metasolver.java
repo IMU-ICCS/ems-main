@@ -43,7 +43,7 @@ public class metasolver{
 
 	public void doWork(String CPmodID, String metricFile, int solver) throws MetricMapperException, IOException
 	{
-		Mapper map = new Mapper();
+		Mapper map = new Mapper(CPmodID);
 		/* syc17 26Nov15 aligned with updated mapper
 		long mapResult = map.mapMetricVariables(CPmodID);
 		 */
@@ -80,16 +80,7 @@ public class metasolver{
 
 		log.info("Mapping metric variables...");
 		JsonObject jObj;
-		if (mets==null)
-			jObj = map.mapMetricVariables(CPmodID);
-		else {
-			jObj = map.mapMetricVariables(CPmodID, mets);
-		}
-
-		if (true) {
-			log.info("NOT INVOKING SOLVER");
-			return;
-		}
+		jObj = map.mapMetricVariables(mets);
 
 		log.info("Invoking a solver...");
 		long timeStamp = jObj.get("solution_tmp").asLong();
@@ -102,9 +93,18 @@ public class metasolver{
 		log.info("Solver done");
 	}
 
+	private static void usage()
+	{
+		System.out.println("Usage: meta-solver <CamelModelID> <CPModelID> [solver number: 0: default, 1: MILP, 2: CSOP] [metric file]");
+		System.exit(-1);
+	}
+	
 	public static void main(String args[]) throws IOException, InterruptedException, MetricMapperException{
 
-		try{
+		try
+		{
+			if (args.length < 2) usage();
+
 			//			String CAMELmodID= args[0]; // useless ??
 			String CPmodID= args[1];
 			String metricFile=null;
@@ -119,6 +119,8 @@ public class metasolver{
 			//now invoke S2D
 			//runS2D(CAMELmodID, CPmodID, mapResult);
 			//runS2D(CAMELmodID, jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
+			
+			System.exit(0);
 		}
 		catch(Exception e){
 			System.out.println("error running metasolver " + e);
@@ -128,11 +130,11 @@ public class metasolver{
 
 		try{
 			//			String modID= args[1];
-			Mapper map = new Mapper();
+			Mapper map = new Mapper(modID);
 			/* syc17 26Nov15 aligned with updated mapper
 			long mapResult = map.mapMetricVariables(modID);
 			 */
-			JsonObject jObj = map.mapMetricVariables(modID);
+			JsonObject jObj = map.mapMetricVariables();
 			//runMILPSolver("modID", mapResult);
 			runMILPSolver(jObj.get("id").asString(), jObj.get("solution_tmp").asLong());
 		}
@@ -148,10 +150,10 @@ public class metasolver{
 	}
 
 	public void go(String CAMELmodel, String CPmodel) throws MetricMapperException{
-		Mapper map = new Mapper();
+		Mapper map = new Mapper(CPmodel);
 		/* 26Nov15 syc17 aligned with updated Mapper code
 		long mapResult = map.mapMetricVariables(CPmodel); */
-		JsonObject jObj = map.mapMetricVariables(CPmodel);
+		JsonObject jObj = map.mapMetricVariables();
 		RPListener rpl = new RPListener();
 		metricsListener ml = new metricsListener("metricID");		
 		//solutionListener sl = new solutionListener(CAMELmodel, CPmodel, mapResult);
