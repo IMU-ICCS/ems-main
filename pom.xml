@@ -2,7 +2,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ow2.paasage.metasolver</groupId>
   <artifactId>meta_solver</artifactId>
-  <version>2015.9.1-SNAPSHOT</version>
   <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>paasage-pom</artifactId>
@@ -24,11 +23,11 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-<!--         <version>3.1</version>$NO-MVN-MAN-VER$ --><!-- use parent specificaitn -->
-<!--         <configuration> -->
-<!--           <source/> -->
-<!--           <target/> -->
-<!--         </configuration> -->
+        <version>3.2</version>
+	    <configuration>
+	      <source>1.8</source>
+	      <target>1.8</target>
+	    </configuration>
       </plugin>
     <plugin>
   		<groupId>org.codehaus.mojo</groupId>
