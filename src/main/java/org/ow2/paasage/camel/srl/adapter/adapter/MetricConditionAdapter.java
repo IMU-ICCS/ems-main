@@ -122,7 +122,13 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         // TODO not save condition id, since it is never referenced furthermore?
         //fc.addExternalId(composedMonitor, condition.getName());
         // NFE:
-        String idNFE = event.cdoID().toString();
+        final String idNFE;
+        if(event.cdoID() != null){
+            idNFE = event.cdoID().toString();
+        } else {
+            idNFE = event.getName(); /* TODO if CDO is not available this ID might not by
+                                        TODO unique through different model instances */
+        }
 
 
         //1. compute which apply:
@@ -153,7 +159,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         externalReferencesCondition.add(idNFE);
         ComposedMonitor conditionMonitor = (ComposedMonitor) getFc()
                 .mapAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                        FormulaOperator.GTE, applyMonitors, Execution.getScalingActionById(event.cdoID().toString()), externalReferencesCondition);
+                        FormulaOperator.GTE, applyMonitors, Execution.getScalingActionById(idNFE), externalReferencesCondition);
 
 
             /* Do it with FormulaQunatifier as "minimumApplied"

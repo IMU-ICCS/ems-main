@@ -211,7 +211,14 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     for (ScalabilityRule rule : associatedRules) {
-                        mapScalingActionEventName.put(componentHorizontalScalingAction.getId(), rule.getEvent().cdoID().toString());
+                        final String id;
+                        if(rule.getEvent().cdoID() != null){
+                            id = rule.getEvent().cdoID().toString();
+                        } else {
+                            id = rule.getEvent().getName(); /* TODO if now CDO available this ID might not be unique */
+                        }
+
+                        mapScalingActionEventName.put(componentHorizontalScalingAction.getId(), id);
                     }
                 }
 
@@ -259,9 +266,17 @@ public class Execution {
 
                         for(MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())){
                             for(MetricInstance metricInstance : mis){
+                                final String externalId;
+                                if(metricInstance.cdoID() != null){
+                                    externalId = metricInstance.cdoID().toString();
+                                } else {
+                                    externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
+                                                          TODO unique through different model instances */
+                                }
+
                                 if(mi.getExternalReferences().isEmpty()){
-                                    fc.addExternalId(mi, metricInstance.cdoID().toString());
-                                    break; // only one CDOID per monitor instance
+                                    fc.addExternalId(mi, externalId);
+                                    break; // only one CDOID/name per monitor instance
                                 }
                             }
                         }

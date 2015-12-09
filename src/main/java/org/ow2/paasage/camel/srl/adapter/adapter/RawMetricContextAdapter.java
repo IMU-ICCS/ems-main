@@ -99,6 +99,14 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
         }
 
         for (MetricInstance metricInstance : metricInstances) {
+            final String externalId;
+            if(metricInstance.cdoID() != null){
+                externalId = metricInstance.cdoID().toString();
+            } else {
+                externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
+                                                          TODO unique through different model instances */
+            }
+
             if (metricInstance.getMetricContext() == rawMetricContext) {
 
                 if(metricInstance.getObjectBinding() instanceof MetricVMBinding){
@@ -107,21 +115,21 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
                     VirtualMachine frontendVM = getFc().getVirtualMachineToIP(metricVMBinding
                             .getVmInstance().getIp());
 
-                    getFc().addExternalIdToMonitorInstance(rawMonitor, metricInstance.cdoID().toString(), frontendVM);
+                    getFc().addExternalIdToMonitorInstance(rawMonitor, externalId, frontendVM);
                 } else if(metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
                     logger.info("Raw metric is bound to a component - add to linked VM.");
                     MetricComponentBinding metricComponentBinding = (MetricComponentBinding) metricInstance.getObjectBinding();
 
                     if(metricComponentBinding.getVmInstance() == null){
-                        getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, metricInstance.cdoID().toString());
+                        getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, externalId);
                     } else {
                         VirtualMachine frontendVM = getFc().getVirtualMachineToIP(metricComponentBinding
                                 .getVmInstance().getIp());
 
-                        getFc().addExternalIdToMonitorInstance(rawMonitor, metricInstance.cdoID().toString(), frontendVM);
+                        getFc().addExternalIdToMonitorInstance(rawMonitor, externalId, frontendVM);
                     }
                 } else if(metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
-                    getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, metricInstance.cdoID().toString());
+                    getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, externalId);
                     logger.error("Raw metric is bound to an application - just add any cdo id.");
                 } else {
                     logger.error("Raw metric is bound to something else. NOT IMPLEMENTED.");

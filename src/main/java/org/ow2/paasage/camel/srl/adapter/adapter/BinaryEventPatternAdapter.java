@@ -83,7 +83,15 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
 
         for (MonitorInstance monitorInstance : getFc()
                 .getMonitorInstances(composedMonitor.getId())) {
-            getFc().addExternalId(monitorInstance, eventPattern.cdoID().toString());
+            final String externalId;
+            if(eventPattern.cdoID() != null){
+                externalId = eventPattern.cdoID().toString();
+            } else {
+                externalId = eventPattern.getName(); /* TODO if CDO is not available this ID might not by
+                                                        TODO unique through different model instances */
+            }
+
+            getFc().addExternalId(monitorInstance, externalId);
         }
 
 

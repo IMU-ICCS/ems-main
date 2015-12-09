@@ -112,7 +112,15 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
             for (MetricContext mc : context
                     .getComposingMetricContexts()) {
                 for (String s : monitor.getExternalReferences()) {
-                    if (s.equals(mc.cdoID().toString())) { // instead of checking by name mc.getName()
+                    final String id;
+                    if(mc.cdoID() != null){
+                        id = mc.cdoID().toString();
+                    } else {
+                        id = mc.getName(); /* TODO if CDO is not available this ID might not by
+                                              TODO unique through different model instances */
+                    }
+
+                    if (s.equals(id)) { // instead of checking by name mc.getName()
                         composedMonitors.add(monitor);
                     }
                 }
@@ -163,7 +171,15 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
                 }
 
                 if (!isAlreadyTagged) {
-                    getFc().addExternalId(monitorInstance, metricInstance.cdoID().toString());
+                    final String id;
+                    if(metricInstance.cdoID() != null){
+                        id = metricInstance.cdoID().toString();
+                    } else {
+                        id = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
+                                                          TODO unique through different model instances */
+                    }
+
+                    getFc().addExternalId(monitorInstance, id);
                     break; // go to next metric instance
                 }
             }
