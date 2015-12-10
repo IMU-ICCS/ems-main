@@ -1727,8 +1727,9 @@ public class ModelComparator {
 		for(ProvidedCommunication pc : pcs){
 			boolean matched = false;
 			for(ProvidedCommunication pc2 : pcs2){
-				if(pc.getName().equals(pc2.getName())/*&& 
-						((Component) pc.eContainer()).getName().equals(((Component) pc2.eContainer()).getName())*/){	
+				if(pc.getName().equals(pc2.getName()) &&
+						//10Dec15 added port number to guard against orphan provided communication objects which have no communication bindings
+						  pc.getPortNumber() == pc2.getPortNumber()){	
 					matched = true;
 					break; //go to next pc
 				}

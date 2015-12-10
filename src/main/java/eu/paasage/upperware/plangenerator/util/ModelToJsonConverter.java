@@ -503,7 +503,7 @@ public final class ModelToJsonConverter {
     	}
     	return result;
     }
-    /**
+	/**
      * Generate a snapshot in {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} of an orphaned
      * {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} object
      * to populate an artificial {@link eu.paasage.camel.deployment.Communication <em>Communication</em>} object
