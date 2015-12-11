@@ -120,11 +120,20 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         //fc.addExternalId(composedMonitor, condition.getName());
         // NFE:
         final String idNFE;
-        if(event.cdoID() != null){
-            idNFE = event.cdoID().toString();
+        if(event == null) {
+            if (metricCondition.cdoID() != null) {
+                idNFE = metricCondition.cdoID().toString();
+            } else {
+                idNFE = metricCondition.getName(); /* TODO if CDO is not available this ID might not by
+                                                      TODO unique through different model instances */
+            }
         } else {
-            idNFE = event.getName(); /* TODO if CDO is not available this ID might not by
+            if (event.cdoID() != null) {
+                idNFE = event.cdoID().toString();
+            } else {
+                idNFE = event.getName(); /* TODO if CDO is not available this ID might not by
                                         TODO unique through different model instances */
+            }
         }
 
 
