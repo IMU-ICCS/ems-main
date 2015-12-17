@@ -85,6 +85,12 @@ import eu.paasage.upperware.adapter.adaptationmanager.actions.ActionError;
 import eu.paasage.upperware.adapter.adaptationmanager.plangeneration.Plan;
 import eu.paasage.upperware.adapter.adaptationmanager.input.ReasonerInterfacer;*/
 
+/**
+ * Working version - tested 17th Dec with BeWan on Flexiant
+ * @author ArnabSinha
+ *
+ */
+
 @RunWith(JUnit4.class)
 public class AdaptationManagerTest
 
