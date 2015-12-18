@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.eclipsesource.json.JsonObject;
 
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
@@ -56,143 +57,127 @@ public class Mapper {
 	private CdoTool utils;
 
 	/**
-	 * Construct an instance -- remove as we need a cpModelId
-	 */
-//	public Mapper() {
-//	}
-	
-	/**
-	 * Construct an instance with the target CP Model resource id */
-	 
+	 * Construct an instance with the target CP Model resource id 
+	 * */	 
 	public Mapper(String resId) {
-		// I think this may change at runtime as rule processor clones the cp_model
-		// rather than updating it. The new version will have a new resource id
-		// Also, we may need to update the CP model expressions too, this requires creating a new version to avoid 
-		// overwriting previous state
+		// 11Dec15 Mapper now overwrites cp model rather than creating a new version.  One id is sufficient
 		this.cpModelId = resId;
 	}
-
 	/**
-	 * Construct an instance with the target CP Model resource id
-	
-	public Mapper(String resId) {
-		// I think this may change at runtime as rule processor clones the cp_model
-		// rather than updating it. The new version will have a new resource id
-		// Also, we may need to update the CP model expressions too, this requires creating a new version to avoid 
-		// overwriting previous state
-		this.cpModelId = resId;
-	}*/
-	
-	/**
-	 * This method is used for preparing a CP model for first deployment. There
-	 * are no running metrics and a default constant value is assigned to each
-	 * metric variable listed in the model. If there are no metric variables in
-	 * the CPModel, the solution timestamp value will be 0.
+	 * A wrapper for calling the {{@link #mapMetricVariables(HashMap)} method for a first deployment. 
 	 * <p>
 	 * @param resId
-	 *            the target CP Model resource id
+	 *            id of the target {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem <em>ConstraintProblem</em>}
 	 * @return 	a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} containing the 
-	 * 			new resource ID and the solution timestamp
-	 * @throws MetricMapperException
+	 * 			new resource ID and the solution timestamp.  
+	 * @throws {@link eu.paasage.upperware.metasolver.exception.MetricMapperException <em>MetricMapperException</em>}
 	 *             on processing error
 	 */
-
 	public JsonObject mapMetricVariables() throws MetricMapperException {
 		return this.mapMetricVariables(null);
 	}
-	
 	/**
-	 * This method is used to prepare the CP Model for re&#45;deployment. The CP
-	 * model is updated with the metric variable values provided in the input
-	 * {@link java.util.HashMap <em>HashMap</em>}
+	 * Prepare the CP Model for a new deployment. There are no running metrics 
+	 * and a default constant value is assigned to each metric variable listed in the constraint model. 
 	 * <p>
-	 * @param resId
-	 *            the target CP Model resource id
-	 * @param metrics
-	 *            a {@link java.util.HashMap <em>HashMap</em>} of the metric
-	 *            variables and associated values to update
-	 * @return 	a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} containing the 
-	 * 			new resource ID and the solution timestamp
-	 * @throws MetricMapperException
-	 *             on processing error
+	 * @param cp		the {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem <em>ConstraintProblem</em>} to solve	
+	 * @param solution	the last {@link eu.paasage.upperware.metamodel.cp.Solution <em>Solution</em>} object in the model.
+	 * @return	true if the {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem <em>ConstraintProblem</em>} has been modified, else false.
 	 */
-	
 	private boolean initWithDefaultMetricVariable(ConstraintProblem cp, Solution solution)
 	{
 		boolean updatedCP=false;
-		for (MetricVariable mv : cp.getMetricVariables())
-		{
-			if (CPModelTool.searchMetricValue(solution, mv) == null)
-			{
+		//Theoretically CP_generator should have set default values for all the metric variable upstream
+		for (MetricVariable mv : cp.getMetricVariables()){	
+			if (CPModelTool.searchMetricValue(solution, mv) == null){
 				// create it
-				CpModelTool.setConstantValue(mv, solution); // TO CHECK !!!
-				updatedCP=true;
+				log.debug("...about to call setConstantValue with solution(" + solution.getTimestamp() + ") and metric variable(" + mv.getId() );
+				CpModelTool.setConstantValue(mv, solution); 
+				updatedCP = true;
 			}
 		}
 		return updatedCP;
 	}
-	
-	private boolean initWithMetrics(ConstraintProblem cp, Solution lastSolution, Solution newSolution, HashMap<String, String> metrics )
+	/**
+	 * Update the {@link eu.paasage.upperware.metamodel.cp.MetricVariableValue <em>MetricVariableValue</em>} with the
+	 * incoming ones or copy the existing ones from the previous {@link eu.paasage.upperware.metamodel.cp.Solution <em>Solution</em>} object
+	 * <p>
+	 * @param cp	the target {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem <em>ConstraintProblem</em>} 
+	 * @param newSolution	the new {@link eu.paasage.upperware.metamodel.cp.Solution <em>Solution</em>} object used to store the values
+	 * @param lastSolution  the last {@link eu.paasage.upperware.metamodel.cp.Solution <em>Solution</em>} object in the cp model
+	 * @param metrics	a {@java.util.HashMap <em>HashMap</em>} containing the key value pairs of the incoming metric variables.
+	 * @return	true if the {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem <em>ConstraintProblem</em>} has been modified, else false.
+	 * @throw 	{@link eu.paasage.upperware.metasolver.exception.MetricMapperException <em>MetricMapperException</em>}
+	 *             on processing error
+	 */
+	private boolean initWithMetrics(ConstraintProblem cp, Solution lastSolution, Solution newSolution, HashMap<String, String> metrics ) throws MetricMapperException
 	{
-		boolean updatedCP=false;
-		
+		boolean updatedCP = false;		
 		// process the incoming metric variable values
 		List<MetricVariable> cp_MVs = cp.getMetricVariables();
 		Set<String> metricVariables = metrics.keySet();
+		//process the incoming metric variables first
 		for (String mvName : metricVariables) { 
 			log.debug("the current metric variable is : " + mvName + "...");
 			//look for the owner - the metric variable
 			MetricVariable currentMV = CpModelTool.getMetricVariable(mvName, cp_MVs);				
 			// create the new value using the incoming version
 			MetricVariableValue value = CpModelTool.createMVV(currentMV, metrics.get(mvName));
-			// TODO: CHECK IF IT DOES NOT ALREAD EXIST
+			//
 			newSolution.getMetricVariableValue().add(value);
 			updatedCP = true;
 		}
-
-		//need to copy the existing values for those not included in the update
-		if(cp_MVs.size() > metrics.size()){ //if there are more metric variables than those provided
+		//now copy the existing values for those not included in the update
+		if(cp_MVs.size() > metrics.size()){ //if there are more metric variables than those incoming
 			for(MetricVariable cp_mv : cp_MVs){
 				//System.out.println("current metricVariable id is : " + cp_mv.getId() + "....");
 				log.debug("current metricVariable id is : " + cp_mv.getId() + "....");
 				//is the current cp metric variable in the incoming set
 				if(!metricVariables.contains(cp_mv.getId())){
 					log.debug("current metric variable(" + cp_mv.getId() + ") is not in the incoming set....");
-					//find the existing value (there should always be one, either initial constant value or the previous runtime value
+					//find the existing value (there should always be one, either the initial constant value or the previous runtime value
 					MetricVariableValue oldValue = CPModelTool.searchMetricValue(lastSolution, cp_mv);
 					//
 					if(oldValue != null){
-						log.debug("... trying to copy old value to new solution for : " + cp_mv.getId());
-						//needs to clone a new MetricVariableValue ob
+						log.debug("... copying old value to new solution for : " + cp_mv.getId());
+						//need to clone a new MetricVariableValue object
 						MetricVariableValue newValueObj = CpModelTool.createMVV(cp_mv, oldValue.getValue());
-						// TODO: CHECK IF IT DOES NOT ALREAD EXIST
+						//
 						newSolution.getMetricVariableValue().add(newValueObj);
 						updatedCP = true;
+					}else{//failed to find the old value
+						throw new MetricMapperException("Failed to find existing metric variable value for : " + cp_mv.getId());
 					}
 				}
 			}
 		}	
 		return updatedCP;
 	}
-
+	/**
+	 * Update the {@link eu.paasage.upperware.metamodel.cp.MetricVariableValue <em>MetricVariableValue</em>}
+	 * <p>
+	 * @param metrics	a {@java.util.HashMap <em>HashMap</em>} containing the key value pairs of the incoming metric variables.
+	 * @return	a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} containing the 
+	 * 			new resource ID and the solution timestamp.  
+	 * @throws {@link eu.paasage.upperware.metasolver.exception.MetricMapperException <em>MetricMapperException</em>}
+	 *             on processing error
+	 */
 	public JsonObject mapMetricVariables(HashMap<String, String> metrics) throws MetricMapperException {
 		JsonObject jObj = new JsonObject(); //keys are "id" (String) and "solution_tmp" (long)
 
 		jObj.add("id", this.cpModelId);
-
-		if (this.utils == null) {
-			this.utils = CdoTool.getInstance();
-		}
 		// start the cdo-client
-		try
-		{	
-			this.utils.openCDOSession();
-			// load the resource in memory and get the cp model 
-			CDOTransaction trans = CdoTool.getCDOClient().openTransaction();
-			log.info("Reading CDO resId: "+this.cpModelId);
-			CDOResource res = trans.getResource(this.cpModelId); 
-			log.info("Res: "+res);
-			EList<EObject> model_contents = res.getContents(); // cloner may return an empty list		
+		CDOClient cdoClient = new CDOClient();
+		CdoTool.registerPackages(cdoClient);
+		// to overwrite, we need to get the target object w/n a transaction
+		CDOTransaction trans = cdoClient.openTransaction();
+		//
+		try{	
+			
+			log.info("Reading CDO resId: "+ this.cpModelId);
+			CDOResource res = trans.getResource(CdoTool.mapCdoId(this.cpModelId)); 
+			log.info("Res: " + res);
+			EList<EObject> model_contents = res.getContents(); // may get an empty list		
 			ConstraintProblem cp = CpModelTool.getCPModel(model_contents);
 			if (cp == null) {
 				throw new MetricMapperException("failed to extract ConstraintModel from the resource(" + this.cpModelId + ")");
@@ -205,66 +190,68 @@ public class Mapper {
 			Solution lastSolution = CPModelTool.searchLastSolution(cp.getSolution());
 			Solution newSolution = null;
 			Long timestamp;
-			// If not solution, create an empty one
-			if ((lastSolution == null) || (metrics!=null))
-			{
+			// 11Dec15 either no last solution or has metrics
+			// there is always a last solution, so we rely on the 2nd condition
+			log.debug("last solution is null? " + (lastSolution == null ? true : false));
+			log.debug("metrics hm is null? " + (metrics == null ? true : false));
+			//			
+			if ((lastSolution == null) || (metrics !=null)){
+				log.debug("metrics hm != null ...");
+				//only applies to reconfig 
 				Solution sol = CpFactory.eINSTANCE.createSolution();
 				Long ts = System.currentTimeMillis();
 				sol.setTimestamp(ts);
 				cp.getSolution().add(sol);
-
-				try {
-					log.debug("Commiting a new empty Solution...");
-					trans.commit();
-				} catch (CommitException e) {
-					throw new MetricMapperException("Error when commiting an empty solution to CDO");
-				}
+				//chunk up commits to avoid dirty state
+				log.debug("Commiting a new empty Solution...");
+				trans.commit();
 				// need to reload sol ?
 				newSolution = sol;
 				timestamp = ts;
 			} else {
+				//11Dec15, this implies the new deployment case. We rely on CP Generator doing the deed
 				timestamp = lastSolution.getTimestamp();
 			}
-
 			// Completing jObj
 			jObj.add("solution_tmp", timestamp); // milp-solver needs this
-			
+			//
 			// Check if there are some metric variables
 			List<MetricVariable> mvs = cp.getMetricVariables();
 			if ((mvs == null) || mvs.isEmpty()) {
-				// Nothing to do?
+				// Nothing to do?  but the cp model will always have an empty solution
 				log.info("CP model in " + this.cpModelId + " has no Metric Variable entities...");
 				trans.close();
 				return jObj;
-			}			
-			
-			//there are metric variables
-			log.info(mvs.size()	+ " metric variables retrived from CP model in " + this.cpModelId + "...");
-
+			}	
+			//there are metric variables in the CP model
+			log.info(mvs.size()	+ " metric variables retrieved from CP model in " + this.cpModelId + "...");
+			//
 			boolean updatedCP;
-			if (metrics == null)
+			if (metrics == null){ //new deployment, no running metrics
+				log.debug("..no metrics HM, calling initWithDefaultMetricVariable....");
 				updatedCP = this.initWithDefaultMetricVariable(cp, lastSolution);
-			else
+			}else{	//reconfig
+				log.debug("..have metrics HM, calling initWithMetrics....");
 				updatedCP = this.initWithMetrics(cp, lastSolution, newSolution, metrics);
-				
-			if (updatedCP)
-			{
-				try {
-					log.debug("Commiting Metric Variable Solution...");
-					trans.commit();
-				} catch (CommitException e) {
-					throw new MetricMapperException("Error when commiting an empty solution to CDO");
-				}				
+			}	
+			if (updatedCP){
+				//
+				log.debug("Commiting Metric Variable Solution...");
+				trans.commit();
+				trans.close();
 			}
-
-			trans.close();
+		} catch (CommitException e) {
+			throw new MetricMapperException("Error when commiting an empty solution to CDO : " + e);
 		}catch(MetricMapperException me){
 			throw me;	//re-throw
 		}catch(Exception e){
-			log.error("Error trying to map metricVariableValues for new deployment : " + e.getMessage());
+			log.error("Error trying to map metricVariableValues: " + e.getMessage());
 			throw new MetricMapperException(e);
-		} finally {
-			this.utils.closeCDOSession();
+		}finally{
+			//make sure that it is closed
+			if(!trans.isClosed()){
+				trans.close();
+			}
 		}
 		return jObj;
 	}
@@ -274,7 +261,6 @@ public class Mapper {
 	/**
 	 * Getter for the {@link #cpModelId <em>cpModelId</em>}
 	 * <p>
-	 * 
 	 * @return the cpModelId
 	 */
 	public String getCpModelId() {
@@ -284,7 +270,6 @@ public class Mapper {
 	/**
 	 * Setter for the {@link #cpModelId <em>cpModelId</em>}
 	 * <p>
-	 * 
 	 * @param cpModelId
 	 *            the cpModelId to set
 	 */

@@ -27,6 +27,8 @@ import eu.paasage.upperware.metasolver.solutionListener;
 import eu.paasage.upperware.metasolver.RPListener;
 import eu.paasage.upperware.metasolver.metricsListener;
 import eu.paasage.upperware.metasolver.metrics.Mapper;
+import eu.paasage.upperware.metasolver.util.CdoTool;
+import eu.paasage.upperware.metasolver.util.CpModelTool;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -48,34 +50,39 @@ public class metasolver{
 		long mapResult = map.mapMetricVariables(CPmodID);
 		 */
 		CDOClient cdoClient = new CDOClient();
-		cdoClient.registerPackage(ApplicationPackage.eINSTANCE);
-		cdoClient.registerPackage(CpPackage.eINSTANCE);
-		cdoClient.registerPackage(TypesPackage.eINSTANCE);
-		cdoClient.registerPackage(TypesPaasagePackage.eINSTANCE);
-		cdoClient.registerPackage(TypePackage.eINSTANCE);
-		CDOView cdoView = cdoClient.openView();
-
-		log.info("Reading CP model from CDO...");
-		EList<EObject> contentsPC = cdoView.getResource(CPmodID).getContents();
-		log.info("Extracting models...");
-		//		PaasageConfiguration paasageConfiguration = (PaasageConfiguration) contentsPC.get(0);
-		ConstraintProblem cp = (ConstraintProblem) contentsPC.get(1);
-
+		CdoTool.registerPackages(cdoClient);
+//		cdoClient.registerPackage(ApplicationPackage.eINSTANCE);
+//		cdoClient.registerPackage(CpPackage.eINSTANCE);
+//		cdoClient.registerPackage(TypesPackage.eINSTANCE);
+//		cdoClient.registerPackage(TypesPaasagePackage.eINSTANCE);
+//		cdoClient.registerPackage(TypePackage.eINSTANCE);
+		CDOView cdoView = cdoClient.openView();		
 		HashMap<String, String> mets=null;
-		// Handling Metric passed as input file (to be updated for reading from CDO)
-		if(metricFile!=null){
-			//get Metrics
-			mets = readFile1(metricFile);
-			//check Metrics
-			boolean check = checkMets(mets, cp);
-			if (check)
-				System.out.println("MetricFile validated");
-			else
-				System.out.println("MetricFile not validated. Proceeding anyway");
+		//
+		try{
+			log.info("Reading CP model from CDO...");
+			EList<EObject> contentsPC = cdoView.getResource(CPmodID).getContents();
+			log.info("Extracting models...");
+	//		PaasageConfiguration paasageConfiguration = (PaasageConfiguration) contentsPC.get(0);
+			ConstraintProblem cp = CpModelTool.getCPModel(contentsPC);
+			// Handling Metric passed as input file (to be updated for reading from CDO)
+			if(metricFile!=null){
+				//get Metrics
+				mets = readFile1(metricFile);
+				//check Metrics
+				boolean check = checkMets(mets, cp);
+				if (check)
+					System.out.println("MetricFile validated");
+				else
+					System.out.println("MetricFile not validated. Proceeding anyway");
+			}
+		}catch(Exception e){
+			System.out.println("Error reading ConstraintProblem from CDO : " + e.getMessage() + "!");
+		}finally{
+			log.info("Closing CDO connection...");
+			cdoView.close();
+			cdoClient.closeSession();
 		}
-		log.info("Closing CDO...");
-		cdoView.close();
-		cdoClient.closeSession();
 		
 
 		log.info("Mapping metric variables...");

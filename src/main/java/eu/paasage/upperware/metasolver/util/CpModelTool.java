@@ -53,21 +53,17 @@ public final class CpModelTool {
 	 * Initialise the model
 	 */
 	public static void init() {
-
+		//
 		log.debug("initialising model ....");
 		// initialise the Upperware model packages
 		ApplicationPackage.eINSTANCE.eClass();
 		TypesPaasagePackage.eINSTANCE.eClass(); 
 		TypesPackage.eINSTANCE.eClass(); 
 		CpPackage.eINSTANCE.eClass();
-		OntologyPackage.eINSTANCE.eClass();
-		
-		
-		
+		OntologyPackage.eINSTANCE.eClass();		
 		// Register the XMI resource factory for the .xmi extension
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
 				new XMIResourceFactoryImpl());
-		
 	}
 	
 
@@ -346,42 +342,35 @@ public final class CpModelTool {
 				+ ")....");
 
 		// metricVariable can be of type: int, double, float, long
-		String constantValue = "";
-		if(mv.getType() == BasicTypeEnum.INTEGER){
-			constantValue = Integer.toString(1);
-		}else if(mv.getType() == BasicTypeEnum.DOUBLE){
-			constantValue = Double.toString(1.0);
-		}else if(mv.getType() == BasicTypeEnum.LONG){
-			constantValue = Long.toString(1l);
-		}else{
-			constantValue = Float.toString(1f);
-		}			
-		MetricVariableValue value = createMVV(mv, constantValue);
-		
-//		DoubleValueUpperware defaultValue = TypesFactory.eINSTANCE
-//				.createDoubleValueUpperware();
-//		defaultValue.setValue(1);
-//		//
-//		MetricVariableValue value = CpFactory.eINSTANCE
-//				.createMetricVariableValue();
-//		value.setVariable(mv);
-//		value.setValue(defaultValue);
+//		String constantValue = "";
+//		if(mv.getType() == BasicTypeEnum.INTEGER){
+//			constantValue = Integer.toString(1);
+//		}else if(mv.getType() == BasicTypeEnum.DOUBLE){
+//			constantValue = Double.toString(1.0);
+//		}else if(mv.getType() == BasicTypeEnum.LONG){
+//			constantValue = Long.toString(1l);
+//		}else{
+//			constantValue = Float.toString(1f);
+//		}			
+//		MetricVariableValue value = createMVV(mv, constantValue);
+		//no need to create a String rep of the number
+		//
+		MetricVariableValue value = createMVV(mv, "1");
 		solution.getMetricVariableValue().add(value);
 		//debug
-		System.out.println("the solution now has : " + solution.getMetricVariableValue().size() + " metricVariableValues");
+		//System.out.println("the solution now has : " + solution.getMetricVariableValue().size() + " metricVariableValues");
+		log.debug("the solution now has : " + solution.getMetricVariableValue().size() + " metricVariableValues");
 		return solution;
 	}
 
 	/**
 	 * Make a copy of the provided solution. Update its timestamp to current.
 	 * <p>
-	 * 
 	 * @param sol
 	 *            the original
 	 *            {@link eu.paasage.upperware.metamodel.cp.Solution
 	 *            <em>Solution</em>} object
-	 * @return the copied the target
-	 *         {@link eu.paasage.upperware.metamodel.cp.Solution
+	 * @return the copied {@link eu.paasage.upperware.metamodel.cp.Solution
 	 *         <em>Solution</em>} object
 	 */
 	public static Solution copySolution(Solution sol) {
@@ -395,7 +384,6 @@ public final class CpModelTool {
 	/**
 	 * Validate if the provided metric variable id exists in the CP model.
 	 * <p>
-	 * 
 	 * @param id
 	 *            name of the metric variable
 	 * @param list
@@ -490,8 +478,7 @@ public final class CpModelTool {
 	/**
 	 * Create a {@link eu.paasage.upperware.metamodel.cp.MetricVariableValue
 	 * <em>MetricVariableValue</em>} for the provided
-	 * {@link eu.paasage.upperware.metamodel.cp.MetricVariable
-	 * <em>MetricVariable</em>} object.
+	 * {@link eu.paasage.upperware.metamodel.cp.MetricVariable <em>MetricVariable</em>} object.
 	 * <p> 
 	 * @param current
 	 *            the target
