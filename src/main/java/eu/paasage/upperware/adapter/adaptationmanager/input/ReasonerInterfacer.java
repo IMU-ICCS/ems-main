@@ -223,6 +223,27 @@ public class ReasonerInterfacer {
 		DeploymentModel model = cm.getDeploymentModels().get(0);
 		return model;
 	}
+	
+	public DeploymentModel loadFromFileTest(){
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
+				new XMIResourceFactoryImpl() {
+					public Resource createResource(URI uri) {
+						XMIResource xmiResource = new XMIResourceImpl(uri);
+						return xmiResource;
+					}
+				});
+
+		final ResourceSet rs = new ResourceSetImpl();
+		rs.getPackageRegistry().put(CamelPackage.eNS_URI,
+				CamelPackage.eINSTANCE);
+		Resource res = rs.getResource(URI.createFileURI(this.inputFile), true);
+		LOGGER.log(Level.INFO, "Obtained resource: " + res.getURI());
+		EList<EObject> contents = res.getContents();
+		CamelModel cm = (CamelModel) contents.get(0);
+		System.out.println("# deployment models in CAMEL file model " + cm.getDeploymentModels().size() );
+		DeploymentModel model = cm.getDeploymentModels().get(1);
+		return model;
+	}
 
 	public DeploymentModel getDeploymentModel(boolean current) {
 

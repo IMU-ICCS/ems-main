@@ -254,6 +254,8 @@ public class Coordinator {
 		LOGGER.log(Level.INFO, "Start of threaded execution");
 
 		Map<String, Object> outputMap = new HashMap<String, Object>();
+		
+		DeploymentModel targetModel = reasonerInterfacer.loadFromFileTest();
 
 		// DeploymentModel targetModel =
 		// reasonerInterfacer.getDeploymentModel(false);//Commented to replace
@@ -261,7 +263,7 @@ public class Coordinator {
 
 //		int dmIndex = 1;// Simple deployment model location
 
-		reasonerInterfacer.openTransaction();
+/*		reasonerInterfacer.openTransaction();
 
 		int ndm = reasonerInterfacer.getDeploymentModelsSize();
 
@@ -276,7 +278,7 @@ public class Coordinator {
 			currentModel = reasonerInterfacer.getLiveDeploymentModel(ndm - 2);
 			targetModel = reasonerInterfacer.getLiveDeploymentModel(ndm - 1);
 			LOGGER.log(Level.INFO, "Reconfiguration between two deployment models");
-		}
+		}*/
 
 		
 //	DeploymentModel targetModel = reasonerInterfacer
@@ -295,7 +297,7 @@ public class Coordinator {
 		// Integration for Shirley's plangenerator
 		taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
 
-		reasonerInterfacer.closeTransaction();// closing the live transaction
+//		reasonerInterfacer.closeTransaction();// closing the live transaction
 												// after plan generated
 
 		DirectedGraph<Action, DefaultEdge> g = GraphUtilities

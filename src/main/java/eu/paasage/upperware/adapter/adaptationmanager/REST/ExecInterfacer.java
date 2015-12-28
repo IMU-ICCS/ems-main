@@ -14,7 +14,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -32,6 +34,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -46,7 +49,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
 import com.eclipsesource.json.JsonObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -59,7 +61,6 @@ import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory;
 
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecutionwareError;
-import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer.User;
 import eu.paasage.upperware.adapter.adaptationmanager.core.AdaptationManager;
 
 public class ExecInterfacer {
@@ -154,7 +155,23 @@ public class ExecInterfacer {
 	
 	
 	public ExecInterfacer(String baseUrl) {
+		//Properties properties = AdaptationManager.getProperties();
+		Properties properties = AdaptationManager.loadAndGetProperties();
 		this.baseUrl = baseUrl;
+		String uname = properties.getProperty("ExecutionwareUname");
+		String pass = properties.getProperty("ExecutionwarePwd");
+		String tenant = properties.getProperty("ExecutionwareTenant");
+		setCloudCredentials(properties);
+		try {
+			login(uname, pass, tenant);
+		} catch (ExecutionwareError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (this.baseUrl == null || uname==null || pass==null) {
+			LOGGER.log(Level.WARNING,
+					"ExecutionwareURL/ExecutionwareUname/ExecutionwarePwd property(s) not set; error reaching with Executionware");
+		}
 	}
 
 	public ExecInterfacer() {
@@ -176,7 +193,6 @@ public class ExecInterfacer {
 					"ExecutionwareURL/ExecutionwareUname/ExecutionwarePwd property(s) not set; error reaching with Executionware");
 		}
 	}
-	
 	
 	//Methods for reading Cloud Provider credentials from property file	
     private Set<Object> getAllKeys(Properties prop){
@@ -915,7 +931,7 @@ public class ExecInterfacer {
 		 * Authentication Actions
 		*/
 		
-		LOGGER.log(Level.INFO, "Login: sending POST1");
+		LOGGER.log(Level.INFO, "Login: sending POST");
 		
 		//Request Parameters
 		JSONObject credentials = new JSONObject();
@@ -1044,6 +1060,16 @@ public class ExecInterfacer {
 		return execUser.getUserName();
 	}
 	
+	private String dumpRespHeader(HttpResponse resp){
+		String dump = "{";
+		List<Header> httpHeaders = Arrays.asList(resp.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+		return dump;
+	}
+	
 	private HttpResponse postRequest(String apiExt, Header inHeader, JSONObject inBody) throws IOException{
 		
         HttpPost hur = new HttpPost(baseUrl + apiExt);
@@ -1062,6 +1088,9 @@ public class ExecInterfacer {
         hur.addHeader("X-Auth-Token", execUser.getToken());
         hur.addHeader("X-Auth-UserId", String.valueOf(execUser.getUserId()));
         hur.addHeader("X-Tenant", execUser.getTenant());
+        
+        List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());
+        BufferedHttpEntity ent = new BufferedHttpEntity(hur.getEntity());
 
         HttpResponse resp = null;
         try{
@@ -1073,6 +1102,18 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
+        
+        HttpResponse resp1 =resp; 
+		String dump = "{";
+		
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
+//      LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(ent, "UTF-8") + " \nRESPONSE header: " + dumpRespHeader(resp1) + " body: " + EntityUtils.toString(resp1.getEntity(), "UTF-8") + "\n");
+	    LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(ent, "UTF-8") + "\n");
+        
         return resp;
         
 	}
@@ -1106,6 +1147,17 @@ public class ExecInterfacer {
         	ex.printStackTrace();
         }
         
+		String dump = "{";
+		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
+        //LOGGER.log(Level.INFO, "\nPUT " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(hur.getEntity(), "UTF-8") + " \nRESPONSE header: " + dumpRespHeader(resp) + " body: " + EntityUtils.toString(resp.getEntity(), "UTF-8") + "\n");
+	    LOGGER.log(Level.INFO, "\nPUT " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(hur.getEntity(), "UTF-8") + "\n");
+        
+        
         return resp;
 	}
 	
@@ -1133,6 +1185,18 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
+        
+		String dump = "{";
+		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
+        //LOGGER.log(Level.INFO, "\nGET " + apiExt + " \nREQUEST header: " + dump + " \nRESPONSE header: " + dumpRespHeader(resp) + " body: " + EntityUtils.toString(resp.getEntity(), "UTF-8") + "\n");
+	    LOGGER.log(Level.INFO, "\nGET " + apiExt + " \nREQUEST header: " + dump + "\n");
+        
+        
         return resp;
 	}
 
@@ -1160,6 +1224,18 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
+        
+		String dump = "{";
+		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
+        //LOGGER.log(Level.INFO, "\nDELETE " + apiExt + " \nREQUEST header: " + dump + " \nRESPONSE header: " + dumpRespHeader(resp) + " body: " + EntityUtils.toString(resp.getEntity(), "UTF-8") + "\n");
+	    LOGGER.log(Level.INFO, "\nDELETE " + apiExt + " \nREQUEST header: " + dump + "\n");
+        
+        
         return resp;
 	}
 	
