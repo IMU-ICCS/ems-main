@@ -234,7 +234,8 @@ public class VMInstanceAction implements Action {
 			for(Object obj : depOnActions){
 				System.out.println("-- " + obj.toString() + " ");
 				if(obj.getClass()==CommunicationAction.class){
-					((CommunicationAction) obj).run();
+					LOGGER.log(Level.INFO, "VMInstanceAction " + this.vmInstName + " => CommunicationAction " + ((CommunicationAction) obj).toString() + " thread run supressed");
+					//((CommunicationAction) obj).run();
 					//LOGGER.log(Level.INFO, "Forced (creation) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
 /*					boolean status = ((CommunicationAction) obj).getActionDone());
 						LOGGER.log(Level.INFO, "Waiting for " + ((CommunicationAction) obj).getCommTypeName());*/

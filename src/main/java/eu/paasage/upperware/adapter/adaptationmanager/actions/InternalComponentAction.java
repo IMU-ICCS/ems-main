@@ -174,7 +174,8 @@ public class InternalComponentAction implements Action {
 				for(Object obj : depOnActions){
 					System.out.println("-- " + obj.toString() + " ");
 					if(obj.getClass()==CommunicationAction.class){
-						((CommunicationAction) obj).run();
+						LOGGER.log(Level.INFO, "InternalComponentAction " + this.iCompName + " => CommunicationAction " + ((CommunicationAction) obj).toString() + " thread run supressed");
+						//((CommunicationAction) obj).run();
 					}
 				}
 				

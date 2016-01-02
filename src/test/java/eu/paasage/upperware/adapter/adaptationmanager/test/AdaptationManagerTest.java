@@ -58,6 +58,9 @@ public class AdaptationManagerTest
 	private static final String TEST_INPUTFILE3 = System
 			.getProperty("user.dir") + "/src/test/resources/Scalarm_full3.xmi";
 	
+	private final String TEST_INPUTFILE_SimpleDeployment = System
+			.getProperty("user.dir") + "/src/test/resources/CAMEL_test_SimpleDeployment.xmi";
+	
 	/**
 	 * Response Strings for Client Driver
 	 */
@@ -76,7 +79,6 @@ public class AdaptationManagerTest
 	
 	@Rule
 	public ClientDriverRule driver = new ClientDriverRule(port);
-	//driver.addExpectation(onRequestTo("/blah"), giveEmptyResponse().withStatus(404));
 	
 	@Test
 //	@Ignore
@@ -89,8 +91,6 @@ public class AdaptationManagerTest
 				.giveResponse("{\"createdOn\":1450816014555,\"expiresAt\":1450816314555,\"token\":\""+ token + "\",\"userId\":1}", "application/json")
 				.withContentType("application/json")
 				.withStatus(200)).anyTimes();
-		
-		
 		
 		ExecInterfacer exec = new ExecInterfacer(driver.getBaseUrl());
 		exec.getCloudUname("flexiant");
@@ -105,263 +105,10 @@ public class AdaptationManagerTest
 //	@Ignore
 	public void verifyDeployment(){
 		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LOGIN)
-				.withHeader("Content-Type", "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse("{\"createdOn\":1450816014555,\"expiresAt\":1450816314555,\"token\":\""+ token + "\",\"userId\":1}", "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATION)
-				.withHeader("Content-Type", "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_APP, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONINSTANCE)
-				.withHeader("Content-Type", "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_APPInst, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_CLOUD)
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_GET_CLOUD, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LOCATION)
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_GET_LOCATION, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_HARDWARE)
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_GET_HARDWARE, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_IMAGE)
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_GET_IMAGE, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_IMAGE+"/158")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_GET_IMAGE_158, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINETEMPLATE)
-				.withHeader("Content-Type", "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VMT1, "application/json")
-				.withStatus(200)).times(1);
-
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINETEMPLATE)
-				.withHeader("Content-Type", "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VMT2, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LIFECYCLECOMPONENT)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_LCCOMP1, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_LCCOMP1, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LIFECYCLECOMPONENT)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_LCCOMP2, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_LCCOMP2, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LIFECYCLECOMPONENT)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_LCCOMP3, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_LCCOMP3, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONCOMPONENT)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_AC1, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_AC1, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONCOMPONENT)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_AC2, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_AC2, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONCOMPONENT)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_AC3, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_AC3, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTREQ)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_PORTREQ1, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_PORTREQ1, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTREQ)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_PORTREQ4, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_PORTREQ4, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTPROV)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_PORTPROV2, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_PORTPROV2, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTPROV)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_PORTPROV3, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_PORTPROV3, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTPROV)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_PORTPROV5, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_PORTPROV5, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_COMMUNICATION)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_COMM1, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_COMM1, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_COMMUNICATION)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_COMM2, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_COMM2, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_VIRTUALMACHINE65536, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VIRTUALMACHINE65536, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_VIRTUALMACHINE65537, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VIRTUALMACHINE65537, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_VIRTUALMACHINE65538, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VIRTUALMACHINE65538, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65536")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VIRTUALMACHINE65536, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65537")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VIRTUALMACHINE65537, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65538")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_VIRTUALMACHINE65538, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_INSTANCE65539, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_INSTANCE65539, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_INSTANCE65540, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_INSTANCE65540, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE)
-				.withHeader("Content-Type", "application/json")
-				.withBody(ClientDriverStrings.PATTERN_INSTANCE65541, "application/json")
-				.withMethod(Method.POST),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_INSTANCE65541, "application/json")
-				.withStatus(200)).times(1);
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65539")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_INSTANCE65539, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65540")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_INSTANCE65540, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65541")
-				.withMethod(Method.GET),
-				RestClientDriver
-				.giveResponse(ClientDriverStrings.RESP_POST_INSTANCE65541, "application/json")
-				.withStatus(200)).anyTimes();
-		
-		
+		SimpleDeploymentScenario example = new SimpleDeploymentScenario(driver);
 		
 		ReasonerInterfacer currentReasonerInterfacer = null;
-		currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/PaaSage/christmasCDOBackup/CAMEL_676790ec61a8ae90a627eec0323eee12.xmi", true);
+		currentReasonerInterfacer = new ReasonerInterfacer(example.getDeploymentXMI(), true);
 		
 		ExecInterfacer exec = new ExecInterfacer(driver.getBaseUrl());
 		IValidator validator = new ValidatorImpl();
@@ -413,7 +160,7 @@ public class AdaptationManagerTest
 //		currentReasonerInterfacer = new ReasonerInterfacer("CAMEL_676790ec61a8ae90a627eec0323eee12", false);
 		//currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/FullDeploymentBewan-Y3Rev-Christian.xmi", true);
 //		currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/BeWan_Deployment034553.xmi", true);
-		currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/PaaSage/christmasCDOBackup/CAMEL_676790ec61a8ae90a627eec0323eee12.xmi", true);
+		currentReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_SimpleDeployment, true);
 		
 		ExecInterfacer exec = new ExecInterfacer();
 		IValidator validator = new ValidatorImpl();

@@ -95,7 +95,8 @@ public class VMAction implements Action {
 			for(Object obj : depOnActions){
 				System.out.println("-- " + obj.toString() + " ");
 				if(obj.getClass()==InternalComponentAction.class){
-					((InternalComponentAction) obj).run();
+					LOGGER.log(Level.INFO, "VMAction " + this.vmName + " => InternalComponentAction " + ((InternalComponentAction) obj).toString() + " thread run supressed");
+					//((InternalComponentAction) obj).run();
 				}
 			}
 
