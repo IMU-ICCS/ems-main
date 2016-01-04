@@ -103,7 +103,7 @@ public class AdaptationManagerTest
 	
 	@Test
 //	@Ignore
-	public void verifyDeployment(){
+	public void verifySimpleDeployment(){
 		
 		SimpleDeploymentScenario example = new SimpleDeploymentScenario(driver);
 		
@@ -115,7 +115,7 @@ public class AdaptationManagerTest
 		Coordinator c = new Coordinator(currentReasonerInterfacer, exec, validator);
 		
 		c.startThreaded();
-		System.out.println("End of method verifyParallelDeployment()");
+		System.out.println("End of method verifySimpleDeployment()");
 	}
 	
 	@Test

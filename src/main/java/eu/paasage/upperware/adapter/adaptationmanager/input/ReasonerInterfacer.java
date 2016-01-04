@@ -170,8 +170,17 @@ public class ReasonerInterfacer {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("#Deployment_Models in CDO : " + model.getDeploymentModels().size() + ". Getting model# " + dmIndex);
-		DeploymentModel depModel = model.getDeploymentModels().get(dmIndex);
+		LOGGER.log(Level.INFO, "#Deployment_Models in CDO : " + model.getDeploymentModels().size() + ". Getting model# " + dmIndex);
+		DeploymentModel depModel = null;
+		if(dmIndex <= model.getDeploymentModels().size())
+			depModel = model.getDeploymentModels().get(dmIndex);
+		else{
+			try {
+				throw new Exception("Inexistent deployment model index");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		return depModel;
 	}
 	
@@ -242,6 +251,36 @@ public class ReasonerInterfacer {
 		CamelModel cm = (CamelModel) contents.get(0);
 		System.out.println("# deployment models in CAMEL file model " + cm.getDeploymentModels().size() );
 		DeploymentModel model = cm.getDeploymentModels().get(1);
+		return model;
+	}
+	
+	public DeploymentModel loadNthFromFile(int dmIndex){
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
+				new XMIResourceFactoryImpl() {
+					public Resource createResource(URI uri) {
+						XMIResource xmiResource = new XMIResourceImpl(uri);
+						return xmiResource;
+					}
+				});
+
+		final ResourceSet rs = new ResourceSetImpl();
+		rs.getPackageRegistry().put(CamelPackage.eNS_URI,
+				CamelPackage.eINSTANCE);
+		Resource res = rs.getResource(URI.createFileURI(this.inputFile), true);
+		LOGGER.log(Level.INFO, "Obtained resource: " + res.getURI());
+		EList<EObject> contents = res.getContents();
+		CamelModel cm = (CamelModel) contents.get(0);
+		System.out.println("# deployment models in CAMEL file model " + cm.getDeploymentModels().size() + ". Getting model# " + dmIndex);
+		DeploymentModel model = null;
+		if(dmIndex <= cm.getDeploymentModels().size())
+			model = cm.getDeploymentModels().get(dmIndex);
+		else{
+			try {
+				throw new Exception("Inexistent deployment model index");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		return model;
 	}
 

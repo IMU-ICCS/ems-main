@@ -257,7 +257,7 @@ public class Coordinator {
 
 		Map<String, Object> outputMap = new HashMap<String, Object>();
 		
-		DeploymentModel targetModel = reasonerInterfacer.loadFromFileTest();
+		DeploymentModel targetModel = reasonerInterfacer.loadNthFromFile(1);
 
 		// DeploymentModel targetModel =
 		// reasonerInterfacer.getDeploymentModel(false);//Commented to replace
