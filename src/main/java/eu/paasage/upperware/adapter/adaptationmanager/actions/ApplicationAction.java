@@ -154,6 +154,7 @@ public class ApplicationAction implements Action {
 				e.printStackTrace();
 			}
 		}
+		return;
 	}
 
 	public ConfigurationTask getTask() {

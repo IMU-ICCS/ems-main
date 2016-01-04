@@ -258,6 +258,8 @@ public class Coordinator {
 		LOGGER.log(Level.INFO, "Start of threaded execution");
 
 		Map<String, Object> outputMap = new HashMap<String, Object>();
+		
+		DeploymentModel targetModel = reasonerInterfacer.loadNthFromFile(1);
 
 		// DeploymentModel targetModel =
 		// reasonerInterfacer.getDeploymentModel(false);//Commented to replace
@@ -265,7 +267,7 @@ public class Coordinator {
 
 //		int dmIndex = 1;// Simple deployment model location
 
-		reasonerInterfacer.openTransaction();
+/*		reasonerInterfacer.openTransaction();
 
 		int ndm = reasonerInterfacer.getDeploymentModelsSize();
 
@@ -280,7 +282,7 @@ public class Coordinator {
 			currentModel = reasonerInterfacer.getLiveDeploymentModel(ndm - 2);
 			targetModel = reasonerInterfacer.getLiveDeploymentModel(ndm - 1);
 			LOGGER.log(Level.INFO, "Reconfiguration between two deployment models");
-		}
+		}*/
 
 		
 //	DeploymentModel targetModel = reasonerInterfacer
@@ -299,7 +301,7 @@ public class Coordinator {
 		// Integration for Shirley's plangenerator
 		taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
 
-		reasonerInterfacer.closeTransaction();// closing the live transaction
+//		reasonerInterfacer.closeTransaction();// closing the live transaction
 												// after plan generated
 
 		DirectedGraph<Action, DefaultEdge> g = GraphUtilities
@@ -321,7 +323,7 @@ public class Coordinator {
 
 		int cpus = Runtime.getRuntime().availableProcessors();
 
-		executor = new ThreadExecutor(cpus, 60, new LinkedBlockingQueue<Runnable>());
+		executor = new ThreadExecutor(cpus, 300, new LinkedBlockingQueue<Runnable>());
 		
 		graph = g;
 
@@ -347,32 +349,53 @@ public class Coordinator {
 		}
 
 		synchronized (graph) {
-
-			GraphIterator<Action, DefaultEdge> iterator = new DepthFirstIterator<Action, DefaultEdge>(
-					graph);
-
+			
+			DirectedGraph<Action, DefaultEdge> revGraph = new EdgeReversedGraph<>(graph);
+			GraphIterator<Action, DefaultEdge> iterator = new TopologicalOrderIterator<Action, DefaultEdge>(
+					revGraph);
+			
 			while (iterator.hasNext()) {
 				Action task = (Action) iterator.next();
+				LOGGER.log(Level.INFO, "Check " + task.toString());
 				executor.execute(task);
 			}
+			
+			LOGGER.log(Level.INFO, "Scheduled All Threads For Execution");
 
 			// executor.getKeepAliveTime(TimeUnit.MINUTES);
 			// executor.allowCoreThreadTimeOut(true);
 
-			executor.shutdown();
+			try {
+				executor.shutdown();//it cannot be queued more Actions
 
-    		try {
-    				//executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-    				//executor.awaitTermination(1, TimeUnit.SECONDS);
-    				executor.awaitTermination(100000000, TimeUnit.MICROSECONDS);
-    			} catch (InterruptedException e) {
-    				e.printStackTrace();
-    				System.out.println("Tasks not completed successfully");
-    			} finally{
-    				//System.exit(0);
-    				executor.shutdown();
-    				LOGGER.log(Level.INFO, "Shutdown Executor thread");
-    			}
+				//Wait for 30 minutes to finish
+				int i = 10;
+				boolean status = false;
+				while(!(status = executor.awaitTermination(3, TimeUnit.MINUTES)) && i>0){
+					LOGGER.log(Level.INFO, "Awaiting termination of threads");
+					i--;
+				}
+
+				if(status)
+					LOGGER.log(Level.INFO, "Adapter completed execution");
+				else{
+					LOGGER.log(Level.WARNING, "Executor did not terminate within the specified time.");
+					
+				}
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				System.out.println("Tasks not completed successfully");
+			} finally{
+				List<Runnable> droppedTasks = executor.shutdownNow();
+				if(droppedTasks.size() > 0)
+					LOGGER.log(Level.WARNING, "Executor was abruptly shut down. " + droppedTasks.size() + " tasks were not executed.");
+				else
+					LOGGER.log(Level.INFO, "Executor was safely shut down. All tasks were executed.");
+				//System.exit(0);
+				//executor.shutdown();
+				//LOGGER.log(Level.INFO, "Shutdown Executor thread");
+			}
 		}
 
 	}
@@ -430,13 +453,36 @@ public class Coordinator {
 
 			int count = graph.outgoingEdgesOf(task).size();
 			
-			System.out.println("Dependency count " + count);
+			LOGGER.log(Level.INFO, "Dependency count " + count);
 			printDependencies(task);
 			
 			if(count == 0)
 				return true;
 		}
 		return false;
+	}
+	
+	private static synchronized boolean completedDependenciesTest(Action task) {
+		
+		if (graph.vertexSet().size() == 0)
+			return true;
+		
+		int countSuccNeigh = neigh.successorsOf(task).size();
+		int countDependencyCompleted = holdDependents.get(task.toString()).size();
+		LOGGER.log(Level.INFO, "Dependency count remaining = " + (countSuccNeigh-countDependencyCompleted));
+		if(countSuccNeigh==countDependencyCompleted)
+			return true;
+		else
+			return false;
+		
+		/*Collection<Object> act = holdDependents.get(task.toString());
+		int count = act.size();
+		LOGGER.log(Level.INFO, "Dependency count " + count);
+		
+		if(count == 0)
+			return true;
+		else
+			return false;*/
 	}
 
 	private static void dependencies() {
@@ -472,7 +518,8 @@ public class Coordinator {
 		}
 	}
 
-	private static boolean deleteTask(Action task) {
+	private static synchronized boolean deleteTask(Action task) {
+		LOGGER.log(Level.INFO, "Starting to delete the completed task " + task.toString());
 		setNeighbourDependencies(task);
 		synchronized (graph) {
 			// System.out.println("Deleting task " + task.getClass() +
@@ -481,6 +528,11 @@ public class Coordinator {
 					+ " from graph. Id: " + task.toString());
 			return graph.removeVertex(task);
 		}
+	}
+	
+	private static synchronized void deleteTaskTest(Action task) {
+		LOGGER.log(Level.INFO, "Starting to delete the completed task " + task.toString());
+		setNeighbourDependencies(task);
 	}
 
 	private class ThreadExecutor extends ThreadPoolExecutor {
@@ -491,7 +543,7 @@ public class Coordinator {
 					TimeUnit.SECONDS, workQueue);
 		}
 
-		@Override
+/*		@Override
 		protected void beforeExecute(Thread thread, Runnable runTask) {
  
 			//Task task = (Task) runTask;
@@ -501,37 +553,75 @@ public class Coordinator {
 //			LOG.info("Starting task: " + task.getName());
 			
 			while(!completedDependencies(task))
-				System.out.println("Task " + task.toString() + " waiting to complete dependencies");
+				LOGGER.log(Level.INFO, "Task " + task.toString() + " waiting to complete dependencies");
 			
 			//System.out.println(task.toString() + " dependencies complete");
 
 			LOGGER.log(Level.INFO, task.toString() + " dependencies complete");
 			super.beforeExecute(thread, runTask);
-		}
+		}*/
+		
+		/*@Override
+		protected void beforeExecute(Thread thread, Runnable runTask) {
+			super.beforeExecute(thread, runTask);
+			Action task = (Action) runTask;
+			while(!completedDependenciesTest(task)){
+				LOGGER.log(Level.INFO, "Task " + task.toString() + " waiting to complete dependencies");
+				try {
+					Thread.currentThread().sleep(10000);;
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		}*/
 
 		@Override
 		public void execute(Runnable runTask) {
-			super.execute(runTask);
+			
+			//copied from beforeExecute
 			Action task = (Action) runTask;
+			while(!completedDependenciesTest(task)){
+				LOGGER.log(Level.INFO, "Task " + task.toString() + " waiting to complete dependencies");
+				try {
+					Thread.currentThread().sleep(10000);;
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			//super.execute(runTask);
+			//Action task = (Action) runTask;
 			task.run();
 			LOGGER.log(Level.INFO, "Ran Task " + task.toString());
+			
+			//copied from afterExecute
+			deleteTaskTest((Action) runTask);
 		}
 
-		@Override
+/*		@Override
 		protected void afterExecute(Runnable runTask, Throwable e) {
 			super.afterExecute(runTask, e);
 
 			if (e == null) {
 				//completed((Task) runTask);
 			//	completed((DefaultAction) runTask);
-				System.out.println("In afterExecute e is null");
+				LOGGER.log(Level.INFO, "In afterExecute e is null");
 				deleteTask((Action) runTask);
 			} else {
+<<<<<<< HEAD
 				// failed((Task) runTask, e);
 				// failed((DefaultAction) runTask, e);
 				System.out.println("In afterExecute e is not null");
+=======
+				//failed((Task) runTask, e);
+			//	failed((DefaultAction) runTask, e);
+				LOGGER.log(Level.INFO, "In afterExecute e is not null");
+>>>>>>> master
 			}
-		}
+		}*/
 
 	}
 }

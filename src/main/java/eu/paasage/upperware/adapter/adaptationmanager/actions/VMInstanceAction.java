@@ -234,7 +234,8 @@ public class VMInstanceAction implements Action {
 			for(Object obj : depOnActions){
 				System.out.println("-- " + obj.toString() + " ");
 				if(obj.getClass()==CommunicationAction.class){
-					((CommunicationAction) obj).run();
+					LOGGER.log(Level.INFO, "VMInstanceAction " + this.vmInstName + " => CommunicationAction " + ((CommunicationAction) obj).toString() + " thread run supressed");
+					//((CommunicationAction) obj).run();
 					//LOGGER.log(Level.INFO, "Forced (creation) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
 /*					boolean status = ((CommunicationAction) obj).getActionDone());
 						LOGGER.log(Level.INFO, "Waiting for " + ((CommunicationAction) obj).getCommTypeName());*/
@@ -249,9 +250,9 @@ public class VMInstanceAction implements Action {
 				vmInstID = execInterfacer.createVirtualMachine(this.vmInstName, Integer.parseInt(cloudID), Integer.parseInt(imageID), Integer.parseInt(hardwareID), Integer.parseInt(locationID));
 				
 				int temp = Integer.parseInt(execInterfacer.trimResponseID(vmInstID));
-/*				boolean status = false;
-				int timeout = 0;
-				while((!(status = execInterfacer.queryStateOKVM(temp))) && timeout < 4){
+				boolean status = false;
+				int timeout = 60;
+				while((!(status = execInterfacer.queryStateOKVM(temp))) && timeout > 0){
 					LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. VM Instance : ID " + vmInstID);
 					try {
 						Thread.sleep(30000);
@@ -259,14 +260,16 @@ public class VMInstanceAction implements Action {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					timeout++;
+					timeout--;
 				}
 				
-				if(timeout >= 4)
-					status = true;*/
+				if(timeout > 0)
+					status = true;
+				else
+					LOGGER.log(Level.WARNING, "Newly created VM Instance : ID " + vmInstID + " has ERROR state");
 				
 				LOGGER.log(Level.INFO, "Created VM Instance : ID " + vmInstID);
-				if(dataShare.setVMIID(this.vmInstName, execInterfacer.trimResponseID(vmInstID)) /*&& status*/)
+				if(dataShare.setVMIID(this.vmInstName, execInterfacer.trimResponseID(vmInstID)) && status)
 					LOGGER.log(Level.INFO, "Stored newly created VM Instance : ID " + vmInstID);
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created VM Instance : ID " + vmInstID);

@@ -342,6 +342,36 @@ public class CamelExecwareMapping {
 		return status;
 	}
 	
+	public boolean addLCAC(String intCompId_Camel, String preInstall, String postInstall, String start, Application app, VirtualMachineTemplate vmt){
+		boolean status = false;
+		LCAppComponent LCAComp;
+		synchronized (LCACs) {
+			for(LCAppComponent lcac : LCACs){
+				if(lcac.getLCACType().equalsIgnoreCase(intCompId_Camel) && app != null && vmt != null){
+					status = true;
+					LCAComp = lcac;
+					LOGGER.log(Level.WARNING, "Lifecycle Component " + intCompId_Camel +" already exists");
+				}
+			}
+			
+			if(app == null){
+				LOGGER.log(Level.WARNING, "Application is NULL! Could not create " + intCompId_Camel);
+				return status;
+			}
+			if(vmt == null){
+				LOGGER.log(Level.WARNING, "VM Type is NULL! Could not create " + intCompId_Camel);
+				return status;
+			}
+			
+			if(!status && app != null && vmt != null){
+				LCAComp = new LCAppComponent(intCompId_Camel, preInstall, postInstall, start, app, vmt);
+				status = LCACs.add(LCAComp);
+				LOGGER.log(Level.INFO, "LC Comp Name " + intCompId_Camel + " status " + status + " app " + app.getName_Camel() + " vmt " + vmt.getVMType());
+			}
+		}
+		return status;
+	}
+	
 	
 	public boolean setLCACID(String intCompId_Camel, String id){
 		synchronized (LCACs) {
@@ -452,6 +482,9 @@ public class CamelExecwareMapping {
 	    String install;//"install.sh"
 	    String start;//"start.sh"
 	    String stop;//"stop.sh"
+	    //new changes for the demo
+	    String preInstall;
+	    String postInstall;
 		
 		//VirtualMachineTemplate VMTemplate_Exec;
 		//String appID_Exec;
@@ -466,6 +499,17 @@ public class CamelExecwareMapping {
 			this.install = install;
 			this.start = start;
 			this.stop = stop;
+			this.lifeCycleCompId_Exec = null;
+			this.id = null;
+			this.app = app;
+			this.vmt = vmt;
+		}
+		
+		public LCAppComponent(String intCompId_Camel, String preInstall, String postInstall, String start, Application app, VirtualMachineTemplate vmt){
+			this.intCompId_Camel = intCompId_Camel;
+			this.preInstall = preInstall;
+			this.postInstall = postInstall;
+			this.start = start;
 			this.lifeCycleCompId_Exec = null;
 			this.id = null;
 			this.app = app;
