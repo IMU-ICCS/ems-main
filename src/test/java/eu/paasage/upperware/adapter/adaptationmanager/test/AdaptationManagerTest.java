@@ -36,28 +36,6 @@ import eu.paasage.upperware.adapter.adaptationmanager.core.Coordinator;
 public class AdaptationManagerTest
 
 {
-	private static final String TEST_SCALARMiNSTANCE = System.getProperty("user.dir")
-			+ "/src/test/resources/ver2_0/ScalarmModelInstance.xmi";
-	
-	private static final String TEST_SCALARMiNSTANCE_Shirley = System.getProperty("user.dir")
-			+ "/src/test/resources/ver2_0/Scalarm_full_Shirley.xmi";
-	
-	private static final String TEST_SCALARMiNSTANCE_Alessandro = System.getProperty("user.dir")
-			+ "/src/test/resources/ver2_0/ScalarmModelInstance_Alessandro.xmi";
-	
-	private static final String TEST_Kyriakos = System.getProperty("user.dir")
-			+ "/src/test/resources/ver2_0/test_kyriakos.xmi";
-	
-	private static final String TEST1 = System.getProperty("user.dir")
-			+ "/src/test/resources/ver2_0/test1.xmi";
-
-	private static final String TEST_INPUTFILE = System.getProperty("user.dir")
-			+ "/src/test/resources/Scalarm_full.xmi";
-	private static final String TEST_INPUTFILE2 = System
-			.getProperty("user.dir") + "/src/test/resources/Scalarm_full2.xmi";
-	private static final String TEST_INPUTFILE3 = System
-			.getProperty("user.dir") + "/src/test/resources/Scalarm_full3.xmi";
-	
 	private final String TEST_INPUTFILE_SimpleDeployment = System
 			.getProperty("user.dir") + "/src/test/resources/CAMEL_test_SimpleDeployment.xmi";
 	
@@ -65,17 +43,7 @@ public class AdaptationManagerTest
 	 * Response Strings for Client Driver
 	 */
 	private static final int port = 9000;
-	private static final String res = "Created";
 	private static final String token = "bo6t3h9fl1i6ie7fu2l1k1bafnsr0jv1qo5ampb2qlt1u1q2o12674qoad8qa1sh306d1riffu471nr055tv3ftqm0u07camoo9j2luut1pqm3oosb62sqgheh0aak0bm2266n730sa62eifj78qipj3elipdnt74mc1tas8h1qv60cld5nrn2f8gttfqf5r35ol4b0obcdos";
-	
-	/**
-	 * Params for CDO server
-	 */
-	private static final String TEST_APPLICATIONNAME = "Scalarm";
-	private static final String TEST_HOST = "54.246.101.26";
-	private static final String TEST_PORT = "2036";
-	private static final String TEST_REPOSITORYNAME = "repo1";
-	private static final String TEST_RESOURCENAME= "Scalarm";
 	
 	@Rule
 	public ClientDriverRule driver = new ClientDriverRule(port);
@@ -114,60 +82,36 @@ public class AdaptationManagerTest
 		IValidator validator = new ValidatorImpl();
 		Coordinator c = new Coordinator(currentReasonerInterfacer, exec, validator);
 		
-		c.startThreaded();
+		c.deployModelIDThreaded(1);
 		System.out.println("End of method verifySimpleDeployment()");
 	}
 	
 	@Test
 	@Ignore
-	public void verifyNewPlanGenerator(){
-		
-		/*ReasonerInterfacer currentReasonerInterfacer = new ReasonerInterfacer(
-				TEST_SCALARMiNSTANCE_Alessandro);*/
+	public void deployTestFileOnCloud(){
 		ReasonerInterfacer currentReasonerInterfacer = null;
-		/*currentReasonerInterfacer = new ReasonerInterfacer(
-				TEST1);
-		DeploymentModel current = currentReasonerInterfacer.getDeploymentModel(false);*/
-		
-		
-		//CDOClientUtil mycdo = new CDOClientUtil("/home/asinha/Desktop/test");
-		//mycdo.exportModelWithRefRecToDir("test", false);
-		//DeploymentModel current = mycdo.tryLoadTwoFiles("/home/asinha/Desktop/test/test.xmi", "/home/asinha/Desktop/test/upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi");
-		
-		//currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/Desktop/test", true, "test");
-		
-		/*currentReasonerInterfacer.openTransaction();
-		DeploymentModel current = currentReasonerInterfacer.getLiveDeploymentModel();
-		
-		System.out.println("Loaded the CAMEL file successfully");
-		
-		DirectedGraph<ConfigurationTask, DefaultEdge> taskPlan = GraphUtilities.generatePlanGraph(null, current);
-		System.out.println(taskPlan.toString());
-		
-		System.out.println("=============================================================================");
-		
-		currentReasonerInterfacer.closeTransaction();
-		
-		DirectedGraph<Action, DefaultEdge> actionGraph = GraphUtilities.taskGraphToActions(taskPlan);
-		System.out.println(actionGraph.toString());*/
-		
-		
-		//ExecInterfacer exec = new ExecInterfacer("http://131.254.13.194:9000");
-		
-		//currentReasonerInterfacer = new ReasonerInterfacer("test", false);
-		//currentReasonerInterfacer = new ReasonerInterfacer("enterprise-service-application.xmi_1442302901", false);
-		
-//		currentReasonerInterfacer = new ReasonerInterfacer("CAMEL_676790ec61a8ae90a627eec0323eee12", false);
-		//currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/FullDeploymentBewan-Y3Rev-Christian.xmi", true);
-//		currentReasonerInterfacer = new ReasonerInterfacer("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/BeWan_Deployment034553.xmi", true);
 		currentReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_SimpleDeployment, true);
 		
 		ExecInterfacer exec = new ExecInterfacer();
 		IValidator validator = new ValidatorImpl();
 		Coordinator c = new Coordinator(currentReasonerInterfacer, exec, validator);
 		
-		c.startThreaded();
-		System.out.println("End of method verifyParallelDeployment()");
+		c.deployModelIDThreaded(1);
+		System.out.println("End of method deployTestFileOnCloud()");
+	}
+	
+	@Test
+	@Ignore
+	public void deployFromCDOOnCloud(){
+		ReasonerInterfacer currentReasonerInterfacer = null;
+		currentReasonerInterfacer = new ReasonerInterfacer("CAMEL_676790ec61a8ae90a627eec0323eee12", false);
+		
+		ExecInterfacer exec = new ExecInterfacer();
+		IValidator validator = new ValidatorImpl();
+		Coordinator c = new Coordinator(currentReasonerInterfacer, exec, validator);
+		
+		c.deployModelIDThreaded(1);
+		System.out.println("End of method deployFromCDOOnCloud()");
 	}
 
 }

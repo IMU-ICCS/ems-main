@@ -97,7 +97,7 @@ public class ReasonerInterfacer {
 			usingCDO = false;
 		}else{
 			client = new CDOClient();
-			usingCDOClientLib = true;
+			usingCDO = usingCDOClientLib = true;
 			if(resource != null)
 				this.resourceName = resource;
 			else
@@ -146,6 +146,7 @@ public class ReasonerInterfacer {
 		usingCDO = true;
 	}
 	
+	public boolean isModelFromCDO(){return usingCDO;}
 	
 	public void openTransaction(){
 		//if(usingCDOClientLib)
@@ -154,7 +155,7 @@ public class ReasonerInterfacer {
 	}
 	
 	public DeploymentModel getLiveDeploymentModel(int dmIndex){
-		if(!usingCDOClientLib && client != null && transaction != null)
+		if(!usingCDO && !usingCDOClientLib && client != null && transaction != null)
 			return null;
 		
 		CDOResource cdoRes = null;
@@ -185,7 +186,7 @@ public class ReasonerInterfacer {
 	}
 	
 	public int getDeploymentModelsSize(){
-		if(!usingCDOClientLib && client != null && transaction != null)
+		if(!usingCDO && !usingCDOClientLib && client != null && transaction != null)
 			return 0;
 		
 		CDOResource cdoRes = null;

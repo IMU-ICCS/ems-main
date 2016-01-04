@@ -96,7 +96,7 @@ public class AdaptationManager {
 			if (isDaemon || args[0].equals("daemon")) {
 				runListener();
 			} else {
-				c.startThreaded();// threaded execution of plan
+				c.deployModelIDThreaded(1);// threaded execution of plan
 			}
 		} catch (Exception ex) {
 			if (ex instanceof ArrayIndexOutOfBoundsException)

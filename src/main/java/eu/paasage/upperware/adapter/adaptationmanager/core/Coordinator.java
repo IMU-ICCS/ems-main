@@ -79,6 +79,7 @@ public class Coordinator {
 	IValidator validator;
 	PlanGenerator planGenerator;
 	DeploymentModel currentModel = null;
+	DeploymentModel targetModel = null;
 	ReasonerInterfacer reasonerInterfacer;
 	Map<String, Object> state = new HashMap<String, Object>();
 
@@ -253,56 +254,46 @@ public class Coordinator {
 		List<ConfigurationTask> tasks = plan.getTasks();
 	}
 
-	public boolean startThreaded() {
+	public boolean deployModelIDThreaded(int dmIndex){
 
 		LOGGER.log(Level.INFO, "Start of threaded execution");
 
 		Map<String, Object> outputMap = new HashMap<String, Object>();
 		
-		DeploymentModel targetModel = reasonerInterfacer.loadNthFromFile(1);
-
-		// DeploymentModel targetModel =
-		// reasonerInterfacer.getDeploymentModel(false);//Commented to replace
-		// live transaction below
-
-//		int dmIndex = 1;// Simple deployment model location
-
-/*		reasonerInterfacer.openTransaction();
-
-		int ndm = reasonerInterfacer.getDeploymentModelsSize();
-
-		DeploymentModel targetModel = null;
-		if (ndm < 2) {
-			System.out.println("Not enough deployment models in CAMEL model");
-			System.exit(0);
-		} else if (ndm == 2) {
-			currentModel = null;
-			targetModel = reasonerInterfacer.getLiveDeploymentModel(1);
-		} else {
-			currentModel = reasonerInterfacer.getLiveDeploymentModel(ndm - 2);
-			targetModel = reasonerInterfacer.getLiveDeploymentModel(ndm - 1);
-			LOGGER.log(Level.INFO, "Reconfiguration between two deployment models");
-		}*/
-
-		
-//	DeploymentModel targetModel = reasonerInterfacer
-//				.getLiveDeploymentModel(dmIndex);// Comment to stop getting live
-													// model
-
-		// CDOClientUtil mycdo = new CDOClientUtil(null);//comment not to load
-		// local files
-		// DeploymentModel targetModel =
-		// CDOClientUtil.tryLoadTwoFiles("/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/PGexamples/test.xmi",
-		// "/home/asinha/git/paasadapterOW2OS/adapter/src/test/resources/PGexamples/upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi");
-		// DeploymentModel targetModel =
-		// mycdo.tryLoadTwoFiles("/home/asinha/git/paasadapterOW2/paasadapter/src/test/resources/ver2_0/test.xmi",
-		// "/home/asinha/git/paasadapterOW2/paasadapter/src/test/resources/ver2_0/upperware-models_fms_1436444254010_GWDG-DE-1436444254477.xmi");
-
-		// Integration for Shirley's plangenerator
-		taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
-
-//		reasonerInterfacer.closeTransaction();// closing the live transaction
-												// after plan generated
+		if(targetModel == null){//Simple deployment
+			
+			if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+				
+				reasonerInterfacer.openTransaction();
+				targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
+			
+			}else{//getting model from Model file
+				
+				targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+			}
+			
+		}else if(targetModel != null){//Reconfig
+			
+			currentModel = targetModel;
+			
+			//get new targetModel and deploy
+			if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+				
+				reasonerInterfacer.openTransaction();
+				targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
+				
+			}else{//getting model from Model file
+				
+				targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				
+			}
+		}
 
 		DirectedGraph<Action, DefaultEdge> g = GraphUtilities
 				.taskGraphToActions(taskPlan, execInterfacer);
@@ -339,7 +330,7 @@ public class Coordinator {
 			return true;
 		}
 	}
-
+	
 	private static void schedule() {
 
 		LOGGER.log(Level.INFO, "Scheduling threaded Action execution");
