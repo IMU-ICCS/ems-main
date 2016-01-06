@@ -30,6 +30,7 @@ import eu.paasage.upperware.adapter.adaptationmanager.input.CDOClientUtil;
 import eu.paasage.upperware.adapter.adaptationmanager.input.ReasonerInterfacer;
 //import eu.paasage.upperware.adapter.adaptationmanager.plangeneration.PlanGenerator;
 import eu.paasage.upperware.plangenerator.PlanGenerator;//Shirley's PlanGenerator
+import eu.paasage.upperware.adapter.adaptationmanager.validation.ApplicationController;
 import eu.paasage.upperware.adapter.adaptationmanager.validation.IValidator;
 import eu.paasage.upperware.adapter.adaptationmanager.input.MyCDOClient;
 import eu.paasage.upperware.adapter.adaptationmanager.mapping.GraphUtilities;
@@ -325,6 +326,10 @@ public class Coordinator {
 
 			schedule();
 			LOGGER.log(Level.INFO, "End of Scheduling thread actions");
+			
+			if(!ApplicationController.monitorEntitiesStatus(execInterfacer, 30))
+				return false;
+			
 			return true;
 		}
 	}
