@@ -8,29 +8,19 @@
 package eu.paasage.upperware.metasolver.util;
 
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
+//import org.eclipse.emf.cdo.transaction.CDOTransaction;
+//import org.eclipse.emf.cdo.view.CDOView;
+//import org.eclipse.emf.common.util.EList;
+//import org.eclipse.emf.ecore.EObject;
 //import org.eclipse.emf.cdo.transaction.CDOTransaction;
 //import org.eclipse.emf.cdo.util.CommitException;
 //import org.eclipse.emf.common.util.EList;
 //import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-
-
-
-
-
-
-
-
+//import org.eclipse.emf.ecore.resource.Resource;
+//import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.upperware.cp.cloner.CDOClientExtended;
+//import eu.paasage.upperware.cp.cloner.CDOClientExtended;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 //import eu.paasage.upperware.cp.cloner.CPCloner;
 //import eu.paasage.upperware.cp.cloner.CDOClientExtended;
@@ -95,7 +85,11 @@ public final class CdoTool {
 		return cdoClient;
 	}
 	*/
-	
+	/**
+	 * Register the PaaSage Upperware Model CDO packages with the {@link eu.paasage.mddb.cdo.client.CDOClient <em>CDOClient</em>}.
+	 * <p>
+	 * @param cdoClient	the target {@link eu.paasage.mddb.cdo.client.CDOClient <em>CDOClient</em>}
+	 */
 	public static void registerPackages(CDOClient cdoClient){
 		//add the cp packages
 		log.debug("Instantiating cdoClient and registering packages...");
