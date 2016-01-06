@@ -24,6 +24,8 @@ import com.eclipsesource.json.JsonValue;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.core.Coordinator;
+import eu.paasage.upperware.adapter.adaptationmanager.validation.ApplicationController;
+import eu.paasage.upperware.adapter.adaptationmanager.validation.MonitorEntity.Type;
 import eu.paasage.upperware.plangenerator.model.task.ConfigurationTask;
 import eu.paasage.upperware.plangenerator.type.TaskType;
 
@@ -143,9 +145,12 @@ public class InternalComponentInstanceAction implements Action {
 					status = true;
 				else
 					LOGGER.log(Level.WARNING, "Newly created Internal Comp Instance : ID " + iCompInstID + " has ERROR state");*/
-				
-				if(iCompInstID != null && dataShare.setCompInstID(iCompInstName, execInterfacer.trimResponseID(iCompInstID)) /*&& stat*/)
+				String iciId_string = execInterfacer.trimResponseID(iCompInstID);
+				int iciId = Integer.parseInt(iciId_string);
+				if(iCompInstID != null && dataShare.setCompInstID(iCompInstName, iciId_string) /*&& stat*/){
 					LOGGER.log(Level.INFO, "Stored newly created Internal Comp Instance : ID " + iCompInstID);
+					ApplicationController.addEntityToMonitor(Type.instance, iciId);
+				}
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created Internal Comp Instance : ID " + iCompInstID);
 			}

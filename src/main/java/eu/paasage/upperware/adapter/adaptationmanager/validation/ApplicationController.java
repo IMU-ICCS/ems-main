@@ -1,0 +1,105 @@
+/*
+ * Copyright (c) 2016 INRIA, INSA Rennes
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.paasage.upperware.adapter.adaptationmanager.validation;
+
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
+
+/**
+ * This class is used to accept entities from the Action threads during deployment process and then monitor their states later
+ * @author Arnab Sinha
+ *
+ */
+
+public class ApplicationController {
+	
+	private static LinkedList<MonitorEntity> entities = new LinkedList<MonitorEntity>();
+	
+	private final static Logger LOGGER = Logger.getLogger(ApplicationController.class.getName());
+	
+	/**
+	 * Adds an entity to be monitored later
+	 * @param type {@link MonitorEntity.Type} virtualMachine or instance
+	 * @param execwareId of the entity
+	 * @return true, if successfully added to the queue
+	 */
+	public synchronized static boolean addEntityToMonitor(MonitorEntity.Type type, int execwareId){
+		MonitorEntity ent = new MonitorEntity(type, execwareId);
+		if(entities.add(ent)){
+			LOGGER.log(Level.INFO, "Added " + ent.getEntityType() + " to be monitored for status later");
+			return true;
+		}else{
+			LOGGER.log(Level.INFO, "Could not add " + ent.getEntityType() + " to be monitored for status later");
+			return false;
+		}
+	}
+	
+	/**
+	 * monitor the state of all the entities listed to be monitored until TIMEOUT_MINS
+	 * @param execInterfacer ExecutionWare Interfacer instance
+	 * @param TIMEOUT_MINS timeout in minutes
+	 * @return true if all the entities have state OK
+	 */
+	public synchronized static boolean monitorEntitiesStatus(ExecInterfacer execInterfacer, int TIMEOUT_MINS){
+		
+		int entitiesOk = 0;
+		long time = 0;
+		
+		while(entitiesOk < entities.size() && time < TIMEOUT_MINS){
+			
+			ListIterator<MonitorEntity> iter = entities.listIterator();
+			while(iter.hasNext()){
+				MonitorEntity ent = iter.next();
+				
+				MonitorEntity.Type entType = ent.getEntityType();
+				boolean status = false;
+				
+				switch (entType) {
+				case virtualMachine:
+					if(!ent.isStateOK()){
+						status = execInterfacer.queryStateOKVM(ent.getexecWareId());
+					}
+					break;
+					
+				case instance:
+					if(!ent.isStateOK())
+						status = execInterfacer.queryStateOKInstance(ent.getexecWareId());
+					break;
+				}
+				
+				if(status){
+					ent.setStateOK();
+					LOGGER.log(Level.INFO, ent.getEntityType().toString() + " id : " + ent.getexecWareId() + " state OK");
+					entitiesOk++;
+				}
+			}
+			
+			try {
+				Thread.sleep(30000);
+				time += 0.5;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}			
+		}
+		
+		if(entitiesOk == entities.size()){
+			LOGGER.log(Level.INFO, "states OK for all monitored entities");
+			return true;
+		}
+		else{
+			LOGGER.log(Level.INFO, "states OK for " + entitiesOk + " monitored entities.\nproblem detected for " + (entities.size()-entitiesOk) + " entities!");
+			return false;
+		}
+	}
+}
+
