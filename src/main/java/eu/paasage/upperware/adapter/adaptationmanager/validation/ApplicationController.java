@@ -85,8 +85,10 @@ public class ApplicationController {
 			}
 			
 			try {
-				Thread.sleep(30000);
-				time += 0.5;
+				if(entitiesOk < entities.size()){
+					Thread.sleep(30000);
+					time += 0.5;
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}			
