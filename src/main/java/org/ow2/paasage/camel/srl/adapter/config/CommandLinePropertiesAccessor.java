@@ -25,6 +25,7 @@ public interface CommandLinePropertiesAccessor {
     boolean getSaveExample();
     boolean getCreateMetricInstances();
     boolean getCreateMonitorSubscriptions();
+    boolean getCleanMonitoring();
     ExecutionMode getExecutionMode();
     int getZeroMqPort();
     String getZeroMqUri();

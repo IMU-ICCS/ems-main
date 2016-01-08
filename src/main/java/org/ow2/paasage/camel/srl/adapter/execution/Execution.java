@@ -72,6 +72,7 @@ public class Execution {
         boolean createNew = conf.getSaveExample();
         boolean createMetricInstances = conf.getCreateMetricInstances();
         boolean createMonitorSubscriptions = conf.getCreateMonitorSubscriptions();
+        boolean cleanMonitoring = conf.getCleanMonitoring();
         String modelName = conf.getModelName();
         String resourceName = conf.getResourceName();
         String executionContextName = conf.getExecutionContextName();
@@ -151,7 +152,9 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                fc.cleanMonitoring();
+                if(cleanMonitoring){
+                    fc.cleanMonitoring();
+                }
 
                 /*************************************************************************
                  *
