@@ -733,7 +733,7 @@ public class PlanGeneratorTest {
 				//exception here
 				JsonObject jo = task.getJsonModel();
 				if(jo != null){
-					System.out.println("task : " + task.getName() + " [" + jo.toString() + "]\n");
+					System.out.println(task.getTaskType() + " task : " + task.getName() + " [" + jo.toString() + "]\n");
 					Set<ConfigurationTask> dependencies = task.getDependencies();
 					if(dependencies != null){
 						int count = 1;

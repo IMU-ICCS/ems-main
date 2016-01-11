@@ -59,7 +59,7 @@ import eu.paasage.upperware.plangenerator.util.ModelToJsonConverter;
 public class PlanGenerator {
 	
 	/** Message logger */
-	private static final Logger LOG = Logger.getLogger(PlanGenerator.class.getName());
+	private static final Logger log = Logger.getLogger(PlanGenerator.class.getName());
 	/** attribute to set deployment method required, default is false */
 	boolean simpleInitialDeployment = false;
 	/** The generated plan */
@@ -98,7 +98,7 @@ public class PlanGenerator {
 		//currentModel is nullable but must have a targetModel
 		//validate
 		if(targetModel == null  ){
-			LOG.error("target deployment deployment is null, cannot proceed.");
+			log.error("target deployment deployment is null, cannot proceed.");
 			return null;
 		}
 		this.targetDM = targetModel;
@@ -108,17 +108,17 @@ public class PlanGenerator {
 		if(simpleInitialDeployment){ //flag set by AdaptationManager			
 			//
 			buildSimpleDeploymentPlan();			
-			LOG.info("Generated plan to create " + this.plan.getAppName() + " with " + this.plan.getTasks().size() + " tasks.");			
+			log.info("Generated plan to create " + this.plan.getAppName() + " with " + this.plan.getTasks().size() + " tasks.");			
 			return this.plan;			
 		}
 		//Case re-configuration
 		if (currentModel == null) {		
-			LOG.error("current model is null, cannot define re-configuration plan.");
+			log.error("current model is null, cannot define re-configuration plan.");
 			return null;
 		}	
 		this.currentDM = currentModel;
 		buildReconfigPlan();
-		LOG.info("Generated reconfiguration plan with "+ this.plan.getTasks().size() +" tasks");
+		log.info("Generated reconfiguration plan with "+ this.plan.getTasks().size() +" tasks");
 		//
 		return this.plan;
 	}
@@ -132,7 +132,7 @@ public class PlanGenerator {
 	 */
 	private void buildReconfigPlan() throws PlanGenerationException, ModelComparatorException {
 		//
-		LOG.debug("....building a reconfiguration plan.....");
+		log.debug("....building a reconfiguration plan.....");
 		//go ahead and compare target model against current model		
 		ModelComparator mc = new ModelComparator(this.currentDM, this.targetDM);
 		mc.compareModels();
@@ -162,14 +162,15 @@ public class PlanGenerator {
 			appInsTask.getDependencies().add(appTask);	//add the dependency to app task
 			this.plan.getTasks().add(appInsTask);
 		}else{
-			LOG.info("Application/Instance name unchanged ....");
+			log.info("Application/Instance name unchanged ....");
 		}
-		//what if the models are equal, nothing to add/remove/update!!!
+		/*what if the models are equal, nothing to add/remove/update!!!
 		if(vmTypeTasks.isEmpty() && vmInsTasks.isEmpty() && compTypeTasks.isEmpty() && compInsTasks.isEmpty()
 			&& hostingTypeTasks.isEmpty() && hostingInsTasks.isEmpty() && communicationTypeTasks.isEmpty() && communicationInsTasks.isEmpty()
 			&& appTask == null){ //appIns totally dependent on appTask, no need to check
+			log.debug("models are equal, nothing to add/remove/update!!! Returing .....");
 			return; //nothing to un/deploy or update
-		}
+		}*./
 				
 		/***************************************** REMOVAL TASKS : the objects (id) already exists in EW ********************************************/
 		//removing all objects means undeploying the app but cannot assume deleting the app
@@ -177,130 +178,130 @@ public class PlanGenerator {
 		//                internalComponent, VM. If EW does not enforce dependency, it is possible to do all these in parallel
 		//communication instances
 		if(!mc.getRemovedComInstances().isEmpty()){
-			LOG.debug(mc.getRemovedComInstances().size() + " number of communication instances to remove....");
+			log.debug(mc.getRemovedComInstances().size() + " number of communication instances to remove....");
 			for(CommunicationInstance comIns : mc.getRemovedComInstances()){
 				communicationInsTasks.add(getCommunicationInsTask(comIns, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No communication to remove ....");
+			log.info("No communication to remove ....");
 		}
 		//hosting instances	
 		if(!mc.getRemovedHostingInstances().isEmpty()){
-			LOG.debug(mc.getRemovedHostingInstances().size() + " number of hosting instances to remove....");
+			log.debug(mc.getRemovedHostingInstances().size() + " number of hosting instances to remove....");
 			for(HostingInstance hi : mc.getRemovedHostingInstances()){
 				hostingInsTasks.add(getHostingInsTask(hi, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No hosting instances to remove ....");
+			log.info("No hosting instances to remove ....");
 		}
 		//internalComponent instances ??these depends on the binding tasks?? 
 		if(!mc.getRemovedComInstances().isEmpty()){
-			LOG.debug(mc.getRemovedComInstances().size() + " number of internal component instances to remove....");
+			log.debug(mc.getRemovedComInstances().size() + " number of internal component instances to remove....");
 			for(InternalComponentInstance ici : mc.getRemovedInternalComponentInstances()){
 				compInsTasks.add(getComponentInsTask(ici, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No internal component instances to remove ....");
+			log.info("No internal component instances to remove ....");
 		}
 		//vm instances ??these depends on the consumer (internal component instance) tasks
 		if(!mc.getRemovedVMInstances().isEmpty()){
-			LOG.debug(mc.getRemovedVMInstances().size() + " number of VM instances to remove....");
+			log.debug(mc.getRemovedVMInstances().size() + " number of VM instances to remove....");
 			for(VMInstance vmi : mc.getRemovedVMInstances()){
 				vmInsTasks.add(getVMInsTask(vmi, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No VM instances to remove ....");
+			log.info("No VM instances to remove ....");
 		}
 		//type tasks, again if EW does not enforce dependency, we can process them all in parallel		
 		//communications
 		if(!mc.getRemovedCommunications().isEmpty()){
-			LOG.debug(mc.getRemovedCommunications().size() + " number of communication to remove....");
+			log.debug(mc.getRemovedCommunications().size() + " number of communication to remove....");
 			for(Communication com : mc.getRemovedCommunications()){
 				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No communication to remove ....");
+			log.info("No communication to remove ....");
 		}
 		//hostings
 		if(!mc.getRemovedHostings().isEmpty()){
-			LOG.debug(mc.getRemovedHostings().size() + " number of hosting to remove....");
+			log.debug(mc.getRemovedHostings().size() + " number of hosting to remove....");
 			for(Hosting hosting : mc.getRemovedHostings()){
 				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No hosting to remove ....");
+			log.info("No hosting to remove ....");
 		}
 		//internal components
 		if(!mc.getRemovedInternalComponents().isEmpty()){
-			LOG.debug(mc.getRemovedInternalComponents().size() + " number of internal components to remove....");
+			log.debug(mc.getRemovedInternalComponents().size() + " number of internal components to remove....");
 			for(InternalComponent comp : mc.getRemovedInternalComponents()){
 				compTypeTasks.add(getComponentTypeTask(comp, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No internal component to remove ....");
+			log.info("No internal component to remove ....");
 		}
 		//VMs
 		if(!mc.getRemovedVMTypes().isEmpty()){
-			LOG.debug(mc.getRemovedVMTypes().size() + " number of VM to remove....");
+			log.debug(mc.getRemovedVMTypes().size() + " number of VM to remove....");
 			for(VM vm : mc.getRemovedVMTypes()){
 				vmTypeTasks.add(getVMTypeTask(vm, TaskType.DELETE));
 			}
 		}else{
-			LOG.info("No VM to remove ....");
+			log.info("No VM to remove ....");
 		}
 		/***************************************** CREATE TASKS - the objects (id) do not exist in EW ************************************/
 		//Types
 		//VMs
 		if(!mc.getAddedVMTypes().isEmpty()){
-			LOG.debug(mc.getAddedVMTypes().size() + " number of VMs to add....");
+			log.debug(mc.getAddedVMTypes().size() + " number of VMs to add....");
 			for(VM vm : mc.getAddedVMTypes()){
 				vmTypeTasks.add(getVMTypeTask(vm, TaskType.CREATE));
 			}
 		}else{
-			LOG.info("No VM to create ....");
+			log.info("No VM to create ....");
 		}
 		//internal components
 		if(!mc.getAddedInternalComponents().isEmpty()){
-			LOG.debug(mc.getAddedInternalComponents().size() + " number of internal components to add....");
+			log.debug(mc.getAddedInternalComponents().size() + " number of internal components to add....");
 			for(InternalComponent comp : mc.getAddedInternalComponents()){
 				compTypeTasks.add(getComponentTypeTask(comp, TaskType.CREATE));
 				//app should already exist, app can only be updated, so ignore dependency
 			}
 		}else{
-			LOG.info("No internal component to create ....");
+			log.info("No internal component to create ....");
 		}		
 		//communication
 		if(!mc.getAddedCommunications().isEmpty()){
-			LOG.debug(mc.getAddedCommunications().size() + " number of communication to add....");
+			log.debug(mc.getAddedCommunications().size() + " number of communication to add....");
 			for(Communication com : mc.getAddedCommunications()){
 				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.CREATE));
 			}
 		}else{
-			LOG.info("No communication object to create ....");
+			log.info("No communication object to create ....");
 		}
 		//hosting
 		if(!mc.getAddedHostings().isEmpty()){
-			LOG.debug(mc.getAddedHostings().size() + " number of hosting to add....");
+			log.debug(mc.getAddedHostings().size() + " number of hosting to add....");
 			for(Hosting hosting : mc.getAddedHostings()){
 				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.CREATE));
 				//27Nov15 ExecutionWare doesn't care about hosting type, so ignore dependencies
 			}
 		}else{
-			LOG.info("No hosting object to create ....");
+			log.info("No hosting object to create ....");
 		}
 		//Instances
 		//VM Instance		
 		if(!mc.getAddedVMInstances().isEmpty()){
-			LOG.debug(mc.getAddedVMInstances().size() + " number of VM instances to add ....");
+			log.debug(mc.getAddedVMInstances().size() + " number of VM instances to add ....");
 			for(VMInstance avm : mc.getAddedVMInstances()){				
 				vmInsTasks.add(getVMInsTask(avm, TaskType.CREATE));	//create the VMinstanceTask for create
 			}		
 		}else{
-			LOG.info("No VM instances to add ....");
+			log.info("No VM instances to add ....");
 		}
 		//Internal Component Instance		
 		if(!mc.getAddedInternalComponentInstances().isEmpty()){
-			LOG.debug(mc.getAddedInternalComponentInstances().size() + " number of internal component instances to add ....");
+			log.debug(mc.getAddedInternalComponentInstances().size() + " number of internal component instances to add ....");
 			//
 			for(InternalComponentInstance aic : mc.getAddedInternalComponentInstances()){
 				ComponentInstanceTask cit = getComponentInsTask(aic, TaskType.CREATE);
@@ -311,90 +312,90 @@ public class PlanGenerator {
 				compInsTasks.add(cit);
 			}
 		}else{
-			LOG.info("No internal component instances to add ....");
+			log.info("No internal component instances to add ....");
 		}
 		//hosting instances		
 		if(!mc.getAddedHostingInstances().isEmpty()){
-			LOG.debug(mc.getAddedHostingInstances().size() + " number of hosting instances to add ....");
+			log.debug(mc.getAddedHostingInstances().size() + " number of hosting instances to add ....");
 			//
 			for(HostingInstance ahi : mc.getAddedHostingInstances()){
 				hostingInsTasks.add(getHostingInsTask(ahi, TaskType.CREATE));
 			}	
 		}else{
-			LOG.info("No hosting instances to add ....");
+			log.info("No hosting instances to add ....");
 		}
 		//communication instances
 		if(!mc.getAddedComInstances().isEmpty()){
-			LOG.debug(mc.getAddedComInstances().size() + " number of communication instances to add ....");
+			log.debug(mc.getAddedComInstances().size() + " number of communication instances to add ....");
 			for(CommunicationInstance aci : mc.getAddedComInstances()){
 				communicationInsTasks.add(getCommunicationInsTask(aci, TaskType.CREATE));	
 				//27Nov15 ExecutionWare doesn't care about hosting type, so ignore dependencies
 			}//end for each com instance
 		}else{
-			LOG.info("No communication instances to add ....");
+			log.info("No communication instances to add ....");
 		}
 		
 		/***************************************** UPDATE TASKS - the objects (id) already exist in EW *********************************************/ 
 		//assuming the update tasks can be done simultaneously, i.e. EW does not enforce dependency between objects
 		//VMs
 		if(!mc.getUpdatedVMTypes().isEmpty()){
-			LOG.debug(mc.getUpdatedVMTypes().size() + " number of VMs to update....");
+			log.debug(mc.getUpdatedVMTypes().size() + " number of VMs to update....");
 			for(VM vm : mc.getUpdatedVMTypes()){
 				vmTypeTasks.add(getVMTypeTask(vm, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No VM to update ....");
+			log.info("No VM to update ....");
 		}
 		//internal components
 		if(!mc.getUpdatedInternalComponents().isEmpty()){
-			LOG.debug(mc.getUpdatedInternalComponents().size() + " number of internal components to update....");
+			log.debug(mc.getUpdatedInternalComponents().size() + " number of internal components to update....");
 			for(InternalComponent comp : mc.getUpdatedInternalComponents()){
 				compTypeTasks.add(getComponentTypeTask(comp, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No internal component to update ....");
+			log.info("No internal component to update ....");
 		}		
 		//communication
 		if(!mc.getUpdatedCommunications().isEmpty()){
-			LOG.debug(mc.getUpdatedCommunications().size() + " number of communication to update....");
+			log.debug(mc.getUpdatedCommunications().size() + " number of communication to update....");
 			for(Communication com : mc.getUpdatedCommunications()){
 				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No communication object to update ....");
+			log.info("No communication object to update ....");
 		}
 		//hosting
 		if(!mc.getUpdatedHostings().isEmpty()){
-			LOG.debug(mc.getUpdatedHostings().size() + " number of hosting to update....");
+			log.debug(mc.getUpdatedHostings().size() + " number of hosting to update....");
 			for(Hosting hosting : mc.getUpdatedHostings()){
 				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No hosting object to update ....");
+			log.info("No hosting object to update ....");
 		}
 		//
 		//instances to update
 		//communication instance
 		if(!mc.getUpdatedComInstances().isEmpty()){
-			LOG.debug(mc.getUpdatedComInstances().size() + " number of communication instances to updated....");
+			log.debug(mc.getUpdatedComInstances().size() + " number of communication instances to updated....");
 			for(CommunicationInstance comIns : mc.getUpdatedComInstances()){
 				communicationInsTasks.add(getCommunicationInsTask(comIns, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No communication instance to remove ....");
+			log.info("No communication instance to remove ....");
 		}
 		//hosting instances	
 		if(!mc.getUpdatedHostingInstances().isEmpty()){
-			LOG.debug(mc.getUpdatedHostingInstances().size() + " number of hosting instances to update....");
+			log.debug(mc.getUpdatedHostingInstances().size() + " number of hosting instances to update....");
 			for(HostingInstance hi : mc.getUpdatedHostingInstances()){
 				hostingInsTasks.add(getHostingInsTask(hi, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No hosting instances to update ....");
+			log.info("No hosting instances to update ....");
 		}
 		//internalComponent instances ??these depends on the binding tasks
 		if(!mc.getUpdatedInternalComponentInstance().isEmpty()){
-			LOG.debug(mc.getUpdatedInternalComponentInstance().size() + " number of internal component instances to update....");
+			log.debug(mc.getUpdatedInternalComponentInstance().size() + " number of internal component instances to update....");
 			for(InternalComponentInstance ici : mc.getUpdatedInternalComponentInstance()){
 				ComponentInstanceTask cit = getComponentInsTask(ici, TaskType.UPDATE);
 				if(appInsTask != null){
@@ -403,16 +404,16 @@ public class PlanGenerator {
 				compInsTasks.add(cit);
 			}
 		}else{
-			LOG.info("No internal component instances to updated ....");
+			log.info("No internal component instances to updated ....");
 		}
 		//vm instances ??these depends on the consumer (internal component instance) tasks
 		if(!mc.getUpdatedVMInstances().isEmpty()){
-			LOG.debug(mc.getUpdatedVMInstances().size() + " number of VM instances to update....");
+			log.debug(mc.getUpdatedVMInstances().size() + " number of VM instances to update....");
 			for(VMInstance vmi : mc.getUpdatedVMInstances()){
 				vmInsTasks.add(getVMInsTask(vmi, TaskType.UPDATE));
 			}
 		}else{
-			LOG.info("No VM instances to update ....");
+			log.info("No VM instances to update ....");
 		}		
 		//Better to do the dependencies after all the tasks have been created as the relationship can be complex
 		//basic assumption : 
@@ -423,14 +424,14 @@ public class PlanGenerator {
 		//
 		//VM Types
 		if(!vmTypeTasks.isEmpty()){
-			LOG.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
+			log.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
 			this.plan.getTasks().addAll(vmTypeTasks);
 		}else{
-			LOG.info("No VM type tasks to add .....");
+			log.info("No VM type tasks to add .....");
 		}
 		//VM Instances
 		if(!vmInsTasks.isEmpty()){ 
-			LOG.debug(vmInsTasks.size() + " number of VM instance tasks to added to plan ....");
+			log.debug(vmInsTasks.size() + " number of VM instance tasks to added to plan ....");
 			for(VMInstanceTask vmit : vmInsTasks){
 				if(!vmit.getTaskType().equals(TaskType.DELETE)){	//only process update/create
 					//can't be both update and create
@@ -440,7 +441,7 @@ public class PlanGenerator {
 					}
 					if(parent != null){
 						vmit.getDependencies().add(parent);
-						LOG.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
+						log.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
 					}
 					//if no parent, the type must be already 'deployed'
 					//27Nov15 add dependencies to new comm type
@@ -452,11 +453,11 @@ public class PlanGenerator {
 				this.plan.getTasks().add(vmit);
 			}//end for each vmInsTask				
 		}else{
-			LOG.info("No VM instance tasks to add dependencies ....");
+			log.info("No VM instance tasks to add dependencies ....");
 		}
 		//comp type 
 		if(!compTypeTasks.isEmpty()){
-			LOG.debug(compTypeTasks.size() + " number of create/update/delete comp type tasks to add to plan ....");
+			log.debug(compTypeTasks.size() + " number of create/update/delete comp type tasks to add to plan ....");
 			//add the application dependencies, VMType dependency processed in hosting type
 			if(appTask != null){
 				for(ComponentTypeTask compTypeTask : compTypeTasks){
@@ -465,12 +466,12 @@ public class PlanGenerator {
 			}
 			this.plan.getTasks().addAll(compTypeTasks);
 		}else{
-			LOG.info("No component type tasks to add ....");
+			log.info("No component type tasks to add ....");
 		}
 		//internal component instances
 		//add comp type dependencies, other dependencies are added when processing hosting & communication
 		if(!compInsTasks.isEmpty()){ 
-			LOG.debug(compInsTasks.size() + " number of update/create/delete compInsTasks to add to plan ....");
+			log.debug(compInsTasks.size() + " number of update/create/delete compInsTasks to add to plan ....");
 			for(ComponentInstanceTask ctt : compInsTasks){
 				if(!ctt.getTaskType().equals(TaskType.DELETE)){	//only process update/create
 					ConfigurationTask parent = getDepended(compTypeTasks, ctt.getJsonModel().get("type").asString(), TaskType.CREATE);
@@ -479,18 +480,18 @@ public class PlanGenerator {
 					}
 					if(parent != null){
 						ctt.getDependencies().add(parent);
-						LOG.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
+						log.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
 					}
 					//if no parent, the type must be already 'deployed'
 				}//end if NOT delete
 				this.plan.getTasks().add(ctt); //no other dependencies at this stage
 			}//end for component instance task
 		}else{
-			LOG.info("No component instance tasks to add ....");
+			log.info("No component instance tasks to add ....");
 		}
 		//hosting types
 		if(!hostingTypeTasks.isEmpty()){
-			LOG.debug(hostingTypeTasks.size() + " number of create/update/delete hosting type tasks to add to plan ....");
+			log.debug(hostingTypeTasks.size() + " number of create/update/delete hosting type tasks to add to plan ....");
 			List<Hosting> newHostings = new ArrayList<Hosting>();
 			newHostings.addAll(mc.getUpdatedHostings());
 			newHostings.addAll(mc.getAddedHostings());
@@ -529,7 +530,7 @@ public class PlanGenerator {
 						hTask.getJsonModel().add("providerCompTypeTask", hostingProviderTask.getName());
 						hTask.getDependencies().add(hostingProviderTask);
 					}else{
-						LOG.info("...did not locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
+						log.info("...did not locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
 					}
 					hostingConsumerTask = getDepended(compTypeTasks, hostingConsumer.getName(), TaskType.CREATE);
 					if(hostingConsumerTask == null){
@@ -544,17 +545,17 @@ public class PlanGenerator {
 							hostingConsumerTask.getDependencies().add(hostingProviderTask);
 						}
 					}else{
-						LOG.info("...did not locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
+						log.info("...did not locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
 					}
 				}//end if NOT delete task
 				this.plan.getTasks().add(hTask);	
 			}//end for hosting task		
 		}else{
-			LOG.info("No hosting type tasks to add ....");
+			log.info("No hosting type tasks to add ....");
 		}
 		//hosting instances
 		if(!hostingInsTasks.isEmpty()){
-			LOG.debug(hostingInsTasks.size() + " number of create/update/delete hosting instance tasks to add to plan ....");
+			log.debug(hostingInsTasks.size() + " number of create/update/delete hosting instance tasks to add to plan ....");
 			List<HostingInstance> newHostingIns = new ArrayList<HostingInstance>();
 			newHostingIns.addAll(mc.getUpdatedHostingInstances());
 			newHostingIns.addAll(mc.getAddedHostingInstances());
@@ -568,7 +569,7 @@ public class PlanGenerator {
 					}
 					if(parent != null){ //assume already deployed if none found
 						hiTask.getDependencies().add(parent);
-						LOG.debug("...added type dependency(" + parent.getName() + ") to " + hiTask.getName());
+						log.debug("...added type dependency(" + parent.getName() + ") to " + hiTask.getName());
 					}
 					ComponentInstance hiProviderIns = null;
 					ComponentInstance hiConsumerIns = null;
@@ -601,7 +602,7 @@ public class PlanGenerator {
 						hiTask.getJsonModel().add("providerCompTypeTask", hiProviderTask.getName());
 						hiTask.getDependencies().add(hiProviderTask);
 					}else{
-						LOG.info("...did not locate the hosting provider instance task(name = " + hiProviderIns.getName() + ") for hosting task(" + hiTask.getName() + ".  Assume already deployed.");
+						log.info("...did not locate the hosting provider instance task(name = " + hiProviderIns.getName() + ") for hosting task(" + hiTask.getName() + ".  Assume already deployed.");
 					}
 					hiConsumerTask = getDepended(compInsTasks, hiConsumerIns.getName(), TaskType.CREATE);
 					if(hiConsumerTask == null){
@@ -616,17 +617,17 @@ public class PlanGenerator {
 							hiConsumerTask.getDependencies().add(hiProviderTask);
 						}
 					}else{
-						LOG.info("...did not locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName() + ".  Assume already deployed.");					//hrow new PlanGenerationException("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting task(" + hTask.getName());
+						log.info("...did not locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName() + ".  Assume already deployed.");					//hrow new PlanGenerationException("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting task(" + hTask.getName());
 					}
 				}//end if NOT delete task
 				this.plan.getTasks().add(hiTask);	
 			}//end for hosting instance task		
 		}else{
-			LOG.info("No hosting instance tasks to add ....");
+			log.info("No hosting instance tasks to add ....");
 		}
 		//communication
 		if(!communicationTypeTasks.isEmpty()){
-			LOG.debug(communicationTypeTasks.size() + " number of communication type tasks to add ....");
+			log.debug(communicationTypeTasks.size() + " number of communication type tasks to add ....");
 			List<Communication> newCommunications = new ArrayList<Communication>();
 			newCommunications.addAll(mc.getUpdatedCommunications());
 			newCommunications.addAll(mc.getAddedCommunications());
@@ -634,7 +635,7 @@ public class PlanGenerator {
 			for(CommunicationTypeTask commTypeTask : communicationTypeTasks){
 				if(!commTypeTask.getTaskType().equals(TaskType.DELETE)){
 					//communication depends on components, but not the other way around to avoid cyclic dependency
-					LOG.debug("...inside communication type task : " + commTypeTask.getName());
+					log.debug("...inside communication type task : " + commTypeTask.getName());
 					//communication depends on components, but not the other way around to avoid cyclic dependency
 					Component commProvider = null;	//initialised for each commTypeTask
 					Component commConsumer = null;
@@ -666,7 +667,7 @@ public class PlanGenerator {
 						commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());
 						commTypeTask.getDependencies().add(commProviderTask);
 					}else{
-						LOG.info("...did not locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName() + ".  Assume already deployed.");
+						log.info("...did not locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName() + ".  Assume already deployed.");
 					}
 					commConsumerTask = getDepended(compTypeTasks, commConsumer.getName(), TaskType.CREATE);
 					if(commConsumerTask == null){
@@ -680,18 +681,18 @@ public class PlanGenerator {
 						if(commTypeTask.isMandatory() && commProviderTask != null){
 							commConsumerTask.getDependencies().add(commProviderTask);
 						}else{
-							LOG.info("...did not locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName() + ".  Assume already deployed.");
+							log.info("...did not locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName() + ".  Assume already deployed.");
 						}	
 					}
 				}//end if NOT delete task
 				this.plan.getTasks().add(commTypeTask);	
 			}//end for communication task		
 		}else{
-			LOG.info("No communication type tasks to add ....");
+			log.info("No communication type tasks to add ....");
 		}
 		//communication instance
 		if(!communicationInsTasks.isEmpty()){
-			LOG.debug(communicationInsTasks.size() + " number of create/update/delete communication instance tasks to add ....");
+			log.debug(communicationInsTasks.size() + " number of create/update/delete communication instance tasks to add ....");
 			List<CommunicationInstance> newCommunicationIns = new ArrayList<CommunicationInstance>();
 			newCommunicationIns.addAll(mc.getUpdatedComInstances());
 			newCommunicationIns.addAll(mc.getAddedComInstances());
@@ -705,9 +706,9 @@ public class PlanGenerator {
 					}
 					if(parent != null){
 						ciTask.getDependencies().add(parent);
-						LOG.debug("...added type dependency(" + parent.getName() + ") to " + ciTask.getName());
+						log.debug("...added type dependency(" + parent.getName() + ") to " + ciTask.getName());
 					}else{
-						LOG.info("... cannot find parent type task, assume already deployed....");
+						log.info("... cannot find parent type task, assume already deployed....");
 					}
 					//communication depends on components, but not the other way around to avoid cyclic dependency
 					ComponentInstance commInsProvider = null;	//initialised for each cTask
@@ -731,7 +732,7 @@ public class PlanGenerator {
 						}
 					}else if(commInsProvider instanceof InternalComponentInstance){
 						//debug
-						LOG.debug("... about to find task for commInsProvider(" + commInsProvider.getName() + "...");
+						log.debug("... about to find task for commInsProvider(" + commInsProvider.getName() + "...");
 						commInsProviderTask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.CREATE);
 						if(commInsProviderTask == null){
 							commInsProviderTask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.UPDATE);
@@ -742,9 +743,9 @@ public class PlanGenerator {
 						ciTask.getJsonModel().add("providerCompTypeTask", commInsProviderTask.getName());
 						ciTask.getDependencies().add(commInsProviderTask);
 					}else{
-						LOG.info("...did not locate the communication instance provider task(name = " + commInsProvider.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
+						log.info("...did not locate the communication instance provider task(name = " + commInsProvider.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
 					}
-					LOG.debug("... about to find task for commInsConsumer(" + commInsConsumer.getName() + "...");
+					log.debug("... about to find task for commInsConsumer(" + commInsConsumer.getName() + "...");
 					commInsConsumerTask = getDepended(compInsTasks, commInsConsumer.getName(), TaskType.CREATE);
 					if(commInsConsumerTask == null){
 						commInsConsumerTask = getDepended(compInsTasks, commInsConsumer.getName(), TaskType.UPDATE);
@@ -772,13 +773,13 @@ public class PlanGenerator {
 							commInsConsumerTask.getDependencies().add(commInsProviderTask);
 						}
 					}else{
-						LOG.info("...did not locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
+						log.info("...did not locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
 					}
 			}//end if NOT delete task
 				this.plan.getTasks().add(ciTask);	
 			}//end for communication task		
 		}else{
-			LOG.info("No communication instance tasks to add ....");
+			log.info("No communication instance tasks to add ....");
 		}	
 				//remove internal component instances
 //				List<InternalComponentInstance> ricis = mc.getRemovedInternalComponentInstances();
@@ -869,14 +870,14 @@ public class PlanGenerator {
 		sdInsT.getDependencies().add(sdt);
 		plan.getTasks().add(sdInsT);
 		//
-		LOG.debug("..just before create the VMType....");
+		log.debug("..just before create the VMType....");
 		//create the VMTypeTasks
 		if(newVMTypes != null && !newVMTypes.isEmpty()){
 			for(VM vm : newVMTypes){
 				vmTypeTasks.add(getVMTypeTask(vm, TaskType.CREATE));
 			}			
 		}
-		LOG.debug("..just before create the VMI....");
+		log.debug("..just before create the VMI....");
 		//create the VMInstanceTasks
 		if(newVMInstances != null && !newVMInstances.isEmpty()){
 			for(VMInstance vmi : newVMInstances){
@@ -917,12 +918,12 @@ public class PlanGenerator {
 				//1Dec2015 blotch to create hanging provided communication which is not explicitly declared in CAMEL
 				//apparently InternalComponent can provide a communication which is not explicitly consumed by a CAMEL object but
 				//by the abstract public (a concept not included in CAMEL)
-				LOG.debug("the current communication.providedCommunication.name is :" + com.getProvidedCommunication().getName());
+				log.debug("the current communication.providedCommunication.name is :" + com.getProvidedCommunication().getName());
 				//check if the providedCom matches the cached one 
 				for(int i = 0; i < pcs.size(); i++){
 					if(ModelComparator.equalProvidedCommunication(pcs.get(i), com.getProvidedCommunication())){
 						//get rid of this, so we will end up with only pcs that not linked to any com type
-						LOG.debug("..removing provided communication(" + pcs.get(i).getName() + " from the orphan list...." );
+						log.debug("..removing provided communication(" + pcs.get(i).getName() + " from the orphan list...." );
 						pcs.remove(i);
 						break;
 					}
@@ -932,14 +933,14 @@ public class PlanGenerator {
 		//1Dec2015, now the blotch.  At this stage, we have processed all the comm types 
 		if(!pcs.isEmpty()){
 			System.out.println("...there are " + pcs.size() + " orphan provided communication objects....");
-			LOG.debug("...there are " + pcs.size() + " orphan provided communication objects....");
+			log.debug("...there are " + pcs.size() + " orphan provided communication objects....");
 			for(int i = 0; i < pcs.size(); i++){
 				//the dependency is processed further downstream
 				communicationTypeTasks.add(getOrphanComTask("OrphanCommunication" + i, pcs.get(i), TaskType.CREATE));
 			}
 		}else{
 			System.out.println("...there aren't any orphan provided communication objects....");
-			LOG.info("...there aren't any orphan provided communication objects....");
+			log.info("...there aren't any orphan provided communication objects....");
 		}
 		
 		
@@ -955,19 +956,19 @@ public class PlanGenerator {
 		//add to plan and process dependencies
 		//VMs
 		if(!vmTypeTasks.isEmpty()){
-			LOG.debug(vmTypeTasks.size() + " number of VM type tasks to add to add to plan ....");
+			log.debug(vmTypeTasks.size() + " number of VM type tasks to add to add to plan ....");
 			this.plan.getTasks().addAll(vmTypeTasks);	//add to plan, ExeWare does not associate VM* with an application
 		}else{
-			LOG.info("No new VM type tasks to add ....");
+			log.info("No new VM type tasks to add ....");
 		}	
 		//VMInstances
 		if(!vmInsTasks.isEmpty()){ 
-			LOG.debug(vmInsTasks.size() + " number of VM instance tasks to add to add to plan ....");
+			log.debug(vmInsTasks.size() + " number of VM instance tasks to add to add to plan ....");
 			for(VMInstanceTask vmit : vmInsTasks){
 				ConfigurationTask parent = getDepended(vmTypeTasks, vmit.getJsonModel().get("type").asString(), TaskType.CREATE);
 				if(parent != null){
 					vmit.getDependencies().add(parent);
-					LOG.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
+					log.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
 				}
 				//27Nov2015 - add all communicationType Tasks.  ExecutionWare requires that all com types are processed before VMInstances
 				setComTypeDependencies(vmit, communicationTypeTasks);
@@ -975,37 +976,37 @@ public class PlanGenerator {
 				this.plan.getTasks().add(vmit);
 			}//end for each vmInsTask				
 		}else{
-			LOG.info("No new VM instance tasks to add ....");
+			log.info("No new VM instance tasks to add ....");
 		}
 		//comp type depends on application
 		if(!compTypeTasks.isEmpty()){
-			LOG.debug(compTypeTasks.size() + " number of comp type tasks to add to plan ....");
+			log.debug(compTypeTasks.size() + " number of comp type tasks to add to plan ....");
 			//add the application dependencies
 			for(ComponentTypeTask compTypeTask : compTypeTasks){
 				compTypeTask.getDependencies().add(sdt);
 				this.plan.getTasks().add(compTypeTask);
 			}
 		}else{
-			LOG.info("No new component type tasks to add ....");
+			log.info("No new component type tasks to add ....");
 		}		
 		//add comp type and app instance dependencies, other dependencies are added when processing hosting & communication
 		if(!compInsTasks.isEmpty()){ 
-			LOG.debug(compInsTasks.size() + " number of compTasks to add to plan ....");
+			log.debug(compInsTasks.size() + " number of compTasks to add to plan ....");
 			for(ComponentInstanceTask ctt : compInsTasks){
 				ConfigurationTask parent = getDepended(compTypeTasks, ctt.getJsonModel().get("type").asString(), TaskType.CREATE);
 				if(parent != null){
 					ctt.getDependencies().add(parent);
-					LOG.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
+					log.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
 				}
 				ctt.getDependencies().add(sdInsT);//add the app instance task
 				this.plan.getTasks().add(ctt); //no other dependencies at this stage
 			}//end for component instance task
 		}else{
-			LOG.info("No new component instance tasks to add ....");
+			log.info("No new component instance tasks to add ....");
 		}
 		//hosting type
 		if(!hostingTypeTasks.isEmpty()){
-			LOG.debug(hostingTypeTasks.size() + " number of hosting type tasks to add to plan ....");
+			log.debug(hostingTypeTasks.size() + " number of hosting type tasks to add to plan ....");
 			//
 			for(HostingTypeTask hTask : hostingTypeTasks){
 				//hosting depends on components, but not the other way around to avoid cyclic dependency
@@ -1034,7 +1035,7 @@ public class PlanGenerator {
 					hTask.getJsonModel().add("providerCompTypeTask", hostingProviderTask.getName());
 					hTask.getDependencies().add(hostingProviderTask);
 				}else{
-					LOG.error("...failed to locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName());
+					log.error("...failed to locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName());
 					//throw new PlanGenerationException("...failed to locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName());
 				}
 				hostingConsumerTask = getDepended(compTypeTasks, hostingConsumer.getName(), TaskType.CREATE);
@@ -1047,25 +1048,25 @@ public class PlanGenerator {
 						hostingConsumerTask.getDependencies().add(hostingProviderTask);
 					}
 				}else{
-					LOG.error("...failed to locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName());
+					log.error("...failed to locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName());
 					//throw new PlanGenerationException("...failed to locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName());
 				}
 				//continues anyway for now .....
 				this.plan.getTasks().add(hTask);	
 			}//end for hosting task		
 		}else{
-			LOG.info("No hosting type tasks to add ....");
+			log.info("No hosting type tasks to add ....");
 		}
 		//hosting instances
 		if(!hostingInsTasks.isEmpty()){
-			LOG.debug(hostingInsTasks.size() + " number of hosting instance tasks to add to plan ....");
+			log.debug(hostingInsTasks.size() + " number of hosting instance tasks to add to plan ....");
 			//
 			for(HostingInstanceTask hiTask : hostingInsTasks){
 				//search for the parent hosting type
 				ConfigurationTask parent = getDepended(hostingTypeTasks, hiTask.getJsonModel().get("type").asString(), TaskType.CREATE);
 				if(parent != null){
 					hiTask.getDependencies().add(parent);
-					LOG.debug("...added type dependency(" + parent.getName() + ") to " + hiTask.getName());
+					log.debug("...added type dependency(" + parent.getName() + ") to " + hiTask.getName());
 				}
 				ComponentInstance hiProviderIns = null;
 				ComponentInstance hiConsumerIns = null;
@@ -1091,7 +1092,7 @@ public class PlanGenerator {
 					hiTask.getJsonModel().add("providerCompTypeTask", hiProviderTask.getName());
 					hiTask.getDependencies().add(hiProviderTask);
 				}else{
-					LOG.error("...failed to locate the hosting provider instance task(name = " + hiProviderIns.getName() + ") for hosting task(" + hiTask.getName());
+					log.error("...failed to locate the hosting provider instance task(name = " + hiProviderIns.getName() + ") for hosting task(" + hiTask.getName());
 					//throw new PlanGenerationException("...failed to locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName());
 				}
 				hiConsumerTask = getDepended(compInsTasks, hiConsumerIns.getName(), TaskType.CREATE);
@@ -1104,21 +1105,21 @@ public class PlanGenerator {
 						hiConsumerTask.getDependencies().add(hiProviderTask);
 					}
 				}else{
-					LOG.error("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName());
+					log.error("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName());
 					//throw new PlanGenerationException("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting task(" + hTask.getName());
 				}				
 				this.plan.getTasks().add(hiTask);	
 			}//end for hosting instance task		
 		}else{
-			LOG.info("No hosting instance tasks to add ....");
+			log.info("No hosting instance tasks to add ....");
 		}
 		//communication
 		if(!communicationTypeTasks.isEmpty()){
-			LOG.debug(communicationTypeTasks.size() + " number of communication type tasks to add ....");
+			log.debug(communicationTypeTasks.size() + " number of communication type tasks to add ....");
 			//			
 			for(CommunicationTypeTask commTypeTask : communicationTypeTasks){				
 				//communication depends on components, but not the other way around to avoid cyclic dependency
-				LOG.debug("...inside communication type task : " + commTypeTask.getName());
+				log.debug("...inside communication type task : " + commTypeTask.getName());
 				//communication depends on components, but not the other way around to avoid cyclic dependency
 				//1Dec2015 blotch, need to treats the orphan differently
 				if(!commTypeTask.getName().startsWith("OrphanCommunication")){
@@ -1146,7 +1147,7 @@ public class PlanGenerator {
 						commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());
 						commTypeTask.getDependencies().add(commProviderTask);
 					}else{
-						LOG.error("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
+						log.error("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
 						//throw new PlanGenerationException("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
 					}
 					commConsumerTask = getDepended(compTypeTasks, commConsumer.getName(), TaskType.CREATE);
@@ -1161,7 +1162,7 @@ public class PlanGenerator {
 							if(commProviderTask != null){
 								commConsumerTask.getDependencies().add(commProviderTask);
 							}else{
-								LOG.error("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
+								log.error("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
 							//throw new PlanGenerationException("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
 							}
 						}
@@ -1172,24 +1173,24 @@ public class PlanGenerator {
 						commTypeTask.getDependencies().add(parentCompTask);
 					}else{
 						System.out.println("Failed to find the parent comp type task for orphan(" + commTypeTask.getName() + "!!!");
-						LOG.error("Failed to find the parent comp type task for orphan(" + commTypeTask.getName() + "!!!");
+						log.error("Failed to find the parent comp type task for orphan(" + commTypeTask.getName() + "!!!");
 					}
 				}
 				this.plan.getTasks().add(commTypeTask);	
 			}//end for communication task		
 		}else{
-			LOG.info("No communication type tasks to add ....");
+			log.info("No communication type tasks to add ....");
 		}
 		//communication instance
 		if(!communicationInsTasks.isEmpty()){
-			LOG.debug(communicationInsTasks.size() + " number of communication instance tasks to add ....");
+			log.debug(communicationInsTasks.size() + " number of communication instance tasks to add ....");
 			//
 			for(CommunicationInstanceTask ciTask : communicationInsTasks){
 				//search for the parent communication type
 				ConfigurationTask parent = getDepended(communicationTypeTasks, ciTask.getJsonModel().get("type").asString(), TaskType.CREATE);
 				if(parent != null){
 					ciTask.getDependencies().add(parent);
-					LOG.debug("...added type dependency(" + parent.getName() + ") to " + ciTask.getName());
+					log.debug("...added type dependency(" + parent.getName() + ") to " + ciTask.getName());
 				}
 				//communication depends on components, but not the other way around to avoid cyclic dependency
 				ComponentInstance commInsProvider = null;	//initialised for each cTask
@@ -1210,7 +1211,7 @@ public class PlanGenerator {
 					commInsProviderTask = getDepended(vmInsTasks, commInsProvider.getName(), TaskType.CREATE);
 				}else if(commInsProvider instanceof InternalComponentInstance){
 					//debug
-					LOG.debug("... about to find task for commInsProvider(" + commInsProvider.getName() + "...");
+					log.debug("... about to find task for commInsProvider(" + commInsProvider.getName() + "...");
 					commInsProviderTask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.CREATE);
 				}
 				if(commInsProviderTask != null){
@@ -1218,10 +1219,10 @@ public class PlanGenerator {
 					ciTask.getJsonModel().add("providerCompTypeTask", commInsProviderTask.getName());
 					ciTask.getDependencies().add(commInsProviderTask);
 				}else{
-					LOG.error("...failed to locate the communication instance provider task(name = " + commInsProvider.getName() + ") for communication instance task(" + ciTask.getName());
+					log.error("...failed to locate the communication instance provider task(name = " + commInsProvider.getName() + ") for communication instance task(" + ciTask.getName());
 					//throw new planGenerationException("...failed to locate the communication instance provider task(name = " + commInsProvider.getName() + ") for communication instance task(" + cTask.getName());
 				}
-				LOG.debug("... about to find task for commInsConsumer(" + commInsConsumer.getName() + "...");
+				log.debug("... about to find task for commInsConsumer(" + commInsConsumer.getName() + "...");
 				commInsConsumerTask = getDepended(compInsTasks, commInsConsumer.getName(), TaskType.CREATE);
 				if(commInsConsumerTask != null){
 					//8July15 : added owner task as requested by Adapter
@@ -1232,12 +1233,12 @@ public class PlanGenerator {
 						commInsConsumerTask.getDependencies().add(commInsProviderTask);
 					}
 				}else{
-					LOG.error("...failed to locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName());
+					log.error("...failed to locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName());
 				}
 				this.plan.getTasks().add(ciTask);	
 			}//end for communication task		
 		}else{
-			LOG.info("No communication instance tasks to add ....");
+			log.info("No communication instance tasks to add ....");
 		}
 	}	
 	/**
@@ -1490,7 +1491,7 @@ public class PlanGenerator {
 		if(candidates != null && !candidates.isEmpty()){
 			for(ConfigurationTask task : candidates){
 				//debug
-				LOG.debug(" comparing task(" + task.getName() + ") against target(" + target + ")");
+				log.debug(" comparing task(" + task.getName() + ") against target(" + target + ")");
 				if(task.getTaskType().equals(type) && task.getName().equals(target)){
 					return task;
 				}
@@ -1511,10 +1512,10 @@ public class PlanGenerator {
 		if(!tasks.isEmpty()){
 			for(ConfigurationTask ctt : tasks){
 				targetTask.getDependencies().add(ctt);
-				LOG.debug("...added task dependency(" + ctt.getName() + ") to the target task : " + targetTask.getName());
+				log.debug("...added task dependency(" + ctt.getName() + ") to the target task : " + targetTask.getName());
 			}
 		}else{
-			LOG.debug("...No task dependencies to add to target task(" + targetTask.getName() + ")");
+			log.debug("...No task dependencies to add to target task(" + targetTask.getName() + ")");
 		}		
 		return targetTask;
 	}
@@ -1531,7 +1532,7 @@ public class PlanGenerator {
 			for(ConfigurationTask ctt : allTask){
 				if(ctt.getTaskType().equals(TaskType.CREATE)){
 					newTasks.add(ctt);
-					LOG.debug("... added " + ctt.getName() + "  to new task list....");
+					log.debug("... added " + ctt.getName() + "  to new task list....");
 				}
 			}
 		}

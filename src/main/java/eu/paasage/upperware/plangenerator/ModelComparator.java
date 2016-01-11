@@ -58,7 +58,7 @@ public class ModelComparator {
 	
 
 	/** Message logger */
-	private static final Logger LOGGER = Logger.getLogger(ModelComparator.class.getName());
+	private static final Logger logger = Logger.getLogger(ModelComparator.class.getName());
 	
 	///////////////////////////////VM Type///////////////////////////////////////
 	/**
@@ -318,52 +318,52 @@ public class ModelComparator {
 		// compareModels is only called when there are current and target models
 		// the processing order is based on the dependencies between the objects
 		// debug
-		LOGGER.debug("Comparing current(" + currentDM.getName()
+		logger.debug("Comparing current(" + currentDM.getName()
 				+ ") and target(" + targetDM.getName() + ")");		
 		//23July2015 it is assumed that the Application type and instance are being updated
 
 		//compare the hosting types
 		compareHostings();
-		LOGGER.debug(">> Removed hosting types size :" + removedHostings.size());
-		LOGGER.debug(">> Added hosting types  size :" + addedHostings.size());
-		LOGGER.debug(">> Updated hosting types size : " + updatedHostings.size());
+		logger.debug(">> Removed hosting types size :" + removedHostings.size());
+		logger.debug(">> Added hosting types  size :" + addedHostings.size());
+		logger.debug(">> Updated hosting types size : " + updatedHostings.size());
 		// compare the HostingInstance
 		compareHostingInstances();
-		LOGGER.debug(">> Removed HostingInstances size :" + removedHostingInstances.size());
-		LOGGER.debug(">> Added HostingInstances size :" + addedHostingInstances.size());
-		LOGGER.debug(">> Updated HostingInstances size :" + updatedHostingInstances.size());				
+		logger.debug(">> Removed HostingInstances size :" + removedHostingInstances.size());
+		logger.debug(">> Added HostingInstances size :" + addedHostingInstances.size());
+		logger.debug(">> Updated HostingInstances size :" + updatedHostingInstances.size());				
 		//compare the communication types
 		compareCommunications();
-		LOGGER.debug(">> Removed communication types size :" + removedCommunications.size());
-		LOGGER.debug(">> Added communication types  size :" + addedCommunications.size());
-		LOGGER.debug(">> Updated communication types size : " + updatedCommunications.size());
+		logger.debug(">> Removed communication types size :" + removedCommunications.size());
+		logger.debug(">> Added communication types  size :" + addedCommunications.size());
+		logger.debug(">> Updated communication types size : " + updatedCommunications.size());
 		// compare the CommunicationInstance
 		compareCommunicationInstances();
-		LOGGER.debug(">> Removed Communication Instances size :" + removedComInstances.size());
-		LOGGER.debug(">> Added Communications Instances size :" + addedComInstances.size());
+		logger.debug(">> Removed Communication Instances size :" + removedComInstances.size());
+		logger.debug(">> Added Communications Instances size :" + addedComInstances.size());
 		//LOGGER.debug(">> Updated Communications Instances size :" + updatedComInstances.size());
 		//compare the VM types
 		compareVMTypes();
-		LOGGER.debug(">> Removed VM types size :" + removedVMTypes.size());
-		LOGGER.debug(">> Added VM types  size :" + addedVMTypes.size());
-		LOGGER.debug(">> Updated VM types size : " + updatedVMTypes.size());
+		logger.debug(">> Removed VM types size :" + removedVMTypes.size());
+		logger.debug(">> Added VM types  size :" + addedVMTypes.size());
+		logger.debug(">> Updated VM types size : " + updatedVMTypes.size());
 		//compare the VMInstance
 		compareVMInstances();
-		LOGGER.debug(">> Removed VMInstances size :" + removedVMInstances.size());
-		LOGGER.debug(">> Added VMInstances  size :" + addedVMInstances.size());
-		LOGGER.debug(">> Updated VMInstances size : " + updatedVMInstances.size());		
+		logger.debug(">> Removed VMInstances size :" + removedVMInstances.size());
+		logger.debug(">> Added VMInstances  size :" + addedVMInstances.size());
+		logger.debug(">> Updated VMInstances size : " + updatedVMInstances.size());		
 		compareInternalComponents();
-		LOGGER.debug(">> Removed InternalComponents size :" + removedInternalComponents.size());
-		LOGGER.debug(">> Added InternalComponents  size :" + addedInternalComponents.size());
-		LOGGER.debug(">> Updated InternalComponents size : " + updatedInternalComponents.size());
+		logger.debug(">> Removed InternalComponents size :" + removedInternalComponents.size());
+		logger.debug(">> Added InternalComponents  size :" + addedInternalComponents.size());
+		logger.debug(">> Updated InternalComponents size : " + updatedInternalComponents.size());
 		//LOGGER.debug(">> Removed Configurations size :" + removedConfigurations.size());
 		//LOGGER.debug(">> Added Configurations  size :" + addedConfigurations.size());
 		//LOGGER.debug(">> Updated Configurations size : " + updatedConfigurations.size());
 		//compare the ComponentInstance
 		compareInternalComponentInstances();
-		LOGGER.debug(">> Removed internal component instances size : " + removedInternalComponentIns.size());
-		LOGGER.debug(">> Added internal component instances size : " + addedInternalComponentIns.size());
-		LOGGER.debug(">> Updated internal component instances size : " + updatedInternalComponentIns.size());		
+		logger.debug(">> Removed internal component instances size : " + removedInternalComponentIns.size());
+		logger.debug(">> Added internal component instances size : " + addedInternalComponentIns.size());
+		logger.debug(">> Updated internal component instances size : " + updatedInternalComponentIns.size());		
 	}
 	
 	/**
@@ -372,15 +372,15 @@ public class ModelComparator {
 	 */
 	public void compareVMTypes(){		
 		//VMS in DeploymentModel		
-		LOGGER.info(">> Comparing vm types ...");
+		logger.info(">> Comparing vm types ...");
 		Boolean match = false;		
 		List<VM> curVMs = this.currentDM.getVms();
 		List<VM> tarVMs = this.targetDM.getVms();
 		if (curVMs != null && !curVMs.isEmpty()) {
 			//System.out.println("currentDM has " + currentVMs.size() + " VMs");
-			LOGGER.debug("currentDM has " + curVMs.size() + " VMs");
+			logger.debug("currentDM has " + curVMs.size() + " VMs");
 			if (tarVMs != null && !tarVMs.isEmpty()) {
-				LOGGER.debug("targetDM has " + tarVMs.size() + " VMs");
+				logger.debug("targetDM has " + tarVMs.size() + " VMs");
 				System.out.println("targetDM has " + tarVMs.size() + " VMs");
 				// now compare
 				for (VM ni : curVMs) {
@@ -389,14 +389,14 @@ public class ModelComparator {
 					for (VM ni2 : tarVMs) {
 						if (equalVM(ni, ni2)) {	//the current one is found in the target
 							match = true;
-							LOGGER.debug("adding matched VM: " + ni.getName() + " to matchedVMs");
+							logger.debug("adding matched VM: " + ni.getName() + " to matchedVMs");
 							matchedVMTypes.put(ni, ni2);	//key = current, value = target
 							break; // go to next current VM
 						}
 					}// end for each target VM
 					if (!match) {	 
 						// if current one not in target
-						LOGGER.debug("adding unmatched VM: " + ni.getName() + " to removedVMs");
+						logger.debug("adding unmatched VM: " + ni.getName() + " to removedVMs");
 						removedVMTypes.add(ni); 
 					}
 				}// end for each currentVMs
@@ -423,16 +423,16 @@ public class ModelComparator {
 	 * @throws ModelComparatorException on processing error
 	 */
 	public void compareVMInstances() throws ModelComparatorException {
-		LOGGER.info(">> Comparing vm instances ...");
+		logger.info(">> Comparing vm instances ...");
 		Boolean match = false;		
 		List<VMInstance> currentVMInstances = this.currentDM.getVmInstances(); 
 		List<VMInstance> targetVMInstances = this.targetDM.getVmInstances();
 		//
 		if (currentVMInstances != null && !currentVMInstances.isEmpty()) {
 			//System.out.println("currentDM has " + currentVMs.size() + " VMInstances");
-			LOGGER.debug("currentDM has " + currentVMInstances.size() + " VMInstances");
+			logger.debug("currentDM has " + currentVMInstances.size() + " VMInstances");
 			if (targetVMInstances != null && !targetVMInstances.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetVMInstances.size() + " VMInstances");
+				logger.debug("targetDM has " + targetVMInstances.size() + " VMInstances");
 				//System.out.println("targetDM has " + targetVMInstances.size() + " VMInstances");
 				// now compare
 				for (VMInstance ni : currentVMInstances) {
@@ -473,7 +473,7 @@ public class ModelComparator {
 				//LOGGER.debug(matchedVMInstances.values().size() + " matched VMInstance/s & " + addedVMInstances.size() + " addedVMInstances before removal");
 				addedVMInstances.removeAll(matchedVMInstances.values()); //subtract the matched instances
 				if(addedVMInstances.size() > 0){
-					LOGGER.debug("addedVMInstance : " + addedVMInstances.get(0).getName());
+					logger.debug("addedVMInstance : " + addedVMInstances.get(0).getName());
 				}
 			} else {// no target VMInstance, meaning the current ones are all
 					// obsolete
@@ -495,16 +495,16 @@ public class ModelComparator {
 	 * the target and the current deployment models
 	 */
 	public void compareHostings(){
-		LOGGER.info(">> Comparing Hostings ...");
+		logger.info(">> Comparing Hostings ...");
 		Boolean match = false;
 		//
 		List<Hosting> currentHostings = this.currentDM.getHostings();
 		List<Hosting> targetHostings = this.targetDM.getHostings();
 		//
 		if (currentHostings != null && !currentHostings.isEmpty()) {
-			LOGGER.debug("currentDM has " + currentHostings.size() + " Hostings");
+			logger.debug("currentDM has " + currentHostings.size() + " Hostings");
 			if (targetHostings != null && !targetHostings.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetHostings.size() + " Hostings");
+				logger.debug("targetDM has " + targetHostings.size() + " Hostings");
 				// now compare
 				for (Hosting ni : currentHostings) {
 					// for each current Hosting, match with the target 
@@ -542,16 +542,16 @@ public class ModelComparator {
 	 * the target and the current deployment models
 	 */
 	public void compareHostingInstances() {
-		LOGGER.info(">> Comparing Hosting Instances ...");
+		logger.info(">> Comparing Hosting Instances ...");
 		Boolean match = false;
 		//
 		List<HostingInstance> currentHostingIns = this.currentDM.getHostingInstances();
 		List<HostingInstance> targetHostingIns = this.targetDM.getHostingInstances();
 		//
 		if (currentHostingIns != null && !currentHostingIns.isEmpty()) {
-			LOGGER.debug("currentDM has " + currentHostingIns.size() + " HostingInstances");
+			logger.debug("currentDM has " + currentHostingIns.size() + " HostingInstances");
 			if (targetHostingIns != null && !targetHostingIns.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetHostingIns.size() + " HostingInstances");
+				logger.debug("targetDM has " + targetHostingIns.size() + " HostingInstances");
 				// now compare
 				for (HostingInstance ni : currentHostingIns) {
 					// for each current Hosting instance, match with the target instances
@@ -589,16 +589,16 @@ public class ModelComparator {
 	 * in the target and the current deployment models
 	 */
 	public void compareCommunications(){
-		LOGGER.info(">> Comparing Communications ...");
+		logger.info(">> Comparing Communications ...");
 		//
 		Boolean match = false;
 		List<Communication> currentComs = this.currentDM.getCommunications();
 		List<Communication> targetComs = this.targetDM.getCommunications();
 		//
 		if (currentComs != null && !currentComs.isEmpty()) {
-			LOGGER.debug("currentDM has " + currentComs.size() + " Communication");
+			logger.debug("currentDM has " + currentComs.size() + " Communication");
 			if (targetComs != null && !targetComs.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetComs.size() + " Communication");
+				logger.debug("targetDM has " + targetComs.size() + " Communication");
 				// now compare
 				for (Communication ni : currentComs) {
 					//LOGGER.debug("current Com: " + ni.getName() + " .....");
@@ -642,16 +642,16 @@ public class ModelComparator {
 	 */
 	public void compareCommunicationInstances() {
 		//ExecutionWare automatically bootstrap communication when deploying the internal component object
-		LOGGER.info(">> Comparing Communication Instances ...");
+		logger.info(">> Comparing Communication Instances ...");
 		//
 		Boolean match = false;
 		List<CommunicationInstance> currentComIns = this.currentDM.getCommunicationInstances();
 		List<CommunicationInstance> targetComIns = this.targetDM.getCommunicationInstances();
 		//
 		if (currentComIns != null && !currentComIns.isEmpty()) {
-			LOGGER.debug("currentDM has " + currentComIns.size() + " CommunicationInstances");
+			logger.debug("currentDM has " + currentComIns.size() + " CommunicationInstances");
 			if (targetComIns != null && !targetComIns.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetComIns.size() + " CommunicationInstances");
+				logger.debug("targetDM has " + targetComIns.size() + " CommunicationInstances");
 				// now compare
 				for (CommunicationInstance ni : currentComIns) {
 					//LOGGER.debug("current ComInstance: " + ni.getName() + " .....");
@@ -695,15 +695,15 @@ public class ModelComparator {
 	 * target and the current deployment models
 	 */
 	public void compareInternalComponents() {
-		LOGGER.info(">> Comparing internal components ...");
+		logger.info(">> Comparing internal components ...");
 		Boolean match = false;	
 		List<InternalComponent> currentComps = this.currentDM.getInternalComponents();
 		List<InternalComponent> targetComps = this.targetDM.getInternalComponents();
 		//
 		if (currentComps != null && !currentComps.isEmpty()) {
-			LOGGER.debug("currentDM has " + currentComps.size() + " InternalComponents");
+			logger.debug("currentDM has " + currentComps.size() + " InternalComponents");
 			if (targetComps != null && !targetComps.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetComps.size() + " InternalComponents");
+				logger.debug("targetDM has " + targetComps.size() + " InternalComponents");
 				// now compare
 				for (InternalComponent ni : currentComps) {
 					// for each current internal component instance, match with the target instances
@@ -745,15 +745,15 @@ public class ModelComparator {
 	 * target and the current deployment models
 	 */
 	public void compareInternalComponentInstances() {
-		LOGGER.info(">> Comparing internal component instances ...");
+		logger.info(">> Comparing internal component instances ...");
 		Boolean match = false;	
 		List<InternalComponentInstance> currentCompIns = this.currentDM.getInternalComponentInstances();
 		List<InternalComponentInstance> targetCompIns = this.targetDM.getInternalComponentInstances();
 		//
 		if (currentCompIns != null && !currentCompIns.isEmpty()) {
-			LOGGER.debug("currentDM has " + currentCompIns.size() + " InternalComponentInstances");
+			logger.debug("currentDM has " + currentCompIns.size() + " InternalComponentInstances");
 			if (targetCompIns != null && !targetCompIns.isEmpty()) {
-				LOGGER.debug("targetDM has " + targetCompIns.size() + " InternalComponentInstances");
+				logger.debug("targetDM has " + targetCompIns.size() + " InternalComponentInstances");
 				// now compare
 				for (InternalComponentInstance ni : currentCompIns) {
 					// for each current internal component instance, match with the target instances
@@ -1138,9 +1138,9 @@ public class ModelComparator {
 		boolean match = false;
 		if(pc1.getName().equals(pc2.getName()) && pc1.getPortNumber() == pc2.getPortNumber()){
 			InternalComponent ic1 = (InternalComponent) pc1.eContainer();
-			LOGGER.debug("pc1 parent component is: " + ic1);
+			logger.debug("pc1 parent component is: " + ic1);
 			InternalComponent ic2 = (InternalComponent) pc2.eContainer();
-			LOGGER.debug("pc2 parent component is: " + ic2);
+			logger.debug("pc2 parent component is: " + ic2);
 			if(ic1.getName().equals(ic2.getName())){
 				match = true;
 			}
@@ -1420,7 +1420,7 @@ public class ModelComparator {
 	 */
 	private boolean isUpdatedVMInstance(VMInstance ni, VMInstance ni2) throws ModelComparatorException {
 		//we won't compare the credentials as they belong to the user, not the VMInstance
-		LOGGER.debug("comparing VMInstance name : " + ni.getName() + " and " + ni2.getName());
+		logger.debug("comparing VMInstance name : " + ni.getName() + " and " + ni2.getName());
 		//LOGGER.debug("comparing VMInstance type name : " + ni.getType().getName() + " and " + ni2.getType().getName());
 		//vmType
 		//get vm flavour, you will always get an Attribute instance but its attributes may not be populated!
@@ -1428,10 +1428,10 @@ public class ModelComparator {
 		Attribute vmType2 = ni2.getVmType();
 		//not sure why we don't get the value here, but we get the values elsewhere?? 30July15
 		if(vmType1.getName() == null){
-			LOGGER.debug("vmtype1.name is null!");
+			logger.debug("vmtype1.name is null!");
 		}
 		if(vmType2.getName() == null){
-			LOGGER.debug("vmtype2.name is null!");
+			logger.debug("vmtype2.name is null!");
 		}
 		String vmTypeName1 = (vmType1.getName() == null ? "null" : vmType1.getName()); //can't do it in one step, got NPE
 		String vmTypeName2 = (vmType2.getName() == null ? "null" : vmType2.getName());
@@ -1439,7 +1439,7 @@ public class ModelComparator {
 		//30July15, for some reasons, the getVMType and getVMTypeValue doesn work w/n this context, it works elsewhere???e.g. ModelProxy
 		if(vmTypeName1 != "null" && vmTypeName2 != "null"){
 			//debug
-			LOGGER.debug("comparing VM type : " + vmTypeName1 + ":" + vmTypeName2);
+			logger.debug("comparing VM type : " + vmTypeName1 + ":" + vmTypeName2);
 			//we try and compare the values
 			SingleValue typeValue1 = ni.getVmTypeValue(); //this need to explicitly cast, see below
 			SingleValue typeValue2 = ni2.getVmTypeValue(); //this need to explicitly cast, see below
@@ -1456,7 +1456,7 @@ public class ModelComparator {
 				return true;
 			}
 			if(valueName1 != null && valueName2 != null){
-				LOGGER.debug("comparing VM type value : " + valueName1 + ":" + valueName2);
+				logger.debug("comparing VM type value : " + valueName1 + ":" + valueName2);
 				if(!valueName1.equals(valueName2)){
 					return true;
 				}
