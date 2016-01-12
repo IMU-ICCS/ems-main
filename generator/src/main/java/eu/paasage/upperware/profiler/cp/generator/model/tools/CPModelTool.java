@@ -268,7 +268,7 @@ public class CPModelTool {
 		return exp; 
 	}
 	
-	public static Goal createGoal(GoalOperatorEnum type, String goalId, NumericExpression exp)
+	public static Goal createGoal(GoalOperatorEnum type, String goalId, NumericExpression exp, double priority)
 	{
 		Goal goal= CpFactory.eINSTANCE.createGoal(); 
 		
@@ -278,6 +278,8 @@ public class CPModelTool {
 		goal.setExpression(exp); 
 		
 		goal.setId(goalId); 
+		
+		goal.setPriority(priority);
 				
 		return goal; 
 	}

@@ -89,7 +89,7 @@ public class ResponseTimeFunctionCreator implements IFunctionCreator {
 			
 		}
 		
-		Goal goalCP= CPModelTool.createGoal(GoalOperatorEnum.MIN, goal.getId(), ce); 
+		Goal goalCP= CPModelTool.createGoal(GoalOperatorEnum.MIN, goal.getId(), ce,0); //0 is the default priority as here we are not using an optimisation requirement for the creation of the goal 
 		
 		cp.getGoals().add(goalCP); 
 		

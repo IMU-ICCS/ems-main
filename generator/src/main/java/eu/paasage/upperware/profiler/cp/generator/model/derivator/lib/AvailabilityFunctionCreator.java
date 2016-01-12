@@ -28,10 +28,8 @@ import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
 import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.derivator.api.IFunctionCreator;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
@@ -129,7 +127,7 @@ public class AvailabilityFunctionCreator implements IFunctionCreator {
 			
 		}
 		
-		Goal goalCP= CPModelTool.createGoal(GoalOperatorEnum.MAX, goal.getId(), ce); 
+		Goal goalCP= CPModelTool.createGoal(GoalOperatorEnum.MAX, goal.getId(), ce, 0); //0 is the default priority as here we are not using an optimisation requirement for the creation of the goal 
 		
 		cp.getGoals().add(goalCP); 
 		

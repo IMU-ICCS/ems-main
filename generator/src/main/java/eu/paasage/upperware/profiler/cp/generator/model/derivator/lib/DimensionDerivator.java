@@ -67,6 +67,8 @@ public class DimensionDerivator
 	
 	protected static String CONSTRAINTS_SUFFIX= "_constraint"; 
 	
+	protected static String GOAL_ID_SEPARATOR= "_"; 
+	
 	public void createDimensions(CamelModel camel, ConstraintProblem cp, List<OptimisationRequirement> complexOptRequirements)
 	{
 		logger.debug("DimensionDerivator - createDimensions 1");
@@ -125,9 +127,12 @@ public class DimensionDerivator
 							
 						}
 						
+						int count= 0; 
+						
 						for(NumericExpression exp: expressions)
 						{
-							createDimension(exp, cp, optimisationType);
+							createDimension(exp, cp, optimisationType, optReq.getPriority(), optReq.getName()+GOAL_ID_SEPARATOR+count);
+							count++; 
 						}
 						
 					}
@@ -215,7 +220,7 @@ public class DimensionDerivator
 	}
 	
 	
-	protected void createDimension(RawMetric metric, ConstraintProblem cp, InternalComponent ic, OptimisationFunctionType goal)
+	protected void createDimension(RawMetric metric, ConstraintProblem cp, InternalComponent ic, OptimisationFunctionType goal, double priority, String goalId)
 	{
 		GoalOperatorEnum theGoal= GoalOperatorEnum.MIN;
 		
@@ -230,7 +235,7 @@ public class DimensionDerivator
 		
 		if(var!=null)
 		{
-			Goal goalCP= CPModelTool.createGoal(theGoal, theGoal.getLiteral(), var); 
+			Goal goalCP= CPModelTool.createGoal(theGoal, goalId, var, priority); 
 			
 			cp.getGoals().add(goalCP); 
 		}
@@ -238,7 +243,7 @@ public class DimensionDerivator
 			logger.warn("DimensionDerivator - createDimension - The dimension for the metric  "+varName+" cannot be created!");
 	}
 	
-	protected void createDimension(NumericExpression exp, ConstraintProblem cp, OptimisationFunctionType goal)
+	protected void createDimension(NumericExpression exp, ConstraintProblem cp, OptimisationFunctionType goal, double priority, String goalId)
 	{
 		GoalOperatorEnum theGoal= GoalOperatorEnum.MIN;
 		
@@ -246,9 +251,8 @@ public class DimensionDerivator
 		{
 			theGoal= GoalOperatorEnum.MAX;
 		}
-				
-		
-		Goal goalCP= CPModelTool.createGoal(theGoal, theGoal.getLiteral(), exp); 
+						
+		Goal goalCP= CPModelTool.createGoal(theGoal, goalId, exp, priority); 
 		
 		cp.getGoals().add(goalCP); 
 
