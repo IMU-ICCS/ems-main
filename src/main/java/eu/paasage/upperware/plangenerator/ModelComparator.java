@@ -254,6 +254,26 @@ public class ModelComparator {
 	 */
 	private List<Communication> updatedCommunications = new ArrayList<Communication>();
 	
+	//////////////////12Jan2016 to cope with the implied orphan communication objects//////////////////W
+	/**
+	 * A {@link java.util.List <em>List</em>} of {@link
+	 * eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} added in the
+	 * comparison
+	 */
+	private List<ProvidedCommunication> addedOrphanCommunications = new ArrayList<ProvidedCommunication>();
+	/**
+	 * A {@link java.util.List <em>List</em>} of {@link
+	 * eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} with updated attributes
+	 */
+	private List<ProvidedCommunication> updatedOrphanCommunications = new ArrayList<ProvidedCommunication>();
+	/**
+	 * A {@link java.util.List <em>List</em>} of {@link
+	 * eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} removed in the
+	 * comparison
+	 */
+	private List<ProvidedCommunication> removedOrphanCommunications = new ArrayList<ProvidedCommunication>();
+	
+	
 	///////////////////////////////Internal Component Configuration (Lifecycle component)///////////////////
 	/**
 	 * A {@link java.util.List <em>List</em>} of {@link eu.paasage.camel.deployment.Configuration <em>Configuration</em>}
@@ -363,7 +383,12 @@ public class ModelComparator {
 		compareInternalComponentInstances();
 		logger.debug(">> Removed internal component instances size : " + removedInternalComponentIns.size());
 		logger.debug(">> Added internal component instances size : " + addedInternalComponentIns.size());
-		logger.debug(">> Updated internal component instances size : " + updatedInternalComponentIns.size());		
+		logger.debug(">> Updated internal component instances size : " + updatedInternalComponentIns.size());
+		//////////////12Jan2016 process orphan communications.  Must be done AFTER compareInternalComponents()
+		compareOrphanCommunications();
+		logger.debug(">> Removed OrphanCommunications size :" + removedOrphanCommunications.size());
+		logger.debug(">> Added OrphanCommunications  size :" + addedOrphanCommunications.size());
+		logger.debug(">> Updated OrphanCommunications size : " + updatedOrphanCommunications.size());
 	}
 	
 	/**
@@ -724,7 +749,7 @@ public class ModelComparator {
 				}// end for each current internal component
 				//LOGGER.debug(matchedInternalComponents.size() + " matchedInternalComponent");
 				addedInternalComponents.addAll(targetComps); // first add all instances in the target
-				addedInternalComponents.removeAll(matchedInternalComponents.values());
+				addedInternalComponents.removeAll(matchedInternalComponents.values());				
 			} else {// no target internal component, meaning the current internal components are all obsolete
 				removedInternalComponents.addAll(currentComps);
 			}// endif targetInternalComponents is not null...
@@ -739,7 +764,58 @@ public class ModelComparator {
 		}
 	}
 	
-
+	/**
+	 * Generate the necessary orphan communication objects.  An orphan communication is one provided by an
+	 * {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} object but is not
+	 * bond to any {@link eu.paasage.camel.deployment.Communication <em>Communication</em>} objects
+	 */
+	public void compareOrphanCommunications(){
+		logger.info(">> Processing orphan communications ...");
+		List<Communication> currentCommTypes = this.currentDM.getCommunications();
+		//		
+		for(InternalComponent ic : this.removedInternalComponents){
+			List<ProvidedCommunication> removedPCs = ic.getProvidedCommunications();
+			if(removedPCs != null){
+				for(ProvidedCommunication dpc : removedPCs){
+					if(isOrphanCom(dpc, currentCommTypes)){
+						this.removedOrphanCommunications.add(dpc);
+						logger.debug("Added " + dpc.getName() + " to removedOrphanCommunications");
+					}
+				}
+			}
+		}
+		List<Communication> targetCommTypes = this.targetDM.getCommunications();
+		for(InternalComponent ic : this.addedInternalComponents){
+			List<ProvidedCommunication> addedPCs = ic.getProvidedCommunications();
+			if(addedPCs != null){
+				for(ProvidedCommunication apc : addedPCs){
+					if(isOrphanCom(apc, targetCommTypes)){
+						this.addedOrphanCommunications.add(apc);
+						logger.debug("Added " + apc.getName() + " to addedOrphanCommunications");
+					}
+				}
+			}
+		}
+		for(InternalComponent ic : this.updatedInternalComponents){
+			List<ProvidedCommunication> updatedPCs = ic.getProvidedCommunications();
+			if(updatedPCs != null){
+				for(ProvidedCommunication upc : updatedPCs){
+					if(isOrphanCom(upc, targetCommTypes)){//the updated IC comes from the target DeploymentModel
+						logger.debug("Found orphan communication(" + upc.getName());
+						//we found an orphan, but has this been changed?
+						//providedCommunication got name and portNumber attributes.  The parent would be the IC itself, not useful
+						//need to find out if the orphan communication itself has changed 
+						if(isUpdatedOrphanCommunication(upc)){
+							this.updatedOrphanCommunications.add(upc);
+							logger.debug("Added " + upc.getName() + " to updatedOrphanCommunications");
+						}else{
+							logger.debug("Orphan communication has not been changed, no action required ....");
+						}
+					}
+				}
+			}
+		}
+	}
 	/**
 	 * Compares the {@link eu.paasage.camel.deployment.InternalComponentInstance <em>InternalComponentInstance</em>} in the
 	 * target and the current deployment models
@@ -996,8 +1072,31 @@ public class ModelComparator {
 	 */
 	public List<CommunicationInstance> getUpdatedComInstances() {
 		return updatedComInstances;
+	}	
+	/**
+	 * Getter for the {@link java.util.List <em>List</em>} of orphan communication objects added
+	 * 
+	 * @return for the {@link java.util.List <em>List</em>} of orphan communication objects added
+	 */
+	public List<ProvidedCommunication> getAddedOrphanCommunications() {
+		return this.addedOrphanCommunications;
 	}
-
+	/**
+	 * Getter for the {@link java.util.List <em>List</em>} of orphan communication objects updated
+	 * 
+	 * @return for the {@link java.util.List <em>List</em>} of orphan communication objects updated
+	 */
+	public List<ProvidedCommunication> getUpdatedOrphanCommunications() {
+		return this.updatedOrphanCommunications;
+	}
+	/**
+	 * Getter for the {@link java.util.List <em>List</em>} of orphan communication objects removed
+	 * 
+	 * @return for the {@link java.util.List <em>List</em>} of orphan communication objects removed
+	 */
+	public List<ProvidedCommunication> getRemovedOrphanCommunications() {
+		return this.removedOrphanCommunications;
+	}
 	/**
 	 * Getter for the {@link java.util.List <em>List</em>} of {@link
 	 * eu.paasage.camel.deployment.VM <em>VM</em>} removed
@@ -1143,6 +1242,8 @@ public class ModelComparator {
 			logger.debug("pc2 parent component is: " + ic2);
 			if(ic1.getName().equals(ic2.getName())){
 				match = true;
+			}else{
+				logger.debug("...different parent component....");
 			}
 		}
 		return match;
@@ -1189,6 +1290,10 @@ public class ModelComparator {
 		removedComInstances.clear();
 		addedComInstances.clear();
 		updatedComInstances.clear();
+		
+		addedOrphanCommunications.clear();
+		removedOrphanCommunications.clear();
+		updatedOrphanCommunications.clear();
 	}
 	
 	/**
@@ -2061,5 +2166,55 @@ public class ModelComparator {
 			config = resources.get(0);	
 		}//end if resources != null
 		return config;
+	}
+	
+	/**
+	 * Check if the target {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} is an orphan.
+	 * <p>
+	 * @param commTypes		a {@link java.util.List <em>List</em>} of {@link eu.paasage.camel.deployment.Communication <em>Communication</em>}
+	 * 						to use in the comparison.
+	 * @param pc			the target {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} object
+	 * @return				true if it is an orphan, else false
+	 */
+	private boolean isOrphanCom(ProvidedCommunication pc, List<Communication> commTypes) {
+		//
+		if(commTypes != null){
+			for(Communication com : commTypes){
+				if(com.getProvidedCommunication().equals(pc)){	//if it is the same object
+					logger.debug("found match for provided communication(" + pc.getName() + ").  It is not an orphan....");
+					return false;  //is defined in com type
+				}
+			}
+		}
+		//has gone through all the com type or there is no communication objects in the deployment model
+		return true;
+	}
+	
+	/**
+	 * Check if the attributes in the target {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} 
+	 * has been updated.
+	 * <p>
+	 * @param pc	the target {@link eu.paasage.camel.deployment.ProvidedCommunication <em>ProvidedCommunication</em>} object
+	 * @return		true if it has been updated, else false
+	 */
+	private boolean isUpdatedOrphanCommunication(ProvidedCommunication pc){
+		boolean rc = true;
+		//
+		List<InternalComponent> currentICs = this.currentDM.getInternalComponents(); //can't be null as update case
+		for(InternalComponent ic : currentICs){
+			if(ic.getName().equals(((InternalComponent) pc.eContainer()).getName())){//as update, the IC name should be the same
+				//found the current version of the internal component object
+				List<ProvidedCommunication> currentPCs = ic.getProvidedCommunications();
+				if(currentPCs != null){
+					for(ProvidedCommunication cpc : currentPCs){
+						if(cpc.getName().equals(pc.getName()) && cpc.getPortNumber() == pc.getPortNumber()){
+							logger.debug("the ProvidedCommunication(" + pc.getName() + ") has not been updated....");
+							rc = false;
+						}
+					}
+				}
+			}
+		}//end for(InternalComponent ic : currentICs)
+		return rc;	//true means: updated attributes or the PC is new	
 	}
 }
