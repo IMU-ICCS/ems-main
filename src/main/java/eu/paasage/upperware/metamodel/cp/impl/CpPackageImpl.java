@@ -703,6 +703,15 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getGoal_Priority() {
+		return (EAttribute)goalEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getBooleanExpression() {
 		return booleanExpressionEClass;
 	}
@@ -1058,6 +1067,7 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		goalEClass = createEClass(GOAL);
 		createEReference(goalEClass, GOAL__EXPRESSION);
 		createEAttribute(goalEClass, GOAL__GOAL_TYPE);
+		createEAttribute(goalEClass, GOAL__PRIORITY);
 
 		booleanExpressionEClass = createEClass(BOOLEAN_EXPRESSION);
 
@@ -1208,6 +1218,7 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEClass(goalEClass, Goal.class, "Goal", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getGoal_Expression(), this.getNumericExpression(), null, "expression", null, 1, 1, Goal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getGoal_GoalType(), this.getGoalOperatorEnum(), "goalType", null, 1, 1, Goal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getGoal_Priority(), ecorePackage.getEDouble(), "priority", null, 0, 1, Goal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(booleanExpressionEClass, BooleanExpression.class, "BooleanExpression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

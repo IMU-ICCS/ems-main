@@ -18,6 +18,7 @@ import org.eclipse.emf.ecore.EClass;
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.GoalImpl#getExpression <em>Expression</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.GoalImpl#getGoalType <em>Goal Type</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.GoalImpl#getPriority <em>Priority</em>}</li>
  * </ul>
  * </p>
  *
@@ -77,6 +78,24 @@ public class GoalImpl extends CPElementImpl implements Goal {
 	 */
 	public void setGoalType(GoalOperatorEnum newGoalType) {
 		eSet(CpPackage.Literals.GOAL__GOAL_TYPE, newGoalType);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public double getPriority() {
+		return (Double)eGet(CpPackage.Literals.GOAL__PRIORITY, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setPriority(double newPriority) {
+		eSet(CpPackage.Literals.GOAL__PRIORITY, newPriority);
 	}
 
 } //GoalImpl

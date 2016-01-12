@@ -13,6 +13,7 @@ package eu.paasage.upperware.metamodel.cp;
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Goal#getExpression <em>Expression</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Goal#getGoalType <em>Goal Type</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.Goal#getPriority <em>Priority</em>}</li>
  * </ul>
  * </p>
  *
@@ -75,5 +76,31 @@ public interface Goal extends CPElement {
 	 * @generated
 	 */
 	void setGoalType(GoalOperatorEnum value);
+
+	/**
+	 * Returns the value of the '<em><b>Priority</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Priority</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Priority</em>' attribute.
+	 * @see #setPriority(double)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getGoal_Priority()
+	 * @model
+	 * @generated
+	 */
+	double getPriority();
+
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.Goal#getPriority <em>Priority</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Priority</em>' attribute.
+	 * @see #getPriority()
+	 * @generated
+	 */
+	void setPriority(double value);
 
 } // Goal

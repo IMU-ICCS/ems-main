@@ -792,13 +792,22 @@ public interface CpPackage extends EPackage {
 	int GOAL__GOAL_TYPE = CP_ELEMENT_FEATURE_COUNT + 1;
 
 	/**
+	 * The feature id for the '<em><b>Priority</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int GOAL__PRIORITY = CP_ELEMENT_FEATURE_COUNT + 2;
+
+	/**
 	 * The number of structural features of the '<em>Goal</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int GOAL_FEATURE_COUNT = CP_ELEMENT_FEATURE_COUNT + 2;
+	int GOAL_FEATURE_COUNT = CP_ELEMENT_FEATURE_COUNT + 3;
 
 	/**
 	 * The number of operations of the '<em>Goal</em>' class.
@@ -1786,6 +1795,17 @@ public interface CpPackage extends EPackage {
 	EAttribute getGoal_GoalType();
 
 	/**
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Goal#getPriority <em>Priority</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Priority</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.Goal#getPriority()
+	 * @see #getGoal()
+	 * @generated
+	 */
+	EAttribute getGoal_Priority();
+
+	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.BooleanExpression <em>Boolean Expression</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2486,6 +2506,14 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute GOAL__GOAL_TYPE = eINSTANCE.getGoal_GoalType();
+
+		/**
+		 * The meta object literal for the '<em><b>Priority</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute GOAL__PRIORITY = eINSTANCE.getGoal_Priority();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.BooleanExpressionImpl <em>Boolean Expression</em>}' class.
