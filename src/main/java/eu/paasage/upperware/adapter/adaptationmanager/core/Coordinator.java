@@ -82,6 +82,7 @@ public class Coordinator {
 	DeploymentModel currentModel = null;
 	DeploymentModel targetModel = null;
 	ReasonerInterfacer reasonerInterfacer;
+	ApplicationController appController;
 	Map<String, Object> state = new HashMap<String, Object>();
 
 	private static Map<String, Object> handles = new HashMap<String, Object>();
@@ -112,6 +113,7 @@ public class Coordinator {
 		this.execInterfacer = execInterfacer;
 		this.validator = validator;
 		this.planGenerator = planGenerator;
+		this.appController = new ApplicationController(reasonerInterfacer.getresourceName());
 
 		initializeHandlers(execInterfacer);
 	}
@@ -122,6 +124,7 @@ public class Coordinator {
 		this.reasonerInterfacer = reasonerInterfacer;
 		this.execInterfacer = execInterfacer;
 		this.validator = validator;
+		this.appController = new ApplicationController(reasonerInterfacer.getresourceName());
 
 		initializeHandlers(execInterfacer);
 	}
@@ -261,18 +264,22 @@ public class Coordinator {
 
 		Map<String, Object> outputMap = new HashMap<String, Object>();
 		
+		String modelName = "some_model";
+		
 		if(targetModel == null){//Simple deployment
 			
 			if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
 				
 				reasonerInterfacer.openTransaction();
 				targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
 				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
 				reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
 			
 			}else{//getting model from Model file
 				
 				targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
 				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
 			}
 			
@@ -285,12 +292,14 @@ public class Coordinator {
 				
 				reasonerInterfacer.openTransaction();
 				targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
 				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
 				reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
 				
 			}else{//getting model from Model file
 				
 				targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
 				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
 				
 			}
@@ -331,7 +340,10 @@ public class Coordinator {
 			
 			if(!ApplicationController.monitorEntitiesStatus(execInterfacer, 30))
 				return false;
-			
+
+			//Deployment completed successfully. So publish to metrics collector
+			if(!appController.publishToMetric(modelName))
+				LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
 			return true;
 		}
 	}

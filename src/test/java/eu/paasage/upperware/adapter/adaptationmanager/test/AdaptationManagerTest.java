@@ -25,6 +25,8 @@ import eu.paasage.upperware.adapter.adaptationmanager.input.ReasonerInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.validation.IValidator;
 import eu.paasage.upperware.adapter.adaptationmanager.validation.ValidatorImpl;
 import eu.paasage.upperware.adapter.adaptationmanager.core.Coordinator;
+import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQPublisher;
+import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQSubscriber;
 
 /**
  * Working version - tested 17th Dec with BeWan on Flexiant
@@ -113,5 +115,34 @@ public class AdaptationManagerTest
 		c.deployModelIDThreaded(1);
 		System.out.println("End of method deployFromCDOOnCloud()");
 	}
-
+	
+	@Test
+//	@Ignore
+	public void testZMQ(){
+		ZeroMQPublisher zmpMetric = null;
+		ZeroMQPublisher zmpModelreq = new ZeroMQPublisher("ModelReqPub", 5551);
+		
+		ZeroMQSubscriber zmsMetric = new ZeroMQSubscriber("MetricSub", "localhost", "M",5550);
+		ZeroMQSubscriber zmsModelreq0 = new ZeroMQSubscriber("ModelReqSub0", "localhost", "M", 5551);
+		ZeroMQSubscriber zmsModelreq1;
+		
+		zmsMetric.start();
+		zmsModelreq0.start();
+		
+		
+		for (int i = 0; i < 10000; i++) {
+			if(i%2==0)
+				if(zmpMetric != null)
+					zmpMetric.publishMsg("M" + i + "");
+			else
+				zmpModelreq.publishMsg("M" + i + "");
+			if(i==1000){
+				zmsModelreq1 = new ZeroMQSubscriber("ModelReqSub1", "localhost", "M", 5551);
+				zmsModelreq1.start();
+			}
+			
+			if(i==2000)
+				zmpMetric = new ZeroMQPublisher("MetricPub", 5550);
+		}
+	}
 }

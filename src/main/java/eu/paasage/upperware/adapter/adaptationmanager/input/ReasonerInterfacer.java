@@ -284,6 +284,23 @@ public class ReasonerInterfacer {
 		}
 		return model;
 	}
+	
+	public String getresourceName(){
+		
+		String rescName = null;
+		
+		if(!usingCDO && !usingCDOClientLib && client != null && transaction != null)
+			rescName = null;
+		
+		if(this.resourceName != null)
+			rescName = this.resourceName;
+		
+		return rescName;
+	}
+	
+	public String getModelName(DeploymentModel depModel){
+		return depModel.getName();
+	}
 
 	public DeploymentModel getDeploymentModel(boolean current) {
 

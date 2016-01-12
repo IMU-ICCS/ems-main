@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
+import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQPublisher;
 
 /**
  * This class is used to accept entities from the Action threads during deployment process and then monitor their states later
@@ -25,7 +26,20 @@ public class ApplicationController {
 	
 	private static LinkedList<MonitorEntity> entities = new LinkedList<MonitorEntity>();
 	
+	private String resourceName;
+	private String modelName;
+	ZeroMQPublisher zmqAdap2MetricsPub;
+	
 	private final static Logger LOGGER = Logger.getLogger(ApplicationController.class.getName());
+	
+	public ApplicationController(String resourceName){
+		this.resourceName = resourceName;
+		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", 5550);
+	}
+	
+	private void setModelName(String modelName){
+		this.modelName = modelName;
+	}
 	
 	/**
 	 * Adds an entity to be monitored later
@@ -102,6 +116,23 @@ public class ApplicationController {
 			LOGGER.log(Level.INFO, "states OK for " + entitiesOk + " monitored entities.\nproblem detected for " + (entities.size()-entitiesOk) + " entities!");
 			return false;
 		}
+	}
+	
+	public boolean publishToMetric(String modelName){
+		boolean status = false;
+		
+		setModelName(modelName);
+		
+		String msg = "";
+		if(resourceName == null){//means xmi file used for deployment
+			msg = "newResourceArrival:" + "noResourceName:" + modelName;
+		}else{//means CDO server is used
+			msg = "newResourceArrival:" + resourceName + ":" + modelName;
+		}
+		
+		status = zmqAdap2MetricsPub.publishMsg(msg);
+		
+		return status;
 	}
 }
 
