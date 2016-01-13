@@ -20,6 +20,9 @@ public class ZeroMQSubscriber extends Thread {
 	ZMQ.Context context;
 	ZMQ.Socket subscriber;
 	
+	long sleepTime = 0;
+	private volatile String message = "";
+	
 	private final static Logger LOGGER = Logger
 		.getLogger(ZeroMQSubscriber.class.getName());
 		
@@ -36,6 +39,26 @@ public class ZeroMQSubscriber extends Thread {
 		subscriber.subscribe(topic.getBytes());
 	}
 	
+	public ZeroMQSubscriber(String subscriberName, String ipAddress, String topic, int port, long sleepMillis){
+		this(subscriberName, ipAddress, topic, port);
+		this.sleepTime = sleepMillis;
+	}
+	
+	private void setMessage(String message){
+		this.message = message;
+	}
+	
+	public String readResetMessage(){
+		String msg = this.message;
+		this.message = "";
+		return msg;
+	}
+	
+	public String readMessage(){
+		String msg = this.message;
+		return msg;
+	}
+	
 	public void finalize() throws Throwable{
 		try{
 			subscriber.close();
@@ -46,7 +69,6 @@ public class ZeroMQSubscriber extends Thread {
         	LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " closed");
         	super.finalize();
     	}
-
 	}
     
     public void run(){
@@ -56,7 +78,9 @@ public class ZeroMQSubscriber extends Thread {
 				if (!Thread.currentThread ().isInterrupted ()) {
 					// Read message contents
 					String contents = subscriber.recvStr();
+					setMessage(contents);
 					LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " received msg: " +contents);
+					Thread.currentThread().sleep(sleepTime);
 				}
 			} catch (Exception e){
 				LOGGER.log(Level.SEVERE, "0MQ Subscriber " + this.subscriberName + " failed running");

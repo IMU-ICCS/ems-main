@@ -94,9 +94,13 @@ public class AdaptationManager {
 		try {
 			// c.runStep();
 			if (isDaemon || args[0].equals("daemon")) {
-				runListener();
+				//runListener();
+				daemonMode();
 			} else {
-				c.deployModelIDThreaded(1);// threaded execution of plan
+				if(c.deployModelIDThreaded(1))// threaded execution of plan
+					LOGGER.log(Level.INFO, "Successfully deployed model");
+				else
+					LOGGER.log(Level.SEVERE, "Failed to deploy model");
 			}
 		} catch (Exception ex) {
 			if (ex instanceof ArrayIndexOutOfBoundsException)
@@ -111,6 +115,40 @@ public class AdaptationManager {
 			System.exit(0);
 		}
 		// System.exit(1);
+	}
+	
+	public static void daemonMode(){
+		LOGGER.log(Level.INFO, "Running in deamon mode");
+		ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546, 30000);
+		zmsModelSub.start();
+		
+		ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", 5555, 60000);
+		zmsTermSub.start();
+		
+		boolean terminate = false;
+		boolean taskInProgress = false;
+		
+		int depModelIndex = 0;
+		
+		while(!terminate){
+			
+			if(zmsModelSub.readResetMessage().contains("newDeploymentCAMELModel")){
+				//new Deployment model available, so take decision and deploy
+				depModelIndex++;
+				taskInProgress = true;
+				if(!c.deployModelIDThreaded(depModelIndex)){//deployment was not successful
+					terminate = true;
+					LOGGER.log(Level.SEVERE, "Failed to deploy model");
+				}
+				taskInProgress = false;
+			}
+			
+			if(zmsTermSub.readMessage().contains("terminate") || depModelIndex > 100)
+				terminate = true;
+		}
+		
+		LOGGER.log(Level.INFO, "Adaptation manager: stopped");
+		System.exit(0);
 	}
 
 	public static void runListener() {

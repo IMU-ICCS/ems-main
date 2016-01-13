@@ -8,6 +8,7 @@
 
 package eu.paasage.upperware.adapter.adaptationmanager.test;
 
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.junit.Ignore;
@@ -117,7 +118,7 @@ public class AdaptationManagerTest
 	}
 	
 	@Test
-//	@Ignore
+	@Ignore
 	public void testZMQ(){
 		ZeroMQPublisher zmpMetric = null;
 		ZeroMQPublisher zmpModelreq = new ZeroMQPublisher("ModelReqPub", 5551);
