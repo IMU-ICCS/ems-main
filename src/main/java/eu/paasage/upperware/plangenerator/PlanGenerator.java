@@ -434,11 +434,12 @@ public class PlanGenerator {
 		//Process dependencies....
 		//Better to do the dependencies after all the tasks have been created as the relationship can be complex
 		//basic assumption : 
-		//1. removal tasks can be process at any time (assuming EW does not enforce dependency)
+		//1. delete tasks can be process at any time (assuming EW does not enforce dependency)
 		//2. update application/instance tasks can also be done at any time as it only got the name attribute
 		//3. update and create tasks can be dependent on each other.  Instances depend on Types (definition), bindings depends on the consumer/dependent.
 		//4. update will not change the existing identifier, create will change the identifier.  Therefore update and create tasks do not depend on delete task.
-		//
+		//5. (18Jan16) delete tasks, the instance depends on the parent type (if the type is also being deleted) 
+		//6. (18Jan16) special case for orphan commuication, VMInstances must be deleted BEFORE the communication types
 		//Orphan Communications
 		if(!orphanComTypeTasks.isEmpty()){
 			log.debug("adding task dependencies to orphan communications....");
@@ -456,7 +457,15 @@ public class PlanGenerator {
 						//there must be a parent, as we get the orphan communication from the parent.  See ModelComparator.compareOrphanCommunications() method
 						throw new PlanGenerationException("Failed to find the parent InternalComponent or orphan communication(" + orphanCtt.getName() + ").....");
 					}
-				}//end if not DELETE task
+				}else{//18Jan16 delete communication type depends on delete VMInstance tasks
+					log.debug("..about to find delete VMInstanceTask for orphan communication type(" + orphanCtt.getName() + ")");
+					for(VMInstanceTask vmit : vmInsTasks){
+						if(vmit.getTaskType().equals(TaskType.DELETE)){	//delete VMInstances first
+							log.debug("Added delete VMInstanceTask(" + vmit.getName() + ") as dependency for orphan communication type(" + orphanCtt.getName() + ")");
+							orphanCtt.getDependencies().add(vmit);
+						}
+					}
+				}
 				this.plan.getTasks().add(orphanCtt);//add task to plan
 			}//end for
 		}else{
@@ -493,7 +502,15 @@ public class PlanGenerator {
 						setComTypeDependencies(vmit, orphanComTypeTasks, TaskType.DELETE);						
 					//}
 					//12Jan16 
-				}//end if not delete
+				}else{//18Jan16 delete VMInstance depends on delete VM Type
+					log.debug("..about to find delete VMTypeTask for vm instance type(" + vmit.getName() + ")");
+					for(VMTypeTask vm: vmTypeTasks){
+						if(vm.getTaskType().equals(TaskType.DELETE)){
+							log.debug("Addming vmtype(" + vm.getName() + ") to vm instance(" + vmit.getName() + ")....");
+							vmit.getDependencies().add(vm);
+						}
+					}
+				}
 				this.plan.getTasks().add(vmit);
 			}//end for each vmInsTask				
 		}else{
@@ -527,7 +544,16 @@ public class PlanGenerator {
 						log.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
 					}
 					//if no parent, the type must be already 'deployed'
-				}//end if NOT delete
+				}else{//18Jan16 delete  componentInstance depends on delete component Type
+					log.debug("..about to find delete componentTypeTask for component instance type(" + ctt.getName() + ")");
+					for(ComponentTypeTask cm: compTypeTasks){
+						if(cm.getTaskType().equals(TaskType.DELETE)){
+							log.debug("Adding component type task(" + cm.getName() + ") to component instance(" + ctt.getName() + ")....");
+							ctt.getDependencies().add(cm);
+						}
+					}
+					
+				}
 				this.plan.getTasks().add(ctt); //no other dependencies at this stage
 			}//end for component instance task
 		}else{
@@ -665,7 +691,7 @@ public class PlanGenerator {
 					}
 				}//end if NOT delete task
 				this.plan.getTasks().add(hiTask);	
-			}//end for hosting instance task		
+			}//end for hosting instance task //18Jan16 EW does not recognise Hosting instances		
 		}else{
 			log.info("No hosting instance tasks to add ....");
 		}
@@ -728,7 +754,15 @@ public class PlanGenerator {
 							log.info("...did not locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName() + ".  Assume already deployed.");
 						}	
 					}
-				}//end if NOT delete task
+				}else{//16Jan16 delete communication type depends on delete vminstances tasks
+					log.debug("... about to find vm instance task for deleted communication type task(" + commTypeTask.getName() + ")....");
+					for(VMInstanceTask vmit : vmInsTasks){
+						if(vmit.getTaskType().equals(TaskType.DELETE)){	//delete VMInstances first
+							commTypeTask.getDependencies().add(vmit);
+							log.debug("Added vm instance task(" + vmit.getName() + ") to communication type task(" + commTypeTask.getName() + ")");
+						}
+					}
+				}
 				this.plan.getTasks().add(commTypeTask);	
 			}//end for communication task		
 		}else{
@@ -819,7 +853,7 @@ public class PlanGenerator {
 					}else{
 						log.info("...did not locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
 					}
-			}//end if NOT delete task
+			}//end if NOT delete task 18Jan16 EW does not recognise Communication instances
 				this.plan.getTasks().add(ciTask);	
 			}//end for communication task		
 		}else{
