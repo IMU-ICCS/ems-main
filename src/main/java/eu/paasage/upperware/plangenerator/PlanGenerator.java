@@ -457,7 +457,7 @@ public class PlanGenerator {
 						//there must be a parent, as we get the orphan communication from the parent.  See ModelComparator.compareOrphanCommunications() method
 						throw new PlanGenerationException("Failed to find the parent InternalComponent or orphan communication(" + orphanCtt.getName() + ").....");
 					}
-				}else{//18Jan16 delete communication type depends on delete VMInstance tasks
+				}else{//18Jan16 delete communication type task depends on ALL delete VMInstance tasks
 					log.debug("..about to find delete VMInstanceTask for orphan communication type(" + orphanCtt.getName() + ")");
 					for(VMInstanceTask vmit : vmInsTasks){
 						if(vmit.getTaskType().equals(TaskType.DELETE)){	//delete VMInstances first
@@ -473,7 +473,17 @@ public class PlanGenerator {
 		}
 		//VM Types
 		if(!vmTypeTasks.isEmpty()){
-			log.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
+			//18Jan2016 added dependencies to deleted VM instances
+			for(VMTypeTask vm : vmTypeTasks){
+				log.debug("..about to find delete VMInstanceTask for vm  type(" + vm.getName() + ")");
+				for(VMInstanceTask vmi: vmInsTasks){
+					if(vmi.getTaskType().equals(TaskType.DELETE) && vmi.getJsonModel().get("type").asString().equals(vm.getName())){
+						log.debug("Adding vmInstanceTask(" + vmi.getName() + ") to vm type task(" + vm.getName() + ")....");
+						vm.getDependencies().add(vmi);
+				}				
+			}//end 18Jan2016
+				log.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
+			}
 			this.plan.getTasks().addAll(vmTypeTasks);
 		}else{
 			log.info("No VM type tasks to add .....");
@@ -501,15 +511,7 @@ public class PlanGenerator {
 						setComTypeDependencies(vmit, orphanComTypeTasks, TaskType.CREATE);
 						setComTypeDependencies(vmit, orphanComTypeTasks, TaskType.DELETE);						
 					//}
-					//12Jan16 
-				}else{//18Jan16 delete VMInstance depends on delete VM Type
-					log.debug("..about to find delete VMTypeTask for vm instance type(" + vmit.getName() + ")");
-					for(VMTypeTask vm: vmTypeTasks){
-						if(vm.getTaskType().equals(TaskType.DELETE)){
-							log.debug("Addming vmtype(" + vm.getName() + ") to vm instance(" + vmit.getName() + ")....");
-							vmit.getDependencies().add(vm);
-						}
-					}
+					//12Jan16
 				}
 				this.plan.getTasks().add(vmit);
 			}//end for each vmInsTask				
@@ -522,9 +524,20 @@ public class PlanGenerator {
 			//add the application dependencies, VMType dependency processed in hosting type
 			if(appTask != null){
 				for(ComponentTypeTask compTypeTask : compTypeTasks){
-					compTypeTask.getDependencies().add(appTask);
-				}
+					compTypeTask.getDependencies().add(appTask);				}
 			}
+			//18Jan16 delete  component type task depends on delete component instance task
+			for(ComponentTypeTask ctt : compTypeTasks){
+				if(ctt.getTaskType().equals(TaskType.DELETE)){
+					log.debug("..about to find deleted componentInstanceTask for component type(" + ctt.getName() + ")");
+					for(ComponentInstanceTask ict: compInsTasks){
+						if(ict.getTaskType().equals(TaskType.DELETE) && ict.getJsonModel().get("type").equals(ctt.getName())){
+							log.debug("Adding component instance task(" + ict.getName() + ") to component type(" + ctt.getName() + ")....");
+							ctt.getDependencies().add(ict);
+						}	
+					}
+				}
+			}//end 18Jan16
 			this.plan.getTasks().addAll(compTypeTasks);
 		}else{
 			log.info("No component type tasks to add ....");
@@ -544,22 +557,13 @@ public class PlanGenerator {
 						log.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
 					}
 					//if no parent, the type must be already 'deployed'
-				}else{//18Jan16 delete  componentInstance depends on delete component Type
-					log.debug("..about to find delete componentTypeTask for component instance type(" + ctt.getName() + ")");
-					for(ComponentTypeTask cm: compTypeTasks){
-						if(cm.getTaskType().equals(TaskType.DELETE)){
-							log.debug("Adding component type task(" + cm.getName() + ") to component instance(" + ctt.getName() + ")....");
-							ctt.getDependencies().add(cm);
-						}
-					}
-					
 				}
 				this.plan.getTasks().add(ctt); //no other dependencies at this stage
 			}//end for component instance task
 		}else{
 			log.info("No component instance tasks to add ....");
 		}
-		//hosting types
+		//hosting types. Execution ware does not recognise hosting types
 		if(!hostingTypeTasks.isEmpty()){
 			log.debug(hostingTypeTasks.size() + " number of create/update/delete hosting type tasks to add to plan ....");
 			List<Hosting> newHostings = new ArrayList<Hosting>();
@@ -754,7 +758,7 @@ public class PlanGenerator {
 							log.info("...did not locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName() + ".  Assume already deployed.");
 						}	
 					}
-				}else{//16Jan16 delete communication type depends on delete vminstances tasks
+				}else{//16Jan16 delete communication type depends on delete vminstances tasks.  Orphan com types are processed separately
 					log.debug("... about to find vm instance task for deleted communication type task(" + commTypeTask.getName() + ")....");
 					for(VMInstanceTask vmit : vmInsTasks){
 						if(vmit.getTaskType().equals(TaskType.DELETE)){	//delete VMInstances first
