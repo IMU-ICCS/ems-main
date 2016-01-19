@@ -533,9 +533,9 @@ public class PlanGenerator {
 			//18Jan16 delete  component type task depends on delete component instance task
 			for(ComponentTypeTask ctt : compTypeTasks){
 				if(ctt.getTaskType().equals(TaskType.DELETE)){
-					log.debug("..about to find deleted componentInstanceTask for deleted component type(" + ctt.getName() + ")");
+					//log.debug("..about to find deleted componentInstanceTask for deleted component type(" + ctt.getName() + ")");
 					for(ComponentInstanceTask icit: compInsTasks){
-						log.debug(icit.getTaskType() + " InternalComponentInstance(" + icit.getName() + ") parent is " + icit.getJsonModel().get("type").asString() + "..."); 
+						//log.debug(icit.getTaskType() + " InternalComponentInstance(" + icit.getName() + ") parent is " + icit.getJsonModel().get("type").asString() + "..."); 
 						if(icit.getTaskType().equals(TaskType.DELETE) && icit.getJsonModel().get("type").asString().equals(ctt.getName())){
 							log.debug("Adding deleted component instance task(" + icit.getName() + ") to deleted component type(" + ctt.getName() + ")....");
 							ctt.getDependencies().add(icit);
@@ -731,12 +731,12 @@ public class PlanGenerator {
 							ConfigurationTask hostingInsProviderTask = null;
 							ConfigurationTask hostingInsConsumerTask = null;							
 							//find consumer
-							hostingInsConsumerTask = getDepended(compTypeTasks, ((ComponentInstance) deletedHI.getRequiredHostInstance().eContainer()).getName(), TaskType.DELETE);
+							hostingInsConsumerTask = getDepended(compInsTasks, ((ComponentInstance) deletedHI.getRequiredHostInstance().eContainer()).getName(), TaskType.DELETE);
 							//first tried VM 
-							hostingInsProviderTask = getDepended(vmTypeTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
+							hostingInsProviderTask = getDepended(vmInsTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
 							if(hostingInsProviderTask == null){
 								//try component instances
-								hostingInsProviderTask = getDepended(compTypeTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
+								hostingInsProviderTask = getDepended(compInsTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
 							}
 							if(hostingInsProviderTask == null){					
 									log.info("...failed to find deleted hosting instance provider for hosting instance(" + deletedHI.getName() + ").....");  //it is legitimate					
@@ -820,6 +820,35 @@ public class PlanGenerator {
 							log.debug("Added vm instance task(" + vmit.getName() + ") to communication type task(" + commTypeTask.getName() + ")");
 						}
 					}
+					//19Jan2016 depends on delete mandatory communication provider
+					if(commTypeTask.isMandatory()){
+						//find the provider
+						//need the communication type objects
+						Component commProvider = null;
+						Component commConsumer = null;
+						//find the consumer/provider
+						for(Communication communication : mc.getRemovedCommunications()){
+							if(commTypeTask.getName().equals(communication.getName())){
+								//got the original camel communication type
+								commProvider = (Component) communication.getProvidedCommunication().eContainer();
+								commConsumer = (Component) communication.getRequiredCommunication().eContainer();
+								break;
+							}					
+						}
+						//now find the component task
+						ConfigurationTask providerTask = getDepended(compTypeTasks, commProvider.getName(),TaskType.DELETE);
+						if(providerTask != null){
+							ConfigurationTask consumerTask = getDepended(compTypeTasks, commConsumer.getName(),TaskType.DELETE);
+							if(consumerTask != null){
+								providerTask.getDependencies().add(consumerTask);
+							}else{
+								log.debug("...cannot find delete consumer task for mandatory delete communication(" + commTypeTask.getName());//it is legitimate
+							}
+						}else{
+							log.debug("...cannot find delete provider task for mandatory delete communication(" + commTypeTask.getName());//it is legitimate
+						}
+						
+					}//end 19Jan2016
 				}
 				this.plan.getTasks().add(commTypeTask);	
 			}//end for communication task		
@@ -1506,16 +1535,13 @@ public class PlanGenerator {
 	 */
 	private CommunicationTypeTask getCommunicationTypeTask(Communication com, TaskType type){
 		CommunicationTypeTask ct = new CommunicationTypeTask(com.getName(), type);
+		ct.setMandatory(com.getRequiredCommunication().isIsMandatory());
 		//get the info
 		if(type.equals(TaskType.DELETE)){
-			JsonObject nameObj = new JsonObject();
-			nameObj.add("name", com.getName());
-			ct.setJsonModel(nameObj);	
+			//19Jan2016 create a minimal json object			
+			ct.setJsonModel(ModelToJsonConverter.convertDeleteCommunication(com));	
 		}else{//create and update
-			ct.setJsonModel(ModelToJsonConverter.convertCommunication(com));
-			if(ct.getJsonModel().get("isMandatory").asBoolean() == true){
-				ct.setMandatory(true);
-			}
+			ct.setJsonModel(ModelToJsonConverter.convertCommunication(com));			
 		}
 		return ct;
 	}

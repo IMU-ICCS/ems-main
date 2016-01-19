@@ -449,6 +449,28 @@ public final class ModelToJsonConverter {
     	return result;    	
     }
     /**
+     * Generate a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} of a deleted 
+     * {@link eu.paasage.camel.deployment.Communication <em>Communication</em>}
+     * <p> 
+     * @param com	the source {@link eu.paasage.camel.deployment.Communication <em>Communication</em>}
+     * @return		the {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} information object
+     */
+    public static JsonObject convertDeleteCommunication(Communication com){
+    	JsonObject result = new JsonObject();
+    	//
+    	logger.debug(" processing  deleted communication: " + com.getName() );
+    	//basic metadata
+    	result.add("name",  com.getName());
+    	//9July15 added objectType as requested by Adapter
+    	result.add("objType","communication");
+    	result.add("isMandatory",com.getRequiredCommunication().isIsMandatory());//req com is Mandatory?
+    	result.add("provider", com.getProvidedCommunication().getName());
+    	//    	
+    	result.add("consumer", com.getRequiredCommunication().getName());
+    	//
+    	return result;
+    }
+    /**
      * Generate a snapshot in {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} of a 
      * {@link eu.paasage.camel.deployment.Communication <em>Communication</em>}
      * <p> 
