@@ -1076,7 +1076,7 @@
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/OS7"
+            name="RegionOne/8ce27cc1-5256-44fd-899b-682ba1ae7ad7"
             value="6"/>
         <toValue
             xsi:type="type:EnumerateValue"
