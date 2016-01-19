@@ -638,14 +638,16 @@ public class PlanGenerator {
 							hostingConsumerTask = getDepended(compTypeTasks, ((Component) deletedHosting.getRequiredHost().eContainer()).getName(), TaskType.DELETE);
 							//first tried VM 
 							hostingProviderTask = getDepended(vmTypeTasks, ((Component) deletedHosting.getProvidedHost().eContainer()).getName(),TaskType.DELETE);
-							if(hostingProviderTask == null){
+							if(hostingProviderTask == null){								
 								//try component type
 								hostingProviderTask = getDepended(compTypeTasks, ((Component) deletedHosting.getProvidedHost().eContainer()).getName(),TaskType.DELETE);
 							}
 							if(hostingProviderTask == null){
 								log.info("...failed to find deleted hosting provider for hosting(" + deletedHosting.getName() + ").....");  //it is legitimate					
 							}else{//provider also being deleted, need to first delete the consumer, then the provider
+								hostingProviderTask.getDependencies().add(hTask);//delete hosting task before the provider component task
 								if(hostingConsumerTask != null){ //consumer also being deleted, so add dependency
+									hostingConsumerTask.getDependencies().add(hTask);//delete hosting task before the consumer component task
 									hostingProviderTask.getDependencies().add(hostingConsumerTask);
 								}
 							}
@@ -741,7 +743,10 @@ public class PlanGenerator {
 							if(hostingInsProviderTask == null){					
 									log.info("...failed to find deleted hosting instance provider for hosting instance(" + deletedHI.getName() + ").....");  //it is legitimate					
 							}else{//provider also being deleted, need to first delete the consumer, then the provider
+								//delete hosting instance before component instance
+								hostingInsProviderTask.getDependencies().add(hiTask);
 								if(hostingInsConsumerTask != null){ //consumer also being deleted, so add dependency
+									hostingInsConsumerTask.getDependencies().add(hiTask); //delete hosting instance before consumer component instance
 									hostingInsProviderTask.getDependencies().add(hostingInsConsumerTask);
 								}
 							}
@@ -821,7 +826,7 @@ public class PlanGenerator {
 						}
 					}
 					//19Jan2016 depends on delete mandatory communication provider
-					if(commTypeTask.isMandatory()){
+					//if(commTypeTask.isMandatory()){
 						//find the provider
 						//need the communication type objects
 						Component commProvider = null;
@@ -838,17 +843,20 @@ public class PlanGenerator {
 						//now find the component task
 						ConfigurationTask providerTask = getDepended(compTypeTasks, commProvider.getName(),TaskType.DELETE);
 						if(providerTask != null){
+							providerTask.getDependencies().add(commTypeTask); //delete com type before the provider component
 							ConfigurationTask consumerTask = getDepended(compTypeTasks, commConsumer.getName(),TaskType.DELETE);
 							if(consumerTask != null){
-								providerTask.getDependencies().add(consumerTask);
+								consumerTask.getDependencies().add(commTypeTask); //delete com type before consumer component
+								if(commTypeTask.isMandatory()){
+									providerTask.getDependencies().add(consumerTask);
+								}
 							}else{
 								log.debug("...cannot find delete consumer task for mandatory delete communication(" + commTypeTask.getName());//it is legitimate
 							}
 						}else{
 							log.debug("...cannot find delete provider task for mandatory delete communication(" + commTypeTask.getName());//it is legitimate
-						}
-						
-					}//end 19Jan2016
+						}						
+					//}//end 19Jan2016
 				}
 				this.plan.getTasks().add(commTypeTask);	
 			}//end for communication task		
@@ -939,9 +947,41 @@ public class PlanGenerator {
 						}
 					}else{
 						log.info("...did not locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
-					}
-			}//end if NOT delete task 18Jan16 EW does not recognise Communication instances
-				this.plan.getTasks().add(ciTask);	
+					}//end if commInsConsumerTask != null
+				}else{//end if NOT delete task 18Jan16 EW does not recognise Communication instances
+					//19Jan2016 add for deleted communication instance which are mandatory, the deleted provider component instance depends on the deleted consumer instance
+					for(Communication allCom : this.currentDM.getCommunications()){
+						//check if mandatory
+						if(allCom.getName().equals(ciTask.getJsonModel().get("type").asString())){
+							//found the camel com object,now find the original communication instance
+							if(allCom.getRequiredCommunication().isIsMandatory()){
+								//need to find if there is a deleted provider instance	
+								for(CommunicationInstance commInstance : mc.getRemovedComInstances()){
+									if(ciTask.getName().equals(commInstance.getName())){
+										//got the original camel communication instance 
+										ComponentInstance commInsProvider = (ComponentInstance) commInstance.getProvidedCommunicationInstance().eContainer();
+										ComponentInstance commInsConsumer = (ComponentInstance) commInstance.getRequiredCommunicationInstance().eContainer();
+										ConfigurationTask delProvidedCITask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.DELETE);
+										if(delProvidedCITask != null){
+											//find the consumer
+											ConfigurationTask delRequiredCITask = getDepended(compInsTasks, commInsConsumer.getName(),TaskType.DELETE);
+											if(delRequiredCITask != null){
+												delProvidedCITask.getDependencies().add(delRequiredCITask); //delete the consumer first, then the provider
+											}else{
+												log.debug("...failed to find the delete communication instance consumer task for deleted communication instance(" + ciTask.getName());//it is legitimate
+											}									
+										}
+										break;
+									}	
+									log.debug("...failed to find the deleted communication instance for deleted communication instance task(" + ciTask.getName() + "....");
+								}//end for communication instance					
+							}
+							break;
+						}//end if found the parent type	
+						log.debug("...failed to find the deleted communication type for communication instance task(" + ciTask.getName() + "....");
+					}//end for communication
+				}
+			this.plan.getTasks().add(ciTask);	
 			}//end for communication task		
 		}else{
 			log.info("No communication instance tasks to add ....");
@@ -1587,6 +1627,8 @@ public class PlanGenerator {
 		if(type.equals(TaskType.DELETE)){
 			JsonObject nameObj = new JsonObject();
 			nameObj.add("name", ci.getName());
+			nameObj.add("objType","communicationInstance");
+			nameObj.add("type", ci.getType().getName()); //to help locate mandatory com
 			ct.setJsonModel(nameObj);	
 		}else{//create and update
 			ct.setJsonModel(ModelToJsonConverter.convertCommunicationInstance(ci));
