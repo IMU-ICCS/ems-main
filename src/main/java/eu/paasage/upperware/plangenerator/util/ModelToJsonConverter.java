@@ -533,6 +533,7 @@ public final class ModelToJsonConverter {
     public static JsonObject convertDeletedObj(ComponentInstance object){
     	//19Jan2016 - create a simple Json object with only the instance object and its parent names, plus object type
     	JsonObject result = new JsonObject();
+    	logger.debug("incoming component instance object is : " + object.getClass().getSimpleName());
     	//
     	if(object instanceof VMInstance){
     		VMInstance vmi = (VMInstance) object;
@@ -546,6 +547,7 @@ public final class ModelToJsonConverter {
     		result.add("name", ici.getName()); //instance name
         	result.add("objType","internalComponentInstance");
         	result.add("type", ici.getType().getName());
+        	logger.debug(" ici name : " + ici.getName() + ", type : " + ici.getType().getName() + "....");
     	}else{
     		logger.error("unexpected object type!  Cannot convert object to Json......");
     	}    	

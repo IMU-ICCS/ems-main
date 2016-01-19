@@ -534,10 +534,11 @@ public class PlanGenerator {
 			for(ComponentTypeTask ctt : compTypeTasks){
 				if(ctt.getTaskType().equals(TaskType.DELETE)){
 					log.debug("..about to find deleted componentInstanceTask for deleted component type(" + ctt.getName() + ")");
-					for(ComponentInstanceTask ict: compInsTasks){
-						if(ict.getTaskType().equals(TaskType.DELETE) && ict.getJsonModel().get("type").equals(ctt.getName())){
-							log.debug("Adding deleted component instance task(" + ict.getName() + ") to deleted component type(" + ctt.getName() + ")....");
-							ctt.getDependencies().add(ict);
+					for(ComponentInstanceTask icit: compInsTasks){
+						log.debug(icit.getTaskType() + " InternalComponentInstance(" + icit.getName() + ") parent is " + icit.getJsonModel().get("type").asString() + "..."); 
+						if(icit.getTaskType().equals(TaskType.DELETE) && icit.getJsonModel().get("type").asString().equals(ctt.getName())){
+							log.debug("Adding deleted component instance task(" + icit.getName() + ") to deleted component type(" + ctt.getName() + ")....");
+							ctt.getDependencies().add(icit);
 						}	
 					}
 				}
