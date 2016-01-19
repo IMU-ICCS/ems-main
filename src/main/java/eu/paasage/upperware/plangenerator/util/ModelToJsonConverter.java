@@ -19,7 +19,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EStructuralFeature.Setting;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -31,6 +30,7 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.Component;
+import eu.paasage.camel.deployment.ComponentInstance;
 import eu.paasage.camel.deployment.Configuration;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
@@ -47,12 +47,6 @@ import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.deployment.impl.VMImpl;
-import eu.paasage.camel.location.CloudLocation;
-import eu.paasage.camel.location.Country;
-import eu.paasage.camel.location.GeographicalRegion;
-import eu.paasage.camel.organisation.CloudCredentials;
-import eu.paasage.camel.organisation.CloudProvider;
-import eu.paasage.camel.organisation.DataCenter;
 import eu.paasage.camel.organisation.Entity;
 import eu.paasage.camel.organisation.OrganisationModel;
 import eu.paasage.camel.organisation.PaaSageCredentials;
@@ -78,7 +72,7 @@ import eu.paasage.camel.type.SingleValue;
  */
 public final class ModelToJsonConverter {
 	/** message logger */
-	public static final Logger LOGGER = Logger.getLogger(ModelToJsonConverter.class.getName());
+	public static final Logger logger = Logger.getLogger(ModelToJsonConverter.class.getName());
 
 	/**
 	 * Private constructor to avoid unnecessary instantiation of the class
@@ -95,7 +89,7 @@ public final class ModelToJsonConverter {
     public static JsonObject convertInternalComponent(InternalComponent ic){
     	JsonObject result = new JsonObject();
     	//
-    	LOGGER.debug(" processing internal component: " + ic.getName());
+    	logger.debug(" processing internal component: " + ic.getName());
     	//basic metadata
     	result.add("name", ic.getName()); // name
     	//9July15 added objectType as requested by Adapter
@@ -161,7 +155,7 @@ public final class ModelToJsonConverter {
     public static JsonObject convertInternalComponentInstance(InternalComponentInstance ici){
     	JsonObject result = new JsonObject();
     	//
-    	LOGGER.debug(" processing : " + ici.getName() + " which is a type of " + ici.getType().getName());
+    	logger.debug(" processing : " + ici.getName() + " which is a type of " + ici.getType().getName());
     	//basic metadata
     	result.add("name", ici.getName()); //instance name
     	//9July15 added objectType as requested by Adapter
@@ -246,7 +240,7 @@ public final class ModelToJsonConverter {
     		result.add("version", app.getVersion());
     	}
     	//
-    	LOGGER.debug("just before getting Owner.....");
+    	logger.debug("just before getting Owner.....");
     	//aborted changes for S2D, the issue is S2D output is not a self-contained model
 //    	String org = null;
 //    	Entity owner = (Entity) app.getOwner(); 
@@ -324,7 +318,7 @@ public final class ModelToJsonConverter {
 	    	}
 		}//end if resources != null    	
     	//
-    	LOGGER.debug(" just before getVMQuantitativeSpec....");
+    	logger.debug(" just before getVMQuantitativeSpec....");
 		//get vm quantitative specifications and apply globalVMrequirement.  Hardware quantitative requirements are compulsory and must be satisfied, so save  
 		HashMap<String, Object> vmQSpec = getVMQuantitativeSpec(vm);
 		if(!vmQSpec.isEmpty()){
@@ -378,9 +372,9 @@ public final class ModelToJsonConverter {
     	
     	JsonObject result = new JsonObject();
     	//    
-    	LOGGER.debug(" vmi.getType() is an instance of " + vmi.getType().getClass().getName());
+    	logger.debug(" vmi.getType() is an instance of " + vmi.getType().getClass().getName());
     	VMImpl vm = (VMImpl) vmi.getType(); //a vmi type is a VM
-    	LOGGER.debug(" processing : " + vmi.getName() + " which is a type of " + (vm.getName() == null ? "null" : vm.getName()));
+    	logger.debug(" processing : " + vmi.getName() + " which is a type of " + (vm.getName() == null ? "null" : vm.getName()));
     	//basic metadata
     	result.add("name", vmi.getName());
     	//9July15 added objectType as requested by Adapter
@@ -393,9 +387,9 @@ public final class ModelToJsonConverter {
 		//
 		//LOGGER.debug(" just before switchValue...." + typeValue.getClass().getName());
 		String valueName = ModelUtil.switchValue(typeValue);
-		LOGGER.debug("VMTYPE : " + (vmType.getName() == null ? "null" : vmType.getName()) + ", value name : " + valueName);	
+		logger.debug("VMTYPE : " + (vmType.getName() == null ? "null" : vmType.getName()) + ", value name : " + valueName);	
 		if(valueName != null && (!valueName.equals("type not supported") || !valueName.equals("null"))){
-			LOGGER.debug("VMType valueName : " + valueName);
+			logger.debug("VMType valueName : " + valueName);
 			result.add(vmType.getName(), valueName);
 		}		
 		//
@@ -464,7 +458,7 @@ public final class ModelToJsonConverter {
     public static JsonObject convertCommunication(Communication com){
     	JsonObject result = new JsonObject();
     	//
-    	LOGGER.debug(" processing  communication: " + com.getName() );
+    	logger.debug(" processing  communication: " + com.getName() );
     	//basic metadata
     	result.add("name",  com.getName());
     	//9July15 added objectType as requested by Adapter
@@ -482,7 +476,7 @@ public final class ModelToJsonConverter {
 	        Iterator it = keys.iterator();
 	        while(it.hasNext()){
 	        	String key = (String) it.next();
-	        	LOGGER.debug("the current config key : " + key);
+	        	logger.debug("the current config key : " + key);
 	        	String jKey = "providedPort" + key;
 	            result.add(jKey, phConfig.get(key));
 	        }
@@ -496,7 +490,7 @@ public final class ModelToJsonConverter {
 	        Iterator it = keys.iterator();
 	        while(it.hasNext()){
 	        	String key = (String) it.next();
-	        	LOGGER.debug("the current req com config key : " + key);
+	        	logger.debug("the current req com config key : " + key);
 	        	String jKey = "requiredPort" + key;
 	            result.add(jKey, rpConfig.get(key));	            
 	        }
@@ -516,7 +510,7 @@ public final class ModelToJsonConverter {
     	//1Dec2015 - this is a blotch required by the execution ware
     	JsonObject result = new JsonObject();
     	//
-    	LOGGER.debug("processing orphan communication for " + pc.getName());
+    	logger.debug("processing orphan communication for " + pc.getName());
     	//basic metadata    	
     	result.add("objType","communication");
     	result.add("provider", pc.getName());
@@ -524,10 +518,39 @@ public final class ModelToJsonConverter {
     	result.add("providerPort", pc.getPortNumber());//provided port number
     	//this is a runtime attribute that should be removed downstream
     	String parent = ((InternalComponent) pc.eContainer()).getName();
-    	LOGGER.debug("...just added orphan provided communication's providerCompTypeTask name :  " + parent);
+    	logger.debug("...just added orphan provided communication's providerCompTypeTask name :  " + parent);
     	result.add("providerCompTypeTask", parent);
     	//
 		return result;
+    }
+    /**
+     * Create a skeleton {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} information object for  
+     * a deleted instance object.
+     * <p>
+     * @param object	the deleted instance object
+     * @return			the {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} information object
+     */
+    public static JsonObject convertDeletedObj(ComponentInstance object){
+    	//19Jan2016 - create a simple Json object with only the instance object and its parent names, plus object type
+    	JsonObject result = new JsonObject();
+    	//
+    	if(object instanceof VMInstance){
+    		VMInstance vmi = (VMInstance) object;
+    		logger.debug("processing deleted instance for " + vmi.getName());
+    		result.add("name", vmi.getName());
+        	result.add("objType","vmInstance");
+    		result.add("type", vmi.getType().getName());
+    	}else if(object instanceof InternalComponentInstance){   
+    		InternalComponentInstance ici = (InternalComponentInstance) object;
+    		logger.debug("processing deleted instance for " + ici.getName());
+    		result.add("name", ici.getName()); //instance name
+        	result.add("objType","internalComponentInstance");
+        	result.add("type", ici.getType().getName());
+    	}else{
+    		logger.error("unexpected object type!  Cannot convert object to Json......");
+    	}    	
+    	//
+    	return result;
     }
     
     /**
@@ -540,7 +563,7 @@ public final class ModelToJsonConverter {
     public static JsonObject convertCommunicationInstance(CommunicationInstance ci){
     	JsonObject result = new JsonObject();
     	//    	 
-    	LOGGER.debug(" processing com instance : " + ci.getName());
+    	logger.debug(" processing com instance : " + ci.getName());
     	//basic metadata
     	result.add("name",  ci.getName());
     	//9July15 added objectType as requested by Adapter
@@ -560,7 +583,7 @@ public final class ModelToJsonConverter {
 	public static JsonObject convertHosting(Hosting hosting){
 	    	JsonObject result = new JsonObject();
 	    	// 
-	    	LOGGER.debug(" processing hosting : " + hosting.getName());
+	    	logger.debug(" processing hosting : " + hosting.getName());
 	    	//basic metadata
 	    	result.add("name", hosting.getName());
 	    	//9July15 added objectType as requested by Adapter
@@ -598,7 +621,7 @@ public final class ModelToJsonConverter {
     public static JsonObject convertHostingInstance(HostingInstance hi){
     	JsonObject result = new JsonObject();
     	//
-    	LOGGER.debug(" processing hosting instance : " + hi.getName());
+    	logger.debug(" processing hosting instance : " + hi.getName());
     	//basic metadata
     	result.add("name", hi.getName()); 
     	//9July15 added objectType as requested by Adapter
@@ -745,7 +768,7 @@ public final class ModelToJsonConverter {
     	//LOGGER.debug("just before populating config....");
     	HashMap<String, String> result = new HashMap<String, String>();    	
     	if(config != null){
-    		LOGGER.debug("converting configuration object " + config.getName() + "...");
+    		logger.debug("converting configuration object " + config.getName() + "...");
     		result.put("configName",config.getName());
     		if(config.getDownloadCommand() != null){
     			result.put("downloadCmd", config.getDownloadCommand());
@@ -757,7 +780,7 @@ public final class ModelToJsonConverter {
     			result.put("installCmd", config.getInstallCommand());
     		}
     		if(config.getStartCommand() != null){
-    			LOGGER.debug("..getting start command : " + config.getStartCommand());
+    			logger.debug("..getting start command : " + config.getStartCommand());
     			result.put("startCmd", config.getStartCommand());
     		}
     		if(config.getStopCommand() != null){
@@ -780,7 +803,7 @@ public final class ModelToJsonConverter {
      */
     public static HashMap<String, Object> getVMQuantitativeSpec(VM vm){
     	//May need to source the info from the VM object if available, needs to see a concrete deployment model example
-    	LOGGER.debug("processing vm : " + vm.getName());
+    	logger.debug("processing vm : " + vm.getName());
     	VMRequirementSet globalReq = ((DeploymentModel) vm.eContainer()).getGlobalVMRequirementSet();
     	VMRequirementSet vmReq = vm.getVmRequirementSet(); //for this component
     	VMRequirementSet allVMReq = ModelUtil.addGlobalRequirements(globalReq, vmReq); //includes global VM requirement set
@@ -794,7 +817,7 @@ public final class ModelToJsonConverter {
     public static HashMap<String, Object> convertVMRequirementSet(VMRequirementSet vmReq){
     	//these may have to be sourced from the VM camel element, needs to see a concrete deployment model
     	//QuantitativeRequirement is a hard requirement and must be fulfilled 
-    	LOGGER.debug("processing VMRequirement : " + vmReq.getName());
+    	logger.debug("processing VMRequirement : " + vmReq.getName());
     	HashMap<String, Object> hm = new HashMap<String, Object>();
     	OSOrImageRequirement osReq = vmReq.getOsOrImageRequirement();
 		if(osReq != null){
@@ -845,7 +868,7 @@ public final class ModelToJsonConverter {
      * @return a {@link java.util.HashMap <em>HashMap</em>} containing the information.
      */
     public static HashMap<String, Object> getCloudProviderInfo(Attribute vmType){
-    	LOGGER.debug("... just inside getCloudProviderInfo ....");
+    	logger.debug("... just inside getCloudProviderInfo ....");
 		//System.out.println("inside getCloudProviderInfo with vmType (cdoid) " + vmType.cdoID().toString());
     	//populate cloud,     	
     	HashMap<String, Object> hm = new HashMap<String, Object>();	   
@@ -855,7 +878,7 @@ public final class ModelToJsonConverter {
     	//System.out.println("provider is an instance of " + provider.getClass().getName()); //providerModelImpl 21/7/2015
     	//    	
 		if(provider instanceof ProviderModel){ //23Nov15, we go straight for the VM Feature
-			LOGGER.debug("about to cast provider container to ProvderModel....");
+			logger.debug("about to cast provider container to ProvderModel....");
 			//System.out.println("about to cast provider container to ProvderModel....");
 			ProviderModel cloudPM = (ProviderModel) provider;
 			//System.out.println("cloudPM is : " + cloudPM.getName());
@@ -884,7 +907,7 @@ public final class ModelToJsonConverter {
 						EList<Attribute> attrs = sf.getAttributes(); 
 						if(attrs != null && !attrs.isEmpty()){
 							for(Attribute attr : attrs){
-								LOGGER.debug("Location current attribute : " + attr.getName());
+								logger.debug("Location current attribute : " + attr.getName());
 								if(attr.getName().equals("LocationId")){
 									locsStr.add(ModelUtil.switchValue(attr.getValue()));	//19Nov15 there should only be 1 value now, save time keep JsonArray
 									break;
@@ -896,7 +919,7 @@ public final class ModelToJsonConverter {
 						EList<Attribute> attrs = sf.getAttributes(); 
 						if(attrs != null && !attrs.isEmpty()){
 							for(Attribute attr : attrs){
-								LOGGER.debug("VM current attribute : " + attr.getName());
+								logger.debug("VM current attribute : " + attr.getName());
 								if(attr.getName().equals("VMOS")){
 									hm.put("VMOS",ModelUtil.switchValue(attr.getValue()));
 								}else if(attr.getName().equals("VMImageId")){
@@ -923,18 +946,18 @@ public final class ModelToJsonConverter {
 									if(dln != null){
 										defCredential.remove("defaultLoginName");	//there is no update method, has to remove then add
 				    					defCredential.add("defaultLoginName", dln);
-				    					LOGGER.debug("defaultLoginName : " + dln);
+				    					logger.debug("defaultLoginName : " + dln);
 									}else{
-										LOGGER.error("failed to switch defaultLoginName!");
+										logger.error("failed to switch defaultLoginName!");
 									}
 								}else if(attr.getName().equals("DefaultLoginPassword")){
 									String dlp = ModelUtil.switchValue(attr.getValue());
 									if(dlp != null){
 										defCredential.remove("defaultLoginPassword");	//there is no update method, has to remove then add
 				    					defCredential.add("defaultLoginPassword", dlp);
-				    					LOGGER.debug("defaultLoginPassword : " + dlp);
+				    					logger.debug("defaultLoginPassword : " + dlp);
 									}else{
-										LOGGER.error("failed to switch defaultLoginPassword!");
+										logger.error("failed to switch defaultLoginPassword!");
 									}
 								}
 							}
@@ -951,7 +974,7 @@ public final class ModelToJsonConverter {
 			EList<Attribute> attrs = cloudPM.getRootFeature().getAttributes(); 
 			if(attrs != null && !attrs.isEmpty()){
 				for(Attribute attr : attrs){
-					LOGGER.debug("CProvider current attribute : " + attr.getName());
+					logger.debug("CProvider current attribute : " + attr.getName());
 					if(attr.getName().equals("Driver")){
 						//LOGGER.debug("found Driver attribute.....");	
 						//System.out.print("attr valueType is : " + attr.getValueType());
@@ -964,7 +987,7 @@ public final class ModelToJsonConverter {
 					}else if(attr.getName().equals("Name")){ //19Nov15 - get cloud name here now!
 						//LOGGER.debug("found cloud Name attribute....");
 						cloudName = ModelUtil.switchValue(attr.getValue());
-						LOGGER.debug("cloudname is : " + cloudName);
+						logger.debug("cloudname is : " + cloudName);
 					}
 				}
 			}
@@ -1045,16 +1068,16 @@ public final class ModelToJsonConverter {
     	if(username != ""){
     		credentials.remove("username");	//there is no update method, has to remove then add
 			credentials.add("username", username);
-			LOGGER.debug("paasage credential user name : " + username);
+			logger.debug("paasage credential user name : " + username);
     	}
     	if(cc != null){   
 			if(cc.getPassword() != null){ 
 				credentials.remove("password");
 				credentials.add("password", cc.getPassword());
-				LOGGER.debug("credential user password : " + cc.getPassword());
+				logger.debug("credential user password : " + cc.getPassword());
 			}
     	}else{
-    		LOGGER.error("failed to retrieve the paasage credentials!");
+    		logger.error("failed to retrieve the paasage credentials!");
     	}
     	return credentials;
     }
@@ -1117,29 +1140,29 @@ public final class ModelToJsonConverter {
      */
     public static ScalabilityInfo getScalabilityInfoByXRef(Component internalComponent){
 		//
-		LOGGER.debug("processing : " + internalComponent.getName());
+		logger.debug("processing : " + internalComponent.getName());
 		Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(internalComponent, internalComponent.eResource().getResourceSet());			
-		LOGGER.debug("UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+		logger.debug("UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
 		//
 		ScalabilityInfo horizontalScalingInfo = new ScalabilityInfo(); //would need more if checking for other types of scaling info
 		//
 		for(Setting setting : references){
 			//
 			if(setting.getEObject() instanceof HorizontalScaleRequirement){
-				LOGGER.debug("About to cast eObj to HorizontalScaleRequirement ...");		
+				logger.debug("About to cast eObj to HorizontalScaleRequirement ...");		
 				HorizontalScaleRequirement hr = (HorizontalScaleRequirement) setting.getEObject(); //cast
 				horizontalScalingInfo = new ScalabilityInfo();
 				horizontalScalingInfo.maxInstances = hr.getMaxInstances();
 				horizontalScalingInfo.minInstances = hr.getMinInstances();				
 			}else if(setting.getEObject() instanceof HorizontalScalingAction){
-				LOGGER.debug("About to cast eObj to HorizontalScalingAction ...");
+				logger.debug("About to cast eObj to HorizontalScalingAction ...");
 				HorizontalScalingAction hscaction = (HorizontalScalingAction) setting.getEObject();//cast
 				horizontalScalingInfo.type = hscaction.getType().getLiteral();
 				//fnd find the rules
 				ScalabilityRule sr = getRuleByActionXRef(hscaction);
 				if(sr != null){
 					horizontalScalingInfo.ruleName = sr.getName();
-					LOGGER.debug("set horizontal scaling rule to : " + horizontalScalingInfo.ruleName);
+					logger.debug("set horizontal scaling rule to : " + horizontalScalingInfo.ruleName);
 				}else{
 					horizontalScalingInfo.ruleName = "null";
 				}
@@ -1154,15 +1177,15 @@ public final class ModelToJsonConverter {
 	 * @return	the retrieved {@link eu.paasage.camel.scalability.HorizontalScalingAction <em>HorizontalScalingAction</em>}
 	 */
 	public static ScalabilityRule getRuleByActionXRef(ScalingAction action){
-		LOGGER.debug("RuleByActionXRef processing : " + action.getName());
+		logger.debug("RuleByActionXRef processing : " + action.getName());
 		Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(action, action.eResource().getResourceSet());			
-		LOGGER.debug("UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+		logger.debug("UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
 		//
 		for(Setting setting : references){
 			//System.out.println("eObject class : " + setting.getEObject().eClass().getName());
 			if(setting.getEObject() instanceof ScalabilityRule){
 				//
-				LOGGER.debug("getRuleByActionXRef about to return rule ... ");			
+				logger.debug("getRuleByActionXRef about to return rule ... ");			
 				return (ScalabilityRule) setting.getEObject();
 			}
 		}

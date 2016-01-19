@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.ecore.EObject;
 
 import com.eclipsesource.json.JsonObject;
 
@@ -438,8 +439,8 @@ public class PlanGenerator {
 		//2. update application/instance tasks can also be done at any time as it only got the name attribute
 		//3. update and create tasks can be dependent on each other.  Instances depend on Types (definition), bindings depends on the consumer/dependent.
 		//4. update will not change the existing identifier, create will change the identifier.  Therefore update and create tasks do not depend on delete task.
-		//5. (18Jan16) delete tasks, the instance depends on the parent type (if the type is also being deleted) 
-		//6. (18Jan16) special case for orphan commuication, VMInstances must be deleted BEFORE the communication types
+		//5. (18Jan16) delete tasks, the type depends on the children instances (if the both are being deleted) 
+		//6. (18Jan16) special case for communication, VMInstances must be deleted BEFORE the communication types
 		//Orphan Communications
 		if(!orphanComTypeTasks.isEmpty()){
 			log.debug("adding task dependencies to orphan communications....");
@@ -473,17 +474,20 @@ public class PlanGenerator {
 		}
 		//VM Types
 		if(!vmTypeTasks.isEmpty()){
-			//18Jan2016 added dependencies to deleted VM instances
+			//18Jan16 added dependencies to deleted VM instances
 			for(VMTypeTask vm : vmTypeTasks){
-				log.debug("..about to find delete VMInstanceTask for vm  type(" + vm.getName() + ")");
-				for(VMInstanceTask vmi: vmInsTasks){
-					if(vmi.getTaskType().equals(TaskType.DELETE) && vmi.getJsonModel().get("type").asString().equals(vm.getName())){
-						log.debug("Adding vmInstanceTask(" + vmi.getName() + ") to vm type task(" + vm.getName() + ")....");
-						vm.getDependencies().add(vmi);
-				}				
-			}//end 18Jan2016
-				log.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
-			}
+				if(vm.getTaskType().equals(TaskType.DELETE)){
+					log.debug("..about to find delete VMInstanceTask for deleted vm type(" + vm.getName() + ")");
+					for(VMInstanceTask vmi: vmInsTasks){
+						if(vmi.getTaskType().equals(TaskType.DELETE) && vmi.getJsonModel().get("type").asString().equals(vm.getName())){
+							log.debug("Adding vmInstanceTask(" + vmi.getName() + ") to vm type task(" + vm.getName() + ")....");
+							vm.getDependencies().add(vmi);
+						}
+					}//end for vminstance	
+				}		
+			}//end for vmtypetask 18Jan16
+			log.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
+			//
 			this.plan.getTasks().addAll(vmTypeTasks);
 		}else{
 			log.info("No VM type tasks to add .....");
@@ -529,10 +533,10 @@ public class PlanGenerator {
 			//18Jan16 delete  component type task depends on delete component instance task
 			for(ComponentTypeTask ctt : compTypeTasks){
 				if(ctt.getTaskType().equals(TaskType.DELETE)){
-					log.debug("..about to find deleted componentInstanceTask for component type(" + ctt.getName() + ")");
+					log.debug("..about to find deleted componentInstanceTask for deleted component type(" + ctt.getName() + ")");
 					for(ComponentInstanceTask ict: compInsTasks){
 						if(ict.getTaskType().equals(TaskType.DELETE) && ict.getJsonModel().get("type").equals(ctt.getName())){
-							log.debug("Adding component instance task(" + ict.getName() + ") to component type(" + ctt.getName() + ")....");
+							log.debug("Adding deleted component instance task(" + ict.getName() + ") to deleted component type(" + ctt.getName() + ")....");
 							ctt.getDependencies().add(ict);
 						}	
 					}
@@ -621,7 +625,32 @@ public class PlanGenerator {
 					}else{
 						log.info("...did not locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
 					}
-				}//end if NOT delete task
+				}else{//delete task  19Jan2016 delete vm type depends on delete component type
+					for(Hosting deletedHosting : mc.getRemovedHostings()){
+						log.debug("..processing removed hosting(" + deletedHosting.getName() + "....");
+						if(hTask.getName().equals(deletedHosting.getName())){
+							log.debug("deleted hosting: the current deleted hosting is : " + hTask.getName() + "....");							
+						//provider is a VM or a component, consumer is a component 
+							ConfigurationTask hostingProviderTask = null;
+							ConfigurationTask hostingConsumerTask = null;
+							//find consumer
+							hostingConsumerTask = getDepended(compTypeTasks, ((Component) deletedHosting.getRequiredHost().eContainer()).getName(), TaskType.DELETE);
+							//first tried VM 
+							hostingProviderTask = getDepended(vmTypeTasks, ((Component) deletedHosting.getProvidedHost().eContainer()).getName(),TaskType.DELETE);
+							if(hostingProviderTask == null){
+								//try component type
+								hostingProviderTask = getDepended(compTypeTasks, ((Component) deletedHosting.getProvidedHost().eContainer()).getName(),TaskType.DELETE);
+							}
+							if(hostingProviderTask == null){
+								log.info("...failed to find deleted hosting provider for hosting(" + deletedHosting.getName() + ").....");  //it is legitimate					
+							}else{//provider also being deleted, need to first delete the consumer, then the provider
+								if(hostingConsumerTask != null){ //consumer also being deleted, so add dependency
+									hostingProviderTask.getDependencies().add(hostingConsumerTask);
+								}
+							}
+						}						
+					}
+				}//end 19Jan2016
 				this.plan.getTasks().add(hTask);	
 			}//end for hosting task		
 		}else{
@@ -693,7 +722,31 @@ public class PlanGenerator {
 					}else{
 						log.info("...did not locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName() + ".  Assume already deployed.");					//hrow new PlanGenerationException("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting task(" + hTask.getName());
 					}
-				}//end if NOT delete task
+				}else{//delete task  19Jan2016 delete vm type depends on delete component type
+					for(HostingInstance deletedHI : mc.getRemovedHostingInstances()){
+						log.debug("..processing removed hosting instance(" + deletedHI.getName() + "....");
+						if(hiTask.getName().equals(deletedHI.getName())){
+						//provider is a VMInstance or a ComponentInstance, consumer is a ComponentInstance
+							ConfigurationTask hostingInsProviderTask = null;
+							ConfigurationTask hostingInsConsumerTask = null;							
+							//find consumer
+							hostingInsConsumerTask = getDepended(compTypeTasks, ((ComponentInstance) deletedHI.getRequiredHostInstance().eContainer()).getName(), TaskType.DELETE);
+							//first tried VM 
+							hostingInsProviderTask = getDepended(vmTypeTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
+							if(hostingInsProviderTask == null){
+								//try component instances
+								hostingInsProviderTask = getDepended(compTypeTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
+							}
+							if(hostingInsProviderTask == null){					
+									log.info("...failed to find deleted hosting instance provider for hosting instance(" + deletedHI.getName() + ").....");  //it is legitimate					
+							}else{//provider also being deleted, need to first delete the consumer, then the provider
+								if(hostingInsConsumerTask != null){ //consumer also being deleted, so add dependency
+									hostingInsProviderTask.getDependencies().add(hostingInsConsumerTask);
+								}
+							}
+						}						
+					}
+				}//end 19Jan2016
 				this.plan.getTasks().add(hiTask);	
 			}//end for hosting instance task //18Jan16 EW does not recognise Hosting instances		
 		}else{
@@ -1345,9 +1398,10 @@ public class PlanGenerator {
 		VMInstanceTask vmit = new VMInstanceTask(vmi.getName(), type);
 		//get the info
 		if(type.equals(TaskType.DELETE)){
-			JsonObject nameObj = new JsonObject();
-			nameObj.add("name", vmi.getName());
-			vmit.setJsonModel(nameObj);	
+			//JsonObject nameObj = new JsonObject();
+			//nameObj.add("name", vmi.getName());
+			//19Jan2016
+			vmit.setJsonModel(ModelToJsonConverter.convertDeletedObj((ComponentInstance) vmi));	
 		}else{//create and update
 			vmit.setJsonModel(ModelToJsonConverter.convertVMInstance(vmi));	
 		}
@@ -1389,9 +1443,8 @@ public class PlanGenerator {
 		ComponentInstanceTask cit = new ComponentInstanceTask(ici.getName(), type);
 		//get the info
 		if(type.equals(TaskType.DELETE)){
-			JsonObject nameObj = new JsonObject();
-			nameObj.add("name", ici.getName());
-			cit.setJsonModel(nameObj);	
+			//19Jan2016
+			cit.setJsonModel(ModelToJsonConverter.convertDeletedObj((ComponentInstance) ici));	
 		}else{//create and update
 			cit.setJsonModel(ModelToJsonConverter.convertInternalComponentInstance(ici));
 		}
