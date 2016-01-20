@@ -1068,7 +1068,7 @@
     </constraints>
     <constraints
         xsi:type="provider:Implies"
-        name="RegionOne/OS7_OS_Constraint_Mapping"
+        name="RegionOne/8ce27cc1-5256-44fd-899b-682ba1ae7ad7_OS_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
@@ -1088,7 +1088,7 @@
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/OS7"
+            name="RegionOne/8ce27cc1-5256-44fd-899b-682ba1ae7ad7"
             value="6"/>
         <toValue
             xsi:type="type:EnumerateValue"
@@ -1607,7 +1607,7 @@
           name="RegionOne/OS6"
           value="5"/>
       <values
-          name="RegionOne/OS7"
+          name="RegionOne/8ce27cc1-5256-44fd-899b-682ba1ae7ad7"
           value="6"/>
       <values
           name="RegionOne/OS8"
