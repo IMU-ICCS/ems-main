@@ -5,11 +5,13 @@
     xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
   <locations
       xsi:type="typesPaasage:CountryUpperware"
-      name="France"/>
+      name="France"
+      continent="#//@locations.5"/>
   <locations
       xsi:type="typesPaasage:CountryUpperware"
       typeId="1"
-      name="Spain"/>
+      name="Spain"
+      continent="#//@locations.5"/>
   <locations
       xsi:type="typesPaasage:CountryUpperware"
       typeId="2"
@@ -18,11 +20,13 @@
   <locations
       xsi:type="typesPaasage:CountryUpperware"
       typeId="3"
-      name="Brasil"/>
+      name="Brasil"
+      continent="#//@locations.7"/>
   <locations
       xsi:type="typesPaasage:CountryUpperware"
       typeId="4"
-      name="US">
+      name="US"
+      continent="#//@locations.8">
     <alternativeNames>US East</alternativeNames>
     <alternativeNames>United States</alternativeNames>
   </locations>
@@ -48,8 +52,12 @@
   <locations
       xsi:type="typesPaasage:CountryUpperware"
       typeId="9"
-      name="UK">
+      name="UK"
+      continent="#//@locations.5">
     <alternativeNames>United Kingdom</alternativeNames>
+    <alternativeNames>Scotland</alternativeNames>
+    <alternativeNames>UK</alternativeNames>
+    <alternativeNames>uk</alternativeNames>
   </locations>
   <locations
       xsi:type="typesPaasage:CountryUpperware"
@@ -57,6 +65,7 @@
       name="Scotland"
       continent="#//@locations.5">
     <alternativeNames>United Kingdom</alternativeNames>
+    <alternativeNames>UK</alternativeNames>
   </locations>
   <locations
       xsi:type="typesPaasage:CityUpperware"

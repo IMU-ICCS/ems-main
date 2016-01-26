@@ -106,21 +106,33 @@ public class ProviderModelParser
 		
 		if(candidate!=null)
 		{
+			boolean found= false;
 			if(candidate.getLocation()!=null)
 			{
+				logger.debug("ProviderModelParser - parseOntology - Searching Candidate with Location "+candidate.getLocation().getName());
 				Provider aux= PaasageModelTool.searchProviderWithLocationInList(candidates, candidate); 
 				
 				if(aux!=null)
+				{	
 					candidate= aux; 
+					found= true; 
+				}	
 			}
 			else
 			{
 				Provider aux= PaasageModelTool.searchProviderInList(candidates, candidate); 
 				
 				if(aux!=null)
+				{	
 					candidate= aux; 
+					found= true; 
+					
+				}	
 				
 			}
+			
+			if(!found)
+				logger.warn("** 		The candidate with ID "+candidate.getId()+" was not found. It will be not considerd in the problem creation");
 			
 			CamelModel camelModel= (CamelModel) pmd.getPm().eContainer(); 
 			camelModel.setName(vmName);
@@ -172,7 +184,14 @@ public class ProviderModelParser
 	
 	
 	public void removeNoCandidateProviders(PaasageConfiguration configuration, List<Provider> candidates)
-	{
+	{	logger.debug("** 		Candidates size: "+candidates.size()); 
+	
+	
+		for(Provider c: candidates)
+		{
+			logger.debug("** 		Candidates ID: "+c.getId()); 
+		}
+		
 		for(int i=0; i<configuration.getProviders().size(); i++ )
 		{
 			Provider current= configuration.getProviders().get(i); 
