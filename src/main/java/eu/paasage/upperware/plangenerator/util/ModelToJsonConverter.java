@@ -979,7 +979,7 @@ public final class ModelToJsonConverter {
 									if(dlp != null){
 										defCredential.remove("defaultLoginPassword");	//there is no update method, has to remove then add
 				    					defCredential.add("defaultLoginPassword", dlp);
-				    					logger.debug("defaultLoginPassword : " + dlp);
+				    					logger.debug("defaultLoginPassword : NOT NULL, have switched value...."); //28Jan16 avoid printing password
 									}else{
 										logger.error("failed to switch defaultLoginPassword!");
 									}
@@ -1098,7 +1098,7 @@ public final class ModelToJsonConverter {
 			if(cc.getPassword() != null){ 
 				credentials.remove("password");
 				credentials.add("password", cc.getPassword());
-				logger.debug("credential user password : " + cc.getPassword());
+				//logger.debug("credential user password : " + cc.getPassword()); //28Jan2016 avoid printing user password
 			}
     	}else{
     		logger.error("failed to retrieve the paasage credentials!");
