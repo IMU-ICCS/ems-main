@@ -26,9 +26,9 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>fr.inria.gforge.paasage.saloon</groupId>
-  			<artifactId>paasage</artifactId>
-  			<version>2.1.7</version>
+			<groupId>fr.inria.saloon</groupId>
+  			<artifactId>paasage-saloon</artifactId>
+  			<version>2.1.8</version>
 		</dependency>
 		 
 		<dependency>
