@@ -62,6 +62,8 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
+import fr.inria.paasage.saloon.camel.mapping.ConceptToFeatureCamel;
+import fr.inria.paasage.saloon.camel.mapping.MappingCamel;
 import fr.inria.paasage.saloon.camel.mapping.MappingListCamel;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyCamel;
@@ -824,7 +826,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 								{
 									List<EObject> cloned= cloner.cloneModel(FMS_APP_CDO_SERVER_PATH+cloud); 
 									
-									pm= (CamelModel) cloned.get(0); 
+									pm= (CamelModel) cloned.get(cloned.size()-1); //We pick the last added model. It is necessary as it is not possible to delete models from CDO.  
 									
 									logger.debug("CDODatabaseProxy- The PM "+cloud+" has been cloaned!");
 								}
@@ -880,9 +882,9 @@ public class CDODatabaseProxy extends DatabaseProxy
 										
 										
 										MappingListCamel mappingList= (MappingListCamel) r2.getContents().get(0);  
-										
+																				
 										mappings.add(mappingList); 
-										logger.debug("CDODatabaseProxy- The mapping of "+cloud+" has been loaded!");
+										logger.debug("CDODatabaseProxy- The mapping of "+cloud+" has been loaded! File: "+info[1]);
 		
 										
 										ProviderModelDecorator pmw= new ProviderModelDecorator(cloud,pm.getProviderModels().get(0), mappingList); 
@@ -1063,7 +1065,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		CDOView view= cdoClient.openView();
 		EList<EObject> res= view.getResource(FMS_APP_CDO_SERVER_PATH+PaasageModelTool.getFMResourceId(pc, provider)).getContents(); 
 		
-		CamelModel pm= (CamelModel) res.get(0); 
+		CamelModel pm= (CamelModel) res.get(res.size()-1); 
 		
 		logger.debug("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
 		
@@ -1090,7 +1092,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		}
 		//TODO THE VIEW REMAINS OPEN
 		
-		CamelModel cm= (CamelModel) res.get(0);
+		CamelModel cm= (CamelModel) res.get(res.size()-1); //Always we pick the last model
 		
 		return cm; 
 		
@@ -1107,7 +1109,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		CDOView view= cdoClient.openView();
 		EList<EObject> res= view.getResource(FMS_APP_CDO_SERVER_PATH+PaasageModelTool.getFMResourceId(appId, providerId)).getContents(); 
 		
-		CamelModel pm= (CamelModel) res.get(0); 
+		CamelModel pm= (CamelModel) res.get(res.size()-1); 
 		
 		logger.debug("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
 		
