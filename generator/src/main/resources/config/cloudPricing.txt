@@ -1,4 +1,4 @@
-Amazon EC2;fr.inria.paasage.saloon.price.model.lib.AmazonEC2PriceEstimator;2
+Amazon;fr.inria.paasage.saloon.price.model.lib.AmazonEC2PriceEstimator;2
 US East;12
 M;Ubuntu;0.084
 L;Ubuntu;0.17
