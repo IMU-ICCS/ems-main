@@ -1,7 +1,12 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -24,7 +29,6 @@ import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.LongValueUpperware;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.StringValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.ValueUpperware;
@@ -261,9 +265,69 @@ public class SolutionManager {
 	
 	////////////////////////////////////////////////////////////////////
 
+	private void dump(Solution sol, String filename) throws S2DException
+	{
+		try {
+			Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+			for(VariableValue vv : sol.getVariableValue())
+			{
+					writer.write(vv.getVariable().getId()+" = "+getValueUpperware(vv.getValue())+"\n");
+			}
+			writer.close();
+		} catch (IOException e) {
+			throw new S2DException("Error when dumping to file "+filename);
+		}
+	}
+	
+	private void dumpSolution(String param, String filename) throws S2DException
+	{
+		CDOTransaction trans = _cdoClient.openTransaction();
+
+		loadFromCDO(trans);
+		EList<Solution> sols = constraintProblem.getSolution();
+		Solution solToDump=null;
+
+		// Checks
+		if (sols.isEmpty())
+		{
+			log.info("Empty solution -- doing nothing");
+			return;
+		}
+		// Doing the work
+		switch(param.toLowerCase())
+		{
+		case "first":
+			log.info("Going to dump the first solution -- found: "+sols.size());
+			solToDump = sols.get(0);
+			break;
+		case "last":
+			log.info("Going to dump the last solution -- found: "+sols.size());
+			solToDump = sols.get(sols.size()-1);
+			break;
+		default: // shall be a timestamp
+			long timestamp = Long.parseLong(param);
+			log.info("Going to dump Solution with timestamp: "+timestamp);
+			for(Solution sol : sols)
+			{
+				if (sol.getTimestamp() == timestamp)
+				{
+					solToDump = sol; break;
+				}
+			}
+		}
+
+		this.dump(solToDump, filename);
+
+		log.info("Closing CDO transaction & Client...");
+		trans.close();
+
+	}
+	
+	////////////////////////////////////////////////////////////////////
+
 	final int LIST_MAX_LEVEL=3;
 
-	String getValueUpperware(ValueUpperware val) throws S2DException
+	private String getValueUpperware(ValueUpperware val) throws S2DException
 	{
 		String res;
 		if      (val instanceof StringValueUpperware)  res = ((StringValueUpperware) val).getValue();
@@ -276,7 +340,7 @@ public class SolutionManager {
 		return res;
 	}
 	
-	void setValueUpperware(ValueUpperware val, String value) throws S2DException
+	private void setValueUpperware(ValueUpperware val, String value) throws S2DException
 	{
 		if      (val instanceof StringValueUpperware)  ((StringValueUpperware) val).setValue(value);
 		else if (val instanceof BooleanValueUpperware) ((BooleanValueUpperware) val).setValue(Boolean.valueOf(value));
@@ -287,22 +351,24 @@ public class SolutionManager {
 		else throw new S2DException("Unsupported NumericValueUpperware type: "+val);
 	}
 
+	////////////////////////////////////////////////////////////////////
+
 	private void listSolution(Solution sol, int level) throws S2DException
 	{
-		log.info("  Solution timestamp: "+sol.getTimestamp()+" #VariableValue: "+sol.getVariableValue().size()+" #MetricVariableValue: "+sol.getMetricVariableValue().size());
+		System.out.println("  Solution timestamp: "+sol.getTimestamp()+" #VariableValue: "+sol.getVariableValue().size()+" #MetricVariableValue: "+sol.getMetricVariableValue().size());
 		if (level>0) 
 		{
-			log.info("    #VariableValue: "+sol.getVariableValue().size());
+			System.out.println("    #VariableValue: "+sol.getVariableValue().size());
 			if (level>1)
 				for(VariableValue vv : sol.getVariableValue())
 				{
-					log.info("+    "+vv.getVariable().getId()+" = "+getValueUpperware(vv.getValue()));
+					System.out.println("    "+vv.getVariable().getId()+" = "+getValueUpperware(vv.getValue()));
 				}
-			log.info("    #MetricVariableValue: "+sol.getMetricVariableValue().size());
+			System.out.println("    #MetricVariableValue: "+sol.getMetricVariableValue().size());
 			if (level>1)
 				for(MetricVariableValue mvv : sol.getMetricVariableValue())
 				{
-					log.info("    "+mvv.getVariable().getId()+" = "+this.getValueUpperware(mvv.getValue()));
+					System.out.println("    "+mvv.getVariable().getId()+" = "+this.getValueUpperware(mvv.getValue()));
 				}
 		}
 	}
@@ -329,13 +395,14 @@ public class SolutionManager {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	private enum SOLUTION_MANAGER_ARGS_CMD { DEFAULT, LIST, ADD, DEL, WRITE, _WRITE};
+	private enum SOLUTION_MANAGER_ARGS_CMD { DEFAULT, LIST, ADD, DEL, DUMPFILE, _DUMPFILE, WRITE, _WRITE};
 
 	private static void usage()
 	{
 //		System.err.println("Usage: SolutionManager CPid [add timeStamp / new ]* [del timeStamp / all / last]* [list level (0-2)]* [ls == list 2]*");
 		System.err.println("Usage: SolutionManager CPid [add timeStamp / new ]* [list level (0-2)]* [ls == list 2]*");
-		System.err.println("Usage: SolutionManager CPid [write timeStamp filename (format: 1 line: variable value]");
+		System.err.println("Usage: SolutionManager CPid [dump <timeStamp/first/last> filename (create a file that contains current solutio)]");
+		System.err.println("Usage: SolutionManager CPid [write <timeStamp/first/last> filename (filename: each line is in the form of 'variable name' = 'value' -- without quotes)]");
 		System.exit(-1);
 		
 	}
@@ -350,7 +417,7 @@ public class SolutionManager {
 		SolutionManager gen = new SolutionManager(paasageConfigurationID);
 
 		try {
-			String _write_tmp=null;
+			String _tmp=null;
 			SOLUTION_MANAGER_ARGS_CMD next_op=SOLUTION_MANAGER_ARGS_CMD.DEFAULT;
 			for(int i=1; i<args.length; i++) 
 			{
@@ -360,14 +427,17 @@ public class SolutionManager {
 				case LIST: next_op = SOLUTION_MANAGER_ARGS_CMD.DEFAULT; gen.listSolutions(a); break;
 				case ADD:  next_op = SOLUTION_MANAGER_ARGS_CMD.DEFAULT; gen.addEmptySolution(a);break;
 				case DEL:  next_op = SOLUTION_MANAGER_ARGS_CMD.DEFAULT; gen.removeSolution(a);break;
-				case WRITE: next_op = SOLUTION_MANAGER_ARGS_CMD._WRITE; _write_tmp=a;break;
-				case _WRITE: next_op = SOLUTION_MANAGER_ARGS_CMD.DEFAULT; gen.writeSolution(_write_tmp,a);break;
+				case DUMPFILE: next_op = SOLUTION_MANAGER_ARGS_CMD._DUMPFILE;  _tmp=a;break;
+				case _DUMPFILE: next_op = SOLUTION_MANAGER_ARGS_CMD.DEFAULT; gen.dumpSolution(_tmp,a);break;
+				case WRITE: next_op = SOLUTION_MANAGER_ARGS_CMD._WRITE;  _tmp=a;break;
+				case _WRITE: next_op = SOLUTION_MANAGER_ARGS_CMD.DEFAULT; gen.writeSolution(_tmp,a);break;
 
 				default:
 					if (a.equals("list")) 	  next_op = SOLUTION_MANAGER_ARGS_CMD.LIST;
 					else if (a.equals("ls"))  gen.listSolutions("2"); // shortcut
 					else if (a.equals("add")) next_op = SOLUTION_MANAGER_ARGS_CMD.ADD;
 //					else if (a.equals("del")) next_op = SOLUTION_MANAGER_ARGS_CMD.DEL;
+					else if (a.equals("dump")) next_op = SOLUTION_MANAGER_ARGS_CMD.DUMPFILE;
 					else if (a.equals("write")) next_op = SOLUTION_MANAGER_ARGS_CMD.WRITE;
 					else {
 						log.fatal("Unknown parameter: "+a);
