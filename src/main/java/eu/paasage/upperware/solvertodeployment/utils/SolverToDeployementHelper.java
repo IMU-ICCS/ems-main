@@ -9,6 +9,8 @@ import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.Communication;
+import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
@@ -22,6 +24,7 @@ import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
@@ -231,6 +234,10 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem, int solutionId) throws S2DException
 	{		
 		Solution solution = _constraintProblem.getSolution().get(solutionId);
+		
+		for(MetricVariable mv : _constraintProblem.getMetricVariables()) {
+			String metricId = mv.getId();
+		}
 
 			EList<VariableValue> variables  = solution.getVariableValue();
 
