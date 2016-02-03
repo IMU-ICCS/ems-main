@@ -12,7 +12,15 @@
 package eu.paasage.init;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
@@ -55,19 +63,13 @@ public class Init {
 	 */	
 	public Init()
 	{
-		//appFactory= ApplicationFactory.eINSTANCE; 
-		System.out.println("Init 1");
+
 		ApplicationPackage.eINSTANCE.eClass();
-		System.out.println("Init 2");
 		TypesPaasagePackage.eINSTANCE.eClass(); 
-		System.out.println("Init 3");
 		TypesPackage.eINSTANCE.eClass(); 
-		System.out.println("Init 4");
 		CpPackage.eINSTANCE.eClass();
-		System.out.println("Init 5");
 		OntologyPackage.eINSTANCE.eClass();
 
-		System.out.println("Init 6");
 		TypePackage.eINSTANCE.eClass();
 		MappingPackage.eINSTANCE.eClass();
 		
@@ -125,6 +127,17 @@ public class Init {
 	public static void main(String[] args) 
 	{
 		System.out.println("Starting");
+		OutputStream output;
+		try {
+			output = new FileOutputStream("."+File.separator+"system.err.txt");
+			
+			PrintStream printErr = new PrintStream(output);
+			System.setErr(printErr);
+			
+		} catch (FileNotFoundException e) {
+			
+			e.printStackTrace();
+		}
 		if(args.length==2)
 		{
 			File xmiFile= new File(args[0]); 
@@ -143,11 +156,49 @@ public class Init {
 					
 					System.out.println("File: "+res);
 					
+					String resourceId= args[1]; 
+					
 					if(res!=null)
 					{
 						CamelModel model= (CamelModel) res.getContents().get(0);
+						
+						CDOClient client= init.getClient(); 
+						
+						EObject obj= null; 
+						CDOTransaction trans=  client.openTransaction(); ; 
+						Resource r= null;
+						
+						try{
+							r= trans.getResource(resourceId); 
+							
+							if(r!=null)
+								obj= r.getContents().get(0); 
+						}
+						catch(Exception e)
+						{
+							System.out.println("Model with ID "+resourceId+" does not exist");
+						}
+
+						try
+						{
+							if(obj!=null)
+							{
+								
+								r.getContents().clear();
+								trans.commit();
+								trans.close();
+								
+								//client.deleteObject((CDOObject) obj,trans, true); //THIS METHOD DOES NOT WORK
+								System.out.println("Model with ID "+resourceId+" was remvoed from CDO!");
+							}
+						}
+						catch(Exception e)
+						{
+							System.out.println("Model with ID "+resourceId+" already exists but it is not possible to remove it from CDO.");
+						}
 					
-						init.getClient().storeModel(model, args[1], true);
+
+						client.storeModel(model, resourceId, true);
 					
 						System.out.println("Model Stored!");
 						
