@@ -115,6 +115,10 @@ public class CamelModelProcessor extends ModelProcessor {
 	}
 	
 	
+	/**
+	 * Gets elements from {@link #model} and fills the specified pc.
+	 * @param pc The PaaSage Configuration to be filled
+	 */
 	public void parseModel(PaaSageConfigurationWrapper pc) 
 	{
 		

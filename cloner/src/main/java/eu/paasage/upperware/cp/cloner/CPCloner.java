@@ -30,6 +30,9 @@ import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 
+/**
+ * This class clones a model stored in CDO.
+ */
 public class CPCloner 
 {
 	
@@ -76,7 +79,11 @@ public class CPCloner
 		return client; 
 	}
 	
-	
+	/**
+	 * Clones and stores in CDO.
+	 * @param id  the source identifier
+	 * @param copyId  the target identifier
+	 */
 	public void cloneModel(String id, String copyId)
 	{
 		CDOClientExtended extended= createCDOClient(); 
@@ -98,6 +105,11 @@ public class CPCloner
 				
 	}
 	
+	/**
+	 * Clones and returns a model stored in CDO.
+	 * @param id  the source identifier
+	 * @return  the cloned model
+	 */
 	public List<EObject> cloneModel(String id)
 	{
 		CDOClientExtended extended= createCDOClient(); 
