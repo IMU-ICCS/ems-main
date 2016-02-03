@@ -608,7 +608,7 @@ public class GenerationOrchestrator
 	}
 	
 	/**
-	 * Lunch the CP Genetor
+	 * Launch the CP Generator
 	 * @param args The CDO id of the model
 	 */
 	public static void main(String[] args) 
