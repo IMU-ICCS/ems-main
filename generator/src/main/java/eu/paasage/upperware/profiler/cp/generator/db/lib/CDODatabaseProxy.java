@@ -853,7 +853,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 										cloudFile=FileTool.getInputStreamFromFileName(info[0]);
 										if(cloudFile==null)
 											cloudFile = FileTool.getInputStreamFromLocalFile(info[0]);
-																				
+											
 										r= ModelTool.loadModelFromInputStream(rs, info[0], cloudFile); 
 										
 										pm= (CamelModel) r.getContents().get(0); 
@@ -877,6 +877,12 @@ public class CDODatabaseProxy extends DatabaseProxy
 									{
 										providersList.add(pm); 
 										logger.debug("CDODatabaseProxy- The PM "+cloud+" has been loaded!");
+										
+										InputStream cloudFile=FileTool.getInputStreamFromFileName(info[0]);
+										if(cloudFile==null)
+											cloudFile = FileTool.getInputStreamFromLocalFile(info[0]);
+											
+										ModelTool.loadModelFromInputStream(rs, info[0], cloudFile); //Required, otherwise it fails when executing with jar
 										
 										Resource r2= ModelTool.loadModelFromInputStream(rs, info[1], mappingFile); 
 										
