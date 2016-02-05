@@ -24,7 +24,6 @@ object Expr {
         case OperatorEnum.MINUS => Subtract(acc, fromWP3(elem, variableMap))
         case OperatorEnum.TIMES => Multiply(acc, fromWP3(elem, variableMap))
         case OperatorEnum.DIV   => Divide(acc, fromWP3(elem, variableMap))
-        case OperatorEnum.MEAN  => throw new Exception(x.getOperator + " operator is not supported")
       })
     }
     case x: cp.Variable => Variable(x.getId)
