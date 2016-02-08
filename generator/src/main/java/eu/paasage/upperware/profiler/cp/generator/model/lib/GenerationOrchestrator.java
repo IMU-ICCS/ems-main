@@ -167,8 +167,8 @@ public class GenerationOrchestrator
 	}
 	
 	/**
-	 * Generates the CP model by using the provided model infos
-	 * @param modelInfos The list of model infos
+	 * Generates the CP model by using the provided model path
+	 * @param modelPath The path of the model
 	 * @return The id or path of the generate CP Model. It is stored in CDO
 	 */
 	public String generateCPModel(String modelPath)
