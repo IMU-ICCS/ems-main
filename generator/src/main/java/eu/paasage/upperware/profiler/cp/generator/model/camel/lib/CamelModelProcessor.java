@@ -42,13 +42,11 @@ import eu.paasage.upperware.metamodel.application.ComponentMetricRelationship;
 import eu.paasage.upperware.metamodel.application.PaaSageGoal;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.Provider;
-import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionType;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.ModelProcessor;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
@@ -63,7 +61,7 @@ import fr.inria.paasage.saloon.camel.ontology.QuantifiableBoundedElementCamel;
  * @author danielromero
  *
  */
-public class CamelModelProcessor extends ModelProcessor {
+public class CamelModelProcessor {
 
 	/*
 	 * ATTRIBUTES
@@ -94,6 +92,10 @@ public class CamelModelProcessor extends ModelProcessor {
 	 */
 	protected static Logger logger= GenerationOrchestrator.getLogger(); 
 	
+	/*
+	 * The valid value
+	 */
+	protected boolean valid;
 
 	/*
 	 * CONSTRUCTOR
@@ -126,7 +128,7 @@ public class CamelModelProcessor extends ModelProcessor {
 		logger.info(" ** 	Calling DeploymentModelParser");
 		deploymentModelParser.parsePIM(model.getDeploymentModels().get(0), pc);
 		
-		Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
+		//Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
 		
 		List<VM> vms=  DeploymentModelParser.getVMList(model.getDeploymentModels().get(0));
 		//logger.info(" ** 	Processing Opt Rerqs");
@@ -153,7 +155,7 @@ public class CamelModelProcessor extends ModelProcessor {
 			
 			ConceptCamel gbUnit= ProviderModelParser.getConceptByName(UnitType.GIGABYTES.getLiteral(), ontology.getReusedConcept());
 			
-			ConceptCamel mghzUnit= ProviderModelParser.getConceptByName(fr.inria.paasage.saloon.camel.tool.Constants.GHZ_UNIT, ontology.getReusedConcept());
+			//ConceptCamel mghzUnit= ProviderModelParser.getConceptByName(fr.inria.paasage.saloon.camel.tool.Constants.GHZ_UNIT, ontology.getReusedConcept());
 			
 			logger.debug("CamelModelProcessor - parseModel - Unit concepts Retrieved! ");
 			
@@ -673,8 +675,29 @@ public class CamelModelProcessor extends ModelProcessor {
 				
 	}
 	
+	/**
+	 * Returns the Camel Model
+	 * @return The Camel Model
+	 */
 	public CamelModel getCamelModel()
 	{
 		return model; 
 	}
+	
+	/**
+	 * Indicates if the processor is valid
+	 * @return The valid value
+	 */
+	public boolean isValid() {
+		return valid;
+	}
+
+	
+	/**
+	 * Sets the valid value
+	 * @param valid The new valid value
+	 */
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	} 
 }

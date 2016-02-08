@@ -54,7 +54,6 @@ import eu.paasage.upperware.metamodel.cp.NumericDomain;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;
 import eu.paasage.upperware.metamodel.cp.NumericListDomain;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.RangeDomain;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
@@ -84,7 +83,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	/*
 	 * CONSTANTS
 	 */
-	private static final String NUM_VM_FOR_APP_COMPONENT ="num_vm_for_app_component"; 
+	//private static final String NUM_VM_FOR_APP_COMPONENT ="num_vm_for_app_component"; 
 		
 	private static final String MIN_NUM_VM ="min_num_vm"; 
 	
@@ -98,13 +97,13 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	private static final String VM_PROFILE_VAR_PREFIX= "number_vm_"; 
 	
-	private static final String MIN_COST_FUNCT_PREFIX= "min_cost_"; 
+	//private static final String MIN_COST_FUNCT_PREFIX= "min_cost_"; 
 	
 	private static final String COST= "Cost"; 
 	
 	private static final int MAX_NUMBER_OF_VMS= 128; 
 	
-	private static final int MIN_NUMBER_OF_VMS= 0; 
+	//private static final int MIN_NUMBER_OF_VMS= 0; 
 	
 	
 	

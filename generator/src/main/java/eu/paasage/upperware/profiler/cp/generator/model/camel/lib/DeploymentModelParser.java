@@ -316,7 +316,7 @@ public class DeploymentModelParser
 		
 		EList<HostingInstance> hostingInstances= pim.getHostingInstances(); 
 		
-		EList<InternalComponentInstance> componentInstances= pim.getInternalComponentInstances(); 
+		//EList<InternalComponentInstance> componentInstances= pim.getInternalComponentInstances(); 
 		
 		for(Hosting hosting: hostingRelationships)
 		{

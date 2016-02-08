@@ -1,14 +1,11 @@
 package eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.zeromq.ZMQ;
 
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.ModelFileInfo;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
 
 public class ZeroMQServer 
@@ -134,20 +131,20 @@ public class ZeroMQServer
             
             System.out.println("model id "+modelId);
 
-            List<ModelFileInfo> modelInfos=  null; 
+            //List<ModelFileInfo> modelInfos=  null; 
         	
-			ModelFileInfo mfi= new ModelFileInfo(modelId, "camel");
+			//ModelFileInfo mfi= new ModelFileInfo(modelId, "camel");
 			
-			modelInfos= new ArrayList<ModelFileInfo>(); 
+			//modelInfos= new ArrayList<ModelFileInfo>(); 
 			
-			modelInfos.add(mfi); 
+			//modelInfos.add(mfi); 
 			
 			System.out.println("Creating GenerationOrchestrator");
 			
 			GenerationOrchestrator go= new GenerationOrchestrator(); 
 				
 			System.out.println("Generating CP Model");
-			String paasageConfigID= go.generateCPModel(modelInfos); 
+			String paasageConfigID= go.generateCPModel(modelId); 
 			System.out.println("CP Model Generated");
             
 			publisher.sendMore(cpModelIdTopic); 

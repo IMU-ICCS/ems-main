@@ -46,7 +46,6 @@ import eu.paasage.upperware.metamodel.cp.RangeDomain;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.metamodel.tool.UpperwareModelTool;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
@@ -54,7 +53,6 @@ import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
-import eu.paasage.upperware.profiler.cp.generator.model.derivator.lib.CPModelDerivator;
 
 public class CPModelTool {
 	

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -35,7 +34,6 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.ModelFileInfo;
 
 /**
  * This class provides auxiliary methods to deal with system files
@@ -59,7 +57,6 @@ public class FileTool
 	{
 		try
         {
-            byte[] buf = new byte[1024];
             ZipInputStream zipinputstream = null;
             ZipEntry zipentry;
             zipinputstream = new ZipInputStream(new FileInputStream(file));
@@ -70,7 +67,6 @@ public class FileTool
                 //for each entry to be extracted
                 String entryName = zipentry.getName();
 
-                int n;
                 FileOutputStream fileoutputstream;
                 
                 if(zipentry.isDirectory())
@@ -548,51 +544,4 @@ public class FileTool
 		return is; 
 	}
 	
-	/**
-	 * Creates a list of model file info by using a zip file
-	 * @param zipFile The zip file
-	 * @param workingDir The working directory to unzip the file
-	 * @return List of models that are in the zip file
-	 */
-	public static List<ModelFileInfo> processZipFile(File zipFile, File workingDir)
-	{
-		List<ModelFileInfo> modelInfos= new ArrayList<ModelFileInfo>(); 
-		
-		FileTool.unzipFile(workingDir.getAbsolutePath(), zipFile); 
-		
-		File desriptorFile= FileTool.searchFileByName(workingDir, Constants.PAASAGE_MODEL_DESCRIPTOR_FILE); 
-		
-		if(desriptorFile!=null)
-		{	
-		
-			Properties descriptorAsProperties= FileTool.loadPropertiesFile(desriptorFile); 
-			
-			Set<Object> keys= descriptorAsProperties.keySet(); 
-			
-			for(Object key: keys)
-			{
-				String fileName= descriptorAsProperties.getProperty((String) key); 
-				
-				File currentFile= FileTool.searchFileByName(workingDir, fileName); 
-				
-				if(currentFile!=null)
-				{
-					ModelFileInfo mfi= new ModelFileInfo(currentFile.getAbsolutePath(), (String) key); 
-				
-					modelInfos.add(mfi); 
-				}
-				else
-					logger.warn("FileTool- processZipFile - The file "+ fileName +" does not exist in the zip file!"); 
-				
-				
-						
-			}
-		}
-		else
-			logger.error("FileTool- processZipFile - The PaaSage descriptor file does not exist in the zip file!"); 
-		
-		return modelInfos; 
-	}
-
-
 }

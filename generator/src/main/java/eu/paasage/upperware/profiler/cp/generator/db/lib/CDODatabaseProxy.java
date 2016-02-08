@@ -14,12 +14,9 @@ package eu.paasage.upperware.profiler.cp.generator.db.lib;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -62,8 +59,6 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
-import fr.inria.paasage.saloon.camel.mapping.ConceptToFeatureCamel;
-import fr.inria.paasage.saloon.camel.mapping.MappingCamel;
 import fr.inria.paasage.saloon.camel.mapping.MappingListCamel;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyCamel;
@@ -200,11 +195,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		cdoClient.registerPackage(OntologyPackage.eINSTANCE);
 		cdoClient.registerPackage(MappingPackage.eINSTANCE);
 		cdoClient.registerPackage(TypePackage.eINSTANCE);
-		
-		//cdoClient.registerPackage(OntologyPackage.eINSTANCE);
-		
-		//cdoClient.registerPackage(MappingPackage.eINSTANCE);
-		
+				
 		cdoClient.registerPackage(CamelPackage.eINSTANCE);
 		cdoClient.registerPackage(ProviderPackage.eINSTANCE);
 		
@@ -285,9 +276,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		}
 		else
 			functionTypes= (FunctionTypes) functionTypesList.get(0); 
-		
-		//System.setErr(originalErrOutput); 
-		
+				
 	}
 	
 	/**
