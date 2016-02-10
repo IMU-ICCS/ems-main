@@ -165,7 +165,7 @@ public class CloudMLHelper {
 
 	public static HostingInstance buildNewHostingInstance(String acName,VMInstance vmInstance, InternalComponentInstance internalComponentInstance, Hosting hosting) {
 		HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
-		hostingInstance.setName("VMto" + acName + "HostingInstance");
+		hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalCount());
 		EList<ProvidedHostInstance> pis = vmInstance.getProvidedHostInstances();
 		hostingInstance.setProvidedHostInstance(pis.get(0));
 		hostingInstance.setRequiredHostInstance(internalComponentInstance.getRequiredHostInstance());
