@@ -127,9 +127,9 @@ public class ApplicationInstanceAction implements Action {
 			//LOGGER.log(Level.INFO, "from Application Instance " + dataShare.getApplicationId());
 			
 			//To Do Exec API Call
-			String appType = objParams.get("type").asString();
+/*			String appType = objParams.get("type").asString();
 			String appExecId = dataShare.getApplicationId(appType);
-			int appExId = Integer.parseInt(appExecId);
+			int appExId = Integer.parseInt(appExecId);*/
 			//Application app = dataShare.getApplication(appType);
 			//String execWareAppInstID = "/api/applicationInstance/"+this.appInstName;//substitute with API call
 			String execWareAppInstID = dataShare.getApplicationInstanceId();

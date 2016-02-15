@@ -101,6 +101,10 @@ public class InternalComponentInstanceAction implements Action {
 					}
 				}
 				
+				if(appliInstCamelName.equalsIgnoreCase("")){
+					appliInstCamelName = dataShare.getApplicationInstanceName_Camel();
+				}
+				
 				System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
 			} catch(Exception e){/*
 				try {
@@ -240,7 +244,8 @@ public class InternalComponentInstanceAction implements Action {
 			
 			String iCompInstID = null;
 			
-			boolean status = true;
+			boolean deleted = true;
+			boolean status = false;
 			
 			try{
 				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
@@ -249,16 +254,16 @@ public class InternalComponentInstanceAction implements Action {
 				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Delete)--- " + depActions.size());
 				for(Object obj : depActions){
 					System.out.println("-- " + obj.toString() + " ");
-					if(obj.getClass()==ApplicationInstanceAction.class){
-						appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
-					}else if(obj.getClass()==VMInstanceAction.class){
-						vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
-					}else if(obj.getClass()==InternalComponentAction.class){
-						appCompTypeName = ((InternalComponentAction)obj).getCompName();
+					if(obj.getClass()==ApplicationInstanceAction.class){//doesn't depend for deletion, so commenting
+						//appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
+					}else if(obj.getClass()==VMInstanceAction.class){//doesn't depend for deletion, so commenting
+						//vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
+					}else if(obj.getClass()==InternalComponentAction.class){//doesn't depend for deletion, so commenting
+						//appCompTypeName = ((InternalComponentAction)obj).getCompName();
 					}
 				}
 				
-				System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
+				//System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
 			} catch(Exception e){/*
 				try {
 				throw new ActionError();
@@ -269,13 +274,13 @@ public class InternalComponentInstanceAction implements Action {
 				e.printStackTrace();
 			}
 			
-			appliInstID = Integer.parseInt(dataShare.getApplicationInstanceId(appliInstCamelName));
+			/*appliInstID = Integer.parseInt(dataShare.getApplicationInstanceId(appliInstCamelName));
 			String appCompTID = dataShare.getAppCompID(appCompTypeName);
 			appCompTypeID = Integer.parseInt(appCompTID);
 			String vmInstID = dataShare.getEntityVMIid(vmiCamelName);
 			vmiID = Integer.parseInt(vmInstID);
 			
-			LOGGER.log(Level.INFO, "To update Component Instance. Fetched appliInstID " + appliInstID + " appCompTypeID " + appCompTypeID + " vmiID " + vmiID);
+			LOGGER.log(Level.INFO, "To delete Component Instance. Fetched appliInstID " + appliInstID + " appCompTypeID " + appCompTypeID + " vmiID " + vmiID);*/
 			
 			iCompInstID = dataShare.getCompInstID(iCompInstName);
 			int iCompInstID_temp = Integer.parseInt(iCompInstID);
@@ -283,7 +288,25 @@ public class InternalComponentInstanceAction implements Action {
 			//To Do Exec API Call
 			//iCompInstID = "/api/instance/" + iCompInstName;//POST using parameters appliInstID, appCompTypeID & vmiID
 			try {
-				status = execInterfacer.deleteInstance(iCompInstID_temp);
+				deleted = execInterfacer.deleteInstance(iCompInstID_temp);
+			
+				int timeout = 60;
+				while(deleted && (!(status = execInterfacer.queryStateDeletedInstance(iCompInstID_temp))) && timeout > 0){
+					LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. VM Instance : ID " + iCompInstID_temp);
+					try {
+						Thread.sleep(30000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					timeout--;
+				}
+				
+				if(deleted && (timeout > 0))
+					status = true;
+				else
+					LOGGER.log(Level.WARNING, "Error deleting Component Instance : ID " + iCompInstID_temp);
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -291,11 +314,30 @@ public class InternalComponentInstanceAction implements Action {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if(status){
-				LOGGER.log(Level.INFO, "Updated Component Instance : ID " + iCompInstID);
-				status = status && dataShare.deleteCompInst(iCompInstName);
-				if(status)
+			
+			/*LOGGER.log(Level.INFO, "Waiting for 2 mins");
+			
+			try {
+				Thread.sleep(120000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+			
+			if(deleted && status){
+				LOGGER.log(Level.INFO, "Deleted Component Instance : ID " + iCompInstID);
+				deleted = deleted && dataShare.deleteCompInst(iCompInstName);
+				if(deleted){
 					LOGGER.log(Level.INFO, "Mapping Updated for Component Instance : ID " + iCompInstID);
+					
+/*					try {
+						LOGGER.log(Level.INFO, "Sleeping for two minutes enabling completion of deletion operation");
+						Thread.sleep(120000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}*/
+				}
 			}
 		}
 	}

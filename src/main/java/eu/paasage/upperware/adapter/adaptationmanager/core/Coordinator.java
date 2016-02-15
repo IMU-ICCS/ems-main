@@ -61,6 +61,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.jgrapht.traverse.GraphIterator;
 import org.jgrapht.traverse.TopologicalOrderIterator;
+import org.junit.Test;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -256,6 +257,107 @@ public class Coordinator {
 		 * } state.putAll(outputMap);
 		 */
 		List<ConfigurationTask> tasks = plan.getTasks();
+	}
+	
+	@Test
+	public boolean deployModelIDThreaded(int dmIndex, ReasonerInterfacer interfacer){
+
+		LOGGER.log(Level.INFO, "Start of threaded execution");
+
+		Map<String, Object> outputMap = new HashMap<String, Object>();
+		
+		String modelName = "some_model";
+		
+		if(interfacer == null)
+			deployModelIDThreaded(dmIndex);
+		else{
+			if(targetModel == null){//Simple deployment
+				
+				this.reasonerInterfacer = interfacer;
+				
+				if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+					
+					reasonerInterfacer.openTransaction();
+					targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+					modelName = reasonerInterfacer.getModelName(targetModel);
+					taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+					reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
+				
+				}else{//getting model from Model file
+					
+					targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+					modelName = reasonerInterfacer.getModelName(targetModel);
+					taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				}
+				
+			}else if(targetModel != null){//Reconfig
+				
+				currentModel = targetModel;
+				
+				this.reasonerInterfacer = interfacer;
+				
+				//get new targetModel and deploy
+				if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+					
+					reasonerInterfacer.openTransaction();
+					targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+					modelName = reasonerInterfacer.getModelName(targetModel);
+					taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+					reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
+					
+				}else{//getting model from Model file
+					
+					targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+					modelName = reasonerInterfacer.getModelName(targetModel);
+					taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+					
+				}
+			}
+		}
+
+		DirectedGraph<Action, DefaultEdge> g = GraphUtilities
+				.taskGraphToActions(taskPlan, execInterfacer);
+
+		/*
+		 * //GENERATING DEPENDENCIES OF ACTIONS AS A GRAPH DirectedGraph<Action,
+		 * DefaultEdge> g = planGenerator.generatePlanGraph(currentModel,
+		 * targetModel);
+		 * 
+		 * // Plan plan = planGenerator.generate(currentModel, targetModel); //
+		 * // // validate plan // if (!validator.validate(plan)) // throw new
+		 * AssertionError();
+		 */
+
+		// execute plan in parallel now
+
+		LOGGER.log(Level.INFO, "Starting threaded Action execution");
+
+		int cpus = Runtime.getRuntime().availableProcessors();
+
+		executor = new ThreadExecutor(cpus, 300, new LinkedBlockingQueue<Runnable>());
+		
+		graph = g;
+
+		synchronized (graph) {
+			neigh = new DirectedNeighborIndex<Action, DefaultEdge>(graph);
+
+			initializeNeighbourDependencies();
+			
+			ApplicationController.resetMonitorEntities();
+
+			// dependencies();
+
+			schedule();
+			LOGGER.log(Level.INFO, "End of Scheduling thread actions");
+			
+			if(!ApplicationController.monitorEntitiesStatus(execInterfacer, 30))
+				return false;
+
+			//Deployment completed successfully. So publish to metrics collector
+			if(!appController.publishToMetric(modelName))
+				LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
+			return true;
+		}
 	}
 
 	public boolean deployModelIDThreaded(int dmIndex){

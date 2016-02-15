@@ -126,6 +126,10 @@ public class InternalComponentAction implements Action {
 					}
 				}
 				
+				if(appliCamelName.equalsIgnoreCase("")){
+					appliCamelName = dataShare.getApplicationName_Camel();
+				}
+				
 				System.out.println("AppName:: " + appliCamelName + " VMT name: " + vmtCamelName);
 				
 				boolean exists = false;
@@ -336,14 +340,14 @@ public class InternalComponentAction implements Action {
 				LOGGER.log(Level.INFO, "--------------Breakpoint IntComp (Delete)--- " + depActions.size());
 				for(Object obj : depActions){
 					System.out.println("-- " + obj.toString() + " ");
-					if(obj.getClass()==ApplicationAction.class){
-						appliCamelName = ((ApplicationAction) obj).getAppName();
-					}else if(obj.getClass()==VMAction.class){
-						vmtCamelName = ((VMAction)obj).getVMName();
+					if(obj.getClass()==ApplicationAction.class){//doesn't depend for deletion, so commenting
+						//appliCamelName = ((ApplicationAction) obj).getAppName();
+					}else if(obj.getClass()==VMAction.class){//doesn't depend for deletion, so commenting
+						//vmtCamelName = ((VMAction)obj).getVMName();
 					}
 				}
 				
-				System.out.println("AppName:: " + appliCamelName + " VMT name: " + vmtCamelName);
+				//System.out.println("AppName:: " + appliCamelName + " VMT name: " + vmtCamelName);
 			
 				
 				AppCompID = dataShare.getAppCompID(iCompName);
@@ -376,12 +380,7 @@ public class InternalComponentAction implements Action {
 				}*/
 				e.printStackTrace();
 			}
-			
-			
-			
 		}
-		
-		
 	}
 
 	public ConfigurationTask getTask() {

@@ -106,8 +106,10 @@ public class CommunicationAction implements Action {
 			
 			//check if created forcibly from VMType action
 			boolean commTypeExists = false;
-			if(dataShare.getCommID(communicationName)!=null)
-				commTypeExists = true;			
+			if(dataShare.getCommID(communicationName)!=null){
+				commTypeExists = true;
+				LOGGER.log(Level.INFO, "Communication exists : " + communicationName);
+			}
 			
 			Collection<Action> depActions = Coordinator.getDependentActions(this);
 			LOGGER.log(Level.INFO, "--------------Breakpoint CommAct--- " + depActions.size());
@@ -171,7 +173,7 @@ public class CommunicationAction implements Action {
 			}
 			
 			
-			if(!commTypeExists && provPortID != null && consPortID != null && dataShare.addComm(communicationName, dataShare.getEntityProvPort(provPortName), dataShare.getEntityReqPort(consPortName))){
+			if(!containsOrphan && provPortID != null && consPortID != null && dataShare.addComm(communicationName, dataShare.getEntityProvPort(provPortName), dataShare.getEntityReqPort(consPortName))){
 
 				//To Do Exec API Call
 				//commExecID = "/api/communication/" + communicationName;//POST using parameters communicationName, provCompID, consCompID, port
@@ -183,7 +185,20 @@ public class CommunicationAction implements Action {
 					LOGGER.log(Level.INFO, "Stored newly created Communication Type Instance : ID " + commExecID);
 				else
 					LOGGER.log(Level.WARNING, "Could not store newly created Communication Type Instance : ID " + commExecID);
-			}			
+			
+			}else if(containsOrphan && provPortID != null && dataShare.addOrphanComm(communicationName, dataShare.getEntityProvPort(provPortName))){
+
+				//To Do Exec API Call
+				//commExecID = "/api/communication/" + communicationName;//POST using parameters communicationName, provCompID, consCompID, port
+				//commExecID = execInterfacer.createCommunication(Integer.parseInt(execInterfacer.trimResponseID(provPortID)), Integer.parseInt(execInterfacer.trimResponseID(consPortID)));
+				
+				//LOGGER.log(Level.INFO, "Created Communication : ID " + commExecID);
+				
+				if(dataShare.setCommID(communicationName, "0"))
+					LOGGER.log(Level.INFO, "Stored newly created Orphan Communication Type : " + communicationName);
+				else
+					LOGGER.log(Level.WARNING, "Could not stored newly created Orphan Communication Type : " + communicationName);
+			}
 			
 			/*if(dataShare.addComm(communicationName, dataShare.getEntityLCAppComponent(provCompName), dataShare.getEntityLCAppComponent(consCompName), provPort, consPort)){
 				provCompID = dataShare.getAppCompID(provCompName);
@@ -307,31 +322,34 @@ public class CommunicationAction implements Action {
 			
 			
 			this.communicationName = objParams.get("name").asString();
-			LOGGER.log(Level.INFO, "Communication Type action thread : name " + communicationName);
+			LOGGER.log(Level.INFO, "Communication Type action (delete) thread : name " + communicationName);
 			
 			boolean status = true;
 			
+			boolean isOrphan = communicationName.toLowerCase().contains("orphan");
+			System.out.println("Orphan Communication? " + isOrphan);
+			
 			String commExecID = null;
 			
-			String provider = objParams.get("provider").asString();
+			//String provider = objParams.get("provider").asString();
 			String provCompName = null;
 			String provCompID = null;
 			
-			String provPort = objParams.get("providerPort").toString();
+			//String provPort = objParams.get("providerPort").toString();
 			String provPortName = null;
 			String provPortID = null;
 			
-			String consumer = objParams.get("consumer").asString();
+			//String consumer = objParams.get("consumer").asString();
 			String consCompName = null;
 			String consCompID = null;
 			
-			String consPort = objParams.get("consumerPort").toString();
+			//String consPort = objParams.get("consumerPort").toString();
 			String consPortName = null;
 			String consPortID = null;
 			
-			LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
+			//LOGGER.log(Level.INFO, "provider port consumer port: " + provider + " " + provPort + " " + consumer + " " + consPort);
 			
-			Collection<Action> depActions = Coordinator.getDependentActions(this);
+/*			Collection<Action> depActions = Coordinator.getDependentActions(this);
 			LOGGER.log(Level.INFO, "--------------Breakpoint CommAct--- " + depActions.size());
 			for(Object obj : depActions){
 				System.out.println("-- " + obj.toString() + " ");
@@ -340,29 +358,40 @@ public class CommunicationAction implements Action {
 				}else if(obj.getClass()==InternalComponentAction.class && ((InternalComponentAction) obj).isRequiredComm(consumer)){
 					consCompName = ((InternalComponentAction) obj).getCompName();
 				}
-			}
+			}*/
 			
-			LOGGER.log(Level.INFO, "providerComp consumerComp: " + provCompName + " " + consCompName);
+			//LOGGER.log(Level.INFO, "providerComp consumerComp: " + provCompName + " " + consCompName);
 			
-			provPortName = "prov-" + provCompName + "-" + provPort;
-			consPortName = "cons-" + consCompName + "-" + consPort;
-			LOGGER.log(Level.INFO, "provPortName consPortName: " + provPortName + " " + consPortName);
-			
+			//provPortName = "prov-" + provCompName + "-" + provPort;
+			if(isOrphan)
+				provPortName = dataShare.getOrphanCommProvPortName(communicationName);
+			else
+				provPortName = dataShare.getCommProvPortName(communicationName);
 			provPortID = dataShare.getProvPortID(provPortName);
-			consPortID = dataShare.getReqPortID(consPortName);
+			//provCompID = dataShare.getAppCompID(provCompName);
 			
-			provCompID = dataShare.getAppCompID(provCompName);
-			consCompID = dataShare.getAppCompID(consCompName);
+			if(!isOrphan){
+				//consPortName = "cons-" + consCompName + "-" + consPort;
+				consPortName = dataShare.getCommReqPortName(communicationName);
+				consPortID = dataShare.getReqPortID(consPortName);
+				//consCompID = dataShare.getAppCompID(consCompName);
+				commExecID = dataShare.getCommID(communicationName);
+				LOGGER.log(Level.INFO, "provPortName provPortID consPortName consPortID: " + provPortName + " " + provPortID + " " + consPortName + " " + consPortID);
+			}else
+				LOGGER.log(Level.INFO, "provPortName provPortID: " + provPortName + " " + provPortID);
 			
-			commExecID = dataShare.getCommID(communicationName);
+			
 			
 			try {
-				status = status && execInterfacer.deleteProviderPort(Integer.parseInt(provPortID));
+				status = status && execInterfacer.deleteProviderPort(Integer.parseInt(execInterfacer.trimResponseID(provPortID)));
 				status = status && dataShare.deleteProvPort(provPortName);
-				status = status && execInterfacer.deleteConsumerPort(Integer.parseInt(consPortID));
-				status = status && dataShare.deleteReqPort(consPortName);
-				status = status && execInterfacer.deleteCommunication(Integer.parseInt(commExecID));
-				dataShare.deleteComm(communicationName);
+				if(!isOrphan){
+					status = status && execInterfacer.deleteConsumerPort(Integer.parseInt(execInterfacer.trimResponseID(consPortID)));
+					status = status && dataShare.deleteReqPort(consPortName);
+					status = status && execInterfacer.deleteCommunication(Integer.parseInt(commExecID));
+					//status = status && dataShare.deleteComm(communicationName);
+				}
+				status = status && dataShare.deleteComm(communicationName);
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -375,9 +404,9 @@ public class CommunicationAction implements Action {
 			}
 			
 			if(status)
-				LOGGER.log(Level.INFO, "Deleted Communication Type Instance : ID " + commExecID);
+				LOGGER.log(Level.INFO, "Deleted Communication Type Instance : ID Name : " + commExecID + " " + communicationName);
 			else
-				LOGGER.log(Level.WARNING, "Could not completely delete Communication Type Instance : ID " + commExecID);
+				LOGGER.log(Level.WARNING, "Could not completely delete Communication Type Instance : ID Name " + commExecID + communicationName);
 		}
 //		actionDone = true;
 	}

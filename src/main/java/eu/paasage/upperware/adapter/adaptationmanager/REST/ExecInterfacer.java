@@ -228,7 +228,7 @@ public class ExecInterfacer {
             	
             	if(!cloudProvName.equalsIgnoreCase("") && !cloudUName.equalsIgnoreCase("") && cloudPass!=null && cloudEndpoint!=null){
             		clouds.add(new Cloud(cloudProvName, cloudUName, cloudPass, cloudEndpoint));
-            		LOGGER.log(Level.INFO, "Retrieved & stored from Adapter Property file " + cloudProvName + " " + cloudUName + " " + cloudPass + " " + cloudEndpoint);
+            		//LOGGER.log(Level.INFO, "Retrieved & stored from Adapter Property file " + cloudProvName + " " + cloudUName + " " + cloudPass + " " + cloudEndpoint);
             		count++;
             	}
             }
@@ -972,7 +972,8 @@ public class ExecInterfacer {
 	            execUser.setExpiresAt((Long)result.get("expiresAt"));
 	            execUser.setToken((String)result.get("token"));
 	            execUser.setuserId((Long)result.get("userId"));
-	            LOGGER.log(Level.INFO, "Login: success for " + execUser.getUserName() + " id " + execUser.getUserId() + " token: " + execUser.getToken());
+	            //LOGGER.log(Level.INFO, "Login: success for " + execUser.getUserName() + " id " + execUser.getUserId() + " token: " + execUser.getToken());
+	            LOGGER.log(Level.INFO, "Login success");
 
         	} else{
 				LOGGER.log(Level.SEVERE, "Login: problem logging in to " + baseUrl + API_LOGIN);
@@ -1014,7 +1015,6 @@ public class ExecInterfacer {
         credentials.put("email", execUser.getUserName());
         credentials.put("password", execUser.getPass());
         credentials.put("tenant", execUser.getTenant());
-
         
         HttpPost hur = new HttpPost(baseUrl + API_LOGIN);
         hur.addHeader("content-type", "application/json");
@@ -1045,7 +1045,8 @@ public class ExecInterfacer {
 	            execUser.setExpiresAt((Long)result.get("expiresAt"));
 	            execUser.setToken((String)result.get("token"));
 	            execUser.setuserId((Long)result.get("userId"));
-	            LOGGER.log(Level.INFO, "Renewed token: username " + execUser.getUserName() + " " + execUser.getToken());
+	            //LOGGER.log(Level.INFO, "Renewed token: username " + execUser.getUserName() + " " + execUser.getToken());
+	            LOGGER.log(Level.INFO, "Renewed token success");
 
         	} else{
 				LOGGER.log(Level.SEVERE, "Renewing token: problem logging in to " + baseUrl + API_LOGIN);
@@ -1082,15 +1083,21 @@ public class ExecInterfacer {
         if(inBody != null)
         	hur.setEntity(new StringEntity(inBody.toString()));
         
-        renewToken();
+        List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());
+        BufferedHttpEntity ent = new BufferedHttpEntity(hur.getEntity());
+		String dump = "{ExecWare_auth_tokens ";
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
         //Providing token and the user id for authentication
         renewToken();
         hur.addHeader("X-Auth-Token", execUser.getToken());
         hur.addHeader("X-Auth-UserId", String.valueOf(execUser.getUserId()));
         hur.addHeader("X-Tenant", execUser.getTenant());
         
-        List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());
-        BufferedHttpEntity ent = new BufferedHttpEntity(hur.getEntity());
+        
 
         HttpResponse resp = null;
         try{
@@ -1102,17 +1109,22 @@ public class ExecInterfacer {
         catch(Exception ex){
         	ex.printStackTrace();
         }
+
+/*      HttpResponse resp1 =resp; 
+        LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(ent, "UTF-8") + " \nRESPONSE header: " + dumpRespHeader(resp1) + " body: " + EntityUtils.toString(resp1.getEntity(), "UTF-8") + "\n");*/
+	    
+	    switch (apiExt) {
         
-        HttpResponse resp1 =resp; 
-		String dump = "{";
-		
-	    for (Header header : httpHeaders) {
-	    	dump += (header.getName() + " : " + header.getValue() + "  ");
-	    }
-	    dump += "}";
-        
-//      LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(ent, "UTF-8") + " \nRESPONSE header: " + dumpRespHeader(resp1) + " body: " + EntityUtils.toString(resp1.getEntity(), "UTF-8") + "\n");
-	    LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(ent, "UTF-8") + "\n");
+			case API_CLOUDCREDENTIAL:
+				
+				LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + "{** supressed **}\n");
+				break;
+	
+			default:
+				
+				LOGGER.log(Level.INFO, "\nPOST " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(ent, "UTF-8") + "\n");
+				break;
+		}
         
         return resp;
         
@@ -1129,6 +1141,13 @@ public class ExecInterfacer {
         if(inBody != null)
         	hur.setEntity(new StringEntity(inBody.toString()));
         
+        String dump = "{ExecWare_auth_tokens ";
+		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
         renewToken();
         //Providing token and the user id for authentication
         hur.addHeader("X-Auth-Token", execUser.getToken());
@@ -1147,17 +1166,9 @@ public class ExecInterfacer {
         	ex.printStackTrace();
         }
         
-		String dump = "{";
-		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
-	    for (Header header : httpHeaders) {
-	    	dump += (header.getName() + " : " + header.getValue() + "  ");
-	    }
-	    dump += "}";
-        
-        //LOGGER.log(Level.INFO, "\nPUT " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(hur.getEntity(), "UTF-8") + " \nRESPONSE header: " + dumpRespHeader(resp) + " body: " + EntityUtils.toString(resp.getEntity(), "UTF-8") + "\n");
-	    LOGGER.log(Level.INFO, "\nPUT " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(hur.getEntity(), "UTF-8") + "\n");
-        
-        
+        //LOGGER.log(Level.INFO, "\nPUT " + apiExt + " \nREQUEST header: " + dump + " body: " + EntityUtils.toString(hur.getEntity(), "UTF-8") + "\n");
+        LOGGER.log(Level.INFO, "\nPUT " + apiExt + " \nREQUEST header: " + dump + "\n");
+                
         return resp;
 	}
 	
@@ -1168,6 +1179,13 @@ public class ExecInterfacer {
         if(inHeader != null)
         	hur.addHeader(inHeader);
         
+        String dump = "{ExecWare_auth_tokens ";
+		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
+        
         renewToken();
         //Providing token and the user id for authentication
         hur.addHeader("X-Auth-Token", execUser.getToken());
@@ -1186,16 +1204,18 @@ public class ExecInterfacer {
         	ex.printStackTrace();
         }
         
-		String dump = "{";
-		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
-	    for (Header header : httpHeaders) {
-	    	dump += (header.getName() + " : " + header.getValue() + "  ");
-	    }
-	    dump += "}";
+        switch (apiExt) {
         
-        //LOGGER.log(Level.INFO, "\nGET " + apiExt + " \nREQUEST header: " + dump + " \nRESPONSE header: " + dumpRespHeader(resp) + " body: " + EntityUtils.toString(resp.getEntity(), "UTF-8") + "\n");
-	    LOGGER.log(Level.INFO, "\nGET " + apiExt + " \nREQUEST header: " + dump + "\n");
-        
+			case API_CLOUDCREDENTIAL:
+				
+				LOGGER.log(Level.INFO, "\nGET " + apiExt + " \nREQUEST header: {** supressed **}\n");
+				break;
+	
+			default:
+				
+				LOGGER.log(Level.INFO, "\nGET " + apiExt + " \nREQUEST header: " + dump + "\n");
+				break;
+		}
         
         return resp;
 	}
@@ -1206,6 +1226,13 @@ public class ExecInterfacer {
 
         if(inHeader != null)
         	hur.addHeader(inHeader);
+        
+        String dump = "{ExecWare_auth_tokens ";
+		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
+	    for (Header header : httpHeaders) {
+	    	dump += (header.getName() + " : " + header.getValue() + "  ");
+	    }
+	    dump += "}";
 
         renewToken();
         //Providing token and the user id for authentication
@@ -1225,16 +1252,8 @@ public class ExecInterfacer {
         	ex.printStackTrace();
         }
         
-		String dump = "{";
-		List<Header> httpHeaders = Arrays.asList(hur.getAllHeaders());        
-	    for (Header header : httpHeaders) {
-	    	dump += (header.getName() + " : " + header.getValue() + "  ");
-	    }
-	    dump += "}";
-        
         //LOGGER.log(Level.INFO, "\nDELETE " + apiExt + " \nREQUEST header: " + dump + " \nRESPONSE header: " + dumpRespHeader(resp) + " body: " + EntityUtils.toString(resp.getEntity(), "UTF-8") + "\n");
 	    LOGGER.log(Level.INFO, "\nDELETE " + apiExt + " \nREQUEST header: " + dump + "\n");
-        
         
         return resp;
 	}
@@ -1351,6 +1370,40 @@ public class ExecInterfacer {
 		
     	return status;
 	}
+	
+	/**
+	 * returns if a particular resource is deleted
+	 * @param API_RESOURCE the url of a particular resource to query
+	 * @return true if deleted else false
+	 */
+		private boolean queryStateDeleted(String API_RESOURCE){
+
+			boolean status = false;
+			
+			//Header inHeader = new BasicHeader(name, value);
+			
+			HttpResponse resp = null;
+			try {
+				resp = getRequest(API_RESOURCE, null);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch(NullPointerException npEx){
+				LOGGER.log(Level.SEVERE, "Could not get the resource " + API_RESOURCE);
+				npEx.printStackTrace();
+			}
+	        
+			try {
+		    	if(resp.getStatusLine().getStatusCode()==404){
+		    		status = true;
+		    	}
+			} catch (org.apache.http.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	    	return status;
+		}
 	
 	
 	/**
@@ -3910,7 +3963,15 @@ public class ExecInterfacer {
 	public boolean queryStateOKVM(int virtualMachineId){
 		return queryStateOK(API_VIRTUALMACHINE + "/" + virtualMachineId);
 	}
-
+	
+	/**
+	 * returns if a particular VM is deleted
+	 * @param virtualMachineId VM id for state deletion
+	 * @return true if deleted else false
+	 */
+	public boolean queryStateDeletedVM(int virtualMachineId){
+		return queryStateDeleted(API_VIRTUALMACHINE + "/" + virtualMachineId);
+	}
 	
 	public boolean deleteVirtualMachine(int virtualMachineId) throws IOException, ParseException{
 		
@@ -4016,6 +4077,15 @@ public class ExecInterfacer {
 		return queryStateOK(API_INSTANCE + "/" + instanceId);
 	}
 	
+	/**
+	 * returns if a particular VM is deleted
+	 * @param virtualMachineId VM id for state deletion
+	 * @return true if deleted else false
+	 */
+	public boolean queryStateDeletedInstance(int instanceId){
+		return queryStateDeleted(API_INSTANCE + "/" + instanceId);
+	}
+	
 	
 	public boolean updateInstance(int instanceId, int applicationInstance, int applicationComponent, int virtualMachine){
 		
@@ -4054,7 +4124,7 @@ public class ExecInterfacer {
 		//JSONObject inBody = new JSONObject();
 		//inBody.put("cloud_id", cloudId);
 		
-		HttpResponse resp = deleteRequest(API_INSTANCE + Integer.toString(instanceId), inHeader);
+		HttpResponse resp = deleteRequest(API_INSTANCE + "/" + Integer.toString(instanceId), inHeader);
         HttpEntity respEntity = resp.getEntity();
         
         String respString = EntityUtils.toString(respEntity);

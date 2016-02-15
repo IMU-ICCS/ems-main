@@ -286,7 +286,8 @@ public class AdaptationManager {
 		Properties result = new Properties();
 		result.putAll(fileprops);
 		result.putAll(commandlineprops);
-		LOGGER.log(Level.INFO, "Properties:" + result);
+		LOGGER.log(Level.INFO, "Retrieved #" + result.size() + " info from Adapter property file and command line args");
+		//LOGGER.log(Level.INFO, "Properties:" + result);
 		return result;
 	}
 }

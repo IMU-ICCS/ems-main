@@ -110,7 +110,7 @@ public class SimpleDeploymentScenario {
 	public static final String RESP_GET_IMAGE = "[{\"remoteId\":\"30260ebc-d106-4ade-8441-559bf212428a/e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c\",\"cloudProviderId\":\"e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c\",\"remoteState\":null,\"name\":\"Ubuntu 14.04 (Cluster Two)\",\"cloud\":1,\"location\":1,\"operatingSystem\":2,\"cloudCredentials\":[1],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/158\",\"rel\":\"self\"}]},{\"remoteId\":\"252aa06a-6a02-4e84-940a-5f66f1d681ad/RegionOne/47eaf851-d05e-4213-a1ee-fef19c5e848f\",\"cloudProviderId\":\"RegionOne/47eaf851-d05e-4213-a1ee-fef19c5e848f\",\"remoteState\":\"INPROGRESS\",\"name\":\"Windows2012R2_cloudiator_v2\",\"cloud\":32768,\"location\":32768,\"operatingSystem\":null,\"cloudCredentials\":[32768],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/32769\",\"rel\":\"self\"}]},{\"remoteId\":\"252aa06a-6a02-4e84-940a-5f66f1d681ad/RegionOne/673b8967-dc56-4e4f-a759-a5b1b10f7b70\",\"cloudProviderId\":\"RegionOne/673b8967-dc56-4e4f-a759-a5b1b10f7b70\",\"remoteState\":\"INPROGRESS\",\"name\":\"Centos 7\",\"cloud\":32768,\"location\":32768,\"operatingSystem\":null,\"cloudCredentials\":[32768],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/32770\",\"rel\":\"self\"}]},{\"remoteId\":\"252aa06a-6a02-4e84-940a-5f66f1d681ad/RegionOne/87945f45-c4fc-45bb-b5a2-9aa7be31a036\",\"cloudProviderId\":\"RegionOne/87945f45-c4fc-45bb-b5a2-9aa7be31a036\",\"remoteState\":\"INPROGRESS\",\"name\":\"cirros\",\"cloud\":32768,\"location\":32768,\"operatingSystem\":null,\"cloudCredentials\":[32768],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/32771\",\"rel\":\"self\"}]},{\"remoteId\":\"252aa06a-6a02-4e84-940a-5f66f1d681ad/RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97\",\"cloudProviderId\":\"RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97\",\"remoteState\":\"INPROGRESS\",\"name\":\"Ubuntu Server 14.04.2 AMD64 LTS\",\"cloud\":32768,\"location\":32768,\"operatingSystem\":null,\"cloudCredentials\":[32768],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/32772\",\"rel\":\"self\"}]},{\"remoteId\":\"252aa06a-6a02-4e84-940a-5f66f1d681ad/RegionOne/5bc61c5d-0fbb-4f86-965b-ad662264be88\",\"cloudProviderId\":\"RegionOne/5bc61c5d-0fbb-4f86-965b-ad662264be88\",\"remoteState\":\"INPROGRESS\",\"name\":\"Windows2012R2_cloudiator\",\"cloud\":32768,\"location\":32768,\"operatingSystem\":null,\"cloudCredentials\":[32768],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/32773\",\"rel\":\"self\"}]},{\"remoteId\":\"252aa06a-6a02-4e84-940a-5f66f1d681ad/RegionOne/4d079447-fba5-48c9-b0ed-a36a33a042d2\",\"cloudProviderId\":\"RegionOne/4d079447-fba5-48c9-b0ed-a36a33a042d2\",\"remoteState\":\"INPROGRESS\",\"name\":\"molpro-image-v1.5-OUTDATED\",\"cloud\":32768,\"location\":32768,\"operatingSystem\":null,\"cloudCredentials\":[32768],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/32774\",\"rel\":\"self\"}]}]";
 	public static final String RESP_GET_IMAGE_158 = "{\"remoteId\":\"30260ebc-d106-4ade-8441-559bf212428a/e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c\",\"cloudProviderId\":\"e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c\",\"remoteState\":null,\"name\":\"Ubuntu 14.04 (Cluster Two)\",\"cloud\":1,\"location\":1,\"operatingSystem\":2,\"cloudCredentials\":[1],\"defaultLoginUsername\":null,\"defaultLoginPassword\":null,\"link\":[{\"href\":\"http://localhost:9000/api/image/158\",\"rel\":\"self\"}]}";
 
-	public SimpleDeploymentScenario(ClientDriverRule driver){
+	public SimpleDeploymentScenario(ClientDriverRule driver, boolean enableDeleteAPIs){
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LOGIN)
 				.withHeader("Content-Type", "application/json")
@@ -309,19 +309,19 @@ public class SimpleDeploymentScenario {
 				.withMethod(Method.GET),
 				RestClientDriver
 				.giveResponse(SimpleDeploymentScenario.RESP_POST_VIRTUALMACHINE65536, "application/json")
-				.withStatus(200)).anyTimes();
+				.withStatus(200)).times(1);
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65537")
 				.withMethod(Method.GET),
 				RestClientDriver
 				.giveResponse(SimpleDeploymentScenario.RESP_POST_VIRTUALMACHINE65537, "application/json")
-				.withStatus(200)).anyTimes();
+				.withStatus(200)).times(1);
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65538")
 				.withMethod(Method.GET),
 				RestClientDriver
 				.giveResponse(SimpleDeploymentScenario.RESP_POST_VIRTUALMACHINE65538, "application/json")
-				.withStatus(200)).anyTimes();
+				.withStatus(200)).times(1);
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE)
 				.withHeader("Content-Type", "application/json")
@@ -351,19 +351,190 @@ public class SimpleDeploymentScenario {
 				.withMethod(Method.GET),
 				RestClientDriver
 				.giveResponse(SimpleDeploymentScenario.RESP_POST_INSTANCE65539, "application/json")
-				.withStatus(200)).anyTimes();
+				.withStatus(200)).times(1);
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65540")
 				.withMethod(Method.GET),
 				RestClientDriver
 				.giveResponse(SimpleDeploymentScenario.RESP_POST_INSTANCE65540, "application/json")
-				.withStatus(200)).anyTimes();
+				.withStatus(200)).times(1);
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65541")
 				.withMethod(Method.GET),
 				RestClientDriver
 				.giveResponse(SimpleDeploymentScenario.RESP_POST_INSTANCE65541, "application/json")
-				.withStatus(200)).anyTimes();
+				.withStatus(200)).times(1);
+
+		
+		if(enableDeleteAPIs){
+			
+			//Delete requests
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINETEMPLATE+"/1")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINETEMPLATE+"/2")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LIFECYCLECOMPONENT+"/1")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LIFECYCLECOMPONENT+"/2")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LIFECYCLECOMPONENT+"/3")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONCOMPONENT+"/1")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONCOMPONENT+"/2")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_APPLICATIONCOMPONENT+"/3")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTREQ+"/1")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTREQ+"/4")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTPROV+"/2")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTPROV+"/3")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_PORTPROV+"/5")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_COMMUNICATION+"/1")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_COMMUNICATION+"/2")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65536")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65537")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65538")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65539")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65540")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65541")
+					.withMethod(Method.DELETE),
+					RestClientDriver
+					.giveEmptyResponse()
+					.withStatus(200)).times(1);
+			
+			//404 GET Empty Responses
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65536")
+					.withMethod(Method.GET),
+					RestClientDriver
+					.giveResponse("Could not find entity of type VirtualMachine with id 65536", "application/json")
+					.withStatus(404)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65537")
+					.withMethod(Method.GET),
+					RestClientDriver
+					.giveResponse("Could not find entity of type VirtualMachine with id 65537", "application/json")
+					.withStatus(404)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_VIRTUALMACHINE+"/65538")
+					.withMethod(Method.GET),
+					RestClientDriver
+					.giveResponse("Could not find entity of type VirtualMachine with id 65538", "application/json")
+					.withStatus(404)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65539")
+					.withMethod(Method.GET),
+					RestClientDriver
+					.giveResponse("Could not find entity of type Instance with id 65539", "application/json")
+					.withStatus(404)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65540")
+					.withMethod(Method.GET),
+					RestClientDriver
+					.giveResponse("Could not find entity of type Instance with id 65540", "application/json")
+					.withStatus(404)).times(1);
+			
+			driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_INSTANCE+"/65541")
+					.withMethod(Method.GET),
+					RestClientDriver
+					.giveResponse("Could not find entity of type Instance with id 65541", "application/json")
+					.withStatus(404)).times(1);
+			
+		}
 		
 	}
 	

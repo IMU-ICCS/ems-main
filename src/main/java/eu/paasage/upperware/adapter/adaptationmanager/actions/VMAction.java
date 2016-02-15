@@ -131,10 +131,35 @@ public class VMAction implements Action {
 			this.vmName = objParams.get("name").asString();
 			LOGGER.log(Level.INFO, "VM Type action (delete) thread : name " + this.vmName);
 			
+			boolean deleted = true;		
+			String vmt;
+				
+			vmt = dataShare.getEntityVMTid(vmName);
+			try{
+				deleted = deleted && execInterfacer.deleteVirtualMachineTemplate(Integer.parseInt(vmt));
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			if(deleted){
+				LOGGER.log(Level.INFO, "Deleted VM Template : ID " + vmt);
+				if(dataShare.removeVMT(vmName))
+					LOGGER.log(Level.INFO, "Removed from Mapper VM Template : ID " + vmt);
+				else
+					LOGGER.log(Level.WARNING, "Could not remove from Mapper VM Template : ID " + vmt);
+			}
+			
 			/**
 			 * Force dependent VMInstAct to execute deletion before VMType deletion
 			 */
-			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+/*			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
 			LOGGER.log(Level.INFO, "--------------Breakpoint VMAction (Delete)--- " + depOnActions.size());
@@ -142,17 +167,17 @@ public class VMAction implements Action {
 			for(Object obj : depOnActions){
 				System.out.println("-- " + obj.toString() + " ");
 				if(obj.getClass()==VMInstanceAction.class){
-					((VMInstanceAction) obj).run();
-					LOGGER.log(Level.INFO, "Forced (deletion) " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
+					//((VMInstanceAction) obj).run();
+					//LOGGER.log(Level.INFO, "Forced (deletion) " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
 				} else
 					status = false;
-			}
+			}*/
 			
 			/*NO Exec API Call!!
 			 * Passing and storing the VM name and image to be created in VMInstanceAction when having cloud, hardware and location params */
-			if(status){//there exists no instance of this VMType
+/*			if(status){//there exists no instance of this VMType
 				dataShare.removeVMT(this.vmName);//deleted the VMType
-			}
+			}*/
 		}
 	}
 	

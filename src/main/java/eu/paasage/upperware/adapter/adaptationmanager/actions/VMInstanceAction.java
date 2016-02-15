@@ -519,7 +519,7 @@ public class VMInstanceAction implements Action {
 			this.vmInstName = objParams.get("name").asString();
 			LOGGER.log(Level.INFO, "VM Instance action (deletion) thread : name " + vmInstName);
 			
-			String vmType = objParams.get("type").asString();//getting camel name for vm type
+/*			String vmType = objParams.get("type").asString();//getting camel name for vm type
 			String imageName, imageID = null, cloudID = null, hardwareID=null, locationID=null, vmt;
 			imageName = dataShare.getImageNameFromVMT(vmType);//getting image value for the vmtype
 			
@@ -533,7 +533,7 @@ public class VMInstanceAction implements Action {
 				imageID = ids[2];
 				locationID = ids[3];
 				hardwareID = ids[4];
-			}
+			}*/
 
 			//Now steps for VM instance entity
 			String vmInstID;
@@ -541,9 +541,29 @@ public class VMInstanceAction implements Action {
 				
 				String vmiId = dataShare.getEntityVMIid(this.vmInstName);
 				boolean deleted = false;
+				boolean status = false;
 				
 				try {
 					deleted = execInterfacer.deleteVirtualMachine(Integer.parseInt(vmiId));
+					
+					int temp = Integer.parseInt(vmiId);					
+					int timeout = 60;
+					while(deleted && (!(status = execInterfacer.queryStateDeletedVM(temp))) && timeout > 0){
+						LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. VM Instance : ID " + temp);
+						try {
+							Thread.sleep(30000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						timeout--;
+					}
+					
+					if(deleted && (timeout > 0))
+						status = true;
+					else
+						LOGGER.log(Level.WARNING, "Error deleting VM Instance : ID " + temp);
+					
 				} catch (NumberFormatException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -555,17 +575,34 @@ public class VMInstanceAction implements Action {
 					e1.printStackTrace();
 				}
 				
-				if(deleted){
+				/*LOGGER.log(Level.INFO, "Waiting 60 secs for operation completion.");
+				try {
+					Thread.sleep(60000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+				
+				if(deleted && status){
 					LOGGER.log(Level.INFO, "Deleted VM Instance : ID " + vmiId);
-					if(dataShare.deleteVMI(this.vmInstName))
+					if(dataShare.deleteVMI(this.vmInstName)){
 						LOGGER.log(Level.INFO, "Removed from Mapper VM Instance : ID " + vmiId);
+						
+/*						try {
+							LOGGER.log(Level.INFO, "Sleeping for two minutes enabling completion of deletion operation");
+							Thread.sleep(120000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}*/
+					}
 					else
 						LOGGER.log(Level.WARNING, "Could not remove from Mapper VM Instance : ID " + vmiId);
 				}
 			}
 			
 			
-			//Forcing the CommunicationAction to run before deleting VMType but after deleting its VMInstances
+/*			//Forcing the CommunicationAction to run before deleting VMType but after deleting its VMInstances
 			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
@@ -578,7 +615,7 @@ public class VMInstanceAction implements Action {
 					((CommunicationAction) obj).run();
 					LOGGER.log(Level.INFO, "Forced (delete) " + ((CommunicationAction) obj).getCommTypeName() + " to run from " + this.getVMInstName());
 				}
-			}
+			}*/
 		}
 		
 	}

@@ -118,6 +118,11 @@ public class ApplicationController {
 		}
 	}
 	
+	public synchronized static void resetMonitorEntities(){
+		entities.clear();
+		return;
+	}
+	
 	public boolean publishToMetric(String modelName){
 		boolean status = false;
 		

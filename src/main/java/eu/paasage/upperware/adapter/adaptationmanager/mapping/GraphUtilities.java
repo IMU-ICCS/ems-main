@@ -45,7 +45,12 @@ import eu.paasage.upperware.plangenerator.exception.PlanGenerationException;
 import eu.paasage.upperware.plangenerator.model.Plan;
 import eu.paasage.upperware.plangenerator.model.task.ApplicationInstanceTask;
 import eu.paasage.upperware.plangenerator.model.task.ApplicationTask;
+import eu.paasage.upperware.plangenerator.model.task.CommunicationTypeTask;
+import eu.paasage.upperware.plangenerator.model.task.ComponentInstanceTask;
+import eu.paasage.upperware.plangenerator.model.task.ComponentTypeTask;
 import eu.paasage.upperware.plangenerator.model.task.ConfigurationTask;
+import eu.paasage.upperware.plangenerator.model.task.VMInstanceTask;
+import eu.paasage.upperware.plangenerator.model.task.VMTypeTask;
 import eu.paasage.upperware.plangenerator.type.TaskType;
 
 import org.jgrapht.ext.DOTExporter;
@@ -190,49 +195,49 @@ public final class GraphUtilities {
 			
 			Action node = null;
 			
-			if(obj.get("objType").asString().equalsIgnoreCase("application")){
+			if((task instanceof ApplicationTask) /*|| obj.get("objType").asString().equalsIgnoreCase("application")*/){
 				LOGGER.log(Level.INFO, "Type detected ApplicationTask");
 				//System.out.println(obj.toString());
 				
 				node = new ApplicationAction(task, execInterfacer);
 				actionGraph.addVertex(node);
 				
-			}else if(obj.get("objType").asString().equalsIgnoreCase("applicationInstance")){
+			}else if((task instanceof ApplicationInstanceTask) /*|| obj.get("objType").asString().equalsIgnoreCase("applicationInstance")*/){
 				LOGGER.log(Level.INFO, "Type detected ApplicationInstanceTask");
 				//System.out.println(obj.toString());
 				
 				node = new ApplicationInstanceAction(task, execInterfacer);
 				actionGraph.addVertex(node);
 				
-			}else if(obj.get("objType").asString().equalsIgnoreCase("internalComponent")){
+			}else if((task instanceof ComponentTypeTask) /*|| obj.get("objType").asString().equalsIgnoreCase("internalComponent")*/){
 				LOGGER.log(Level.INFO, "Type detected ComponentTypeTask");
 				//System.out.println(obj.toString());
 				
 				node = new InternalComponentAction(task, execInterfacer);
 				actionGraph.addVertex(node);
 				
-			}else if(obj.get("objType").asString().equalsIgnoreCase("internalComponentInstance")){
+			}else if((task instanceof ComponentInstanceTask) /*|| obj.get("objType").asString().equalsIgnoreCase("internalComponentInstance")*/){
 				LOGGER.log(Level.INFO, "Type detected ComponentInstanceTask");
 				//System.out.println(obj.toString());
 				
 				node = new InternalComponentInstanceAction(task, execInterfacer);
 				actionGraph.addVertex(node);
 				
-			}else if(obj.get("objType").asString().equalsIgnoreCase("VM")){
+			}else if((task instanceof VMTypeTask) /*|| obj.get("objType").asString().equalsIgnoreCase("VM")*/){
 				LOGGER.log(Level.INFO, "Type detected VMTypeTask");
 				//System.out.println(obj.toString());
 				
 				node = new VMAction(task, execInterfacer);
 				actionGraph.addVertex(node);
 				
-			}else if(obj.get("objType").asString().equalsIgnoreCase("vmInstance")){
+			}else if((task instanceof VMInstanceTask) /*|| obj.get("objType").asString().equalsIgnoreCase("vmInstance")*/){
 				LOGGER.log(Level.INFO, "Type detected VMInstanceTask");
 				//System.out.println(obj.toString());
 				
 				node = new VMInstanceAction(task, execInterfacer);
 				actionGraph.addVertex(node);
 				
-			}else if(obj.get("objType").asString().equalsIgnoreCase("communication")){
+			}else if((task instanceof CommunicationTypeTask) /*|| obj.get("objType").asString().equalsIgnoreCase("communication")*/){
 				LOGGER.log(Level.INFO, "Type detected CommunicationTypetask");
 				//System.out.println(obj.toString());
 				
@@ -304,7 +309,10 @@ public final class GraphUtilities {
 				//LOGGER.log(Level.INFO, "Dependency Action " + depAction.toString());
 				if(depAction != null && node != null){//ERROR IN LOGIC HERE.... CHECK...
 					//actionGraph.addVertex(depAction);//ERROR IN LOGIC HERE.... CHECK...
-					actionGraph.addEdge(node, depAction);
+/*					if(task.getTaskType() == TaskType.DELETE)
+						actionGraph.addEdge(depAction, node);
+					else*/
+						actionGraph.addEdge(node, depAction);
 					LOGGER.log(Level.INFO, "Added dependency : " + node.toString() + " " + depAction.toString());
 				}
 			}

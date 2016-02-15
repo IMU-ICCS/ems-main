@@ -8,9 +8,13 @@
 
 package eu.paasage.upperware.adapter.adaptationmanager.test;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,17 +25,25 @@ import com.github.restdriver.clientdriver.ClientDriverRequest.Method;
 import com.github.restdriver.clientdriver.ClientDriverRule;
 import com.github.restdriver.clientdriver.RestClientDriver;
 
+import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.input.ReasonerInterfacer;
+import eu.paasage.upperware.adapter.adaptationmanager.mapping.GraphUtilities;
 import eu.paasage.upperware.adapter.adaptationmanager.validation.IValidator;
 import eu.paasage.upperware.adapter.adaptationmanager.validation.ValidatorImpl;
+import eu.paasage.upperware.adapter.adaptationmanager.actions.Action;
 import eu.paasage.upperware.adapter.adaptationmanager.core.Coordinator;
 import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQPublisher;
 import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQSubscriber;
+import eu.paasage.upperware.plangenerator.PlanGenerator;
+import eu.paasage.upperware.plangenerator.exception.ModelComparatorException;
+import eu.paasage.upperware.plangenerator.exception.PlanGenerationException;
+import eu.paasage.upperware.plangenerator.model.Plan;
+import eu.paasage.upperware.plangenerator.model.task.ConfigurationTask;
 
 /**
  * Working version - tested 17th Dec with BeWan on Flexiant
- * @author ArnabSinha
+ * @author arnab [dot] sinha [at] inria [dot] fr
  *
  */
 
@@ -42,6 +54,12 @@ public class AdaptationManagerTest
 	private final String TEST_INPUTFILE_SimpleDeployment = System
 			.getProperty("user.dir") + "/src/test/resources/CAMEL_test_SimpleDeployment.xmi";
 	
+	private final String TEST_INPUTFILE_ReconfigDeployment1 = System
+			.getProperty("user.dir") + "/src/test/resources/CAMEL_test_Redeployment1.xmi";
+	
+	private final String TEST_INPUTFILE_ReconfigDeployment3 = System
+			.getProperty("user.dir") + "/src/test/resources/CAMEL_test_Redeployment3.xmi";
+
 	/**
 	 * Response Strings for Client Driver
 	 */
@@ -73,10 +91,10 @@ public class AdaptationManagerTest
 	}
 	
 	@Test
-//	@Ignore
+	@Ignore
 	public void verifySimpleDeployment(){
-		
-		SimpleDeploymentScenario example = new SimpleDeploymentScenario(driver);
+
+		SimpleDeploymentScenario example = new SimpleDeploymentScenario(driver, false);
 		
 		ReasonerInterfacer currentReasonerInterfacer = null;
 		currentReasonerInterfacer = new ReasonerInterfacer(example.getDeploymentXMI(), true);
@@ -118,7 +136,7 @@ public class AdaptationManagerTest
 	}
 	
 	@Test
-	@Ignore
+//	@Ignore
 	public void testZMQ(){
 		ZeroMQPublisher zmpMetric = null;
 		ZeroMQPublisher zmpModelreq = new ZeroMQPublisher("ModelReqPub", 5551);
@@ -145,5 +163,121 @@ public class AdaptationManagerTest
 			if(i==2000)
 				zmpMetric = new ZeroMQPublisher("MetricPub", 5550);
 		}
+	}
+	
+	@Test
+	@Ignore
+	public void redeployPlanGeneration(){
+		ReasonerInterfacer currentReasonerInterfacer = null;
+		ReasonerInterfacer targetReasonerInterfacer = null;
+
+		DeploymentModel currentModel = null;
+		DeploymentModel targetModel = null;
+
+		currentReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_SimpleDeployment, true);
+		//targetReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_ReconfigDeployment1, true);
+		targetReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_ReconfigDeployment3, true);
+
+		//Simple Deployment
+/*		currentModel = null;
+		targetModel = targetReasonerInterfacer.loadNthFromFile(1);*/
+		
+		//Redeployment
+		currentModel = currentReasonerInterfacer.loadNthFromFile(1);
+		targetModel = targetReasonerInterfacer.loadNthFromFile(1);
+
+		System.out.println("!=============================================================================");
+
+		PlanGenerator generator = null;
+
+		if(currentModel != null && targetModel != null)//condition for reconfiguration
+			generator = new PlanGenerator();
+		else if(currentModel == null && targetModel != null)//condition for simple deployment
+			generator = new PlanGenerator(true);
+
+		Plan newPlan = null;
+
+		try {
+			newPlan = generator.generate(currentModel, targetModel);
+		} catch (PlanGenerationException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Plan generation exception");
+			e.printStackTrace();
+		} catch (ModelComparatorException e) {
+			// TODO: handle exception
+			System.out.println("Model comparator exception");
+			e.printStackTrace();
+		}
+		
+		System.out.println("==============================================================================");
+
+		List<ConfigurationTask> tasks = newPlan.getTasks();
+		try {
+			for(ConfigurationTask task : tasks){
+				System.out.println("Class Name " + task.getClass());
+				System.out.println("Task Type " + task.getTaskType());
+				System.out.println("JSON " + task.getJsonModel().toString());
+				for(ConfigurationTask dep : task.getDependencies()){
+					System.out.println("Class Name " + dep.getClass() + " " + dep.getTaskType());
+					System.out.println("Test key name : " + dep.getName());
+					System.out.println("dep JSON " + dep.getJsonModel().toString());
+				}
+				System.out.println();
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		System.out.println("=============================================================================!");
+	}
+	
+	@Test
+//	@Ignore
+	public void testRedeployment(){
+
+		SimpleDeploymentScenario example = new SimpleDeploymentScenario(driver, true);
+		
+		ReasonerInterfacer currentReasonerInterfacer = null;
+		currentReasonerInterfacer = new ReasonerInterfacer(example.getDeploymentXMI(), true);
+		
+		ExecInterfacer exec = new ExecInterfacer(driver.getBaseUrl());
+		IValidator validator = new ValidatorImpl();
+		Coordinator c = new Coordinator(currentReasonerInterfacer, exec, validator);
+		
+		c.deployModelIDThreaded(1);
+		
+		RedeploymentScenario3 example3 = new RedeploymentScenario3(driver);
+		ReasonerInterfacer redeploymentInterfacer = new ReasonerInterfacer(example3.getDeploymentXMI(), true);
+		c.deployModelIDThreaded(1, redeploymentInterfacer);
+		System.out.println("End of method testRedeployment()");
+	}
+	
+	@Test
+	@Ignore
+	public void redeployTestFilesOnCloud(){
+		ReasonerInterfacer currentReasonerInterfacer = null;
+		ReasonerInterfacer targetReasonerInterfacer = null;
+		
+		DeploymentModel currentModel = null;
+		DeploymentModel targetModel = null;
+		
+		currentReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_SimpleDeployment, true);
+		targetReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_ReconfigDeployment3, true);
+		
+		ExecInterfacer exec = new ExecInterfacer();
+		IValidator validator = new ValidatorImpl();
+		Coordinator c = new Coordinator(currentReasonerInterfacer, exec, validator);
+		
+		System.out.println("!=============================================================================");
+		System.out.println("Starting SimpledeployTestFileOnCloud()");
+		
+		c.deployModelIDThreaded(1);
+		System.out.println("End of SimpledeployTestFileOnCloud()");
+		System.out.println("==============================================================================");
+		System.out.println("Starting testFileRedeployment()");
+		
+		c.deployModelIDThreaded(1, targetReasonerInterfacer);
+		System.out.println("End of method testFileRedeployment()");
+		System.out.println("=============================================================================!");
 	}
 }

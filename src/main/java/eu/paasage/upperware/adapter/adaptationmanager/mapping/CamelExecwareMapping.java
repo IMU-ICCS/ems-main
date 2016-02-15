@@ -67,6 +67,11 @@ public class CamelExecwareMapping {
 		return appli.getApplicationId_Exec();
 	}
 	
+	public String getApplicationName_Camel(){
+		LOGGER.log(Level.INFO, "Application " + appli.getName_Camel());
+		return appli.getName_Camel();
+	}
+	
 	public String getApplicationId(String name_Camel){
 		if(appli.name_Camel.equalsIgnoreCase(name_Camel)){
 			LOGGER.log(Level.INFO, "Application " + appli.getApplicationId_Exec());
@@ -112,6 +117,11 @@ public class CamelExecwareMapping {
 		return appliInst.getApplicationInstanceId_Exec();
 	}
 	
+	public String getApplicationInstanceName_Camel(){
+		LOGGER.log(Level.INFO, "Application " + appliInst.getAppInstName());
+		return appliInst.getAppInstName();
+	}
+	
 	public boolean updateApplicationInstanceName(String ApplicationInstanceId, String name_Camel){
 		if(appliInst.getApplicationInstanceId_Exec().equalsIgnoreCase(ApplicationInstanceId)){
 			appliInst.setApplicationInstanceName(name_Camel);
@@ -149,17 +159,20 @@ public class CamelExecwareMapping {
 		}
 	}
 	
-	public void removeVMT(String name_Camel){
+	public boolean removeVMT(String name_Camel){
+		boolean status = false;
 		synchronized(VMTs){
 			ListIterator<VirtualMachineTemplate> it = VMTs.listIterator();
 			while(it.hasNext()){
 				VirtualMachineTemplate temp = it.next();
 				if(temp.getVMType().equalsIgnoreCase(name_Camel)){
 					it.remove();
+					status = true;
 					LOGGER.log(Level.INFO, "Removed VMT with name_Camel " + name_Camel);
 				}
 			}
 		}
+		return status;
 	}
 	
 	public void addImageNametoVMT(String name_Camel, String imageName){
@@ -912,6 +925,32 @@ public class CamelExecwareMapping {
 		return status;
 	}
 	
+	public boolean addOrphanComm(String CommType_Camel, ProvidedPort prvPort){
+		boolean status = false;
+		Communication commEntity;
+		synchronized (Comms) {
+			for(Communication comm : Comms){
+				if(comm.getCommType().equalsIgnoreCase(CommType_Camel) && prvPort != null){
+					status = true;
+					commEntity = comm;
+					LOGGER.log(Level.WARNING, "Communication Component " + CommType_Camel +" already exists");
+				}
+			}
+			
+			if(prvPort == null){
+				LOGGER.log(Level.WARNING, "Communication provider port entity is NULL! Could not create " + CommType_Camel);
+				return status;
+			}
+			
+			if(!status && prvPort != null){
+				commEntity = new Communication(CommType_Camel, prvPort, null);
+				status = Comms.add(commEntity);
+				LOGGER.log(Level.INFO, "Communication Name " + CommType_Camel + " provPort " + prvPort.getProvidedPortName() + " consPort NONE");
+			}
+		}
+		return status;
+	}
+	
 	public boolean setCommID(String commId_Camel, String id){
 		synchronized (Comms) {
 			for(Communication comm : Comms){
@@ -933,6 +972,57 @@ public class CamelExecwareMapping {
 			}
 		}
 		return null;
+	}
+	
+	public String getCommProvPortName(String commId_Camel){
+		String prvPortName = "";
+		synchronized (Comms) {
+			for(Communication comm : Comms){
+				if(comm.getCommType().equalsIgnoreCase(commId_Camel) && comm.getCommID()!=null){
+					//return comm;
+					ProvidedPort prvPort = comm.getProvPort();
+					if(prvPort == null)
+						LOGGER.log(Level.INFO, "Provided port NULL for Communication Component " + commId_Camel);
+					else
+						prvPortName = prvPort.getProvidedPortName();
+				}
+			}
+		}
+		return prvPortName;
+	}
+	
+	public String getOrphanCommProvPortName(String commId_Camel){
+		String prvPortName = "";
+		synchronized (Comms) {
+			for(Communication comm : Comms){
+				if(comm.getCommType().equalsIgnoreCase(commId_Camel) && comm.getCommID().equalsIgnoreCase("0")){
+					//return comm;
+					ProvidedPort prvPort = comm.getProvPort();
+					if(prvPort == null)
+						LOGGER.log(Level.INFO, "Provided port NULL for Communication Component " + commId_Camel);
+					else
+						prvPortName = prvPort.getProvidedPortName();
+				}
+			}
+		}
+		return prvPortName;
+	}
+	
+	public String getCommReqPortName(String commId_Camel){
+		String reqPortName = "";
+		synchronized (Comms) {
+			for(Communication comm : Comms){
+				if(comm.getCommType().equalsIgnoreCase(commId_Camel) && comm.getCommID()!=null){
+					//return comm;
+					RequiredPort reqPort = comm.getReqPort();
+					if(reqPort == null)
+						LOGGER.log(Level.INFO, "Provided port NULL for Communication Component " + commId_Camel);
+					else
+						reqPortName = reqPort.getRequiredPortName();
+				}
+			}
+		}
+		return reqPortName;
 	}
 	
 	public boolean updateComm(String CommType_Camel, ProvidedPort prvPort, RequiredPort reqPort){
@@ -1028,6 +1118,10 @@ public class CamelExecwareMapping {
 		private String getCommType(){return CommType_Camel;}
 		
 		private String getCommID(){return this.id;}
+		
+		private ProvidedPort getProvPort(){return this.prvPort;}
+		
+		private RequiredPort getReqPort(){return this.reqPort;}
 		
 		public boolean setCommunicationParams(ProvidedPort prvPort, RequiredPort reqPort){
 			this.prvPort = prvPort;
