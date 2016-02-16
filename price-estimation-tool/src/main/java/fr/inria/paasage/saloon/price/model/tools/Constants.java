@@ -18,5 +18,7 @@ public interface Constants
 	public static final String CONFIG_FILES_DEFAULT_PATH= File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"config"+File.separator;
 	
 	public static final String CONFIG_FILES_DEFAULT_PATH_TEST= File.separator+"src"+File.separator+"test"+File.separator+"resources"+File.separator+"config"+File.separator;
+	
+	public static final double DEFAULT_PRICE_VM=1; 
 
 }

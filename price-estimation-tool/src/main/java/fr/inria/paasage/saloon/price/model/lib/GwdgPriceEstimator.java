@@ -23,6 +23,7 @@ import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.type.EnumerateValue;
 import fr.inria.paasage.saloon.price.api.IProviderPriceEstimator;
+import fr.inria.paasage.saloon.price.model.tools.Constants;
 import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
 
 public class GwdgPriceEstimator implements IProviderPriceEstimator 
@@ -60,16 +61,25 @@ public class GwdgPriceEstimator implements IProviderPriceEstimator
 	{
 		logger.debug("GwdgPriceEstimator - computeVmsPrice- Computing the price... ");
 		double price= 0; 
+		double rate = Constants.DEFAULT_PRICE_VM; //This is the default value
 		
 		Attribute vmType= ProviderModelTool.getAttributeByName(vm, "vmType"); 
 		
 		if(vmType==null)
 			vmType= ProviderModelTool.getAttributeByName(vm, "VMType"); 
 		
-		logger.debug("GwdgPriceEstimator - computeVmsPrice- Computing the price for vm: "+((EnumerateValue)vmType.getValue()).getName());
+			
+			logger.debug("GwdgPriceEstimator - computeVmsPrice- Computing the price for vm: "+((EnumerateValue)vmType.getValue()).getName());
 		
-		price =vmsMap.get(((EnumerateValue)vmType.getValue()).getName())*vm.getFeatureCardinality().getValue(); 
+		if(vmsMap.get(((EnumerateValue)vmType.getValue()).getName())!=null)
+		{	
+			rate= vmsMap.get(((EnumerateValue)vmType.getValue()).getName()); 
+		}
+		else
+			logger.warn("GwdgPriceEstimator - computeVmsPrice- The rate for vm: "+((EnumerateValue)vmType.getValue()).getName()+ "cannot be found. The default value will be used");
 
+		price =rate*vm.getFeatureCardinality().getValue(); 
+		
 		return price; 
 		
 	}

@@ -20,6 +20,7 @@ import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.type.EnumerateValue;
 import fr.inria.paasage.saloon.price.api.IProviderPriceEstimator;
+import fr.inria.paasage.saloon.price.model.tools.Constants;
 import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
 
 public class OmistackPriceEstimator implements IProviderPriceEstimator 
@@ -57,6 +58,7 @@ public class OmistackPriceEstimator implements IProviderPriceEstimator
 	{
 		logger.debug("OmistackPriceEstimator - computeVmsPrice- Computing the price... ");
 		double price= 0; 
+		double rate = Constants.DEFAULT_PRICE_VM; 
 		
 		Attribute vmType= ProviderModelTool.getAttributeByName(vm, "vmType"); 
 		
@@ -67,10 +69,15 @@ public class OmistackPriceEstimator implements IProviderPriceEstimator
 		logger.info("OmistackPriceEstimator - computeVmsPrice- Computing the price for vm: "+((EnumerateValue)vmType.getValue()).getName());
 		
 		String n1 = ((EnumerateValue)vmType.getValue()).getName();
+		
+		if(vmsMap.get(n1)!=null)
+		{
+			rate= vmsMap.get(n1); 
+		}
+		else
+			logger.warn("OmistackPriceEstimator - computeVmsPrice- The rate for vm: "+((EnumerateValue)vmType.getValue()).getName()+ "cannot be found. The default value will be used");
 
-		price =vmsMap.get(n1)*vm.getFeatureCardinality().getValue(); 
-
-//		price =vmsMap.get(((EnumerateValue)vmType.getValue()).getName())*vm.getFeatureCardinality().getValue(); 
+		price =rate*vm.getFeatureCardinality().getValue(); 
 
 		return price; 
 		
