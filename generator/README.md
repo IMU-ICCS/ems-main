@@ -47,27 +47,24 @@ $ java -jar cp-generator-service-jar-with-dependencies.jar resourceName outputFi
 The component also provides a CLI interface for executions with ZeroMQ: 
 
 ```shell
-java -Djava.library.path=pathToZmqLibraries -cp cp-generator-service-jar-with-dependencies.jar eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib.ZeroMQServer subscriberPort publisherPort
+java -Djava.library.path=pathToZmqLibraries -cp cp-generator-service-jar-with-dependencies.jar eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib.ZeroMQServer
 ```
 
-**Input:** CP Generator reads CAMEL models directly from CDO resource. To do that via ZeroMQ, the component subscribes to the "ID" topic via  by using `subscriberPort` and retrieves the resource name. If subscriber port is not specified, the component uses 5555 as default port.
+**Input:** CP Generator reads CAMEL models directly from CDO resource. To do that via ZeroMQ, the component subscribes to the "ID" topic via  by using `zeromqSubscriberPort` and retrieves the resource name. If subscriber port is not specified, the component uses 5555 as default port.
 
-**Output:** CP Generator publishes the identifier of the generated Upperware model via ZeroMQ by using `publisherPort` and the "startSolving" as topic. The component also publishes the identifer of the input Camel model by using the topic "camelModelId". If publisher port is not specified, the component uses 5544 as default port.CAMEL model is not modified.
+**Output:** CP Generator publishes the identifier of the generated Upperware model via ZeroMQ by using `zeromqPublisherPort` and the "startSolving" as topic. The component also publishes the identifier of the input Camel model by using the topic "camelModelId". If publisher port is not specified, the component uses 5544 as default port.CAMEL model is not modified.
 
  The `java.library.path` has to define the directory where the libzmq and libjzmq shared libraries were installed (normally /usr/local/lib on UNIX-like systems) 
 
-`subscriberPort`and `publisherPort` are optional. However, if you want to specify `publisherPort` you have also to define `subscriberPort`.    
-
-### Example
- 
-The `src/main/resources/examples/scalarm` directory contains 4 xmi files with CAMEL models that can be used for testing purposes:
-
-- `ScalarmFlexiant.xmi`
-- `ScalarmFlexiantFull.xmi`
-- `ScalarmGWDG.xmi`
-- `ScalarmGWDGFull.xmi`
-
-They can be stored in CDO Server by using the Init tool.  
+You can define topics and ports by using the wp3_cp_generator.properties file available in the `PAASAGE_CONFIG_DIR directory`. Below, you have the list of properties that you can specify via this file.  
+  
+- `zeromqSubscriberPort`: The subscriber port. The default value is 5555.  
+- `zeromqSubscriberHostName`: The host name for subscription. The default value is "localhost" 
+- `zeromqSubscriberTopicName`: The subscription topic. The default value is "ID"
+- `zeromqPublisherPort`: The publisher port. The default value is 5544. 
+- `zeromqPublisherrCPModelID`: The topic used for publishing the generated model id. The default value is "startSolving".  
+- `zeromqPublisherrCamelModelID`: The topic used for publshing the Camel Model id. The default value is "camelModelId".   
+    
 
 ## Limitations
 
