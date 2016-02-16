@@ -4079,7 +4079,7 @@ public class ExecInterfacer {
 	
 	/**
 	 * returns if a particular VM is deleted
-	 * @param virtualMachineId VM id for state deletion
+	 * @param instanceId VM id for state deletion
 	 * @return true if deleted else false
 	 */
 	public boolean queryStateDeletedInstance(int instanceId){
