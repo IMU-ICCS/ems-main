@@ -370,7 +370,14 @@ public class RuleProcessor {
 			return SOLUTION_STATUS.ERROR;
 		}
 
-		List<EObject> objList = this.getCloneModel();
+		List<EObject> objList;
+		try {
+			objList = this.getCloneModel();
+		} catch (Exception e) {
+			System.out.println("ERROR while trying to clone the model.");
+			System.out.println(e.getMessage());
+			return SOLUTION_STATUS.ERROR;
+		}
 		String[] strArray = resId.split("/"); // splitting
 												// upperware-models/1414751126815
 		String newPaaSageConfigId = strArray[1] + "v2"; // take the latter part:
@@ -1409,7 +1416,14 @@ public class RuleProcessor {
 		
 		/* (b) */
 		openCDOSession(cdoIdentifier);
-		List<EObject> objList = this.getCloneModel();
+		List<EObject> objList;
+		try {
+			objList = this.getCloneModel();
+		} catch (Exception e) {
+			System.out.println("    -> Error: Cloning the model was not successful: " + e.getMessage());
+			System.out.println("    -> Please have a look at the output of the previous component.");
+			return SOLUTION_STATUS.ERROR;
+		}
 		cloneResId_ = cdoIdentifier + "v2";
 		
 		System.out.println();
