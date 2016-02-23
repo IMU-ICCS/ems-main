@@ -2,14 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.db.lib;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -199,7 +196,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 				logger.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
 		} else
 			operatingSystems = (OperatingSystems) operatingSystemsList.get(0);
-
 	}
 
 	/**
@@ -226,7 +222,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		} else {
 			locations = (Locations) locationsList.get(0);
 		}
-
 	}
 
 	protected List<EObject> getResourceContents(String path) {
@@ -235,12 +230,10 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		EList<EObject> content = resource.getContents();
 
 		List<EObject> qr = new ArrayList<EObject>();
-		logger.info("CDOClient - getResourceContents - Retrieved Resource "
-				+ resource + " path " + path);
+		logger.info("CDOClient - getResourceContents - Retrieved Resource " + resource + " path " + path);
 
 		if (!content.isEmpty()) {
-			logger.info("CDOClient - getResourceContents - Resource path "
-					+ path + " size " + content.size());
+			logger.info("CDOClient - getResourceContents - Resource path " + path + " size " + content.size());
 
 			for (EObject o : content) {
 				logger.info("CDOClient - getResourceContents - Content " + o);
@@ -248,8 +241,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 			}
 
 		} else
-			logger.warn("CDOClient - getResourceContents - Resource path "
-					+ path + " is empty ");
+			logger.warn("CDOClient - getResourceContents - Resource path " + path + " is empty ");
 
 		cdoClient.closeView(view);
 
@@ -343,7 +335,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		cdoClient.storeModel(pc, CDO_SERVER_PATH + pc.getId(), true);
 
 		File paasageConfigurationDir = new File(GENERATION_DIR);
-		;
 
 		File paasageConfigModel = new File(paasageConfigurationDir,
 				"paasageConfigurationModel.xmi");

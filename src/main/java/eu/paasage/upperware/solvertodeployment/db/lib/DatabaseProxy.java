@@ -22,9 +22,10 @@ import eu.paasage.upperware.solvertodeployment.db.api.IDatabaseProxy;
 
 public abstract class DatabaseProxy implements IDatabaseProxy {
 
+	// UPPERWARE ELEMENTS -----------------------------------
 	
 	/*
-	 * List of Operating systems
+	 * List of Operating systems 
 	 */
 	protected OperatingSystems operatingSystems; 
 	

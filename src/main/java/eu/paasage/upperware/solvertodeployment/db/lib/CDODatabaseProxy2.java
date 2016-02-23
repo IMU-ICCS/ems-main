@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.db.lib;
 
 import java.util.List;
@@ -14,8 +12,10 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;
@@ -38,23 +38,37 @@ import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 
 public class CDODatabaseProxy2 {
 	
-	class CamelAndDeployementModelTransactionManager {
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Class member variables
+	//////////////////////////////////////////////////////////////////////////////////////
+
+//	private static HashMap<String, ProviderModel> _providers = new HashMap<String, ProviderModel>();
+
+	private static Logger log = Logger.getLogger(CDODatabaseProxy2.class);
+	
+	private static CDODatabaseProxy2 cdoDatabaseProxy2 = new CDODatabaseProxy2();
+	
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Helper class for transactions
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	class CamelAndDeploymentModelTransactionManager {
 
 		DeploymentModel deploymentModel;
 		CamelModel camelModel;
 		CDOTransaction transaction;
+		int _dmId;
 
-		public CamelAndDeployementModelTransactionManager(String camelModelID) {
-			transaction = CDODatabaseProxy.getInstance().getCdoClient()
-					.openTransaction();
-			camelModel = (CamelModel) transaction.getResource(camelModelID)
-					.getContents().get(0);
-			deploymentModel = camelModel.getDeploymentModels().get(0);
+		public CamelAndDeploymentModelTransactionManager(String camelModelID, int dmId) {
+			transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+			camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+			deploymentModel = camelModel.getDeploymentModels().get(dmId);
+			_dmId = dmId;
 		}
 
 		public void commitAndClose() {
 
-			camelModel.getDeploymentModels().set(0, deploymentModel);
+			camelModel.getDeploymentModels().set(_dmId, deploymentModel);
 
 			try {
 				transaction.commit();
@@ -73,10 +87,98 @@ public class CDODatabaseProxy2 {
 		}
 	}
 
-	private static Logger log = Logger.getLogger(CDODatabaseProxy2.class);
+	class CamelAndCreateDeploymentModelTransactionManager {
 
-	public static CamelModel findCamelModel(CDODatabaseProxy cdoProxy,
-			String cloudMLId) {
+		DeploymentModel deploymentModel;
+		CamelModel camelModel;
+		CDOTransaction transaction;
+		int dmId;
+
+		public CamelAndCreateDeploymentModelTransactionManager(String camelModelID, int dmId) {
+			transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+			camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+			deploymentModel = camelModel.getDeploymentModels().get(dmId);
+		}
+
+		public void commitAndClose() {
+
+			camelModel.getDeploymentModels().set(dmId, deploymentModel);
+
+			try {
+				transaction.commit();
+			} catch (ConcurrentAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CommitException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+
+				if (transaction != null && !transaction.isClosed()) {
+					transaction.close();
+				}
+			}
+		}
+	}
+
+	
+	class CamelAndProviderModelTransactionManager {
+
+		CamelModel newCloudCamelModel;
+		CamelModel camelModel;
+		CDOTransaction transaction;
+
+		public CamelAndProviderModelTransactionManager(String camelModelID)
+		{
+			transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+			camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+			newCloudCamelModel=null;
+		}
+
+		public void commitAndClose() throws CommitException
+		{
+			// TYPE
+			// val type.TypeModel[*] typeModels;
+			camelModel.getTypeModels().addAll(newCloudCamelModel.getTypeModels());
+
+			// LOCATIONS
+			// val location.LocationModel[*] locationModels;
+			camelModel.getLocationModels().addAll(newCloudCamelModel.getLocationModels());
+
+			// ORGANIZATION
+			// val organisation.OrganisationModel[*] organisationModels;
+			camelModel.getOrganisationModels().addAll(newCloudCamelModel.getOrganisationModels());
+
+			// PROVIDER -- ALWAYS
+			// val provider.ProviderModel[*] providerModels;
+			camelModel.getProviderModels().add(newCloudCamelModel.getProviderModels().get(0));
+
+			try {
+				transaction.commit();
+			} catch (ConcurrentAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.fatal("ConcurentAccessException when commiting for copy cloud provider");
+				throw e;
+			} catch (CommitException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.fatal("CommitException when commiting for copy cloud provider");
+				throw e;
+			} finally {
+				if (transaction != null && !transaction.isClosed()) {
+					transaction.close();
+				}
+			}
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Reading stuff from CDO
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	public static CamelModel findCamelModel(CDODatabaseProxy cdoProxy, String cloudMLId)
+	{
 		cdoProxy = CDODatabaseProxy.getInstance();
 
 		CDOView view = cdoProxy.getCdoClient().openView();
@@ -84,18 +186,15 @@ public class CDODatabaseProxy2 {
 		CDOResource resource = view.getResource(cloudMLId);
 		EList<EObject> content = resource.getContents();
 		return (CamelModel) content.get(0);
-
 	}
 
-	public static DeploymentModel findDeployementModel(
-			CDODatabaseProxy cdoProxy, String cloudMLId) {
+	public static DeploymentModel findDeployementModel(CDODatabaseProxy cdoProxy, String cloudMLId)
+	{
 		return findCamelModel(cdoProxy, cloudMLId).getDeploymentModels().get(0);
 	}
 
-	public static PaasageConfiguration findPC(CDODatabaseProxy cdoProxy,
-			String pcID) {
-		cdoProxy = CDODatabaseProxy.getInstance();
-
+	public static PaasageConfiguration findPC(CDODatabaseProxy cdoProxy, String pcID)
+	{
 		CDOView view = cdoProxy.getCdoClient().openView();
 
 		CDOResource resource = view.getResource(pcID);
@@ -104,8 +203,9 @@ public class CDODatabaseProxy2 {
 		return (PaasageConfiguration) content.get(0);
 
 	}
-	public static ConstraintProblem findConstraintsProblem(CDODatabaseProxy cdoProxy,
-			String pcID) {
+	
+	public static ConstraintProblem findConstraintsProblem(CDODatabaseProxy cdoProxy, String pcID)
+	{
 		cdoProxy = CDODatabaseProxy.getInstance();
 
 		CDOView view = cdoProxy.getCdoClient().openView();
@@ -116,9 +216,9 @@ public class CDODatabaseProxy2 {
 		return (ConstraintProblem) content.get(1);
 
 	}
-	public static ApplicationComponent findAppComponentInConfiguration(
-			PaasageConfiguration pc, String applicationId) {
 
+	public static ApplicationComponent findAppComponentInConfiguration(PaasageConfiguration pc, String applicationId)
+	{
 		for (ApplicationComponent apc : pc.getComponents()) {
 			log.debug("Looking component " + apc.getCloudMLId()
 					+ " in paasaconfiguration");
@@ -134,9 +234,8 @@ public class CDODatabaseProxy2 {
 		return null;
 	}
 
-	public static VirtualMachineProfile findVirtualMachineProfileInConfiguration(
-			PaasageConfiguration pc, String applicationId) throws S2DException {
-
+	public static VirtualMachineProfile findVirtualMachineProfileInConfiguration(PaasageConfiguration pc, String applicationId) throws S2DException
+	{
 		for (VirtualMachineProfile vmp : pc.getVmProfiles()) {
 			log.debug("Looking component " + vmp.getCloudMLId()
 					+ " in paasaconfiguration. Compare with "+ applicationId);
@@ -147,66 +246,133 @@ public class CDODatabaseProxy2 {
 			}
 		}
 		throw new S2DException("Unable to find vm profile !! Looking for: " + applicationId);
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Copy Cloud Providers into CAMEL CDO + Helper function
+	//////////////////////////////////////////////////////////////////////////////////////
+	
+	public static void copyAllCloudProviderModel(String providerId, String cloudVMId, CamelModel cm, String camelModelID) throws CommitException {
+		
+		CamelAndProviderModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndProviderModelTransactionManager(camelModelID);
 
+		// CREATING A COPY
+		CamelModel cmcopy = (CamelModel) EcoreUtil.copy(cm);
 
+		// FIXING ITS NAME TO BE UNIQUE
+		cmcopy.getProviderModels().get(0).setName(providerId+"#"+cloudVMId);
+		
+		transactionManager.newCloudCamelModel = cmcopy;
+		transactionManager.commitAndClose(); // COPY TO CDO!
 	}
 
-	private static CDODatabaseProxy2 cdoDatabaseProxy2 = new CDODatabaseProxy2();
+	public static void copyAllCloudProviderModel(String pmId, String cloudVMid, String camelModelID, String appId) throws S2DException, CommitException {
+		try {
+			log.info("appId="+appId);
+			log.info("pmId="+pmId);
+			log.info("cloudVMd="+cloudVMid);
+			EList<CamelModel> cms = findAllCamelProviderModel(appId, pmId);
+			log.info("#Camel CloudProvider Model(s) loaded: "+cms.size());
+			for(CamelModel cm : cms)
+			{
+				if (cloudVMid.equals(cm.getName()))
+				{
+					log.info("Copying "+cm.getName());
+					copyAllCloudProviderModel(pmId, cloudVMid, cm, camelModelID);					
+				}
+			}
+			log.info("Done");
+		} catch (S2DException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.fatal("Error when copying PM into CAMEL");
+			throw e;
+		}
+	}
+	
+	public static int copyDeploymentModel(String camelModelID, int srcId, boolean overwriteDM, int dstId) throws CommitException
+	{
+		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+		CamelModel camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+		DeploymentModel dm = camelModel.getDeploymentModels().get(srcId);
+		DeploymentModel dmcopy = (DeploymentModel) EcoreUtil.copy(dm);
+		
+		int dmid;
+		if (overwriteDM)
+		{
+			// Checking that dmId exists
+			try {
+				if (dstId==-1) dstId = camelModel.getDeploymentModels().size()-1; // LAST IF -1
+				log.info("Trying to overwrite DM entry "+dstId);
+				camelModel.getDeploymentModels().set(dstId, dmcopy);
+			} catch (IndexOutOfBoundsException e)
+			{
+				log.fatal("DemploymentModel dst id (overwriten) is not corect! #DM: "+camelModel.getDeploymentModels().size());
+			}
+			dmid = dstId;
+		}
+		else
+		{
+			camelModel.getDeploymentModels().add(dmcopy);
+			dmid = camelModel.getDeploymentModels().size()-1;
+		}
 
-	public static void registerInternalComponentInstance(
-			InternalComponentInstance internalComponentInstance,
-			String camelModelID) {
+		try {
+			transaction.commit();
+		} catch (ConcurrentAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		} catch (CommitException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		} finally {
+			if (transaction != null && !transaction.isClosed()) {
+				transaction.close();
+			}
+		}
+		return dmid;
+	}
 
-		CamelAndDeployementModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeployementModelTransactionManager(
-				camelModelID);
-		transactionManager.deploymentModel.getInternalComponentInstances().add(
-				internalComponentInstance);
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Registering stuff into CDO
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	public static void registerInternalComponentInstance(InternalComponentInstance internalComponentInstance, String camelModelID, int dmId)
+	{
+		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
+		transactionManager.deploymentModel.getInternalComponentInstances().add(internalComponentInstance);
 		transactionManager.commitAndClose();
 
 	}
 
-	public static void registerVMInstance(VMInstance vmInstance,
-			String camelModelID) {
-
-		CamelAndDeployementModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeployementModelTransactionManager(
-				camelModelID);
+	public static void registerVMInstance(VMInstance vmInstance, String camelModelID, int dmId)
+	{
+		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID,dmId);
 		transactionManager.deploymentModel.getVmInstances().add(vmInstance);
 		transactionManager.commitAndClose();
 
 	}
 
-	public static void registerHostingInstance(HostingInstance hostingInstance,
-			String camelModelID) {
+	public static void registerHostingInstance(HostingInstance hostingInstance, String camelModelID, int dmId) {
 
-		CamelAndDeployementModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeployementModelTransactionManager(
-				camelModelID);
-		transactionManager.deploymentModel.getHostingInstances().add(
-				hostingInstance);
+		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
+		transactionManager.deploymentModel.getHostingInstances().add(hostingInstance);
 		transactionManager.commitAndClose();
 	}
 
-	public static void registerCommunicationInstance(
-			CommunicationInstance communicationInstance, String camelModelID) {
-		CamelAndDeployementModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeployementModelTransactionManager(
-				camelModelID);
-		transactionManager.deploymentModel.getCommunicationInstances().add(
-				communicationInstance);
+	public static void registerCommunicationInstance(CommunicationInstance communicationInstance, String camelModelID, int dmId) {
+		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
+		transactionManager.deploymentModel.getCommunicationInstances().add(communicationInstance);
 		transactionManager.commitAndClose();
-
 	}
 
-	/*
-	 * public static VMInfo getFirstVMInfo(CDODatabaseProxy cdoProxy,String
-	 * cloudMLId) { CamelModel cm = findCamelModel(cdoProxy,cloudMLId); return
-	 * cm.getVmInfos().get(0);
-	 * 
-	 * }
-	 */
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Helper function
+	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static Hosting getHostingContainString(DeploymentModel dm,
-			String acName) {
-
-		
+	public static Hosting getHostingContainString(DeploymentModel dm, String acName) {
 
 		List<Hosting> hostings = dm.getHostings();
 		for (Hosting hosting : hostings) {
@@ -214,15 +380,14 @@ public class CDODatabaseProxy2 {
 			if (hosting.getName().contains(acName)) {
 				return hosting;
 			}
-
 		}
 		log.error("Unable to hosting with name containing string " + acName);
 		return null;
 	}
 
-
 	public static RequiredCommunicationInstance findRequiredCommunicationInstance(DeploymentModel deploymentModel, 
-			Communication communication)	throws S2DException {
+			Communication communication)	throws S2DException
+	{
 		RequiredCommunicationInstance requiredCommunicationInstanceResult = null;
 		RequiredCommunication requiredCommunicationExpected = communication.getRequiredCommunication();
 
@@ -230,7 +395,7 @@ public class CDODatabaseProxy2 {
 		{
 			for(RequiredCommunicationInstance  requiredCommunicationInstance : internalComponentInstance.getRequiredCommunicationInstances())
 			{
-			
+
 				if( requiredCommunicationInstance.getType().getName().equals(requiredCommunicationExpected.getName()))
 				{
 					requiredCommunicationInstanceResult =  requiredCommunicationInstance;
@@ -244,18 +409,17 @@ public class CDODatabaseProxy2 {
 		return requiredCommunicationInstanceResult;
 	}
 
-	public static ProvidedCommunicationInstance findProvidedCommunicationInstance(
-			DeploymentModel deploymentModel, Communication communication)
-					throws S2DException {
-		
-			ProvidedCommunicationInstance providedCommunicationInstanceResult = null;
+	public static ProvidedCommunicationInstance findProvidedCommunicationInstance(DeploymentModel deploymentModel, Communication communication)
+			throws S2DException
+	{	
+		ProvidedCommunicationInstance providedCommunicationInstanceResult = null;
 		ProvidedCommunication providedCommunicationExpected = communication.getProvidedCommunication();
 
 		for(InternalComponentInstance internalComponentInstance : deploymentModel.getInternalComponentInstances())
 		{
 			for(ProvidedCommunicationInstance  providedCommunicationInstance : internalComponentInstance.getProvidedCommunicationInstances())
 			{
-			
+
 				if( providedCommunicationInstance.getType().getName().equals(providedCommunicationExpected.getName()))
 				{
 					providedCommunicationInstanceResult =  providedCommunicationInstance;
@@ -267,41 +431,74 @@ public class CDODatabaseProxy2 {
 					+ communication.getName());
 		}
 		return providedCommunicationInstanceResult;
-		
-		
 	}
-	
-	
+
 	static 		String FMS_APP_CDO_SERVER_PATH = "upperware-models/fms/";
-	
-	
+
 	public static String getFMResourceId(String appId, String providerId)
 	{
 		return appId+"/"+providerId; 
 	}
-	
-	
 
 	static public ProviderModel findProviderModel(String appId, String providerId) throws S2DException 
 	{
 		String componentURI = FMS_APP_CDO_SERVER_PATH+getFMResourceId(appId, providerId);
 
 		try{
-		CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
+			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
 
-		CDOView view = cdoProxy.getCdoClient().openView();
-		EList<EObject> res= view.getResource(componentURI).getContents(); 
-		
-		CamelModel pm = (CamelModel) res.get(0); 
-		
-		System.err.println("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
-		
-		return pm.getProviderModels().get(0); 
-		}catch(Exception e)
+			log.info("loading PM model: "+componentURI);
+			CDOView view = cdoProxy.getCdoClient().openView();
+			EList<EObject> res= view.getResource(componentURI).getContents(); 
+
+			CamelModel pm = (CamelModel) res.get(0); 
+
+			System.err.println("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
+
+			return pm.getProviderModels().get(0); 
+		}
+		catch(Exception e)
 		{
 			throw new S2DException("Unable to find provider model with name " + providerId + " . Is there something wrong in your original model ? The uri looking was : " + componentURI + 
 					". Message : "+ e.getMessage());
 		}
-}  
+	}
 
+	static public EList<CamelModel> findAllCamelProviderModel(String appId, String providerId) throws S2DException 
+	{
+		String componentURI = FMS_APP_CDO_SERVER_PATH+getFMResourceId(appId, providerId);
+
+		try{
+			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
+
+			log.info("loading PM model: "+componentURI);
+			CDOView view = cdoProxy.getCdoClient().openView();
+			EList<EObject> res= view.getResource(componentURI).getContents(); 
+
+			EList<CamelModel> cms = new BasicEList<CamelModel>();
+			for(EObject e : res)
+			{
+				CamelModel cm = (CamelModel) e;
+				System.err.println("CDODatabaseProxy- loadPM- CamelModel "+cm.getName());
+				cms.add(cm);
+			}
+			return cms;
+		}
+		catch(Exception e)
+		{
+			throw new S2DException("Unable to find provider model with name " + providerId + " . Is there something wrong in your original model ? The uri looking was : " + componentURI + 
+					". Message : "+ e.getMessage());
+		}
+	}
+
+	public static ConstraintProblem findConstraintProblem(CDODatabaseProxy cdoProxy, String paasageConfigurationCompleteID) {
+
+		CDOView view = cdoProxy.getCdoClient().openView();
+
+		log.info("loading CP model: "+paasageConfigurationCompleteID);
+		CDOResource resource = view.getResource(paasageConfigurationCompleteID);
+		EList<EObject> content = resource.getContents();
+
+		return (ConstraintProblem) content.get(1);	
+	}  
 }

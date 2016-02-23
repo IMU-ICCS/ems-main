@@ -1,22 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-        <groupId>org.ow2.paasage</groupId>
 	<artifactId>solver-to-deployment</artifactId>
 	<name>solver-to-deployment</name>
-        <version>2015.9.1-SNAPSHOT</version>
-	<properties>
+        <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
-	
-
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>paasage-pom</artifactId>
         <version>2015.9.1-SNAPSHOT</version>
     </parent>
-	
 	
 	<dependencies>
 	
@@ -30,13 +25,11 @@
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>upperware-metamodel</artifactId>
 			<version>${paasage.version}</version>
-			
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.paasage.mddb.cdo</groupId>
 			<artifactId>client</artifactId>
 			<version>${paasage.version}</version>
-			
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -65,33 +58,68 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.7</version>
 		</dependency>
-
-	</dependencies>
-		<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>eu.paasage.upperware.solvertodeployment.lib.SolverToDeployment</mainClass>
-					</manifest>
-					</archive>
-				<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-			</plugin>
-		</plugins>
-		</build>
+		<dependency>
+ 			<groupId>org.zeromq</groupId>
+ 			<artifactId>jeromq</artifactId>
+  			<version>0.3.2</version>
+  		</dependency>
+  	</dependencies>
+ <build>
+	<plugins>
+	   <plugin>
+	    <artifactId>maven-compiler-plugin</artifactId>
+	    <configuration>
+	      <source>1.8</source>
+	      <target>1.8</target>
+	    </configuration>
+	   </plugin>
+	   <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>eu.paasage.upperware.solvertodeployment.lib.SolverToDeployment</mainClass>
+                    </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+            <executions>
+                    <execution>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+              </executions>
+        </plugin>
+	  </plugins>
+  </build>
+  <repositories>
+    <repository>
+      <id>ow2.releases</id>
+      <name>OW2 repository</name>
+      <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+    </repository>
+    <repository>
+      <id>ow2.snapshots</id>
+      <name>OW2 repository</name>
+      <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+    </repository>
+    <repository>
+      <id>paasage.repo</id>
+      <name>PaaSage repository</name>
+      <url>http://jenkins.paasage.cetic.be/repository/</url>
+    </repository>
+<!--     <repository>
+      <id>myrepo.local</id>
+      <name>myrepo</name>
+      <url>file://${basedir}/lib</url>
+    </repository> -->
+  </repositories>
 </project>
 

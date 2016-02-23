@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 package eu.paasage.upperware.solvertodeployment.derivator.lib;
 
 import org.apache.log4j.Logger;
@@ -31,27 +29,24 @@ import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 public class CloudMLHelper {
 
 	private static int globalCount = 0;
-	
+
 	public static int getGlobalCount()
 	{
 		return globalCount++;
 	}
-	private static Logger log = Logger.getLogger(CloudMLHelper.class);
-	
-	private static String findProviderName(String input)
-	{
-		
-		
-		String[] split = input.split("_provider_");
 
-			
+	@SuppressWarnings("unused")
+	private static Logger log = Logger.getLogger(CloudMLHelper.class);
+
+	private static String findProviderName(String input)
+	{	
+		String[] split = input.split("_provider_");		
 		return split[1];
 	}
+
 	public  static String[] CPToKey(String key)
 	{
-
 		String[] split1 = key.split("_vm_");
-
 		String[] split2 = split1[0].split("U_app_component_");
 
 		String [] result = new String [3]; 
@@ -59,20 +54,14 @@ public class CloudMLHelper {
 		result[1]=split1[1];
 		result[2]=findProviderName(key);
 		return result;
-
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Internal Component Instance
+	//////////////////////////////////////////////////////////////////////////////////////
 	
-	
-
-	
-
-
-
-
-
-
-	public static InternalComponentInstance createICInstance(InternalComponent ic1) {
+	public static InternalComponentInstance createICInstance(InternalComponent ic1)
+	{
 		InternalComponentInstance internalComponentInstance = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
 		internalComponentInstance.setName(ic1.getName() + "Instance_" + getGlobalCount());
 		internalComponentInstance.setType(ic1);
@@ -86,7 +75,7 @@ public class CloudMLHelper {
 
 				ProvidedCommunication providedCommunication = ic1.getProvidedCommunications().get(i);
 				providedCommunicationInstance.setType(providedCommunication);
-		//		providedCommunicationInstance.setOwner(internalComponentInstance);
+				//		providedCommunicationInstance.setOwner(internalComponentInstance);
 				providedCommunicationInstance.setName(providedCommunication.getName() + "ProvidedCommunicationInstance_" + getGlobalCount());
 			}
 			internalComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance);
@@ -100,7 +89,7 @@ public class CloudMLHelper {
 				RequiredCommunication requiredCommunication = ic1.getRequiredCommunications().get(i);
 
 				requiredCommunicationInstance.setType(requiredCommunication);
-			//	requiredCommunicationInstance.setOwner(internalComponentInstance);
+				//	requiredCommunicationInstance.setOwner(internalComponentInstance);
 				requiredCommunicationInstance.setName(requiredCommunication.getName() + "ReqCommunicationInstance_" + getGlobalCount());
 			}
 			internalComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance);
@@ -111,18 +100,19 @@ public class CloudMLHelper {
 		{
 			requiredHostInstance.setType(ic1.getRequiredHost());
 			requiredHostInstance.setName(ic1.getName() + "RequiredHostInstance_" + getGlobalCount());
-		//	requiredHostInstance.setOwner(internalComponentInstance);
+			//	requiredHostInstance.setOwner(internalComponentInstance);
 		}
 		internalComponentInstance.setRequiredHostInstance(requiredHostInstance);
 
 		return internalComponentInstance;
 	}
-	
-	
-		public static VMInstance createVMInstance(VM vm,ProviderModel providerModel) {
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// VM Instance
+	//////////////////////////////////////////////////////////////////////////////////////
 
-
+	public static VMInstance createVMInstance(VM vm,ProviderModel providerModel)
+	{
 		VMInstance vmInstance = DeploymentFactory.eINSTANCE.createVMInstance();
 		vmInstance.setType(vm);
 		vmInstance.setName(vm.getName() + "VMInstance_" + getGlobalCount());
@@ -137,47 +127,49 @@ public class CloudMLHelper {
 			}
 			vmInstance.getProvidedHostInstances().add(providedHostInstance);
 		}
-		
-		
 		return vmInstance;
 	}
 
-
-		public static Attribute findVMType(ProviderModel _providerModel) throws S2DException
+	public static Attribute findVMType(ProviderModel _providerModel) throws S2DException
+	{
+		Attribute result = null;
+		if(_providerModel == null )
 		{
-			Attribute result = null;
-			if(_providerModel == null )
-			{
-				throw new S2DException("Bad calling . Provider musn't not be null");
+			throw new S2DException("Bad calling . Provider musn't not be null");
 
-			}
-			EList<Feature> subFeatures = _providerModel.getRootFeature().getSubFeatures(); 
-			String logTxt = "\n * Start looking vmType for providerModel " + _providerModel.getName();
-			logTxt+=(" \n  ** Scan SubFeature of provider model. Scanning "+ subFeatures.size() +" elements");
-			for (Feature feature : subFeatures) {
-				EList<Attribute> attributes = feature.getAttributes();
-				logTxt+=(" ** Will scanning all attributes for feature " + feature.getName()+ ". Number of attributes : " + attributes.size());
+		}
+		EList<Feature> subFeatures = _providerModel.getRootFeature().getSubFeatures(); 
+		String logTxt = "\n * Start looking vmType for providerModel " + _providerModel.getName();
+		logTxt+=(" \n  ** Scan SubFeature of provider model. Scanning "+ subFeatures.size() +" elements");
+		for (Feature feature : subFeatures) {
+			EList<Attribute> attributes = feature.getAttributes();
+			logTxt+=(" ** Will scanning all attributes for feature " + feature.getName()+ ". Number of attributes : " + attributes.size());
 
-				for (Attribute attribute : attributes) {	
-					logTxt+=("\n    *** Is attribute name equals vmType ? : " + attribute.getName() + " bla " + attribute.getValue());
-					
-					if(attribute.getName().equals("VMType"))
-					{
-						result = attribute;
-					}
+			for (Attribute attribute : attributes) {	
+				logTxt+=("\n    *** Is attribute name equals vmType ? : " + attribute.getName() + " bla " + attribute.getValue());
+
+				if(attribute.getName().equals("VMType"))
+				{
+					result = attribute;
 				}
 			}
-			if(result == null) 
-				throw new S2DException("Unable to find VMType . There is error in original model ! .Details :" + logTxt);
-			return result;
 		}
-		public static HostingInstance buildNewHostingInstance(String acName,VMInstance vmInstance, InternalComponentInstance internalComponentInstance, Hosting hosting) {
-			HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
-			hostingInstance.setName("VMto" + acName + "HostingInstance");
-			EList<ProvidedHostInstance> pis = vmInstance.getProvidedHostInstances();
-			hostingInstance.setProvidedHostInstance(pis.get(0));
-			hostingInstance.setRequiredHostInstance(internalComponentInstance.getRequiredHostInstance());
-			hostingInstance.setType(hosting);
-			return hostingInstance;
-		}
+		if(result == null) 
+			throw new S2DException("Unable to find VMType . There is error in original model ! .Details :" + logTxt);
+		return result;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Hosting Instance
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	public static HostingInstance buildNewHostingInstance(String acName,VMInstance vmInstance, InternalComponentInstance internalComponentInstance, Hosting hosting) {
+		HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
+		hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalCount());
+		EList<ProvidedHostInstance> pis = vmInstance.getProvidedHostInstances();
+		hostingInstance.setProvidedHostInstance(pis.get(0));
+		hostingInstance.setRequiredHostInstance(internalComponentInstance.getRequiredHostInstance());
+		hostingInstance.setType(hosting);
+		return hostingInstance;
+	}
 }
