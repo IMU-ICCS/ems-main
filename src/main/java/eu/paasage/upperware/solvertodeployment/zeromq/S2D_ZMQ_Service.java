@@ -65,9 +65,9 @@ public class S2D_ZMQ_Service {
     }
 
     /**
-     * Returns a singleton-instance of the RuleProcessorService.
+     * Returns a singleton-instance of the S2DService.
      * 
-     * @return the RuleProcessorService instance
+     * @return the S2DService instance
      */
     public static S2D_ZMQ_Service getInstance() {
         if (instance == null) {
@@ -123,7 +123,7 @@ public class S2D_ZMQ_Service {
 		if (subscriber.hasReceiveMore()) {
 			cdoIdentifier = subscriber.recvStr();
 		} else {
-			String error = "ZeroMQ init error: Subscriber socket is missing";
+			String error = "ZeroMQ init error: Subscriber socket is missing (1)";
 			publishError(publisher, error);
 			logger.error(error);
 			return;
@@ -133,7 +133,7 @@ public class S2D_ZMQ_Service {
 		if (subscriber.hasReceiveMore()) {
 			cpDirId = subscriber.recvStr();
 		} else {
-			String error = "ZeroMQ init error: Subscriber socket is missing";
+			String error = "ZeroMQ init error: Subscriber socket is missing (2)";
 			publishError(publisher, error);
 			logger.error(error);
 			return;
@@ -143,7 +143,7 @@ public class S2D_ZMQ_Service {
 		if (subscriber.hasReceiveMore()) {
 			msg = subscriber.recvStr();
 		} else {
-			String error = "ZeroMQ init error: Subscriber socket is missing";
+			String error = "ZeroMQ init error: Subscriber socket is missing (3)";
 			publishError(publisher, error);
 			logger.error(error);
 			return;
@@ -179,7 +179,7 @@ public class S2D_ZMQ_Service {
 	}
 
 	private static void publishError(Socket publisher, String errorMessage) {
-		logger.error("Failure in RP: " + errorMessage);
+		logger.error("Failure in S2D: " + errorMessage);
 		publisher.sendMore(PUB_GROUP);
 		publisher.sendMore(ERROR);
 		publisher.send(errorMessage);

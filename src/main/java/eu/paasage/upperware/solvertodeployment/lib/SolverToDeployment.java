@@ -24,6 +24,8 @@ import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
 //import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZMQ_Service;
+import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZMQ_Service;
+import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZeroMQServer;
 
 public class SolverToDeployment {
 
@@ -167,13 +169,29 @@ public class SolverToDeployment {
 		return true;
 	}
 
+	private static void usage()
+	{
+		System.out.println("[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] [-d level] ConfigurationCDOId CamelCDOId CloudProviderCDODirID");
+		System.out.println("[-daemon] [-daemonold]");
+	}
+	
 	enum S2D_ARGS_CMD { DEFAULT, OVERVRITE_DM, TIMESTAMP, DUMPDM };
 	public static void main(String[] args) {
 
-//		if ((args.length == 1)&&(args[0].equals("-d")))
-//		{
-//			S2D_ZMQ_Service.getInstance().run();
-//		}
+		if (args.length == 0) {
+			usage();
+			System.exit(-1);
+		}
+		if ((args.length == 1)&&(args[0].equals("-daemonold")))
+		{
+			S2D_ZMQ_Service.getInstance().run();
+			System.exit(0);
+		}
+		if ((args.length == 1)&&(args[0].equals("-daemon")))
+		{
+			S2D_ZeroMQServer.getInstance().run();
+			System.exit(0);
+		}
 		
 		S2D_ARGS_CMD next_op=S2D_ARGS_CMD.DEFAULT;	
 		int dmID=-1;
@@ -204,7 +222,7 @@ public class SolverToDeployment {
 		
 		if (param_idx!=3)
 		{
-			System.out.println("[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] [-d level] ConfigurationCDOId CamelCDOId CloudProviderCDODirID");
+			usage();
 			System.exit(-1);
 		}
 
