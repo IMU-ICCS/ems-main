@@ -426,7 +426,7 @@ public class GenerationOrchestrator
 		}
 		else
 		{	
-			GenerationOrchestrator.logger.error("GenerationOrchestrator- Main- You have to specifiy a valid resouce in CDO containing the Camel Model and a Output file!"); 
+			GenerationOrchestrator.getLogger().error("GenerationOrchestrator- Main- You have to specifiy a valid resouce in CDO containing the Camel Model and a Output file!"); 
 			System.exit(1);
 		}	
 		
