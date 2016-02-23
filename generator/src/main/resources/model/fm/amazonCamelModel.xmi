@@ -4,7 +4,7 @@
     <regions id="EU" name="EU"/>
   </locationModels>
   <organisationModels name="AmazonOrganisation">
-    <provider name="omistack" www="www.gwdg.de" postalAddress="GWDG, Am Fa&#xdf;berg 11, 37077 G&#xf6;ttingen, Germany" email="gwdg@gwdg.de" public="true" IaaS="true" providerModel="//@providerModels.0"/>
+    <provider name="Amazon" www="www.amazon.com" postalAddress="Amazon, USA" email="contact@amazon.com" public="true" IaaS="true" providerModel="//@providerModels.0"/>
     <dataCentres name="AmazonDataCentre" codeName="ec2" location="//@locationModels.0/@regions.0"/>
   </organisationModels>
   <providerModels name="AmazonProvider">
