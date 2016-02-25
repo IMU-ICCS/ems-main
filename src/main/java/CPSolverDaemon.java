@@ -31,12 +31,12 @@ public class CPSolverDaemon implements Runnable{
 		recContext = ZMQ.context(1);
         recSocket = recContext.socket(ZMQ.SUB);
 
-        recSocket.connect("tcp://localhost:" + ADAPTER_PORT);
+        recSocket.connect("tcp://localhost:" + SOLVER_PORT);
         recSocket.subscribe("startSolving".getBytes(ZMQ.CHARSET));
         
         servContext = ZMQ.context(1);
         servSocket = servContext.socket(ZMQ.PUB);
-        servSocket.bind("tcp://*:" + SOLVER_PORT);
+        servSocket.bind("tcp://*:" + ADAPTER_PORT);
         logger.info("Init call finished for CPSolverDaemon");
 	}
 	
@@ -56,8 +56,20 @@ public class CPSolverDaemon implements Runnable{
             String address = recSocket.recvStr();
             // Read message contents
             String cpModelRef = recSocket.recvStr();
-            logger.info("Got new problem to solve: " + address + " : " + cpModelRef);
-            CPSolver cp = new CPSolver(cpModelRef,null);
+    		long timestamp = -1;
+            CPSolver cp;
+            if (recSocket.hasReceiveMore())
+            {
+            	String timestampStr = recSocket.recvStr();
+        		if (timestampStr != null){
+        			timestamp = new Long(timestampStr);
+        		}            	
+                cp = new CPSolver(cpModelRef,null, timestamp);
+            } else
+            {
+                cp = new CPSolver(cpModelRef,null);            	
+            }
+            logger.info("Got new problem to solve: " + address + " : " + cpModelRef + " / "+ timestamp);
             boolean hasSolution = false;
             try{
             	hasSolution = cp.solve();
