@@ -27,7 +27,8 @@ import eu.paasage.upperware.profiler.rp.util.RPOutput;
  * 
  * topic: RPsolutionAvailable
  * - Camel Model, e.g. bewan
- * - CDO Identifier, e.g. upperware-models/1444391197664
+ * - new CDO Identifier, e.g. upperware-models/1444391197664
+ * - original CDO Identifier
  * 
  * If an error occurs, then the RuleProcessor will publish an error message on
  * the topic "RPSolutionAvailable". Please check if the key "ERROR" exists in
@@ -148,7 +149,8 @@ public class RuleProcessorService {
 			System.out.println("RP passed. Publish onto topic " + PUB_GROUP);
 			publisher.sendMore(PUB_GROUP);
 			publisher.sendMore(camelModel);
-			publisher.send(output.getCpModelId());
+			publisher.sendMore(output.getCpModelId()); // new
+			publisher.send(cdoIdentifier); // old
 		} else {
 			String error = "An error occurred while validating the model with the Rule Processor";
 			publishError(publisher, error);
