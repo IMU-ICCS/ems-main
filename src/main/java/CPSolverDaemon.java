@@ -51,25 +51,44 @@ public class CPSolverDaemon implements Runnable{
 	 */
 	public void run() {
 		while (run) {
+			String topic="not set";
+			String camelModelRef="not set";
+			String cpModelRef="not set";
+			long timestamp = -1;
+			CPSolver cp;
 			logger.info("Waiting to receive message");
-            // Read envelope with address
-            String address = recSocket.recvStr();
-            // Read message contents
-            String cpModelRef = recSocket.recvStr();
-    		long timestamp = -1;
-            CPSolver cp;
-            if (recSocket.hasReceiveMore())
-            {
-            	String timestampStr = recSocket.recvStr();
-        		if (timestampStr != null){
-        			timestamp = new Long(timestampStr);
-        		}            	
-                cp = new CPSolver(cpModelRef,null, timestamp);
-            } else
-            {
-                cp = new CPSolver(cpModelRef,null);            	
-            }
-            logger.info("Got new problem to solve: " + address + " : " + cpModelRef + " / "+ timestamp);
+			try
+			{
+				// Read envelope with topic
+				topic = recSocket.recvStr();
+				// Read message contents -- camelModel
+				if (recSocket.hasReceiveMore())
+				{
+					camelModelRef = recSocket.recvStr();
+				} else throw new Exception("CamelModel is missing");
+				// Read message contents -- cpModel
+				if (recSocket.hasReceiveMore())
+				{
+					cpModelRef = recSocket.recvStr();
+				} else throw new Exception("cpModel is missing");
+				// Read message contents -- timestamp (optional?)
+				if (recSocket.hasReceiveMore())
+				{
+					String timestampStr = recSocket.recvStr();
+					if (timestampStr != null){
+						timestamp = new Long(timestampStr);
+					}            	
+					cp = new CPSolver(cpModelRef,null, timestamp);
+				} else
+				{
+					cp = new CPSolver(cpModelRef,null);            	
+				}
+			}	catch (Exception e) {
+	            logger.error("Got an exception: "+e.getMessage());
+	            continue;
+			}
+
+            logger.info("Got new problem to solve: " + topic + " : " + camelModelRef + " / " + cpModelRef + " / "+ timestamp);
             boolean hasSolution = false;
             try{
             	hasSolution = cp.solve();
@@ -83,6 +102,7 @@ public class CPSolverDaemon implements Runnable{
             if (hasSolution){
             	logger.info("Got new solution and publishing it");
 	            servSocket.sendMore("CPSolutionAvailable");
+				servSocket.sendMore(camelModelRef);
 				servSocket.send(cpModelRef);
             }
         }
