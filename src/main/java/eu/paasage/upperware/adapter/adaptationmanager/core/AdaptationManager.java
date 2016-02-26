@@ -58,8 +58,9 @@ public class AdaptationManager {
 	private static ZeromqServer zmqS = null;
 	
 	private static final int SUB_S2D_PORT_DEFAULT=5584;
+	private static final String SUB_S2D_TOPIC_DEFAULT="newCamelDeploymentAvailable";
 	private static final int SUB_TERMINATION_PORT_DEFAULT=5588;
-			
+	private static final String SUB_TERMINATION_TOPIC_DEFAULT="terminate";
 
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
@@ -124,13 +125,22 @@ public class AdaptationManager {
 	public static void daemonMode(){
 		LOGGER.log(Level.INFO, "Running in deamon mode");
 
+		///////////////////////////////////////////////////
+		//// CONFIGURATION
+		///////////////////////////////////////////////////
+
 		String subs2dportstr = properties.getProperty("ZMQ.SubS2DPort");
 		int subs2dport;
 		if (subs2dportstr==null)
 			subs2dport=SUB_S2D_PORT_DEFAULT;
 		else
 			subs2dport = Integer.valueOf(subs2dportstr);
-		LOGGER.info("==> ZMQ S2D PORT: "+subs2dport);
+		LOGGER.log(Level.INFO, "==> ZMQ S2D PORT: "+subs2dport);
+
+		String subs2dtopic = properties.getProperty("ZMQ.SubS2DTopic");
+		if (subs2dtopic==null)
+			subs2dtopic=SUB_S2D_TOPIC_DEFAULT;
+		LOGGER.log(Level.INFO, "==> ZMQ S2D topic: "+subs2dtopic);
 
 		String subterminationportstr = properties.getProperty("ZMQ.SubTerminationPort");
 		int subterminationport;
@@ -138,12 +148,19 @@ public class AdaptationManager {
 			subterminationport=SUB_TERMINATION_PORT_DEFAULT;
 		else
 			subterminationport = Integer.valueOf(subterminationportstr);
-		LOGGER.info("==> ZMQ termination PORT: "+subterminationport);
+		LOGGER.log(Level.INFO, "==> ZMQ termination PORT: "+subterminationport);
 
-		ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", subs2dport, 30000);
+		String subterminationtopic = properties.getProperty("ZMQ.SubTerminationTopic");
+		if (subterminationtopic==null)
+			subterminationtopic=SUB_TERMINATION_TOPIC_DEFAULT;
+		LOGGER.log(Level.INFO, "==> ZMQ Termination topic: "+subterminationtopic);
+
+		///////////////////////////////////////////////////
+
+		ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", subs2dtopic, subs2dport, 30000);
 		zmsModelSub.start();
 		
-		ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", subterminationport, 60000);
+		ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", subterminationtopic, subterminationport, 60000);
 		zmsTermSub.start();
 		
 		boolean terminate = false;
