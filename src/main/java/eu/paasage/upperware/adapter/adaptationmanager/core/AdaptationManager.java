@@ -56,6 +56,10 @@ public class AdaptationManager {
 			.getLogger(AdaptationManager.class.getName());
 
 	private static ZeromqServer zmqS = null;
+	
+	private static final int SUB_S2D_PORT_DEFAULT=5584;
+	private static final int SUB_TERMINATION_PORT_DEFAULT=5588;
+			
 
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
@@ -119,10 +123,27 @@ public class AdaptationManager {
 	
 	public static void daemonMode(){
 		LOGGER.log(Level.INFO, "Running in deamon mode");
-		ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546, 30000);
+
+		String subs2dportstr = properties.getProperty("ZMQ.SubS2DPort");
+		int subs2dport;
+		if (subs2dportstr==null)
+			subs2dport=SUB_S2D_PORT_DEFAULT;
+		else
+			subs2dport = Integer.valueOf(subs2dportstr);
+		LOGGER.info("==> ZMQ S2D PORT: "+subs2dport);
+
+		String subterminationportstr = properties.getProperty("ZMQ.SubTerminationPort");
+		int subterminationport;
+		if (subterminationportstr==null)
+			subterminationport=SUB_TERMINATION_PORT_DEFAULT;
+		else
+			subterminationport = Integer.valueOf(subterminationportstr);
+		LOGGER.info("==> ZMQ termination PORT: "+subterminationport);
+
+		ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", subs2dport, 30000);
 		zmsModelSub.start();
 		
-		ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", 5555, 60000);
+		ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", subterminationport, 60000);
 		zmsTermSub.start();
 		
 		boolean terminate = false;
