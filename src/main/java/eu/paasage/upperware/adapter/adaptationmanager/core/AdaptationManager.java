@@ -56,6 +56,12 @@ public class AdaptationManager {
 			.getLogger(AdaptationManager.class.getName());
 
 	private static ZeromqServer zmqS = null;
+	
+	private static final int SUB_S2D_PORT_DEFAULT=5584;
+	private static final String SUB_S2D_TOPIC_DEFAULT="newCamelDeploymentAvailable";
+	private static final int SUB_TERMINATION_PORT_DEFAULT=5588;
+	private static final String SUB_TERMINATION_TOPIC_DEFAULT="terminate";
+	private static final int SUB_SCALING_PORT_DEFAULT=5589;
 
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
@@ -120,15 +126,55 @@ public class AdaptationManager {
 	public static void daemonMode(){
 		LOGGER.log(Level.INFO, "Running in deamon mode");
 		
+		///////////////////////////////////////////////////
+		//// ZMQ CONFIGURATION
+		///////////////////////////////////////////////////
+
+		String subs2dportstr = properties.getProperty("ZMQ.SubS2DPort");
+		int subs2dport;
+		if (subs2dportstr==null)
+			subs2dport=SUB_S2D_PORT_DEFAULT;
+		else
+			subs2dport = Integer.valueOf(subs2dportstr);
+		LOGGER.log(Level.INFO, "==> ZMQ S2D PORT: "+subs2dport);
+
+		String subs2dtopic = properties.getProperty("ZMQ.SubS2DTopic");
+		if (subs2dtopic==null)
+			subs2dtopic=SUB_S2D_TOPIC_DEFAULT;
+		LOGGER.log(Level.INFO, "==> ZMQ S2D topic: "+subs2dtopic);
+
+		String subterminationportstr = properties.getProperty("ZMQ.SubTerminationPort");
+		int subterminationport;
+		if (subterminationportstr==null)
+			subterminationport=SUB_TERMINATION_PORT_DEFAULT;
+		else
+			subterminationport = Integer.valueOf(subterminationportstr);
+		LOGGER.log(Level.INFO, "==> ZMQ termination PORT: "+subterminationport);
+
+		String subterminationtopic = properties.getProperty("ZMQ.SubTerminationTopic");
+		if (subterminationtopic==null)
+			subterminationtopic=SUB_TERMINATION_TOPIC_DEFAULT;
+		LOGGER.log(Level.INFO, "==> ZMQ Termination topic: "+subterminationtopic);
+		
+		String subscalingportstr = properties.getProperty("ZMQ.SubTerminationPort");
+		int subscalingport;
+		if (subscalingportstr==null)
+			subscalingport=SUB_TERMINATION_PORT_DEFAULT;
+		else
+			subscalingport = Integer.valueOf(subscalingportstr);
+		LOGGER.log(Level.INFO, "==> ZMQ scaling PORT: " + subscalingport);
+
+		///////////////////////////////////////////////////
+		
 		/*ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546, 30000);
 		zmsModelSub.start();*/
-		ZeroMQSubscriberSimple zmsModelSub = new ZeroMQSubscriberSimple("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546);
+		ZeroMQSubscriberSimple zmsModelSub = new ZeroMQSubscriberSimple("Solver2DeploySub", "localhost", subs2dtopic, subs2dport);
 		
-		ZeroMQSubscriberSimple zmsScaleSub = new ZeroMQSubscriberSimple("ScaleSub", "localhost", "", 5555);
+		ZeroMQSubscriberSimple zmsScaleSub = new ZeroMQSubscriberSimple("ScaleSub", "localhost", "", subscalingport);
 		
 		/*ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", 5555, 60000);
 		zmsTermSub.start();*/
-		ZeroMQSubscriberSimple zmsTermSub = new ZeroMQSubscriberSimple("TerminationSub", "localhost", "terminate", 5555);
+		ZeroMQSubscriberSimple zmsTermSub = new ZeroMQSubscriberSimple("TerminationSub", "localhost", subterminationtopic, subterminationport);
 		
 		boolean terminate = false;
 		boolean taskInProgress = false;

@@ -16,6 +16,7 @@ public class ZeroMQSubscriber extends Thread {
 	
 	private String subscriberName;
 	private int port;
+	private String topic;
 	
 	ZMQ.Context context;
 	ZMQ.Socket subscriber;
@@ -30,13 +31,14 @@ public class ZeroMQSubscriber extends Thread {
 		super(subscriberName);
 		this.subscriberName = subscriberName;
 		this.port = port;
-		LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " subscribing");
+		this.topic = topic;
+		LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " subscribing to topic "+topic);
 		setDaemon(true);
 		context = ZMQ.context(1);
 		subscriber = context.socket(ZMQ.SUB);
 		subscriber.connect("tcp://" + ipAddress + ":" + port);
-		LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " subscribed");
 		subscriber.subscribe(topic.getBytes());
+		LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " subscribed");
 	}
 	
 	public ZeroMQSubscriber(String subscriberName, String ipAddress, String topic, int port, long sleepMillis){
@@ -83,7 +85,7 @@ public class ZeroMQSubscriber extends Thread {
 	}
     
     public void run(){
-    	LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " Listen mode");
+    	LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " Listen mode on topic" + this.topic);
 		while(true){
 			try {					
 				if (!Thread.currentThread ().isInterrupted ()) {
