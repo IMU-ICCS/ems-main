@@ -48,6 +48,15 @@ public class ZeroMQSubscriber extends Thread {
 		this.message = message;
 	}
 	
+	private void setMessage(){
+		String contents;
+		if(this.message.equals("")){
+			contents = subscriber.recvStr();
+			this.message = contents;
+			LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " received msg: " + contents);
+		}
+	}
+	
 	public String readResetMessage(){
 		String msg = this.message;
 		this.message = "";
@@ -58,6 +67,8 @@ public class ZeroMQSubscriber extends Thread {
 		String msg = this.message;
 		return msg;
 	}
+	
+	public boolean isMessageEmpty(){return this.message.equals("");}
 	
 	public void finalize() throws Throwable{
 		try{
@@ -77,10 +88,11 @@ public class ZeroMQSubscriber extends Thread {
 			try {					
 				if (!Thread.currentThread ().isInterrupted ()) {
 					// Read message contents
-					String contents = subscriber.recvStr();
+					setMessage();
+					/*String contents = subscriber.recvStr();
 					setMessage(contents);
-					LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " received msg: " +contents);
-					Thread.currentThread().sleep(sleepTime);
+					LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " received msg: " +contents);*/
+					//Thread.currentThread().sleep(sleepTime);
 				}
 			} catch (Exception e){
 				LOGGER.log(Level.SEVERE, "0MQ Subscriber " + this.subscriberName + " failed running");

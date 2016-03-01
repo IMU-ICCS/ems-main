@@ -119,11 +119,16 @@ public class AdaptationManager {
 	
 	public static void daemonMode(){
 		LOGGER.log(Level.INFO, "Running in deamon mode");
-		ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546, 30000);
-		zmsModelSub.start();
 		
-		ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", 5555, 60000);
-		zmsTermSub.start();
+		/*ZeroMQSubscriber zmsModelSub = new ZeroMQSubscriber("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546, 30000);
+		zmsModelSub.start();*/
+		ZeroMQSubscriberSimple zmsModelSub = new ZeroMQSubscriberSimple("Solver2DeploySub", "localhost", "newDeploymentCAMELModel", 5546);
+		
+		ZeroMQSubscriberSimple zmsScaleSub = new ZeroMQSubscriberSimple("ScaleSub", "localhost", "", 5555);
+		
+		/*ZeroMQSubscriber zmsTermSub = new ZeroMQSubscriber("TerminationSub", "localhost", "terminate", 5555, 60000);
+		zmsTermSub.start();*/
+		ZeroMQSubscriberSimple zmsTermSub = new ZeroMQSubscriberSimple("TerminationSub", "localhost", "terminate", 5555);
 		
 		boolean terminate = false;
 		boolean taskInProgress = false;
@@ -132,7 +137,13 @@ public class AdaptationManager {
 		
 		while(!terminate){
 			
-			if(zmsModelSub.readResetMessage().contains("newDeploymentCAMELModel")){
+			if(!zmsScaleSub.readMessage().equalsIgnoreCase("")){//an auto-scale event has happened
+				String message = zmsScaleSub.getLastMessage();
+				//Query ExecutionWare for the VM instances and then update Adapter mapping as well as the CAMEL model
+			}
+			
+			//if(zmsModelSub.readResetMessage().contains("newDeploymentCAMELModel")){
+			if(zmsModelSub.readMessage().contains("newDeploymentCAMELModel")){
 				//new Deployment model available, so take decision and deploy
 				depModelIndex++;
 				taskInProgress = true;

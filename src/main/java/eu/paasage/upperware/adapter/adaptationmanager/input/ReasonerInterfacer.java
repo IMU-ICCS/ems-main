@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -207,6 +209,24 @@ public class ReasonerInterfacer {
 	
 	public void closeTransaction(){
 		if(this.transaction != null){
+			client.closeTransaction(transaction);
+			LOGGER.log(Level.INFO, "...stopping proxy, closed session etc.");
+		}else{
+			LOGGER.log(Level.INFO, "No transaction, just stopping session....");
+		}
+	}
+	
+	public void commitAndCloseTransaction(){
+		if(this.transaction != null){
+			try {
+				transaction.commit();
+			} catch (ConcurrentAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CommitException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			client.closeTransaction(transaction);
 			LOGGER.log(Level.INFO, "...stopping proxy, closed session etc.");
 		}else{

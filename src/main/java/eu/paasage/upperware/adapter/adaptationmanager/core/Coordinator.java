@@ -33,6 +33,7 @@ import eu.paasage.upperware.plangenerator.PlanGenerator;//Shirley's PlanGenerato
 import eu.paasage.upperware.adapter.adaptationmanager.validation.ApplicationController;
 import eu.paasage.upperware.adapter.adaptationmanager.validation.IValidator;
 import eu.paasage.upperware.adapter.adaptationmanager.input.MyCDOClient;
+import eu.paasage.upperware.adapter.adaptationmanager.mapping.CDOUpdater;
 import eu.paasage.upperware.adapter.adaptationmanager.mapping.GraphUtilities;
 import eu.paasage.upperware.plangenerator.model.task.ConfigurationTask;
 
@@ -510,6 +511,28 @@ public class Coordinator {
 
 	}
 	
+	public boolean updateRunningCDOModel(int dmIndex){
+		boolean status = false;
+		
+		DeploymentModel model = null;
+		CDOUpdater updater;
+		
+		if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+			
+			reasonerInterfacer.openTransaction();
+			model = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+			updater = new CDOUpdater(model);
+			updater.printVMInstances();
+			reasonerInterfacer.commitAndCloseTransaction();//closing the live transaction after plan generated
+			
+		}else{//running model deployed from file. So nothing to update on CDO
+			
+			LOGGER.log(Level.INFO, "Model was deployed from a file. Nothing to update in CDO.");
+			
+		}
+		
+		return status;
+	}
 	
 	private static void scheduleSerial() {
 
