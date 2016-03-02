@@ -34,7 +34,7 @@
 		<dependency>
 			 <groupId>org.ow2.paasage</groupId>
 		    <artifactId>camel</artifactId>
-		    <version>${paasage.version}</version>
+		    <version>2015.9.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
       		<groupId>junit</groupId>
@@ -60,7 +60,7 @@
 	 	<dependency>
 			<groupId>org.ow2.paasage.mddb.cdo</groupId>
   			<artifactId>client</artifactId>
-  			<version>${paasage.version}</version>
+		        <version>2015.9.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>	
 	

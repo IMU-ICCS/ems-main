@@ -31,7 +31,7 @@
 		<dependency>
 		    <groupId>org.ow2.paasage</groupId>
 		    <artifactId>upperware-metamodel</artifactId>
-		    <version>${paasage.version}</version>
+  	            <version>2015.9.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
@@ -63,7 +63,7 @@
 		<dependency>
 			<groupId>org.ow2.paasage.mddb.cdo</groupId>
   			<artifactId>client</artifactId>
-  			<version>${paasage.version}</version>
+  			<version>2015.9.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

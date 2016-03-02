@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.ow2.paasage</groupId>
     <artifactId>paasage-pom</artifactId>
-    <version>2016.4.0-SNAPSHOT</version>
+    <version>2015.9.1-SNAPSHOT</version>
   </parent>
   
     <build>
