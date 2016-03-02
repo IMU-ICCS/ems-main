@@ -40,8 +40,10 @@ import eu.paasage.camel.metric.Metric;
 import eu.paasage.camel.metric.MetricFormula;
 import eu.paasage.camel.metric.MetricFormulaParameter;
 import eu.paasage.camel.metric.impl.CompositeMetricImpl;
+import eu.paasage.camel.organisation.CloudCredentials;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.OrganisationModel;
+import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
@@ -364,8 +366,11 @@ public class RuleProcessor {
 		return cloneList_;
 	}
 
-	public SOLUTION_STATUS removeProvider(String resId, String camelModel,
-			String providerType) {
+	public SOLUTION_STATUS removeProvider(
+			String resId,
+			String camelModel,
+			String providerType,
+			Map<String, String> providersToKeep) {
 		if (providerType == null) {
 			return SOLUTION_STATUS.ERROR;
 		}
@@ -399,14 +404,34 @@ public class RuleProcessor {
 				pc = (PaasageConfiguration) obj;
 				pc.setId(newPaaSageConfigId); // set a new resource ID for this clone version
 
-				Iterator<VirtualMachineProfile> it = pc.getVmProfiles()
-						.iterator();
+				Iterator<VirtualMachineProfile> it = pc.getVmProfiles().iterator();
 				while (it.hasNext()) {
 					VirtualMachineProfile vmProfile = it.next();
 					String vmID = vmProfile.getCloudMLId();
-					for (ProviderDimension provider : vmProfile
-							.getProviderDimension()) {
+					for (ProviderDimension provider : vmProfile.getProviderDimension()) {
 						String pId = provider.getProvider().getId();
+						
+						if (providersToKeep.size() >= 1) {
+							String shortName = null;
+							try {
+								shortName = pId.split("-")[0];
+							} catch (Exception e) {
+								// we should report a warning
+							}
+							/*
+							 * overrule public/private preferences if cloud provider
+							 * is set via user model -> cloud credentials -> RP_ProviderRequirements
+							 */
+							if (!providersToKeep.containsKey(shortName)) {
+								willBeRemoved.add(pId);
+								vmRemoveList.add(vmID);
+								delTable.put(pId, null);
+								delTable.put(vmID, null);
+							}
+							/* do not continue; otherwise some user-defined requirements might be overriden */
+							continue;
+						}
+						
 						try {
 							if (isProviderPublic(strArray[1], pId)) {
 								if (providerType.equals("public")) {
@@ -429,14 +454,11 @@ public class RuleProcessor {
 			}
 		}
 
-		System.out
-				.println("List of cloud providers to be REMOVED since they are "
-						+ providerType + ":");
+		System.out.println("List of cloud providers to be REMOVED:");
 		if (willBeRemoved.isEmpty()) {
-			System.out
-					.println("    -> None. No "
+			System.out.println("    -> None. No "
 							+ providerType
-							+ " cloud providers were selected by the CP generator for deployment.\n");
+							+ " cloud provider were selected by the CP generator for deployment.\n");
 			return SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		} else {
 			for (String provider : willBeRemoved) {
@@ -926,8 +948,7 @@ public class RuleProcessor {
 
 	// get providers defined in the Organisation Model and identify the provider
 	// to be deleted.
-	public static Map<String, String> getProviderFromOrganisationModel(
-			String cModel) {
+	public static Map<String, String> getProviderFromOrganisationModel(String cModel) {
 		Map<String, String> foundProviders = new HashMap<String, String>();
 
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
@@ -942,8 +963,7 @@ public class RuleProcessor {
 			EObject obj = orgModels.get(i);
 			if (obj instanceof eu.paasage.camel.organisation.impl.OrganisationModelImpl) {
 				OrganisationModelImpl omObj = (OrganisationModelImpl) obj;
-				if (!omObj.getName()
-						.equalsIgnoreCase("RP_ProviderRequirements")) {
+				if (!omObj.getName().equalsIgnoreCase("RP_ProviderRequirements")) {
 					continue;
 				}
 				CloudProvider provider = omObj.getProvider();
@@ -959,9 +979,57 @@ public class RuleProcessor {
 
 		return foundProviders;
 	}
+	
+	public static Map<String, String> getProviderFromUserModel(String cModel) {
+		Map<String, String> foundProviders = new HashMap<String, String>();
+		
+		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
+		CamelModel camelModel = proxy.getCamelModel(cModel);
+		if (camelModel == null) {
+			System.out.println("Error: The given CAMEL model (" + cModel
+					+ ") was not found in the CDO database!");
+			return null;
+		}
+		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
+		for (int i = 0; i < orgModels.size(); i++) {
+			EObject obj = orgModels.get(i);
+			if (obj instanceof eu.paasage.camel.organisation.impl.OrganisationModelImpl) {
+				OrganisationModelImpl omObj = (OrganisationModelImpl) obj;
+				EList<User> users = omObj.getUsers();
+				for (User user : users) {
+					EList<CloudCredentials> cloudCredentials = user.getCloudCredentials();
+					for (CloudCredentials cloudCredential : cloudCredentials) {
+						CloudProvider cloudProvider = cloudCredential.getCloudProvider();
+						String providerName = cloudProvider.getName();
+						if (providerName.equalsIgnoreCase("GlobalProviderRequirements")) {
+							String name = cloudCredential.getName();
+							foundProviders.put(name, null);							
+						}
+					}
+					break; // we are currently supporting only one user
+				}
+			}
+		}
+		
+		return foundProviders;
+	}
 
 	public RPOutput processRequest(String camelModel, String cdoIdentifier,
 			String outputFile, boolean runAsDaemon) {
+		Map<String, String> providerToKeep = getProviderFromUserModel(camelModel); // new
+		if (providerToKeep.size() >= 1) {
+			System.out.println();
+			System.out.println("*************************************************");
+			System.out.println("LIST OF USER-DEFINED PROVIDERS FOR DEPLOYMENT");
+			System.out.println("*************************************************");
+			System.out.println();
+			for (String key : providerToKeep.keySet()) {
+				System.out.println("    -> " + key);
+			}
+			System.out.println();
+			System.out.println("*************************************************");
+		}
+		
 		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
 		if (camelProviders == null) { // no CAMEL model was found
 			return new RPOutput(0, outputFile);
@@ -1178,22 +1246,15 @@ public class RuleProcessor {
 		SOLUTION_STATUS status = SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		String detectedProvider = camelProviders.values().iterator().next();
 
+		System.out.println();
+		System.out.println("*************************************************");
+		System.out.println("EVALUATING IF CLOUD PROVIDERS CAN BE REMOVED");
+		System.out.println("*************************************************");
+		System.out.println();
 		if (detectedProvider.equalsIgnoreCase("public")) {
-			System.out.println();
-			System.out.println("*************************************************");
-			System.out.println("EVALUATING IF PRIVATE CLOUD PROVIDERS CAN BE REMOVED");
-			System.out.println("*************************************************");
-			System.out.println();
-			
-			status = this.removeProvider(cdoIdentifier, camelModel, "private");
+			status = this.removeProvider(cdoIdentifier, camelModel, "private", providerToKeep);
 		} else {
-			System.out.println();
-			System.out.println("*************************************************");
-			System.out.println("EVALUATING IF PUBLIC CLOUD PROVIDERS CAN BE REMOVED");
-			System.out.println("*************************************************");
-			System.out.println();
-			
-			status = this.removeProvider(cdoIdentifier, camelModel, "public");
+			status = this.removeProvider(cdoIdentifier, camelModel, "public", providerToKeep);
 		}
 
 		int success = 0;
