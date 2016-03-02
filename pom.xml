@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>generator</artifactId>
-			<version>${paasage.version}</version>
+			<version>2015.9.1-SNAPSHOT</version> <!-- might need to be updated -->
 		</dependency>
 		<!-- reading command line arguments -->
 		<dependency>
