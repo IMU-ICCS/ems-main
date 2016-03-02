@@ -731,13 +731,33 @@ public class RuleProcessor {
 				System.out.println("    -> REMOVE " + vmId);
 
 				// Removing the child elements first
-				EcoreUtil.delete(vmProfile.getMemory().getValue(), true);
-				EcoreUtil.delete(vmProfile.getMemory(), true);
-				EcoreUtil.delete(vmProfile.getStorage().getValue(), true);
-				EcoreUtil.delete(vmProfile.getStorage(), true);
-				EcoreUtil.delete(vmProfile.getCpu().getValue(), true);
-				EcoreUtil.delete(vmProfile.getCpu(), true);
-				EcoreUtil.delete(vmProfile.getOs(), true);
+				if (vmProfile.getMemory() != null) {
+					EcoreUtil.delete(vmProfile.getMemory().getValue(), true);
+					EcoreUtil.delete(vmProfile.getMemory(), true);
+				} else {
+					System.out.println("    -> [WARNING]: Could not remove memory. Missing.");
+				}
+				
+				if (vmProfile.getStorage() != null) {
+					EcoreUtil.delete(vmProfile.getStorage().getValue(), true);
+					EcoreUtil.delete(vmProfile.getStorage(), true);					
+				} else {
+					System.out.println("    -> [WARNING]: Could not remove storage. Missing.");
+				}
+				
+				if (vmProfile.getCpu() != null) {
+					EcoreUtil.delete(vmProfile.getCpu().getValue(), true);
+					EcoreUtil.delete(vmProfile.getCpu(), true);
+				} else {
+					System.out.println("    -> [WARNING]: Could not remove CPU. Missing.");
+				}
+				
+				if (vmProfile.getOs() != null) {
+					EcoreUtil.delete(vmProfile.getOs(), true);
+				} else {
+					System.out.println("    -> [WARNING]: Could not remove OS. Missing.");
+				}
+				
 				EcoreUtil.delete(vmProfile, true);
 			}
 		}
