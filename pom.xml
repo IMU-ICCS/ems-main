@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.ow2.paasage</groupId>
 		<artifactId>paasage-pom</artifactId>
-		<version>2015.9.1-SNAPSHOT</version>
+		<version>2016.4.0-SNAPSHOT</version>
 	</parent>
 	<packaging>jar</packaging>
 	<name>Rule Processor</name>
@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>generator</artifactId>
-			<version>${paasage.version}</version>
+			<version>2015.9.1-SNAPSHOT</version> <!-- might need to be updated -->
 		</dependency>
 		<!-- reading command line arguments -->
 		<dependency>
@@ -36,11 +36,11 @@
 			<version>1.2.17</version>
 		</dependency>
 		<!-- ZeroMQ -->
-        <dependency>
+		<dependency>
 			<groupId>org.zeromq</groupId>
 			<artifactId>jzmq</artifactId>
-            <version>3.1.0</version>
-        </dependency>
+			<version>3.1.0</version>
+		</dependency>
         <!-- algebra requirements -->
  		<dependency>
 			<groupId>org.apache.commons</groupId>
