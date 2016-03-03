@@ -87,27 +87,45 @@ public class Algebra {
 		int y_lower = Integer.MAX_VALUE;
 		int y_upper = -1;
 		
-		int xmin = answer.get(0).getFrom();
-		int xmax = answer.get(0).getTo();
-		int ymin = answer.get(1).getFrom();
-		int ymax = answer.get(1).getTo();
-		
-		Map<String, Integer> variables = new HashMap<String, Integer>();
-		
-		for (int i = xmin; i <= xmax; ++i) {
-			for (int j = ymin; j <= ymax; ++j) {
+		if (answer.size() == 1) {
+			int xmin = answer.get(0).getFrom();
+			int xmax = answer.get(0).getTo();
+			
+			Map<String, Integer> variables = new HashMap<String, Integer>();
+			
+			for (int i = xmin; i <= xmax; ++i) {
 				variables.put(answer.get(0).getVariable(), i);
-				variables.put(answer.get(1).getVariable(), j);
-				
 				if (evaluate(expression, variables)) {
 					x_lower = Math.min(x_lower, i);
 					x_upper = Math.max(x_upper, i);
-					y_lower = Math.min(y_lower, j);
-					y_upper = Math.max(y_upper, j);
 					solvable = true;
 				}
 			}
+		} else if (answer.size() == 2) {
+			int xmin = answer.get(0).getFrom();
+			int xmax = answer.get(0).getTo();
+			int ymin = answer.get(1).getFrom();
+			int ymax = answer.get(1).getTo();
+			
+			Map<String, Integer> variables = new HashMap<String, Integer>();
+			
+			for (int i = xmin; i <= xmax; ++i) {
+				for (int j = ymin; j <= ymax; ++j) {
+					variables.put(answer.get(0).getVariable(), i);
+					variables.put(answer.get(1).getVariable(), j);
+					
+					if (evaluate(expression, variables)) {
+						x_lower = Math.min(x_lower, i);
+						x_upper = Math.max(x_upper, i);
+						y_lower = Math.min(y_lower, j);
+						y_upper = Math.max(y_upper, j);
+						solvable = true;
+					}
+				}
+			}
 		}
+		
+		
 		
 		if (!solvable) {
 			throw new NotSolvableException();

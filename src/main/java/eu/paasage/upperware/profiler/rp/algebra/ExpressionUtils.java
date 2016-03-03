@@ -15,6 +15,7 @@ import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.Expression;
+import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
@@ -54,7 +55,25 @@ public class ExpressionUtils {
 		if (exp1 instanceof ComposedExpression) {
 			ComposedExpression composed = (ComposedExpression) exp1;
 			for (Expression ex : composed.getExpressions()) {
-				if (ex instanceof Variable) {
+				if (ex instanceof MetricVariable) {
+					MetricVariable mVar = (MetricVariable) ex;
+					String id = mVar.getId();
+					try {
+						id = id.split("_")[1];
+					} catch (Exception e) {
+						System.out.println("[WARNING] Error while reading component name (" + id + ")");
+					}
+					
+					for (AlgebraVariable candidate : varList) {
+						if (candidate.getVariable().equals(id)) {
+							Integer value = varMap.get(candidate);
+							if (value == null) {
+								value = 0;
+							}
+							varMap.put(candidate, ++value);
+						}
+					}
+				} else if (ex instanceof Variable) {
 					Variable var = (Variable) ex;
 					String id = var.getId();
 					try {
@@ -126,8 +145,8 @@ public class ExpressionUtils {
 		switch (operator) {
 		case DIV:
 			return "/";
-		//case MEAN:
-		//	throw new UnsupportedOperationException();
+		case MEAN:
+			return "avg";
 		case MINUS:
 			return "-";
 		case PLUS:
@@ -135,7 +154,9 @@ public class ExpressionUtils {
 		case TIMES:
 			return "*";
 		default:
-			throw new UnsupportedOperationException();
+			System.out.println("[WARNING] Operator is not supported: " + operator.getLiteral());
+			return "";
+			//throw new UnsupportedOperationException();
 		}
 	}
 	
