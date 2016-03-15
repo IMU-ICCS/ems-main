@@ -152,8 +152,10 @@ public class ZeroMQServer
             publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
             System.out.println("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
             
+	    //EC
             publisher.sendMore(camelModelIdTopic); 
-            publisher.send(modelId); 
+            publisher.sendMore(modelId); 
+            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
             
         	}
         	catch(Exception e)
