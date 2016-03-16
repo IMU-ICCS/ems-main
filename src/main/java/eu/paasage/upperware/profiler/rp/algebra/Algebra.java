@@ -101,6 +101,9 @@ public class Algebra {
 					solvable = true;
 				}
 			}
+			
+			answer.get(0).setFrom(x_lower);
+			answer.get(0).setTo(x_upper);
 		} else if (answer.size() == 2) {
 			int xmin = answer.get(0).getFrom();
 			int xmax = answer.get(0).getTo();
@@ -123,6 +126,11 @@ public class Algebra {
 					}
 				}
 			}
+			
+			answer.get(0).setFrom(x_lower);
+			answer.get(0).setTo(x_upper);
+			answer.get(1).setFrom(y_lower);
+			answer.get(1).setTo(y_upper);
 		}
 		
 		
@@ -130,11 +138,6 @@ public class Algebra {
 		if (!solvable) {
 			throw new NotSolvableException();
 		}
-		
-		answer.get(0).setFrom(x_lower);
-		answer.get(0).setTo(x_upper);
-		answer.get(1).setFrom(y_lower);
-		answer.get(1).setTo(y_upper);
 		
 		return answer;
 	}
