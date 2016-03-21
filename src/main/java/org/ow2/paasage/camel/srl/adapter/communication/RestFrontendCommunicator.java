@@ -18,11 +18,13 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FlowOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.AbstractEntity;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.NamedEntity;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,61 +42,66 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     @Override
     public Monitor doMonitorComponents(Application app, Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, null, null, null, schedule, desc, null);
+        return doMonitor(app, null, null, null, schedule, desc, null, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Component component, Schedule schedule,
         SensorDescription desc) {
-        return doMonitor(app, component, null, null, schedule, desc, null);
+        return doMonitor(app, component, null, null, schedule, desc, null, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Component component, Instance instance,
         Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, component, instance, null, schedule, desc, null);
+        return doMonitor(app, component, instance, null, schedule, desc, null, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Component component, Cloud cloud,
         Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, component, null, cloud, schedule, desc, null);
+        return doMonitor(app, component, null, cloud, schedule, desc, null, null);
     }
 
     @Override
     public Monitor doMonitorComponents(Application app, Cloud cloud, Schedule schedule,
         SensorDescription desc) {
-        return doMonitor(app, null, null, cloud, schedule, desc, null);
+        return doMonitor(app, null, null, cloud, schedule, desc, null, null);
     }
 
     @Override
     public Monitor doMonitorVms(Application app, Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, null, null, null, schedule, desc, null);
+        return doMonitor(app, null, null, null, schedule, desc, null, null);
     }
 
     @Override public Monitor doMonitorVms(Application app, Cloud cloud, Schedule schedule,
         SensorDescription desc) {
-        return doMonitor(app, null, null, cloud, schedule, desc, null);
+        return doMonitor(app, null, null, cloud, schedule, desc, null, null);
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Schedule schedule,
-        SensorDescription desc, List<String> externalReferences) {
-        return doMonitor(app, component, null, null, schedule, desc, externalReferences);
+        SensorDescription desc, List<String> externalReferences,  Map<String, String> sensorConfiguration) {
+        return doMonitor(app, component, null, null, schedule, desc, externalReferences, null);
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Cloud cloud,
         Schedule schedule, SensorDescription desc) {
-        return doMonitor(app, component, null, cloud, schedule, desc, null);
+        return doMonitor(app, component, null, cloud, schedule, desc, null, null);
     }
 
     @Override public Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc, List<String> externalReferences){
+        Schedule schedule, SensorDescription desc, List<String> externalReferences, Map<String, String> sensorConfiguration){
 
         RawMonitor rm = new RawMonitor((app == null ? null : app.getId()),
                 (component == null ? null : component.getId()),
                 (instance == null ? null : instance.getId()),
                 (cloud == null ? null : cloud.getId()), desc.getId(), schedule.getId());
         rm.setExternalReferences(externalReferences);
+
+        if(sensorConfiguration != null && !sensorConfiguration.isEmpty()) {
+            SensorConfigurations sensorConfigurations = this.saveSensorConfiguration(sensorConfiguration);
+            rm.setSensorConfigurations(sensorConfigurations.getId());
+        }
 
         return client.controller(RawMonitor.class).create(rm);
     }
@@ -473,5 +480,14 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         }
 
         return "";
+    }
+
+    @Override
+    public SensorConfigurations saveSensorConfiguration(Map<String,String> sensorConfiguration) {
+        List<KeyValue> list = new ArrayList<KeyValue>();
+
+        sensorConfiguration.forEach((k,v) -> list.add(new KeyValue(k,v)));
+
+        return client.controller(SensorConfigurations.class).create(new SensorConfigurations(list));
     }
 }

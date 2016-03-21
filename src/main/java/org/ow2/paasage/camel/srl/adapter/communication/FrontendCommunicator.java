@@ -15,6 +15,7 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,7 +40,7 @@ public interface FrontendCommunicator {
     /** all vms of this application in this cloud */
     Monitor doMonitorVms(Application app, Cloud component, Schedule schedule, SensorDescription desc);
     /** all vms of this application running a component instance of this component */
-    Monitor doMonitorVms(Application app, Component component, Schedule schedule, SensorDescription desc, List<String> externalReferences);
+    Monitor doMonitorVms(Application app, Component component, Schedule schedule, SensorDescription desc, List<String> externalReferences, Map<String, String> sensorConfiguration);
     /** all vms of this application running a component instance of this component in this cloud */
     Monitor doMonitorVms(Application app, Component component, Cloud cloud, Schedule schedule, SensorDescription desc);
 
@@ -94,7 +95,7 @@ public interface FrontendCommunicator {
         SubscriptionType type, FilterType filterType, double filterValue);
 
     Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc, List<String> externalReferences);
+        Schedule schedule, SensorDescription desc, List<String> externalReferences, Map<String, String> sensorConfiguration);
 
     public void removeMonitorSubscription(Long id);
     public void removeAllMonitorSubscriptions();
@@ -102,4 +103,6 @@ public interface FrontendCommunicator {
     void cleanMonitoring();
 
     String getPublicIpOfVmByName(String name);
+
+    SensorConfigurations saveSensorConfiguration(Map<String,String> sensorConfiguration);
 }

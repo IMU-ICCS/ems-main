@@ -8,19 +8,25 @@
 
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.Application;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.SensorDescription;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Component;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import eu.paasage.camel.metric.*;
+import jdk.nashorn.internal.parser.JSONParser;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Frank on 07.09.2015.
@@ -64,14 +70,37 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
             throw new RuntimeException("No schedule assigned for RawMetricContext " + rawMetricContext.getName());
         }
 
-        Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
-        String _className =
-                rawMetricContext.getSensor().getConfiguration().split(";")[1];
-        String _metricName =
-                rawMetricContext.getSensor().getConfiguration().split(";")[0];
+        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
+
+        // Classname and metricname decompilation:
+        final String[] configurationSplit = rawMetricContext.getSensor().getConfiguration().split(";");
+
+        String _className = configurationSplit[1];
+        String _metricName = configurationSplit[0];
         Boolean _isVmSensor = true; /* TODO */
 
+        /**
+         * TODO
+         * Integration of sensor configuration until integrated also in CAMEL natively.
+         */
+        Map<String,String> sensorConfiguration = new HashMap<String, String>();
+        try {
+            if(configurationSplit.length > 2){
+                int index = rawMetricContext.getSensor().getConfiguration().indexOf(";", _className.length() + _metricName.length() + 1);
+                String jsonConfig = rawMetricContext.getSensor().getConfiguration().substring(index + 1);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                sensorConfiguration = objectMapper.readValue(jsonConfig, HashMap.class);
+
+                _isVmSensor = false; /* TODO only when linked to component */
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         SensorDescription sensorDescription = getFc().saveSensorDescription(_className, _metricName, _isVmSensor);
+
+        //SensorConfigurations sensorConfigurations = getFc().saveSensorConfiguration(sensorConfiguration);
 
         Monitor rawMonitor = null;
         List<String> externalReferences = new ArrayList<>();
@@ -79,9 +108,9 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
 
         if (app == null && component != null) {
             rawMonitor = getFc().doMonitorVms(null, /*TODO*/ component, schedule,
-                    sensorDescription, externalReferences);
+                    sensorDescription, externalReferences, sensorConfiguration);
         } else if (app != null && component != null) {
-            rawMonitor = getFc().doMonitorVms(app, component, schedule, sensorDescription, externalReferences);
+            rawMonitor = getFc().doMonitorVms(app, component, schedule, sensorDescription, externalReferences, sensorConfiguration);
         } else {
             /**
              * TODO: implement other Monitor filters
