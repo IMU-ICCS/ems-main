@@ -81,7 +81,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     @Override public Monitor doMonitorVms(Application app, Component component, Schedule schedule,
         SensorDescription desc, List<String> externalReferences,  Map<String, String> sensorConfiguration) {
-        return doMonitor(app, component, null, null, schedule, desc, externalReferences, null);
+        return doMonitor(app, component, null, null, schedule, desc, externalReferences, sensorConfiguration);
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Cloud cloud,
@@ -126,6 +126,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
             monitorIds.add(monitor.getId());
         }
 
+        
         ComposedMonitor cm = new ComposedMonitor(flowOperator, formulaOperator, quantifier.getId(), window.getId(),
                 monitorIds, scalingActions, schedule.getId());
 
