@@ -2527,8 +2527,8 @@ public class ExecInterfacer {
 		Iterator<JSONObject> jArrIt = jArr.iterator();
 		while(jArrIt.hasNext()){
 			JSONObject jObj = (JSONObject) jArrIt.next();
-			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("cloudProviderId")==cloudProviderId){
-			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)){
+			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("swordId")==cloudProviderId){
+			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("swordId")).equalsIgnoreCase(cloudProviderId)){
 				
 			//if(jObj.get("name").equals(name)){
 				JSONArray links= (JSONArray) jObj.get("link");
@@ -2704,8 +2704,8 @@ public class ExecInterfacer {
 					status = true;
 			}*/
 			
-			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("cloudProviderId")==cloudProviderId){
-			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)/* && status*/){
+			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("swordId")==cloudProviderId){
+			if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("swordId")).equalsIgnoreCase(cloudProviderId)/* && status*/){
 				
 			//if(jObj.get("name").equals(name)){
 				JSONArray links= (JSONArray) jObj.get("link");
@@ -2859,7 +2859,7 @@ public class ExecInterfacer {
 			
 			JSONObject inBody = new JSONObject();
 			inBody.put("remoteId", imgJObj.get("remoteId"));
-			inBody.put("cloudProviderId", imgJObj.get("cloudProviderId"));
+			inBody.put("cloudProviderId", imgJObj.get("swordId"));
 			inBody.put("name", imgJObj.get("name"));
 			inBody.put("cloud", imgJObj.get("cloud"));
 			inBody.put("location", imgJObj.get("location"));
@@ -2973,17 +2973,17 @@ public class ExecInterfacer {
 		Iterator<JSONObject> jArrIt = jArr.iterator();
 		while(jArrIt.hasNext()){
 			JSONObject jObj = (JSONObject) jArrIt.next();
-			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("cloudProviderId")==cloudProviderId){
+			//if(Integer.parseInt((String) jObj.get("cloud"))==cloud && jObj.get("swordId")==cloudProviderId){
 			
 			//debug lines to test if statement
 			int fetchedCloud = Integer.parseInt(jObj.get("cloud").toString());
-			String fetchedCloudProviderId = ((String) jObj.get("cloudProviderId")).trim();
+			String fetchedCloudProviderId = ((String) jObj.get("swordId")).trim();
 /*			if(fetchedCloud==cloud)
 				System.out.println("Fetched Cloud # equal");
 			if(fetchedCloudProviderId.equalsIgnoreCase(cloudProviderId.trim()))
 				System.out.println("Fetched CloudProviderId equal : " + fetchedCloudProviderId + " " + cloudProviderId.trim());*/
 			if(fetchedCloud==cloud && fetchedCloudProviderId.equalsIgnoreCase(cloudProviderId.trim())){
-			//if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("cloudProviderId")).equalsIgnoreCase(cloudProviderId)){
+			//if(Integer.parseInt(jObj.get("cloud").toString())==cloud && ((String) jObj.get("swordId")).equalsIgnoreCase(cloudProviderId)){
 				
 			//if(jObj.get("name").equals(name)){
 				JSONArray links= (JSONArray) jObj.get("link");
