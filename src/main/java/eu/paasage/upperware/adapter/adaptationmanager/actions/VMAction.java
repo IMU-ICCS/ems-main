@@ -416,7 +416,7 @@ public class VMAction implements Action {
 			}
 			
 			//String cloudUuid = vmiParams.get("region").asString();//"regionOne"
-			String cloudProviderIdLocation = vmiParams.get("locations").asArray().get(0).toString();
+			String cloudProviderIdLocation = vmiParams.get("locations").asArray().get(0).toString();//CODE to add - check for all locations in the array
 			System.out.println("Locations fetched to deploy " + vmiParams.get("locations").asArray().toString());
 			
 /*				if(cloudName.equalsIgnoreCase("Flexiant"))
@@ -433,8 +433,8 @@ public class VMAction implements Action {
 					locationID = (temp = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation)) + "";
 				}
 				if(temp==-1 && retryTimes<=0){
-					LOGGER.log(Level.INFO, "Timeout! Cloud could not find location. Quitting");
-					throw new InterruptedException("Timeout error looking for cloud location " + cloudProviderIdLocation);
+					LOGGER.log(Level.INFO, "Timeout! Cloud could not find location id " + cloudProviderIdLocation +" Please verify. Quitting");
+					throw new InterruptedException("Timeout error looking for cloud location id " + cloudProviderIdLocation);
 				}
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
@@ -470,11 +470,11 @@ public class VMAction implements Action {
 					LOGGER.log(Level.INFO, "ExecWare still updating hardwares. 30 seconds wait");
 					Thread.sleep(30000);
 					retryTimes--;
-					locationID = (temp = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation)) + "";
+					hardwareID = (temp = execInterfacer.getSpecificHardware(Integer.parseInt(cloudID), hardwCloudProviderId)) + "";
 				}
 				if(temp==-1 && retryTimes<=0){
-					LOGGER.log(Level.INFO, "Timeout! ExecWare could not find hardware. Quitting");
-					throw new InterruptedException("Timeout error looking for cloud hardware " + cloudProviderIdLocation);
+					LOGGER.log(Level.INFO, "Timeout! ExecWare could not find hardware id " + hardwCloudProviderId  +" Please verify. Quitting");
+					throw new InterruptedException("Timeout error looking for cloud hardware id " + hardwCloudProviderId);
 				}
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
@@ -510,11 +510,11 @@ public class VMAction implements Action {
 					LOGGER.log(Level.INFO, "ExecWare still updating images. 30 seconds wait");
 					Thread.sleep(30000);
 					retryTimes--;
-					locationID = (temp = execInterfacer.getSpecificLocation(Integer.parseInt(cloudID), cloudProviderIdLocation)) + "";
+					imageID = (temp = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId/*, locationID*/)) + "";
 				}
 				if(temp==-1 && retryTimes<=0){
-					LOGGER.log(Level.INFO, "Timeout! ExecWare could not yet find image. Quitting");
-					throw new InterruptedException("Timeout error looking for cloud image " + cloudProviderIdLocation);
+					LOGGER.log(Level.INFO, "Timeout! ExecWare could not yet find image id " +  imgCloudProviderId +" Please verify. Quitting");
+					throw new InterruptedException("Timeout error looking for cloud image id " + imgCloudProviderId);
 				} else
 					status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
 				
