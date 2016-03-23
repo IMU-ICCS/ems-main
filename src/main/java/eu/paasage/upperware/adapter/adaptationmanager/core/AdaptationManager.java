@@ -183,15 +183,24 @@ public class AdaptationManager {
 		
 		while(!terminate){
 			
-			if(!zmsScaleSub.readMessage().equalsIgnoreCase("")){//an auto-scale event has happened
+			if(!zmsScaleSub.readMessage(true).equalsIgnoreCase("")){//an auto-scale event has happened
 				String message = zmsScaleSub.getLastMessage();
 				//Query ExecutionWare for the VM instances and then update Adapter mapping as well as the CAMEL model
 			}
 			
 			//if(zmsModelSub.readResetMessage().contains("newDeploymentCAMELModel")){
-			if(zmsModelSub.readMessage().contains("newDeploymentCAMELModel")){
+			if(zmsModelSub.readMessage(true).contains("newDeploymentCAMELModel")){//multipart message contains a camel ID later
+				
 				//new Deployment model available, so take decision and deploy
-				depModelIndex++;
+				//depModelIndex++;
+				
+				if(zmsModelSub.hasMoreMessage()){
+					String newModelID = zmsModelSub.readMessage(false);
+					depModelIndex = Integer.parseInt(newModelID);
+				} else{
+					depModelIndex++;
+				}
+				
 				taskInProgress = true;
 				if(!c.deployModelIDThreaded(depModelIndex)){//deployment was not successful
 					terminate = true;
@@ -200,7 +209,7 @@ public class AdaptationManager {
 				taskInProgress = false;
 			}
 			
-			if(zmsTermSub.readMessage().contains("terminate") || depModelIndex > 100)
+			if(zmsTermSub.readMessage(true).contains("terminate") || depModelIndex > 100)
 				terminate = true;
 		}
 		

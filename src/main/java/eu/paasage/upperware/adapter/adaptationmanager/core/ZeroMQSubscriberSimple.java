@@ -40,10 +40,16 @@ public class ZeroMQSubscriberSimple{
 		subscriber.subscribe(topic.getBytes());
 	}
 	
-	public String readMessage(){
+	public boolean hasMoreMessage(){
+		return subscriber.hasReceiveMore();
+	}
+	
+	public String readMessage(boolean saveMessage){
 		String message = subscriber.recvStr(ZMQ.DONTWAIT);
-		if(message != null){
+		if(message != null && saveMessage){
 			this.lastMessage = message;
+			return message;
+		}else if(message != null && !saveMessage){
 			return message;
 		}
 		else
