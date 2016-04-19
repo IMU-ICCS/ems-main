@@ -358,8 +358,8 @@ public class VMAction implements Action {
 		
 		//String OSVendorType = "NIX", login = "ubuntu", OSArchitecture = "AMD64", OSVersion = "14.04.2";//putting default values
 		//getting values from plan generator
-		//String OSVendorType = "NIX";//objParams.get("OSVendorType").asString();
-		String OSVendorType = objParams.get("OSVendorType").asString();
+		//String OSVendorType = "NIX";//vmiParams.get("OSVendorType").asString();
+		String OSVendorType = vmiParams.get("OSVendorType").asString();
 		if(OSVendorType == null)
 			OSVendorType = "NIX";
 		JsonObject defaultCred = (JsonObject) vmiParams.get("defaultCredential");
