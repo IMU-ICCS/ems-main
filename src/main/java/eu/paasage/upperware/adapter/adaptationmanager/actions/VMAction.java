@@ -358,9 +358,15 @@ public class VMAction implements Action {
 		
 		//String OSVendorType = "NIX", login = "ubuntu", OSArchitecture = "AMD64", OSVersion = "14.04.2";//putting default values
 		//getting values from plan generator
-		String OSVendorType = "NIX";//objParams.get("OSVendorType").asString();
+		//String OSVendorType = "NIX";//objParams.get("OSVendorType").asString();
+		String OSVendorType = objParams.get("OSVendorType").asString();
+		if(OSVendorType == null)
+			OSVendorType = "NIX";
 		JsonObject defaultCred = (JsonObject) vmiParams.get("defaultCredential");
-		String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
+		//String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
+		String login = defaultCred.get("defaultLoginName").asString();
+		if(login == null)
+			login = "ubuntu";
 		String OSArchitecture = vmiParams.get("OSArchitecture").asString();
 		String OSVersion = "14.04.2";//default value - to be provided in Model
 		
@@ -396,6 +402,14 @@ public class VMAction implements Action {
 						uname = execInterfacer.getCloudUname("Omistack");
 						pass = execInterfacer.getCloudPass("Omistack");
 						//endpoint = execInterfacer.getCloudEndpoint("Omistack");
+					}else if(cloudName.equalsIgnoreCase("GWDG")){
+						uname = execInterfacer.getCloudUname("GWDG");
+						pass = execInterfacer.getCloudPass("GWDG");
+						endpoint = execInterfacer.getCloudEndpoint("GWDG");
+					}else if(cloudName.equalsIgnoreCase("EC2")){
+						uname = execInterfacer.getCloudUname("EC2");
+						pass = execInterfacer.getCloudPass("EC2");
+						endpoint = execInterfacer.getCloudEndpoint("EC2");
 					}
 					
 					linkCloudProvToExecWare(cloudName, driver, endpoint, uname, pass);
