@@ -4210,7 +4210,9 @@ public class ExecInterfacer {
 			this.uname = new String(uname);
 			this.pass = new String(pass);
 			if(endpoint.equalsIgnoreCase("optional"))
-				this.endpoint = endpoint;
+				this.endpoint = "";
+			else
+				this.endpoint = new String(endpoint);
 		}
 		
 		protected String getCloudProvName() {
