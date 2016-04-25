@@ -157,11 +157,12 @@ public class ExecInterfacer {
 	public ExecInterfacer(String baseUrl) {
 		//Properties properties = AdaptationManager.getProperties();
 		Properties properties = AdaptationManager.loadAndGetProperties();
+		Properties credentials = AdaptationManager.loadAndGetCredentials();
 		this.baseUrl = baseUrl;
 		String uname = properties.getProperty("ExecutionwareUname");
 		String pass = properties.getProperty("ExecutionwarePwd");
 		String tenant = properties.getProperty("ExecutionwareTenant");
-		setCloudCredentials(properties);
+		setCloudCredentials(credentials);
 		try {
 			login(uname, pass, tenant);
 		} catch (ExecutionwareError e) {
@@ -177,11 +178,12 @@ public class ExecInterfacer {
 	public ExecInterfacer() {
 		//Properties properties = AdaptationManager.getProperties();
 		Properties properties = AdaptationManager.loadAndGetProperties();
+		Properties credentials = AdaptationManager.loadAndGetCredentials();
 		this.baseUrl = properties.getProperty("ExecutionwareURL");
 		String uname = properties.getProperty("ExecutionwareUname");
 		String pass = properties.getProperty("ExecutionwarePwd");
 		String tenant = properties.getProperty("ExecutionwareTenant");
-		setCloudCredentials(properties);
+		setCloudCredentials(credentials);
 		try {
 			login(uname, pass, tenant);
 		} catch (ExecutionwareError e) {
@@ -233,7 +235,7 @@ public class ExecInterfacer {
             	}
             }
         }
-        LOGGER.log(Level.INFO, "Retrieved from Adapter Property file " + count + " cloud credentials");
+        LOGGER.log(Level.INFO, "Retrieved from Adapter Credential file " + count + " cloud credentials");
     	return count;
     }
     

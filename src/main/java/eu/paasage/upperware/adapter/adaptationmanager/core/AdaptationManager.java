@@ -305,6 +305,18 @@ public class AdaptationManager {
 		}
 		return fileprops;
 	}
+	
+	public static Properties loadAndGetCredentials() {
+		String credentialPath = retrievePropertiesFilePath("eu.paasage.upperware.adapter.credentials");
+		Properties filecreds = new Properties();
+		try {
+			filecreds.load(new FileInputStream(credentialPath));
+		} catch (java.io.IOException e) {
+			LOGGER.log(Level.SEVERE,
+					"Failed to load eu.paasage.upperware.adapter.credentials");
+		}
+		return filecreds;
+	}
 
 	public static Properties loadProperties(String[] args) {
 		String propertyPath = retrievePropertiesFilePath("eu.paasage.upperware.adapter.properties");
@@ -315,6 +327,16 @@ public class AdaptationManager {
 			LOGGER.log(Level.SEVERE,
 					"Failed to load eu.paasage.upperware.adapter.properties");
 		}
+		
+		String credentialPath = retrievePropertiesFilePath("eu.paasage.upperware.adapter.credentials");
+		Properties filecreds = new Properties();
+		try {
+			filecreds.load(new FileInputStream(credentialPath));
+		} catch (java.io.IOException e) {
+			LOGGER.log(Level.SEVERE,
+					"Failed to load eu.paasage.upperware.adapter.credentials");
+		}
+		
 		// Read properties from command line (they have priority over previous)
 		Options options = new Options();
 		Option help = new Option("help", "print this message");
@@ -351,8 +373,9 @@ public class AdaptationManager {
 		Properties commandlineprops = cmd.getOptionProperties("c");
 		Properties result = new Properties();
 		result.putAll(fileprops);
+		result.putAll(filecreds);
 		result.putAll(commandlineprops);
-		LOGGER.log(Level.INFO, "Retrieved #" + result.size() + " info from Adapter property file and command line args");
+		LOGGER.log(Level.INFO, "Retrieved #" + result.size() + " info from Adapter property, credential file and command line args");
 		//LOGGER.log(Level.INFO, "Properties:" + result);
 		return result;
 	}
