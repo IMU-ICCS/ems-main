@@ -307,13 +307,13 @@ public class AdaptationManager {
 	}
 	
 	public static Properties loadAndGetCredentials() {
-		String credentialPath = retrievePropertiesFilePath("eu.paasage.upperware.adapter.credentials");
+		String credentialPath = retrievePropertiesFilePath("eu.paasage.upperware.cloudcredentials.properties");
 		Properties filecreds = new Properties();
 		try {
 			filecreds.load(new FileInputStream(credentialPath));
 		} catch (java.io.IOException e) {
 			LOGGER.log(Level.SEVERE,
-					"Failed to load eu.paasage.upperware.adapter.credentials");
+					"Failed to load eu.paasage.upperware.cloudcredentials.properties");
 		}
 		return filecreds;
 	}
@@ -328,13 +328,13 @@ public class AdaptationManager {
 					"Failed to load eu.paasage.upperware.adapter.properties");
 		}
 		
-		String credentialPath = retrievePropertiesFilePath("eu.paasage.upperware.adapter.credentials");
+		String credentialPath = retrievePropertiesFilePath("eu.paasage.upperware.cloudcredentials.properties");
 		Properties filecreds = new Properties();
 		try {
 			filecreds.load(new FileInputStream(credentialPath));
 		} catch (java.io.IOException e) {
 			LOGGER.log(Level.SEVERE,
-					"Failed to load eu.paasage.upperware.adapter.credentials");
+					"Failed to load eu.paasage.upperware.cloudcredentials.properties");
 		}
 		
 		// Read properties from command line (they have priority over previous)
