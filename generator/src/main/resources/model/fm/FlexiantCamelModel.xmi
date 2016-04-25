@@ -6,7 +6,7 @@
     xmlns:camel="http://www.paasage.eu/2015/06/camel"
     xmlns:provider="http://www.paasage.eu/2015/06/camel/provider"
     xmlns:type="http://www.paasage.eu/2015/06/camel/type"
-    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel ../../metamodel/camel.ecore http://www.paasage.eu/2015/06/camel/provider ../../metamodel/camel.ecore#//provider http://www.paasage.eu/2015/06/camel/type ../../metamodel/camel.ecore#//type"
+    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type"
     name="Flexiant_Camel_Model">
   <locationModels
       name="FlexiantLocation">
@@ -324,7 +324,7 @@
             valueType="//@typeModels.0/@dataTypes.5">
           <value
               xsi:type="type:StringsValue"
-              value="1"/>
+              value="NIX"/>
         </attributes>
         <attributes
             name="OSArchitecture"
@@ -341,7 +341,7 @@
             valueType="//@typeModels.0/@dataTypes.5">
           <value
               xsi:type="type:StringsValue"
-              value="&quot;&quot;"/>
+              value="ubuntu"/>
         </attributes>
         <attributes
             name="DefaultLoginPassword"
