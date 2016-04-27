@@ -160,7 +160,7 @@ public class EstimatorsManager
 	
 	public double estimatePricePerHour(ProviderModel configuration)
 	{
-		double price= -1; 
+		double price= 0; 
 		
 		IProviderPriceEstimator estimator= estimators.get(configuration.getRootFeature().getName()); 
 		
@@ -175,7 +175,7 @@ public class EstimatorsManager
 	
 	public double estimatePricePerMonth(ProviderModel configuration)
 	{
-		double price= -1; 
+		double price= 0; 
 		
 		IProviderPriceEstimator estimator= estimators.get(configuration.getRootFeature().getName()); 
 		
@@ -190,7 +190,7 @@ public class EstimatorsManager
 	
 	public double estimatePricePerYear(ProviderModel configuration)
 	{
-		double price= -1; 
+		double price= 0; 
 		
 		IProviderPriceEstimator estimator= estimators.get(configuration.getRootFeature().getName()); 
 		
@@ -205,7 +205,7 @@ public class EstimatorsManager
 	
 	public double estimatePrice(ProviderModel configuration)
 	{
-		double price= -1; 
+		double price= 0; 
 		
 		IProviderPriceEstimator estimator= estimators.get(configuration.getRootFeature().getName()); 
 		

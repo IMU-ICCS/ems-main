@@ -6,7 +6,7 @@
     xmlns:camel="http://www.paasage.eu/2015/06/camel"
     xmlns:provider="http://www.paasage.eu/2015/06/camel/provider"
     xmlns:type="http://www.paasage.eu/2015/06/camel/type"
-    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel ../../metamodel/camel.ecore http://www.paasage.eu/2015/06/camel/provider ../../metamodel/camel.ecore#//provider http://www.paasage.eu/2015/06/camel/type ../../metamodel/camel.ecore#//type"
+    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type"
     name="Flexiant_Camel_Model">
   <locationModels
       name="FlexiantLocation">
@@ -418,6 +418,9 @@
       <values
           name="Windows_2008_R2"
           value="3"/>
+      <values
+          name="Windows_2012"
+          value="4"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Range"
@@ -539,6 +542,15 @@
         name="VMImageIdEnum">
       <values
           name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="OSVendorType">
+      <values
+          name="WINDOWS"/>
+      <values
+          name="UNIX"
+          value="1"/>
     </dataTypes>
   </typeModels>
 </camel:CamelModel>

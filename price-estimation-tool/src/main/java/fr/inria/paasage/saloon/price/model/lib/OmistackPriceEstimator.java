@@ -66,7 +66,7 @@ public class OmistackPriceEstimator implements IProviderPriceEstimator
 			vmType= ProviderModelTool.getAttributeByName(vm, "VMType"); 
 
 		
-		logger.info("OmistackPriceEstimator - computeVmsPrice- Computing the price for vm: "+((EnumerateValue)vmType.getValue()).getName());
+		logger.debug("OmistackPriceEstimator - computeVmsPrice- Computing the price for vm: "+((EnumerateValue)vmType.getValue()).getName());
 		
 		String n1 = ((EnumerateValue)vmType.getValue()).getName();
 		

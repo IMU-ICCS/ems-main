@@ -892,7 +892,7 @@ public class DeploymentModelParser
 				
 				ProviderDimension pd= applicationFactory.createProviderDimension(); //TODO THE METRIC ID ???
 				
-				pd.setValue(-1); //TODO THIS VALUE HAS TO BE DEFINED WITH THE PRICE CALCULATION
+				pd.setValue(0); //TODO THIS VALUE HAS TO BE DEFINED WITH THE PRICE CALCULATION
 				
 				pd.setProvider(providerUpperware);
 				
