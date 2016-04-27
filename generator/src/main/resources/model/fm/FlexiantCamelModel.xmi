@@ -324,7 +324,7 @@
             valueType="//@typeModels.0/@dataTypes.5">
           <value
               xsi:type="type:StringsValue"
-              value="1"/>
+              value="NIX"/>
         </attributes>
         <attributes
             name="OSArchitecture"
@@ -341,7 +341,7 @@
             valueType="//@typeModels.0/@dataTypes.5">
           <value
               xsi:type="type:StringsValue"
-              value="&quot;&quot;"/>
+              value="ubuntu"/>
         </attributes>
         <attributes
             name="DefaultLoginPassword"
