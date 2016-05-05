@@ -454,7 +454,11 @@ public class PlanGeneratorTest {
 	}
 	
 	
-	
+	/**
+	 * Test building a reconfiguratin plan. 
+	 * All the names are changed and added 2 VMInstances,
+	 * 2 InternalComponentInstances and 2 HostingInstances
+	 */
 	//@Ignore
 	@Test
 	public void testBBuildRedeploymentPlan() {
@@ -468,8 +472,8 @@ public class PlanGeneratorTest {
 			Plan reconfigPlan = generator.generate(currentDM, targetDM);
 			if(reconfigPlan != null){
 				//printTasks(reconfigPlan.getTasks());
-				//
-				assertEquals("Incorrect number of tasks generated!", 14, reconfigPlan.getTasks().size());
+				//1 app, 1 appIns, 6 vm Instances, 6 ic Instances, 6 hosting Instances
+				assertEquals("Incorrect number of tasks generated!", 20, reconfigPlan.getTasks().size());
 				//
 				//check tasks
 				List<ConfigurationTask> tasks = reconfigPlan.getTasks();
@@ -481,9 +485,9 @@ public class PlanGeneratorTest {
 				assertTrue("appInstance task dependency incorrect!", appInstance.getDependencies().contains(app));
 				assertTrue("appInstance task type is incorrect!", appInstance.getTaskType().equals(TaskType.UPDATE));				
 				//vm instance tasks
-				assertEquals("incorrect number of vmInstanceTasks generated!", 2, vmInstances.size());
-				for(VMInstanceTask vmi : vmInstances){ //there should only be 2
-					assertTrue("vmInstance task type is incorrect!", vmi.getTaskType().equals(TaskType.CREATE));
+				assertEquals("incorrect number of vmInstanceTasks generated!", 6, vmInstances.size());
+				for(VMInstanceTask vmi : vmInstances){ //there should only be 6
+					assertTrue("vmInstance task type is incorrect!", !vmi.getTaskType().equals(TaskType.DELETE));
 					if(vmi.getName().startsWith("Core")){
 						assertTrue("incorrect type for  vm instance task(" + vmi.getName() + ")", vmi.getJsonModel().get("type").asString().equals("CoreIntensiveUbuntuGermany"));
 					}else if(vmi.getName().startsWith("CPU")){
@@ -491,16 +495,16 @@ public class PlanGeneratorTest {
 					}					
 				}
 				//internal component 1
-				assertEquals("incorrect number of comp type tasks generated!", 1, components.size());
-				ComponentTypeTask ctt = components.get(0);
-				assertTrue("component type task(" + ctt.getName() + " task type is incorrect!", ctt.getTaskType().equals(TaskType.UPDATE));
-				assertTrue("component type task(" + ctt.getName() + " incorrect number of dependency!", ctt.getDependencies().size() == 1);
-				assertTrue("component type task(" + ctt.getName() + " incorrect dependency!", ctt.getDependencies().iterator().next().getName().equals("NewScalarmApplication"));
-				assertTrue("component type task(" + ctt.getName() + " incorrect dependency type!", ctt.getDependencies().iterator().next() instanceof ApplicationTask);
-				//internal component instances 2
-				assertEquals("incorrect number of compInstanceTasks generated!", 2, compInstances.size());
-				for(ComponentInstanceTask compIns : compInstances){ //there should be 2				
-					assertTrue("component instance task(" + compIns.getName() + " task type is incorrect!", compIns.getTaskType().equals(TaskType.CREATE));
+				//assertEquals("incorrect number of comp type tasks generated!", 1, components.size());
+				//ComponentTypeTask ctt = components.get(0);
+				//assertTrue("component type task(" + ctt.getName() + " task type is incorrect!", ctt.getTaskType().equals(TaskType.UPDATE));
+				//assertTrue("component type task(" + ctt.getName() + " incorrect number of dependency!", ctt.getDependencies().size() == 1);
+				//assertTrue("component type task(" + ctt.getName() + " incorrect dependency!", ctt.getDependencies().iterator().next().getName().equals("NewScalarmApplication"));
+				//assertTrue("component type task(" + ctt.getName() + " incorrect dependency type!", ctt.getDependencies().iterator().next() instanceof ApplicationTask);
+				//internal component instances 6
+				assertEquals("incorrect number of compInstanceTasks generated!", 6, compInstances.size());
+				for(ComponentInstanceTask compIns : compInstances){ //there should be 6				
+					assertTrue("component instance task(" + compIns.getName() + " task type is incorrect!", !compIns.getTaskType().equals(TaskType.DELETE));
 					Set<ConfigurationTask> deps = compIns.getDependencies();				
 					//check each one
 					if(compIns.getName().startsWith("Simulation")){
@@ -510,7 +514,7 @@ public class PlanGeneratorTest {
 						for(ConfigurationTask task : deps){
 							if(task.getName().equals("NewScalarmApplicationInstance") && (task instanceof ApplicationInstanceTask)){
 								matched++;
-							}else if(task.getName().equals("CPUIntensiveUbuntuGermanyVMInstance1") && (task instanceof VMInstanceTask)){
+							}else if(task.getName().startsWith("CPUIntensiveUbuntuGermanyVMInstance") && (task instanceof VMInstanceTask)){
 								matched++;
 							}
 						}//end for
@@ -518,52 +522,50 @@ public class PlanGeneratorTest {
 						//
 					}else if(compIns.getName().startsWith("Experiment")){
 						//3 dependencies
-						assertEquals("incorrect dependency for " + compIns.getName(), 3, deps.size()); //depends on appIns, VMIns
+						assertEquals("incorrect dependency for " + compIns.getName(), 2, deps.size()); //depends on appIns, VMIns
 						int matched = 0;
 						for(ConfigurationTask task : deps){
 							if(task.getName().equals("NewScalarmApplicationInstance") && (task instanceof ApplicationInstanceTask)){ //app instance
 								matched++;
-							}else if(task.getName().equals("CoreIntensiveUbuntuGermanyVMInstance2") && (task instanceof VMInstanceTask)){ //vm instance
-								matched++;
-							}else if(task.getName().equals("ExperimentManager")){
+							}else if(task.getName().startsWith("CoreIntensiveUbuntuGermanyVMInstance") && (task instanceof VMInstanceTask)){ //vm instance
 								matched++;
 							}
 						}//end for
-						assertEquals("only managed to get " + matched + "/3 dependencies for " + compIns.getName(), 3, matched);
+						assertEquals("only managed to get " + matched + "/2 dependencies for " + compIns.getName(), 2, matched);
 					}
 				}//end for comp instances
-				//hosting instances, only 2
-				assertEquals("incorrect number of hostingInstanceTasks generated!", 2, hostingInstances.size());
-				for(HostingInstanceTask hi : hostingInstances){ //there should only be 2 hosting instance
-					if(hi.getName().equals("VMtoExperimentManagerHostingInstance1")){
+				//hosting instances, only 6
+				assertEquals("incorrect number of hostingInstanceTasks generated!", 6, hostingInstances.size());
+				for(HostingInstanceTask hi : hostingInstances){ //there should only be 6 hosting instance
+					if(hi.getName().equals("VMtoExperimentManagerHostingInstance_1")){
 						assertEquals("incorrect dependency for hosting instance task(" + hi.getName() + ")",2, hi.getDependencies().size()); //depends on provider &  consumer instances
-						assertTrue("hostingInstance task type is incorrect!", hi.getTaskType().equals(TaskType.CREATE));
+						assertTrue("hostingInstance task type is incorrect!", !hi.getTaskType().equals(TaskType.DELETE));
 						Set<ConfigurationTask> configTasks = hi.getDependencies();
 						int matched = 0;
 						for(ConfigurationTask ct : configTasks){
-							if(ct.getName().equals("ExperimentManagerInstance1") && ct instanceof ComponentInstanceTask){ //provider
+							if(ct.getName().equals("ExperimentManagerInstance_1") && ct instanceof ComponentInstanceTask){ //provider
 								matched++;
-							}else if(ct.getName().equals("CoreIntensiveUbuntuGermanyVMInstance2") && ct instanceof VMInstanceTask){ //provider
+							}else if(ct.getName().startsWith("CoreIntensiveUbuntuGermanyVMInstance") && ct instanceof VMInstanceTask){ //provider
 								matched++;
 							}	
 						}//end for config
 						assertEquals("only managed to get " + matched + "/2 dependencies for " + hi.getName(), 2, matched);						
-					}else if(hi.getName().equals("VMtoSimulationManagerHostingInstance1")){
+					}else if(hi.getName().equals("VMtoSimulationManagerHostingInstance_1")){
 						assertEquals("incorrect dependency for hosting instance task(" + hi.getName() + ")",2, hi.getDependencies().size()); //depends on provider &  consumer instances
 						assertTrue("hostingInstance task type is incorrect!", hi.getTaskType().equals(TaskType.CREATE));
 						Set<ConfigurationTask> configTasks = hi.getDependencies();
 						int matched = 0;
 						for(ConfigurationTask ct : configTasks){
-							if(ct.getName().equals("SimulationManagerInstance1") && ct instanceof ComponentInstanceTask){ //provider
+							if(ct.getName().equals("SimulationManagerInstance_1") && ct instanceof ComponentInstanceTask){ //provider
 								matched++;
-							}else if(ct.getName().equals("CPUIntensiveUbuntuGermanyVMInstance1") && ct instanceof VMInstanceTask){ //provider
+							}else if(ct.getName().startsWith("CPUIntensiveUbuntuGermanyVMInstance") && ct instanceof VMInstanceTask){ //provider
 								matched++;
 							}	
 						}//end for config
 						assertEquals("only managed to get " + matched + "/2 dependencies for " + hi.getName(), 2, matched);
 					}
 				}//end for hosting instance
-				//communication instance, there is only 5
+				/*communication instance, there is only 5
 				assertEquals("incorrect number of communicationInstanceTasks generated!", 5, communicationInstances.size());
 				for(CommunicationInstanceTask comm : communicationInstances){ //there should only be 5 com instance
 					if(comm.getName().equals("ExperimentManagerToStorageManagerInstance1")){
@@ -585,7 +587,7 @@ public class PlanGeneratorTest {
 						}//end for config
 						assertEquals("only managed to get " + matched + "/2 dependencies for " + comm.getName(), 2, matched);
 					}
-				}//end for comm instance				
+				}//end for comm instance*/				
 			}else{
 				fail("failed to generate a reconfiguration plan with tasks!");
 			}
@@ -598,8 +600,91 @@ public class PlanGeneratorTest {
 			fail("ModelComparatorException generating a reconfiguration plan :" + me.getMessage());
 		}
 	}	
-			
-	
+	/**
+	 * Test building a reconfiguration plan, all the names are changed and
+	 * deleted 2 VMInstances, 2 InternalComponentInstances and 2 Hosting Instances
+	 * app name changed back to original name
+	 */
+	//@Ignore
+	@Test
+	public void testCBuildRedeploymentPlan(){
+		//some expectations are hardcoded to fit the input model
+		loadModel(TAR_CM_FILE, TAR_PM_FILE, CUR_CM_FILE, CUR_PM_FILE);
+		currentDM = current.getApplications().get(0).getDeploymentModels().get(0);
+		targetDM = target.getApplications().get(0).getDeploymentModels().get(0);
+		//
+		generator = new PlanGenerator(false); //not simple deployment
+		try {
+			Plan reconfigPlan = generator.generate(currentDM, targetDM);
+//			if(reconfigPlan != null){
+//				printTasks(reconfigPlan.getTasks());	
+//			}
+			//1 app, 1 app Instance, 6 vm Instances, 6 ic Instances, 6 hosting Instances
+			assertEquals("Incorrect number of tasks generated!", 20, reconfigPlan.getTasks().size());
+			//
+			//check tasks
+			List<ConfigurationTask> tasks = reconfigPlan.getTasks();
+			switchTasks(tasks);//already tested for size
+			//
+			//app instance task
+			assertNotNull("Failed to generate the application instance task!", appInstance);
+			assertEquals("appInstance task should have 1 dependency!", 1, appInstance.getDependencies().size());//the app task
+			assertTrue("appInstance task dependency incorrect!", appInstance.getDependencies().contains(app));
+			assertTrue("appInstance task type is incorrect!", appInstance.getTaskType().equals(TaskType.UPDATE));				
+			//
+			assertEquals("incorrect number of vmInstanceTasks generated!", 6, vmInstances.size());
+			assertEquals("incorrect number of internal component InstanceTasks generated!", 6, compInstances.size());
+			assertEquals("incorrect number of hosting InstanceTasks generated!", 6, hostingInstances.size());
+			int delCount = 0;
+			int updCount = 0;
+			//
+			for(VMInstanceTask vmt : vmInstances){
+				if(vmt.getTaskType().equals(TaskType.UPDATE)){
+					updCount ++;
+				}else if(vmt.getTaskType().equals(TaskType.DELETE)){
+					delCount++;
+				}else{
+					fail("There shouldn't be any create VMInstance task!");
+				}
+			}
+			assertEquals("incorrect number of update VMInstanceTasks!", 4, updCount);
+			assertEquals("incorrect number of delete VMInstanceTasks!", 2, delCount);
+			//
+			delCount = 0;
+			updCount = 0;
+			for(ComponentInstanceTask cit : compInstances){
+				if(cit.getTaskType().equals(TaskType.UPDATE)){
+					updCount ++;
+				}else if(cit.getTaskType().equals(TaskType.DELETE)){
+					delCount++;
+				}else{
+					fail("There shouldn't be any create Internal Component Instance task!");
+				}
+			}
+			assertEquals("incorrect number of update Internal Component InstanceTasks!", 4, updCount);
+			assertEquals("incorrect number of delete Internal Component InstanceTasks!", 2, delCount);
+			//
+			delCount = 0;
+			updCount = 0;
+			for(HostingInstanceTask hit : hostingInstances){
+				if(hit.getTaskType().equals(TaskType.UPDATE)){
+					updCount ++;
+				}else if(hit.getTaskType().equals(TaskType.DELETE)){
+					delCount++;
+				}else{
+					fail("There shouldn't be any create HostingInstance task!");
+				}
+			}
+			assertEquals("incorrect number of update HostingInstanceTasks!", 4, updCount);
+			assertEquals("incorrect number of delete HostingInstanceTasks!", 2, delCount);
+			//
+		}catch (PlanGenerationException e) {
+			fail("Error generating a reconfiguration plan :" + e.getMessage());
+		} catch (ModelComparatorException me){
+			fail("ModelComparatorException generating a reconfiguration plan :" + me.getMessage());
+		}
+		
+	}
 	//////////////////////////////////////////////////////////////private methods//////////////////////////////////////////////////////////
 	/**
 	 * Reinitialise the variables		

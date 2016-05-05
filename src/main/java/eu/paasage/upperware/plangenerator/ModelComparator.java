@@ -54,8 +54,11 @@ import eu.paasage.upperware.plangenerator.util.ModelUtil;
  * @author Shirley Crompton 
  * org UK Science and Technology Facilities Council
  */
+@Deprecated
 public class ModelComparator {	
-	
+	/************************************************************************
+	 * Use DeploymentModelComparator (SYC: 25April2016)
+	 ************************************************************************/
 
 	/** Message logger */
 	private static final Logger logger = Logger.getLogger(ModelComparator.class.getName());

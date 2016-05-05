@@ -8,11 +8,9 @@
 package eu.paasage.upperware.plangenerator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.ecore.EObject;
 
 import com.eclipsesource.json.JsonObject;
 
@@ -31,6 +29,7 @@ import eu.paasage.camel.deployment.ProvidedCommunication;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.upperware.plangenerator.exception.ModelComparatorException;
+import eu.paasage.upperware.plangenerator.exception.ModelUtilException;
 import eu.paasage.upperware.plangenerator.exception.PlanGenerationException;
 import eu.paasage.upperware.plangenerator.model.Plan;
 import eu.paasage.upperware.plangenerator.model.task.ApplicationInstanceTask;
@@ -48,9 +47,8 @@ import eu.paasage.upperware.plangenerator.type.TaskType;
 import eu.paasage.upperware.plangenerator.util.ModelToJsonConverter;
 
 /**
- * The entry point to the plan generator.  This component is used by the Adaptation Manager 
- * to compute configuration plan of a cloud application. 
- * Based on prototype developed by INRIA, INSA Rennes.
+ * The entry point to the plan generator.  This component is used by the Adapter 
+ * to compute configuration plan of a cloud application.
  * <p> 
  * @author  Shirley Crompton (shirley.crompton@stfc.ac.uk)
  * org      UK Science and Technology Facilities Council
@@ -106,7 +104,7 @@ public class PlanGenerator {
 		//create a new Plan with the deployment model name
 		this.plan = new Plan(targetDM.getName());
 		//Case simple initial deployment
-		if(simpleInitialDeployment){ //flag set by AdaptationManager			
+		if(simpleInitialDeployment){ //flag set by Adapter			
 			//
 			buildSimpleDeploymentPlan();			
 			log.info("Generated plan to create " + this.plan.getAppName() + " with " + this.plan.getTasks().size() + " tasks.");			
@@ -128,25 +126,23 @@ public class PlanGenerator {
 	/**
 	 * Build a reconfiguration plan with dependencies.
 	 * <p>
+	 * @throws ModelUtilException 
 	 * @throws	{@link eu.paasage.upperware.plangenerator.exception.PlanGenerationException <em>PlanGenerationException</em>} or
-	 * 			{@link eu.paasage.upperware.plangenerator.exception.ModelComparatorException <em>ModelComparatorException</em>}on error
+	 * 			{@link eu.paasage.upperware.plangenerator.exception.ModelComparatorException <em>ModelComparatorException</em>}  on error
 	 */
 	private void buildReconfigPlan() throws PlanGenerationException, ModelComparatorException {
-		//
+		/******************************************************************************************
+		 * refactored to use DeploymentModelComparator as object names cannot be used as identifier
+		 ******************************************************************************************/
 		log.debug("....building a reconfiguration plan.....");
 		//go ahead and compare target model against current model		
-		ModelComparator mc = new ModelComparator(this.currentDM, this.targetDM);
-		mc.compareModels();
-		//all tasks depends on the applicationTask
-		List<VMTypeTask> vmTypeTasks = new ArrayList<VMTypeTask>();
+		DeploymentModelComparator dmc = new DeploymentModelComparator(this.currentDM, this.targetDM);
+		dmc.compareModels();
+		//
 		List<VMInstanceTask> vmInsTasks = new ArrayList<VMInstanceTask>();
-		List<ComponentTypeTask> compTypeTasks = new ArrayList<ComponentTypeTask>();
 		List<ComponentInstanceTask> compInsTasks = new ArrayList<ComponentInstanceTask>();
-		List<HostingTypeTask> hostingTypeTasks = new ArrayList<HostingTypeTask>();
 		List<HostingInstanceTask> hostingInsTasks = new ArrayList<HostingInstanceTask>();
-		List<CommunicationTypeTask> communicationTypeTasks = new ArrayList<CommunicationTypeTask>();
-		List<CommunicationTypeTask> orphanComTypeTasks = new ArrayList<CommunicationTypeTask>();
-		List<CommunicationInstanceTask> communicationInsTasks = new ArrayList<CommunicationInstanceTask>();
+		//List<CommunicationInstanceTask> communicationInsTasks = new ArrayList<CommunicationInstanceTask>();
 		ApplicationTask appTask = null;
 		ApplicationInstanceTask appInsTask = null;
 		//
@@ -154,6 +150,7 @@ public class PlanGenerator {
 		CamelModel currentCamel = (CamelModel) currentDM.eContainer();
 		CamelModel targetCamel = (CamelModel) targetDM.eContainer();
 		//
+		//4May2016 ExecutionWare does not do update, but Adapter keep a cache of the current names
 		if(!currentCamel.getApplications().get(0).getName().equals(targetCamel.getApplications().get(0).getName())){
 			appTask = getApplicationTask(targetCamel.getApplications().get(0), TaskType.UPDATE);
 			this.plan.getTasks().add(appTask);				
@@ -167,135 +164,45 @@ public class PlanGenerator {
 			log.info("Application/Instance name unchanged ....");
 		}
 		
-		/***************************************** REMOVAL TASKS : the objects (id) already exists in EW ********************************************/
-		//removing all objects means undeploying the app but cannot assume deleting the app
-		//process in this order communication instance, hosting instance, internalComponent instance, VM instance,communication, hosting, 
-		//                internalComponent, VM. If EW does not enforce dependency, it is possible to do all these in parallel
-		//communication instances
-		if(!mc.getRemovedComInstances().isEmpty()){
-			log.debug(mc.getRemovedComInstances().size() + " number of communication instances to remove....");
-			for(CommunicationInstance comIns : mc.getRemovedComInstances()){
-				communicationInsTasks.add(getCommunicationInsTask(comIns, TaskType.DELETE));
-			}
-		}else{
-			log.info("No communication to remove ....");
-		}
+		/*********** REMOVAL TASKS : the objects already exists in EW. The names should be the current names****************************/
+		//removing all objects means un-deploying the app but cannot assume deleting the app
+		//process in this order hosting instance, internalComponent instance, VM instance. 
+		//If EW does not enforce dependency, it is possible to do all these in parallel
+		//
 		//hosting instances	
-		if(!mc.getRemovedHostingInstances().isEmpty()){
-			log.debug(mc.getRemovedHostingInstances().size() + " number of hosting instances to remove....");
-			for(HostingInstance hi : mc.getRemovedHostingInstances()){
+		if(!dmc.getRemovedHostingInstances().isEmpty()){
+			log.debug(dmc.getRemovedHostingInstances().size() + " number of hosting instances to remove....");
+			for(HostingInstance hi : dmc.getRemovedHostingInstances()){
 				hostingInsTasks.add(getHostingInsTask(hi, TaskType.DELETE));
 			}
 		}else{
 			log.info("No hosting instances to remove ....");
 		}
-		//internalComponent instances ??these depends on the binding tasks?? 
-		if(!mc.getRemovedComInstances().isEmpty()){
-			log.debug(mc.getRemovedComInstances().size() + " number of internal component instances to remove....");
-			for(InternalComponentInstance ici : mc.getRemovedInternalComponentInstances()){
+		//InternalComponentInstances - hosting instances depends on these
+		if(!dmc.getRemovedInternalComponentInstances().isEmpty()){
+			log.debug(dmc.getRemovedInternalComponentInstances().size() + " number of internal component instances to remove....");
+			for(InternalComponentInstance ici : dmc.getRemovedInternalComponentInstances()){
 				compInsTasks.add(getComponentInsTask(ici, TaskType.DELETE));
 			}
 		}else{
 			log.info("No internal component instances to remove ....");
 		}
-		//vm instances ??the consumer (internal component instance) depends on this
-		if(!mc.getRemovedVMInstances().isEmpty()){
-			log.debug(mc.getRemovedVMInstances().size() + " number of VM instances to remove....");
-			for(VMInstance vmi : mc.getRemovedVMInstances()){
+		//vm instances - the consumer (internal component instance) and hosting instances depend on these
+		if(!dmc.getRemovedVMInstances().isEmpty()){
+			log.debug(dmc.getRemovedVMInstances().size() + " number of VM instances to remove....");
+			for(VMInstance vmi : dmc.getRemovedVMInstances()){
 				vmInsTasks.add(getVMInsTask(vmi, TaskType.DELETE));
 			}
 		}else{
 			log.info("No VM instances to remove ....");
 		}
-		//type tasks, again if EW does not enforce dependency, we can process them all in parallel		
-		//communications
-		if(!mc.getRemovedCommunications().isEmpty()){
-			log.debug(mc.getRemovedCommunications().size() + " number of communication to remove....");
-			for(Communication com : mc.getRemovedCommunications()){
-				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.DELETE));
-			}
-		}else{
-			log.info("No communication to remove ....");
-		}
-		//12Jan2016 add the orphan coms to the communicationTypeTasks now
-		if(!mc.getRemovedOrphanCommunications().isEmpty()){
-			log.debug(mc.getRemovedOrphanCommunications().size() + " number of Orphan communication objects to remove....");
-			for(ProvidedCommunication orphan : mc.getRemovedOrphanCommunications()){
-				orphanComTypeTasks.add(getOrphanComTask(orphan, TaskType.DELETE));
-			}
-		}
-		//hostings
-		if(!mc.getRemovedHostings().isEmpty()){
-			log.debug(mc.getRemovedHostings().size() + " number of hosting to remove....");
-			for(Hosting hosting : mc.getRemovedHostings()){
-				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.DELETE));
-			}
-		}else{
-			log.info("No hosting to remove ....");
-		}
-		//internal components
-		if(!mc.getRemovedInternalComponents().isEmpty()){
-			log.debug(mc.getRemovedInternalComponents().size() + " number of internal components to remove....");
-			for(InternalComponent comp : mc.getRemovedInternalComponents()){
-				compTypeTasks.add(getComponentTypeTask(comp, TaskType.DELETE));
-			}
-		}else{
-			log.info("No internal component to remove ....");
-		}
-		//VMs
-		if(!mc.getRemovedVMTypes().isEmpty()){
-			log.debug(mc.getRemovedVMTypes().size() + " number of VM to remove....");
-			for(VM vm : mc.getRemovedVMTypes()){
-				vmTypeTasks.add(getVMTypeTask(vm, TaskType.DELETE));
-			}
-		}else{
-			log.info("No VM to remove ....");
-		}
-		/***************************************** CREATE TASKS - the objects (id) do not exist in EW ************************************/
-		//Types
-		//VMs
-		if(!mc.getAddedVMTypes().isEmpty()){
-			log.debug(mc.getAddedVMTypes().size() + " number of VMs to add....");
-			for(VM vm : mc.getAddedVMTypes()){
-				vmTypeTasks.add(getVMTypeTask(vm, TaskType.CREATE));
-			}
-		}else{
-			log.info("No VM to create ....");
-		}
-		//internal components
-		if(!mc.getAddedInternalComponents().isEmpty()){
-			log.debug(mc.getAddedInternalComponents().size() + " number of internal components to add....");
-			for(InternalComponent comp : mc.getAddedInternalComponents()){
-				compTypeTasks.add(getComponentTypeTask(comp, TaskType.CREATE));
-				//app should already exist, app can only be updated, so ignore dependency				
-			}//end for(InternalComponent comp : mc.getAddedInternalComponents())
-		}else{
-			log.info("No internal component to create ....");
-		}		
-		//communication
-		if(!mc.getAddedCommunications().isEmpty()){
-			log.debug(mc.getAddedCommunications().size() + " number of communication to add....");
-			for(Communication com : mc.getAddedCommunications()){
-				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.CREATE));
-			}
-		}else{
-			log.info("No communication object to create ....");
-		}
-		//hosting
-		if(!mc.getAddedHostings().isEmpty()){
-			log.debug(mc.getAddedHostings().size() + " number of hosting to add....");
-			for(Hosting hosting : mc.getAddedHostings()){
-				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.CREATE));
-				//27Nov15 ExecutionWare doesn't care about hosting type, so ignore dependencies
-			}
-		}else{
-			log.info("No hosting object to create ....");
-		}
+		
+		/***************************************** CREATE TASKS - the objects do not exist in EW ************************************/		
 		//Instances
 		//VM Instance		
-		if(!mc.getAddedVMInstances().isEmpty()){
-			log.debug(mc.getAddedVMInstances().size() + " number of VM instances to add ....");
-			for(VMInstance avm : mc.getAddedVMInstances()){	
+		if(!dmc.getAddedVMInstances().isEmpty()){
+			log.debug(dmc.getAddedVMInstances().size() + " number of VM instances to add ....");
+			for(VMInstance avm : dmc.getAddedVMInstances()){	
 				vmInsTasks.add(getVMInsTask(avm, TaskType.CREATE));	
 				//task dependencies added further downstream
 			}		
@@ -303,12 +210,12 @@ public class PlanGenerator {
 			log.info("No VM instances to add ....");
 		}
 		//Internal Component Instance		
-		if(!mc.getAddedInternalComponentInstances().isEmpty()){
-			log.debug(mc.getAddedInternalComponentInstances().size() + " number of internal component instances to add ....");
+		if(!dmc.getAddedInternalComponentInstances().isEmpty()){
+			log.debug(dmc.getAddedInternalComponentInstances().size() + " number of internal component instances to add ....");
 			//
-			for(InternalComponentInstance aic : mc.getAddedInternalComponentInstances()){
+			for(InternalComponentInstance aic : dmc.getAddedInternalComponentInstances()){
 				ComponentInstanceTask cit = getComponentInsTask(aic, TaskType.CREATE);
-				//check if any comp instance task to add
+				//check if any app instance task to add, other dependencies added further down
 				if(appInsTask != null){
 					cit.getDependencies().add(appInsTask);
 				}
@@ -318,103 +225,40 @@ public class PlanGenerator {
 			log.info("No internal component instances to add ....");
 		}
 		//hosting instances		
-		if(!mc.getAddedHostingInstances().isEmpty()){
-			log.debug(mc.getAddedHostingInstances().size() + " number of hosting instances to add ....");
+		if(!dmc.getAddedHostingInstances().isEmpty()){
+			log.debug(dmc.getAddedHostingInstances().size() + " number of hosting instances to add ....");
 			//
-			for(HostingInstance ahi : mc.getAddedHostingInstances()){
+			for(HostingInstance ahi : dmc.getAddedHostingInstances()){
 				hostingInsTasks.add(getHostingInsTask(ahi, TaskType.CREATE));
 			}	
 		}else{
 			log.info("No hosting instances to add ....");
 		}
-		//communication instances
-		if(!mc.getAddedComInstances().isEmpty()){
-			log.debug(mc.getAddedComInstances().size() + " number of communication instances to add ....");
-			for(CommunicationInstance aci : mc.getAddedComInstances()){
-				communicationInsTasks.add(getCommunicationInsTask(aci, TaskType.CREATE));	
-				//27Nov15 ExecutionWare doesn't care about hosting type, so ignoring dependencies
-			}//end for each com instance
-		}else{
-			log.info("No communication instances to add ....");
-		}
-		//12Jan2016  orphan communication
-		if(!mc.getAddedOrphanCommunications().isEmpty()){
-			log.debug(mc.getAddedOrphanCommunications().size() + " number of orphan communication to add ....");
-			for(ProvidedCommunication orphan : mc.getAddedOrphanCommunications()){
-				orphanComTypeTasks.add(getOrphanComTask(orphan, TaskType.CREATE));
-			}
-		}
 		
-		/***************************************** UPDATE TASKS - the objects (id) already exist in EW *********************************************/ 
-		//assuming the update tasks can be done simultaneously, i.e. EW does not enforce dependency between objects
-		//VMs
-		if(!mc.getUpdatedVMTypes().isEmpty()){
-			log.debug(mc.getUpdatedVMTypes().size() + " number of VMs to update....");
-			for(VM vm : mc.getUpdatedVMTypes()){
-				vmTypeTasks.add(getVMTypeTask(vm, TaskType.UPDATE));
-			}
-		}else{
-			log.info("No VM to update ....");
-		}
-		//internal components
-		if(!mc.getUpdatedInternalComponents().isEmpty()){
-			log.debug(mc.getUpdatedInternalComponents().size() + " number of internal components to update....");
-			for(InternalComponent comp : mc.getUpdatedInternalComponents()){
-				compTypeTasks.add(getComponentTypeTask(comp, TaskType.UPDATE));
-			}
-		}else{
-			log.info("No internal component to update ....");
-		}		
-		//communication
-		if(!mc.getUpdatedCommunications().isEmpty()){
-			log.debug(mc.getUpdatedCommunications().size() + " number of communication to update....");
-			for(Communication com : mc.getUpdatedCommunications()){
-				communicationTypeTasks.add(getCommunicationTypeTask(com, TaskType.UPDATE));
-			}
-		}else{
-			log.info("No communication object to update ....");
-		}
-		//12Jan2016  orphan communication
-		if(!mc.getUpdatedOrphanCommunications().isEmpty()){
-			log.debug(mc.getUpdatedOrphanCommunications().size() + " number of orphan communication to update ....");
-			for(ProvidedCommunication orphan : mc.getUpdatedOrphanCommunications()){
-				orphanComTypeTasks.add(getOrphanComTask(orphan, TaskType.UPDATE));
-			}
-		}
-		//hosting
-		if(!mc.getUpdatedHostings().isEmpty()){
-			log.debug(mc.getUpdatedHostings().size() + " number of hosting to update....");
-			for(Hosting hosting : mc.getUpdatedHostings()){
-				hostingTypeTasks.add(getHostingTypeTask(hosting, TaskType.UPDATE));
-			}
-		}else{
-			log.info("No hosting object to update ....");
-		}
-		//
-		//instances to update (Execution Was does not care about com instances
-		//communication instance
-		if(!mc.getUpdatedComInstances().isEmpty()){
-			log.debug(mc.getUpdatedComInstances().size() + " number of communication instances to updated....");
-			for(CommunicationInstance comIns : mc.getUpdatedComInstances()){
-				communicationInsTasks.add(getCommunicationInsTask(comIns, TaskType.UPDATE));
-			}
-		}else{
-			log.info("No communication instance to remove ....");
-		}
+		/******************** UPDATE TASKS - the objects (id) already exist in Adapter  *********************************************/ 
+		//update tasks can be done simultaneously	
 		//hosting instances	
-		if(!mc.getUpdatedHostingInstances().isEmpty()){
-			log.debug(mc.getUpdatedHostingInstances().size() + " number of hosting instances to update....");
-			for(HostingInstance hi : mc.getUpdatedHostingInstances()){
-				hostingInsTasks.add(getHostingInsTask(hi, TaskType.UPDATE));
+		if(!dmc.getMatchedHostingInstances().isEmpty()){
+			log.debug(dmc.getMatchedHostingInstances().size() + " number of hosting instances to update....");
+			for(HostingInstance hi : dmc.getMatchedHostingInstances().keySet()){
+				HostingInstanceTask hit = getHostingInsTask(hi, TaskType.UPDATE);
+				//needs to get old name from current object
+				String old_name = dmc.getMatchedHostingInstances().get(hi).getName();
+				hit.getJsonModel().add("old_name", old_name);	
+				hostingInsTasks.add(hit);
 			}
 		}else{
 			log.info("No hosting instances to update ....");
 		}
-		//internalComponent instances ??these depends on the binding tasks
-		if(!mc.getUpdatedInternalComponentInstance().isEmpty()){
-			log.debug(mc.getUpdatedInternalComponentInstance().size() + " number of internal component instances to update....");
-			for(InternalComponentInstance ici : mc.getUpdatedInternalComponentInstance()){
+		//internalComponent instances 
+		if(!dmc.getMatchedInternalComponentIns().isEmpty()){
+			log.debug(dmc.getMatchedInternalComponentIns().size() + " number of internal component instances to update....");
+			for(InternalComponentInstance ici : dmc.getMatchedInternalComponentIns().keySet()){
 				ComponentInstanceTask cit = getComponentInsTask(ici, TaskType.UPDATE);
+				//needs to get old name from current object
+				String old_name = dmc.getMatchedInternalComponentIns().get(ici).getName();
+				cit.getJsonModel().add("old_name", old_name);	
+				//				
 				if(appInsTask != null){
 					cit.getDependencies().add(appInsTask);
 				}
@@ -423,11 +267,18 @@ public class PlanGenerator {
 		}else{
 			log.info("No internal component instances to updated ....");
 		}
-		//vm instances ?? the consumer (internal component instance) task depends on these
-		if(!mc.getUpdatedVMInstances().isEmpty()){
-			log.debug(mc.getUpdatedVMInstances().size() + " number of VM instances to update....");
-			for(VMInstance vmi : mc.getUpdatedVMInstances()){
-				vmInsTasks.add(getVMInsTask(vmi, TaskType.UPDATE));
+		//vm instances : the consumer (internal component instance) task depends on these hosting instance providers
+		if(!dmc.getMatchedVMInstances().isEmpty()){
+		//if(!dmc.getUpdatedVMInstances().isEmpty()){
+			log.debug(dmc.getMatchedVMInstances().size() + " number of VM instances to update....");
+			//for(VMInstance vmi : dmc.getUpdatedVMInstances()){
+			for(VMInstance vmi : dmc.getMatchedVMInstances().keySet()){
+				VMInstanceTask vmit = getVMInsTask(vmi, TaskType.UPDATE);
+				//needs to get old name from current object
+				String old_name = dmc.getMatchedVMInstances().get(vmi).getName();
+				vmit.getJsonModel().add("old_name", old_name);
+				//				
+				vmInsTasks.add(vmit);
 			}
 		}else{
 			log.info("No VM instances to update ....");
@@ -436,255 +287,48 @@ public class PlanGenerator {
 		//Better to do the dependencies after all the tasks have been created as the relationship can be complex
 		//basic assumption : 
 		//1. delete tasks can be process at any time (assuming EW does not enforce dependency)
-		//2. update application/instance tasks can also be done at any time as it only got the name attribute
-		//3. update and create tasks can be dependent on each other.  Instances depend on Types (definition), bindings depends on the consumer/dependent.
-		//4. update will not change the existing identifier, create will change the identifier.  Therefore update and create tasks do not depend on delete task.
-		//5. (18Jan16) delete tasks, the type depends on the children instances (if the both are being deleted) 
-		//6. (18Jan16) special case for communication, VMInstances must be deleted BEFORE the communication types
-		//Orphan Communications
-		if(!orphanComTypeTasks.isEmpty()){
-			log.debug("adding task dependencies to orphan communications....");
-			for(CommunicationTypeTask orphanCtt : orphanComTypeTasks){
-				//
-				if(!orphanCtt.getTaskType().equals(TaskType.DELETE)){ //only process update/create
-					ConfigurationTask parent = getDepended(compTypeTasks, orphanCtt.getJsonModel().get("providerCompTypeTask").asString(), TaskType.CREATE);
-					if(parent == null){//try look in update objects
-						parent = getDepended(compTypeTasks, orphanCtt.getJsonModel().get("providerCompTypeTask").asString(), TaskType.UPDATE);
-					}
-					if(parent != null){
-						orphanCtt.getDependencies().add(parent);
-						log.debug("...added parent task dependency(" + parent.getName() + ") to orphan communication type task : " + orphanCtt.getName());
-					}else{
-						//there must be a parent, as we get the orphan communication from the parent.  See ModelComparator.compareOrphanCommunications() method
-						throw new PlanGenerationException("Failed to find the parent InternalComponent or orphan communication(" + orphanCtt.getName() + ").....");
-					}
-				}else{//18Jan16 delete communication type task depends on ALL delete VMInstance tasks
-					log.debug("..about to find delete VMInstanceTask for orphan communication type(" + orphanCtt.getName() + ")");
-					for(VMInstanceTask vmit : vmInsTasks){
-						if(vmit.getTaskType().equals(TaskType.DELETE)){	//delete VMInstances first
-							log.debug("Added delete VMInstanceTask(" + vmit.getName() + ") as dependency for orphan communication type(" + orphanCtt.getName() + ")");
-							orphanCtt.getDependencies().add(vmit);
-						}
-					}
-				}
-				this.plan.getTasks().add(orphanCtt);//add task to plan
-			}//end for
-		}else{
-			log.info("No Orphan Communication type tasks to add .....");
-		}
-		//VM Types
-		if(!vmTypeTasks.isEmpty()){
-			//18Jan16 added dependencies to deleted VM instances
-			for(VMTypeTask vm : vmTypeTasks){
-				if(vm.getTaskType().equals(TaskType.DELETE)){
-					log.debug("..about to find delete VMInstanceTask for deleted vm type(" + vm.getName() + ")");
-					for(VMInstanceTask vmi: vmInsTasks){
-						if(vmi.getTaskType().equals(TaskType.DELETE) && vmi.getJsonModel().get("type").asString().equals(vm.getName())){
-							log.debug("Adding vmInstanceTask(" + vmi.getName() + ") to vm type task(" + vm.getName() + ")....");
-							vm.getDependencies().add(vmi);
-						}
-					}//end for vminstance	
-				}		
-			}//end for vmtypetask 18Jan16
-			log.debug(vmTypeTasks.size() + " number of VM type tasks added to the plan");
-			//
-			this.plan.getTasks().addAll(vmTypeTasks);
-		}else{
-			log.info("No VM type tasks to add .....");
-		}
+		//2. update application/instance tasks can also be done at any time 
+		//3. update and create tasks can be dependent on each other.  HostingInstance depends on the consumer/dependent
+		//4. (18Jan16) delete tasks, the type depends on the children instances (if the both are being deleted) 
+		//5. (3May16) EW does not support update.  The name attributes are required by Adapter and needs to be synchronised 
+		//    with the S2D deployment model.
+		
 		//VM Instances
 		if(!vmInsTasks.isEmpty()){ 
 			log.debug(vmInsTasks.size() + " number of VM instance tasks to added to plan ....");
-			for(VMInstanceTask vmit : vmInsTasks){
-				if(!vmit.getTaskType().equals(TaskType.DELETE)){	//only process update/create
-					//can't be both update and create
-					ConfigurationTask parent = getDepended(vmTypeTasks, vmit.getJsonModel().get("type").asString(), TaskType.CREATE);
-					if(parent == null){//try look in update objs
-						parent = getDepended(vmTypeTasks,vmit.getJsonModel().get("type").asString(), TaskType.UPDATE);
-					}
-					if(parent != null){
-						vmit.getDependencies().add(parent);
-						log.debug("...added type dependency(" + parent.getName() + ") to VM intance task : " + vmit.getName());
-					}
-					//if no parent, the type must be already 'deployed'
-					//12Jan16 add dependencies to new/updated comm type
-					//if(vmit.getTaskType().equals(TaskType.CREATE)){
-						//we are adding obj references, so should be OK if the objs are changed further down stream
-						setComTypeDependencies(vmit, communicationTypeTasks, TaskType.CREATE);
-						setComTypeDependencies(vmit, communicationTypeTasks, TaskType.UPDATE);
-						setComTypeDependencies(vmit, orphanComTypeTasks, TaskType.CREATE);
-						setComTypeDependencies(vmit, orphanComTypeTasks, TaskType.DELETE);						
-					//}
-					//12Jan16
-				}
-				this.plan.getTasks().add(vmit);
-			}//end for each vmInsTask				
+				//the types do not change
+				this.plan.getTasks().addAll(vmInsTasks);	
 		}else{
 			log.info("No VM instance tasks to add dependencies ....");
 		}
-		//component type 
-		if(!compTypeTasks.isEmpty()){
-			log.debug(compTypeTasks.size() + " number of create/update/delete component type tasks to add to plan ....");
-			//add the application dependencies, VMType dependency processed in hosting type
-			if(appTask != null){
-				for(ComponentTypeTask compTypeTask : compTypeTasks){
-					compTypeTask.getDependencies().add(appTask);				}
-			}
-			//18Jan16 delete  component type task depends on delete component instance task
-			for(ComponentTypeTask ctt : compTypeTasks){
-				if(ctt.getTaskType().equals(TaskType.DELETE)){
-					//log.debug("..about to find deleted componentInstanceTask for deleted component type(" + ctt.getName() + ")");
-					for(ComponentInstanceTask icit: compInsTasks){
-						//log.debug(icit.getTaskType() + " InternalComponentInstance(" + icit.getName() + ") parent is " + icit.getJsonModel().get("type").asString() + "..."); 
-						if(icit.getTaskType().equals(TaskType.DELETE) && icit.getJsonModel().get("type").asString().equals(ctt.getName())){
-							log.debug("Adding deleted component instance task(" + icit.getName() + ") to deleted component type(" + ctt.getName() + ")....");
-							ctt.getDependencies().add(icit);
-						}	
-					}
-				}
-			}//end 18Jan16
-			this.plan.getTasks().addAll(compTypeTasks);
-		}else{
-			log.info("No component type tasks to add ....");
-		}
+		
 		//internal component instances
 		//add comp type dependencies, other dependencies are added when processing hosting & communication
 		if(!compInsTasks.isEmpty()){ 
-			log.debug(compInsTasks.size() + " number of update/create/delete compInsTasks to add to plan ....");
-			for(ComponentInstanceTask ctt : compInsTasks){
-				if(!ctt.getTaskType().equals(TaskType.DELETE)){	//only process update/create
-					ConfigurationTask parent = getDepended(compTypeTasks, ctt.getJsonModel().get("type").asString(), TaskType.CREATE);
-					if(parent == null){
-						parent = getDepended(compTypeTasks, ctt.getJsonModel().get("type").asString(), TaskType.UPDATE);
-					}
-					if(parent != null){
-						ctt.getDependencies().add(parent);
-						log.debug("...added type dependency(" + parent.getName() + ") to component instance task : " + ctt.getName());
-					}
-					//if no parent, the type must be already 'deployed'
-				}
-				this.plan.getTasks().add(ctt); //no other dependencies at this stage
-			}//end for component instance task
+			log.debug(compInsTasks.size() + " number of update/create/delete compInsTasks to add to plan ....");			
+				this.plan.getTasks().addAll(compInsTasks); //no other dependencies at this stage
 		}else{
 			log.info("No component instance tasks to add ....");
 		}
-		//hosting types. Execution ware does not recognise hosting types
-		if(!hostingTypeTasks.isEmpty()){
-			log.debug(hostingTypeTasks.size() + " number of create/update/delete hosting type tasks to add to plan ....");
-			List<Hosting> newHostings = new ArrayList<Hosting>();
-			newHostings.addAll(mc.getUpdatedHostings());
-			newHostings.addAll(mc.getAddedHostings());
-			//
-			for(HostingTypeTask hTask : hostingTypeTasks){
-				if(!hTask.getTaskType().equals(TaskType.DELETE)){
-					//hosting depends on components, but not the other way around to avoid cyclic dependency
-					Component hostingProvider = null;	//initialised for each hTask
-					Component hostingConsumer = null;
-					ConfigurationTask hostingProviderTask = null;
-					ConfigurationTask hostingConsumerTask = null;
-					//need the hosting objects 
-					for(Hosting hosting : newHostings){
-						if(hTask.getName().equals(hosting.getName())){
-							//got the original camel hosting
-							hostingProvider = (Component) hosting.getProvidedHost().eContainer();
-							hostingConsumer = (Component) hosting.getRequiredHost().eContainer();
-							break;
-						}					
-					}
-					//now locate the config tasks for these components
-					if(hostingProvider instanceof VM){
-						hostingProviderTask = getDepended(vmTypeTasks, hostingProvider.getName(), TaskType.CREATE);
-						if(hostingProviderTask == null){
-							hostingProviderTask = getDepended(vmTypeTasks, hostingProvider.getName(), TaskType.UPDATE);
-						}					
-					}else if(hostingProvider instanceof InternalComponent){
-						hostingProviderTask = getDepended(compTypeTasks, hostingProvider.getName(), TaskType.CREATE);
-						if(hostingProviderTask == null){
-							hostingProviderTask = getDepended(compTypeTasks, hostingProvider.getName(), TaskType.UPDATE);
-						}
-					}
-					//if none found, assume already deployed
-					if(hostingProviderTask != null){	
-						//8July15 : added owner task as requested by Adapter
-						hTask.getJsonModel().add("providerCompTypeTask", hostingProviderTask.getName());
-						hTask.getDependencies().add(hostingProviderTask);
-					}else{
-						log.info("...did not locate the hosting provider task(name = " + hostingProvider.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
-					}
-					hostingConsumerTask = getDepended(compTypeTasks, hostingConsumer.getName(), TaskType.CREATE);
-					if(hostingConsumerTask == null){
-						hostingConsumerTask = getDepended(vmTypeTasks, hostingProvider.getName(), TaskType.UPDATE);
-					}	
-					if(hostingConsumerTask != null){
-						//8July15 : added owner task as requested by Adapter
-						hTask.getJsonModel().add("consumerCompTypeTask", hostingConsumerTask.getName());
-						hTask.getDependencies().add(hostingConsumerTask);
-						//the consumer depends on the host
-						if(hostingProviderTask != null){
-							hostingConsumerTask.getDependencies().add(hostingProviderTask);
-						}
-					}else{
-						log.info("...did not locate the hosting consumer task(name = " + hostingConsumer.getName() + ") for hosting task(" + hTask.getName() + ".  Assume already deployed.");					
-					}
-				}else{//delete task  19Jan2016 delete vm type depends on delete component type
-					for(Hosting deletedHosting : mc.getRemovedHostings()){
-						log.debug("..processing removed hosting(" + deletedHosting.getName() + "....");
-						if(hTask.getName().equals(deletedHosting.getName())){
-							log.debug("deleted hosting: the current deleted hosting is : " + hTask.getName() + "....");							
-						//provider is a VM or a component, consumer is a component 
-							ConfigurationTask hostingProviderTask = null;
-							ConfigurationTask hostingConsumerTask = null;
-							//find consumer
-							hostingConsumerTask = getDepended(compTypeTasks, ((Component) deletedHosting.getRequiredHost().eContainer()).getName(), TaskType.DELETE);
-							//first tried VM 
-							hostingProviderTask = getDepended(vmTypeTasks, ((Component) deletedHosting.getProvidedHost().eContainer()).getName(),TaskType.DELETE);
-							if(hostingProviderTask == null){								
-								//try component type
-								hostingProviderTask = getDepended(compTypeTasks, ((Component) deletedHosting.getProvidedHost().eContainer()).getName(),TaskType.DELETE);
-							}
-							if(hostingProviderTask == null){
-								log.info("...failed to find deleted hosting provider for hosting(" + deletedHosting.getName() + ").....");  //it is legitimate					
-							}else{//provider also being deleted, need to first delete the consumer, then the provider
-								hostingProviderTask.getDependencies().add(hTask);//delete hosting task before the provider component task
-								if(hostingConsumerTask != null){ //consumer also being deleted, so add dependency
-									hostingConsumerTask.getDependencies().add(hTask);//delete hosting task before the consumer component task
-									hostingProviderTask.getDependencies().add(hostingConsumerTask);
-								}
-							}
-						}						
-					}
-				}//end 19Jan2016
-				this.plan.getTasks().add(hTask);	
-			}//end for hosting task		
-		}else{
-			log.info("No hosting type tasks to add ....");
-		}
+		
 		//hosting instances
 		if(!hostingInsTasks.isEmpty()){
 			log.debug(hostingInsTasks.size() + " number of create/update/delete hosting instance tasks to add to plan ....");
 			List<HostingInstance> newHostingIns = new ArrayList<HostingInstance>();
-			newHostingIns.addAll(mc.getUpdatedHostingInstances());
-			newHostingIns.addAll(mc.getAddedHostingInstances());
-			//
+			newHostingIns.addAll(dmc.getMatchedHostingInstances().keySet());
+			newHostingIns.addAll(dmc.getAddedHostingInstances());
+			//consumer depends on provider
 			for(HostingInstanceTask hiTask : hostingInsTasks){
 				if(!hiTask.getTaskType().equals(TaskType.DELETE)){
-					//search for the parent hosting type
-					ConfigurationTask parent = getDepended(hostingTypeTasks, hiTask.getJsonModel().get("type").asString(), TaskType.CREATE);
-					if(parent == null){
-						parent = getDepended(hostingTypeTasks, hiTask.getJsonModel().get("type").asString(), TaskType.UPDATE);
-					}
-					if(parent != null){ //assume already deployed if none found
-						hiTask.getDependencies().add(parent);
-						log.debug("...added type dependency(" + parent.getName() + ") to " + hiTask.getName());
-					}
+					//
 					ComponentInstance hiProviderIns = null;
 					ComponentInstance hiConsumerIns = null;
 					ConfigurationTask hiProviderTask = null;
 					ConfigurationTask hiConsumerTask = null;
-					//looks for the parent type 
+					//looks for the provider/consumer instance
 					for(HostingInstance hInstance : newHostingIns){
 						if(hiTask.getName().equals(hInstance.getName())){
-							//get the original camel hosting instance
+							//
 							hiProviderIns = (ComponentInstance) hInstance.getProvidedHostInstance().eContainer();
 							hiConsumerIns = (ComponentInstance) hInstance.getRequiredHostInstance().eContainer();
 							break;
@@ -696,19 +340,20 @@ public class PlanGenerator {
 						if(hiProviderTask == null){
 							hiProviderTask = getDepended(vmInsTasks, hiProviderIns.getName(), TaskType.UPDATE);
 						}
-					}else if(hiProviderIns instanceof InternalComponent){
+					}else if(hiProviderIns instanceof InternalComponentInstance){
 						hiProviderTask = getDepended(compInsTasks, hiProviderIns.getName(), TaskType.CREATE);
 						if(hiProviderTask == null){
 							hiProviderTask = getDepended(compInsTasks, hiProviderIns.getName(), TaskType.UPDATE);
 						}
-					}
-					//if none found, assume already deployed
+					}					
 					if(hiProviderTask != null){
 						//8July15 : added owner task as requested by Adapter
 						hiTask.getJsonModel().add("providerCompTypeTask", hiProviderTask.getName());
 						hiTask.getDependencies().add(hiProviderTask);
-					}else{
-						log.info("...did not locate the hosting provider instance task(name = " + hiProviderIns.getName() + ") for hosting task(" + hiTask.getName() + ".  Assume already deployed.");
+					}else{//if none found, assume already deployed
+						log.info("...did not locate the hosting provider instance task(name = " + 
+							hiProviderIns.getName() + ") for hosting task(" + hiTask.getName() + 
+							".  Assume already deployed.");
 					}
 					hiConsumerTask = getDepended(compInsTasks, hiConsumerIns.getName(), TaskType.CREATE);
 					if(hiConsumerTask == null){
@@ -723,10 +368,13 @@ public class PlanGenerator {
 							hiConsumerTask.getDependencies().add(hiProviderTask);
 						}
 					}else{
-						log.info("...did not locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName() + ".  Assume already deployed.");					//hrow new PlanGenerationException("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting task(" + hTask.getName());
+						log.info("...did not locate the hosting consumer instance task(name = " + 
+							hiConsumerIns.getName() + ") for hosting instance task(" + hiTask.getName() + 
+							".  Assume already deployed.");					
+							//throw new PlanGenerationException("...failed to locate the hosting consumer instance task(name = " + hiConsumerIns.getName() + ") for hosting task(" + hTask.getName());
 					}
 				}else{//delete task  19Jan2016 delete vm type depends on delete component type
-					for(HostingInstance deletedHI : mc.getRemovedHostingInstances()){
+					for(HostingInstance deletedHI : dmc.getRemovedHostingInstances()){
 						log.debug("..processing removed hosting instance(" + deletedHI.getName() + "....");
 						if(hiTask.getName().equals(deletedHI.getName())){
 						//provider is a VMInstance or a ComponentInstance, consumer is a ComponentInstance
@@ -734,6 +382,9 @@ public class PlanGenerator {
 							ConfigurationTask hostingInsConsumerTask = null;							
 							//find consumer
 							hostingInsConsumerTask = getDepended(compInsTasks, ((ComponentInstance) deletedHI.getRequiredHostInstance().eContainer()).getName(), TaskType.DELETE);
+							if(hostingInsConsumerTask != null){
+								hostingInsConsumerTask.getDependencies().add(hiTask); //delete binding before consumer component instance
+							}
 							//first tried VM 
 							hostingInsProviderTask = getDepended(vmInsTasks, ((ComponentInstance) deletedHI.getProvidedHostInstance().eContainer()).getName(),TaskType.DELETE);
 							if(hostingInsProviderTask == null){
@@ -744,9 +395,8 @@ public class PlanGenerator {
 									log.info("...failed to find deleted hosting instance provider for hosting instance(" + deletedHI.getName() + ").....");  //it is legitimate					
 							}else{//provider also being deleted, need to first delete the consumer, then the provider
 								//delete hosting instance before component instance
-								hostingInsProviderTask.getDependencies().add(hiTask);
+								hostingInsProviderTask.getDependencies().add(hiTask); //delete binding first
 								if(hostingInsConsumerTask != null){ //consumer also being deleted, so add dependency
-									hostingInsConsumerTask.getDependencies().add(hiTask); //delete hosting instance before consumer component instance
 									hostingInsProviderTask.getDependencies().add(hostingInsConsumerTask);
 								}
 							}
@@ -758,238 +408,7 @@ public class PlanGenerator {
 		}else{
 			log.info("No hosting instance tasks to add ....");
 		}
-		//communication
-		if(!communicationTypeTasks.isEmpty()){
-			log.debug(communicationTypeTasks.size() + " number of communication type tasks to add ....");
-			List<Communication> newCommunications = new ArrayList<Communication>();
-			newCommunications.addAll(mc.getUpdatedCommunications());
-			newCommunications.addAll(mc.getAddedCommunications());
-			//
-			for(CommunicationTypeTask commTypeTask : communicationTypeTasks){
-				if(!commTypeTask.getTaskType().equals(TaskType.DELETE)){  
-					//communication depends on components, but not the other way around to avoid cyclic dependency
-					log.debug("...inside communication type task : " + commTypeTask.getName());
-					//communication depends on components, but not the other way around to avoid cyclic dependency
-					Component commProvider = null;	//initialised for each commTypeTask
-					Component commConsumer = null;
-					ConfigurationTask commProviderTask = null;
-					ConfigurationTask commConsumerTask = null;
-					//need the communication type objects 
-					for(Communication communication : newCommunications){
-						if(commTypeTask.getName().equals(communication.getName())){
-							//got the original camel communication type
-							commProvider = (Component) communication.getProvidedCommunication().eContainer();
-							commConsumer = (Component) communication.getRequiredCommunication().eContainer();
-							break;
-						}					
-					}
-					//now locate the config tasks for these components
-					if(commProvider instanceof VM){
-						commProviderTask = getDepended(vmTypeTasks, commProvider.getName(), TaskType.CREATE);
-						if(commProviderTask == null){
-							commProviderTask = getDepended(vmTypeTasks, commProvider.getName(), TaskType.UPDATE);
-						}
-					}else if(commProvider instanceof InternalComponent){
-						commProviderTask = getDepended(compTypeTasks, commProvider.getName(), TaskType.CREATE);
-						if(commProviderTask == null){
-							commProviderTask = getDepended(compTypeTasks, commProvider.getName(), TaskType.UPDATE);
-						}
-					}
-					if(commProviderTask != null){
-						//8July15 : added owner task as requested by Adapter
-						commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());
-						commTypeTask.getDependencies().add(commProviderTask);
-					}else{
-						log.info("...did not locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName() + ".  Assume already deployed.");
-					}
-					commConsumerTask = getDepended(compTypeTasks, commConsumer.getName(), TaskType.CREATE);
-					if(commConsumerTask == null){
-						commConsumerTask = getDepended(compTypeTasks, commConsumer.getName(), TaskType.UPDATE);
-					}
-					if(commConsumerTask != null){
-						//8July15 : added owner task as requested by Adapter
-						commTypeTask.getJsonModel().add("consumerCompTypeTask", commConsumerTask.getName());
-						commTypeTask.getDependencies().add(commConsumerTask);
-						//if mandatory, the consumer depends on the provider
-						if(commTypeTask.isMandatory() && commProviderTask != null){
-							commConsumerTask.getDependencies().add(commProviderTask);
-						}else{
-							log.info("...did not locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName() + ".  Assume already deployed.");
-						}	
-					}
-				}else{//16Jan16 delete communication type depends on delete vminstances tasks.  Orphan com types are processed separately
-					log.debug("... about to find vm instance task for deleted communication type task(" + commTypeTask.getName() + ")....");
-					for(VMInstanceTask vmit : vmInsTasks){
-						if(vmit.getTaskType().equals(TaskType.DELETE)){	//delete VMInstances first
-							commTypeTask.getDependencies().add(vmit);
-							log.debug("Added vm instance task(" + vmit.getName() + ") to communication type task(" + commTypeTask.getName() + ")");
-						}
-					}
-					//19Jan2016 depends on delete mandatory communication provider
-					//if(commTypeTask.isMandatory()){
-						//find the provider
-						//need the communication type objects
-						Component commProvider = null;
-						Component commConsumer = null;
-						//find the consumer/provider
-						for(Communication communication : mc.getRemovedCommunications()){
-							if(commTypeTask.getName().equals(communication.getName())){
-								//got the original camel communication type
-								commProvider = (Component) communication.getProvidedCommunication().eContainer();
-								commConsumer = (Component) communication.getRequiredCommunication().eContainer();
-								break;
-							}					
-						}
-						//now find the component task
-						ConfigurationTask providerTask = getDepended(compTypeTasks, commProvider.getName(),TaskType.DELETE);
-						if(providerTask != null){
-							providerTask.getDependencies().add(commTypeTask); //delete com type before the provider component
-							ConfigurationTask consumerTask = getDepended(compTypeTasks, commConsumer.getName(),TaskType.DELETE);
-							if(consumerTask != null){
-								consumerTask.getDependencies().add(commTypeTask); //delete com type before consumer component
-								if(commTypeTask.isMandatory()){
-									providerTask.getDependencies().add(consumerTask);
-								}
-							}else{
-								log.debug("...cannot find delete consumer task for mandatory delete communication(" + commTypeTask.getName());//it is legitimate
-							}
-						}else{
-							log.debug("...cannot find delete provider task for mandatory delete communication(" + commTypeTask.getName());//it is legitimate
-						}						
-					//}//end 19Jan2016
-				}
-				this.plan.getTasks().add(commTypeTask);	
-			}//end for communication task		
-		}else{
-			log.info("No communication type tasks to add ....");
-		}
-		//communication instance
-		if(!communicationInsTasks.isEmpty()){
-			log.debug(communicationInsTasks.size() + " number of create/update/delete communication instance tasks to add ....");
-			List<CommunicationInstance> newCommunicationIns = new ArrayList<CommunicationInstance>();
-			newCommunicationIns.addAll(mc.getUpdatedComInstances());
-			newCommunicationIns.addAll(mc.getAddedComInstances());
-			//
-			for(CommunicationInstanceTask ciTask : communicationInsTasks){
-				if(!ciTask.getTaskType().equals(TaskType.DELETE)){
-					//search for the parent communication type
-					ConfigurationTask parent = getDepended(communicationTypeTasks, ciTask.getJsonModel().get("type").asString(), TaskType.CREATE);
-					if(parent == null){
-						parent = getDepended(communicationTypeTasks, ciTask.getJsonModel().get("type").asString(), TaskType.UPDATE);
-					}
-					if(parent != null){
-						ciTask.getDependencies().add(parent);
-						log.debug("...added type dependency(" + parent.getName() + ") to " + ciTask.getName());
-					}else{
-						log.info("... cannot find parent type task, assume already deployed....");
-					}
-					//communication depends on components, but not the other way around to avoid cyclic dependency
-					ComponentInstance commInsProvider = null;	//initialised for each cTask
-					ComponentInstance commInsConsumer = null;
-					ConfigurationTask commInsProviderTask = null;
-					ConfigurationTask commInsConsumerTask = null;
-					//need the communication type objects 
-					for(CommunicationInstance commInstance : newCommunicationIns){
-						if(ciTask.getName().equals(commInstance.getName())){
-							//got the original camel communication owner
-							commInsProvider = (ComponentInstance) commInstance.getProvidedCommunicationInstance().eContainer();
-							commInsConsumer = (ComponentInstance) commInstance.getRequiredCommunicationInstance().eContainer();
-							break;
-						}					
-					}
-					//now locate the config tasks for these components
-					if(commInsProvider instanceof VMInstance){
-						commInsProviderTask = getDepended(vmInsTasks, commInsProvider.getName(), TaskType.CREATE);
-						if(commInsProviderTask == null){
-							commInsProviderTask = getDepended(vmInsTasks, commInsProvider.getName(), TaskType.UPDATE);
-						}
-					}else if(commInsProvider instanceof InternalComponentInstance){
-						//debug
-						log.debug("... about to find task for commInsProvider(" + commInsProvider.getName() + "...");
-						commInsProviderTask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.CREATE);
-						if(commInsProviderTask == null){
-							commInsProviderTask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.UPDATE);
-						}
-					}
-					if(commInsProviderTask != null){
-						//8July15 : added owner task as requested by Adapter
-						ciTask.getJsonModel().add("providerCompTypeTask", commInsProviderTask.getName());
-						ciTask.getDependencies().add(commInsProviderTask);
-					}else{
-						log.info("...did not locate the communication instance provider task(name = " + commInsProvider.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
-					}
-					log.debug("... about to find task for commInsConsumer(" + commInsConsumer.getName() + "...");
-					commInsConsumerTask = getDepended(compInsTasks, commInsConsumer.getName(), TaskType.CREATE);
-					if(commInsConsumerTask == null){
-						commInsConsumerTask = getDepended(compInsTasks, commInsConsumer.getName(), TaskType.UPDATE);
-					}
-					if(commInsConsumerTask != null){
-						//8July15 : added owner task as requested by Adapter
-						ciTask.getJsonModel().add("consumerCompTypeTask", commInsConsumerTask.getName());
-						ciTask.getDependencies().add(commInsConsumerTask);
-						boolean mandatory = false;
-						if(parent == null){
-							//need to find the type and get the isMandatoryValue.....
-							@SuppressWarnings("unchecked")
-							Collection<Communication> targetComs = (Collection<Communication>) mc.getMatchedComms().values();
-							//
-							for(Communication ci : targetComs){
-								if(ci.getName().equals(ciTask.getJsonModel().get("type").asString())){
-									mandatory = ci.getRequiredCommunication().isIsMandatory();
-								}
-							}
-						}else{
-							mandatory = ((CommunicationTypeTask) parent).isMandatory(); //get this directly from the parent type task
-						}						
-						//the consumer depends on the provider
-						if(mandatory && commInsProviderTask != null){
-							commInsConsumerTask.getDependencies().add(commInsProviderTask);
-						}
-					}else{
-						log.info("...did not locate the communication instance consumer task(name = " + commInsConsumer.getName() + ") for communication instance task(" + ciTask.getName() + ".  Assume already deployed.");
-					}//end if commInsConsumerTask != null
-				}else{//end if NOT delete task 18Jan16 EW does not recognise Communication instances
-					//19Jan2016 add for deleted communication instance which are mandatory, the deleted provider component instance depends on the deleted consumer instance
-					for(Communication allCom : this.currentDM.getCommunications()){
-						//check if mandatory
-						if(allCom.getName().equals(ciTask.getJsonModel().get("type").asString())){
-							//found the camel com object,now find the original communication instance
-							if(allCom.getRequiredCommunication().isIsMandatory()){
-								//need to find if there is a deleted provider instance	
-								for(CommunicationInstance commInstance : mc.getRemovedComInstances()){
-									if(ciTask.getName().equals(commInstance.getName())){
-										//got the original camel communication instance 
-										ComponentInstance commInsProvider = (ComponentInstance) commInstance.getProvidedCommunicationInstance().eContainer();
-										ComponentInstance commInsConsumer = (ComponentInstance) commInstance.getRequiredCommunicationInstance().eContainer();
-										ConfigurationTask delProvidedCITask = getDepended(compInsTasks, commInsProvider.getName(), TaskType.DELETE);
-										if(delProvidedCITask != null){
-											//find the consumer
-											ConfigurationTask delRequiredCITask = getDepended(compInsTasks, commInsConsumer.getName(),TaskType.DELETE);
-											if(delRequiredCITask != null){
-												delProvidedCITask.getDependencies().add(delRequiredCITask); //delete the consumer first, then the provider
-											}else{
-												log.debug("...failed to find the delete communication instance consumer task for deleted communication instance(" + ciTask.getName());//it is legitimate
-											}									
-										}
-										break;
-									}	
-									log.debug("...failed to find the deleted communication instance for deleted communication instance task(" + ciTask.getName() + "....");
-								}//end for communication instance					
-							}
-							break;
-						}//end if found the parent type	
-						log.debug("...failed to find the deleted communication type for communication instance task(" + ciTask.getName() + "....");
-					}//end for communication
-				}
-			this.plan.getTasks().add(ciTask);	
-			}//end for communication task		
-		}else{
-			log.info("No communication instance tasks to add ....");
-		}	
 	}
-	
-	
-
 	/**
 	 * Build a simple deployment {@link eu.paasage.upperware.plangenerator.model.Plan <em>Plan</em>}
 	 * from a {@link eu.paasage.camel.CamelModel <em>CamelModel</em>}.
@@ -1079,7 +498,7 @@ public class PlanGenerator {
 				log.debug("the current communication.providedCommunication.name is :" + com.getProvidedCommunication().getName());
 				//check if the providedCom matches the cached one 
 				for(int i = 0; i < pcs.size(); i++){
-					if(ModelComparator.equalProvidedCommunication(pcs.get(i), com.getProvidedCommunication())){
+					if(DeploymentModelComparator.equalProvidedCommunication(pcs.get(i), com.getProvidedCommunication())){
 						//get rid of this, so we will end up with only pcs that not linked to any com type
 						log.debug("..removing provided communication(" + pcs.get(i).getName() + " from the orphan list...." );
 						pcs.remove(i);
@@ -1689,7 +1108,7 @@ public class PlanGenerator {
 	 * <p>
 	 * @param allTask	the {@link java.util.List <em>List</em>} of {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>} to process.
 	 * @return	a {@link java.util.List <em>List</em>} of selected {@link eu.paasage.upperware.plangenerator.model.task.ConfigurationTask <em>ConfigurationTask</em>}.
-	 */
+	 
 	private List<? extends ConfigurationTask> getNewTask(List<? extends ConfigurationTask> allTask){
 		List<ConfigurationTask> newTasks = new ArrayList<ConfigurationTask>();
 		if(!allTask.isEmpty()){
@@ -1701,5 +1120,5 @@ public class PlanGenerator {
 			}
 		}
 		return newTasks;
-	}
+	}*/
 }

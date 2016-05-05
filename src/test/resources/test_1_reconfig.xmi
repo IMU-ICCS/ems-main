@@ -8,7 +8,7 @@
     xmlns:requirement="http://www.paasage.eu/2015/06/camel/requirement"
     xmlns:type="http://www.paasage.eu/2015/06/camel/type"
     xmlns:unit="http://www.paasage.eu/2015/06/camel/unit"
-    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel platform:/resource/eu.paasage.camel/model/camel.ecore http://www.paasage.eu/2015/06/camel/provider platform:/resource/eu.paasage.camel/model/camel.ecore#//provider http://www.paasage.eu/2015/06/camel/requirement platform:/resource/eu.paasage.camel/model/camel.ecore#//requirement http://www.paasage.eu/2015/06/camel/type platform:/resource/eu.paasage.camel/model/camel.ecore#//type http://www.paasage.eu/2015/06/camel/unit platform:/resource/eu.paasage.camel/model/camel.ecore#//unit"
+    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/requirement http://www.paasage.eu/2015/06/camel#//requirement http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type http://www.paasage.eu/2015/06/camel/unit http://www.paasage.eu/2015/06/camel#//unit"
     name="ScalarmModel">
   <applications
       name="NewScalarmApplication"
@@ -26,7 +26,8 @@
           name="Configuration88"
           downloadCommand="wget https://github.com/kliput/scalarm_service_scripts/archive/paasage.tar.gz &amp;&amp; sudo apt-get update &amp;&amp; sudo apt-get install -y groovy ant &amp;&amp; tar -zxvf paasage.tar.gz &amp;&amp; cd scalarm_service_scripts-paasage"
           installCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_install.sh"
-          startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_start.sh" stopCommand="cd scalarm_service_scripts-paasage &amp; &amp; ./experiment_manager_stop.sh"/>
+          startCommand="cd scalarm_service_scripts-paasage &amp;&amp; ./experiment_manager_start.sh"
+          stopCommand="cd scalarm_service_scripts-paasage &amp; &amp; ./experiment_manager_stop.sh"/>
       <requiredCommunications
           name="StoManPortReq"
           portNumber="20001"
@@ -86,7 +87,7 @@
           name="StorageIntensiveUbuntuGermanyHostReq"/>
     </internalComponents>
     <internalComponentInstances
-        name="ExperimentManagerInstance"
+        name="ExperimentManagerInstance_1"
         type="//@deploymentModels.0/@internalComponents.0">
       <providedCommunicationInstances
           name="ExpManPortProvidedCommunicationInstance"
@@ -102,7 +103,7 @@
           type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="ExperimentManagerInstance1"
+        name="ExperimentManagerInstance2"
         type="//@deploymentModels.0/@internalComponents.0">
       <providedCommunicationInstances
           name="ExpManPortProvidedCommunicationInstance1"
@@ -118,7 +119,7 @@
           type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="InformationServiceInstance"
+        name="InformationServiceInstance_1"
         type="//@deploymentModels.0/@internalComponents.1">
       <providedCommunicationInstances
           name="InfSerPortProvidedCommunicationInstance"
@@ -128,7 +129,7 @@
           type="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="StorageManagerInstance"
+        name="StorageManagerInstance_1"
         type="//@deploymentModels.0/@internalComponents.3">
       <providedCommunicationInstances
           name="StoManPortProvidedCommunicationInstance"
@@ -141,7 +142,7 @@
           type="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="SimulationManagerInstance"
+        name="SimulationManagerInstance_1"
         type="//@deploymentModels.0/@internalComponents.2">
       <requiredCommunicationInstances
           name="InfSerPortReqReqCommunicationInstance"
@@ -157,7 +158,7 @@
           type="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
     </internalComponentInstances>
     <internalComponentInstances
-        name="SimulationManagerInstance1"
+        name="SimulationManagerInstance2"
         type="//@deploymentModels.0/@internalComponents.2">
       <requiredCommunicationInstances
           name="InfSerPortReqReqCommunicationInstance1"
@@ -188,7 +189,7 @@
           name="StorageIntensiveUbuntuGermanyHost"/>
     </vms>
     <vmInstances
-        name="CoreIntensiveUbuntuGermanyVMInstance"
+        name="CoreIntensiveUbuntuGermanyVMInstance_1"
         type="//@deploymentModels.0/@vms.0">
       <providedHostInstances
           name="CoreIntensiveUbuntuGermanyHostProvidedHostInstance"
@@ -200,7 +201,7 @@
           href="upperware-models_fms_1.xmi#//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"/>
     </vmInstances>
     <vmInstances
-        name="CoreIntensiveUbuntuGermanyVMInstance1"
+        name="CoreIntensiveUbuntuGermanyVMInstance1_1"
         type="//@deploymentModels.0/@vms.0">
       <providedHostInstances
           name="CoreIntensiveUbuntuGermanyHostProvidedHostInstance1"
@@ -212,7 +213,7 @@
           href="upperware-models_fms_1.xmi#//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"/>
     </vmInstances>
     <vmInstances
-        name="StorageIntensiveUbuntuGermanyVMInstance"
+        name="StorageIntensiveUbuntuGermanyVMInstance_1"
         type="//@deploymentModels.0/@vms.2">
       <providedHostInstances
           name="StorageIntensiveUbuntuGermanyHostProvidedHostInstance"
@@ -224,7 +225,7 @@
           href="upperware-models_fms_1.xmi#//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"/>
     </vmInstances>
     <vmInstances
-        name="CPUIntensiveUbuntuGermanyVMInstance"
+        name="CPUIntensiveUbuntuGermanyVMInstance_1"
         type="//@deploymentModels.0/@vms.1">
       <providedHostInstances
           name="CPUIntensiveUbuntuGermanyHostProvidedHostInstance"
@@ -248,14 +249,14 @@
           href="upperware-models_fms_1.xmi#//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"/>
     </vmInstances>
     <vmInstances
-        name="CPUIntensiveUbuntuGermanyVMInstance1"
+        name="CPUIntensiveUbuntuGermanyVMInstance2"
         type="//@deploymentModels.0/@vms.1">
       <providedHostInstances
           name="CPUIntensiveUbuntuGermanyHostProvidedHostInstance1"
           type="//@deploymentModels.0/@vms.1/@providedHosts.0"/>
       <vmType
           href="upperware-models_fms_1.xmi#//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"/>
-	<vmTypeValue
+      <vmTypeValue
           xsi:type="type:EnumerateValue"
           href="upperware-models_fms_1.xmi#//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"/>
     </vmInstances>
@@ -356,32 +357,32 @@
         providedHost="//@deploymentModels.0/@vms.2/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.3/@requiredHost"/>
     <hostingInstances
-        name="VMtoSimulationManagerHostingInstance1"
+        name="VMtoSimulationManagerHostingInstance2"
         type="//@deploymentModels.0/@hostings.2"
         providedHostInstance="//@deploymentModels.0/@vmInstances.5/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.5/@requiredHostInstance"/>
     <hostingInstances
-        name="VMtoExperimentManagerHostingInstance"
+        name="VMtoExperimentManagerHostingInstance_1"
         type="//@deploymentModels.0/@hostings.0"
         providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
     <hostingInstances
-        name="VMtoInformationServiceHostingInstance"
+        name="VMtoInformationServiceHostingInstance_1"
         type="//@deploymentModels.0/@hostings.1"
         providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
     <hostingInstances
-        name="VMtoExperimentManagerHostingInstance1"
+        name="VMtoExperimentManagerHostingInstance2"
         type="//@deploymentModels.0/@hostings.0"
         providedHostInstance="//@deploymentModels.0/@vmInstances.4/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
     <hostingInstances
-        name="VMtoStorageManagerHostingInstance"
+        name="VMtoStorageManagerHostingInstance_1"
         type="//@deploymentModels.0/@hostings.3"
         providedHostInstance="//@deploymentModels.0/@vmInstances.2/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.3/@requiredHostInstance"/>
     <hostingInstances
-        name="VMtoSimulationManagerHostingInstance"
+        name="VMtoSimulationManagerHostingInstance_1"
         type="//@deploymentModels.0/@hostings.2"
         providedHostInstance="//@deploymentModels.0/@vmInstances.3/@providedHostInstances.0"
         requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.4/@requiredHostInstance"/>
@@ -433,7 +434,7 @@
         email="morzech@agh.edu.pl"
         firstName="Michal"
         lastName="Orzechowski">
-	<cloudCredentials
+      <cloudCredentials
           name="GWDG"
           cloudProvider="//@organisationModels.1/@provider"
           securityGroup=""

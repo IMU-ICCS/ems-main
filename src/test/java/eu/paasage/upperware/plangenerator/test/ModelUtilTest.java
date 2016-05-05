@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -19,8 +20,10 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentFactory;
@@ -43,6 +46,7 @@ import eu.paasage.camel.type.FloatsValue;
 import eu.paasage.camel.type.IntegerValue;
 import eu.paasage.camel.type.StringsValue;
 import eu.paasage.camel.type.TypeFactory;
+import eu.paasage.upperware.plangenerator.exception.ModelUtilException;
 import eu.paasage.upperware.plangenerator.util.ModelUtil;
 
 /**
@@ -51,10 +55,11 @@ import eu.paasage.upperware.plangenerator.util.ModelUtil;
  * @author Shirley Crompton
  * org	UK Science and Technology Facilities Council
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ModelUtilTest {
 	
 	/** Message logger */
-	private final static Logger LOG = Logger.getLogger(ModelUtilTest.class);
+	private final static Logger log = Logger.getLogger(ModelUtilTest.class);
 	/** Input file */
 	private static final String MODEL_FILE = "src" + File.separator + "test" + File.separator + "resources" + File.separator + "Scalarm_full.xmi";
 	/** Camel model */
@@ -97,15 +102,15 @@ public class ModelUtilTest {
 	@Test
 	//@Ignore
 	public void testALoadDeploymentModel() {
-		LOG.info("\n...testLoadDeploymentModel....");
+		log.info("\n...testLoadDeploymentModel....");
 		try{
-			LOG.debug("INPUTFILE is " + MODEL_FILE);
+			log.debug("INPUTFILE is " + MODEL_FILE);
 			DeploymentModel model = ModelUtil.loadDeploymentModel(MODEL_FILE);
 			assertNotNull("Failed to load Scalarm deployment model!",model);
 			//
 			assertEquals("incorrect deployment model loaded, got " + model.getName(),model.getName(), "ScalarmDeployment");
 		}catch (Exception e){
-			LOG.error("error loading  deployment model(" + MODEL_FILE + ") : " + e.getMessage());
+			log.error("error loading  deployment model(" + MODEL_FILE + ") : " + e.getMessage());
 			Assert.fail("Failed to load the deployment model!");
 		}		
 	}
@@ -117,15 +122,14 @@ public class ModelUtilTest {
 	//@Ignore
 	public void testBLoadCamelModel(){
 		try{
-			LOG.debug("INPUTFILE is " + MODEL_FILE);
-			CamelModel model = ModelUtil.loadCamelModel(MODEL_FILE);
-			assertNotNull("Failed to load Scalarm camel model!",model);
+			log.debug("INPUTFILE is " + MODEL_FILE);
+			cm = ModelUtil.loadCamelModel(MODEL_FILE);
+			assertNotNull("Failed to load Scalarm camel model!",cm);
 			//
-			assertEquals("incorrect camel model loaded, got " + model.getName(),model.getName(), "ScalarmModel");
-			cm = model;
+			assertEquals("incorrect camel model loaded, got " + cm.getName(),cm.getName(), "ScalarmModel");
+			//cm = model;
 		}catch (Exception e){
-			LOG.error("error loading  camel model(" + MODEL_FILE + ") : " + e.getMessage());
-			Assert.fail("Failed to load the camel model!");
+			Assert.fail("Failed to load the camel model " + e.getMessage());
 		}	
 	}
 	/**
@@ -137,7 +141,7 @@ public class ModelUtilTest {
 	@Test
 	//@Ignore
 	public void testConvertLocation(){
-		LOG.debug("Starting testConvertLocation.... ");
+		log.debug("Starting testConvertLocation.... ");
 		LocationRequirement lr = RequirementFactory.eINSTANCE.createLocationRequirement();
 		lr.setName("TEST_LOC_REC");
 		LocationModel locModel = LocationFactory.eINSTANCE.createLocationModel();
@@ -164,8 +168,8 @@ public class ModelUtilTest {
 	 */
 	@Test
 	//@Ignore
-	public void testAddGlobalRequirement(){
-		LOG.debug("Starting testAddGlobalRequirement.... ");
+	public void testDAddGlobalRequirement(){
+		log.debug("Starting testAddGlobalRequirement.... ");
 		//
 		VMRequirementSet global = DeploymentFactory.eINSTANCE.createVMRequirementSet();
 		global.setName("Global_requirements");
@@ -203,8 +207,8 @@ public class ModelUtilTest {
 	 */
 	@Test
 	//@Ignore
-	public void testSwitchValues(){
-		LOG.debug("Starting testSwitchValues.... ");
+	public void testESwitchValues(){
+		log.debug("Starting testSwitchValues.... ");
 		//
 		Enumeration enumeration = TypeFactory.eINSTANCE.createEnumeration();
 		EnumerateValue enumerateValue = TypeFactory.eINSTANCE.createEnumerateValue();
@@ -232,5 +236,69 @@ public class ModelUtilTest {
 		BoolValue boolValue = TypeFactory.eINSTANCE.createBoolValue();
 		boolValue.setValue(true);
 		assertEquals("Failed to switch boolValue!", String.valueOf(boolValue.isValue()), ModelUtil.switchValue(boolValue));	
+	}
+	/**
+	 * Test getting a count of instances by deployment type objects in a {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+	 * @see eu.paasage.upper.plangenerator.util.ModelUitl#getInstanceCountByTypes
+	 */
+	//@Ignore
+	@Test
+	public void testFCountTypeInstancesScalarmFull(){
+		log.debug("Starting count instance by type : Scarlam full deployment model.... ");
+		//
+		try {
+			DeploymentModel dm = cm.getDeploymentModels().get(0);
+			if(dm != null){
+				Map<String,Integer> result = ModelUtil.getInstanceCountByTypes(cm.getDeploymentModels().get(0));
+				assertTrue("Incorrect number of instance found for VM type : CoreIntensiveUbuntuGermany!", result.get("CoreIntensiveUbuntuGermany") == 1);
+				assertTrue("Incorrect number of instance found for hositng type : ExperimentManagerToCoreIntensiveUbuntuGermany !",result.get("ExperimentManagerToCoreIntensiveUbuntuGermany") == 1);
+				assertTrue("Incorrect number of instance found for internal component type : ExperimentManager!",result.get("ExperimentManager") == 1);
+				assertTrue("Incorrect number of instance found for internal component type : ExperimentManager!",result.get("StorageManager") == 1);				
+			}else{
+				log.error("failed to get deployment model....");
+			}
+		} catch (ModelUtilException e) {
+			// 
+			Assert.fail("Failed to load the camel model: " + e.getMessage());
+		}		
+	}
+	
+	/**
+	 * Test getting a count of instances by deployment type objects in a {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>}
+	 * @see eu.paasage.upper.plangenerator.util.ModelUitl#getInstanceCountByTypes
+	 */
+	@Test
+	public void testGCountTypeInstancesBewanFull(){
+		log.debug("Starting count instance by type : Bewan full deployment model.... ");
+		//
+		try {
+			CamelModel camel = ModelUtil.loadCamelModel("src" + File.separator + "test" + File.separator + "resources" + File.separator + "bewan-camel.xmi");
+			//
+			if(camel != null){
+				DeploymentModel model = camel.getDeploymentModels().get(1);
+				//log.debug("VMInstance count: " + model.getVmInstances().size());
+				//log.debug("CompInstance count: " + model.getInternalComponentInstances().size());
+				//log.debug("HostingInstance count: " + model.getHostingInstances().size());
+				//log.debug("CommInstance count: " + model.getCommunicationInstances().size());
+				Map<String,Integer> result = ModelUtil.getInstanceCountByTypes(model);
+				assertTrue("Incorrect number of instance found for VM type : MediumComputeLowStorageUbuntu!", result.get("MediumComputeLowStorageUbuntu") == 2);
+				assertTrue("Incorrect number of instance found for VM type : MediumComputeLowStorageUbuntu!", result.get("MediumComputeMediumStorageUbuntu") == 1);				
+				assertTrue("Incorrect number of instance found for internal component type : WebApplication!",result.get("WebApplication") == 1);
+				assertTrue("Incorrect number of instance found for internal component type : DatabaseComp!",result.get("DatabaseComp") == 1);				
+				assertTrue("Incorrect number of instance found for internal component type : LoadBalancer!",result.get("LoadBalancer") == 1);				
+				assertTrue("Incorrect number of instance found for hosting type : WebApplication_to_ubuntu!",result.get("WebApplication_to_ubuntu") == 1);
+				assertTrue("Incorrect number of instance found for hosting type : DatabaseComp_to_ubuntu!",result.get("DatabaseComp_to_ubuntu") == 1);
+				assertTrue("Incorrect number of instance found for hosting type : LoadBalancer_to_ubuntu!",result.get("LoadBalancer_to_ubuntu") == 1);
+				assertTrue("Incorrect number of instance found for communication type : WEBAPPLICATIONTODATABASECOMPCOMMUNICATION!",result.get("WEBAPPLICATIONTODATABASECOMPCOMMUNICATION") == 1);
+				assertTrue("Incorrect number of instance found for communication type : WEBAPPLICATIONTOLOADBALANCERCOMMUNICATION!",result.get("WEBAPPLICATIONTOLOADBALANCERCOMMUNICATION") == 1);								
+			}else{
+				log.error("failed to get deployment model....");
+			}
+		} catch (Exception e) {
+			// 
+			Assert.fail("Exception : " + e.getMessage());
+		}
+		
+		
 	}
 }

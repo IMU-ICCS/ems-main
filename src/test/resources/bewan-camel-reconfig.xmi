@@ -21,100 +21,53 @@
     <internalComponents
         name="WebApplication">
       <providedCommunications
-          name="WebApplicationProv"
-          portNumber="20001"/>
+          name="WEBAPPLICATIONPROV"
+          portNumber="80"/>
       <configurations
           name="WebApplicationConf"
-          downloadCommand="sudo mkdir -p ~/tmp &amp;&amp; cd ~/tmp &amp;&amp; sudo wget -O archive.zip http://git.cetic.be/paasage/enterprise-service-application/repository/archive.zip?ref=dev &amp;&amp; sudo unzip archive.zip &amp;&amp; sudo rm archive.zip &amp;&amp; sudo mv enterprise-service-application.git/deploy/ deploy &amp;&amp; sudo rm -r enterprise-service-application.git"
-          uploadCommand=""
-          installCommand="cd ~/tmp &amp;&amp; sudo bash deploy/scripts/project.sh -e prod"
-          configureCommand=""
-          startCommand="sudo service apache2 start &amp;&amp; sudo bash deploy/commands/project/startCommand.sh"
-          stopCommand="sudo service apache2 stop &amp;&amp; sudo bash deploy/commands/project/stopCommand.sh"/>
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/webApplication.sh -e prod"
+          startCommand="apachectl -DFOREGROUND"
+          stopCommand="apachectl stop"/>
       <requiredCommunications
-          name="DatabaseCompReq"
-          portNumber="10001"
-          isMandatory="true"/>
-      <requiredCommunications
-          name="LoadBalancerReq"
-          portNumber="30001"
+          name="DATABASECOMPREQ"
+          portNumber="3306"
           isMandatory="true"/>
       <requiredHost
-          name="MediumComputeLowStorageUbuntuReqSet"/>
+          name="WebApplicationReqHost"/>
     </internalComponents>
     <internalComponents
         name="DatabaseComp">
       <providedCommunications
-          name="DatabaseCompProv"
-          portNumber="10001"/>
+          name="DATABASECOMPPROV"
+          portNumber="3306"/>
       <configurations
           name="DatabaseCompConfig"
-          downloadCommand="sudo mkdir -p ~/tmp &amp;&amp; cd ~/tmp &amp;&amp; sudo wget http://git.cetic.be/paasage/enterprise-service-application/raw/master/deploy/scripts/db.sh"
-          uploadCommand=""
-          installCommand="cd ~/tmp &amp;&amp; sudo bash db.sh -e prod"
-          configureCommand=""
-          startCommand="sudo service mysql start"
-          stopCommand="sudo service mysql stop"/>
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/databaseComp.sh -e prod"
+          startCommand="mysqld_safe --log-error=/var/log/mysql.err"
+          stopCommand="mysqladmin -uroot -proot shutdown"/>
       <requiredHost
-          name="MediumComputeMediumStorageUbuntuReqSet"/>
+          name="DatabaseCompReqHost"/>
     </internalComponents>
     <internalComponents
         name="LoadBalancer">
       <providedCommunications
-          name="LoadBalancerProv"
-          portNumber="30001"/>
+          name="LOADBALANCERPROV"
+          portNumber="80"/>
       <configurations
           name="LoadBalancerConfiguration"
-          downloadCommand="sudo apt-get install git &amp;&amp; cd /usr &amp;&amp; source /etc/Paasage/bewan.credential.sh &amp;&amp; git clone http://$username:$password@git.cetic.be/paasage/enterprise-service-application.git &amp;&amp; username='' &amp;&amp; password=''"
-          installCommand="cd ~/tmp &amp;&amp; sudo bash deploy/scripts/loadBalancer.sh -e prod"
-          startCommand="sudo service apache2 start"
-          stopCommand="sudo service apache2 stop"/>
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/loadBalancer.sh -e prod"
+          startCommand="apachectl -DFOREGROUND"
+          stopCommand="apachectl stop"/>
       <requiredCommunications
-          name="WebApplicationReq"
-          portNumber="20001"
+          name="WEBAPPLICATIONREQ"
+          portNumber="80"
           isMandatory="true"/>
       <requiredHost
-          name="MediumComputeLowStorageUbuntuReqSet"/>
+          name="LoadBalancerReqHost"/>
     </internalComponents>
-    <internalComponentInstances
-        name="WebApplicationInstance_0"
-        type="//@deploymentModels.0/@internalComponents.0">
-      <providedCommunicationInstances
-          name="WebApplicationProvProvidedCommunicationInstance_1"
-          type="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"/>
-      <requiredCommunicationInstances
-          name="DatabaseCompReqReqCommunicationInstance_2"
-          type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"/>
-      <requiredCommunicationInstances
-          name="LoadBalancerReqReqCommunicationInstance_3"
-          type="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"/>
-      <requiredHostInstance
-          name="WebApplicationRequiredHostInstance_4"
-          type="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
-    </internalComponentInstances>
-    <internalComponentInstances
-        name="DatabaseCompInstance_7"
-        type="//@deploymentModels.0/@internalComponents.1">
-      <providedCommunicationInstances
-          name="DatabaseCompProvProvidedCommunicationInstance_8"
-          type="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"/>
-      <requiredHostInstance
-          name="DatabaseCompRequiredHostInstance_9"
-          type="//@deploymentModels.0/@internalComponents.1/@requiredHost"/>
-    </internalComponentInstances>
-    <internalComponentInstances
-        name="LoadBalancerInstance_12"
-        type="//@deploymentModels.0/@internalComponents.2">
-      <providedCommunicationInstances
-          name="LoadBalancerProvProvidedCommunicationInstance_13"
-          type="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
-      <requiredCommunicationInstances
-          name="WebApplicationReqReqCommunicationInstance_14"
-          type="//@deploymentModels.0/@internalComponents.2/@requiredCommunications.0"/>
-      <requiredHostInstance
-          name="LoadBalancerRequiredHostInstance_15"
-          type="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
-    </internalComponentInstances>
     <vms name="MediumComputeLowStorageUbuntu"
         vmRequirementSet="//@deploymentModels.0/@vmRequirementSets.0">
       <providedHosts
@@ -125,65 +78,22 @@
       <providedHosts
           name="MediumComputeMediumStorageUbuntu"/>
     </vms>
-    <vmInstances
-        name="MediumComputeLowStorageUbuntuVMInstance_5"
-        type="//@deploymentModels.0/@vms.0"
-        vmType="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-        vmTypeValue="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value">
-      <providedHostInstances
-          name="MediumComputeLowStorageUbuntuProvidedHostInstance_6"
-          type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
-    </vmInstances>
-    <vmInstances
-        name="MediumComputeMediumStorageUbuntuVMInstance_10"
-        type="//@deploymentModels.0/@vms.1"
-        vmType="//@providerModels.1/@rootFeature/@subFeatures.0/@attributes.0"
-        vmTypeValue="//@providerModels.1/@rootFeature/@subFeatures.0/@attributes.0/@value">
-      <providedHostInstances
-          name="MediumComputeMediumStorageUbuntuProvidedHostInstance_11"
-          type="//@deploymentModels.0/@vms.1/@providedHosts.0"/>
-    </vmInstances>
-    <vmInstances
-        name="MediumComputeLowStorageUbuntuVMInstance_16"
-        type="//@deploymentModels.0/@vms.0"
-        vmType="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-        vmTypeValue="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value">
-      <providedHostInstances
-          name="MediumComputeLowStorageUbuntuProvidedHostInstance_17"
-          type="//@deploymentModels.0/@vms.0/@providedHosts.0"/>
-    </vmInstances>
     <communications
-        name="WebApplicationToDatabaseCompCommunication"
+        name="WEBAPPLICATIONTODATABASECOMPCOMMUNICATION"
         type="REMOTE"
         providedCommunication="//@deploymentModels.0/@internalComponents.1/@providedCommunications.0"
         requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.0"/>
     <communications
-        name="WebApplicationToLoadBalancerCommunication"
-        type="REMOTE"
-        providedCommunication="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"
-        requiredCommunication="//@deploymentModels.0/@internalComponents.0/@requiredCommunications.1"/>
-    <communications
-        name="LoadBalancerToWebApplicationCommunication"
+        name="WEBAPPLICATIONTOLOADBALANCERCOMMUNICATION"
         type="REMOTE"
         providedCommunication="//@deploymentModels.0/@internalComponents.0/@providedCommunications.0"
-        requiredCommunication="//@deploymentModels.0/@internalComponents.2/@requiredCommunications.0"/>
-    <communicationInstances
-        name="WebApplicationToDatabaseCompCommunicationInstance"
-        type="//@deploymentModels.0/@communications.0"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.1/@providedCommunicationInstances.0"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.0"/>
-    <communicationInstances
-        name="WebApplicationToLoadBalancerCommunicationInstance"
-        type="//@deploymentModels.0/@communications.1"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@providedCommunicationInstances.0"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredCommunicationInstances.1"/>
-    <communicationInstances
-        name="LoadBalancerToWebApplicationCommunicationInstance"
-        type="//@deploymentModels.0/@communications.2"
-        providedCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.0/@providedCommunicationInstances.0"
-        requiredCommunicationInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredCommunicationInstances.0"/>
+        requiredCommunication="//@deploymentModels.0/@internalComponents.2/@requiredCommunications.0">
+      <requiredPortConfiguration
+          name="WebApplicationToLoadBalancerReqConf"
+          startCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/startCommunicationCommand.sh -l /tmp/start.log -e prod"/>
+    </communications>
     <hostings
-        name="WebApplication_to_ubuntu "
+        name="WebApplication_to_ubuntu"
         providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.0/@requiredHost"/>
     <hostings
@@ -194,21 +104,382 @@
         name="LoadBalancer_to_ubuntu"
         providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0"
         requiredHost="//@deploymentModels.0/@internalComponents.2/@requiredHost"/>
+    <vmRequirementSets
+        name="MediumComputeLowStorageUbuntuReqSet"
+        locationRequirement="//@requirementModels.0/@requirements.3"
+        quantitativeHardwareRequirement="//@requirementModels.0/@requirements.1"
+        osOrImageRequirement="//@requirementModels.0/@requirements.0"/>
+    <vmRequirementSets
+        name="MediumComputeMediumStorageUbuntuReqSet"
+        locationRequirement="//@requirementModels.0/@requirements.3"
+        quantitativeHardwareRequirement="//@requirementModels.0/@requirements.2"
+        osOrImageRequirement="//@requirementModels.0/@requirements.0"/>
+  </deploymentModels>
+  <deploymentModels
+      name="BewanDeployment">
+    <internalComponents
+        name="WebApplication">
+      <providedCommunications
+          name="WEBAPPLICATIONPROV"
+          portNumber="80"/>
+      <configurations
+          name="WebApplicationConf"
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/webApplication.sh -e prod"
+          startCommand="apachectl -DFOREGROUND"
+          stopCommand="apachectl stop"/>
+      <requiredCommunications
+          name="DATABASECOMPREQ"
+          portNumber="3306"
+          isMandatory="true"/>
+      <requiredHost
+          name="WebApplicationReqHost"/>
+    </internalComponents>
+    <internalComponents
+        name="DatabaseComp">
+      <providedCommunications
+          name="DATABASECOMPPROV"
+          portNumber="3306"/>
+      <configurations
+          name="DatabaseCompConfig"
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/databaseComp.sh -e prod"
+          startCommand="mysqld_safe --log-error=/var/log/mysql.err"
+          stopCommand="mysqladmin -uroot -proot shutdown"/>
+      <requiredHost
+          name="DatabaseCompReqHost"/>
+    </internalComponents>
+    <internalComponents
+        name="LoadBalancer">
+      <providedCommunications
+          name="LOADBALANCERPROV"
+          portNumber="80"/>
+      <configurations
+          name="LoadBalancerConfiguration"
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/loadBalancer.sh -e prod"
+          startCommand="apachectl -DFOREGROUND"
+          stopCommand="apachectl stop"/>
+      <requiredCommunications
+          name="WEBAPPLICATIONREQ"
+          portNumber="80"
+          isMandatory="true"/>
+      <requiredHost
+          name="LoadBalancerReqHost"/>
+    </internalComponents>
+    <internalComponentInstances
+        name="WebApplicationInstance_0"
+        type="//@deploymentModels.1/@internalComponents.0">
+      <providedCommunicationInstances
+          name="WEBAPPLICATIONPROVProvidedCommunicationInstance_1"
+          type="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
+      <requiredCommunicationInstances
+          name="DATABASECOMPREQReqCommunicationInstance_2"
+          type="//@deploymentModels.1/@internalComponents.0/@requiredCommunications.0"/>
+      <requiredHostInstance
+          name="WebApplicationRequiredHostInstance_3"
+          type="//@deploymentModels.1/@internalComponents.0/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="DatabaseCompInstance_6"
+        type="//@deploymentModels.1/@internalComponents.1">
+      <providedCommunicationInstances
+          name="DATABASECOMPPROVProvidedCommunicationInstance_7"
+          type="//@deploymentModels.1/@internalComponents.1/@providedCommunications.0"/>
+      <requiredHostInstance
+          name="DatabaseCompRequiredHostInstance_8"
+          type="//@deploymentModels.1/@internalComponents.1/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="LoadBalancerInstance_11"
+        type="//@deploymentModels.1/@internalComponents.2">
+      <providedCommunicationInstances
+          name="LOADBALANCERPROVProvidedCommunicationInstance_12"
+          type="//@deploymentModels.1/@internalComponents.2/@providedCommunications.0"/>
+      <requiredCommunicationInstances
+          name="WEBAPPLICATIONREQReqCommunicationInstance_13"
+          type="//@deploymentModels.1/@internalComponents.2/@requiredCommunications.0"/>
+      <requiredHostInstance
+          name="LoadBalancerRequiredHostInstance_14"
+          type="//@deploymentModels.1/@internalComponents.2/@requiredHost"/>
+    </internalComponentInstances>
+    <vms name="MediumComputeLowStorageUbuntu"
+        vmRequirementSet="//@deploymentModels.1/@vmRequirementSets.0">
+      <providedHosts
+          name="MediumComputeLowStorageUbuntu"/>
+    </vms>
+    <vms name="MediumComputeMediumStorageUbuntu"
+        vmRequirementSet="//@deploymentModels.1/@vmRequirementSets.1">
+      <providedHosts
+          name="MediumComputeMediumStorageUbuntu"/>
+    </vms>
+    <vmInstances
+        name="MediumComputeLowStorageUbuntuVMInstance_4"
+        type="//@deploymentModels.1/@vms.0"
+        vmType="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+        vmTypeValue="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"
+        ip="">
+      <providedHostInstances
+          name="MediumComputeLowStorageUbuntuProvidedHostInstance_5"
+          type="//@deploymentModels.1/@vms.0/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="MediumComputeMediumStorageUbuntuVMInstance_9"
+        type="//@deploymentModels.1/@vms.1"
+        vmType="//@providerModels.1/@rootFeature/@subFeatures.0/@attributes.0"
+        vmTypeValue="//@providerModels.1/@rootFeature/@subFeatures.0/@attributes.0/@value">
+      <providedHostInstances
+          name="MediumComputeMediumStorageUbuntuProvidedHostInstance_10"
+          type="//@deploymentModels.1/@vms.1/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="MediumComputeLowStorageUbuntuVMInstance_15"
+        type="//@deploymentModels.1/@vms.0"
+        vmType="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+        vmTypeValue="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value">
+      <providedHostInstances
+          name="MediumComputeLowStorageUbuntuProvidedHostInstance_16"
+          type="//@deploymentModels.1/@vms.0/@providedHosts.0"/>
+    </vmInstances>
+    <communications
+        name="WEBAPPLICATIONTODATABASECOMPCOMMUNICATION"
+        type="REMOTE"
+        providedCommunication="//@deploymentModels.1/@internalComponents.1/@providedCommunications.0"
+        requiredCommunication="//@deploymentModels.1/@internalComponents.0/@requiredCommunications.0"/>
+    <communications
+        name="WEBAPPLICATIONTOLOADBALANCERCOMMUNICATION"
+        type="REMOTE"
+        providedCommunication="//@deploymentModels.1/@internalComponents.0/@providedCommunications.0"
+        requiredCommunication="//@deploymentModels.1/@internalComponents.2/@requiredCommunications.0">
+      <requiredPortConfiguration
+          name="WebApplicationToLoadBalancerReqConf"
+          startCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/startCommunicationCommand.sh -l /tmp/start.log -e prod"/>
+    </communications>
+    <communicationInstances
+        name="WEBAPPLICATIONTODATABASECOMPCOMMUNICATIONInstance_0"
+        type="//@deploymentModels.1/@communications.0"
+        providedCommunicationInstance="//@deploymentModels.1/@internalComponentInstances.1/@providedCommunicationInstances.0"
+        requiredCommunicationInstance="//@deploymentModels.1/@internalComponentInstances.0/@requiredCommunicationInstances.0"/>
+    <communicationInstances
+        name="WEBAPPLICATIONTOLOADBALANCERCOMMUNICATIONInstance_0"
+        type="//@deploymentModels.1/@communications.1"
+        providedCommunicationInstance="//@deploymentModels.1/@internalComponentInstances.0/@providedCommunicationInstances.0"
+        requiredCommunicationInstance="//@deploymentModels.1/@internalComponentInstances.2/@requiredCommunicationInstances.0"/>
+    <hostings
+        name="WebApplication_to_ubuntu"
+        providedHost="//@deploymentModels.1/@vms.0/@providedHosts.0"
+        requiredHost="//@deploymentModels.1/@internalComponents.0/@requiredHost"/>
+    <hostings
+        name="DatabaseComp_to_ubuntu"
+        providedHost="//@deploymentModels.1/@vms.1/@providedHosts.0"
+        requiredHost="//@deploymentModels.1/@internalComponents.1/@requiredHost"/>
+    <hostings
+        name="LoadBalancer_to_ubuntu"
+        providedHost="//@deploymentModels.1/@vms.0/@providedHosts.0"
+        requiredHost="//@deploymentModels.1/@internalComponents.2/@requiredHost"/>
     <hostingInstances
         name="VMtoWebApplicationHostingInstance"
-        type="//@deploymentModels.0/@hostings.0"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.0/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.0/@requiredHostInstance"/>
+        type="//@deploymentModels.1/@hostings.0"
+        providedHostInstance="//@deploymentModels.1/@vmInstances.0/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.1/@internalComponentInstances.0/@requiredHostInstance"/>
     <hostingInstances
         name="VMtoDatabaseCompHostingInstance"
-        type="//@deploymentModels.0/@hostings.1"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.1/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.1/@requiredHostInstance"/>
+        type="//@deploymentModels.1/@hostings.1"
+        providedHostInstance="//@deploymentModels.1/@vmInstances.1/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.1/@internalComponentInstances.1/@requiredHostInstance"/>
     <hostingInstances
         name="VMtoLoadBalancerHostingInstance"
-        type="//@deploymentModels.0/@hostings.2"
-        providedHostInstance="//@deploymentModels.0/@vmInstances.2/@providedHostInstances.0"
-        requiredHostInstance="//@deploymentModels.0/@internalComponentInstances.2/@requiredHostInstance"/>
+        type="//@deploymentModels.1/@hostings.2"
+        providedHostInstance="//@deploymentModels.1/@vmInstances.2/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.1/@internalComponentInstances.2/@requiredHostInstance"/>
+    <vmRequirementSets
+        name="MediumComputeLowStorageUbuntuReqSet"
+        locationRequirement="//@requirementModels.0/@requirements.3"
+        quantitativeHardwareRequirement="//@requirementModels.0/@requirements.1"
+        osOrImageRequirement="//@requirementModels.0/@requirements.0"/>
+    <vmRequirementSets
+        name="MediumComputeMediumStorageUbuntuReqSet"
+        locationRequirement="//@requirementModels.0/@requirements.3"
+        quantitativeHardwareRequirement="//@requirementModels.0/@requirements.2"
+        osOrImageRequirement="//@requirementModels.0/@requirements.0"/>
+  </deploymentModels>
+  <deploymentModels
+      name="BewanDeploymentNameChanged">
+    <internalComponents
+        name="WebApplication">
+      <providedCommunications
+          name="WEBAPPLICATIONPROV"
+          portNumber="80"/>
+      <configurations
+          name="WebApplicationConf"
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/webApplication.sh -e prod"
+          startCommand="apachectl -DFOREGROUND"
+          stopCommand="apachectl stop"/>
+      <requiredCommunications
+          name="DATABASECOMPREQ"
+          portNumber="3306"
+          isMandatory="true"/>
+      <requiredHost
+          name="WebApplicationReqHost"/>
+    </internalComponents>
+    <internalComponents
+        name="DatabaseComp">
+      <providedCommunications
+          name="DATABASECOMPPROV"
+          portNumber="3306"/>
+      <configurations
+          name="DatabaseCompConfig"
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/databaseComp.sh -e prod"
+          startCommand="mysqld_safe --log-error=/var/log/mysql.err"
+          stopCommand="mysqladmin -uroot -proot shutdown"/>
+      <requiredHost
+          name="DatabaseCompReqHost"/>
+    </internalComponents>
+    <internalComponents
+        name="LoadBalancer">
+      <providedCommunications
+          name="LOADBALANCERPROV"
+          portNumber="80"/>
+      <configurations
+          name="LoadBalancerConfiguration"
+          downloadCommand="apt-get install -y git &amp;&amp; cd /usr &amp;&amp; git clone http://paasage_demo:PaaSageReview@git.cetic.be/paasage/enterprise_service_application.git"
+          installCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/loadBalancer.sh -e prod"
+          startCommand="apachectl -DFOREGROUND"
+          stopCommand="apachectl stop"/>
+      <requiredCommunications
+          name="WEBAPPLICATIONREQ"
+          portNumber="80"
+          isMandatory="true"/>
+      <requiredHost
+          name="LoadBalancerReqHost"/>
+    </internalComponents>
+    <internalComponentInstances
+        name="WebApplicationInstance_20"
+        type="//@deploymentModels.2/@internalComponents.0">
+      <providedCommunicationInstances
+          name="WEBAPPLICATIONPROVProvidedCommunicationInstance_21"
+          type="//@deploymentModels.0/@internalComponents.2/@providedCommunications.0"/>
+      <requiredCommunicationInstances
+          name="DATABASECOMPREQReqCommunicationInstance_22"
+          type="//@deploymentModels.2/@internalComponents.0/@requiredCommunications.0"/>
+      <requiredHostInstance
+          name="WebApplicationRequiredHostInstance_23"
+          type="//@deploymentModels.2/@internalComponents.0/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="DatabaseCompInstance_26"
+        type="//@deploymentModels.2/@internalComponents.1">
+      <providedCommunicationInstances
+          name="DATABASECOMPPROVProvidedCommunicationInstance_27"
+          type="//@deploymentModels.2/@internalComponents.1/@providedCommunications.0"/>
+      <requiredHostInstance
+          name="DatabaseCompRequiredHostInstance_28"
+          type="//@deploymentModels.2/@internalComponents.1/@requiredHost"/>
+    </internalComponentInstances>
+    <internalComponentInstances
+        name="LoadBalancerInstance_211"
+        type="//@deploymentModels.2/@internalComponents.2">
+      <providedCommunicationInstances
+          name="LOADBALANCERPROVProvidedCommunicationInstance_212"
+          type="//@deploymentModels.2/@internalComponents.2/@providedCommunications.0"/>
+      <requiredCommunicationInstances
+          name="WEBAPPLICATIONREQReqCommunicationInstance_213"
+          type="//@deploymentModels.2/@internalComponents.2/@requiredCommunications.0"/>
+      <requiredHostInstance
+          name="LoadBalancerRequiredHostInstance_214"
+          type="//@deploymentModels.2/@internalComponents.2/@requiredHost"/>
+    </internalComponentInstances>
+    <vms name="MediumComputeLowStorageUbuntu"
+        vmRequirementSet="//@deploymentModels.2/@vmRequirementSets.0">
+      <providedHosts
+          name="MediumComputeLowStorageUbuntu"/>
+    </vms>
+    <vms name="MediumComputeMediumStorageUbuntu"
+        vmRequirementSet="//@deploymentModels.2/@vmRequirementSets.1">
+      <providedHosts
+          name="MediumComputeMediumStorageUbuntu"/>
+    </vms>
+    <vmInstances
+        name="MediumComputeLowStorageUbuntuVMInstance_24"
+        type="//@deploymentModels.2/@vms.0"
+        vmType="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+        vmTypeValue="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value"
+        ip="">
+      <providedHostInstances
+          name="MediumComputeLowStorageUbuntuProvidedHostInstance_25"
+          type="//@deploymentModels.2/@vms.0/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="MediumComputeMediumStorageUbuntuVMInstance_29"
+        type="//@deploymentModels.2/@vms.1"
+        vmType="//@providerModels.1/@rootFeature/@subFeatures.0/@attributes.0"
+        vmTypeValue="//@providerModels.1/@rootFeature/@subFeatures.0/@attributes.0/@value">
+      <providedHostInstances
+          name="MediumComputeMediumStorageUbuntuProvidedHostInstance_210"
+          type="//@deploymentModels.2/@vms.1/@providedHosts.0"/>
+    </vmInstances>
+    <vmInstances
+        name="MediumComputeLowStorageUbuntuVMInstance_215"
+        type="//@deploymentModels.2/@vms.0"
+        vmType="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+        vmTypeValue="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0/@value">
+      <providedHostInstances
+          name="MediumComputeLowStorageUbuntuProvidedHostInstance_216"
+          type="//@deploymentModels.2/@vms.0/@providedHosts.0"/>
+    </vmInstances>
+    <communications
+        name="WEBAPPLICATIONTODATABASECOMPCOMMUNICATION"
+        type="REMOTE"
+        providedCommunication="//@deploymentModels.2/@internalComponents.1/@providedCommunications.0"
+        requiredCommunication="//@deploymentModels.2/@internalComponents.0/@requiredCommunications.0"/>
+    <communications
+        name="WEBAPPLICATIONTOLOADBALANCERCOMMUNICATION"
+        type="REMOTE"
+        providedCommunication="//@deploymentModels.2/@internalComponents.0/@providedCommunications.0"
+        requiredCommunication="//@deploymentModels.2/@internalComponents.2/@requiredCommunications.0">
+      <requiredPortConfiguration
+          name="WebApplicationToLoadBalancerReqConf"
+          startCommand="cd /usr/enterprise_service_application &amp;&amp; bash deploy/scripts/startCommunicationCommand.sh -l /tmp/start.log -e prod"/>
+    </communications>
+    <communicationInstances
+        name="WEBAPPLICATIONTODATABASECOMPCOMMUNICATIONInstance_0"
+        type="//@deploymentModels.2/@communications.0"
+        providedCommunicationInstance="//@deploymentModels.2/@internalComponentInstances.1/@providedCommunicationInstances.0"
+        requiredCommunicationInstance="//@deploymentModels.2/@internalComponentInstances.0/@requiredCommunicationInstances.0"/>
+    <communicationInstances
+        name="WEBAPPLICATIONTOLOADBALANCERCOMMUNICATIONInstance_0"
+        type="//@deploymentModels.2/@communications.1"
+        providedCommunicationInstance="//@deploymentModels.2/@internalComponentInstances.0/@providedCommunicationInstances.0"
+        requiredCommunicationInstance="//@deploymentModels.2/@internalComponentInstances.2/@requiredCommunicationInstances.0"/>
+    <hostings
+        name="WebApplication_to_ubuntu"
+        providedHost="//@deploymentModels.2/@vms.0/@providedHosts.0"
+        requiredHost="//@deploymentModels.2/@internalComponents.0/@requiredHost"/>
+    <hostings
+        name="DatabaseComp_to_ubuntu"
+        providedHost="//@deploymentModels.2/@vms.1/@providedHosts.0"
+        requiredHost="//@deploymentModels.2/@internalComponents.1/@requiredHost"/>
+    <hostings
+        name="LoadBalancer_to_ubuntu"
+        providedHost="//@deploymentModels.2/@vms.0/@providedHosts.0"
+        requiredHost="//@deploymentModels.2/@internalComponents.2/@requiredHost"/>
+    <hostingInstances
+        name="VMtoWebApplicationHostingInstance2"
+        type="//@deploymentModels.2/@hostings.0"
+        providedHostInstance="//@deploymentModels.2/@vmInstances.0/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.2/@internalComponentInstances.0/@requiredHostInstance"/>
+    <hostingInstances
+        name="VMtoDatabaseCompHostingInstance2"
+        type="//@deploymentModels.2/@hostings.1"
+        providedHostInstance="//@deploymentModels.2/@vmInstances.1/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.2/@internalComponentInstances.1/@requiredHostInstance"/>
+    <hostingInstances
+        name="VMtoLoadBalancerHostingInstance2"
+        type="//@deploymentModels.2/@hostings.2"
+        providedHostInstance="//@deploymentModels.2/@vmInstances.2/@providedHostInstances.0"
+        requiredHostInstance="//@deploymentModels.2/@internalComponentInstances.2/@requiredHostInstance"/>
     <vmRequirementSets
         name="MediumComputeLowStorageUbuntuReqSet"
         locationRequirement="//@requirementModels.0/@requirements.3"
@@ -221,16 +492,16 @@
         osOrImageRequirement="//@requirementModels.0/@requirements.0"/>
   </deploymentModels>
   <locationModels
-      name="bewan app location">
+      name="bewan_app_location">
     <regions
         id="EU"
         name="Europe"/>
   </locationModels>
   <locationModels
-      name="OmistackLocation">
+      name="FlexiantLocation">
     <countries
-        id="DE"
-        name="Germany"/>
+        id="UK"
+        name="United Kingdom"/>
   </locationModels>
   <locationModels
       name="FlexiantLocation">
@@ -239,13 +510,14 @@
         name="United Kingdom"/>
   </locationModels>
   <metricModels
-      name="bewan application metrics">
+      name="bewan_application_metrics">
     <contexts
         xsi:type="metric:RawMetricContext"
-        name="CPU context"
+        name="CPU_context"
         component="//@deploymentModels.0/@internalComponents.0"
         application="//@applications.0"
         metric="//@metricModels.0/@metrics.0"
+        schedule="//@metricModels.0/@schedules.0"
         sensor="//@metricModels.0/@sensors.0"/>
     <metrics
         xsi:type="metric:RawMetric"
@@ -256,13 +528,18 @@
         property="//@metricModels.0/@properties.0"/>
     <conditions
         xsi:type="metric:MetricCondition"
-        name="CPU metric condition"
+        name="CPU_metric_condition"
         threshold="30.0"
         metricContext="//@metricModels.0/@contexts.0"/>
     <properties
-        name="CPU"
+        name="CPU_Property"
         type="MEASURABLE"
         sensors="//@metricModels.0/@sensors.0"/>
+    <schedules
+        name="CPU_Schedule"
+        type="FIXED_DELAY"
+        unit="//@unitModels.0/@units.2"
+        interval="1"/>
     <sensors
         name="CPU_Sensor"
         configuration="cpu_usage;de.uniulm.omi.cloudiator.visor.sensors.CpuUsageSensor"/>
@@ -270,7 +547,7 @@
   <organisationModels
       name="bewanOrganisation">
     <organisation
-        name="bewan sprl"
+        name="bewan_sprl"
         www="www.bewan.be"
         postalAddress="Dreve Richelle 161 L bte 46"
         email="info@bewan.be"/>
@@ -279,36 +556,34 @@
         firstName="Franky"
         lastName="Vanraes"
         requirementModels="//@requirementModels.0">
-      <cloudCredentials
-          name="Amazon Credentials"
-          cloudProvider="//@organisationModels.1/@provider"/>
       <paasageCredentials
           password="vanraesf"/>
     </users>
   </organisationModels>
   <organisationModels
-      name="Amazon Organisation Model">
+      name="RP_ProviderRequirements">
     <provider
-        name="Amazon Cloud Provider"
-        www="aws.amazon.com"
-        email="support@amazon.com"
+        name="GlobalProviderRequirements"
+        www=""
+        postalAddress=""
+        email=""
         public="true"
         PaaS="true"
         IaaS="true"/>
   </organisationModels>
   <organisationModels
-      name="OmistackOrganisation">
+      name="FlexiantOrganisation">
     <provider
-        name="omistack"
-        www="www.gwdg.de"
-        postalAddress="GWDG, Am Fa&#xdf;berg 11, 37077 G&#xf6;ttingen, Germany"
-        email="gwdg@gwdg.de"
+        name="Flexiant"
+        www="www.flexiant.com"
+        postalAddress="Flexiant Limited, Geddes House, Kirkton North, Livingston, EH54 6GU, UK"
+        email="contact@flexiant.com"
         public="true"
         IaaS="true"
         providerModel="//@providerModels.0"/>
     <dataCentres
-        name="OmistackDataCentre"
-        codeName="gwdg"
+        name="FlexiantDataCentre"
+        codeName="flexiant"
         location="//@locationModels.1/@countries.0"/>
   </organisationModels>
   <organisationModels
@@ -327,255 +602,115 @@
         location="//@locationModels.2/@countries.0"/>
   </organisationModels>
   <providerModels
-      name="Omistack-EU-1447858908175">
+      name="Flexiant-EU-1448965083075#MediumComputeLowStorageUbuntu">
     <constraints
         xsi:type="provider:Implies"
-        name="M1.SMALL_Constraint_Mapping"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.small"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="2048"/>
-      </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.small"/>
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
         <toValue
             xsi:type="type:IntegerValue"
-            value="1"/>
+            value="4096"/>
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.small"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="20"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.small"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/2"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.LARGE_Constraint_Mapping"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.large"
-            value="1"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="8192"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.large"
-            value="1"/>
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
         <toValue
             xsi:type="type:IntegerValue"
             value="4"/>
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.large"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="100"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
             value="1"/>
         <toValue
             xsi:type="type:IntegerValue"
-            value="80"/>
+            value="2048"/>
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.large"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
             value="1"/>
         <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/4"
-            value="1"/>
+            xsi:type="type:IntegerValue"
+            value="2"/>
       </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97_Constraint_Mapping_OS_CREDENTIALS"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
             value="1"/>
         <toValue
-            xsi:type="type:EnumerateValue"
-            name="Ubuntu Server 14.04.2 AMD64 LTS"/>
+            xsi:type="type:IntegerValue"
+            value="21"/>
       </attributeConstraints>
       <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
-            value="1"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="NIX"
-            value="1"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.7">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
-            value="1"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="AMD64"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
-            value="1"/>
-        <toValue
-            xsi:type="type:StringsValue"
-            value="ubuntu"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
             value="1"/>
         <toValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+            value="1"/>
       </attributeConstraints>
     </constraints>
     <constraints
         xsi:type="provider:Implies"
-        name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938_Constraint_Mapping_OS_CREDENTIALS"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.0">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="Windows2012R2_PW_No_Firewall_0.2"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.6">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="WINDOWS"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.7">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="AMD64"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-        <toValue
-            xsi:type="type:StringsValue"
-            value="Administrator"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.11">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-        <toValue
-            xsi:type="type:StringsValue"
-            value="Admin1"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.9"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.TINY_Constraint_Mapping"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34_Constraint_Mapping"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.tiny"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
             value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
@@ -583,21 +718,10 @@
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.tiny"
-            value="2"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="1"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.tiny"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
             value="2"/>
         <toValue
             xsi:type="type:IntegerValue"
@@ -605,39 +729,50 @@
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.tiny"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+            value="2"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="250"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
             value="2"/>
         <toValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/1"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
             value="2"/>
       </attributeConstraints>
     </constraints>
     <constraints
         xsi:type="provider:Implies"
-        name="M1.MEDIUM_Constraint_Mapping"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.medium"
-            value="3"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="4096"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
           to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.medium"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+            value="3"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
             value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
@@ -645,229 +780,111 @@
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.4">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.medium"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
             value="3"/>
         <toValue
             xsi:type="type:IntegerValue"
-            value="40"/>
+            value="20"/>
       </attributeConstraints>
       <attributeConstraints
           from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.10">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.medium"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
             value="3"/>
         <toValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/3"
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
             value="3"/>
       </attributeConstraints>
     </constraints>
     <constraints
         xsi:type="provider:Implies"
-        name="M1.XLARGE_Constraint_Mapping"
+        name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c_OS"
         from="//@providerModels.0/@rootFeature/@subFeatures.0"
         to="//@providerModels.0/@rootFeature/@subFeatures.0">
       <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.1">
         <fromValue
             xsi:type="type:EnumerateValue"
-            name="m1.xlarge"
-            value="4"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="16384"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.xlarge"
-            value="4"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="8"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.xlarge"
-            value="4"/>
-        <toValue
-            xsi:type="type:IntegerValue"
-            value="160"/>
-      </attributeConstraints>
-      <attributeConstraints
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.xlarge"
-            value="4"/>
+            name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c"/>
         <toValue
             xsi:type="type:EnumerateValue"
-            name="RegionOne/5"
-            value="4"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.SMALL_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          name=""
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.small"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.LARGE_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          name=""
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.large"
-            value="1"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.TINY_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          name=""
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.tiny"
-            value="2"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.MEDIUM_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          name=""
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.medium"
-            value="3"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
-      </attributeConstraints>
-    </constraints>
-    <constraints
-        xsi:type="provider:Implies"
-        name="M1.XLARGE_Constraint_Mapping_LOCATION"
-        from="//@providerModels.0/@rootFeature/@subFeatures.0"
-        to="//@providerModels.0/@rootFeature/@subFeatures.1">
-      <attributeConstraints
-          name=""
-          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
-          to="//@providerModels.0/@rootFeature/@subFeatures.1/@attributes.0">
-        <fromValue
-            xsi:type="type:EnumerateValue"
-            name="m1.xlarge"
-            value="4"/>
-        <toValue
-            xsi:type="type:EnumerateValue"
-            name="RegionOne"/>
+            name="Ubuntu 14.04 (Cluster Two)"/>
       </attributeConstraints>
     </constraints>
     <rootFeature
-        name="Omistack">
+        name="Flexiant">
       <attributes
           name="DeploymentModel"
-          valueType="//@typeModels.0/@dataTypes.4">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
-            value="Private"/>
+            value="Public"/>
       </attributes>
       <attributes
           name="ServiceModel"
-          valueType="//@typeModels.0/@dataTypes.4">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
             value="IaaS"/>
       </attributes>
       <attributes
           name="Availability"
-          valueType="//@typeModels.0/@dataTypes.4"
+          valueType="//@typeModels.0/@dataTypes.5"
           unitType="PERCENTAGE">
         <value
             xsi:type="type:StringsValue"
-            value="95"/>
+            value="99"/>
       </attributes>
       <attributes
           name="Driver"
-          valueType="//@typeModels.0/@dataTypes.4">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
-            value="openstack-nova"/>
+            value="flexiant"/>
       </attributes>
       <attributes
           name="EndPoint"
-          valueType="//@typeModels.0/@dataTypes.4">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
-            value="http://omistack-beta.e-technik.uni-ulm.de:5000/v2.0"/>
+            value="https://cp.sd1.flexiant.net/soap/user/current/"/>
       </attributes>
       <attributes
           name="Name"
-          valueType="//@typeModels.0/@dataTypes.4">
+          valueType="//@typeModels.0/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
-            value="omistack"/>
+            value="Flexiant"/>
       </attributes>
       <subFeatures
           name="VM">
         <attributes
             name="VMType"
-            valueType="//@typeModels.0/@dataTypes.10">
+            valueType="//@typeModels.0/@dataTypes.0">
           <value
               xsi:type="type:EnumerateValue"
-              name="m1.medium"
-              value="3"/>
+              name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
         </attributes>
         <attributes
             name="VMOS"
-            valueType="//@typeModels.0/@dataTypes.1">
+            valueType="//@typeModels.0/@dataTypes.10">
           <value
               xsi:type="type:EnumerateValue"
-              name="Ubuntu Server 14.04.2 AMD64 LTS"/>
+              name="Ubuntu 14.04 (Cluster Two)"/>
+        </attributes>
+        <attributes
+            name="VMImageId"
+            valueType="//@typeModels.0/@dataTypes.11">
+          <value
+              xsi:type="type:EnumerateValue"
+              name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c"/>
         </attributes>
         <attributes
             name="VMMemory"
@@ -878,67 +895,60 @@
               value="4096"/>
         </attributes>
         <attributes
-            name="VMCores"
-            valueType="//@typeModels.0/@dataTypes.11">
+            name="VMStorage"
+            valueType="//@typeModels.0/@dataTypes.8"
+            unitType="GIGABYTES">
           <value
               xsi:type="type:IntegerValue"
-              value="2"/>
+              value="100"/>
+        </attributes>
+        <attributes
+            name="VMCores"
+            valueType="//@typeModels.0/@dataTypes.9">
+          <value
+              xsi:type="type:IntegerValue"
+              value="4"/>
         </attributes>
         <attributes
             name="CostPerHour"
             valueType="//@typeModels.0/@dataTypes.3"/>
         <attributes
-            name="VMStorage"
-            valueType="//@typeModels.0/@dataTypes.5"
-            unitType="GIGABYTES">
-          <value
-              xsi:type="type:IntegerValue"
-              value="40"/>
-        </attributes>
+            name="BecnhmarkRate"
+            valueType="//@typeModels.0/@dataTypes.4"/>
         <attributes
             name="OSVendorType"
-            valueType="//@typeModels.0/@dataTypes.7">
+            valueType="//@typeModels.0/@dataTypes.5">
           <value
-              xsi:type="type:EnumerateValue"
-              name="NIX"
+              xsi:type="type:StringsValue"
               value="1"/>
         </attributes>
         <attributes
             name="OSArchitecture"
-            valueType="//@typeModels.0/@dataTypes.8">
+            valueType="//@typeModels.0/@dataTypes.5">
           <value
-              xsi:type="type:EnumerateValue"
-              name="AMD64"/>
+              xsi:type="type:StringsValue"
+              value="AMD64"/>
         </attributes>
         <attributes
             name="VMTypeCloudProviderId"
-            valueType="//@typeModels.0/@dataTypes.0">
+            valueType="//@typeModels.0/@dataTypes.7">
           <value
               xsi:type="type:EnumerateValue"
-              name="RegionOne/3"
-              value="3"/>
-        </attributes>
-        <attributes
-            name="VMImageId"
-            valueType="//@typeModels.0/@dataTypes.2">
-          <value
-              xsi:type="type:EnumerateValue"
-              name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
-              value="1"/>
+              name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
         </attributes>
         <attributes
             name="DefaultLoginName"
-            valueType="//@typeModels.0/@dataTypes.12">
+            valueType="//@typeModels.0/@dataTypes.5">
           <value
               xsi:type="type:StringsValue"
-              value="ubuntu"/>
+              value="&quot;&quot;"/>
         </attributes>
         <attributes
             name="DefaultLoginPassword"
-            valueType="//@typeModels.0/@dataTypes.13">
+            valueType="//@typeModels.0/@dataTypes.5">
           <value
               xsi:type="type:StringsValue"
-              value="Admin1"/>
+              value="&quot;&quot;"/>
         </attributes>
         <featureCardinality
             cardinalityMin="1"
@@ -948,40 +958,23 @@
       <subFeatures
           name="Location">
         <attributes
-            name="LocationId"
-            valueType="//@typeModels.0/@dataTypes.9">
+            name="LocationId">
           <value
-              xsi:type="type:EnumerateValue"
-              name="RegionOne"/>
+              xsi:type="type:StringsValue"
+              value="b15e1545-7ca3-361c-b6a7-b5cf2828cf28"/>
         </attributes>
         <attributes
             name="Longitude">
           <value
-              xsi:type="type:FloatsValue"
-              value="9.96291"/>
+              xsi:type="type:FloatsValue"/>
         </attributes>
         <attributes
             name="Latitude">
           <value
-              xsi:type="type:FloatsValue"
-              value="48.42599"/>
+              xsi:type="type:FloatsValue"/>
         </attributes>
         <subFeatures
-            name="EU">
-          <subFeatures
-              name="Germany">
-            <subFeatures
-                name="Ulm">
-              <featureCardinality
-                  cardinalityMin="1"
-                  cardinalityMax="1"
-                  value="1"/>
-            </subFeatures>
-            <featureCardinality
-                cardinalityMin="1"
-                cardinalityMax="1"
-                value="1"/>
-          </subFeatures>
+            name="Scotland">
           <featureCardinality
               cardinalityMin="1"
               cardinalityMax="1"
@@ -999,7 +992,7 @@
     </rootFeature>
   </providerModels>
   <providerModels
-      name="Flexiant-EU-1447858908169">
+      name="Flexiant-EU-1448965083075#MediumComputeMediumStorageUbuntu">
     <constraints
         xsi:type="provider:Implies"
         name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054_Constraint_Mapping"
@@ -1251,7 +1244,7 @@
           valueType="//@typeModels.1/@dataTypes.5">
         <value
             xsi:type="type:StringsValue"
-            value="https://api.sd1.flexiant.net:4442"/>
+            value="https://cp.sd1.flexiant.net/soap/user/current/"/>
       </attributes>
       <attributes
           name="Name"
@@ -1358,7 +1351,7 @@
             name="LocationId">
           <value
               xsi:type="type:StringsValue"
-              value="e92bb306-72cd-33a2-a952-908db2f47e98"/>
+              value="b15e1545-7ca3-361c-b6a7-b5cf2828cf28"/>
         </attributes>
         <attributes
             name="Longitude">
@@ -1389,7 +1382,7 @@
     </rootFeature>
   </providerModels>
   <requirementModels
-      name="be.wan requirement model">
+      name="bewan_requirement_model">
     <requirements
         xsi:type="requirement:OSRequirement"
         name="UbuntuReq"
@@ -1418,71 +1411,93 @@
         maxStorage="500"/>
     <requirements
         xsi:type="requirement:LocationRequirement"
-        name="Location Europe Req"
+        name="Location_Europe_Req"
         locations="//@locationModels.0/@regions.0"/>
     <requirements
         xsi:type="requirement:HorizontalScaleRequirement"
-        name="HorizontalScaling WebApplication"
+        name="HorizontalScaling_WebApplication"
         minInstances="1"
         maxInstances="3"
         component="//@deploymentModels.0/@internalComponents.0"/>
+    <requirements
+        xsi:type="requirement:HorizontalScaleRequirement"
+        name="HorizontalScaling_DatabaseComp"
+        minInstances="1"
+        maxInstances="1"
+        component="//@deploymentModels.0/@internalComponents.1"/>
+    <requirements
+        xsi:type="requirement:HorizontalScaleRequirement"
+        name="HorizontalScaling_LoadBalancer"
+        minInstances="1"
+        maxInstances="1"
+        component="//@deploymentModels.0/@internalComponents.2"/>
   </requirementModels>
   <scalabilityModels
-      name="bewan application scalability">
-    <rules name="CPU scalability rule "
+      name="bewan_application_scalability">
+    <rules name="CPU_scalability_rule"
         event="//@scalabilityModels.0/@events.0"
         actions="//@scalabilityModels.0/@actions.0"
         scaleRequirements="//@requirementModels.0/@requirements.4"/>
     <events
         xsi:type="scalability:NonFunctionalEvent"
-        name="CPU load exceeded"
+        name="CPU_load_exceeded"
         metricCondition="//@metricModels.0/@conditions.0"
         isViolation="true"/>
     <actions
         xsi:type="scalability:HorizontalScalingAction"
-        name="HorizontalScaling action WebApplication"
+        name="HorizontalScaling_action_WebApplication"
         type="SCALE_OUT"
         vm="//@deploymentModels.0/@vms.0"
         count="1"
         internalComponent="//@deploymentModels.0/@internalComponents.0"/>
   </scalabilityModels>
   <typeModels
-      name="OmistackType">
+      name="FlexiantType">
     <dataTypes
         xsi:type="type:Enumeration"
-        name="VMTypeCloudProviderIdEnum">
+        name="VMTypeEnum">
       <values
-          name="RegionOne/2"/>
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
       <values
-          name="RegionOne/4"
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
           value="1"/>
       <values
-          name="RegionOne/1"
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
           value="2"/>
       <values
-          name="RegionOne/3"
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
           value="3"/>
-      <values
-          name="RegionOne/5"
-          value="4"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Enumeration"
-        name="VMOsEnum">
+        name="VMOSEnum">
       <values
-          name="Ubuntu Server 14.04.2 AMD64 LTS"/>
+          name="CentOS_6_2"/>
       <values
-          name="Windows2012R2_PW_No_Firewall_0.2"
+          name="Ubuntu_12_04"
           value="1"/>
+      <values
+          name="Ubuntu_14_04"
+          value="2"/>
+      <values
+          name="Windows_2008_R2"
+          value="3"/>
     </dataTypes>
     <dataTypes
-        xsi:type="type:Enumeration"
-        name="VMImageIdEnum">
-      <values
-          name="RegionOne/11a845d0-7ed3-48c8-a36a-9a76a2fe4938"/>
-      <values
-          name="RegionOne/9c154d9a-fab9-4507-a3d7-21b72d31de97"
-          value="1"/>
+        xsi:type="type:Range"
+        name="MemoryRange">
+      <lowerLimit
+          included="true">
+        <value
+            xsi:type="type:IntegerValue"
+            value="512"/>
+      </lowerLimit>
+      <upperLimit
+          included="true">
+        <value
+            xsi:type="type:IntegerValue"
+            value="4096"/>
+      </upperLimit>
     </dataTypes>
     <dataTypes
         xsi:type="type:Range"
@@ -1492,13 +1507,28 @@
           included="true">
         <value
             xsi:type="type:DoublePrecisionValue"
-            value="0.054"/>
+            value="0.084"/>
       </lowerLimit>
       <upperLimit
           included="true">
         <value
             xsi:type="type:DoublePrecisionValue"
-            value="0.095"/>
+            value="0.144"/>
+      </upperLimit>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Range"
+        name="BenchmarkRange"
+        primitiveType="DoubleType">
+      <lowerLimit
+          included="true">
+        <value
+            xsi:type="type:DoublePrecisionValue"/>
+      </lowerLimit>
+      <upperLimit
+          included="true">
+        <value
+            xsi:type="type:DoublePrecisionValue"/>
       </upperLimit>
     </dataTypes>
     <dataTypes
@@ -1507,80 +1537,47 @@
         primitiveType="StringType"/>
     <dataTypes
         xsi:type="type:List"
+        name="MemoryList">
+      <values
+          xsi:type="type:IntegerValue"
+          value="512"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="2048"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="4096"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:Enumeration"
+        name="VMTypeCloudProviderIdEnum">
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054"/>
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:36942ac9-5b98-3501-bdcc-ad22d81e1258"
+          value="1"/>
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/145c5ff0-c7c5-3031-8f29-a5cf602802ff:556f9445-574f-3c15-823d-4763784b0c34"
+          value="2"/>
+      <values
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/fe9b352b-16d9-3ea2-94f5-71bbb342a788:cf9b3bae-a5a9-33b3-b99e-39c385936a9d"
+          value="3"/>
+    </dataTypes>
+    <dataTypes
+        xsi:type="type:List"
         name="StorageList">
       <values
           xsi:type="type:IntegerValue"
           value="20"/>
       <values
           xsi:type="type:IntegerValue"
-          value="80"/>
+          value="21"/>
       <values
           xsi:type="type:IntegerValue"
-          value="1"/>
+          value="100"/>
       <values
           xsi:type="type:IntegerValue"
-          value="40"/>
-      <values
-          xsi:type="type:IntegerValue"
-          value="160"/>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:List"
-        name="MemoryList">
-      <values
-          xsi:type="type:IntegerValue"
-          value="2048"/>
-      <values
-          xsi:type="type:IntegerValue"
-          value="8192"/>
-      <values
-          xsi:type="type:IntegerValue"
-          value="512"/>
-      <values
-          xsi:type="type:IntegerValue"
-          value="4096"/>
-      <values
-          xsi:type="type:IntegerValue"
-          value="16384"/>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Enumeration"
-        name="OSVendorType">
-      <values
-          name="WINDOWS"/>
-      <values
-          name="NIX"
-          value="1"/>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Enumeration"
-        name="OSArchitectureType">
-      <values
-          name="AMD64"/>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Enumeration"
-        name="LocationIdType">
-      <values
-          name="RegionOne"/>
-    </dataTypes>
-    <dataTypes
-        xsi:type="type:Enumeration"
-        name="VMTypeEnumeration">
-      <values
-          name="m1.small"/>
-      <values
-          name="m1.large"
-          value="1"/>
-      <values
-          name="m1.tiny"
-          value="2"/>
-      <values
-          name="m1.medium"
-          value="3"/>
-      <values
-          name="m1.xlarge"
-          value="4"/>
+          value="250"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:List"
@@ -1594,28 +1591,18 @@
       <values
           xsi:type="type:IntegerValue"
           value="4"/>
-      <values
-          xsi:type="type:IntegerValue"
-          value="8"/>
     </dataTypes>
     <dataTypes
-        xsi:type="type:List"
-        name="LoginNameList"
-        primitiveType="StringType">
+        xsi:type="type:Enumeration"
+        name="VMOsEnum">
       <values
-          xsi:type="type:StringsValue"
-          value="Administrator"/>
-      <values
-          xsi:type="type:StringsValue"
-          value="ubuntu"/>
+          name="Ubuntu 14.04 (Cluster Two)"/>
     </dataTypes>
     <dataTypes
-        xsi:type="type:List"
-        name="LoginPasswordList"
-        primitiveType="StringType">
+        xsi:type="type:Enumeration"
+        name="VMImageIdEnum">
       <values
-          xsi:type="type:StringsValue"
-          value="Admin1"/>
+          name="e92bb306-72cd-33a2-a952-908db2f47e98/d8cee060-e487-34fa-aa8b-9e3fef10eb8c"/>
     </dataTypes>
   </typeModels>
   <typeModels
@@ -1773,7 +1760,7 @@
     </dataTypes>
   </typeModels>
   <unitModels
-      name="bewan unit model">
+      name="bewan_unit_model">
     <units xsi:type="unit:MonetaryUnit"
         name="Euro"
         unit="EUROS"/>

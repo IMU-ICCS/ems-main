@@ -9,17 +9,21 @@
 package eu.paasage.upperware.plangenerator.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature.Setting;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
@@ -29,19 +33,23 @@ import com.eclipsesource.json.JsonValue;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
+import eu.paasage.camel.deployment.Communication;
+import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.camel.deployment.Hosting;
+import eu.paasage.camel.deployment.HostingInstance;
+import eu.paasage.camel.deployment.InternalComponent;
+import eu.paasage.camel.deployment.InternalComponentInstance;
+import eu.paasage.camel.deployment.VM;
+import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.location.Location;
-import eu.paasage.camel.requirement.ImageRequirement;
 import eu.paasage.camel.requirement.LocationRequirement;
-import eu.paasage.camel.requirement.OSOrImageRequirement;
-import eu.paasage.camel.requirement.OSRequirement;
 import eu.paasage.camel.type.BoolValue;
 import eu.paasage.camel.type.DoublePrecisionValue;
 import eu.paasage.camel.type.EnumerateValue;
 import eu.paasage.camel.type.FloatsValue;
 import eu.paasage.camel.type.IntegerValue;
-import eu.paasage.camel.type.SingleValue;
 import eu.paasage.camel.type.StringsValue;
 import eu.paasage.upperware.plangenerator.exception.ModelUtilException;
 
@@ -55,7 +63,7 @@ import eu.paasage.upperware.plangenerator.exception.ModelUtilException;
  */
 public final class ModelUtil {
 	/** message logger */
-	public static final Logger LOGGER = Logger.getLogger(ModelUtil.class.getName());
+	public static final Logger logger = Logger.getLogger(ModelUtil.class.getName());
 
 	/**
 	 * Private constructor to avoid unnecessary instantiation of the class
@@ -109,7 +117,7 @@ public final class ModelUtil {
 		final ResourceSet rs = new ResourceSetImpl();
 		rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		Resource res = rs.getResource(URI.createFileURI(inputFilePath),true);
-		LOGGER.info("LoadedEObjectsource: " + res.getURI());
+		logger.info("LoadedEObjectsource: " + res.getURI());
 		EList<EObject> contents = res.getContents();
 		//
 		return ((CamelModel) contents.get(0));
@@ -211,7 +219,7 @@ public final class ModelUtil {
 		//
 		try{
 			//caller to guard against null			
-			LOGGER.debug("...JsonArray size is " + asArray.size() + " content: " + asArray.toString());
+			logger.debug("...JsonArray size is " + asArray.size() + " content: " + asArray.toString());
 			//convert				
 			Iterator<JsonValue> iter = asArray.iterator();
 			while(iter.hasNext()){
@@ -219,7 +227,7 @@ public final class ModelUtil {
 				//LOGGER.debug("...about to add to list...");					
 				String s = iter.next().asString();
 				list.add(s);
-				LOGGER.debug("...after adding " + s + " to list.");	
+				logger.debug("...after adding " + s + " to list.");	
 			}
 		}catch(Exception e){
 			throw new ModelUtilException("error converting JsonArray to List of String : " + e.getMessage());
@@ -238,15 +246,125 @@ public final class ModelUtil {
 		/////
 		if(candidates != null && target != null && !target.isEmpty()){//not sure why target is null?
 			for(String candidate : candidates){
-				LOGGER.debug("matching target " + target + " against " + candidate);
+				logger.debug("matching target " + target + " against " + candidate);
 				if(candidate.equals(target)){
 					return true;
 				}				
 			}
-			LOGGER.info("No match found for " + target);
+			logger.info("No match found for " + target);
 		}else{
-			LOGGER.info("Nothing to match: target and/or candidates are null!");
+			logger.info("Nothing to match: target and/or candidates are null!");
 		}
 		return false;
 	}
+	/**
+	 * Count the instances for each deployment type object.
+	 * <p>
+	 * @param dm {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} to process.
+	 * @return A {@link java.util.Map <em>map</em>} of instance count by type.
+	 * @throws {@link eu.paasage.upperware.plangenerator.exception.ModelUtilException <em>ModelUtilException</em>} 
+	 * 			if {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} is null. 
+	 */
+	public static Map<String, Integer> getInstanceCountByTypes(DeploymentModel dm) throws ModelUtilException{
+		Map<String, Integer> result = new Hashtable<String,Integer>();
+		if(dm == null){
+			throw new ModelUtilException("DeploymentModel is null!");
+		}
+		//debug
+		logger.debug("VMInstance count: " + dm.getVmInstances().size());
+		logger.debug("InternalCompInstance count: " + dm.getInternalComponentInstances().size());
+		logger.debug("HostingInstance count: " + dm.getHostingInstances().size());
+		logger.debug("CommInstance count: " + dm.getCommunicationInstances().size());
+		//
+		for(VM vm : dm.getVms()){
+				Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(vm, vm.eResource().getResourceSet());			
+				logger.debug(vm.getName() + " UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+				for(Setting setting : references){
+					if(setting.getEObject() instanceof VMInstance){
+						if(result.containsKey(vm.getName())){
+							//debug
+							result.put(vm.getName(), (result.get(vm.getName()) + 1)); 
+						}else{// no entry
+							result.put(vm.getName(),1); //initialise to one
+						}
+					}
+				}//end for setting
+		}
+		for(InternalComponent comp : dm.getInternalComponents()){		
+				Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(comp, comp.eResource().getResourceSet());			
+				logger.debug(comp.getName() + " UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+				for(Setting setting : references){
+					if(setting.getEObject() instanceof InternalComponentInstance){
+						if(result.containsKey(comp.getName())){
+							result.put(comp.getName(), (result.get(comp.getName()) + 1)); 
+						}else{// no entry
+							result.put(comp.getName(),1); //initialise to one
+						}
+					}
+				}//end for setting
+		}
+		for(Hosting hosting : dm.getHostings()){
+				Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(hosting, hosting.eResource().getResourceSet());			
+				logger.debug(hosting.getName() + " UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+				for(Setting setting : references){
+					if(setting.getEObject() instanceof HostingInstance){
+						if(result.containsKey(hosting.getName())){
+							result.put(hosting.getName(), (result.get(hosting.getName()) + 1)); 
+						}else{// no entry
+							result.put(hosting.getName(),1); //initialise to one
+						}
+					}
+				}//end for setting
+			}
+		for(Communication comm : dm.getCommunications()){ 
+				Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(comm, comm.eResource().getResourceSet());			
+				logger.debug(comm.getName() + " UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+				for(Setting setting : references){
+					if(setting.getEObject() instanceof CommunicationInstance){
+						if(result.containsKey(comm.getName())){
+							result.put(comm.getName(), (result.get(comm.getName()) + 1)); 
+						}else{// no entry
+							result.put(comm.getName(),1); //initialise to one
+						}
+					}
+				}//end for setting
+		}	
+		logger.debug(" Breakdown of instance count by instance:");
+		for(String key : result.keySet()){
+			logger.debug(key + " : " + result.get(key));
+		}				
+		return result;
+	}
+	/**
+	 * 
+	 * @param dm	{@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} to process.
+	 * @return 		A {@link java.util.Map <em>map</em>} of instance count by type.
+	 * @throws 		{@link eu.paasage.upperware.plangenerator.exception.ModelUtilException <em>ModelUtilException</em>} 
+	 * 				if {@link eu.paasage.camel.deployment.DeploymentModel <em>DeploymentModel</em>} is null. 
+	 */
+	public static Map<String, Integer> getHostingInstanceCountByTypes(DeploymentModel dm) throws ModelUtilException{
+		Map<String, Integer> result = new Hashtable<String,Integer>();
+		if(dm == null){
+			throw new ModelUtilException("DeploymentModel is null!");
+		}
+		//debug
+		logger.debug("HostingInstance count: " + dm.getHostingInstances().size());
+		//
+		for(Hosting hosting : dm.getHostings()){
+			Collection<Setting> references = EcoreUtil.UsageCrossReferencer.find(hosting, hosting.eResource().getResourceSet());			
+			logger.debug(hosting.getName() + " UsageCrossReferencer size : " + (references == null ? 0 : references.size())); //
+			for(Setting setting : references){
+				if(setting.getEObject() instanceof HostingInstance){
+					if(result.containsKey(hosting.getName())){
+						result.put(hosting.getName(), (result.get(hosting.getName()) + 1)); 
+					}else{// no entry
+						result.put(hosting.getName(),1); //initialise to one
+					}
+				}
+			}//end for setting
+		}
+		return result;
+	}
+	
+	
 }

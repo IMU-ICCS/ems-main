@@ -1,13 +1,16 @@
-/**
- * 
+/*
+ * Copyright (c) 2014 UK Science and Technology Facilities Council
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.plangenerator.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -20,14 +23,11 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.type.SingleValue;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.plangenerator.ModelComparator;
-import eu.paasage.upperware.plangenerator.PlanGenerator;
-import eu.paasage.upperware.plangenerator.exception.ModelComparatorException;
 import eu.paasage.upperware.plangenerator.util.ModelUtil;
 
 /**
@@ -38,6 +38,7 @@ import eu.paasage.upperware.plangenerator.util.ModelUtil;
  * org	UK Science and Technology Facilities Council
  *
  */
+@Ignore
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ModelComparatorTest {
 	
