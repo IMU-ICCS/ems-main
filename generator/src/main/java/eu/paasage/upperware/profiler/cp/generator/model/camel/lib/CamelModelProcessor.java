@@ -291,9 +291,26 @@ public class CamelModelProcessor {
 					logger.debug("CamelModelProcessor - parseModel - Dealing with OS Requirement");
 					OSRequirement osReq= (OSRequirement) osImageReq; 
 					//TODO UPDATE THE ONTOLOGY WITH THE CORRECT NAMES
-					ConceptCamel osConcept= ProviderModelParser.getConcepContainingName(osReq.getOs(), ontology.getConcepts());
-					logger.debug("CamelModelProcessor - parseModel - OS concept retrieved "+osConcept+ " Name "+osReq.getOs());
-					osConcept.setSelected(true);
+					ConceptCamel osRootConcept= ProviderModelParser.getConceptByName("OS", ontology.getConcepts());
+					
+					if(osRootConcept==null)
+						osRootConcept= ProviderModelParser.getConceptByName("Os", ontology.getConcepts());
+					
+					if(osRootConcept==null)
+						osRootConcept= ProviderModelParser.getConceptByName("os", ontology.getConcepts());
+					
+					if(osRootConcept!=null)
+					{
+						ConceptCamel osConcept= ProviderModelParser.getConcepContainingName(osReq.getOs(), osRootConcept.getSubConcept());
+						
+						if(osConcept!=null)
+						{	
+							logger.debug("CamelModelProcessor - parseModel - OS concept retrieved "+osConcept+ " Name "+osReq.getOs());
+							osConcept.setSelected(true);
+						}
+					}	
+						
+					
 					
 					
 				}
