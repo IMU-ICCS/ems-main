@@ -103,20 +103,23 @@ public class PaasageModelTool
 	 */
 	public static OS getOSFromNameAndArchitecture(String osName, boolean is64Bits, PaaSageConfigurationWrapper pcw)
 	{
-		logger.debug("*************** new req --- =========================");
+
+		logger.debug("*************** new req");
+
 		for(OS os: pcw.getOperatingSystems().getOss())
 		{
 
 			boolean is64= os.getArchitecture().getValue()==OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE; 
-			
+
 			logger.debug("*************** ==> "+os.getName()+" ==? "+osName+ " = "+os.getName().equals(osName));
 			logger.debug("*************** ==> "+os.getArchitecture().getValue() + " ==? " + OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE);
-			logger.debug("*************** ==> "+is64+" ==? "+is64Bits);
+			logger.debug("***************==> "+is64+" ==? "+is64Bits);
 
 			if(os.getName().equals(osName) && is64==is64Bits) {
 				logger.debug("*************** SUCCESS");
 				return os; 
 			}
+
 		}
 		
 		return null; 
