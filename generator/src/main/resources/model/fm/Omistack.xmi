@@ -6,7 +6,7 @@
     xmlns:camel="http://www.paasage.eu/2015/06/camel"
     xmlns:provider="http://www.paasage.eu/2015/06/camel/provider"
     xmlns:type="http://www.paasage.eu/2015/06/camel/type"
-    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel ../../metamodel/camel.ecore http://www.paasage.eu/2015/06/camel/provider ../../metamodel/camel.ecore#//provider http://www.paasage.eu/2015/06/camel/type ../../metamodel/camel.ecore#//type"
+    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type"
     name="OmistackModel">
   <locationModels
       name="OmistackLocation">
@@ -153,7 +153,7 @@
             value="1"/>
         <toValue
             xsi:type="type:EnumerateValue"
-            name="NIX"
+            name="UNIX"
             value="1"/>
       </attributeConstraints>
       <attributeConstraints
@@ -747,7 +747,7 @@
       <values
           name="WINDOWS"/>
       <values
-          name="NIX"
+          name="UNIX"
           value="1"/>
     </dataTypes>
     <dataTypes

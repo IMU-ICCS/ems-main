@@ -49,6 +49,7 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
+import eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib.ZeroMQServer;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
@@ -399,6 +400,11 @@ public class GenerationOrchestrator
 	 */
 	public static void main(String[] args) 
 	{	
+		if (args.length==1 && args[0].equals("-daemon"))
+		{
+			ZeroMQServer.main(args);
+			System.exit(0);
+		}
 		if(args.length==2 && !args[0].trim().equals(""))
 		{	
 			
@@ -426,7 +432,8 @@ public class GenerationOrchestrator
 		}
 		else
 		{	
-			GenerationOrchestrator.logger.error("GenerationOrchestrator- Main- You have to specifiy a valid resouce in CDO containing the Camel Model and a Output file!"); 
+			GenerationOrchestrator.getLogger().error("Usage: You have to specifiy a valid resouce in CDO containing the Camel Model and a Output file!"); 
+			GenerationOrchestrator.getLogger().error("       or -daemon for ZeroMQ daemon mode!"); 
 			System.exit(1);
 		}	
 		

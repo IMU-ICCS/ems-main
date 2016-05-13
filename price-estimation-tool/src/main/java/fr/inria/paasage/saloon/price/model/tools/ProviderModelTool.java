@@ -29,6 +29,10 @@ public class ProviderModelTool
 	
 	public static final String LOCATION_FEATURE= "Location"; 
 	
+	public static final String VIRTUAL_MACHINE_TYPE= "VMType";
+
+	public static final String VIRTUAL_MACHINE_OSVENDORTYPE= "OSVendorType";
+
 	public static final String VIRTUAL_MACHINE_SIZE_ATTRIBUTE= "vmSize";
 	
 	public static final String VIRTUAL_MACHINE_OS_ATTRIBUTE= "vmOS";

@@ -13,10 +13,10 @@ L;RedHatEnterpriseLinux;0.21
 X;RedHatEnterpriseLinux;0.38
 XXL;RedHatEnterpriseLinux;0.76
 EU;4
-m3.medium;Ubuntu;0.18
-m1.small;Ubuntu;0.09
-m1.large;Ubuntu;0.37
-c1.xlarge;Ubuntu;0.73
+m3.medium;UNIX;0.18
+m1.small;UNIX;0.09
+m1.large;UNIX;0.37
+c1.xlarge;UNIX;0.73
 ElasticHosts;fr.inria.paasage.saloon.price.model.lib.ElasticHostsPriceEstimator;3
 UK;9
 CPU;hour;1000;0.029

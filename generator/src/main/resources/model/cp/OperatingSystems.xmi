@@ -7,7 +7,8 @@
       vers="Ubuntu Server 12.04.3 LTS"/>
   <oss typeId="1"
       name="Windows Server"
-      vers="Windows Server"/>
+      vers="Windows Server"
+      architecture="64bits"/>
   <oss typeId="2"
       name="ubuntu"
       vers="Ubuntu Server 12.04.3 LTS"
