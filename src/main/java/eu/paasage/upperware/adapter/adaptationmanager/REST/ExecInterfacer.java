@@ -1478,9 +1478,9 @@ public class ExecInterfacer {
 			}else if(name.toLowerCase().contains("flexiant")){
 				inBody.put("name", "flexiant");
 		        inBody.put("internalProviderName", "flexiant");
-			}else if(name.toLowerCase().contains("amazon")){
-				inBody.put("name", "amazon");
-		        inBody.put("internalProviderName", "amazon");
+			}else if(name.toLowerCase().contains("aws-ec2")){
+				inBody.put("name", "aws-ec2");
+		        inBody.put("internalProviderName", "aws-ec2");
 			}
 
 	        resp = postRequest(API_API, null, inBody);
@@ -2731,7 +2731,7 @@ public class ExecInterfacer {
 		
 		JSONObject imgJObj = null;
 		
-		String vendorID = "", defLogin = "", OSID = "";
+		String vendorID = "", defLogin = "", defPass = "", OSID = "";
 		
 		HttpResponse resp = getRequest(API_IMAGE + "/" + imgID, null);
         HttpEntity respEntity = resp.getEntity();
@@ -2810,6 +2810,11 @@ public class ExecInterfacer {
 				JSONArray links= (JSONArray) jObj.get("link");
 				defLogin = jObj.get("defaultLoginName").toString();
 				
+				if(jObj.get("defaultPassword") != null)
+					defPass = jObj.get("defaultPassword").toString();
+				else
+					defPass	= null;
+				
 				Iterator<JSONObject> jArrLinksIt = links.iterator();
 				while (jArrLinksIt.hasNext()){
 					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
@@ -2869,11 +2874,40 @@ public class ExecInterfacer {
 			inBody.put("cloudCredentials", imgJObj.get("cloudCredentials"));
 			inBody.put("operatingSystem", Integer.parseInt(OSID));
 			
-			if(login != null){
+			/*if(login != null){
 				if(!login.equalsIgnoreCase(defLogin))
 					inBody.put("defaultLoginUsername", login);
 				else
 					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+			}*/
+			
+			
+			switch (OSVendorType.toUpperCase()) {
+			case "WINDOWS":
+				
+				if(defLogin!= null && imgJObj.get("defaultLoginUsername")==null){
+					inBody.put("defaultLoginUsername", defLogin);
+				}else if(imgJObj.get("defaultLoginUsername")!=null){
+					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+				}
+				
+				if(defPass!= null && imgJObj.get("defaultPassword")==null){
+					inBody.put("defaultPassword", defPass);
+				}else if(imgJObj.get("defaultPassword")!=null){
+					inBody.put("defaultPassword", imgJObj.get("defaultPassword"));
+				}
+				
+				break;
+
+			default://case NIX
+				
+				if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")==null){
+					inBody.put("defaultLoginUsername", login);
+				}else if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")!=null){
+					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+				}
+				
+				break;
 			}
 			
 			resp = putRequest(API_IMAGE + "/" + imgID, null, inBody);

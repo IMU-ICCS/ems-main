@@ -368,7 +368,10 @@ public class VMAction implements Action {
 		if(login == null)
 			login = "ubuntu";
 		String OSArchitecture = vmiParams.get("OSArchitecture").asString();
+		
 		String OSVersion = "14.04.2";//default value - to be provided in Model
+		if(OSVendorType.equalsIgnoreCase("WINDOWS"))
+			OSVersion = "Server 2012 R2";
 		
 		
 		if((vmt=dataShare.getEntityVMTid(vmType))==null){//entity non existant in ExecWare
