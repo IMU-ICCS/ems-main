@@ -163,8 +163,18 @@ public class ExecInterfacer {
 		String pass = properties.getProperty("ExecutionwarePwd");
 		String tenant = properties.getProperty("ExecutionwareTenant");
 		setCloudCredentials(credentials);
+		
+		int retry = 6;
 		try {
-			login(uname, pass, tenant);
+			while(!login(uname, pass, tenant) && retry > 0){
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				retry--;
+			}
 		} catch (ExecutionwareError e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -172,6 +182,11 @@ public class ExecInterfacer {
 		if (this.baseUrl == null || uname==null || pass==null) {
 			LOGGER.log(Level.WARNING,
 					"ExecutionwareURL/ExecutionwareUname/ExecutionwarePwd property(s) not set; error reaching with Executionware");
+		}
+		
+		if (retry <= 0) {
+			LOGGER.log(Level.WARNING,
+					"Executionware login timeout");
 		}
 	}
 
@@ -184,8 +199,18 @@ public class ExecInterfacer {
 		String pass = properties.getProperty("ExecutionwarePwd");
 		String tenant = properties.getProperty("ExecutionwareTenant");
 		setCloudCredentials(credentials);
+		
+		int retry = 6;
 		try {
-			login(uname, pass, tenant);
+			while(!login(uname, pass, tenant) && retry > 0){
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				retry--;
+			}
 		} catch (ExecutionwareError e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -193,6 +218,11 @@ public class ExecInterfacer {
 		if (this.baseUrl == null || uname==null || pass==null) {
 			LOGGER.log(Level.WARNING,
 					"ExecutionwareURL/ExecutionwareUname/ExecutionwarePwd property(s) not set; error reaching with Executionware");
+		}
+		
+		if (retry <= 0) {
+			LOGGER.log(Level.WARNING,
+					"Executionware login timeout");
 		}
 	}
 	
@@ -927,7 +957,9 @@ public class ExecInterfacer {
 	*/
 	
 	@SuppressWarnings("deprecation")//for HttpParams & HttpConnectionParams
-	public void login(String name, String pass, String tenant) throws ExecutionwareError{
+	public boolean login(String name, String pass, String tenant) throws ExecutionwareError{
+		
+		boolean status = false;
 
 		/*
 		 * Authentication Actions
@@ -976,12 +1008,15 @@ public class ExecInterfacer {
 	            execUser.setuserId((Long)result.get("userId"));
 	            //LOGGER.log(Level.INFO, "Login: success for " + execUser.getUserName() + " id " + execUser.getUserId() + " token: " + execUser.getToken());
 	            LOGGER.log(Level.INFO, "Login success");
+	            status = true;
 
         	} else{
 				LOGGER.log(Level.SEVERE, "Login: problem logging in to " + baseUrl + API_LOGIN);
 				//throw new ExecutionwareError();
         	}
         }catch(Exception ex){ex.printStackTrace();}
+        
+        return status;
 	}
 	
 	public void logout(String name) throws ExecutionwareError {
