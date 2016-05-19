@@ -189,15 +189,27 @@ public class AdaptationManager {
 			}
 			
 			//if(zmsModelSub.readResetMessage().contains("newDeploymentCAMELModel")){
-			if(zmsModelSub.readMessage(true).contains("newDeploymentCAMELModel")){//multipart message contains a camel ID later
+			if(zmsModelSub.readMessage(true).contains(subs2dtopic)){//multipart message contains a camel ID later
 				
 				//new Deployment model available, so take decision and deploy
 				//depModelIndex++;
 				
-				if(zmsModelSub.hasMoreMessage()){
+				/*if(zmsModelSub.hasMoreMessage()){
 					String newModelID = zmsModelSub.readMessage(false);
 					depModelIndex = Integer.parseInt(newModelID);
 				} else{
+					depModelIndex++;
+				}*/
+				
+				if(zmsModelSub.hasMoreMessage()){
+					
+					String resourceName = zmsModelSub.readMessage(false);
+					ReasonerInterfacer newReasonerInterfacer = new ReasonerInterfacer(resourceName, false);
+					reasonerInterfacer = newReasonerInterfacer;
+					depModelIndex++;
+					
+				} else{
+					
 					depModelIndex++;
 				}
 				
