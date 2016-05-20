@@ -229,6 +229,10 @@ public class Coordinator {
 		for (String key : execWareObjects.keySet())
 			System.out.print(" " + key);
 	}
+	
+	public void updateReasonerInterfacer(ReasonerInterfacer reasonerInterfacer) {
+		this.reasonerInterfacer = reasonerInterfacer;
+	}
 
 	public void runStep() {
 		Map<String, Object> outputMap = new HashMap<String, Object>();
