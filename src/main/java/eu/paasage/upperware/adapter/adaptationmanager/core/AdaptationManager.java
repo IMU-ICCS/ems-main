@@ -204,6 +204,7 @@ public class AdaptationManager {
 				if(zmsModelSub.hasMoreMessage()){
 					
 					String resourceName = zmsModelSub.readMessage(false);
+					LOGGER.log(Level.INFO, "Received topic \"" + subs2dtopic + "\" from S2D with resource name : " + resourceName);
 					ReasonerInterfacer newReasonerInterfacer = new ReasonerInterfacer(resourceName, false);
 					reasonerInterfacer = newReasonerInterfacer;
 					depModelIndex++;

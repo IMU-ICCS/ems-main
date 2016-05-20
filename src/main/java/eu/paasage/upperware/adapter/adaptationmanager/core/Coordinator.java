@@ -363,7 +363,7 @@ public class Coordinator {
 
 	public boolean deployModelIDThreaded(int dmIndex){
 
-		LOGGER.log(Level.INFO, "Start of threaded execution");
+		LOGGER.log(Level.INFO, "Start of threaded execution for solution indexed " + dmIndex);
 
 		Map<String, Object> outputMap = new HashMap<String, Object>();
 		
