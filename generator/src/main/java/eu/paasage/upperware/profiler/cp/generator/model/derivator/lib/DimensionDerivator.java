@@ -293,7 +293,7 @@ public class DimensionDerivator
 		
 		
 		//The context is a raw context - It is mandatory
-		if(metricContext.getComponent()!=null)
+		if(metricContext!=null && metricContext.getComponent()!=null && metricContext.getComponent() instanceof InternalComponent)
 		{
 			components.add((InternalComponent) metricContext.getComponent());
 		}
@@ -384,25 +384,29 @@ public class DimensionDerivator
 				Metric theMetric= (Metric) parameter;
 				MetricContext theContext= null;
 				
-				EList<MetricContext> contexts= context.getComposingMetricContexts();
-				
-				for(int i=0; i<contexts.size() && theContext==null; i++)
-				{
-					theContext= searchForMetricContext((Metric) parameter, context);
+				if(context!=null)
+				{	
+					EList<MetricContext> contexts= context.getComposingMetricContexts();
+					
+					for(int i=0; i<contexts.size() && theContext==null; i++)
+					{
+						theContext= searchForMetricContext((Metric) parameter, context);
+					}
+					
 				}
 						
 				
-				if(theContext!=null)
+				//if(theContext!=null)
 				{
 					if(theMetric instanceof RawMetric)
 						expressions.addAll(processRawMetric((RawMetric) theMetric, (RawMetricContext) theContext, camel, cp));
 					else
 						expressions.add(processCompositeMetric((CompositeMetric) theMetric, (CompositeMetricContext) theContext, camel, cp));
 				}
-				else
+/*				else
 				{
 					logger.warn("DimensionDerivator - processFormula - The metric "+theMetric.getName()+" does not have a context. It will be ignored!");
-				}
+				}*/
 				
 			}
 			else
