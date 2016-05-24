@@ -7,7 +7,6 @@
  */
 package eu.paasage.upperware.profiler.rp.zeromq;
 
-import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -104,7 +103,7 @@ public class RuleProcessorService {
 			return;
 		}
 
-		String requestType = subscriber.recvStr(Charset.defaultCharset());
+		String requestType = subscriber.recvStr();
 		if (!requestType.equals(subscriberTopic)) {
 			String error = "ZeroMQ init error: Subscriber socket is missing";
 			publishError(publisher, publisherTopic, error);
@@ -114,7 +113,7 @@ public class RuleProcessorService {
 
 		String camelModel = null;
 		if (subscriber.hasReceiveMore()) {
-			camelModel = subscriber.recvStr(Charset.defaultCharset());
+			camelModel = subscriber.recvStr();
 		} else {
 			String error = "ZeroMQ init error: Subscriber socket is missing";
 			publishError(publisher, publisherTopic, error);
@@ -124,7 +123,7 @@ public class RuleProcessorService {
 
 		String cdoIdentifier = null;
 		if (subscriber.hasReceiveMore()) {
-			cdoIdentifier = subscriber.recvStr(Charset.defaultCharset());
+			cdoIdentifier = subscriber.recvStr();
 		} else {
 			String error = "ZeroMQ init error: Subscriber socket is missing";
 			publishError(publisher, publisherTopic, error);
