@@ -313,6 +313,17 @@ public class CamelExecwareMapping {
 		}
 	}
 	
+	public boolean updateEntityVMInstance(String old_name_Camel, String new_name_Camel){
+		synchronized(VMIs){
+			for(VirtualMachineInstance VMI : VMIs)
+				if(VMI.getVMIname().equalsIgnoreCase(old_name_Camel) && VMI.getId()!=null){
+					VMI.setVMIname(new_name_Camel);
+					return true;
+				}
+			return false;
+		}
+	}
+	
 	public String getEntityVMIid(String name_Camel){
 		synchronized(VMIs){
 			for(VirtualMachineInstance VMI : VMIs)
@@ -691,6 +702,10 @@ public class CamelExecwareMapping {
 		
 		void setId(String id){
 			this.id = id;
+		}
+		
+		void setVMIname(String new_name_Camel){
+			this.name_Camel = new_name_Camel;
 		}
 		
 		/*void setAll(String cloud, String image, String location, String hardware){
@@ -1541,6 +1556,20 @@ public class CamelExecwareMapping {
 		return false;
 	}
 	
+	public boolean updateCompInstName(String old_intCompId_Camel, String new_intCompId_Camel){
+		synchronized (CompInsts) {
+			for(ComponentInstance compInst : CompInsts){
+				if(compInst.getCompInstType().equalsIgnoreCase(old_intCompId_Camel) && compInst.getCompInstID()!=null){
+					compInst.setCompInstType(new_intCompId_Camel);
+					LOGGER.log(Level.INFO, "Updated Component Instance name " + old_intCompId_Camel + " to " + new_intCompId_Camel);
+					LOGGER.log(Level.INFO, "Associated VMInstance is : " + compInst.getVMInstanceName());
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public boolean deleteCompInst(String intCompId_Camel){
 		boolean status = false;
 		ListIterator<ComponentInstance> it = CompInsts.listIterator();
@@ -1580,9 +1609,15 @@ public class CamelExecwareMapping {
 			this.id = id;
 		}
 		
+		private void setCompInstType(String compInstName_Camel){
+			this.compInstName_Camel = compInstName_Camel;
+		}
+		
 		private String getCompInstType(){return this.compInstName_Camel;}
 		
 		private String getCompInstID(){return this.id;}
+		
+		private String getVMInstanceName(){return this.vmi.getVMIname();}
 		
 		boolean setComponentInstanceParams(ApplicationInstance appInstance, LCAppComponent appComp, VirtualMachineInstance vmi) {
 			this.appInstance = appInstance;

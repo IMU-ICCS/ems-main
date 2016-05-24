@@ -110,7 +110,7 @@ public class VMAction implements Action {
 			/**
 			 * Force dependent VMInstAct to execute deletion before VMType deletion
 			 */
-			System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
+			/*System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 			//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 			Collection<Action> depOnActions = Coordinator.getDependentOnActions(this);
 			LOGGER.log(Level.INFO, "--------------Breakpoint VMAction (Update)--- " + depOnActions.size());
@@ -122,7 +122,7 @@ public class VMAction implements Action {
 					LOGGER.log(Level.INFO, "Forced (update) " + ((VMInstanceAction) obj).getVMInstName() + " to run from " + this.getVMName());
 				} else
 					status = false;
-			}
+			}*/
 			
 		} else if(task.getTaskType()==TaskType.DELETE){
 			
