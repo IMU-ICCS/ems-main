@@ -179,14 +179,9 @@ public class RuleProcessor {
 		}
 	}
 
-	public void commitAndCloseCDOSession() {
-		commitCloneModelToCDO();
-		closeCDOSession();
-	}
-
 	public void closeCDOSession() {
-		cdoClient_.closeSession();
-		cdoClient_ = null;
+		//cdoClient_.closeSession();
+		//cdoClient_ = null;
 	}
 
 	/*
@@ -1440,7 +1435,7 @@ public class RuleProcessor {
 		
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
 		CamelModel cModel = proxy.getCamelModel(camelModel);
-		if (camelModel == null) {
+		if (cModel == null) {
 			StringBuilder message = new StringBuilder();
 			message.append("User requirements:");
 			message.append("    -> Error: The given CAMEL model (");
