@@ -62,6 +62,9 @@ public class AdaptationManager {
 	private static final int SUB_TERMINATION_PORT_DEFAULT=5588;
 	private static final String SUB_TERMINATION_TOPIC_DEFAULT="terminate";
 	private static final int SUB_SCALING_PORT_DEFAULT=5589;
+	
+	private static String fakeDeployment = null;
+	private static int fakeDeploymentTimeout = -1;
 
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
@@ -73,6 +76,10 @@ public class AdaptationManager {
 		String resourceName = properties.getProperty("CDO.resourceName");
 		if (resourceName == null)
 			resourceName = "test";
+		
+		fakeDeployment = properties.getProperty("FakeDeploymentTimeoutSeconds");
+		if (fakeDeployment != null)
+			fakeDeploymentTimeout = Integer.parseInt(fakeDeployment);
 
 		/*
 		 * //Running the 0MQ Server try { new ZeromqServer().start(); } catch
@@ -103,17 +110,26 @@ public class AdaptationManager {
 				//runListener();
 				daemonMode();
 			} else {
-				if(c.deployModelIDThreaded(1))// threaded execution of plan
-					LOGGER.log(Level.INFO, "Successfully deployed model");
-				else
-					LOGGER.log(Level.SEVERE, "Failed to deploy model");
+				
+				if(fakeDeploymentTimeout >= 0){//Performing a fake deployment
+					Thread.sleep(fakeDeploymentTimeout*1000);
+					LOGGER.log(Level.INFO, "Successfully faked a deployed model");
+				} else{
+					
+					if(c.deployModelIDThreaded(1))// threaded execution of plan
+						LOGGER.log(Level.INFO, "Successfully deployed model");
+					else
+						LOGGER.log(Level.SEVERE, "Failed to deploy model");
+				}
+				
+
 			}
 		} catch (Exception ex) {
 			if (ex instanceof ArrayIndexOutOfBoundsException)
-				System.out
-						.println("Run as deamon if you want to run continuously");
-			else
-				ex.printStackTrace();
+				System.out.println("Run as deamon if you want to run continuously");
+			else if(ex instanceof InterruptedException)
+				System.out.println("Interrupted sleep during fake deployment");
+			ex.printStackTrace();
 		} finally {
 			LOGGER.log(Level.INFO, "Adaptation manager: stopping");
 			// c.terminate();
@@ -216,10 +232,28 @@ public class AdaptationManager {
 				}
 				
 				taskInProgress = true;
-				if(!c.deployModelIDThreaded(depModelIndex)){//deployment was not successful
-					terminate = true;
-					LOGGER.log(Level.SEVERE, "Failed to deploy model");
+				
+				try {
+					
+					if(fakeDeploymentTimeout >= 0){//Performing a fake deployment
+						Thread.sleep(fakeDeploymentTimeout*1000);
+						LOGGER.log(Level.INFO, "Successfully faked a deployed model");
+					} else{
+						
+						if(!c.deployModelIDThreaded(depModelIndex)){//deployment was not successful
+							terminate = true;
+							LOGGER.log(Level.SEVERE, "Failed to deploy model");
+						}					
+					}
+					
+				} catch (Exception ex) {
+					if (ex instanceof IndexOutOfBoundsException)
+						System.out.println("Could not reach indexed CDO solution #" + depModelIndex);
+					else if(ex instanceof InterruptedException)
+						System.out.println("Interrupted sleep during fake deployment");
+					ex.printStackTrace();
 				}
+
 				taskInProgress = false;
 			}
 			

@@ -175,11 +175,11 @@ public class ReasonerInterfacer {
 		}
 		LOGGER.log(Level.INFO, "#Deployment_Models in CDO : " + model.getDeploymentModels().size() + ". Getting model# " + dmIndex);
 		DeploymentModel depModel = null;
-		if(dmIndex <= model.getDeploymentModels().size())
+		if(dmIndex < model.getDeploymentModels().size())
 			depModel = model.getDeploymentModels().get(dmIndex);
 		else{
 			try {
-				throw new Exception("Inexistent deployment model index");
+				throw new Exception("Inexistent deployment model index #" + dmIndex);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
