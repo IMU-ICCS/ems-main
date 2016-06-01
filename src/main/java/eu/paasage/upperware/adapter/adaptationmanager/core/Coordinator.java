@@ -455,6 +455,70 @@ public class Coordinator {
 		}
 	}
 	
+	public boolean fakeDeployment(int dmIndex, int fakeDeploymentTimeout){
+
+		LOGGER.log(Level.INFO, "Start of fake execution for solution indexed " + dmIndex);
+		
+		String modelName = "some_model";
+		
+		if(targetModel == null){//Simple deployment
+			
+			if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+				
+				reasonerInterfacer.openTransaction();
+				targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
+			
+			}else{//getting model from Model file
+				
+				targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+			}
+			
+		}else if(targetModel != null){//Reconfig
+			
+			currentModel = targetModel;
+			
+			//get new targetModel and deploy
+			if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
+				
+				reasonerInterfacer.openTransaction();
+				targetModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				reasonerInterfacer.closeTransaction();// closing the live transaction after plan generated
+				
+			}else{//getting model from Model file
+				
+				targetModel = reasonerInterfacer.loadNthFromFile(dmIndex);
+				modelName = reasonerInterfacer.getModelName(targetModel);
+				taskPlan = GraphUtilities.generatePlanGraph(currentModel, targetModel);
+				
+			}
+		}
+		
+		try {
+			
+			Thread.sleep(fakeDeploymentTimeout*1000);
+			LOGGER.log(Level.INFO, "Successfully faked a deployed model");
+			
+		} catch (Exception ex) {
+			// TODO: handle exception
+			if(ex instanceof InterruptedException)
+				System.out.println("Interrupted sleep during fake deployment");
+			ex.printStackTrace();
+		}
+		
+		//Fake deployment completed successfully. So publish to metrics collector
+		if(!appController.publishToMetric(modelName))
+			LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
+		
+		return true;
+	}
+	
 	private static void schedule() {
 
 		LOGGER.log(Level.INFO, "Scheduling threaded Action execution");

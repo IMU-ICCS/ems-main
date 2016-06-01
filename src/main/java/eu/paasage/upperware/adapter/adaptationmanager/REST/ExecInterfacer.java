@@ -2761,7 +2761,7 @@ public class ExecInterfacer {
     	//return jArr;
 	}
 	
-	public boolean updateOSandLoginForSpecificImage(String imgID, String OSVendorType, String login, String OSArchitecture, String OSVersion) throws IOException, ParseException{
+	public boolean updateOSandLoginForSpecificImage(String imgID, String OSVendorType, String login, String pass, String OSArchitecture, String OSVersion) throws IOException, ParseException{
 		boolean status = false;
 		
 		JSONObject imgJObj = null;
@@ -2920,26 +2920,37 @@ public class ExecInterfacer {
 			switch (OSVendorType.toUpperCase()) {
 			case "WINDOWS":
 				
-				if(defLogin!= null && imgJObj.get("defaultLoginUsername")==null){
+				if(login != null && imgJObj.get("defaultLoginUsername")==null){//populate from the model
+					inBody.put("defaultLoginUsername", login);
+					inBody.put("defaultLoginPassword", pass);
+				}
+				else if(defLogin!= null && imgJObj.get("defaultLoginUsername")==null){//populate from Execware default
 					inBody.put("defaultLoginUsername", defLogin);
-				}else if(imgJObj.get("defaultLoginUsername")!=null){
+					inBody.put("defaultLoginPassword", defPass);
+				}else if(imgJObj.get("defaultLoginUsername")!=null){//rewrite the one set in image already
 					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+					inBody.put("defaultLoginPassword", imgJObj.get("defaultLoginPassword"));
 				}
 				
-				if(defPass!= null && imgJObj.get("defaultPassword")==null){
+				/*if(defPass!= null && imgJObj.get("defaultPassword")==null){
 					inBody.put("defaultPassword", defPass);
 				}else if(imgJObj.get("defaultPassword")!=null){
 					inBody.put("defaultPassword", imgJObj.get("defaultPassword"));
-				}
+				}*/
 				
 				break;
 
 			default://case NIX
 				
-				if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")==null){
+				if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")==null){//populate from the model
 					inBody.put("defaultLoginUsername", login);
-				}else if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")!=null){
+					inBody.put("defaultLoginPassword", pass);
+				}else if(defLogin!= null && imgJObj.get("defaultLoginUsername")==null){//populate from Execware default
+					inBody.put("defaultLoginUsername", defLogin);
+					inBody.put("defaultLoginPassword", defPass);
+				}else if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")!=null){//rewrite the one set in image already
 					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+					inBody.put("defaultLoginPassword", imgJObj.get("defaultLoginPassword"));
 				}
 				
 				break;

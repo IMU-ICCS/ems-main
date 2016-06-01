@@ -197,8 +197,14 @@ public class VMAction implements Action {
 		String OSVendorType = "NIX";//objParams.get("OSVendorType").asString();
 		JsonObject defaultCred = (JsonObject) vmiParams.get("defaultCredential");
 		String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
+		String imgPass = "";
 		String OSArchitecture = vmiParams.get("OSArchitecture").asString();
 		String OSVersion = "14.04.2";//default value - to be provided in Model
+		
+		if(defaultCred.get("defaultLoginName").asString() != null || (!defaultCred.get("defaultLoginName").asString().equalsIgnoreCase(""))){
+			login = defaultCred.get("defaultLoginName").asString();
+			imgPass = defaultCred.get("defaultLoginPassword").asString();
+		}
 		
 		
 		if((vmt=dataShare.getEntityVMTid(vmType))==null){//entity non existant in ExecWare
@@ -308,7 +314,7 @@ public class VMAction implements Action {
 			try {
 				imageID = execInterfacer.getSpecificImage(Integer.parseInt(cloudID), imgCloudProviderId/*, locationID*/) + "";
 				
-				boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
+				boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, imgPass, OSArchitecture, OSVersion);
 				
 				if(status)
 					LOGGER.log(Level.INFO, "Updated OS/Default Login for image " + imageID);
@@ -365,8 +371,10 @@ public class VMAction implements Action {
 		JsonObject defaultCred = (JsonObject) vmiParams.get("defaultCredential");
 		//String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
 		String login = defaultCred.get("defaultLoginName").asString();
-		if(login == null)
-			login = "ubuntu";
+		String imgPass = defaultCred.get("defaultLoginPassword").asString();
+		/*if(login == null)
+			login = "ubuntu";*/
+		
 		String OSArchitecture = vmiParams.get("OSArchitecture").asString();
 		
 		String OSVersion = "14.04.2";//default value - to be provided in Model
@@ -533,7 +541,7 @@ public class VMAction implements Action {
 					LOGGER.log(Level.INFO, "Timeout! ExecWare could not yet find image id " +  imgCloudProviderId +" Please verify. Quitting");
 					throw new InterruptedException("Timeout error looking for cloud image id " + imgCloudProviderId);
 				} else
-					status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
+					status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, imgPass, OSArchitecture, OSVersion);
 				
 				//boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
 				

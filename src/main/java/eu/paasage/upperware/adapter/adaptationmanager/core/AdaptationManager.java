@@ -235,9 +235,12 @@ public class AdaptationManager {
 				
 				try {
 					
-					if(fakeDeploymentTimeout >= 0){//Performing a fake deployment
-						Thread.sleep(fakeDeploymentTimeout*1000);
-						LOGGER.log(Level.INFO, "Successfully faked a deployed model");
+					if(fakeDeploymentTimeout >= 0){//Performing a fake deployment not successful
+						
+						if(!c.fakeDeployment(depModelIndex, fakeDeploymentTimeout)){
+							terminate = true;
+							LOGGER.log(Level.SEVERE, "Failed to fake deploy model");
+						}
 					} else{
 						
 						if(!c.deployModelIDThreaded(depModelIndex)){//deployment was not successful
