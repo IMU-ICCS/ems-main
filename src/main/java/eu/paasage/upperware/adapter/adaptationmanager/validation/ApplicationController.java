@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
+import eu.paasage.upperware.adapter.adaptationmanager.core.PaaSagePublisher;
 import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQPublisher;
 
 /**
@@ -134,9 +135,14 @@ public class ApplicationController {
 		}else{//means CDO server is used
 			msg = "newResourceArrival:" + resourceName + ":" + modelName;
 		}
-		
+
+
 		status = zmqAdap2MetricsPub.publishMsg(msg);
-		
+
+		// *************** Please adapt to use the reald CAMEL_MODEL_ID transmitted by S2D Message
+		String[] messageParts= {"THE_CAMEL_MODEL_ID"};
+		PaaSagePublisher.publishBackend("ApplicationIsRunning",messageParts);
+
 		return status;
 	}
 }

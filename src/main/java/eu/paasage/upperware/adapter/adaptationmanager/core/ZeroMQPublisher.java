@@ -24,7 +24,7 @@ public class ZeroMQPublisher{
 	private String reply;
 	private final static Logger LOGGER = Logger
 		.getLogger(ZeroMQPublisher.class.getName());
-		
+
 	public ZeroMQPublisher(String publisherName, int port){
 		this.publisherName = publisherName;
 		this.port = port;
