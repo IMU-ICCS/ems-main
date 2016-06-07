@@ -32,39 +32,36 @@ public class CdoModelSource implements ImportModelSource {
         logger = org.apache.log4j.Logger.getLogger(CdoModelSource.class);
     }
 
-    private final CommandLinePropertiesAccessor config;
+
     private final CDOClient cl;
     private CDOTransaction trans;
 
-    public CdoModelSource(CommandLinePropertiesAccessor config) {
-        this.config = config;
+    public CdoModelSource(final CommandLinePropertiesAccessor config) {
 
         String cdoUser = config.getCdoUser();
         String cdoPassword = config.getCdoPassword();
 
         //Create the CDOClient
         logger.info("Create CDO client...");
-        cl = new CDOClient(cdoUser, cdoPassword);
+        cl = RetryingCDOClientFactory.client(cdoUser, cdoPassword);
 
         trans = cl.openTransaction();
     }
 
 
-    @Override
-    public EList<EObject> getResources(String resourceName) {
-        EList<EObject> objs = trans.getResource(resourceName).getContents();
-        return objs;
+    @Override public EList<EObject> getResources(String resourceName) {
+        return trans.getResource(resourceName).getContents();
     }
 
-    @Override
-    public void createMetricInstances(FrontendCommunicator fc, CamelFinder finder, ExecutionContext ec, CamelModel model, EList<EObject> objs) {
+    @Override public void createMetricInstances(FrontendCommunicator fc, CamelFinder finder,
+        ExecutionContext ec, CamelModel model, EList<EObject> objs) {
         logger.info("Start creating MetricInstances.");
 
         Instantiator.createMetricInstances(model, ec, objs);
 
         // TODO THIS IS A HACK AND NOT MEANT TO BE HERE
-        for(VMInstance instance : finder.getVMInstances(ec)){
-            if(instance.getIp() == null || "".equals(instance.getIp())){
+        for (VMInstance instance : finder.getVMInstances(ec)) {
+            if (instance.getIp() == null || "".equals(instance.getIp())) {
                 String ip = fc.getPublicIpOfVmByName(instance.getName());
                 instance.setIp(ip);
             }
@@ -80,14 +77,12 @@ public class CdoModelSource implements ImportModelSource {
         }
     }
 
-    @Override
-    public void createExampleModel(String resourceName) {
+    @Override public void createExampleModel(String resourceName) {
         cl.storeModel(CouchbaseExample.get(null), resourceName, false);
     }
 
-    @Override
-    public void terminate() {
-        if(cl != null){
+    @Override public void terminate() {
+        if (cl != null) {
             cl.closeTransaction(trans);
             cl.closeSession();
         }
