@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -62,6 +63,7 @@ import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecutionwareError;
 import eu.paasage.upperware.adapter.adaptationmanager.core.AdaptationManager;
+import eu.paasage.upperware.adapter.adaptationmanager.mapping.ExecwareInstance;
 
 public class ExecInterfacer {
 
@@ -1441,6 +1443,58 @@ public class ExecInterfacer {
 			
 	    	return status;
 		}
+		
+		/**
+		 * returns name of the resource id
+		 * @param API_RESOURCE the url of a particular resource to query
+		 * @return name else ""
+		 */
+		private String queryName(String API_RESOURCE){
+
+			String name = "";
+			
+			//Header inHeader = new BasicHeader(name, value);
+			
+			HttpResponse resp = null;
+			HttpEntity respEntity = null;
+			try {
+				resp = getRequest(API_RESOURCE, null);
+				respEntity = resp.getEntity();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch(NullPointerException npEx){
+				LOGGER.log(Level.SEVERE, "Could not get the resource " + API_RESOURCE);
+				npEx.printStackTrace();
+			}
+	        
+	        String respString;
+	        JSONParser parser = new JSONParser();
+	        JSONObject result = null;        
+	        
+			try {
+				respString = EntityUtils.toString(respEntity);
+		    	if(resp.getStatusLine().getStatusCode()==200){
+		    		
+		    		result = (JSONObject)parser.parse(respString);
+		    		//result = new JSONObject(respString);
+//		    		jArr = (JSONArray)parser.parse(respString);
+		            
+		    		name = (String)result.get("name");
+		    	}
+			} catch (org.apache.http.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	    	return name;
+		}
 	
 	
 	/**
@@ -2024,6 +2078,15 @@ public class ExecInterfacer {
     	
     	System.out.println(respString);
     	return jArr;
+	}
+	
+	/**
+	 * returns the name of a particular VM
+	 * @param virtualMachineId VM id for name query
+	 * @return VM name if found else ""
+	 */
+	public String getLifecycleComponentName(int lifecycleComponentId){
+		return queryName(API_LIFECYCLECOMPONENT + "/" + lifecycleComponentId);
 	}
 	
 	public boolean updateLifecycleComponent(int LCId, String compName, String download, String install, String start, String stop){
@@ -4056,6 +4119,15 @@ public class ExecInterfacer {
 		return queryStateDeleted(API_VIRTUALMACHINE + "/" + virtualMachineId);
 	}
 	
+	/**
+	 * returns the name of a particular VM
+	 * @param virtualMachineId VM id for name query
+	 * @return VM name if found else ""
+	 */
+	public String getVMName(int virtualMachineId){
+		return queryName(API_VIRTUALMACHINE + "/" + virtualMachineId);
+	}
+	
 	public boolean deleteVirtualMachine(int virtualMachineId) throws IOException, ParseException{
 		
 		boolean status = false;
@@ -4219,6 +4291,41 @@ public class ExecInterfacer {
             status = true;
     	}
     	return status;
+	}
+	
+	public LinkedList<ExecwareInstance> getInstancesForCDOUpdate() throws IOException, ParseException{
+		LinkedList<ExecwareInstance> instances = new LinkedList<ExecwareInstance>();
+		
+		JSONArray JArInstances = getInstances();
+		
+		Iterator<JSONObject> jArrIt = JArInstances.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			ExecwareInstance eInstance = new ExecwareInstance();
+			
+			String remoteState, applicationComponent, applicationInstance, virtualMachineName;
+			int virtualMachineId, applicationComponentId;
+			
+			remoteState = jObj.get("remoteState").toString();
+			applicationComponent = jObj.get("applicationComponent").toString();
+			applicationInstance = jObj.get("applicationInstance").toString();
+			virtualMachineId = Integer.parseInt(jObj.get("virtualMachine").toString());
+			applicationComponentId = Integer.parseInt(applicationComponent);
+			
+			String VMName = getVMName(virtualMachineId);
+			
+			eInstance.setInstance(remoteState, applicationComponent, applicationInstance, virtualMachineId);
+			eInstance.setVirtualMachineName(virtualMachineId, VMName);
+			
+			String applicationComponentName = getLifecycleComponentName(applicationComponentId);
+			eInstance.setApplicationComponentName(applicationComponentId, applicationComponentName);
+			
+			instances.add(eInstance);			
+		}
+		
+		
+		return instances;
 	}
 	
 	class User{

@@ -22,6 +22,7 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.actions.Action;
 import eu.paasage.upperware.adapter.adaptationmanager.actions.ActionError;
+import eu.paasage.upperware.adapter.adaptationmanager.actions.CDOUpdateAction;
 import eu.paasage.upperware.plangenerator.exception.ModelComparatorException;
 import eu.paasage.upperware.plangenerator.exception.PlanGenerationException;
 //import eu.paasage.upperware.adapter.adaptationmanager.plangeneration.Plan;
@@ -579,26 +580,111 @@ public class Coordinator {
 
 	}
 	
+	@Test
+	public boolean updateRunningCDOModel(int dmIndex, ReasonerInterfacer interfacer){
+		this.reasonerInterfacer = interfacer;
+		return updateRunningCDOModel(dmIndex);
+	}
+	
 	public boolean updateRunningCDOModel(int dmIndex){
 		boolean status = false;
 		
-		DeploymentModel model = null;
-		CDOUpdater updater;
-		
-		if(reasonerInterfacer.isModelFromCDO()){//get live Model from CDO server
-			
-			reasonerInterfacer.openTransaction();
-			model = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
-			updater = new CDOUpdater(model);
-			updater.printVMInstances();
-			reasonerInterfacer.commitAndCloseTransaction();//closing the live transaction after plan generated
-			
-		}else{//running model deployed from file. So nothing to update on CDO
-			
+		if(!reasonerInterfacer.isModelFromCDO()){//running model deployed from file. So nothing to update on CDO
 			LOGGER.log(Level.INFO, "Model was deployed from a file. Nothing to update in CDO.");
-			
+			return status;
 		}
 		
+		DeploymentModel runningDepModel = null;
+		CDOUpdater updater;
+		
+		
+		/*reasonerInterfacer.openTransaction();
+		runningDepModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
+		updater = new CDOUpdater(reasonerInterfacer.getresourceName(), runningDepModel);*/
+		updater = new CDOUpdater(reasonerInterfacer, dmIndex);
+//		updater.printVMInstances();
+		//updater.test();
+//		updater.copyDeploymentModel();
+		
+		
+		LOGGER.log(Level.INFO, "Starting threaded CDO update Action execution");
+
+		int cpus = Runtime.getRuntime().availableProcessors();
+
+		executor = new ThreadExecutor(cpus, 300, new LinkedBlockingQueue<Runnable>());
+		
+		Action updateNode = new CDOUpdateAction(updater, execInterfacer);
+		
+		graph = null;		
+		graph = new DefaultDirectedGraph<Action, DefaultEdge>(DefaultEdge.class);
+		graph.addVertex(updateNode);
+		
+		status = updateThreaded();
+		
+		//updater.commitAndCloseTransaction();//closing the live transaction after CDO updated
+		reasonerInterfacer.commitAndCloseTransaction();//closing the live transaction after CDO updated
+		
+		return status;
+	}
+	
+	private static boolean updateThreaded(){
+		
+		boolean status = false;
+		
+		LOGGER.log(Level.INFO, "Scheduling threaded Action execution");
+		
+		LOGGER.log(Level.INFO, "Graph vertex size = " + graph.vertexSet().size());
+
+		if (graph.vertexSet().size() != 1) {
+			executor.shutdown();
+			return status;
+		}
+
+		synchronized (graph) {
+			
+			GraphIterator<Action, DefaultEdge> iterator = new TopologicalOrderIterator<Action, DefaultEdge>(graph);
+			
+			while (iterator.hasNext()) {
+				Action task = (Action) iterator.next();
+				LOGGER.log(Level.INFO, "Check " + task.toString());
+				//executor.execute(task);
+				task.run();
+			}
+			
+			LOGGER.log(Level.INFO, "Scheduled All Threads For Execution");
+
+			// executor.getKeepAliveTime(TimeUnit.MINUTES);
+			// executor.allowCoreThreadTimeOut(true);
+
+			try {
+				executor.shutdown();//it cannot be queued more Actions
+
+				//Wait for 30 minutes to finish
+				int i = 10;
+				
+				while(!(status = executor.awaitTermination(3, TimeUnit.MINUTES)) && i>0){
+					LOGGER.log(Level.INFO, "Awaiting termination of threads");
+					i--;
+				}
+
+				if(status)
+					LOGGER.log(Level.INFO, "Adapter CDO update: completed execution");
+				else{
+					LOGGER.log(Level.WARNING, "Adapter CDO update: Executor did not terminate within the specified time.");
+					
+				}
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				System.out.println("Tasks not completed successfully");
+			} finally{
+				List<Runnable> droppedTasks = executor.shutdownNow();
+				if(droppedTasks.size() > 0)
+					LOGGER.log(Level.WARNING, "Executor was abruptly shut down. " + droppedTasks.size() + " tasks were not executed.");
+				else
+					LOGGER.log(Level.INFO, "Executor was safely shut down. All tasks were executed.");
+			}
+		}
 		return status;
 	}
 	

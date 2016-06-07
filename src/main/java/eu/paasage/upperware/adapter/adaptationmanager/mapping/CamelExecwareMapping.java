@@ -8,8 +8,10 @@
 
 package eu.paasage.upperware.adapter.adaptationmanager.mapping;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -331,6 +333,30 @@ public class CamelExecwareMapping {
 					return VMI.getId();
 			return null;
 		}
+	}
+	
+	public LinkedList<String> getEntitiesVMIs(){
+		LinkedList<String> VMINames = new LinkedList<String>();
+		synchronized(VMIs){
+			for(VirtualMachineInstance VMI : VMIs){
+				VMINames.add(VMI.getVMIname());
+			}
+		}
+		return VMINames;
+	}
+	
+	/**
+	 * 
+	 * @return VMIInfo Map(VMI_EW_id, VMI_name)
+	 */
+	public Map<String, String> getInfoVMIs(){
+		Map<String, String> VMIInfo = new HashMap<String, String>();
+		synchronized(VMIs){
+			for(VirtualMachineInstance VMI : VMIs){
+				VMIInfo.put(VMI.getId(), VMI.getVMIname());
+			}
+		}
+		return VMIInfo;
 	}
 	
 	//Stores all the Lifecycle & Application Comp Instance entities created
@@ -699,6 +725,8 @@ public class CamelExecwareMapping {
 		String getHardware(){
 			return vmt.getHardware();
 		}
+		
+		String getTemplateName(){return vmt.getVMType();}
 		
 		void setId(String id){
 			this.id = id;
