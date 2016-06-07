@@ -8,12 +8,16 @@
 
 package eu.paasage.upperware.adapter.adaptationmanager.validation;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.print.attribute.standard.DateTimeAtCompleted;
+
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
+import eu.paasage.upperware.adapter.adaptationmanager.core.PaaSagePublisher;
 import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQPublisher;
 
 /**
@@ -34,12 +38,18 @@ public class ApplicationController {
 	
 	public ApplicationController(String resourceName){
 		this.resourceName = resourceName;
-		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", 5550);
+		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", "newModelArrival", 5550);
 	}
 	
 	private void setModelName(String modelName){
 		this.modelName = modelName;
 	}
+	
+	public void updateResourceName(String resourceName){
+		this.resourceName = resourceName;
+	}
+	
+	private String getUniqueId(){return Long.toString((new Date()).getTime());}
 	
 	/**
 	 * Adds an entity to be monitored later
@@ -130,13 +140,19 @@ public class ApplicationController {
 		
 		String msg = "";
 		if(resourceName == null){//means xmi file used for deployment
-			msg = "newResourceArrival:" + "noResourceName:" + modelName;
+			//msg = "newResourceArrival:" + "noResourceName:" + modelName;
+			msg = "noResourceName:" + modelName + ":" + "ExecutionContext_" + getUniqueId();
 		}else{//means CDO server is used
-			msg = "newResourceArrival:" + resourceName + ":" + modelName;
+			msg = resourceName + ":" + modelName + ":" + "ExecutionContext_" + getUniqueId();
 		}
-		
-		status = zmqAdap2MetricsPub.publishMsg(msg);
-		
+
+
+		status = zmqAdap2MetricsPub.publishMsg(new String[] {msg});
+
+		// *************** Please adapt to use the reald CAMEL_MODEL_ID transmitted by S2D Message
+		String[] messageParts= new String[] {resourceName};
+		PaaSagePublisher.publishBackend("ApplicationIsRunning",messageParts);
+
 		return status;
 	}
 }

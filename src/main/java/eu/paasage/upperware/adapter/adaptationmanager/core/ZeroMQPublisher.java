@@ -20,13 +20,16 @@ public class ZeroMQPublisher{
 	ZMQ.Context context;
 	ZMQ.Socket publisher;
 	
+	private String topic;
+	
 	private String request;
 	private String reply;
 	private final static Logger LOGGER = Logger
 		.getLogger(ZeroMQPublisher.class.getName());
-		
-	public ZeroMQPublisher(String publisherName, int port){
+
+	public ZeroMQPublisher(String publisherName, String topic, int port){
 		this.publisherName = publisherName;
+		this.topic = topic;
 		this.port = port;
 		LOGGER.log(Level.INFO, "0MQ Publisher " + this.publisherName + ":" + this.port + " starting");
 		bindPublisher();
@@ -44,7 +47,7 @@ public class ZeroMQPublisher{
 		LOGGER.log(Level.INFO, "0MQ Publisher " + this.publisherName + ":" + this.port + " started");
 	}
 	
-	public boolean publishMsg(String str){
+	/*public boolean publishMsg(String str){
 		boolean status = false;
 		if(!Thread.currentThread().isInterrupted()){
 			if(publisher.send(str)){
@@ -52,6 +55,39 @@ public class ZeroMQPublisher{
 				LOGGER.log(Level.INFO, "0MQ Publisher " + this.publisherName + ":" + this.port + " published msg: " + str);
 			}
 		}
+		return status;
+	}*/
+	
+	public boolean publishMsg(String[] messages){
+		boolean status = true;
+		
+		if(!Thread.currentThread().isInterrupted()){
+			
+			if(publisher.sendMore(this.topic))
+				status = status && true;
+            else
+            	status = status && false;
+			
+			
+            for ( int i=0; i < messages.length; i++){
+                String message = messages[i];
+                if ( i == messages.length - 1){//last part of the message
+                    if(publisher.send(message))
+                    	status = status && true;
+                    else
+                    	status = status && false;
+                }
+                else {
+                    if(publisher.sendMore(message))
+                    	status = status && true;
+                    else
+                    	status = status && false;
+                }
+            }
+            
+            LOGGER.log(Level.INFO, "0MQ Publisher " + this.publisherName + ":" + this.port + " => topic " + this.topic + " published msg: " + String.join(" | ", messages));
+		}
+		
 		return status;
 	}
 	

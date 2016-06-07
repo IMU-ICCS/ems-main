@@ -233,6 +233,7 @@ public class Coordinator {
 	
 	public void updateReasonerInterfacer(ReasonerInterfacer reasonerInterfacer) {
 		this.reasonerInterfacer = reasonerInterfacer;
+		this.appController.updateResourceName(this.reasonerInterfacer.getresourceName());
 	}
 
 	public void runStep() {
