@@ -21,34 +21,32 @@ import java.util.concurrent.Executors;
 
 /**
  * Hello world!
- *
  */
-public class App 
-{
+public class App {
     private static org.apache.log4j.Logger logger;
 
     static {
         logger = org.apache.log4j.Logger.getLogger(App.class);
     }
 
-    public static void main( String[] args ) {
+    public static void main(String[] args) {
         CommandLinePropertiesAccessor conf = new CommandLinePropertiesAccessorImpl(args);
         ZeroMqSubscriber subscriber;
         ExecutorService executor;
 
-        ImportModelSource ims = ModelSourceType.mapToIms(conf);
-
-        switch(conf.getExecutionMode()){
+        switch (conf.getExecutionMode()) {
             case STATIC:
                 // just run the adapter once with all information in the conf:
                 logger.info("Run SRL-Adapter in STATIC mode.");
                 Execution exec = new Execution(conf);
+                ImportModelSource ims = ModelSourceType.mapToIms(conf);
                 exec.run(ims);
 
                 break;
             case ZMQ_LISTEN:
                 // listen to ZeroMQ for modelname and executioncontext
-                logger.info("Run SRL-Adapter in ZMQ_LISTEN mode and start listening to ZERO_MQ server for modelname and executioncontext name.");
+                logger.info(
+                    "Run SRL-Adapter in ZMQ_LISTEN mode and start listening to ZERO_MQ server for modelname and executioncontext name.");
                 subscriber = new ZeroMqSubscriber(conf);
                 executor = Executors.newCachedThreadPool();
                 executor.execute(subscriber);
@@ -57,7 +55,8 @@ public class App
                 break;
             case ZMQ_HOST:
                 // start and listen to ZeroMQ for modelname and executioncontext
-                logger.info("Run SRL-Adapter in ZMQ_HOST mode and start ZERO_MQ server to wait for messages with modelname and executioncontext name.");
+                logger.info(
+                    "Run SRL-Adapter in ZMQ_HOST mode and start ZERO_MQ server to wait for messages with modelname and executioncontext name.");
                 ZeroMqServer server = new ZeroMqServer(conf.getZeroMqPort());
                 logger.info("Started ZeroMQ server.");
                 subscriber = new ZeroMqSubscriber(conf, "tcp://localhost:" + conf.getZeroMqPort());
@@ -66,12 +65,15 @@ public class App
                 logger.info("Subscribed to ZeroMQ server.");
                 // TEST:
                 try {
-                    logger.info("Sleep for ten seconds so the Subscriber is set up, before we send messages...");
+                    logger.info(
+                        "Sleep for ten seconds so the Subscriber is set up, before we send messages...");
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                server.submitValue(conf.getZeroMqQueue(), conf.getResourceName(), conf.getModelName(), conf.getExecutionContextName());
+                server
+                    .submitValue(conf.getZeroMqQueue(), conf.getResourceName(), conf.getModelName(),
+                        conf.getExecutionContextName());
                 // could also read raw message: server.submitValue(conf.getZeroMqQueue(), conf.getZeroMqTestmessage());
 
                 break;
