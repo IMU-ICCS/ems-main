@@ -139,7 +139,7 @@ public class AdaptationManagerTest
 //	@Ignore
 	public void testZMQ(){
 		ZeroMQPublisher zmpMetric = null;
-		ZeroMQPublisher zmpModelreq = new ZeroMQPublisher("ModelReqPub", 5551);
+		ZeroMQPublisher zmpModelreq = new ZeroMQPublisher("ModelReqPub", "newModelArrival", 5551);
 		
 		ZeroMQSubscriber zmsMetric = new ZeroMQSubscriber("MetricSub", "localhost", "M",5550);
 		ZeroMQSubscriber zmsModelreq0 = new ZeroMQSubscriber("ModelReqSub0", "localhost", "M", 5551);
@@ -152,16 +152,16 @@ public class AdaptationManagerTest
 		for (int i = 0; i < 10000; i++) {
 			if(i%2==0)
 				if(zmpMetric != null)
-					zmpMetric.publishMsg("M" + i + "");
+					zmpMetric.publishMsg(new String[] {"M" + i + ""});
 			else
-				zmpModelreq.publishMsg("M" + i + "");
+				zmpModelreq.publishMsg(new String[] {"M" + i + ""});
 			if(i==1000){
 				zmsModelreq1 = new ZeroMQSubscriber("ModelReqSub1", "localhost", "M", 5551);
 				zmsModelreq1.start();
 			}
 			
 			if(i==2000)
-				zmpMetric = new ZeroMQPublisher("MetricPub", 5550);
+				zmpMetric = new ZeroMQPublisher("MetricPub", "newModelArrival", 5550);
 		}
 	}
 	
