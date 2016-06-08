@@ -13,23 +13,42 @@ package org.ow2.paasage.camel.srl.adapter.config;
  */
 public interface CommandLinePropertiesAccessor {
     String getCdoUser();
+
     String getCdoPassword();
+
     String getModelName();
+
     String getResourceName();
+
     String getExecutionContextName();
+
     String getColosseumUser();
+
     String getColosseumTenant();
+
     String getColosseumPassword();
+
     String getColosseumUrl();
+
     String getVisorEndpoint();
+
     boolean getSaveExample();
+
     boolean getCreateMetricInstances();
+
     boolean getCreateMonitorSubscriptions();
+
     boolean getCleanMonitoring();
+
     ExecutionMode getExecutionMode();
+
     int getZeroMqPort();
+
     String getZeroMqUri();
+
     String getZeroMqQueue();
+
     String getZeroMqTestmessage();
+
     ModelSourceType getModelSourceType();
 }

@@ -25,7 +25,7 @@ public class Printer {
         this.fc = fc;
     }
 
-    public String printMonitorInstances(){
+    public String printMonitorInstances() {
         String result = "";
         for (MonitorInstance monitor : fc.getMonitorInstances()) {
             result += "------------ MONITOR INSTANCES ---------" + lf;
@@ -40,7 +40,7 @@ public class Printer {
         return result;
     }
 
-    public String printRawMetrics(){
+    public String printRawMetrics() {
         String result = "";
         for (RawMonitor monitor : fc.getRawMonitors()) {
             result += "------------ RAW MONITOR ---------" + lf;
@@ -50,13 +50,14 @@ public class Printer {
                 externalId += (s + ";");
             }
             result += "Ex ID: " + externalId + lf;
-            SensorDescription sensorDescription = fc.getSensorDescription(monitor.getSensorDescription());
+            SensorDescription sensorDescription =
+                fc.getSensorDescription(monitor.getSensorDescription());
             result += "Class: " + sensorDescription.getClassName() + lf;
         }
         return result;
     }
 
-    public String printCompositeMetrics(){
+    public String printCompositeMetrics() {
         String result = "";
         for (ComposedMonitor monitor : fc.getComposedMonitors()) {
             result += "------------ AGGREGATED MONITORS ---------" + lf;

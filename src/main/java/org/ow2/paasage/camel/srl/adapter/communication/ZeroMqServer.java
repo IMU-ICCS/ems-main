@@ -19,38 +19,37 @@ public class ZeroMqServer {
     private boolean isRunning = true;
     private Socket socket;
     private Context context;
-    private int threadNum = 1;
     private static final int DEFAULT_THREAD_NUM = 1;
-    private final int port;
 
-    public ZeroMqServer(int port){
+    public ZeroMqServer(int port) {
         this(DEFAULT_THREAD_NUM, port);
     }
 
-    public ZeroMqServer(int threadNum, int port){
-        this.threadNum = threadNum;
-        this.port = port;
+    public ZeroMqServer(int threadNum, int port) {
         context = ZMQ.context(threadNum);
         socket = context.socket(ZMQ.PUB);
         socket.bind("tcp://*:" + port);
     }
 
-    public synchronized void submitValue(String queueName, String resourceName, String modelName, String executionContext){
-        if (isRunning){
+    public synchronized void submitValue(String queueName, String resourceName, String modelName,
+        String executionContext) {
+        if (isRunning) {
 
             // Content format: resource:model:executioncontext
             socket.sendMore(queueName);
-            socket.send(resourceName + ZeroMqSubscriber.SEPARATOR
-                + modelName + ZeroMqSubscriber.SEPARATOR + executionContext);
+            socket.send(
+                resourceName + ZeroMqSubscriber.SEPARATOR + modelName + ZeroMqSubscriber.SEPARATOR
+                    + executionContext);
         }
     }
 
-    public synchronized void submitValue(String queueName, String message){
+    public synchronized void submitValue(String queueName, String message) {
         final CdoConfigTuple cdoConfigTuple = ZeroMqSubscriber.convertLine(message);
-        this.submitValue(queueName, cdoConfigTuple.getResourceName(), cdoConfigTuple.getModelName(), cdoConfigTuple.getExecutionContext());
+        this.submitValue(queueName, cdoConfigTuple.getResourceName(), cdoConfigTuple.getModelName(),
+            cdoConfigTuple.getExecutionContext());
     }
 
-    public synchronized void stop(){
+    public synchronized void stop() {
         isRunning = false;
         socket.close();
         context.term();

@@ -8,22 +8,19 @@
 
 package org.ow2.paasage.camel.srl.adapter.utils;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.ScalingAction;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Frank on 21.05.2015.
  */
 public class Finder {
-    public static List<Long> getScalingActionsByEventId(Map<Long, String> map, String eventId){
+    public static List<Long> getScalingActionsByEventId(Map<Long, String> map, String eventId) {
         List<Long> result = new ArrayList<>();
 
-        for(Map.Entry<Long, String> entrySet : map.entrySet()){
-            if(entrySet.getValue().equals(eventId)){
+        for (Map.Entry<Long, String> entrySet : map.entrySet()) {
+            if (entrySet.getValue().equals(eventId)) {
                 result.add(entrySet.getKey());
             }
         }

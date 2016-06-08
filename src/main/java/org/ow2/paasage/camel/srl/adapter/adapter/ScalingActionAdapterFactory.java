@@ -8,11 +8,10 @@
 
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
-import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.scalability.ScalabilityRule;
 import eu.paasage.camel.scalability.ScalingAction;
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 
 import java.util.List;
 
@@ -21,5 +20,6 @@ import java.util.List;
  */
 public interface ScalingActionAdapterFactory {
     Adapter create(FrontendCommunicator fc, ScalingAction scalingAction,
-                   List<ScalabilityRule> associatedRules, List<HorizontalScaleRequirement> associatedScaleRequirements);
+        List<ScalabilityRule> associatedRules,
+        List<HorizontalScaleRequirement> associatedScaleRequirements);
 }

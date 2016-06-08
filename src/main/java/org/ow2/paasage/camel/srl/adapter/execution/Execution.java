@@ -12,7 +12,8 @@ import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import de.uniulm.omi.cloudiator.colosseum.client.SingletonFactory;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.*;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.ScalingAction;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FlowOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
@@ -20,8 +21,6 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.metric.*;
-import eu.paasage.camel.metric.Schedule;
-import eu.paasage.camel.metric.Window;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.scalability.EventPattern;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
@@ -32,7 +31,6 @@ import org.ow2.paasage.camel.srl.adapter.adapter.*;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.communication.RestFrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
-import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
 import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
 import org.ow2.paasage.camel.srl.adapter.utils.Finder;
 import org.ow2.paasage.camel.srl.adapter.utils.Printer;
@@ -49,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 public class Execution {
     private static final Map<Long, String> mapScalingActionEventName = new HashMap<>(); /* Cache for Scaling Actions */
     private static org.apache.log4j.Logger logger;
+    private boolean doneWork = false;
 
     static {
         logger = org.apache.log4j.Logger.getLogger(Execution.class);
@@ -60,15 +59,17 @@ public class Execution {
         this.conf = conf;
     }
 
-    public void run(ImportModelSource ims){
+    public void run(ImportModelSource ims) {
         run(ims, null, null, null, null);
     }
 
-    public void run(ImportModelSource ims, String dynamicResourceName, String dynamicModelName, String dynamicExecutionContextName) {
+    public void run(ImportModelSource ims, String dynamicResourceName, String dynamicModelName,
+        String dynamicExecutionContextName) {
         run(ims, dynamicResourceName, dynamicModelName, dynamicExecutionContextName, null);
     }
 
-    public void run(ImportModelSource ims, String dynamicResourceName, String dynamicModelName, String dynamicExecutionContextName, Client alternativeColosseumClient){
+    public void run(ImportModelSource ims, String dynamicResourceName, String dynamicModelName,
+        String dynamicExecutionContextName, Client alternativeColosseumClient) {
         boolean createNew = conf.getSaveExample();
         boolean createMetricInstances = conf.getCreateMetricInstances();
         boolean createMonitorSubscriptions = conf.getCreateMonitorSubscriptions();
@@ -82,30 +83,30 @@ public class Execution {
         String colTenant = conf.getColosseumTenant();
 
 
-        if(dynamicModelName != null){
+        if (dynamicModelName != null) {
             createNew = false;
             createMetricInstances = true;
             modelName = dynamicModelName;
         }
 
-        if(dynamicResourceName != null){
+        if (dynamicResourceName != null) {
             resourceName = dynamicResourceName;
         }
 
-        if(dynamicExecutionContextName != null){
+        if (dynamicExecutionContextName != null) {
             executionContextName = dynamicExecutionContextName;
         }
 
         Client colosseumClient;
 
-        if(alternativeColosseumClient == null) {
+        if (alternativeColosseumClient == null) {
             // Orchestrate SRL Engine
             logger.info("Connect to colosseum");
             ClientBuilder clientBuilder = ClientBuilder.getNew()
-                    // the base url
-                    .url(colUrl)
-                    // the login credentials
-                    .credentials(colUser, colTenant, colPassword);
+                // the base url
+                .url(colUrl)
+                // the login credentials
+                .credentials(colUser, colTenant, colPassword);
 
             colosseumClient = clientBuilder.build();
         } else {
@@ -131,8 +132,12 @@ public class Execution {
             for (EObject obj : objs) {
                 logger.info("The objs stored are: " + obj.toString());
 
-                if(!(obj instanceof CamelModel && ((CamelModel)obj).getName().equals(modelName))){
-                    logger.info("Model is not of type CamelModel or name is not equal to '" + modelName + "': " + obj.toString());
+                if (!(obj instanceof CamelModel && ((CamelModel) obj).getName()
+                    .equals(modelName))) {
+                    //noinspection ConstantConditions
+                    logger.info(String.format(
+                        "Found model %s that is of type %s and has name %s, while searching for a model of type CamelModel and name %s. Skipping",
+                        obj, obj.getClass(), ((CamelModel) obj).getName(), modelName));
                     continue;
                 }
 
@@ -152,7 +157,7 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                if(cleanMonitoring){
+                if (cleanMonitoring) {
                     fc.cleanMonitoring();
                 }
 
@@ -184,7 +189,7 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (Window w : finder.getWindows()){
+                for (Window w : finder.getWindows()) {
                     Adapter adapter = new WindowsAdapter(fc, w);
                     adapter.adapt();
                 }
@@ -195,13 +200,16 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (eu.paasage.camel.scalability.HorizontalScalingAction sa : finder.getScalingActions()){
+                for (eu.paasage.camel.scalability.HorizontalScalingAction sa : finder
+                    .getScalingActions()) {
                     ScalingActionAdapterFactory factory = new ScalingActionAdapterFactoryImpl();
 
                     List<ScalabilityRule> associatedRules = finder.getAssociatedRules(sa);
-                    List<HorizontalScaleRequirement> associatedHorizontalScaleRequirements = finder.getAssociatedHorizontalScaleRequirements(sa.getInternalComponent());
+                    List<HorizontalScaleRequirement> associatedHorizontalScaleRequirements =
+                        finder.getAssociatedHorizontalScaleRequirements(sa.getInternalComponent());
 
-                    Adapter adapter = factory.create(fc, sa, associatedRules, associatedHorizontalScaleRequirements);
+                    Adapter adapter = factory
+                        .create(fc, sa, associatedRules, associatedHorizontalScaleRequirements);
                     Object o = adapter.adapt();
 
                     ScalingAction componentHorizontalScalingAction = (ScalingAction) o;
@@ -215,7 +223,7 @@ public class Execution {
                     ///////////////////////////////////////////////////////////////////////////
                     for (ScalabilityRule rule : associatedRules) {
                         final String id;
-                        if(rule.getEvent().cdoID() != null){
+                        if (rule.getEvent().cdoID() != null) {
                             id = rule.getEvent().cdoID().toString();
                         } else {
                             id = rule.getEvent().getName(); /* TODO if now CDO available this ID might not be unique */
@@ -231,7 +239,7 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (RawMetricContext rmc : finder.getRawMetricContexts()){
+                for (RawMetricContext rmc : finder.getRawMetricContexts()) {
                     List<MetricInstance> mis = finder.getMetricInstances(rmc, ec);
                     Adapter adapter = new RawMetricContextAdapter(fc, rmc, mis);
                     Object o = adapter.adapt();
@@ -242,42 +250,42 @@ public class Execution {
                     // Add Subscription to all composite monitor to send to CDO
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    if(createMonitorSubscriptions) {
+                    if (createMonitorSubscriptions) {
                         List<Long> rawMonitors = new ArrayList<>();
                         rawMonitors.add(rawMonitor.getId());
 
                         SingletonFactory factory = new SingletonFactory(colosseumClient);
-                        de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window in5minutes = factory.singleton(new TimeWindow(5l, TimeUnit.MINUTES));
-                        FormulaQuantifier quantifier = factory.singleton(new FormulaQuantifier(true, 1.0));
+                        de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window
+                            in5minutes = factory.singleton(new TimeWindow(5l, TimeUnit.MINUTES));
+                        FormulaQuantifier quantifier =
+                            factory.singleton(new FormulaQuantifier(true, 1.0));
 
-                        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule secondly = factory.singleton(new de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule(1l, TimeUnit.SECONDS));
+                        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule secondly =
+                            factory.singleton(
+                                new de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule(1l,
+                                    TimeUnit.SECONDS));
                         Long schedule;
-                        if(rawMonitor instanceof RawMonitor){
+                        if (rawMonitor instanceof RawMonitor) {
                             schedule = ((RawMonitor) rawMonitor).getSchedule();
                         } else {
                             schedule = secondly.getId();
                         }
                         ComposedMonitor identityMonitor = factory.singleton(
-                                new ComposedMonitor(
-                                        FlowOperator.MAP,
-                                        FormulaOperator.IDENTITY,
-                                        quantifier.getId(),
-                                        in5minutes.getId(),
-                                        rawMonitors,
-                                        null,
-                                        schedule));
+                            new ComposedMonitor(FlowOperator.MAP, FormulaOperator.IDENTITY,
+                                quantifier.getId(), in5minutes.getId(), rawMonitors, null,
+                                schedule));
 
-                        for(MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())){
-                            for(MetricInstance metricInstance : mis){
+                        for (MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())) {
+                            for (MetricInstance metricInstance : mis) {
                                 final String externalId;
-                                if(metricInstance.cdoID() != null){
+                                if (metricInstance.cdoID() != null) {
                                     externalId = metricInstance.cdoID().toString();
                                 } else {
                                     externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
                                                           TODO unique through different model instances */
                                 }
 
-                                if(mi.getExternalReferences().isEmpty()){
+                                if (mi.getExternalReferences().isEmpty()) {
                                     fc.addExternalId(mi, externalId);
                                     break; // only one CDOID/name per monitor instance
                                 }
@@ -286,7 +294,7 @@ public class Execution {
 
 
                         fc.addMonitorSubscription(identityMonitor.getId(), conf.getVisorEndpoint(),
-                                SubscriptionType.CDO, FilterType.ANY, 0);
+                            SubscriptionType.CDO, FilterType.ANY, 0);
                     }
                 }
 
@@ -296,9 +304,10 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (CompositeMetricContext cmc : finder.getCompositeMetricContexts()){
+                for (CompositeMetricContext cmc : finder.getCompositeMetricContexts()) {
                     List<MetricInstance> mis = finder.getMetricInstances(cmc, ec);
-                    CompositeMetricContextAdapter adapter = new CompositeMetricContextAdapter(fc, cmc, mis);
+                    CompositeMetricContextAdapter adapter =
+                        new CompositeMetricContextAdapter(fc, cmc, mis);
                     Object o = adapter.adapt();
                     Monitor compositeMonitor = (Monitor) o;
 
@@ -307,9 +316,9 @@ public class Execution {
                     // Add Subscription to all composite monitor to send to CDO
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    if(createMonitorSubscriptions) {
+                    if (createMonitorSubscriptions) {
                         fc.addMonitorSubscription(compositeMonitor.getId(), conf.getVisorEndpoint(),
-                                SubscriptionType.CDO, FilterType.ANY, 0);
+                            SubscriptionType.CDO, FilterType.ANY, 0);
                     }
                 }
 
@@ -319,21 +328,21 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (MetricCondition mc : finder.getMetricConditions()){
+                for (MetricCondition mc : finder.getMetricConditions()) {
                     NonFunctionalEvent event = finder.getNfeToCondition(mc);
                     MetricConditionAdapter adapter = new MetricConditionAdapter(fc, mc, event);
                     Object o = adapter.adapt();
 
-                    ComposedMonitor conditionMonitor = (ComposedMonitor)o;
+                    ComposedMonitor conditionMonitor = (ComposedMonitor) o;
 
                     ///////////////////////////////////////////////////////////////////////////
                     //
                     // Add Subscription to all conditions / nfe to send to CDO
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    if(createMonitorSubscriptions) {
+                    if (createMonitorSubscriptions) {
                         fc.addMonitorSubscription(conditionMonitor.getId(), conf.getVisorEndpoint(),
-                                SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+                            SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
                 }
 
@@ -343,20 +352,20 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (EventPattern ep : finder.getEventPatterns()){
+                for (EventPattern ep : finder.getEventPatterns()) {
                     EventPatternAdapterFactory factory = new EventPatternAdapterFactoryImpl();
                     Adapter adapter = factory.create(fc, ep);
                     Object o = adapter.adapt();
-                    ComposedMonitor composedMonitor = (ComposedMonitor)o;
+                    ComposedMonitor composedMonitor = (ComposedMonitor) o;
 
                     ///////////////////////////////////////////////////////////////////////////
                     //
                     // Add Subscription to all conditions / nfe to send to CDO
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    if(createMonitorSubscriptions) {
+                    if (createMonitorSubscriptions) {
                         fc.addMonitorSubscription(composedMonitor.getId(), conf.getVisorEndpoint(),
-                                SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+                            SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
                 }
 
@@ -368,18 +377,18 @@ public class Execution {
                  *
                  *
                  *************************************************************************/
-                for (Map.Entry<Long, String> entrySet : mapScalingActionEventName.entrySet()){
+                for (Map.Entry<Long, String> entrySet : mapScalingActionEventName.entrySet()) {
                     ///////////////////////////////////////////////////////////////////////////
                     //
                     // Add Subscription to all rules by the generated composed monitor
                     // (events are mapped to composed monitors)
                     //
                     ///////////////////////////////////////////////////////////////////////////
-                    if(createMonitorSubscriptions) {
+                    if (createMonitorSubscriptions) {
                         ComposedMonitor m = fc.getComposedMonitorByExternalId(entrySet.getValue());
 
                         fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
-                                SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+                            SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
                 }
 
@@ -391,18 +400,24 @@ public class Execution {
                 logger.info(printer.printCompositeMetrics());
                 // Print out instances:
                 logger.info(printer.printMonitorInstances());
+
+                doneWork = true;
+            }
+
+            if (doneWork = false) {
+                logger.warn("SRL adapter done nothing");
             }
 
             ims.terminate();
-            System.out.println("The SRL adapter was executed.");
-        } catch(Exception ex){
+            logger.info("The SRL adapter was executed.");
+        } catch (Exception ex) {
             ims.terminate();
-            System.out.println("Error occurred during execution of the SRL adapter.");
+            logger.error("Error occurred during execution of the SRL adapter.");
             ex.printStackTrace();
         }
     }
 
-    public static List<Long> getScalingActionByEventId(String eventId){
+    public static List<Long> getScalingActionByEventId(String eventId) {
         return Finder.getScalingActionsByEventId(mapScalingActionEventName, eventId);
     }
 }

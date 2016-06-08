@@ -57,14 +57,12 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         return doMonitor(app, component, instance, null, schedule, desc, null, null);
     }
 
-    @Override
-    public Monitor doMonitorComponents(Application app, Component component, Cloud cloud,
+    @Override public Monitor doMonitorComponents(Application app, Component component, Cloud cloud,
         Schedule schedule, SensorDescription desc) {
         return doMonitor(app, component, null, cloud, schedule, desc, null, null);
     }
 
-    @Override
-    public Monitor doMonitorComponents(Application app, Cloud cloud, Schedule schedule,
+    @Override public Monitor doMonitorComponents(Application app, Cloud cloud, Schedule schedule,
         SensorDescription desc) {
         return doMonitor(app, null, null, cloud, schedule, desc, null, null);
     }
@@ -80,8 +78,10 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Schedule schedule,
-        SensorDescription desc, List<String> externalReferences,  Map<String, String> sensorConfiguration) {
-        return doMonitor(app, component, null, null, schedule, desc, externalReferences, sensorConfiguration);
+        SensorDescription desc, List<String> externalReferences,
+        Map<String, String> sensorConfiguration) {
+        return doMonitor(app, component, null, null, schedule, desc, externalReferences,
+            sensorConfiguration);
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Cloud cloud,
@@ -89,17 +89,20 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         return doMonitor(app, component, null, cloud, schedule, desc, null, null);
     }
 
-    @Override public Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc, List<String> externalReferences, Map<String, String> sensorConfiguration){
+    @Override
+    public Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
+        Schedule schedule, SensorDescription desc, List<String> externalReferences,
+        Map<String, String> sensorConfiguration) {
 
         RawMonitor rm = new RawMonitor((app == null ? null : app.getId()),
-                (component == null ? null : component.getId()),
-                (instance == null ? null : instance.getId()),
-                (cloud == null ? null : cloud.getId()), desc.getId(), schedule.getId());
+            (component == null ? null : component.getId()),
+            (instance == null ? null : instance.getId()), (cloud == null ? null : cloud.getId()),
+            desc.getId(), schedule.getId());
         rm.setExternalReferences(externalReferences);
 
-        if(sensorConfiguration != null && !sensorConfiguration.isEmpty()) {
-            SensorConfigurations sensorConfigurations = this.saveSensorConfiguration(sensorConfiguration);
+        if (sensorConfiguration != null && !sensorConfiguration.isEmpty()) {
+            SensorConfigurations sensorConfigurations =
+                this.saveSensorConfiguration(sensorConfiguration);
             rm.setSensorConfigurations(sensorConfigurations.getId());
         }
 
@@ -107,27 +110,33 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override public Monitor mapAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule,
-        Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences) {
-        return this.doAggregateMonitor(FlowOperator.MAP, quantifier, schedule, window,
-            formulaOperator, monitors, scalingActions, externalReferences);
+        Window window, FormulaOperator formulaOperator, List<Monitor> monitors,
+        List<Long> scalingActions, List<String> externalReferences) {
+        return this
+            .doAggregateMonitor(FlowOperator.MAP, quantifier, schedule, window, formulaOperator,
+                monitors, scalingActions, externalReferences);
     }
 
     @Override
     public Monitor reduceAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule,
-        Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences) {
-        return this.doAggregateMonitor(FlowOperator.REDUCE, quantifier, schedule, window,
-            formulaOperator, monitors, scalingActions, externalReferences);
+        Window window, FormulaOperator formulaOperator, List<Monitor> monitors,
+        List<Long> scalingActions, List<String> externalReferences) {
+        return this
+            .doAggregateMonitor(FlowOperator.REDUCE, quantifier, schedule, window, formulaOperator,
+                monitors, scalingActions, externalReferences);
     }
 
-    private Monitor doAggregateMonitor(FlowOperator flowOperator, FormulaQuantifier quantifier, Schedule schedule,
-        Window window, FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions, List<String> externalReferences){
+    private Monitor doAggregateMonitor(FlowOperator flowOperator, FormulaQuantifier quantifier,
+        Schedule schedule, Window window, FormulaOperator formulaOperator, List<Monitor> monitors,
+        List<Long> scalingActions, List<String> externalReferences) {
         List<Long> monitorIds = new ArrayList<>();
-        for(Monitor monitor : monitors){
+        for (Monitor monitor : monitors) {
             monitorIds.add(monitor.getId());
         }
 
-        
-        ComposedMonitor cm = new ComposedMonitor(flowOperator, formulaOperator, quantifier.getId(), window.getId(),
+
+        ComposedMonitor cm =
+            new ComposedMonitor(flowOperator, formulaOperator, quantifier.getId(), window.getId(),
                 monitorIds, scalingActions, schedule.getId());
 
         cm.setExternalReferences(externalReferences);
@@ -136,28 +145,28 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override public void removeMonitor(Monitor monitor) {
-        for(Monitor m : this.getMonitors()){
-            if(m.getId().equals(monitor.getId())){
-                if(m instanceof ConstantMonitor){
-                    client.controller(ConstantMonitor.class).delete((ConstantMonitor)m);
-                } else if(m instanceof RawMonitor){
-                    client.controller(RawMonitor.class).delete((RawMonitor)m);
-                } else if(m instanceof ComposedMonitor){
-                    client.controller(ComposedMonitor.class).delete((ComposedMonitor)m);
+        for (Monitor m : this.getMonitors()) {
+            if (m.getId().equals(monitor.getId())) {
+                if (m instanceof ConstantMonitor) {
+                    client.controller(ConstantMonitor.class).delete((ConstantMonitor) m);
+                } else if (m instanceof RawMonitor) {
+                    client.controller(RawMonitor.class).delete((RawMonitor) m);
+                } else if (m instanceof ComposedMonitor) {
+                    client.controller(ComposedMonitor.class).delete((ComposedMonitor) m);
                 }
             }
         }
     }
 
     @Override public void removeMonitor(Long monitorId) {
-        for(Monitor m : this.getMonitors()){
-            if(m.getId().equals(monitorId)){
-                if(m instanceof ConstantMonitor){
-                    client.controller(ConstantMonitor.class).delete((ConstantMonitor)m);
-                } else if(m instanceof RawMonitor){
-                    client.controller(RawMonitor.class).delete((RawMonitor)m);
-                } else if(m instanceof ComposedMonitor){
-                    client.controller(ComposedMonitor.class).delete((ComposedMonitor)m);
+        for (Monitor m : this.getMonitors()) {
+            if (m.getId().equals(monitorId)) {
+                if (m instanceof ConstantMonitor) {
+                    client.controller(ConstantMonitor.class).delete((ConstantMonitor) m);
+                } else if (m instanceof RawMonitor) {
+                    client.controller(RawMonitor.class).delete((RawMonitor) m);
+                } else if (m instanceof ComposedMonitor) {
+                    client.controller(ComposedMonitor.class).delete((ComposedMonitor) m);
                 }
             }
         }
@@ -187,28 +196,31 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override
     public ComponentHorizontalOutScalingAction saveComponentHorizontalOutScalingAction(Long amount,
         Long min, Long max, Long count, Component component) {
-        return factory.singleton(new ComponentHorizontalOutScalingAction(amount, min, max, count, component.getId()));
+        return factory.singleton(
+            new ComponentHorizontalOutScalingAction(amount, min, max, count, component.getId()));
     }
 
     @Override
     public ComponentHorizontalInScalingAction saveComponentHorizontalInScalingAction(Long amount,
         Long min, Long max, Long count, Component component) {
-        return factory.singleton(new ComponentHorizontalInScalingAction(amount, min, max, count, component.getId()));
+        return factory.singleton(
+            new ComponentHorizontalInScalingAction(amount, min, max, count, component.getId()));
     }
 
-    @Override public void addScalingActionToMonitor(ComposedMonitor m,
-        ScalingAction scalingAction) {
+    @Override
+    public void addScalingActionToMonitor(ComposedMonitor m, ScalingAction scalingAction) {
 
         /** Observer */
         //TODO this has to be done dynamically on the SRLEngine
         // when addScalingActionToMonitor is called:
         // void addObserverToMonitor(Long id, Double value, FormulaOperator formulaOperator);
 
-        ComponentHorizontalOutScalingAction sa = factory.singleton((ComponentHorizontalOutScalingAction)scalingAction);
+        ComponentHorizontalOutScalingAction sa =
+            factory.singleton((ComponentHorizontalOutScalingAction) scalingAction);
         List<ComposedMonitor> cms = client.controller(ComposedMonitor.class).getList();
-        for(ComposedMonitor cm : cms){
-            if(m.getId().equals(cm.getId())){
-                if(cm.getScalingActions() == null){
+        for (ComposedMonitor cm : cms) {
+            if (m.getId().equals(cm.getId())) {
+                if (cm.getScalingActions() == null) {
                     cm.setScalingActions(new ArrayList<Long>());
                 }
                 cm.getScalingActions().add(sa.getId());
@@ -223,12 +235,12 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override public TimeWindow getSmallestTimeWindow(List<Monitor> monitors) {
         TimeWindow result = null;
 
-        for(TimeWindow tw : client.controller(TimeWindow.class).getList()){
-            try{
-                if(result == null || Convert.hertz(tw) < Convert.hertz(result)){
+        for (TimeWindow tw : client.controller(TimeWindow.class).getList()) {
+            try {
+                if (result == null || Convert.hertz(tw) < Convert.hertz(result)) {
                     result = tw;
                 }
-            } catch(Exception ex){
+            } catch (Exception ex) {
                 // just try the next timewindow... TODO add logging
             }
         }
@@ -239,12 +251,12 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override public Schedule getLowestSchedule(List<Monitor> monitors) {
         Schedule result = null;
 
-        for(Schedule s : client.controller(Schedule.class).getList()){
-            try{
-                if(result == null || Convert.hertz(s) > Convert.hertz(result)){
+        for (Schedule s : client.controller(Schedule.class).getList()) {
+            try {
+                if (result == null || Convert.hertz(s) > Convert.hertz(result)) {
                     result = s;
                 }
-            } catch(Exception ex){
+            } catch (Exception ex) {
                 // just try the next schedule... TODO add logging
             }
         }
@@ -261,9 +273,9 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         return searchByName(client.controller(Application.class).getList(), name);
     }
 
-    public <T extends NamedEntity> T searchByName(List<T> entities, String name){
-        for(T entity : entities){
-            if(entity.getName().equals(name)){
+    public <T extends NamedEntity> T searchByName(List<T> entities, String name) {
+        for (T entity : entities) {
+            if (entity.getName().equals(name)) {
                 return entity;
             }
         }
@@ -271,9 +283,9 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         return null;
     }
 
-    public <T extends AbstractEntity> T searchById(List<T> entities, Long id){
-        for(T entity : entities){
-            if(entity.getId().equals(id)){
+    public <T extends AbstractEntity> T searchById(List<T> entities, Long id) {
+        for (T entity : entities) {
+            if (entity.getId().equals(id)) {
                 return entity;
             }
         }
@@ -284,8 +296,8 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override public VirtualMachine getVirtualMachineToIP(String ip) {
         Long virtualMachineId = null;
 
-        for(IpAddress ipAddress : client.controller(IpAddress.class).getList()){
-            if(ipAddress.getIp().equals(ip)){
+        for (IpAddress ipAddress : client.controller(IpAddress.class).getList()) {
+            if (ipAddress.getIp().equals(ip)) {
                 virtualMachineId = ipAddress.getVirtualMachine();
             }
         }
@@ -299,9 +311,9 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         Long virtualMachineId = null;
         List<ComposedMonitor> cms = client.controller(ComposedMonitor.class).getList();
 
-        for(ComposedMonitor m : cms){
-            for(String s : m.getExternalReferences()){
-                if(s.equals(name)){
+        for (ComposedMonitor m : cms) {
+            for (String s : m.getExternalReferences()) {
+                if (s.equals(name)) {
                     return m;
                 }
             }
@@ -329,8 +341,8 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override public List<MonitorInstance> getMonitorInstances(Long monitorId) {
         List<MonitorInstance> result = new ArrayList<>();
 
-        for(MonitorInstance mi : getMonitorInstances()){
-            if(mi.getMonitor().equals(monitorId)){
+        for (MonitorInstance mi : getMonitorInstances()) {
+            if (mi.getMonitor().equals(monitorId)) {
                 result.add(mi);
             }
         }
@@ -365,8 +377,8 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override public void addExternalIdToMonitorInstance(Monitor monitor, String externalId,
         VirtualMachine virtualMachine) {
         List<MonitorInstance> instances = getMonitorInstances(monitor.getId());
-        for(MonitorInstance mi : instances){
-            if(mi.getVirtualMachine().equals(virtualMachine.getId())){
+        for (MonitorInstance mi : instances) {
+            if (mi.getVirtualMachine().equals(virtualMachine.getId())) {
                 _addExternalId(mi, externalId);
             }
         }
@@ -374,25 +386,25 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     @Override public void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalId) {
         List<MonitorInstance> instances = getMonitorInstances(monitor.getId());
-        for(MonitorInstance mi : instances){
+        for (MonitorInstance mi : instances) {
             boolean hasCdoReference = false;
-            for(String er : mi.getExternalReferences()){
-                if(er.startsWith("OID")){
+            for (String er : mi.getExternalReferences()) {
+                if (er.startsWith("OID")) {
                     hasCdoReference = true;
                 }
             }
-            if(!hasCdoReference){
+            if (!hasCdoReference) {
                 _addExternalId(mi, externalId);
                 return;
             }
         }
     }
 
-    private <T extends ExternalReferencedEntity> void _addExternalId(T t, String externalId){
-        ClientController<T> ctrlr = client.controller((Class<T>)t.getClass());
-        for(T onlineObj : ctrlr.getList()){
-            if(onlineObj.equals(t)){
-                if(!t.getExternalReferences().contains(externalId)){
+    private <T extends ExternalReferencedEntity> void _addExternalId(T t, String externalId) {
+        ClientController<T> ctrlr = client.controller((Class<T>) t.getClass());
+        for (T onlineObj : ctrlr.getList()) {
+            if (onlineObj.equals(t)) {
+                if (!t.getExternalReferences().contains(externalId)) {
                     t.getExternalReferences().add(externalId);
                 }
                 ctrlr.update(t);
@@ -401,17 +413,17 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override public void clearAllMonitoringAgents() {
-        for(VirtualMachine vm : client.controller(VirtualMachine.class).getList()){
+        for (VirtualMachine vm : client.controller(VirtualMachine.class).getList()) {
             String ip = getPublicIpAddressToVirtualMachine(vm.getId());
-            if(ip != null){
+            if (ip != null) {
                 // TODO send DELETE to machine:
             }
         }
     }
 
-    private String getPublicIpAddressToVirtualMachine(Long vmId){
-        for(IpAddress ip : client.controller(IpAddress.class).getList()){
-            if(ip.getVirtualMachine().equals(vmId) && ip.getIpType().equals("PUBLIC")){
+    private String getPublicIpAddressToVirtualMachine(Long vmId) {
+        for (IpAddress ip : client.controller(IpAddress.class).getList()) {
+            if (ip.getVirtualMachine().equals(vmId) && ip.getIpType().equals("PUBLIC")) {
                 return ip.getIp();
             }
         }
@@ -423,32 +435,31 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         return factory.singleton(new MeasurementWindow(measurements));
     }
 
-    @Override
-    public MonitorSubscription addMonitorSubscription(Long monitor, String endpoint, SubscriptionType type,
-        FilterType filterType, double filterValue) {
-        try{
+    @Override public MonitorSubscription addMonitorSubscription(Long monitor, String endpoint,
+        SubscriptionType type, FilterType filterType, double filterValue) {
+        try {
             Thread.sleep(6000);
-        } catch(Exception ex){
+        } catch (Exception ex) {
             System.out.println("error with monitorsubscription");
         }
-        MonitorSubscription ms = new MonitorSubscription(monitor, endpoint, type, filterType, filterValue);
+        MonitorSubscription ms =
+            new MonitorSubscription(monitor, endpoint, type, filterType, filterValue);
         return factory.singleton(ms);
         //return client.controller(MonitorSubscription.class).create(ms);
     }
 
     @Override public void removeMonitorSubscription(Long id) {
-        client.controller(MonitorSubscription.class).delete(
-            client.controller(MonitorSubscription.class).get(id));
+        client.controller(MonitorSubscription.class)
+            .delete(client.controller(MonitorSubscription.class).get(id));
     }
 
     @Override public void removeAllMonitorSubscriptions() {
-        for(MonitorSubscription ms : client.controller(MonitorSubscription.class).getList()){
+        for (MonitorSubscription ms : client.controller(MonitorSubscription.class).getList()) {
             client.controller(MonitorSubscription.class).delete(ms);
         }
     }
 
-    @Override
-    public void cleanMonitoring() {
+    @Override public void cleanMonitoring() {
         this.removeAllMonitorSubscriptions();
         // delete existing monitors:
         ArrayList<Long> tmpMonitors = new ArrayList<>();
@@ -463,18 +474,18 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         }
     }
 
-    @Override
-    public String getPublicIpOfVmByName(String name) {
+    @Override public String getPublicIpOfVmByName(String name) {
         Long vmId = null;
-        for(VirtualMachine vm: client.controller(VirtualMachine.class).getList()){
-            if (vm.getName().equals(name)){
+        for (VirtualMachine vm : client.controller(VirtualMachine.class).getList()) {
+            if (vm.getName().equals(name)) {
                 vmId = vm.getId();
             }
         }
 
-        if(vmId != null){
-            for(IpAddress ipAddress: client.controller(IpAddress.class).getList()){
-                if(ipAddress.getVirtualMachine().equals(vmId) && ipAddress.getIpType().equals("PUBLIC")){
+        if (vmId != null) {
+            for (IpAddress ipAddress : client.controller(IpAddress.class).getList()) {
+                if (ipAddress.getVirtualMachine().equals(vmId) && ipAddress.getIpType()
+                    .equals("PUBLIC")) {
                     return ipAddress.getIp();
                 }
             }
@@ -484,10 +495,10 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override
-    public SensorConfigurations saveSensorConfiguration(Map<String,String> sensorConfiguration) {
+    public SensorConfigurations saveSensorConfiguration(Map<String, String> sensorConfiguration) {
         List<KeyValue> list = new ArrayList<KeyValue>();
 
-        sensorConfiguration.forEach((k,v) -> list.add(new KeyValue(k,v)));
+        sensorConfiguration.forEach((k, v) -> list.add(new KeyValue(k, v)));
 
         return client.controller(SensorConfigurations.class).create(new SensorConfigurations(list));
     }

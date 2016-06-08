@@ -12,13 +12,10 @@ import org.apache.commons.cli.*;
 
 import javax.annotation.Nullable;
 
-import static com.google.common.base.Preconditions.checkState;
-
 /**
  * Created by Frank on 09.08.2015.
  */
-public class CommandLinePropertiesAccessorImpl
-    implements CommandLinePropertiesAccessor {
+public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesAccessor {
 
     private final Options options;
     private CommandLine commandLine;
@@ -44,47 +41,39 @@ public class CommandLinePropertiesAccessorImpl
             Option.builder("cdoPass").longOpt("cdoPass").desc("Password to access the CDO").hasArg()
                 .build());
         options.addOption(
-            Option.builder("modelName").longOpt("modelName").desc("Name of model in the CDO").hasArg()
-                .build());
+            Option.builder("modelName").longOpt("modelName").desc("Name of model in the CDO")
+                .hasArg().build());
+        options.addOption(Option.builder("resourceName").longOpt("resourceName")
+            .desc("Name of resource in the CDO").hasArg().build());
+        options.addOption(Option.builder("executionContextName").longOpt("executionContextName")
+            .desc("Name of ExecutionContext in the CDO").hasArg().build());
         options.addOption(
-            Option.builder("resourceName").longOpt("resourceName").desc("Name of resource in the CDO").hasArg()
-                .build());
+            Option.builder("colUser").longOpt("colUser").desc("Username to access the colosseum")
+                .hasArg().build());
         options.addOption(
-            Option.builder("executionContextName").longOpt("executionContextName").desc("Name of ExecutionContext in the CDO").hasArg()
-                .build());
-        options.addOption(
-            Option.builder("colUser").longOpt("colUser").desc("Username to access the colosseum").hasArg()
-                .build());
-        options.addOption(
-            Option.builder("colTen").longOpt("colTen").desc("Tenant to access the colosseum").hasArg()
-                .build());
+            Option.builder("colTen").longOpt("colTen").desc("Tenant to access the colosseum")
+                .hasArg().build());
         options.addOption(
             Option.builder("colPass").longOpt("colPass").desc("Password to access the colosseum")
                 .hasArg().build());
         options.addOption(
-                Option.builder("colUrl").longOpt("colUrl").desc("Url to access the colosseum")
-                        .hasArg().build());
+            Option.builder("colUrl").longOpt("colUrl").desc("Url to access the colosseum").hasArg()
+                .build());
         options.addOption(
             Option.builder("writeExample").longOpt("writeExample").desc("Write example to CDO?")
                 .hasArg().build());
-        options.addOption(
-            Option.builder("createMetricInstances").longOpt("createMetricInstances").desc("Create MetricInstances?")
-                .hasArg().build());
-        options.addOption(
-            Option.builder("visEndpoint").longOpt("visEndpoint").desc("Endpoint of visor to send to CDO.")
-                .hasArg().build());
-        options.addOption(
-                Option.builder("ExecutionMode").longOpt("ExecutionMode").desc("ExecutionMode of the Adapter.")
-                        .hasArg().build());
-        options.addOption(
-                Option.builder("ZeroMqPort").longOpt("ZeroMqPort").desc("Port of the ZeroMQ server to listen to.")
-                        .hasArg().build());
-        options.addOption(
-                Option.builder("ZeroMqUri").longOpt("ZeroMqUri").desc("Endpoint for the ZeroMQ server to listen to.")
-                        .hasArg().build());
-        options.addOption(
-                Option.builder("ZeroMqQueue").longOpt("ZeroMqQueue").desc("Name of the Queue of the ZeroMQ.")
-                        .hasArg().build());
+        options.addOption(Option.builder("createMetricInstances").longOpt("createMetricInstances")
+            .desc("Create MetricInstances?").hasArg().build());
+        options.addOption(Option.builder("visEndpoint").longOpt("visEndpoint")
+            .desc("Endpoint of visor to send to CDO.").hasArg().build());
+        options.addOption(Option.builder("ExecutionMode").longOpt("ExecutionMode")
+            .desc("ExecutionMode of the Adapter.").hasArg().build());
+        options.addOption(Option.builder("ZeroMqPort").longOpt("ZeroMqPort")
+            .desc("Port of the ZeroMQ server to listen to.").hasArg().build());
+        options.addOption(Option.builder("ZeroMqUri").longOpt("ZeroMqUri")
+            .desc("Endpoint for the ZeroMQ server to listen to.").hasArg().build());
+        options.addOption(Option.builder("ZeroMqQueue").longOpt("ZeroMqQueue")
+            .desc("Name of the Queue of the ZeroMQ.").hasArg().build());
     }
 
     public void printHelp() {
@@ -94,7 +83,7 @@ public class CommandLinePropertiesAccessorImpl
     @Nullable protected String getCommandLineOption(String name) {
         if (commandLine != null && commandLine.hasOption(name)) {
             String result = commandLine.getOptionValue(name);
-            if(result == null){
+            if (result == null) {
                 return getDefaultValue(name);
             } else {
                 return result;
@@ -106,28 +95,49 @@ public class CommandLinePropertiesAccessorImpl
 
     private String getDefaultValue(String name) {
         switch (name) {
-            case "cdoUser": return "SA";
-            case "cdoPass": return "";
-            case "modelName": return "BewanCamelModel";
-            case "resourceName": return "enterprise-service-application.xmi_1442232824";
-            case "executionContextName": return "ExecutionContext";
-            case "colUser": return "john.doe@example.com";
-            case "colTen": return "admin";
-            case "colPass": return "admin";
-            case "colUrl": return "http://localhost:9000/api";
-            case "writeExample": return "false";
-            case "createMetricInstances": return "true";
+            case "cdoUser":
+                return "SA";
+            case "cdoPass":
+                return "";
+            case "modelName":
+                return "BewanCamelModel";
+            case "resourceName":
+                return "enterprise-service-application.xmi_1442232824";
+            case "executionContextName":
+                return "ExecutionContext";
+            case "colUser":
+                return "john.doe@example.com";
+            case "colTen":
+                return "admin";
+            case "colPass":
+                return "admin";
+            case "colUrl":
+                return "http://localhost:9000/api";
+            case "writeExample":
+                return "false";
+            case "createMetricInstances":
+                return "true";
             //case "visEndpoint": return "134.60.64.43";
-            case "visEndpoint": return "localhost";
-            case "ExecutionMode": return ExecutionMode.STATIC.toString();
-            case "ZeroMqPort": return "5563";
-            case "ZeroMqUri": return "tcp://localhost:5563";
-            case "ZeroMqQueue": return "newModelArrival";
-            case "ModelSourceType": return ModelSourceType.CDO.toString();
-            case "CreateMonitorSubscriptions": return "true";
-            case "ZeroMqTestmessage": return "resourceName:modelName:executionContextName";
-            case "cleanMonitoring": return "true";
-            default : return null;
+            case "visEndpoint":
+                return "localhost";
+            case "ExecutionMode":
+                return ExecutionMode.STATIC.toString();
+            case "ZeroMqPort":
+                return "5563";
+            case "ZeroMqUri":
+                return "tcp://localhost:5563";
+            case "ZeroMqQueue":
+                return "newModelArrival";
+            case "ModelSourceType":
+                return ModelSourceType.CDO.toString();
+            case "CreateMonitorSubscriptions":
+                return "true";
+            case "ZeroMqTestmessage":
+                return "resourceName:modelName:executionContextName";
+            case "cleanMonitoring":
+                return "true";
+            default:
+                return null;
         }
     }
 
@@ -179,43 +189,35 @@ public class CommandLinePropertiesAccessorImpl
         return this.getCommandLineOption("visEndpoint");
     }
 
-    @Override
-    public ExecutionMode getExecutionMode() {
+    @Override public ExecutionMode getExecutionMode() {
         return ExecutionMode.valueOf(this.getCommandLineOption("ExecutionMode"));
     }
 
-    @Override
-    public int getZeroMqPort() {
+    @Override public int getZeroMqPort() {
         return Integer.parseInt(this.getCommandLineOption("ZeroMqPort"));
     }
 
-    @Override
-    public String getZeroMqUri() {
+    @Override public String getZeroMqUri() {
         return this.getCommandLineOption("ZeroMqUri");
     }
 
-    @Override
-    public String getZeroMqQueue() {
+    @Override public String getZeroMqQueue() {
         return this.getCommandLineOption("ZeroMqQueue");
     }
 
-    @Override
-    public ModelSourceType getModelSourceType() {
+    @Override public ModelSourceType getModelSourceType() {
         return ModelSourceType.valueOf(this.getCommandLineOption("ModelSourceType"));
     }
 
-    @Override
-    public boolean getCreateMonitorSubscriptions() {
+    @Override public boolean getCreateMonitorSubscriptions() {
         return this.getCommandLineOption("CreateMonitorSubscriptions").equals("true");
     }
 
-    @Override
-    public boolean getCleanMonitoring() {
+    @Override public boolean getCleanMonitoring() {
         return this.getCommandLineOption("cleanMonitoring").equals("true");
     }
 
-    @Override
-    public String getZeroMqTestmessage() {
+    @Override public String getZeroMqTestmessage() {
         return this.getCommandLineOption("ZeroMqTestmessage");
     }
 }

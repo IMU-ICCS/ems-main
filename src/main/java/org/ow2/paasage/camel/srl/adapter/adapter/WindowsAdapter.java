@@ -8,12 +8,10 @@
 
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.MeasurementWindow;
-import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
-import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import eu.paasage.camel.metric.Window;
 import eu.paasage.camel.metric.WindowSizeType;
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
+import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 
 /**
  * Created by Frank on 07.09.2015.
@@ -26,18 +24,18 @@ public class WindowsAdapter extends AbstractAdapter {
         this.window = window;
     }
 
-    @Override
-    public de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window adapt() {
+    @Override public de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window adapt() {
         de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window colosseumWindow;
 
         /* TODO implement other types of windows, measurement sizes..., etc. */
-        if (window.getSizeType().equals(WindowSizeType.TIME_ONLY) || window
-                .getSizeType().equals(WindowSizeType.BOTH_MATCH)) {
+        if (window.getSizeType().equals(WindowSizeType.TIME_ONLY) || window.getSizeType()
+            .equals(WindowSizeType.BOTH_MATCH)) {
 
 
             logger.info("Save time window to colosseum: " + window.getName());
 
-            colosseumWindow = getFc().saveTimeWindow(window.getTimeSize(), Convert.toJavaTimeUnit(window.getUnit()));
+            colosseumWindow = getFc()
+                .saveTimeWindow(window.getTimeSize(), Convert.toJavaTimeUnit(window.getUnit()));
         } else if (window.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)) {
             colosseumWindow = getFc().saveMeasurementWindow(window.getMeasurementSize());
         } else {

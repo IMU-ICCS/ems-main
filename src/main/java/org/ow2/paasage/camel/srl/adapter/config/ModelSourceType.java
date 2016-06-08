@@ -28,10 +28,10 @@ public enum ModelSourceType {
         return text;
     }
 
-    public static ImportModelSource mapToIms(CommandLinePropertiesAccessor config){
+    public static ImportModelSource mapToIms(CommandLinePropertiesAccessor config) {
         ImportModelSource ims;
 
-        switch(config.getModelSourceType()){
+        switch (config.getModelSourceType()) {
             case TEXTUAL:
             case CDO:
             default:

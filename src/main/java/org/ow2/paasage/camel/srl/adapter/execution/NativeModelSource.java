@@ -26,8 +26,7 @@ public class NativeModelSource implements ImportModelSource {
         this.camelModel = camelModel;
     }
 
-    @Override
-    public EList<EObject> getResources(String resourceName) {
+    @Override public EList<EObject> getResources(String resourceName) {
         //ignores resourceName, since this Class only holds one model:
         EList<EObject> result = new BasicEList<>();
 
@@ -36,18 +35,16 @@ public class NativeModelSource implements ImportModelSource {
         return result;
     }
 
-    @Override
-    public void createMetricInstances(FrontendCommunicator fc, CamelFinder finder, ExecutionContext ec, CamelModel model, EList<EObject> objs) {
+    @Override public void createMetricInstances(FrontendCommunicator fc, CamelFinder finder,
+        ExecutionContext ec, CamelModel model, EList<EObject> objs) {
         // intentionally left blank
     }
 
-    @Override
-    public void createExampleModel(String resourceName) {
+    @Override public void createExampleModel(String resourceName) {
         // intentionally left blank
     }
 
-    @Override
-    public void terminate() {
+    @Override public void terminate() {
         // intentionally left blank
     }
 }

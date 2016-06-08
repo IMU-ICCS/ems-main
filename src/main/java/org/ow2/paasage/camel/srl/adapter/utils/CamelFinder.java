@@ -8,7 +8,6 @@
 
 package org.ow2.paasage.camel.srl.adapter.utils;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.ComposedMonitor;
 import eu.paasage.camel.Action;
 import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by Frank on 17.05.2015.
- *
+ * <p>
  * Wrapper for Queries (HQL, OCL) or search-algorithms.
  */
 public class CamelFinder {
@@ -41,16 +40,18 @@ public class CamelFinder {
         this.model = model;
     }
 
-    public EObject getUser(){
+    public EObject getUser() {
         return null; /*TODO*/
     }
 
-    public EList<InternalComponentInstance> getInternalComponentInstances(Application application, Component component, ExecutionContext ec){
+    public EList<InternalComponentInstance> getInternalComponentInstances(Application application,
+        Component component, ExecutionContext ec) {
         EList<InternalComponentInstance> result = new BasicEList<InternalComponentInstance>();
 
-        for(InternalComponentInstance instance : ec.getDeploymentModel().getInternalComponentInstances()){
-        //for(InternalComponentInstance instance : model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getInternalComponentInstances()){
-            if ((component == null || instance.getType() == component)){
+        for (InternalComponentInstance instance : ec.getDeploymentModel()
+            .getInternalComponentInstances()) {
+            //for(InternalComponentInstance instance : model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getInternalComponentInstances()){
+            if ((component == null || instance.getType() == component)) {
                 /** TODO check for application:   && (application == null || instance.getType(). == application)){ */
                 result.add(instance);
             }
@@ -59,14 +60,15 @@ public class CamelFinder {
         return result;
     }
 
-    public EList<VMInstance> getVMInstances(Application application, Component component, ExecutionContext ec){
+    public EList<VMInstance> getVMInstances(Application application, Component component,
+        ExecutionContext ec) {
         EList<VMInstance> result = new BasicEList<VMInstance>();
 
-        for(VMInstance instance : ec.getDeploymentModel().getVmInstances()){
-        //for(VMInstance instance : model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getVmInstances()){
-            if ((component == null || instance.getType() == component
-                || ((component instanceof InternalComponent) &&
-                    isInternalComponentInstalledOnVM(instance, (InternalComponent)component, ec.getDeploymentModel())))){
+        for (VMInstance instance : ec.getDeploymentModel().getVmInstances()) {
+            //for(VMInstance instance : model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getVmInstances()){
+            if ((component == null || instance.getType() == component || (
+                (component instanceof InternalComponent) && isInternalComponentInstalledOnVM(
+                    instance, (InternalComponent) component, ec.getDeploymentModel())))) {
                 /** TODO check for application:   && (application == null || instance.getType(). == application)){ */
                 result.add(instance);
             }
@@ -75,34 +77,39 @@ public class CamelFinder {
         return result;
     }
 
-    private boolean isInternalComponentInstalledOnVM(VMInstance instance, InternalComponent component, DeploymentModel deploymentModel) {
+    private boolean isInternalComponentInstalledOnVM(VMInstance instance,
+        InternalComponent component, DeploymentModel deploymentModel) {
         HostingInstance hiOfVM = getHostingInstanceToVM(instance, deploymentModel);
-        List<RequiredHostInstance> rhis = getRequiredHostInstancesToInternalComponent(component, deploymentModel);
-        for(RequiredHostInstance rhiComp : rhis){
-            if(hiOfVM.getRequiredHostInstance().equals(rhiComp)){
+        List<RequiredHostInstance> rhis =
+            getRequiredHostInstancesToInternalComponent(component, deploymentModel);
+        for (RequiredHostInstance rhiComp : rhis) {
+            if (hiOfVM.getRequiredHostInstance().equals(rhiComp)) {
                 return true;
             }
         }
         return false;
     }
 
-    private List<RequiredHostInstance> getRequiredHostInstancesToInternalComponent(InternalComponent component, DeploymentModel deploymentModel) {
+    private List<RequiredHostInstance> getRequiredHostInstancesToInternalComponent(
+        InternalComponent component, DeploymentModel deploymentModel) {
         List<RequiredHostInstance> result = new ArrayList<>();
 
-        List<InternalComponentInstance> cis = getInstancesToInternalComponent(component, deploymentModel);
+        List<InternalComponentInstance> cis =
+            getInstancesToInternalComponent(component, deploymentModel);
 
-        for(InternalComponentInstance ci : cis){
+        for (InternalComponentInstance ci : cis) {
             result.add(ci.getRequiredHostInstance());
         }
 
         return result;
     }
 
-    private List<InternalComponentInstance> getInstancesToInternalComponent(InternalComponent component, DeploymentModel deploymentModel) {
+    private List<InternalComponentInstance> getInstancesToInternalComponent(
+        InternalComponent component, DeploymentModel deploymentModel) {
         List<InternalComponentInstance> result = new ArrayList<>();
 
-        for(InternalComponentInstance ici : deploymentModel.getInternalComponentInstances()){
-            if(ici.getType().equals(component)){
+        for (InternalComponentInstance ici : deploymentModel.getInternalComponentInstances()) {
+            if (ici.getType().equals(component)) {
                 result.add(ici);
             }
         }
@@ -110,10 +117,11 @@ public class CamelFinder {
         return result;
     }
 
-    private HostingInstance getHostingInstanceToVM(VMInstance instance, DeploymentModel deploymentModel) {
-        for(HostingInstance hi : deploymentModel.getHostingInstances()){
-            for(ProvidedHostInstance phi : instance.getProvidedHostInstances()){
-                if(hi.getProvidedHostInstance().equals(phi)){
+    private HostingInstance getHostingInstanceToVM(VMInstance instance,
+        DeploymentModel deploymentModel) {
+        for (HostingInstance hi : deploymentModel.getHostingInstances()) {
+            for (ProvidedHostInstance phi : instance.getProvidedHostInstances()) {
+                if (hi.getProvidedHostInstance().equals(phi)) {
                     return hi;
                 }
             }
@@ -122,10 +130,10 @@ public class CamelFinder {
         return null;
     }
 
-    public EList<MetricInstance> getAllMetricInstancesToContext(MetricContext metricContext){
+    public EList<MetricInstance> getAllMetricInstancesToContext(MetricContext metricContext) {
         EList<MetricInstance> result = new BasicEList<MetricInstance>();
 
-        for(MetricModel mm : model.getMetricModels()) {
+        for (MetricModel mm : model.getMetricModels()) {
             for (MetricInstance mi : mm.getMetricInstances()) {
                 if (mi.getMetricContext() == metricContext) {
                     result.add(mi);
@@ -139,7 +147,7 @@ public class CamelFinder {
     public Application getRandomApplication() {
         Application result = null;
 
-        for(Application app : model.getApplications()){
+        for (Application app : model.getApplications()) {
             result = app;
         }
 
@@ -147,25 +155,26 @@ public class CamelFinder {
     }
 
     public DeploymentModel getRandomDeploymentModel() {
-        if(!model.getDeploymentModels().isEmpty()){
-            return model.getDeploymentModels().get(model.getDeploymentModels().size()-1);
+        if (!model.getDeploymentModels().isEmpty()) {
+            return model.getDeploymentModels().get(model.getDeploymentModels().size() - 1);
         }
 
         throw new RuntimeException("No DeploymentModels available!");
     }
 
-    public ExecutionContext getRandomExecutionContext(String executionContextName, EList<EObject> resourceContent) {
+    public ExecutionContext getRandomExecutionContext(String executionContextName,
+        EList<EObject> resourceContent) {
         ExecutionContext result = null;
 
-        if(model.getExecutionModels().isEmpty()){
+        if (model.getExecutionModels().isEmpty()) {
             ExecutionModel em = ExecutionFactory.eINSTANCE.createExecutionModel();
             em.setName("RandomExecutionModel");
             //if(resourceContent != null)
             //    resourceContent.add(em);
         }
 
-        for(ExecutionModel em : model.getExecutionModels()){
-            if(em.getExecutionContexts().isEmpty()){
+        for (ExecutionModel em : model.getExecutionModels()) {
+            if (em.getExecutionContexts().isEmpty()) {
                 ExecutionContext ec = ExecutionFactory.eINSTANCE.createExecutionContext();
                 ec.setName(executionContextName);
                 ec.setApplication(getRandomApplication());
@@ -184,9 +193,10 @@ public class CamelFinder {
     }
 
     public NonFunctionalEvent getNfeToCondition(Condition condition) {
-        if(!model.getScalabilityModels().isEmpty()) {
+        if (!model.getScalabilityModels().isEmpty()) {
             for (Event ev : model.getScalabilityModels().get(0).getEvents()) {
-                if (ev instanceof NonFunctionalEvent && ((NonFunctionalEvent) ev).getMetricCondition() == condition) {
+                if (ev instanceof NonFunctionalEvent
+                    && ((NonFunctionalEvent) ev).getMetricCondition() == condition) {
                     return (NonFunctionalEvent) ev; // insteaad of only the Name .getName();
                 }
             }
@@ -196,22 +206,25 @@ public class CamelFinder {
         return null;
     }
 
-    public List<CompositeMetricContext> getCompositeMetricContexts(ExecutionContext ec){
+    public List<CompositeMetricContext> getCompositeMetricContexts(ExecutionContext ec) {
         throw new RuntimeException("not implemented");
     }
 
-    public List<CompositeMetricContext> getCompositeMetricContexts(){
-        List<CompositeMetricContext> result = model.getMetricModels().get((0)).getContexts().stream().filter(cc -> cc instanceof CompositeMetricContext).map(cc -> (CompositeMetricContext) cc).collect(Collectors.toList());
+    public List<CompositeMetricContext> getCompositeMetricContexts() {
+        List<CompositeMetricContext> result =
+            model.getMetricModels().get((0)).getContexts().stream()
+                .filter(cc -> cc instanceof CompositeMetricContext)
+                .map(cc -> (CompositeMetricContext) cc).collect(Collectors.toList());
         return result;
     }
 
-    public List<MetricInstance> getMetricInstances(MetricContext mc, ExecutionContext ec){
+    public List<MetricInstance> getMetricInstances(MetricContext mc, ExecutionContext ec) {
         List<MetricInstance> result = new ArrayList<>();
 
-        for(MetricModel mm : model.getMetricModels()){
-            for(MetricInstance mi : mm.getMetricInstances()){
-                if(mi.getObjectBinding().getExecutionContext().getName().equals(ec.getName())
-                        && mi.getMetricContext().getName().equals(mc.getName())){
+        for (MetricModel mm : model.getMetricModels()) {
+            for (MetricInstance mi : mm.getMetricInstances()) {
+                if (mi.getObjectBinding().getExecutionContext().getName().equals(ec.getName()) && mi
+                    .getMetricContext().getName().equals(mc.getName())) {
                     result.add(mi);
                 }
             }
@@ -220,10 +233,11 @@ public class CamelFinder {
         return result;
     }
 
-    public ExecutionContext getExecutionContext(String executionContextName, EList<EObject> resourceContent) {
-        for(ExecutionModel em : model.getExecutionModels()){
-            for(ExecutionContext ec : em.getExecutionContexts()){
-                if(ec.getName().equals(executionContextName)){
+    public ExecutionContext getExecutionContext(String executionContextName,
+        EList<EObject> resourceContent) {
+        for (ExecutionModel em : model.getExecutionModels()) {
+            for (ExecutionContext ec : em.getExecutionContexts()) {
+                if (ec.getName().equals(executionContextName)) {
                     return ec;
                 }
             }
@@ -233,11 +247,11 @@ public class CamelFinder {
         return getRandomExecutionContext(executionContextName, resourceContent);
     }
 
-    public List<Schedule> getSchedules(){
+    public List<Schedule> getSchedules() {
         List<Schedule> result = new ArrayList<>();
 
-        for(MetricModel mm : model.getMetricModels()){
-            for(Schedule s : mm.getSchedules()){
+        for (MetricModel mm : model.getMetricModels()) {
+            for (Schedule s : mm.getSchedules()) {
                 result.add(s);
             }
         }
@@ -245,11 +259,11 @@ public class CamelFinder {
         return result;
     }
 
-    public List<Sensor> getSensors(){
+    public List<Sensor> getSensors() {
         List<Sensor> result = new ArrayList<>();
 
-        for(MetricModel mm : model.getMetricModels()){
-            for(Sensor s : mm.getSensors()){
+        for (MetricModel mm : model.getMetricModels()) {
+            for (Sensor s : mm.getSensors()) {
                 result.add(s);
             }
         }
@@ -260,7 +274,7 @@ public class CamelFinder {
     public List<MetricCondition> getMetricConditions() {
         List<MetricCondition> result = new ArrayList<>();
 
-        if(!model.getMetricModels().isEmpty()) {
+        if (!model.getMetricModels().isEmpty()) {
             for (Condition condition : model.getMetricModels().get(0).getConditions()) {
                 if (condition instanceof MetricCondition) {
                     result.add((MetricCondition) condition);
@@ -272,7 +286,7 @@ public class CamelFinder {
     }
 
     public List<EventPattern> getEventPatterns() {
-        if(!model.getScalabilityModels().isEmpty()) {
+        if (!model.getScalabilityModels().isEmpty()) {
             return model.getScalabilityModels().get(0).getPatterns();
         } else {
             return new ArrayList<EventPattern>();
@@ -280,7 +294,7 @@ public class CamelFinder {
     }
 
     public List<Window> getWindows() {
-        if(!model.getMetricModels().isEmpty()) {
+        if (!model.getMetricModels().isEmpty()) {
             return model.getMetricModels().get(0).getWindows();
         } else {
             return new ArrayList<Window>();
@@ -288,18 +302,20 @@ public class CamelFinder {
     }
 
     public List<RawMetricContext> getRawMetricContexts() {
-        if(model.getMetricModels().isEmpty()){
+        if (model.getMetricModels().isEmpty()) {
             return new ArrayList<>();
         }
 
-        List<RawMetricContext> result = model.getMetricModels().get((0)).getContexts().stream().filter(cc -> cc instanceof RawMetricContext).map(cc -> (RawMetricContext) cc).collect(Collectors.toList());
+        List<RawMetricContext> result = model.getMetricModels().get((0)).getContexts().stream()
+            .filter(cc -> cc instanceof RawMetricContext).map(cc -> (RawMetricContext) cc)
+            .collect(Collectors.toList());
         return result;
     }
 
     public EList<MetricContext> getMetricContexts() {
         EList<MetricContext> result = new BasicEList<>();
 
-        if(!model.getMetricModels().isEmpty()) {
+        if (!model.getMetricModels().isEmpty()) {
             for (ConditionContext context : model.getMetricModels().get(0).getContexts()) {
                 if (context instanceof MetricContext) {
                     result.add((MetricContext) context);
@@ -310,15 +326,14 @@ public class CamelFinder {
         return result;
     }
 
-    public List<ScalabilityRule> getAssociatedRules(Action scalingAction){
+    public List<ScalabilityRule> getAssociatedRules(Action scalingAction) {
         List<ScalabilityRule> result = new ArrayList<>();
 
-        if(model.getScalabilityModels().isEmpty()){
+        if (model.getScalabilityModels().isEmpty()) {
             return result;
         }
 
-        for (ScalabilityRule rule : model.getScalabilityModels().get(0)
-                .getRules()) {
+        for (ScalabilityRule rule : model.getScalabilityModels().get(0).getRules()) {
             for (Action ruleAction : rule.getActions()) {
                 if (ruleAction == scalingAction) {
                     result.add(rule);
@@ -329,17 +344,18 @@ public class CamelFinder {
         return result;
     }
 
-    public List<HorizontalScaleRequirement> getAssociatedHorizontalScaleRequirements(InternalComponent component){
+    public List<HorizontalScaleRequirement> getAssociatedHorizontalScaleRequirements(
+        InternalComponent component) {
         List<HorizontalScaleRequirement> result = new ArrayList<>();
 
-        if(!model.getScalabilityModels().isEmpty()) {
+        if (!model.getScalabilityModels().isEmpty()) {
 
             //TODO: check this: EList<Requirement> requirements = model.getRequirementModels().get(0).getRequirements();
             for (ScaleRequirement requirement : model.getScalabilityModels().get(0)
-                    .getScaleRequirements()) {
+                .getScaleRequirements()) {
                 if (requirement instanceof HorizontalScaleRequirement) {
                     HorizontalScaleRequirement horizontalScaleRequirement =
-                            (HorizontalScaleRequirement) requirement;
+                        (HorizontalScaleRequirement) requirement;
                  /* TODO What if several requirements comply to the same component and are inconsistent? */
                     if (horizontalScaleRequirement.getComponent().equals(component)) {
                         result.add(horizontalScaleRequirement);
@@ -348,13 +364,12 @@ public class CamelFinder {
             }
         }
 
-        if(!model.getRequirementModels().isEmpty()) {
+        if (!model.getRequirementModels().isEmpty()) {
 
-            for (Requirement requirement : model.getRequirementModels().get(0)
-                    .getRequirements()) {
+            for (Requirement requirement : model.getRequirementModels().get(0).getRequirements()) {
                 if (requirement instanceof HorizontalScaleRequirement) {
                     HorizontalScaleRequirement horizontalScaleRequirement =
-                            (HorizontalScaleRequirement) requirement;
+                        (HorizontalScaleRequirement) requirement;
                  /* TODO What if several requirements comply to the same component and are inconsistent? */
                     if (horizontalScaleRequirement.getComponent().equals(component)) {
                         result.add(horizontalScaleRequirement);
@@ -369,9 +384,9 @@ public class CamelFinder {
     public List<HorizontalScalingAction> getScalingActions() {
         List<HorizontalScalingAction> result = new ArrayList<>();
 
-        if(!model.getScalabilityModels().isEmpty()) {
+        if (!model.getScalabilityModels().isEmpty()) {
             for (eu.paasage.camel.scalability.ScalingAction scalingAction : model
-                    .getScalabilityModels().get(0).getActions()) {
+                .getScalabilityModels().get(0).getActions()) {
                 if (scalingAction instanceof HorizontalScalingAction) {
                     result.add((HorizontalScalingAction) scalingAction);
                 }
@@ -382,7 +397,8 @@ public class CamelFinder {
     }
 
     public List<VMInstance> getVMInstances() {
-        return model.getDeploymentModels().get(model.getDeploymentModels().size()-1).getVmInstances();
+        return model.getDeploymentModels().get(model.getDeploymentModels().size() - 1)
+            .getVmInstances();
     }
 
     public List<VMInstance> getVMInstances(ExecutionContext ec) {
@@ -390,14 +406,14 @@ public class CamelFinder {
     }
 
     public Component getEquivalentComponent(Component component, DeploymentModel deploymentModel) {
-        for(InternalComponent ic : deploymentModel.getInternalComponents()){
-            if(ic.getName().equals(component.getName())){
+        for (InternalComponent ic : deploymentModel.getInternalComponents()) {
+            if (ic.getName().equals(component.getName())) {
                 return ic;
             }
         }
 
-        for(VM vm : deploymentModel.getVms()){
-            if(vm.getName().equals(component.getName())){
+        for (VM vm : deploymentModel.getVms()) {
+            if (vm.getName().equals(component.getName())) {
                 return vm;
             }
         }

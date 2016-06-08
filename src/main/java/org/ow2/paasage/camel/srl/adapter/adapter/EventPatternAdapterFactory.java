@@ -8,9 +8,8 @@
 
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
-import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import eu.paasage.camel.scalability.EventPattern;
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 
 /**
  * Created by Frank on 06.09.2015.

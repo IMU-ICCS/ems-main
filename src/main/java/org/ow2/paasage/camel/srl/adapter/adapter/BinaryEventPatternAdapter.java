@@ -11,10 +11,10 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import eu.paasage.camel.scalability.BinaryEventPattern;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
-import eu.paasage.camel.scalability.BinaryEventPattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +30,7 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         this.eventPattern = eventPattern;
     }
 
-    @Override
-    public ComposedMonitor adapt() {
+    @Override public ComposedMonitor adapt() {
         logger.info("Save EventPattern to colosseum: " + eventPattern.getName());
 
         List<Monitor> composedMonitors = new ArrayList<Monitor>();
@@ -65,16 +64,15 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         externalReferences.add(eventPattern.getName());
 
         final String externalEventPatternId;
-        if(eventPattern.cdoID() != null){
+        if (eventPattern.cdoID() != null) {
             externalEventPatternId = eventPattern.cdoID().toString();
         } else {
             externalEventPatternId = eventPattern.getName(); /* TODO if CDO is not available this ID might not by
                                                         TODO unique through different model instances */
         }
         ComposedMonitor composedMonitor = (ComposedMonitor) getFc()
-                .reduceAggregatedMonitors(quantifier, schedule, window, operator,
-                        composedMonitors, Execution.getScalingActionByEventId(externalEventPatternId), externalReferences);
-
+            .reduceAggregatedMonitors(quantifier, schedule, window, operator, composedMonitors,
+                Execution.getScalingActionByEventId(externalEventPatternId), externalReferences);
 
 
 
@@ -86,9 +84,9 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         }
 
         for (MonitorInstance monitorInstance : getFc()
-                .getMonitorInstances(composedMonitor.getId())) {
+            .getMonitorInstances(composedMonitor.getId())) {
             final String externalId;
-            if(eventPattern.cdoID() != null){
+            if (eventPattern.cdoID() != null) {
                 externalId = eventPattern.cdoID().toString();
             } else {
                 externalId = eventPattern.getName(); /* TODO if CDO is not available this ID might not by

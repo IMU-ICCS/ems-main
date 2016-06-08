@@ -9,15 +9,15 @@
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
 
-import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
-import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import eu.paasage.camel.metric.Schedule;
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
+import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 
 /**
  * Created by Frank on 03.09.2015.
  */
-public class ScheduleAdapter extends AbstractAdapter<de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule> {
+public class ScheduleAdapter
+    extends AbstractAdapter<de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule> {
 
     private final Schedule schedule;
 
@@ -26,14 +26,14 @@ public class ScheduleAdapter extends AbstractAdapter<de.uniulm.omi.cloudiator.co
         this.schedule = schedule;
     }
 
-    @Override
-    public de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule adapt() {
+    @Override public de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule adapt() {
 
         /* TODO implement repetitions, etc. */
 
         logger.info("Save schedule to colosseum: " + schedule.getName());
 
-        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule colosseumSchedule = getFc().saveSchedule(schedule.getInterval(), Convert.toJavaTimeUnit(schedule.getUnit()));
+        de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule colosseumSchedule = getFc()
+            .saveSchedule(schedule.getInterval(), Convert.toJavaTimeUnit(schedule.getUnit()));
 
         return colosseumSchedule;
     }

@@ -20,7 +20,11 @@ import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
  */
 public interface ImportModelSource {
     EList<EObject> getResources(String resourceName);
-    void createMetricInstances(FrontendCommunicator fc, CamelFinder finder, ExecutionContext ec, CamelModel model, EList<EObject> objs);
+
+    void createMetricInstances(FrontendCommunicator fc, CamelFinder finder, ExecutionContext ec,
+        CamelModel model, EList<EObject> objs);
+
     void createExampleModel(String resourceName);
+
     void terminate();
 }

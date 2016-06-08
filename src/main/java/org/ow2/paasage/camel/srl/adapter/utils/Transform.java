@@ -8,7 +8,7 @@
 
 package org.ow2.paasage.camel.srl.adapter.utils;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.*;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import eu.paasage.camel.metric.ComparisonOperatorType;
 import eu.paasage.camel.metric.MetricFunctionType;
 import eu.paasage.camel.scalability.BinaryPatternOperatorType;
@@ -47,30 +47,42 @@ public class Transform {
                 return FormulaOperator.MODE;
             case MEDIAN:
                 return FormulaOperator.MEDIAN;
-            default: throw new AssertionError("MetricFunctionType is not implemented");
+            default:
+                throw new AssertionError("MetricFunctionType is not implemented");
         }
     }
 
     public static FormulaOperator condition(ComparisonOperatorType comparisonOperator) {
         switch (comparisonOperator) {
-            case GREATER_THAN: return FormulaOperator.GT;
-            case GREATER_EQUAL_THAN: return FormulaOperator.GTE;
-            case LESS_THAN: return FormulaOperator.LT;
-            case LESS_EQUAL_THAN: return FormulaOperator.LTE;
-            case EQUAL: return FormulaOperator.EQ;
-            case NOT_EQUAL: return FormulaOperator.NEQ;
-            default: throw new AssertionError("ComparisonOperatorType is not imlpemented");
+            case GREATER_THAN:
+                return FormulaOperator.GT;
+            case GREATER_EQUAL_THAN:
+                return FormulaOperator.GTE;
+            case LESS_THAN:
+                return FormulaOperator.LT;
+            case LESS_EQUAL_THAN:
+                return FormulaOperator.LTE;
+            case EQUAL:
+                return FormulaOperator.EQ;
+            case NOT_EQUAL:
+                return FormulaOperator.NEQ;
+            default:
+                throw new AssertionError("ComparisonOperatorType is not imlpemented");
         }
     }
 
     public static FormulaOperator binary(BinaryPatternOperatorType operator) {
         switch (operator) {
-            case AND: return FormulaOperator.AND;
-            case OR: return FormulaOperator.OR;
-            case XOR: return FormulaOperator.XOR;
+            case AND:
+                return FormulaOperator.AND;
+            case OR:
+                return FormulaOperator.OR;
+            case XOR:
+                return FormulaOperator.XOR;
             case PRECEDES: /*TODO*/
             case REPEAT_UNTIL: /*TODO*/
-            default: throw new AssertionError("BinaryPatternOperator is not implemented");
+            default:
+                throw new AssertionError("BinaryPatternOperator is not implemented");
         }
     }
 }

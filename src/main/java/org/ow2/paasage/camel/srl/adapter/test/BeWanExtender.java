@@ -8,12 +8,19 @@
 
 package org.ow2.paasage.camel.srl.adapter.test;
 
-import eu.paasage.camel.*;
-import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.Application;
+import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.DeploymentFactory;
+import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.camel.deployment.InternalComponent;
+import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
-import eu.paasage.camel.requirement.*;
+import eu.paasage.camel.requirement.RequirementFactory;
+import eu.paasage.camel.requirement.RequirementGroup;
+import eu.paasage.camel.requirement.RequirementModel;
+import eu.paasage.camel.requirement.RequirementOperatorType;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
@@ -24,7 +31,7 @@ import java.time.Instant;
  * Created by Frank on 13.09.2015.
  */
 public class BeWanExtender {
-    public static CamelModel get(EList<EObject> resourceContents, CamelModel model){
+    public static CamelModel get(EList<EObject> resourceContents, CamelModel model) {
 
 
         /*
@@ -34,16 +41,18 @@ public class BeWanExtender {
 
 
          */
-        RequirementGroup couchRequirementGroup = RequirementFactory.eINSTANCE.createRequirementGroup();
+        RequirementGroup couchRequirementGroup =
+            RequirementFactory.eINSTANCE.createRequirementGroup();
         couchRequirementGroup.setName("couchRequirementGroup");
         couchRequirementGroup.setRequirementOperator(RequirementOperatorType.AND);
         couchRequirementGroup.getApplication().add(getBewanApplication(model));
-//        couchRequirementGroup.getRequirements().add(CPUIntensive);
-//        couchRequirementGroup.getRequirements().add(UbuntuReq);
-//        couchRequirementGroup.getRequirements().add(CouchScaleRequirement);
-//        couchRequirementGroup.getRequirements().add(GermanyReq);
+        //        couchRequirementGroup.getRequirements().add(CPUIntensive);
+        //        couchRequirementGroup.getRequirements().add(UbuntuReq);
+        //        couchRequirementGroup.getRequirements().add(CouchScaleRequirement);
+        //        couchRequirementGroup.getRequirements().add(GermanyReq);
         getBewanRequirementModel(model).getRequirements().add(couchRequirementGroup);
-        if(resourceContents != null) resourceContents.add(couchRequirementGroup);
+        if (resourceContents != null)
+            resourceContents.add(couchRequirementGroup);
 
 
         /*
@@ -56,7 +65,8 @@ public class BeWanExtender {
         ExecutionModel CouchExecutions = ExecutionFactory.eINSTANCE.createExecutionModel();
         CouchExecutions.setName("CouchExecutions");
         model.getExecutionModels().add(CouchExecutions);
-        if(resourceContents != null) resourceContents.add(CouchExecutions);
+        if (resourceContents != null)
+            resourceContents.add(CouchExecutions);
 
         ExecutionContext ec = ExecutionFactory.eINSTANCE.createExecutionContext();
         ec.setName("ExecutionContext");
@@ -65,7 +75,8 @@ public class BeWanExtender {
         ec.setDeploymentModel(getBewanDeploymentModel(model));
         ec.setRequirementGroup(couchRequirementGroup);
         CouchExecutions.getExecutionContexts().add(ec);
-        if(resourceContents != null) resourceContents.add(ec);
+        if (resourceContents != null)
+            resourceContents.add(ec);
 
 
         /*
@@ -79,46 +90,48 @@ public class BeWanExtender {
         vmApp.setType(getApplicationComponent(model));
         vmApp.setIp("134.60.64.159");
         model.getDeploymentModels().get(0).getVmInstances().add(vmApp);
-        if(resourceContents != null) resourceContents.add(vmApp);
+        if (resourceContents != null)
+            resourceContents.add(vmApp);
 
         VMInstance vmDb = DeploymentFactory.eINSTANCE.createVMInstance();
         vmDb.setName("vmDb");
         vmDb.setType(getDatabaseComponent(model));
         vmDb.setIp("134.60.64.168");
         model.getDeploymentModels().get(0).getVmInstances().add(vmDb);
-        if(resourceContents != null) resourceContents.add(vmDb);
+        if (resourceContents != null)
+            resourceContents.add(vmDb);
 
         return model;
     }
 
-    public static DeploymentModel getBewanDeploymentModel(CamelModel model){
+    public static DeploymentModel getBewanDeploymentModel(CamelModel model) {
         return model.getDeploymentModels().get(0);
     }
 
-    public static RequirementModel getBewanRequirementModel(CamelModel model){
+    public static RequirementModel getBewanRequirementModel(CamelModel model) {
         return model.getRequirementModels().get(0);
     }
 
-    public static Application getBewanApplication(CamelModel model){
-        for(Application app : model.getApplications()){
-            if("bewanApplication".equals(app.getName())){
+    public static Application getBewanApplication(CamelModel model) {
+        for (Application app : model.getApplications()) {
+            if ("bewanApplication".equals(app.getName())) {
                 return app;
             }
         }
         return null;
     }
 
-    public static InternalComponent getApplicationComponent(CamelModel model){
+    public static InternalComponent getApplicationComponent(CamelModel model) {
         return getComponentByName(model, "bewanApplicationComponent");
     }
 
-    public static InternalComponent getDatabaseComponent(CamelModel model){
+    public static InternalComponent getDatabaseComponent(CamelModel model) {
         return getComponentByName(model, "bewanDatabaseComponent ");
     }
 
-    public static InternalComponent getComponentByName(CamelModel model, String name){
-        for(InternalComponent ic : model.getDeploymentModels().get(0).getInternalComponents()){
-            if (ic.getName().equals(name)){
+    public static InternalComponent getComponentByName(CamelModel model, String name) {
+        for (InternalComponent ic : model.getDeploymentModels().get(0).getInternalComponents()) {
+            if (ic.getName().equals(name)) {
                 return ic;
             }
         }

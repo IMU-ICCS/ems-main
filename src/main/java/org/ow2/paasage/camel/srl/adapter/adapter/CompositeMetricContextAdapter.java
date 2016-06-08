@@ -14,11 +14,11 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.MonitorInstance;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import eu.paasage.camel.metric.*;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
-import eu.paasage.camel.metric.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +30,14 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
     private final CompositeMetricContext context;
     private final List<MetricInstance> metricInstances;
 
-    public CompositeMetricContextAdapter(FrontendCommunicator fc,
-                                         CompositeMetricContext context, List<MetricInstance> metricInstances) {
+    public CompositeMetricContextAdapter(FrontendCommunicator fc, CompositeMetricContext context,
+        List<MetricInstance> metricInstances) {
         super(fc);
         this.context = context;
         this.metricInstances = metricInstances;
     }
 
-    @Override
-    public Monitor adapt(){
+    @Override public Monitor adapt() {
         logger.info("Save CompositeMetricContext to colosseum: " + context.getName());
 
 
@@ -52,8 +51,8 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
                 break;
             case SOME:
                     /* TODO implement max and min quantity in execware */
-                quantifier = getFc().saveFormulaQuantifier(context.isIsRelative(),
-                        context.getMinQuantity());
+                quantifier =
+                    getFc().saveFormulaQuantifier(context.isIsRelative(), context.getMinQuantity());
                 break;
             case ANY:
                 if (compositeMetric.getFormula().getFunctionPattern() == FunctionPatternType.MAP) {
@@ -72,27 +71,31 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
 
         eu.paasage.camel.metric.Schedule camelSchedule = context.getSchedule();
 
-        if(camelSchedule == null){
+        if (camelSchedule == null) {
             throw new RuntimeException("Composite metrics needs schedule!");
         }
 
-        Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
+        Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(),
+            Convert.toJavaTimeUnit(camelSchedule.getUnit()));
 
         eu.paasage.camel.metric.Window camelWindow = context.getWindow(); /*TODO implement other units and window types */
 
         de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window window = null;
 
-        if(camelWindow == null){
+        if (camelWindow == null) {
             throw new RuntimeException("Composite metrics needs window!");
         } else {
-            if(camelWindow.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)){
+            if (camelWindow.getSizeType().equals(WindowSizeType.MEASUREMENTS_ONLY)) {
                 window = getFc().saveMeasurementWindow(camelWindow.getMeasurementSize());
-            } else if (camelWindow.getSizeType().equals(WindowSizeType.TIME_ONLY)){
-                window = getFc().saveTimeWindow(camelWindow.getTimeSize(), Convert.toJavaTimeUnit(camelWindow.getUnit()));
-            } else if (camelWindow.getSizeType().equals(WindowSizeType.BOTH_MATCH)){
-                throw new RuntimeException("WindowSizeType.BOTH_MATCH not implemented in Adapter"); //TODO which window type to choose?
-            } else if (camelWindow.getSizeType().equals(WindowSizeType.FIRST_MATCH)){
-                throw new RuntimeException("WindowSizeType.FIRST_MATCH not implemented in Adapter"); //TODO which window type to choose?
+            } else if (camelWindow.getSizeType().equals(WindowSizeType.TIME_ONLY)) {
+                window = getFc().saveTimeWindow(camelWindow.getTimeSize(),
+                    Convert.toJavaTimeUnit(camelWindow.getUnit()));
+            } else if (camelWindow.getSizeType().equals(WindowSizeType.BOTH_MATCH)) {
+                throw new RuntimeException(
+                    "WindowSizeType.BOTH_MATCH not implemented in Adapter"); //TODO which window type to choose?
+            } else if (camelWindow.getSizeType().equals(WindowSizeType.FIRST_MATCH)) {
+                throw new RuntimeException(
+                    "WindowSizeType.FIRST_MATCH not implemented in Adapter"); //TODO which window type to choose?
             }
         }
 
@@ -100,16 +103,14 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
 
         FormulaOperator operator = Transform.operator(compositeMetric.getFormula().getFunction());
 
-        FunctionPatternType functionPattern =
-                compositeMetric.getFormula().getFunctionPattern();
+        FunctionPatternType functionPattern = compositeMetric.getFormula().getFunctionPattern();
 
         List<Monitor> composedMonitors = new ArrayList<>();
         for (Monitor monitor : getFc().getMonitors()) {
-            for (MetricContext mc : context
-                    .getComposingMetricContexts()) {
+            for (MetricContext mc : context.getComposingMetricContexts()) {
                 for (String s : monitor.getExternalReferences()) {
                     final String id;
-                    if(mc.cdoID() != null){
+                    if (mc.cdoID() != null) {
                         id = mc.cdoID().toString();
                     } else {
                         id = mc.getName(); /* TODO if CDO is not available this ID might not by
@@ -129,7 +130,7 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
 
         logger.info("Add aggregator.");
         final String externalContextId;
-        if(context.cdoID() != null){
+        if (context.cdoID() != null) {
             externalContextId = context.cdoID().toString();
         } else {
             externalContextId = context.getName(); /* TODO if CDO is not available this ID might not by
@@ -137,28 +138,18 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
         }
         if (functionPattern == FunctionPatternType.MAP) {
             compositeMonitor = (ComposedMonitor) getFc()
-                    .mapAggregatedMonitors(
-                            quantifier,
-                            schedule,
-                            window,
-                            operator,
-                            composedMonitors,
-                            Execution.getScalingActionByEventId(externalContextId)
+                .mapAggregatedMonitors(quantifier, schedule, window, operator, composedMonitors,
+                    Execution.getScalingActionByEventId(externalContextId)
                             /*TODO this will never return an action, since no scaling action
                               TODO is ever directly added to a composed monitor context */,
-                            externalReferences);
+                    externalReferences);
         } else if (functionPattern == FunctionPatternType.REDUCE) {
             compositeMonitor = (ComposedMonitor) getFc()
-                    .reduceAggregatedMonitors(
-                            quantifier,
-                            schedule,
-                            window,
-                            operator,
-                            composedMonitors,
-                            Execution.getScalingActionByEventId(externalContextId)
+                .reduceAggregatedMonitors(quantifier, schedule, window, operator, composedMonitors,
+                    Execution.getScalingActionByEventId(externalContextId)
                             /*TODO this will never return an action, since no scaling action
                               TODO is ever directly added to a composed monitor context */,
-                            externalReferences);
+                    externalReferences);
         } else {
             throw new RuntimeException("FunctionPatternType is not implemented!");
         }
@@ -176,7 +167,7 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
 
             // Not VM specific, so add all just another one /* TODO THIS IS SEMANTICALLY WRONG */
             for (MonitorInstance monitorInstance : getFc()
-                    .getMonitorInstances(compositeMonitor.getId())) {
+                .getMonitorInstances(compositeMonitor.getId())) {
 
                 Boolean isAlreadyTagged = false;
 
@@ -191,7 +182,7 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
 
                 if (!isAlreadyTagged) {
                     final String id;
-                    if(metricInstance.cdoID() != null){
+                    if (metricInstance.cdoID() != null) {
                         id = metricInstance.cdoID().toString();
                     } else {
                         id = metricInstance.getName(); /* TODO if CDO is not available this ID might not by

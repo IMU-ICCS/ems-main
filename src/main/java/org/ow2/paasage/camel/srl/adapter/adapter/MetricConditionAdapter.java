@@ -11,13 +11,13 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import eu.paasage.camel.metric.MetricCondition;
+import eu.paasage.camel.metric.MetricContext;
+import eu.paasage.camel.scalability.NonFunctionalEvent;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
-import eu.paasage.camel.metric.MetricCondition;
-import eu.paasage.camel.metric.MetricContext;
-import eu.paasage.camel.scalability.NonFunctionalEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +29,14 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
     private final MetricCondition metricCondition;
     private final NonFunctionalEvent event;
 
-    public MetricConditionAdapter(FrontendCommunicator fc, MetricCondition metricCondition, NonFunctionalEvent event) {
+    public MetricConditionAdapter(FrontendCommunicator fc, MetricCondition metricCondition,
+        NonFunctionalEvent event) {
         super(fc);
         this.metricCondition = metricCondition;
         this.event = event;
     }
 
-    @Override
-    public ComposedMonitor adapt() {
+    @Override public ComposedMonitor adapt() {
         logger.info("Save Condition to colosseum: " + metricCondition.getName());
 
             /* TODO implement ... */
@@ -58,7 +58,8 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
 
         eu.paasage.camel.metric.Schedule camelSchedule = metricContext.getSchedule();
 
-        Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(), Convert.toJavaTimeUnit(camelSchedule.getUnit()));
+        Schedule schedule = getFc().saveSchedule(camelSchedule.getInterval(),
+            Convert.toJavaTimeUnit(camelSchedule.getUnit()));
 
         // Window does not make sense, since we only use the last value to get checked:
         //
@@ -88,14 +89,14 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
             case SOME:
                     /* TODO implement max and min quantity in execware */
                 if (metricContext.isIsRelative()) {
-                    minimumApplies = (int) Math
-                            .ceil(metricContext.getMinQuantity() * amountInstances);
+                    minimumApplies =
+                        (int) Math.ceil(metricContext.getMinQuantity() * amountInstances);
                 } else {
                     minimumApplies = (int) metricContext.getMinQuantity();
                 }
 
                 quantifier = getFc().saveFormulaQuantifier(metricContext.isIsRelative(),
-                        metricContext.getMinQuantity());
+                    metricContext.getMinQuantity());
                 break;
             case ANY:
                 minimumApplies = 1;
@@ -120,7 +121,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         //fc.addExternalId(composedMonitor, condition.getName());
         // NFE:
         final String idNFE;
-        if(event == null) {
+        if (event == null) {
             if (metricCondition.cdoID() != null) {
                 idNFE = metricCondition.cdoID().toString();
             } else {
@@ -141,8 +142,9 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         List<String> externalReferencesThreshold = new ArrayList<>();
         externalReferencesThreshold.add(idNFE + "_threshold");
         ComposedMonitor thresholdMonitor = (ComposedMonitor) getFc()
-                .mapAggregatedMonitors(quantifierAll /* quantifier TODO currently only ALL is implemented, minimum applies is used for constant monitor*/,
-                        schedule, window_1_measurment, operator, composedMonitors, null, externalReferencesThreshold);
+            .mapAggregatedMonitors(quantifierAll /* quantifier TODO currently only ALL is implemented, minimum applies is used for constant monitor*/,
+                schedule, window_1_measurment, operator, composedMonitors, null,
+                externalReferencesThreshold);
 
         List<Monitor> thresholdMonitors = new ArrayList();
         thresholdMonitors.add(thresholdMonitor);
@@ -151,8 +153,8 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         List<String> externalReferencesApply = new ArrayList<>();
         externalReferencesApply.add(idNFE + "_apply");
         ComposedMonitor applyMonitor = (ComposedMonitor) getFc()
-                .reduceAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                        FormulaOperator.SUM, thresholdMonitors, null, externalReferencesApply);
+            .reduceAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
+                FormulaOperator.SUM, thresholdMonitors, null, externalReferencesApply);
 
         List<Monitor> applyMonitors = new ArrayList();
         applyMonitors.add(applyMonitor);
@@ -164,16 +166,15 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         List<String> externalReferencesCondition = new ArrayList<>();
         externalReferencesCondition.add(idNFE);
         ComposedMonitor conditionMonitor = (ComposedMonitor) getFc()
-                .mapAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                        FormulaOperator.GTE, applyMonitors, Execution.getScalingActionByEventId(idNFE), externalReferencesCondition);
+            .mapAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
+                FormulaOperator.GTE, applyMonitors, Execution.getScalingActionByEventId(idNFE),
+                externalReferencesCondition);
 
 
             /* Do it with FormulaQunatifier as "minimumApplied"
             ComposedMonitor composedMonitor = (ComposedMonitor)fc.reduceAggregatedMonitors(
                 quantifier, schedule, window_1_measurment, operator, composedMonitors);
             */
-
-
 
 
 
@@ -185,7 +186,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         }
 
         for (MonitorInstance monitorInstance : getFc()
-                .getMonitorInstances(conditionMonitor.getId())) {
+            .getMonitorInstances(conditionMonitor.getId())) {
             getFc().addExternalId(monitorInstance, idNFE);
         }
 

@@ -8,21 +8,19 @@
 
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
-import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import eu.paasage.camel.scalability.BinaryEventPattern;
 import eu.paasage.camel.scalability.EventPattern;
 import eu.paasage.camel.scalability.UnaryEventPattern;
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 
 /**
  * Created by Frank on 06.09.2015.
  */
-public class EventPatternAdapterFactoryImpl implements EventPatternAdapterFactory{
+public class EventPatternAdapterFactoryImpl implements EventPatternAdapterFactory {
 
-    @Override
-    public Adapter create(FrontendCommunicator fc, EventPattern eventPattern){
+    @Override public Adapter create(FrontendCommunicator fc, EventPattern eventPattern) {
         if (eventPattern instanceof BinaryEventPattern) {
-            return new BinaryEventPatternAdapter(fc, (BinaryEventPattern)eventPattern);
+            return new BinaryEventPatternAdapter(fc, (BinaryEventPattern) eventPattern);
         } else if (eventPattern instanceof UnaryEventPattern) {
             throw new RuntimeException("UnaryEventPattern not yet implemented!");
         } else {

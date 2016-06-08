@@ -19,25 +19,21 @@ import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
  * Created by Frank on 18.11.2015.
  */
 public class TextualModelSource implements ImportModelSource {
-    @Override
-    public EList<EObject> getResources(String resourceName) {
+    @Override public EList<EObject> getResources(String resourceName) {
         //TODO not yet implemented, as it is not yet needed
-        new RuntimeException("Adapting textual model is not yet implemented!");
-        return null;
+        throw new UnsupportedOperationException("Adapting textual model is not yet implemented!");
     }
 
-    @Override
-    public void createMetricInstances(FrontendCommunicator fc, CamelFinder finder, ExecutionContext ec, CamelModel model, EList<EObject> objs) {
-        // intentionally left blank
+    @Override public void createMetricInstances(FrontendCommunicator fc, CamelFinder finder,
+        ExecutionContext ec, CamelModel model, EList<EObject> objs) {
+        throw new UnsupportedOperationException("Adapting textual model is not yet implemented!");
     }
 
-    @Override
-    public void createExampleModel(String resourceName) {
-        // intentionally left blank
+    @Override public void createExampleModel(String resourceName) {
+        throw new UnsupportedOperationException("Adapting textual model is not yet implemented!");
     }
 
-    @Override
-    public void terminate() {
-        // intentionally left blank
+    @Override public void terminate() {
+        throw new UnsupportedOperationException("Adapting textual model is not yet implemented!");
     }
 }

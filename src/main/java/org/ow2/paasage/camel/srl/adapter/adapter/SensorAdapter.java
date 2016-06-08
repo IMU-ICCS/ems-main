@@ -9,9 +9,8 @@
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.SensorDescription;
-import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
-import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import eu.paasage.camel.metric.Sensor;
+import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 
 /**
  * Created by Frank on 03.09.2015.
@@ -25,15 +24,15 @@ public class SensorAdapter extends AbstractAdapter<SensorDescription> {
         this.sensor = sensor;
     }
 
-    @Override
-    public SensorDescription adapt() {
+    @Override public SensorDescription adapt() {
         String _className = sensor.getConfiguration().split(";")[1];
         String _metricName = sensor.getConfiguration().split(";")[0];
         Boolean _isVmSensor = true;
 
         logger.info("Save sensor to colosseum: " + sensor.getName());
 
-        SensorDescription sensorDescription = getFc().saveSensorDescription(_className, _metricName, _isVmSensor);
+        SensorDescription sensorDescription =
+            getFc().saveSensorDescription(_className, _metricName, _isVmSensor);
 
         return sensorDescription;
     }
