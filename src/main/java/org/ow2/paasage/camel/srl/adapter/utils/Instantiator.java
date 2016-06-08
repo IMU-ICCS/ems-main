@@ -27,7 +27,8 @@ public class Instantiator {
     public static MetricInstance createMetricInstance(CamelModel model,
         EList<EObject> resourceContents, MetricContext context, MetricObjectBinding mob,
         EList<MetricInstance> metricInstances) {
-        MetricInstance result = null;
+
+        MetricInstance result;
 
         // As proposed in a discussion with Kyriakos Kritikos and Christian Perez:
         // <executionContextId> + "_" + <metricContextId> + "_" + <componentInstanceId>
