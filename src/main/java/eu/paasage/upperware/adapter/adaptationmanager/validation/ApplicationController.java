@@ -38,7 +38,7 @@ public class ApplicationController {
 	
 	public ApplicationController(String resourceName){
 		this.resourceName = resourceName;
-		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", "newModelArrival", 5550);
+		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", "newModelArrival", 15550);
 	}
 	
 	private void setModelName(String modelName){
