@@ -40,7 +40,8 @@ public class ZeroMqServer {
 
             // Content format: resource:model:executioncontext
             socket.sendMore(queueName);
-            socket.send(resourceName + ZeroMqSubscriber.SEPERATOR + modelName + ZeroMqSubscriber.SEPERATOR + executionContext);
+            socket.send(resourceName + ZeroMqSubscriber.SEPARATOR
+                + modelName + ZeroMqSubscriber.SEPARATOR + executionContext);
         }
     }
 

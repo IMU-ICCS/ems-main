@@ -8,9 +8,9 @@
 
 package org.ow2.paasage.camel.srl.adapter.communication;
 
-import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
+import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.execution.ImportModelSource;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
@@ -27,13 +27,10 @@ public class ZeroMqSubscriber implements Runnable {
     }
 
     private final CommandLinePropertiesAccessor conf;
-    private final String uri;
-    private final String queueName;
     private final Context context;
     private final Socket socket;
-    private boolean isRunning = true;
-    private final int ioThreadNum = 1;
-    public static final String SEPERATOR = ":";
+    private final static int IO_THREAD_NUM = 1;
+    public static final String SEPARATOR = ":";
 
 
     public ZeroMqSubscriber(CommandLinePropertiesAccessor conf) {
@@ -42,58 +39,62 @@ public class ZeroMqSubscriber implements Runnable {
 
     public ZeroMqSubscriber(CommandLinePropertiesAccessor conf, String alternativeUri) {
         this.conf = conf;
-        if(alternativeUri == null){
-            this.uri = conf.getZeroMqUri();
+        String uri;
+        if (alternativeUri == null) {
+            uri = conf.getZeroMqUri();
         } else {
-            this.uri = alternativeUri;
+            uri = alternativeUri;
         }
-        this.queueName = conf.getZeroMqQueue();
-        context = ZMQ.context(ioThreadNum);
+        String queueName = conf.getZeroMqQueue();
+        context = ZMQ.context(IO_THREAD_NUM);
         socket = context.socket(ZMQ.SUB);
 
         socket.connect(uri);
         socket.subscribe(queueName.getBytes(ZMQ.CHARSET));
     }
 
-    public synchronized void stop(){
-        this.isRunning = false;
-    }
-
     public void run() {
-        while (isRunning) {
+        while (!Thread.currentThread().isInterrupted()) {
             // Read envelope with address
-            String address = socket.recvStr ();
+            String address = socket.recvStr();
             // Read message contents
-            String contents = socket.recvStr ();
+            String contents = socket.recvStr();
+
+            logger.debug(String.format("Received raw message: %s - %s", address, contents));
 
             CdoConfigTuple converted = convertLine(contents);
 
+            logger.debug(String.format("Parsed message as %s", converted));
+
             // TODO this is blocking - check if this is a problem for frequent requests
-            try{
+            try {
                 Execution ex = new Execution(conf);
                 ImportModelSource ims = ModelSourceType.mapToIms(conf);
-                ex.run(ims, converted.getResourceName(), converted.getModelName(), converted.getExecutionContext());
-            } catch(Exception ex){
-                logger.error("Error when executing Task: " + contents + ". Ignoring so far and continue listening to requests.", ex);
+                ex.run(ims, converted.getResourceName(), converted.getModelName(),
+                    converted.getExecutionContext());
+            } catch (Exception ex) {
+                logger.error("Error when executing Task: " + contents
+                    + ". Ignoring so far and continue listening to requests.", ex);
             }
         }
-        socket.close ();
-        context.term ();
+        socket.close();
+        context.term();
     }
 
-    public static CdoConfigTuple convertLine(String contents){
+    public static CdoConfigTuple convertLine(String contents) {
 
         // Content format: resource:model:executioncontext
 
-        int indexOfSeperator1 = contents.indexOf(SEPERATOR);
-        int indexOfSeperator2 = indexOfSeperator1 + contents.substring(indexOfSeperator1 + 1).indexOf(SEPERATOR) + 1;
+        int indexOfSeperator1 = contents.indexOf(SEPARATOR);
+        int indexOfSeperator2 =
+            indexOfSeperator1 + contents.substring(indexOfSeperator1 + 1).indexOf(SEPARATOR) + 1;
 
         String resourceName = contents.substring(0, indexOfSeperator1);
 
         String modelName = contents.substring(indexOfSeperator1 + 1, indexOfSeperator2);
 
         String executionContext = contents.substring(indexOfSeperator2 + 1, contents.length());
-        if("".equals(executionContext)){
+        if ("".equals(executionContext)) {
             executionContext = null;
         }
 

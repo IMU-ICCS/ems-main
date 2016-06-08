@@ -33,4 +33,12 @@ public class CdoConfigTuple {
     public String getExecutionContext() {
         return executionContext;
     }
+
+    @Override public String toString() {
+        return "CdoConfigTuple{" +
+            "resourceName='" + resourceName + '\'' +
+            ", modelName='" + modelName + '\'' +
+            ", executionContext='" + executionContext + '\'' +
+            '}';
+    }
 }
