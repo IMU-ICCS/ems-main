@@ -60,11 +60,11 @@ public class ZeroMqSubscriber implements Runnable {
             // Read message contents
             String contents = socket.recvStr();
 
-            logger.debug(String.format("Received raw message: %s - %s", address, contents));
+            logger.info(String.format("Received raw message: %s - %s", address, contents));
 
             CdoConfigTuple converted = convertLine(contents);
 
-            logger.debug(String.format("Parsed message as %s", converted));
+            logger.info(String.format("Parsed message as %s", converted));
 
             // TODO this is blocking - check if this is a problem for frequent requests
             try {
