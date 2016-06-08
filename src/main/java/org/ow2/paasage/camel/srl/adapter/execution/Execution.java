@@ -404,7 +404,7 @@ public class Execution {
                 doneWork = true;
             }
 
-            if (doneWork = false) {
+            if (!doneWork) {
                 logger.warn("SRL adapter done nothing");
             }
 

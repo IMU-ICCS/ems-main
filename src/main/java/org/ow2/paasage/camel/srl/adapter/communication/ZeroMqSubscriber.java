@@ -8,6 +8,9 @@
 
 package org.ow2.paasage.camel.srl.adapter.communication;
 
+import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.DeploymentModel;
+import org.eclipse.emf.ecore.EObject;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.config.ModelSourceType;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
@@ -70,7 +73,29 @@ public class ZeroMqSubscriber implements Runnable {
             try {
                 Execution ex = new Execution(conf);
                 ImportModelSource ims = ModelSourceType.mapToIms(conf);
-                ex.run(ims, converted.getResourceName(), converted.getModelName(),
+
+                String camelModelName = null;
+                // search deployment model inside the camel model
+                // we have to do this, as adapter only sends the deploymentModel name
+                for (EObject eObject : ims.getResources(converted.getResourceName())) {
+                    if (eObject instanceof CamelModel) {
+                        for (DeploymentModel deploymentModel : ((CamelModel) eObject)
+                            .getDeploymentModels()) {
+                            if (deploymentModel.getName()
+                                .equalsIgnoreCase(converted.getDeploymentModelName())) {
+                                camelModelName = ((CamelModel) eObject).getName();
+                            }
+                        }
+                    }
+                }
+
+                if (camelModelName == null) {
+                    throw new NullPointerException(
+                        "Could not find a CamelModel containing the DeploymentModel with the name "
+                            + converted.getDeploymentModelName());
+                }
+
+                ex.run(ims, converted.getResourceName(), camelModelName,
                     converted.getExecutionContext());
             } catch (Exception ex) {
                 logger.error("Error when executing Task: " + contents

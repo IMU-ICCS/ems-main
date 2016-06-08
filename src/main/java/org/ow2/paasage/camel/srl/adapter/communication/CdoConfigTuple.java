@@ -13,12 +13,12 @@ package org.ow2.paasage.camel.srl.adapter.communication;
  */
 public class CdoConfigTuple {
     private final String resourceName;
-    private final String modelName;
+    private final String deploymentModelName;
     private final String executionContext;
 
-    public CdoConfigTuple(String resourceName, String modelName, String executionContext) {
+    public CdoConfigTuple(String resourceName, String deploymentModelName, String executionContext) {
         this.resourceName = resourceName;
-        this.modelName = modelName;
+        this.deploymentModelName = deploymentModelName;
         this.executionContext = executionContext;
     }
 
@@ -26,8 +26,8 @@ public class CdoConfigTuple {
         return resourceName;
     }
 
-    public String getModelName() {
-        return modelName;
+    public String getDeploymentModelName() {
+        return deploymentModelName;
     }
 
     public String getExecutionContext() {
@@ -37,7 +37,7 @@ public class CdoConfigTuple {
     @Override public String toString() {
         return "CdoConfigTuple{" +
             "resourceName='" + resourceName + '\'' +
-            ", modelName='" + modelName + '\'' +
+            ", deploymentModelName='" + deploymentModelName + '\'' +
             ", executionContext='" + executionContext + '\'' +
             '}';
     }
