@@ -7,6 +7,7 @@
  */
 package eu.paasage.upperware.profiler.rp.zeromq;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -105,7 +106,7 @@ public class RuleProcessorService {
 			return;
 		}
 
-		String requestType = subscriber.recvStr();
+		String requestType = subscriber.recvStr(StandardCharsets.UTF_8);
 		if (!requestType.equals(subscriberTopic)) {
 			String error = "ZeroMQ topic not as expected: startSolving.";
 			publishError(publisher, publisherTopic, error, null, null);
@@ -115,7 +116,7 @@ public class RuleProcessorService {
 
 		String camelModel = null;
 		if (subscriber.hasReceiveMore()) {
-			camelModel = subscriber.recvStr();
+			camelModel = subscriber.recvStr(StandardCharsets.UTF_8);
 		} else {
 			String error = "ZeroMQ could not read name of CAMEL model from queue.";
 			publishError(publisher, publisherTopic, error, camelModel, null);
@@ -125,7 +126,7 @@ public class RuleProcessorService {
 
 		String cdoIdentifier = null;
 		if (subscriber.hasReceiveMore()) {
-			cdoIdentifier = subscriber.recvStr();
+			cdoIdentifier = subscriber.recvStr(StandardCharsets.UTF_8);
 		} else {
 			String error = "ZeroMQ could not read CDO identifier from queue.";
 			publishError(publisher, publisherTopic, error, camelModel, cdoIdentifier);
@@ -133,12 +134,10 @@ public class RuleProcessorService {
 			return;
 		}
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Received new incoming request");
-			logger.debug("  > request type: " + requestType);
-			logger.debug("  > camel model: " + camelModel);
-			logger.debug("  > cdo identifier: " + cdoIdentifier);
-		}
+		logger.info("Received new incoming request");
+		logger.info("  > request type: " + requestType);
+		logger.info("  > camel model: " + camelModel);
+		logger.info("  > cdo identifier: " + cdoIdentifier);
 
 		RuleProcessor rProcessor = new RuleProcessor();
 		RPOutput output = rProcessor.processRequest(camelModel, cdoIdentifier, null, true);
