@@ -20,31 +20,33 @@ import eu.paasage.upperware.profiler.rp.util.PropertiesReader;
 import eu.paasage.upperware.profiler.rp.util.RPOutput;
 
 /**
- * The RuleProcessor listens on the topic "startSolving", and expects the
- * following multi-part message:
- * 
+ * The RuleProcessor listens on the topic "startSolving".
+ * It expects the following multi-part message:
+ *
  * topic: startSolving
  * - Camel Model, e.g. bewan
  * - CDO Identifier, e.g. upperware-models/1444391197664
- * 
- * The RuleProcessor send publishes on the topic "RPsolutionAvailable" the
- * following multi-part message:
- * 
+ *
+ * The RuleProcessor publishes on the topic "RPsolutionAvailable".
+ * It sends the following multi-part message:
+ *
  * topic: RPsolutionAvailable
  * - Camel Model, e.g. bewan
  * - new CDO Identifier, e.g. upperware-models/1444391197664v2
  * - original CDO Identifier, e.g. upperware-models/1444391197664
- * 
- * If an error occurs, then the RuleProcessor will publish an error message on
- * the topic "RPSolutionAvailable". Please check if the key "ERROR" exists in
- * the incoming multi-part message:
- * 
- * topic: RPSolutionAvailable
- * - "ERROR"
- * - suitable error message
- * 
- * @author hopped
  *
+ * In case an error occurred during processing, the RuleProcessor
+ * will publish on the topic RPsolutionAvailable, but the second
+ * field of the message, new CDO identifier, will contain "ERROR".
+ *
+ * Example for a multi-part message when an error occurred:
+ *
+ * topic: RPsolutionAvailable
+ * - Camel Model, e.g. bewan
+ * - RP_ERROR + ": " + error message
+ * - original CDO identifier, e.g. upperware-models/1444391197664
+ *
+ * @author hopped
  */
 public class RuleProcessorService {
 
@@ -73,9 +75,9 @@ public class RuleProcessorService {
 
         return instance;
     }
-    
+
 	/**
-	 * 
+	 *
 	 * @param subscriber
 	 *            ZeroMQ subscriber socket
 	 * @param publisher
@@ -91,22 +93,22 @@ public class RuleProcessorService {
 
 		if (subscriber == null) {
 			String error = "ZeroMQ subscriber socket not initialized";
-			publishError(publisher, publisherTopic, error);
+			publishError(publisher, publisherTopic, error, null, null);
 			logger.error(error);
 			return;
 		}
 
 		if (publisher == null) {
 			String error = "ZeroMQ publisher socket not initialized";
-			publishError(publisher, publisherTopic, error);
+			publishError(publisher, publisherTopic, error, null, null);
 			logger.error(error);
 			return;
 		}
 
 		String requestType = subscriber.recvStr();
 		if (!requestType.equals(subscriberTopic)) {
-			String error = "ZeroMQ init error: Subscriber socket is missing";
-			publishError(publisher, publisherTopic, error);
+			String error = "ZeroMQ topic not as expected: startSolving.";
+			publishError(publisher, publisherTopic, error, null, null);
 			logger.error(error);
 			return;
 		}
@@ -115,8 +117,8 @@ public class RuleProcessorService {
 		if (subscriber.hasReceiveMore()) {
 			camelModel = subscriber.recvStr();
 		} else {
-			String error = "ZeroMQ init error: Subscriber socket is missing";
-			publishError(publisher, publisherTopic, error);
+			String error = "ZeroMQ could not read name of CAMEL model from queue.";
+			publishError(publisher, publisherTopic, error, camelModel, null);
 			logger.error(error);
 			return;
 		}
@@ -125,8 +127,8 @@ public class RuleProcessorService {
 		if (subscriber.hasReceiveMore()) {
 			cdoIdentifier = subscriber.recvStr();
 		} else {
-			String error = "ZeroMQ init error: Subscriber socket is missing";
-			publishError(publisher, publisherTopic, error);
+			String error = "ZeroMQ could not read CDO identifier from queue.";
+			publishError(publisher, publisherTopic, error, camelModel, cdoIdentifier);
 			logger.error(error);
 			return;
 		}
@@ -151,9 +153,9 @@ public class RuleProcessorService {
 			publisher.send(cdoIdentifier); // old
 		} else {
 			String error = "An error occurred while validating the model with the Rule Processor";
-			publishError(publisher, publisherTopic, error);
+			publishError(publisher, publisherTopic, error, camelModel, cdoIdentifier);
 		}
-		
+
 		logger.info("  > request processed.");
 		System.out.println("  > request processed.");
 	}
@@ -161,14 +163,17 @@ public class RuleProcessorService {
 	private static void publishError(
 			Socket publisher,
 			final String publisherTopic,
-			String errorMessage)
+			String errorMessage,
+			String camelModel,
+			String cdoIdentifier)
 	{
 		logger.error("Failure in RP: " + errorMessage);
 		publisher.sendMore(publisherTopic);
-		publisher.sendMore(ERROR);
-		publisher.send(errorMessage);
+		publisher.sendMore(camelModel);
+		publisher.sendMore(ERROR + ": " + errorMessage);
+		publisher.send(cdoIdentifier); // old
 	}
-	
+
 	private final String getSubscriberURL(Properties properties) {
 		if (properties == null) {
 			return null;
@@ -183,7 +188,7 @@ public class RuleProcessorService {
 		subscriberURL.append(subscriberHost);
 		subscriberURL.append(":");
 		subscriberURL.append(subscriberPort);
-		
+
 		return subscriberURL.toString();
 	}
 
@@ -201,7 +206,7 @@ public class RuleProcessorService {
 		publisherUrl.append(publisherHost);
 		publisherUrl.append(":");
 		publisherUrl.append(publisherPort);
-		
+
 		return publisherUrl.toString();
 	}
 
@@ -212,7 +217,7 @@ public class RuleProcessorService {
     	// [0] Read configuration parameters
     	Properties paasageProperties = PropertiesReader.loadPropertyFile();
 		PropertyConfigurator.configure(paasageProperties);
-				
+	
 		// [1] Create socket and subscribe to SUB_GROUP to receive new requests
 		final String subscriberURL = getSubscriberURL(paasageProperties);
 		final String subscriberTopic = paasageProperties.getProperty("SUBSCRIBER_TOPIC", Constants.DEFAULT_SUBSCRIBER_TOPIC);
@@ -231,7 +236,7 @@ public class RuleProcessorService {
 		// [2] Bind publisher to the PUB_TCP_CONNECT
         final String publisherURL = getPublisherURL(paasageProperties);
 		final String publisherTopic = paasageProperties.getProperty("PUBLISHER_TOPIC", Constants.DEFAULT_PUBLISHER_TOPIC);        
-		
+
         ZMQ.Socket publisher = context.socket(ZMQ.PUB);
         try {
         	System.out.println("Trying to bind to " + publisherURL + " ...");
