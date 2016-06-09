@@ -7,9 +7,9 @@
  */
 package eu.paasage.upperware.profiler.rp.zeromq.test;
 
-import org.zeromq.ZMQ;
+import java.nio.charset.StandardCharsets;
 
-import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
+import org.zeromq.ZMQ;
 
 /**
  * @author hopped
@@ -25,21 +25,19 @@ public class MetaSolverRPSubscriber {
         subscriber.subscribe("RPSolutionAvailable".getBytes());
 
         while (!Thread.currentThread ().isInterrupted ()) {
-            String requestType = subscriber.recvStr();
+            String requestType = subscriber.recvStr(StandardCharsets.UTF_8);
             System.out.println("Received message on topic '" + requestType + "'");
             if (subscriber.hasReceiveMore()) {
-            	String message = subscriber.recvStr();
-            	if (message.equals(RuleProcessorService.ERROR)) {
-            		System.out.println("  > An error has occurred: " + message);
-            	} else {
-            		System.out.println("  > Camel Model: " + message);
-            	}
-            } else {
-            	continue;
+            	String message = subscriber.recvStr(StandardCharsets.UTF_8);
+            	System.out.println("  > Camel Model: " + message);
             }
             if (subscriber.hasReceiveMore()) {
-            	String cdoIdentifier = subscriber.recvStr();
-            	System.out.println("  > CDO Identifier: " + cdoIdentifier);
+            	String cdoIdentifier = subscriber.recvStr(StandardCharsets.UTF_8);
+            	System.out.println("  > CDO Identifier (new): " + cdoIdentifier);
+            }
+            if (subscriber.hasReceiveMore()) {
+            	String cdoIdentifier = subscriber.recvStr(StandardCharsets.UTF_8);
+            	System.out.println("  > CDO Identifier (old): " + cdoIdentifier);
             }
         }
         subscriber.close ();
