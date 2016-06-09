@@ -1003,7 +1003,7 @@ public class RuleProcessor {
 		if (camelModel == null) {
 			System.out.println("Error: The given CAMEL model (" + cModel
 					+ ") was not found in the CDO database!");
-			return null;
+			return foundProviders;
 		}
 		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
 		for (int i = 0; i < orgModels.size(); i++) {
