@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.print.attribute.standard.DateTimeAtCompleted;
 
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
+import eu.paasage.upperware.adapter.adaptationmanager.core.AdaptationManager;
 import eu.paasage.upperware.adapter.adaptationmanager.core.PaaSagePublisher;
 import eu.paasage.upperware.adapter.adaptationmanager.core.ZeroMQPublisher;
 
@@ -36,9 +37,35 @@ public class ApplicationController {
 	
 	private final static Logger LOGGER = Logger.getLogger(ApplicationController.class.getName());
 	
+	private static final int SUB_SRLA_PORT_DEFAULT=15550;
+	private static final String SUB_SRLA_TOPIC_DEFAULT="newModelArrival";
+	
 	public ApplicationController(String resourceName){
 		this.resourceName = resourceName;
-		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", "newModelArrival", 15550);
+		String subSrlAdapterTopic = getSRLAdapterTopic();
+		int subSrlAdapterPort = getSRLAdapterPort();
+		zmqAdap2MetricsPub = new ZeroMQPublisher("Adaptor2MetricsPublisher", subSrlAdapterTopic, subSrlAdapterPort);
+	}
+	
+	private int getSRLAdapterPort(){
+		
+		String subSrlAdapterPortStr = AdaptationManager.loadAndGetProperties().getProperty("ZMQ.SubSrlAdapterPort");
+		int subSrlAdapterPort;
+		if (subSrlAdapterPortStr==null)
+			subSrlAdapterPort=SUB_SRLA_PORT_DEFAULT;
+		else
+			subSrlAdapterPort = Integer.valueOf(subSrlAdapterPortStr);
+		LOGGER.log(Level.INFO, "==> ZMQ SRL Adapter PORT: " + subSrlAdapterPort);
+		
+		return subSrlAdapterPort;		
+	}
+	
+	private String getSRLAdapterTopic(){
+		String subSrlAdapterTopic = AdaptationManager.loadAndGetProperties().getProperty("ZMQ.SubSrlAdapterTopic");
+		if (subSrlAdapterTopic == null)
+			subSrlAdapterTopic = SUB_SRLA_TOPIC_DEFAULT;
+		LOGGER.log(Level.INFO, "==> ZMQ SRL Adapter topic: " + subSrlAdapterTopic);
+		return subSrlAdapterTopic;
 	}
 	
 	private void setModelName(String modelName){
