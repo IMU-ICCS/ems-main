@@ -1045,14 +1045,14 @@ public class RuleProcessor {
 			System.out.println("*************************************************");
 		}
 		
-		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
-		if (camelProviders == null) { // no CAMEL model was found
-			return new RPOutput(0, outputFile);
-		}
-
 		// fallback, if no filename was passed to this process
 		if (outputFile == null) {
 			outputFile = "rp_output";
+		}
+		
+		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
+		if (camelProviders == null) { // no CAMEL model was found
+			return new RPOutput(0, null);
 		}
 		
 		/* (z) checking user requirements (new feature) */
@@ -1255,10 +1255,14 @@ public class RuleProcessor {
 		/*
 		 * (c) either a public or private cloud provider is declared
 		 */
-		this.openCDOSession(cdoIdentifier);
+		if (!openCDOSession(cdoIdentifier)) {
+			System.out.println("    -> Error: Cloning the model was not successful: " + cdoIdentifier);
+			System.out.println("    -> Please have a look at the output of the previous component.");
+			return new RPOutput(0, cdoIdentifier);
+		}
 		this.cloneModel(cdoIdentifier); // clone the model
 
-		SOLUTION_STATUS status = SOLUTION_STATUS.NO_CHANGE_REQUIRED;
+		SOLUTION_STATUS status = SOLUTION_STATUS.NO_CHANGE_REQUIRED;		
 		String detectedProvider = camelProviders.values().iterator().next();
 
 		System.out.println();
@@ -1491,7 +1495,11 @@ public class RuleProcessor {
 		}
 		
 		/* (b) */
-		openCDOSession(cdoIdentifier);
+		if (!openCDOSession(cdoIdentifier)) {
+			System.out.println("    -> Error: Cloning the model was not successful: " + cdoIdentifier);
+			System.out.println("    -> Please have a look at the output of the previous component.");
+			return SOLUTION_STATUS.ERROR;
+		}
 		List<EObject> objList;
 		try {
 			objList = this.getCloneModel();
