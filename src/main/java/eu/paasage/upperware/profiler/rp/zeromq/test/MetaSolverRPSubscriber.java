@@ -25,18 +25,22 @@ public class MetaSolverRPSubscriber {
         subscriber.subscribe("RPSolutionAvailable".getBytes());
 
         while (!Thread.currentThread ().isInterrupted ()) {
-            String requestType = subscriber.recvStr(StandardCharsets.UTF_8);
+        	byte[] data = subscriber.recv();
+            String requestType = new String(data, StandardCharsets.UTF_8);
             System.out.println("Received message on topic '" + requestType + "'");
             if (subscriber.hasReceiveMore()) {
-            	String message = subscriber.recvStr(StandardCharsets.UTF_8);
+            	data = subscriber.recv();
+            	String message = new String(data, StandardCharsets.UTF_8);
             	System.out.println("  > Camel Model: " + message);
             }
             if (subscriber.hasReceiveMore()) {
-            	String cdoIdentifier = subscriber.recvStr(StandardCharsets.UTF_8);
+            	data = subscriber.recv();
+            	String cdoIdentifier = new String(data, StandardCharsets.UTF_8);
             	System.out.println("  > CDO Identifier (new): " + cdoIdentifier);
             }
             if (subscriber.hasReceiveMore()) {
-            	String cdoIdentifier = subscriber.recvStr(StandardCharsets.UTF_8);
+            	data = subscriber.recv();
+            	String cdoIdentifier = new String(data, StandardCharsets.UTF_8);
             	System.out.println("  > CDO Identifier (old): " + cdoIdentifier);
             }
         }

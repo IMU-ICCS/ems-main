@@ -106,7 +106,8 @@ public class RuleProcessorService {
 			return;
 		}
 
-		String requestType = subscriber.recvStr(StandardCharsets.UTF_8);
+		byte[] data = subscriber.recv();
+		String requestType = new String(data, StandardCharsets.UTF_8);
 		if (!requestType.equals(subscriberTopic)) {
 			String error = "ZeroMQ topic not as expected: startSolving.";
 			publishError(publisher, publisherTopic, error, null, null);
@@ -116,7 +117,8 @@ public class RuleProcessorService {
 
 		String camelModel = null;
 		if (subscriber.hasReceiveMore()) {
-			camelModel = subscriber.recvStr(StandardCharsets.UTF_8);
+			data = subscriber.recv();
+			camelModel = new String(data, StandardCharsets.UTF_8);
 		} else {
 			String error = "ZeroMQ could not read name of CAMEL model from queue.";
 			publishError(publisher, publisherTopic, error, camelModel, null);
@@ -126,7 +128,8 @@ public class RuleProcessorService {
 
 		String cdoIdentifier = null;
 		if (subscriber.hasReceiveMore()) {
-			cdoIdentifier = subscriber.recvStr(StandardCharsets.UTF_8);
+			data = subscriber.recv();
+			cdoIdentifier = new String(data, StandardCharsets.UTF_8);
 		} else {
 			String error = "ZeroMQ could not read CDO identifier from queue.";
 			publishError(publisher, publisherTopic, error, camelModel, cdoIdentifier);
