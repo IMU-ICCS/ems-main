@@ -23,6 +23,8 @@ import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecutionwareError;
 import eu.paasage.upperware.adapter.adaptationmanager.core.Coordinator;
 import eu.paasage.upperware.adapter.adaptationmanager.mapping.CamelExecwareMapping;
+import eu.paasage.upperware.adapter.adaptationmanager.validation.ApplicationController;
+import eu.paasage.upperware.adapter.adaptationmanager.validation.MonitorEntity.Type;
 import eu.paasage.upperware.plangenerator.model.task.ConfigurationTask;
 import eu.paasage.upperware.plangenerator.type.TaskType;
 
@@ -250,7 +252,7 @@ public class VMInstanceAction implements Action {
 				vmInstID = execInterfacer.createVirtualMachine(this.vmInstName, Integer.parseInt(cloudID), Integer.parseInt(imageID), Integer.parseInt(hardwareID), Integer.parseInt(locationID));
 				
 				int temp = Integer.parseInt(execInterfacer.trimResponseID(vmInstID));
-				boolean status = false;
+				/*boolean status = false;
 				int timeout = 60;
 				while((!(status = execInterfacer.queryStateOKVM(temp))) && timeout > 0){
 					LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. VM Instance : ID " + vmInstID);
@@ -266,12 +268,13 @@ public class VMInstanceAction implements Action {
 				if(timeout > 0)
 					status = true;
 				else
-					LOGGER.log(Level.WARNING, "Newly created VM Instance : ID " + vmInstID + " has ERROR state");
+					LOGGER.log(Level.WARNING, "Newly created VM Instance : ID " + vmInstID + " has ERROR state");*/
 				
 				LOGGER.log(Level.INFO, "Created VM Instance : ID " + vmInstID);
-				if(dataShare.setVMIID(this.vmInstName, execInterfacer.trimResponseID(vmInstID)) && status)
+				if(vmInstID!= null && dataShare.setVMIID(this.vmInstName, execInterfacer.trimResponseID(vmInstID)) /*&& status*/){
 					LOGGER.log(Level.INFO, "Stored newly created VM Instance : ID " + vmInstID);
-				else
+					ApplicationController.addEntityToMonitor(Type.virtualMachine, temp);
+				}else
 					LOGGER.log(Level.WARNING, "Could not store newly created VM Instance : ID " + vmInstID);
 			}
 
