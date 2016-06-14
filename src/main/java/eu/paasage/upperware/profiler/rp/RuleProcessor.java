@@ -154,7 +154,7 @@ public class RuleProcessor {
 
 	public boolean openCDOSession() {
 		if (cdoClient_ != null) {
-			return false;
+			return cdoClient_.existResource(resId_);
 		}
 
 		cpCloner_ = new CPCloner();
