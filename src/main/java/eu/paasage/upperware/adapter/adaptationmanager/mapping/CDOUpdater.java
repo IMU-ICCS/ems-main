@@ -278,7 +278,7 @@ public class CDOUpdater {
 				mapping.addVMI(ewInst.getVirtualMachineName(), ewInst.getVMTemplateName());
 				mapping.setVMIID(ewInst.getVirtualMachineName(), ewInst.getVirtualMachine()+"");
 				String iCompInstName = ewInst.getVirtualMachineName() + "_Inst_" + getUniqueId();
-				mapping.addCompInst(iCompInstName, mapping.getApplicationInstance(ewInst.getApplicationComponentName()), mapping.getEntityLCAppComponent(ewInst.getApplicationComponentName()), mapping.getEntityVMInstance(ewInst.getVirtualMachineName()));
+				mapping.addCompInst(iCompInstName, mapping.getApplicationInstance(ewInst.getApplicationInstanceName()), mapping.getEntityLCAppComponent(ewInst.getApplicationComponentName()), mapping.getEntityVMInstance(ewInst.getVirtualMachineName()));
 				mapping.setCompInstID(iCompInstName, ewInst.getInstanceId());
 			}
 		}
@@ -299,7 +299,11 @@ public class CDOUpdater {
 		
 		Map<String, String> VMInstancesInfo = mapping.getInfoVMIs();//the instances existing in the Mapping - for the updated names
 		
+		String appInstName = mapping.getApplicationInstanceName_Camel();
+		
 		for(ExecwareInstance ewInst : instances){
+			
+			ewInst.setApplicationInstanceName(appInstName);
 			
 			for(String key: VMInstancesInfo.keySet()){
 				
@@ -315,20 +319,47 @@ public class CDOUpdater {
 		EList<InternalComponentInstance> internalComponentInstances = depModel.getInternalComponentInstances();
 		EList<VMInstance> VmInstances = depModel.getVmInstances();
 		
-		//Filling instances that is NEW or EXISTS		
+		//Updating the details for instances that EXISTS already
 		for(ExecwareInstance ewInst : instances){
-			boolean found = false;
+			/*boolean found = false;*/
 			int pointer = 0;
 			for( ; pointer < VmInstances.size(); pointer++){
 				VMInstance vmInst = VmInstances.get(pointer);
 				//if(vmInst.getName().toString().equalsIgnoreCase(ewInst.getNewVirtualMachineName())){
 				if(vmInst.getName().toString().equalsIgnoreCase(ewInst.getVirtualMachineName())){
-					found = true;
+					/*found = true;*/
 					ewInst.setScaledState(ExecwareInstance.scaledState.EXISTS);
 					ewInst.setIciPointerinDm(pointer);
+					ewInst.setVMTemplateName(vmInst.getType().getName());
 					LOGGER.log(Level.INFO, "Existing VM " + ewInst.getVirtualMachineName());
 				}
 			}
+			
+			/*if(!found){//it is a new VM instance due to scaling
+				ewInst.setScaledState(ExecwareInstance.scaledState.NEW);
+				int ewInstAC = ewInst.getApplicationComponent();
+				boolean flag = false;
+				//setting the pointer to a similar InternalComponentInstance in the current Deployment model
+				for(ExecwareInstance ewInstCopy : instances){
+					if(!ewInst.equals(ewInstCopy) && ewInstAC == ewInstCopy.getApplicationComponent()){
+						ewInst.setIciPointerinDm(ewInstCopy.getIciPointerinDm());
+						flag = true;
+						LOGGER.log(Level.INFO, "Scaled VM " + ewInst.getVirtualMachineName() + " found. To be updated in the CDO.");
+					}
+				}
+				if(!flag){
+					ewInst.setScaledState(ExecwareInstance.scaledState.NOTFOUND);
+					LOGGER.log(Level.WARNING, "Orphan VM " + ewInst.getVirtualMachineName() + " Please check!");
+				}
+			}*/
+		}
+		
+		//Filling the details of instances that are NEW from the replica instances that EXISTS		
+		for(ExecwareInstance ewInst : instances){
+			boolean found = false;
+			
+			if(ewInst.getScaledState()!=null && ewInst.getScaledState()==ExecwareInstance.scaledState.EXISTS)
+				found = true;
 			
 			if(!found){//it is a new VM instance due to scaling
 				ewInst.setScaledState(ExecwareInstance.scaledState.NEW);
@@ -338,6 +369,7 @@ public class CDOUpdater {
 				for(ExecwareInstance ewInstCopy : instances){
 					if(!ewInst.equals(ewInstCopy) && ewInstAC == ewInstCopy.getApplicationComponent()){
 						ewInst.setIciPointerinDm(ewInstCopy.getIciPointerinDm());
+						ewInst.setVMTemplateName(ewInstCopy.getVMTemplateName());
 						flag = true;
 						LOGGER.log(Level.INFO, "Scaled VM " + ewInst.getVirtualMachineName() + " found. To be updated in the CDO.");
 					}
@@ -356,20 +388,54 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 		EList<InternalComponentInstance> internalComponentInstances = depModel.getInternalComponentInstances();
 		EList<VMInstance> VmInstances = depModel.getVmInstances();
 		
-		//Filling instances that is NEW or EXISTS		
+		//Updating the details for instances that EXISTS already		
 		for(ExecwareInstance ewInst : instances){
-			boolean found = false;
+			/*boolean found = false;*/
 			int pointer = 0;
 			for( ; pointer < VmInstances.size(); pointer++){
 				VMInstance vmInst = VmInstances.get(pointer);
 				//if(vmInst.getName().toString().equalsIgnoreCase(ewInst.getNewVirtualMachineName())){
 				if(vmInst.getName().toString().equalsIgnoreCase(ewInst.getVirtualMachineName())){
-					found = true;
+					/*found = true;*/
 					ewInst.setScaledState(ExecwareInstance.scaledState.EXISTS);
 					ewInst.setIciPointerinDm(pointer);
 					LOGGER.log(Level.INFO, "Existing VM " + ewInst.getVirtualMachineName());
 				}
 			}
+			
+			/*if(!found){//it is a new VM instance due to scaling
+				ewInst.setScaledState(ExecwareInstance.scaledState.NEW);
+				int ewInstAC = ewInst.getApplicationComponent();
+				boolean flag = false;
+				//setting the pointer to a similar InternalComponentInstance in the current Deployment model
+				for(ExecwareInstance ewInstCopy : instances){
+					if(!ewInst.equals(ewInstCopy) && ewInstAC == ewInstCopy.getApplicationComponent()){
+						ewInst.setIciPointerinDm(ewInstCopy.getIciPointerinDm());
+						flag = true;
+						LOGGER.log(Level.INFO, "Scaled VM " + ewInst.getVirtualMachineName() + " found. To be updated in the CDO.");
+					}
+				}
+				if(!flag){
+					ewInst.setScaledState(ExecwareInstance.scaledState.NOTFOUND);
+					LOGGER.log(Level.WARNING, "Orphan VM " + ewInst.getVirtualMachineName() + " Please check!");
+				}
+			}*/
+		}
+		
+		
+		//Filling the details of instances that are NEW from the replica instances that EXISTS		
+		for(ExecwareInstance ewInst : instances){
+			boolean found = false;
+			/*int pointer = 0;
+			for( ; pointer < VmInstances.size(); pointer++){
+				VMInstance vmInst = VmInstances.get(pointer);
+				//if(vmInst.getName().toString().equalsIgnoreCase(ewInst.getNewVirtualMachineName())){
+				if(vmInst.getName().toString().equalsIgnoreCase(ewInst.getVirtualMachineName()))
+					found = true;
+			}*/
+			
+			if(ewInst.getScaledState()!=null && ewInst.getScaledState()==ExecwareInstance.scaledState.EXISTS)
+				found = true;
 			
 			if(!found){//it is a new VM instance due to scaling
 				ewInst.setScaledState(ExecwareInstance.scaledState.NEW);
@@ -456,7 +522,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			String ACName = ewInst.getApplicationComponentName();
 			EList<InternalComponent> components = depModel.getInternalComponents();
 			for (InternalComponent internalComponent : components){
-				if(internalComponent.getName().toLowerCase().equals(ACName))
+				if(internalComponent.getName().equalsIgnoreCase(ACName))
 					ic = internalComponent;//holding a pointer to the similar InternalComponentInstance
 			}
 			
@@ -555,6 +621,10 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			vmInst.setType(vmToBeReplicated);
 			//vmInst.setName(vmInstToBeReplicated.getName() + "EWScaled");
 			vmInst.setName(vmInstToBeReplicated.getName() + getUniqueId());
+			//Set VM Type/value
+			vmInst.setVmType(vmInstToBeReplicated.getVmType());
+			vmInst.setVmTypeValue(vmInstToBeReplicated.getVmTypeValue());
+			
 			for(int i=0 ;i < vmInstToBeReplicated.getProvidedHostInstances().size();i++)
 			{
 				ProvidedHostInstance providedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();

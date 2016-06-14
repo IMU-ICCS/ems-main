@@ -4304,7 +4304,7 @@ public class ExecInterfacer {
 			
 			ExecwareInstance eInstance = new ExecwareInstance();
 			
-			String remoteState, applicationComponent, applicationInstance, virtualMachineName;
+			String remoteState, applicationComponent, applicationInstance, virtualMachineName, instanceId = "not_found";
 			int virtualMachineId, applicationComponentId;
 			
 			remoteState = jObj.get("remoteState").toString();
@@ -4313,9 +4313,18 @@ public class ExecInterfacer {
 			virtualMachineId = Integer.parseInt(jObj.get("virtualMachine").toString());
 			applicationComponentId = Integer.parseInt(applicationComponent);
 			
+    		// loop array
+    		JSONArray links = (JSONArray) jObj.get("link");
+    		Iterator<JSONObject> iterator = links.iterator();
+    		while (iterator.hasNext()) {
+    			JSONObject factObj = (JSONObject) iterator.next();
+    			String href = (String) factObj.get("href");
+    			instanceId = trimResponseID(href);
+    		}
+			
 			String VMName = getVMName(virtualMachineId);
 			
-			eInstance.setInstance(remoteState, applicationComponent, applicationInstance, virtualMachineId);
+			eInstance.setInstance(remoteState, applicationComponent, applicationInstance, virtualMachineId, instanceId);
 			eInstance.setVirtualMachineName(virtualMachineId, VMName);
 			
 			String applicationComponentName = getLifecycleComponentName(applicationComponentId);

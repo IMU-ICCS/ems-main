@@ -20,7 +20,8 @@ public class ExecwareInstance {
 	State remoteState;//filled
 	int applicationComponent;//filled
 	String applicationComponentName;//filled
-	int applicationInstance;//filled
+	int applicationInstanceId;//filled
+	String applicationInstanceName;//to be filled from Mapping as it is discarded in ExecutionWare
 	int virtualMachineId;//Execware VM id filled
 	String virtualMachineName;//filled
 	String InstanceId = "-1";//for EW Instance id - not used for the moment but needed for updating mapping
@@ -36,7 +37,7 @@ public class ExecwareInstance {
 	private final static Logger LOGGER = Logger.getLogger(ExecwareInstance.class
 			.getName());
 	
-	public void setInstance(String remoteState, String applicationComponent, String applicationInstance, int virtualMachine){
+	public void setInstance(String remoteState, String applicationComponent, String applicationInstanceId, int virtualMachine, String instanceId){
 		
 		if(remoteState.equalsIgnoreCase("OK"))
 			this.remoteState = State.OK;
@@ -48,8 +49,9 @@ public class ExecwareInstance {
 			this.remoteState = State.ERROR;
 		
 		this.applicationComponent = Integer.parseInt(applicationComponent);
-		this.applicationInstance = Integer.parseInt(applicationInstance);
+		this.applicationInstanceId = Integer.parseInt(applicationInstanceId);
 		this.virtualMachineId = virtualMachine;
+		this.InstanceId = instanceId;
 	}
 	
 	public void setScaledState(scaledState sState){this.scState = sState;}
@@ -71,6 +73,10 @@ public class ExecwareInstance {
 	public String getVMTemplateName(){return this.VMTemplateName;}
 	
 	public String getInstanceId(){return this.InstanceId;}
+	
+	public void setApplicationInstanceName(String applicationInstanceName){this.applicationInstanceName = applicationInstanceName;}
+	
+	public String getApplicationInstanceName(){return this.applicationInstanceName;}
 	
 	//public String getNewVirtualMachineName(){return this.newVirtualMachineName;}
 	
