@@ -212,6 +212,10 @@ public class CamelFinder {
     }
 
     public List<CompositeMetricContext> getCompositeMetricContexts() {
+        if(model.getMetricModels().isEmpty()){
+            return new ArrayList<>();
+        }
+
         List<CompositeMetricContext> result =
             model.getMetricModels().get((0)).getContexts().stream()
                 .filter(cc -> cc instanceof CompositeMetricContext)
