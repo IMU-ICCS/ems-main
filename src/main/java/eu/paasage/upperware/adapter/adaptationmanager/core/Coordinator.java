@@ -87,6 +87,8 @@ public class Coordinator {
 	ReasonerInterfacer reasonerInterfacer;
 	ApplicationController appController;
 	Map<String, Object> state = new HashMap<String, Object>();
+	
+	private int newDMIndex;
 
 	private static Map<String, Object> handles = new HashMap<String, Object>();
 	private static Map<String, Object> execWareObjects = new HashMap<String, Object>();
@@ -441,6 +443,8 @@ public class Coordinator {
 			neigh = new DirectedNeighborIndex<Action, DefaultEdge>(graph);
 
 			initializeNeighbourDependencies();
+			
+			ApplicationController.resetMonitorEntities();
 
 			// dependencies();
 
@@ -625,7 +629,22 @@ public class Coordinator {
 		//updater.commitAndCloseTransaction();//closing the live transaction after CDO updated
 		reasonerInterfacer.commitAndCloseTransaction();//closing the live transaction after CDO updated
 		
-		return status;
+		
+		if(status && (updater.updateStatus())){
+			this.newDMIndex = updater.getNewDMIndex();
+			reasonerInterfacer.openTransaction();
+			this.targetModel = reasonerInterfacer.getLiveDeploymentModel(this.newDMIndex);
+			//reasonerInterfacer.commitAndCloseTransaction();
+			return true;
+		}
+		else
+			return false;
+	}
+	
+	public int getNewDMIndexAndReset(){
+		int index = this.newDMIndex;
+		this.newDMIndex = -1;
+		return index;
 	}
 	
 	private static boolean updateThreaded(){

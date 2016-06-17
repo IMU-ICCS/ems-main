@@ -287,6 +287,7 @@ public class CamelExecwareMapping {
 				VirtualMachineInstance vmi = it.next();
 				if(vmi.getVMIname().equalsIgnoreCase(name_Camel)){
 					it.remove();
+					LOGGER.log(Level.INFO, "Deleted from Mapping VM Instance : " + name_Camel);
 					status = true;
 				}
 			}
@@ -1608,12 +1609,26 @@ public class CamelExecwareMapping {
 				ComponentInstance compInst = it.next();
 				if(compInst.getCompInstType().equalsIgnoreCase(intCompId_Camel)){
 					it.remove();
-					LOGGER.log(Level.INFO, "Deleted Component Instance : " + intCompId_Camel);
+					LOGGER.log(Level.INFO, "Deleted from Mapping Component Instance : " + intCompId_Camel);
 					status = true;
 				}			
 			}
 		}
 		return status;
+	}
+	
+	/**
+	 * 
+	 * @return CompInstInfo Map(compInst_EW_id, compInst_name)
+	 */
+	public Map<String, String> getInfoCompInsts(){
+		Map<String, String> CompInstInfo = new HashMap<String, String>();
+		synchronized(CompInsts){
+			for(ComponentInstance compInst : CompInsts){
+				CompInstInfo.put(compInst.getId(), compInst.getCompInstType());
+			}
+		}
+		return CompInstInfo;
 	}
 	
 	
@@ -1636,6 +1651,8 @@ public class CamelExecwareMapping {
 		private void setId(String id){
 			this.id = id;
 		}
+		
+		private String getId(){return this.id;}
 		
 		private void setCompInstType(String compInstName_Camel){
 			this.compInstName_Camel = compInstName_Camel;

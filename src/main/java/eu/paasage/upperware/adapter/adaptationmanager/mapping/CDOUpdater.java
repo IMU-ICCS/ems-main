@@ -59,6 +59,8 @@ public class CDOUpdater {
 	
 	DeploymentModel targetDepModel = null;
 	
+	int DMIndex, newDMIndex = -1;
+	
 	private LinkedList<ExecwareInstance> instances = null;
 	private int numInstances;
 	
@@ -83,6 +85,7 @@ public class CDOUpdater {
 		this.rescname = reasonerInterfacer.getresourceName();
 		System.out.println("The resource name is " + this.rescname);
 		this.dataHolder = new DataHolder();
+		this.DMIndex = dmIndex;
 	}
 	
 	private void commitAndCloseTransaction(){
@@ -267,7 +270,16 @@ public class CDOUpdater {
 		computeDatasToRemove(instances, this.targetDepModel);
 		registerDataHolderToCDO();
 		addToMapping(instances, mapping);
-		return addToCDO();
+		if((this.newDMIndex = addToCDO()) > this.DMIndex)
+			return this.newDMIndex;
+		else
+			return this.DMIndex;
+	}
+	
+	public int getNewDMIndex(){return this.newDMIndex;}
+	
+	public boolean updateStatus(){
+		return (this.newDMIndex > this.DMIndex);
 	}
 	
 	private void addToMapping(LinkedList<ExecwareInstance> instances, CamelExecwareMapping mapping){
@@ -276,13 +288,26 @@ public class CDOUpdater {
 			boolean found = false;
 			if(ewInst.getScaledState()==ExecwareInstance.scaledState.NEW){//scaled VM found - so add in the Mapping
 				mapping.addVMI(ewInst.getVirtualMachineName(), ewInst.getVMTemplateName());
-				mapping.setVMIID(ewInst.getVirtualMachineName(), ewInst.getVirtualMachine()+"");
-				String iCompInstName = ewInst.getVirtualMachineName() + "_Inst_" + getUniqueId();
+				mapping.setVMIID(ewInst.getVirtualMachineName(), ewInst.getVirtualMachineId()+"");
+				//String iCompInstName = ewInst.getVirtualMachineName() + "_Inst_" + getUniqueId();
+				String iCompInstName = ewInst.getInstanceName();
 				mapping.addCompInst(iCompInstName, mapping.getApplicationInstance(ewInst.getApplicationInstanceName()), mapping.getEntityLCAppComponent(ewInst.getApplicationComponentName()), mapping.getEntityVMInstance(ewInst.getVirtualMachineName()));
 				mapping.setCompInstID(iCompInstName, ewInst.getInstanceId());
 			}
 		}
 		
+	}
+	
+	public boolean removeFromMapping(LinkedList<ExecwareInstance> instances, CamelExecwareMapping mapping){
+		boolean status = true;
+		for(ExecwareInstance ewInst : instances){
+			if(ewInst.getScaledState()==ExecwareInstance.scaledState.REMOVED){//status set in computeDatasToRemove(instances, this.targetDepModel)
+				status &= mapping.deleteCompInst(ewInst.getInstanceName());
+				status &= mapping.deleteVMI(ewInst.getVirtualMachineName());
+				
+			}
+		}
+		return status;
 	}
 	
 	private int addToCDO(){
@@ -298,6 +323,7 @@ public class CDOUpdater {
 	private void fillDataFromDMAndMapping(LinkedList<ExecwareInstance> instances, CamelExecwareMapping mapping, DeploymentModel depModel){
 		
 		Map<String, String> VMInstancesInfo = mapping.getInfoVMIs();//the instances existing in the Mapping - for the updated names
+		Map<String, String> CompInstancesInfo = mapping.getInfoCompInsts();//the component instances existing in the Mapping - for the updated names
 		
 		String appInstName = mapping.getApplicationInstanceName_Camel();
 		
@@ -307,12 +333,20 @@ public class CDOUpdater {
 			
 			for(String key: VMInstancesInfo.keySet()){
 				
-	            int VmiId = ewInst.getVirtualMachine();
+	            int VmiId = ewInst.getVirtualMachineId();
 	            if(key.equalsIgnoreCase(Integer.toString(VmiId))){
 	            	ewInst.setVirtualMachineName(VmiId, VMInstancesInfo.get(key));
 	            	//ewInst.setNewVirtualMachineName(VmiId, VMInstancesInfo.get(key));
 	            }
 	        }
+			
+			for(String key : CompInstancesInfo.keySet()){
+				
+				String compInst = ewInst.getInstanceId();
+				if(key.equalsIgnoreCase(compInst)){
+					ewInst.setInstanceName(compInst, CompInstancesInfo.get(key));
+				}
+			}
 		}
 		
 		EList<HostingInstance> HInstances = depModel.getHostingInstances();
@@ -367,7 +401,7 @@ public class CDOUpdater {
 				boolean flag = false;
 				//setting the pointer to a similar InternalComponentInstance in the current Deployment model
 				for(ExecwareInstance ewInstCopy : instances){
-					if(!ewInst.equals(ewInstCopy) && ewInstAC == ewInstCopy.getApplicationComponent()){
+					if(!ewInst.equals(ewInstCopy) && ewInstAC == ewInstCopy.getApplicationComponent() && ewInstCopy.getScaledState() == ExecwareInstance.scaledState.EXISTS){
 						ewInst.setIciPointerinDm(ewInstCopy.getIciPointerinDm());
 						ewInst.setVMTemplateName(ewInstCopy.getVMTemplateName());
 						flag = true;
@@ -486,7 +520,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 	public void printExecwareInstances(LinkedList<ExecwareInstance> instances){
 		
 		for(ExecwareInstance inst : instances){
-			System.out.println(inst.getApplicationComponent() + " " + inst.getApplicationComponentName() + " " + inst.getVMTemplateName() + " " + inst.getVirtualMachine() + " " + inst.getVirtualMachineName());
+			System.out.println(inst.getApplicationComponent() + " " + inst.getApplicationComponentName() + " " + inst.getVMTemplateName() + " " + inst.getVirtualMachineId() + " " + inst.getVirtualMachineName());
 		}
 	}
 	
@@ -529,7 +563,9 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			//Now creating an IC Instance using infos from InternalComponent and its replicated instance
 			icInst = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
 			//icInst.setName(icInstToBeReplicated.getName() + "EWScaled");
-			icInst.setName(icInstToBeReplicated.getName() + getUniqueId());
+			String iciName = icInstToBeReplicated.getName() + "_" + getUniqueId();
+			ewInst.setInstanceName(ewInst.getInstanceId(), iciName);
+			icInst.setName(iciName);
 			icInst.setType(ic);
 						
 			//ProvidedCommunicationInstance
@@ -620,7 +656,8 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			vmInst = DeploymentFactory.eINSTANCE.createVMInstance();
 			vmInst.setType(vmToBeReplicated);
 			//vmInst.setName(vmInstToBeReplicated.getName() + "EWScaled");
-			vmInst.setName(vmInstToBeReplicated.getName() + getUniqueId());
+			//vmInst.setName(vmInstToBeReplicated.getName() + getUniqueId());
+			vmInst.setName(ewInst.getVirtualMachineName());
 			//Set VM Type/value
 			vmInst.setVmType(vmInstToBeReplicated.getVmType());
 			vmInst.setVmTypeValue(vmInstToBeReplicated.getVmTypeValue());
@@ -646,7 +683,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			Hosting hostingToBeReplicated = hostingInstToBeReplicated.getType();
 			hInst = DeploymentFactory.eINSTANCE.createHostingInstance();
 			//hInst.setName(hostingInstToBeReplicated.getName() + "EWScaled");
-			hInst.setName(hostingInstToBeReplicated.getName() + getUniqueId());
+			hInst.setName(hostingInstToBeReplicated.getName() + "_" + getUniqueId());
 			EList<ProvidedHostInstance> pis = vmInst.getProvidedHostInstances();
 			hInst.setProvidedHostInstance(pis.get(0));
 			hInst.setRequiredHostInstance(icInst.getRequiredHostInstance());
@@ -688,6 +725,9 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			}
 			
 			if(found == false){
+				
+				String vmInstName = vmInst.getName().toString();
+				
 				LOGGER.log(Level.INFO, "Removing VM Instance " + vmInst.getName().toString() + " and others with index " + i + " from Deployment model");
 				depModel.getVmInstances().remove(i);
 				
@@ -697,6 +737,10 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 				LOGGER.log(Level.INFO, "Removing Hosting Instance " + depModel.getHostingInstances().get(i).getName() + " from Deployment model");
 				depModel.getHostingInstances().remove(i);
 				
+				for(ExecwareInstance ewInst : instances){
+					if(vmInstName.equalsIgnoreCase(ewInst.getVirtualMachineName()))
+						ewInst.setScaledState(ExecwareInstance.scaledState.REMOVED);//set here to be removed from CamelExecwareMapping later
+				}				
 			}
 		}		
 	}

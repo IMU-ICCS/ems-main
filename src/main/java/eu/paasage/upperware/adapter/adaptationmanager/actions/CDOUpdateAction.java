@@ -64,11 +64,12 @@ public class CDOUpdateAction implements Action {
 		
 		if(instances == null || instances.size() == 0){
 			LOGGER.log(Level.INFO, "CDOUpdateAction execute block. Nothing to update");
-		}else
+		}else{
 			//cdoUpdater.updateCDO(instances);
-			cdoUpdater.updateFromMapping(instances, dataShare);
-		
-		
+			int index = cdoUpdater.updateFromMapping(instances, dataShare);
+			if(index > -1)
+				cdoUpdater.removeFromMapping(instances, dataShare);
+		}		
 		
 		//cdoUpdater.copyDeploymentModelTest(instances);
 		

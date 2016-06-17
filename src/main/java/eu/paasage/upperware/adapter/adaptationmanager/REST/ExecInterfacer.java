@@ -271,11 +271,19 @@ public class ExecInterfacer {
     	return count;
     }
     
+    private String replaceByChar(String str, char replacement){
+    	String newStr = "";
+    	for(int i=0; i<str.length(); i++){
+    		newStr += replacement;
+    	}
+    	return newStr;
+    }
+    
     public String getCloudUname(String provider){
     	for (Cloud cld: clouds){
     		if(((Cloud)cld).getCloudProvName().toLowerCase().equalsIgnoreCase(provider.toLowerCase())){
     			String uname = ((Cloud)cld).getCloudUname();
-    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Username: " + uname);
+    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Username: " + replaceByChar(uname, '*'));
     			return uname;
     		}
     	}
@@ -287,7 +295,7 @@ public class ExecInterfacer {
     	for (Cloud cld: clouds){
     		if(((Cloud)cld).getCloudProvName().toLowerCase().equalsIgnoreCase(provider.toLowerCase())){
     			String pass = ((Cloud)cld).getCloudPass();
-    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Pass: " + pass);
+    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + " Pass: " + replaceByChar(pass, '*'));
     			return pass;
     		}
     	}

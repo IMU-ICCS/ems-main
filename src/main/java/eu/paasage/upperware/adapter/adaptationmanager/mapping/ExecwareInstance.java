@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class ExecwareInstance {
 	
 	public static enum State {OK, INPROGRESS, ERROR};
-	public static enum scaledState {NEW, EXISTS, NOTFOUND};//NOTFOUND state means that the VM is neither new nor created as a result of scaling. Indicates some problem.
+	public static enum scaledState {NEW, EXISTS, NOTFOUND, REMOVED};//NOTFOUND state means that the VM is neither new nor created as a result of scaling. Indicates some problem.
 	
 	//from API_instance and API_virtualMachine
 	State remoteState;//filled
@@ -24,7 +24,8 @@ public class ExecwareInstance {
 	String applicationInstanceName;//to be filled from Mapping as it is discarded in ExecutionWare
 	int virtualMachineId;//Execware VM id filled
 	String virtualMachineName;//filled
-	String InstanceId = "-1";//for EW Instance id - not used for the moment but needed for updating mapping
+	String InstanceId = "-1";//for EW Instance id - updated from ExecWare
+	String instanceName = "not_found";
 	int cloud, image, hardware, location;
 	String cloudName, imageSwordId, hardwareSwordId, locationSwordId;
 	
@@ -37,7 +38,7 @@ public class ExecwareInstance {
 	private final static Logger LOGGER = Logger.getLogger(ExecwareInstance.class
 			.getName());
 	
-	public void setInstance(String remoteState, String applicationComponent, String applicationInstanceId, int virtualMachine, String instanceId){
+	public void setInstance(String remoteState, String applicationComponent, String applicationInstanceId, int virtualMachineId, String instanceId){
 		
 		if(remoteState.equalsIgnoreCase("OK"))
 			this.remoteState = State.OK;
@@ -50,7 +51,7 @@ public class ExecwareInstance {
 		
 		this.applicationComponent = Integer.parseInt(applicationComponent);
 		this.applicationInstanceId = Integer.parseInt(applicationInstanceId);
-		this.virtualMachineId = virtualMachine;
+		this.virtualMachineId = virtualMachineId;
 		this.InstanceId = instanceId;
 	}
 	
@@ -62,7 +63,7 @@ public class ExecwareInstance {
 	
 	public int getIciPointerinDm(){return this.IciInDmOrSimilar;}
 	
-	public int getVirtualMachine(){return this.virtualMachineId;}
+	public int getVirtualMachineId(){return this.virtualMachineId;}
 	
 	public String getVirtualMachineName(){return this.virtualMachineName;}
 	
@@ -74,14 +75,16 @@ public class ExecwareInstance {
 	
 	public String getInstanceId(){return this.InstanceId;}
 	
+	public String getInstanceName(){return this.instanceName;}
+	
 	public void setApplicationInstanceName(String applicationInstanceName){this.applicationInstanceName = applicationInstanceName;}
 	
 	public String getApplicationInstanceName(){return this.applicationInstanceName;}
 	
 	//public String getNewVirtualMachineName(){return this.newVirtualMachineName;}
 	
-	public void setVirtualMachineName(int virtualMachine, String virtualMachineName){
-		if(this.virtualMachineId == virtualMachine)
+	public void setVirtualMachineName(int virtualMachineId, String virtualMachineName){
+		if(this.virtualMachineId == virtualMachineId)
 			this.virtualMachineName = virtualMachineName;
 	}
 	
@@ -92,6 +95,11 @@ public class ExecwareInstance {
 	
 	public void setVMTemplateName(String VMTemplateName){
 		this.VMTemplateName = VMTemplateName;
+	}
+	
+	public void setInstanceName(String instanceId, String instanceName){
+		if(this.InstanceId.equalsIgnoreCase(instanceId))
+			this.instanceName = instanceName;
 	}
 	
 	/*public void setNewVirtualMachineName(int virtualMachine, String newVirtualMachineName){

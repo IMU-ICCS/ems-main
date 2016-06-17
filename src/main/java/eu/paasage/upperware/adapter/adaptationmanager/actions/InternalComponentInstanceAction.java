@@ -185,16 +185,18 @@ public class InternalComponentInstanceAction implements Action {
 				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 				Collection<Action> depActions = Coordinator.getDependentActions(this);
-				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Update)--- " + depActions.size());
-				for(Object obj : depActions){
-					System.out.println("-- " + obj.toString() + " ");
-					if(obj.getClass()==ApplicationInstanceAction.class){
-						appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
-					}else if(obj.getClass()==VMInstanceAction.class){
-						vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
-						old_vmiCamelName = ((VMInstanceAction)obj).getOldVMInstName();
-					}else if(obj.getClass()==InternalComponentAction.class){
-						appCompTypeName = ((InternalComponentAction)obj).getCompName();
+				if(depActions != null){
+					LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Update)--- " + depActions.size());
+					for(Object obj : depActions){
+						System.out.println("-- " + obj.toString() + " ");
+						if(obj.getClass()==ApplicationInstanceAction.class){
+							appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
+						}else if(obj.getClass()==VMInstanceAction.class){
+							vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
+							old_vmiCamelName = ((VMInstanceAction)obj).getOldVMInstName();
+						}else if(obj.getClass()==InternalComponentAction.class){
+							appCompTypeName = ((InternalComponentAction)obj).getCompName();
+						}
 					}
 				}
 				
@@ -263,18 +265,19 @@ public class InternalComponentInstanceAction implements Action {
 				System.out.println("***" + this.toString() + " *** Data/Objects available from its dependencies ");
 				//Collection<Object> depActions = Coordinator.getNeighbourDependencies(this);
 				Collection<Action> depActions = Coordinator.getDependentActions(this);
-				LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Delete)--- " + depActions.size());
-				for(Object obj : depActions){
-					System.out.println("-- " + obj.toString() + " ");
-					if(obj.getClass()==ApplicationInstanceAction.class){//doesn't depend for deletion, so commenting
-						//appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
-					}else if(obj.getClass()==VMInstanceAction.class){//doesn't depend for deletion, so commenting
-						//vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
-					}else if(obj.getClass()==InternalComponentAction.class){//doesn't depend for deletion, so commenting
-						//appCompTypeName = ((InternalComponentAction)obj).getCompName();
+				if(depActions != null){
+					LOGGER.log(Level.INFO, "--------------Breakpoint IntCompInst (Delete)--- " + depActions.size());
+					for(Object obj : depActions){
+						System.out.println("-- " + obj.toString() + " ");
+						if(obj.getClass()==ApplicationInstanceAction.class){//doesn't depend for deletion, so commenting
+							//appliInstCamelName = ((ApplicationInstanceAction) obj).getAppInstName();
+						}else if(obj.getClass()==VMInstanceAction.class){//doesn't depend for deletion, so commenting
+							//vmiCamelName = ((VMInstanceAction)obj).getVMInstName();
+						}else if(obj.getClass()==InternalComponentAction.class){//doesn't depend for deletion, so commenting
+							//appCompTypeName = ((InternalComponentAction)obj).getCompName();
+						}
 					}
-				}
-				
+				}				
 				//System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
 			} catch(Exception e){/*
 				try {
@@ -304,7 +307,7 @@ public class InternalComponentInstanceAction implements Action {
 			
 				int timeout = 60;
 				while(deleted && (!(status = execInterfacer.queryStateDeletedInstance(iCompInstID_temp))) && timeout > 0){
-					LOGGER.log(Level.INFO, "Waiting 30 secs for operation completion. VM Instance : ID " + iCompInstID_temp);
+					LOGGER.log(Level.INFO, "Waiting 30 secs for deletion operation completion. VM Instance : ID " + iCompInstID_temp);
 					try {
 						Thread.sleep(30000);
 					} catch (InterruptedException e) {
