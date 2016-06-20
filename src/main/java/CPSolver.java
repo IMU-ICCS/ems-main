@@ -417,6 +417,13 @@ public class CPSolver {
 		return 0;
 	}
 	
+	/* Checking if cp's goal operator is MAX or MIN */
+	private int optToInt(GoalOperatorEnum type){
+		if (type.equals(GoalOperatorEnum.MAX)) return 1;
+		else if (type.equals(GoalOperatorEnum.MIN)) return -1;
+		return 0;
+	}
+	
 	/* Creating the optimisation objective from the list of goals contained in the cp model */
 	private void createGoals(EList<Goal> goals){
 		logger.info("--------------- Goals ---------------");
@@ -453,7 +460,7 @@ public class CPSolver {
 				for (int i = 0; i < size; i++){
 					Goal goal = goals.get(i);
 					vars[i] = parseExpression(goal.getExpression());
-					dirs[i] = isMax(goal.getGoalType());
+					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
 				}
 				intGoal = VariableFactory.bounded("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
 				logger.info("Optimization Variable: " + intGoal.getName());
@@ -461,23 +468,26 @@ public class CPSolver {
 				policy = ResolutionPolicy.MAXIMIZE;
 			}
 			else{
-				RealConstraint rc = new RealConstraint(solver);
+				//RealConstraint rc = new RealConstraint(solver);
 				RealVar[] vars = new RealVar[size];
 				int[] dirs = new int[size];
 				for (int i = 0; i < size; i++){
+					RealConstraint rc = new RealConstraint(solver);
 					Goal goal = goals.get(i);
 					vars[i] = parseRealExpression(goal.getExpression(),rc);
-					dirs[i] = isMax(goal.getGoalType());
+					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
+					solver.post(rc);
 				}
+				logger.info("Optimisation goals created successfully");
+				RealConstraint rc = new RealConstraint(solver);
 				realGoal = VariableFactory.real("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, epsilon, solver);
 				StringBuilder function = new StringBuilder("(");
-				if (dirs[0] == 0) function.append("- {0} ");
-				else function.append(" {0} ");
+				function.append(dirs[0] + " * {0} ");
 				for (int i = 1; i < size; i++){
-					if (dirs[i] == 0) function.append(" - {" + i + "} ");
-					else function.append(" + {" + i + "} ");
+					function.append(" + " + dirs[i] + " * {" + i + "} ");
 				}
 				function.append(") = { " + size + "}");
+				logger.info("Optimisation formula is: " + function.toString());
 				RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{realGoal});
 				rc.addFunction(function.toString(), finalVars);
 				solver.post(rc);
@@ -682,7 +692,7 @@ public class CPSolver {
 	/* Printing the array of variables */
 	private String printVarArray(solver.variables.Variable[] vars){
 		String toRet = "[";
-		if (vars.length >= 0){
+		if (vars.length > 0){
 			toRet += vars[0].getName();
 			for (int i = 1; i < vars.length; i++)
 				toRet += " , " + vars[i].getName();
@@ -948,14 +958,30 @@ public class CPSolver {
 				if (expr1 instanceof Variable){
 					Variable var = (Variable)expr1;
 					String id = var.getId();
+					logger.info("Checking variable with name: " + id);
 					RealVar v = idToRealVar.get(id);
+					logger.info("RealVar is: " + v);
+					if (v == null){
+						IntVar iv = idToIntVar.get(id);
+						//Checking if int var is involved
+						if (iv != null){
+							v = VariableFactory.real(iv,epsilon);
+							logger.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
+						}
+						//If not, then we have a problem
+						else{
+							logger.error("Got a new variable not previously parsed");
+						}
+					}
 					function.append(" {0} " + getComparator(operator,false) + " {1} )");
+					logger.info("Operator is: " + operator + " second expression is: " + expr2);
 					RealVar[] all_vars = new RealVar[]{v, parseRealExpression(expr2,rc)};
 					String func = function.toString();
 					logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 			        rc.addFunction(func, all_vars);
 				}
 				else if (expr1 instanceof MetricVariable){
+					System.out.println("CASE 2");
 					MetricVariable var = (MetricVariable)expr1;
 					String id = var.getId();
 					RealVar v = idToRealVar.get(id);
@@ -966,6 +992,7 @@ public class CPSolver {
 			        rc.addFunction(func, all_vars);
 				}
 				else if (expr1 instanceof Constant){
+					System.out.println("CASE 3");
 					Constant constant = (Constant)expr1;
 					BasicTypeEnum type = constant.getType();
 					if (type.equals(BasicTypeEnum.INTEGER)){
