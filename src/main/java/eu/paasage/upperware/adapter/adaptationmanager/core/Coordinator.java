@@ -361,9 +361,14 @@ public class Coordinator {
 			
 			if(!ApplicationController.monitorEntitiesStatus(execInterfacer, 30))
 				return false;
+			
+			String executionContextName = appController.getRandomExecutionContextName();
+			
+			if(!reasonerInterfacer.createExecutionContext(dmIndex, modelName, executionContextName))
+				return false;
 
 			//Deployment completed successfully. So publish to metrics collector
-			if(!appController.publishToMetric(modelName))
+			if(!appController.publishToMetric(modelName, executionContextName))
 				LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
 			return true;
 		}
@@ -453,9 +458,14 @@ public class Coordinator {
 			
 			if(!ApplicationController.monitorEntitiesStatus(execInterfacer, 30))
 				return false;
+			
+			String executionContextName = appController.getRandomExecutionContextName();
+			
+			if(!reasonerInterfacer.createExecutionContext(dmIndex, modelName, executionContextName))
+				return false;
 
 			//Deployment completed successfully. So publish to metrics collector
-			if(!appController.publishToMetric(modelName))
+			if(!appController.publishToMetric(modelName, executionContextName))
 				LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
 			return true;
 		}
@@ -518,8 +528,13 @@ public class Coordinator {
 			ex.printStackTrace();
 		}
 		
+		String executionContextName = appController.getRandomExecutionContextName();
+		
+		if(!reasonerInterfacer.createExecutionContext(dmIndex, modelName, executionContextName))
+			return false;
+		
 		//Fake deployment completed successfully. So publish to metrics collector
-		if(!appController.publishToMetric(modelName))
+		if(!appController.publishToMetric(modelName, executionContextName))
 			LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
 		
 		return true;

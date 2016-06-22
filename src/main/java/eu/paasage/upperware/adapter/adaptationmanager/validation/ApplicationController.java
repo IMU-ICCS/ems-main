@@ -32,7 +32,7 @@ public class ApplicationController {
 	private static LinkedList<MonitorEntity> entities = new LinkedList<MonitorEntity>();
 	
 	private String resourceName;
-	private String modelName;
+	private String modelName, executionContextName;
 	ZeroMQPublisher zmqAdap2MetricsPub;
 	
 	private final static Logger LOGGER = Logger.getLogger(ApplicationController.class.getName());
@@ -72,11 +72,19 @@ public class ApplicationController {
 		this.modelName = modelName;
 	}
 	
+	private void setExecutionContextName(String executionContextName){
+		this.executionContextName = executionContextName;
+	}
+	
+	public String getExecutionContextName(){return this.executionContextName;}
+	
 	public void updateResourceName(String resourceName){
 		this.resourceName = resourceName;
 	}
 	
 	private String getUniqueId(){return Long.toString((new Date()).getTime());}
+	
+	public String getRandomExecutionContextName(){return ("ExecutionContext_" + getUniqueId());}
 	
 	/**
 	 * Adds an entity to be monitored later
@@ -160,7 +168,7 @@ public class ApplicationController {
 		return;
 	}
 	
-	public boolean publishToMetric(String modelName){
+	public boolean publishToMetric(String modelName, String executionContextName){
 		boolean status = false;
 		
 		setModelName(modelName);
@@ -168,9 +176,9 @@ public class ApplicationController {
 		String msg = "";
 		if(resourceName == null){//means xmi file used for deployment
 			//msg = "newResourceArrival:" + "noResourceName:" + modelName;
-			msg = "noResourceName:" + modelName + ":" + "ExecutionContext_" + getUniqueId();
+			msg = "noResourceName:" + modelName + ":" + executionContextName;
 		}else{//means CDO server is used
-			msg = resourceName + ":" + modelName + ":" + "ExecutionContext_" + getUniqueId();
+			msg = resourceName + ":" + modelName + ":" + executionContextName;
 		}
 
 

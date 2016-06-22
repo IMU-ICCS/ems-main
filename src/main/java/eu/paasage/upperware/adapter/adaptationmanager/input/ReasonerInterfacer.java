@@ -28,10 +28,14 @@ import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 
+import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.DeploymentPackage;
+import eu.paasage.camel.execution.ExecutionContext;
+import eu.paasage.camel.execution.ExecutionFactory;
+import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.execution.ExecutionPackage;
 import eu.paasage.camel.location.LocationPackage;
 import eu.paasage.camel.metric.MetricPackage;
@@ -45,6 +49,7 @@ import eu.paasage.camel.type.TypePackage;
 import eu.paasage.camel.unit.UnitPackage;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.adapter.adaptationmanager.core.AdaptationManager;
+import eu.paasage.upperware.adapter.adaptationmanager.mapping.GraphUtilities;
 
 public class ReasonerInterfacer {
 	//old members
@@ -185,6 +190,65 @@ public class ReasonerInterfacer {
 			}
 		}
 		return depModel;
+	}
+	
+	
+	public boolean createExecutionContext(int dmIndex, String modelName, String executionContextName){
+		boolean status = true;
+		
+		if(isModelFromCDO()){//create only if Deployment Model from CDO server
+			
+			openTransaction();
+			DeploymentModel depModel = getLiveDeploymentModel(dmIndex);
+			
+			CamelModel cModel = (CamelModel) depModel.eContainer();
+			
+			ExecutionModel execModel = null;
+			ExecutionContext execContext = null;
+			
+			boolean found = false;
+			if (cModel.getExecutionModels().isEmpty()) {
+	            execModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+	            execModel.setName(modelName);
+	            cModel.getExecutionModels().add(execModel);
+	            found = true;
+	        }else{
+	        	for (ExecutionModel eModel : cModel.getExecutionModels()){
+	        		if(eModel.getName().equalsIgnoreCase(modelName)){
+	        			execModel = eModel;
+	        			found = true;
+	        			break;
+	        		}
+	        	}
+	        }
+			
+			status = status && found;
+			
+			if(status){
+				
+				Application app = cModel.getApplications().get(0);
+				
+				execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
+	            execContext.setName(executionContextName);
+	            execContext.setApplication(app);
+	            execContext.setDeploymentModel(depModel);
+	            status = status && execModel.getExecutionContexts().add(execContext);
+	            
+			}
+
+            closeTransaction();// closing the live transaction execution context created
+			
+		}else{
+			LOGGER.log(Level.WARNING, "Deployment model is a file");
+			status = false;
+		}
+		
+		if(status)
+			LOGGER.log(Level.INFO, "Created execution context in CDO : " + executionContextName);
+		else
+			LOGGER.log(Level.WARNING, "Could not create execution context in CDO");
+		
+		return status;
 	}
 	
 	public int getDeploymentModelsSize(){
