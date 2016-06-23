@@ -107,7 +107,7 @@
     <dependency>
 	 <groupId>org.ow2.paasage</groupId>
 		    <artifactId>upperware-metamodel</artifactId>
-		    <version>2016.4.0-SNAPSHOT</version>
+		    <version>${paasage.version}</version>
 	</dependency>
 	<!-- Zero MQ -->
 	<dependency>
