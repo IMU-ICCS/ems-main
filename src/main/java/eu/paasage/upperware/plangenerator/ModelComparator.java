@@ -1334,11 +1334,11 @@ public class ModelComparator {
 				if(!((String) rec.getValue()).equals((String) targetHM.get("os"))){
 					return true;
 				}
-			}else if(rec.getKey().equals("os64bit")){
+			}/*else if(rec.getKey().equals("os64bit")){
 				if((boolean) rec.getValue() != (boolean) targetHM.get("os64bit")){
 					return true;
-				}
-			}
+				} 23Nov15 redundant
+			}*/
 		}
 		//24July2015 no need to check them all
 //		if(!equalVMRequirementSet(this.currentCamel.getDeploymentModels().get(0).getGlobalVMRequirementSet(),

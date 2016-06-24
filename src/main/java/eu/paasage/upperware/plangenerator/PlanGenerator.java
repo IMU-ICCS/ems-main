@@ -8,7 +8,10 @@
 package eu.paasage.upperware.plangenerator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -26,6 +29,8 @@ import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.deployment.InternalComponentInstance;
 import eu.paasage.camel.deployment.ProvidedCommunication;
+import eu.paasage.camel.deployment.RequiredCommunication;
+import eu.paasage.camel.deployment.RequiredCommunicationInstance;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.upperware.plangenerator.exception.ModelComparatorException;
@@ -45,6 +50,7 @@ import eu.paasage.upperware.plangenerator.model.task.VMInstanceTask;
 import eu.paasage.upperware.plangenerator.model.task.VMTypeTask;
 import eu.paasage.upperware.plangenerator.type.TaskType;
 import eu.paasage.upperware.plangenerator.util.ModelToJsonConverter;
+import eu.paasage.upperware.plangenerator.util.ModelUtil;
 
 /**
  * The entry point to the plan generator.  This component is used by the Adapter 
@@ -130,6 +136,7 @@ public class PlanGenerator {
 	 * @throws	{@link eu.paasage.upperware.plangenerator.exception.PlanGenerationException <em>PlanGenerationException</em>} or
 	 * 			{@link eu.paasage.upperware.plangenerator.exception.ModelComparatorException <em>ModelComparatorException</em>}  on error
 	 */
+	@SuppressWarnings("unchecked")
 	private void buildReconfigPlan() throws PlanGenerationException, ModelComparatorException {
 		/******************************************************************************************
 		 * refactored to use DeploymentModelComparator as object names cannot be used as identifier
@@ -167,7 +174,8 @@ public class PlanGenerator {
 		/*********** REMOVAL TASKS : the objects already exists in EW. The names should be the current names****************************/
 		//removing all objects means un-deploying the app but cannot assume deleting the app
 		//process in this order hosting instance, internalComponent instance, VM instance. 
-		//If EW does not enforce dependency, it is possible to do all these in parallel
+		//If EW does not enforce dependency, it is possible to do all these in parallel. 
+		//:TODO needs to verify if there EW enforces dependencies
 		//
 		//hosting instances	
 		if(!dmc.getRemovedHostingInstances().isEmpty()){
@@ -289,9 +297,9 @@ public class PlanGenerator {
 		//1. delete tasks can be process at any time (assuming EW does not enforce dependency)
 		//2. update application/instance tasks can also be done at any time 
 		//3. update and create tasks can be dependent on each other.  HostingInstance depends on the consumer/dependent
-		//4. (18Jan16) delete tasks, the type depends on the children instances (if the both are being deleted) 
-		//5. (3May16) EW does not support update.  The name attributes are required by Adapter and needs to be synchronised 
+		//4. (3May16) EW does not support update.  The name attributes are required by Adapter and needs to be synchronised 
 		//    with the S2D deployment model.
+		//5. (23June16) EW does not process Hosting and CommunicationInstance objects
 		
 		//VM Instances
 		if(!vmInsTasks.isEmpty()){ 
@@ -303,10 +311,57 @@ public class PlanGenerator {
 		}
 		
 		//internal component instances
-		//add comp type dependencies, other dependencies are added when processing hosting & communication
+		//add comp type dependencies, hosting dependency is added when processing hosting instances
 		if(!compInsTasks.isEmpty()){ 
 			log.debug(compInsTasks.size() + " number of update/create/delete compInsTasks to add to plan ....");			
-				this.plan.getTasks().addAll(compInsTasks); //no other dependencies at this stage
+			//23June2016 capture any dependency for new CompInsTasks that has mandatory communication
+			List<InternalComponentInstance> icis =  dmc.getAddedInternalComponentInstances();
+			if(icis.isEmpty()){
+				log.debug("no new internal component instances to check for mandatory communications.....");
+			}else{
+				log.debug("Processing new InternalComponentInstance for mandatory communications....");
+				//List<InternalComponent> ICsInScope = new ArrayList<InternalComponent>();
+				//
+				for(InternalComponentInstance ici :icis){
+					Set<InternalComponentInstance> providerCIs = new HashSet<InternalComponentInstance>();
+					if(ici.getType() instanceof InternalComponent){
+						//get a list of the mandatory required comm Type
+						List<RequiredCommunication> reqCommTypes = ModelUtil.getMandatoryReqComms((InternalComponent) ici.getType());
+						if(!reqCommTypes.isEmpty()){
+							//ICsInScope.add((InternalComponent) ici.getType());	
+							//now get the instance of comm provider
+							List<RequiredCommunicationInstance> rcis = ici.getRequiredCommunicationInstances();
+							//Set<InternalComponentInstance> providerCIs = new HashSet<InternalComponentInstance>();
+							for(RequiredCommunicationInstance rci: rcis){
+								if(reqCommTypes.contains(rci.getType())){//if same RequiredCommunication type
+									providerCIs.addAll(ModelUtil.getProviderIC(rci, this.targetDM.getCommunicationInstances()));
+								}
+							}
+						}
+					}else{
+						log.debug("Ignoring " + ici.getName() + ", it does not have an InternalComponent as parent type....");
+					}
+					if(providerCIs.isEmpty()){
+						log.debug("Either no mandatory communication or failed to find provider InternalComponentInstances for " + ici.getName());
+					}else{
+						for(InternalComponentInstance ici1 : providerCIs){
+							if(icis.contains(ici1)){	//if provider is also being added, we need to add dependencies
+								//
+								ConfigurationTask depended = getDepended(compInsTasks, ici1.getName(), TaskType.CREATE);
+								ConfigurationTask target = getDepended(compInsTasks, ici.getName(), TaskType.CREATE); 
+								if(target != null && depended != null){
+									log.debug("Failed to find the mandatory comm provider conf task for " + ici1.getName() + ". " + ici.getName() + " task depeds on it!");
+									target.getDependencies().add(depended);
+								}else {//either one is null
+									log.error("Failed to find the mandatory comm provider conf task for " + ici1.getName() + " or the " + ici.getName() + " task itself.  Something is wrong!");
+								}
+							}
+						}
+					}
+				}//endfor ICI
+			}
+			//end 23June2016
+			this.plan.getTasks().addAll(compInsTasks); 
 		}else{
 			log.info("No component instance tasks to add ....");
 		}
@@ -719,7 +774,7 @@ public class PlanGenerator {
 					}
 					if(commProviderTask != null){
 						//8July15 : added owner task as requested by Adapter
-						commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());
+						commTypeTask.getJsonModel().add("providerCompTypeTask", commProviderTask.getName());						
 						commTypeTask.getDependencies().add(commProviderTask);
 					}else{
 						log.error("...failed to locate the communication provider task(name = " + commProvider.getName() + ") for communication type task(" + commTypeTask.getName());
@@ -734,7 +789,8 @@ public class PlanGenerator {
 						//if(commTypeTask.isMandatory() && commProviderTask != null){
 							//4August2015, needs to break this up into two ifs, otherwise returning error for non isMandatory
 						if(commTypeTask.isMandatory()){
-							if(commProviderTask != null){
+							//23June16: bugfix avoid cyclical dependencies if provider==consumer							
+							if(commProviderTask != null && !commProviderTask.getName().equals(commConsumerTask.getName())){
 								commConsumerTask.getDependencies().add(commProviderTask);
 							}else{
 								log.error("...failed to locate the communication consumer task(name = " + commConsumer.getName() + ") for communication task(" + commTypeTask.getName());
@@ -804,7 +860,8 @@ public class PlanGenerator {
 					ciTask.getJsonModel().add("consumerCompTypeTask", commInsConsumerTask.getName());
 					ciTask.getDependencies().add(commInsConsumerTask);
 					//the consumer depends on the provider
-					if(((CommunicationTypeTask) parent).isMandatory() && commInsProviderTask != null){
+					//23June16: bugfix avoid cyclical dependencies if provider==consumer
+					if(((CommunicationTypeTask) parent).isMandatory() && commInsProviderTask != null && !commInsProviderTask.getName().equals(commInsConsumerTask.getName())){
 						commInsConsumerTask.getDependencies().add(commInsProviderTask);
 					}
 				}else{
