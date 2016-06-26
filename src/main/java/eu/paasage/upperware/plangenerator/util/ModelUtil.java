@@ -10,10 +10,12 @@ package eu.paasage.upperware.plangenerator.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
@@ -40,6 +42,9 @@ import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.deployment.InternalComponentInstance;
+import eu.paasage.camel.deployment.ProvidedCommunication;
+import eu.paasage.camel.deployment.RequiredCommunication;
+import eu.paasage.camel.deployment.RequiredCommunicationInstance;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.deployment.VMRequirementSet;
@@ -365,6 +370,150 @@ public final class ModelUtil {
 		}
 		return result;
 	}
+	/**
+	 * Get all {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} that has a mandatory 
+	 * {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}.
+	 * <p>
+	 * @param ics	A {@link java.util.List <em>List</em>} of {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} to check
+	 * @return	A {@link java.util.List <em>List</em>} of {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} that contains
+	 * 			mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}
+	 */
+	public static List<InternalComponent> getICwithMandatoryCommunicationRequirement(List<InternalComponent> ics){
+		List<InternalComponent> candidateICs = new ArrayList<InternalComponent>();
+		
+		for(InternalComponent ic : ics){
+			List<RequiredCommunication> rcs = ic.getRequiredCommunications();
+			if(rcs == null || rcs.isEmpty()){
+				logger.debug("No requiredCommunication for " + ic);
+			}else{
+				for(RequiredCommunication rc : rcs){
+					if(rc.isIsMandatory()){
+						candidateICs.add(ic);
+						break; //it is enough just to find one
+					}
+				}
+			}
+		}
+		if(!candidateICs.isEmpty()){
+			logger.debug("Found " + candidateICs.size() + " internalComponent with mandatory required communication/s...");			
+		}
+		return candidateICs;
+	}
+	/**
+	 * Get all mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>} defined in the
+	 * target {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>}.
+	 * <p>
+	 * @param ic	target {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>}.
+	 * @return		a {@link java.util.List <em>List</em>} of mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}
+	 * 				or an empty {@link java.util.List <em>List</em>}.
+	 */
+	public static List<RequiredCommunication> getMandatoryReqComms(InternalComponent ic){
+		List<RequiredCommunication> rcs = ic.getRequiredCommunications();
+		if(rcs.isEmpty()){ //I think camel returns an empty list
+			logger.debug("No requiredCommunication for " + ic.getName());
+		}else{
+			for(RequiredCommunication rc : rcs){
+				if(rc.isIsMandatory()){
+					rcs.add(rc);
+				}
+			}
+		}//end if required comm
+		return rcs;
+	}
+	/**
+	 * Get all the {@link eu.paasage.camel.deployment.InternalComponentInstance <em>InternalComponentInstance</em>} that
+	 * provides the target mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}.
+	 * Only return those communication provider instances that are not also the communication instance consumers.
+	 * <p>
+	 * @param rci	the target mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>} object
+	 * @param cis	a {@link java.util.List <em>List</em>} of candidate {@link eu.paasage.camel.deployment.CommunicationInstance <em>CommunicationInstance</em>}
+	 * @return	a {@link java.util.Set <em>Set</em>} of {@link eu.paasage.camel.deployment.InternalComponentInstance <em>InternalComponentInstance</em>}
+	 * 			or an empty {@link java.util.Set <em>Set</em>}
+	 */
+	@SuppressWarnings("rawtypes")
+	public static Set getProviderIC(RequiredCommunicationInstance rci, List<CommunicationInstance> cis){
+		Set<InternalComponentInstance> icis = new HashSet<InternalComponentInstance>();//could have more than 1 provider, see LSY-mini 
+		for(CommunicationInstance ci : cis){
+			if(ci.getRequiredCommunicationInstance().equals(rci)){
+				logger.debug("Found provider binding in " + ci.getName() + "for " + rci.getName());
+				if(ci.getProvidedCommunicationInstance().eContainer() instanceof InternalComponentInstance  &&
+						!ci.getProvidedCommunicationInstance().eContainer().equals(rci.eContainer())){
+					icis.add((InternalComponentInstance) ci.getProvidedCommunicationInstance().eContainer());
+				}
+			}
+		}
+		return icis;
+	}
 	
 	
+	/**
+	 * Find the target {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} and check it contains 
+	 * a mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}.
+	 * <p>
+	 * @param targetIC	the target {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>}
+	 * @param ics		the {@link java.util.List <em>List</em>} of {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} 
+	 * 					to check
+	 * @return			true if it does, else false
+	 */
+	public static boolean hasMandatoryComm(InternalComponent targetIC, List<InternalComponent> ics){
+		boolean result = false;
+		for(InternalComponent ic : ics){
+			if(ic.equals(targetIC)){ //if it is the same object
+				logger.debug("comparing " + ic.getName() + " against target " + targetIC.getName());
+				List<RequiredCommunication> rcs = ic.getRequiredCommunications();
+				if(rcs == null || rcs.isEmpty()){
+					logger.debug("No requiredCommunication for " + ic);
+				}else{
+					for(RequiredCommunication rc : rcs){
+						if(rc.isIsMandatory()){
+							result = true;
+							break; //it is enough just to find one
+						}
+					}
+				}//end if required comm
+				break; //found IC
+			}//end if same object			
+		}//end for
+		return result;
+	}
+	/*
+	public static Set<ProvidedCommunication> getMandatoryProvidedComm(InternalComponent ic, List<Communication> comms){
+		Set<ProvidedCommunication> providers = new HashSet<ProvidedCommunication>();
+		logger.debug("Checking for mandatory communication provider for " + ic.getName());
+		//
+		List<RequiredCommunication> rcs = ic.getRequiredCommunications();
+		for(RequiredCommunication rc : rcs){
+			if(rc.isIsMandatory()){
+				//look for the provider, go through the list
+				for(Communication comm : comms){
+					if(comm.getRequiredCommunication().equals(rc)){
+						providers.add(comm.getProvidedCommunication());
+					}
+				}
+			}
+		}
+		if(!providers.isEmpty()){
+			logger.debug("Found " + providers.size() + " mandatory provided communication... ");
+		}
+		return providers;
+	}
+	
+	public static Set<InternalComponent> getCommProvider(ProvidedCommunication pc, List<InternalComponent> ics){
+		
+		Set<InternalComponent> candidates = new HashSet<InternalComponent>();
+		//
+		for(InternalComponent ic : ics){
+			List<ProvidedCommunication> pcs = (ic.getProvidedCommunications());
+			for(ProvidedCommunication ppc : pcs){
+				if(ppc.equals(pc)){
+					candidates.add(ic);
+				}
+			}
+		}
+		if(!candidates.isEmpty()){
+			logger.debug("Found " + candidates.size() + " provider for " + pc.getName());
+		}
+		return candidates;
+	}
+	*/
 }
