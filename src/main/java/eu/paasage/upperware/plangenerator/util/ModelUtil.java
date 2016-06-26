@@ -422,7 +422,8 @@ public final class ModelUtil {
 	}
 	/**
 	 * Get all the {@link eu.paasage.camel.deployment.InternalComponentInstance <em>InternalComponentInstance</em>} that
-	 * provides the target mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}
+	 * provides the target mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>}.
+	 * Only return those communication provider instances that are not also the communication instance consumers.
 	 * <p>
 	 * @param rci	the target mandatory {@link eu.paasage.camel.deployment.RequiredCommunication <em>RequiredCommunication</em>} object
 	 * @param cis	a {@link java.util.List <em>List</em>} of candidate {@link eu.paasage.camel.deployment.CommunicationInstance <em>CommunicationInstance</em>}
@@ -435,7 +436,8 @@ public final class ModelUtil {
 		for(CommunicationInstance ci : cis){
 			if(ci.getRequiredCommunicationInstance().equals(rci)){
 				logger.debug("Found provider binding in " + ci.getName() + "for " + rci.getName());
-				if(ci.getProvidedCommunicationInstance().eContainer() instanceof InternalComponentInstance){
+				if(ci.getProvidedCommunicationInstance().eContainer() instanceof InternalComponentInstance  &&
+						!ci.getProvidedCommunicationInstance().eContainer().equals(rci.eContainer())){
 					icis.add((InternalComponentInstance) ci.getProvidedCommunicationInstance().eContainer());
 				}
 			}
@@ -451,7 +453,7 @@ public final class ModelUtil {
 	 * @param targetIC	the target {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>}
 	 * @param ics		the {@link java.util.List <em>List</em>} of {@link eu.paasage.camel.deployment.InternalComponent <em>InternalComponent</em>} 
 	 * 					to check
-	 * @return			true if it does, else false.
+	 * @return			true if it does, else false
 	 */
 	public static boolean hasMandatoryComm(InternalComponent targetIC, List<InternalComponent> ics){
 		boolean result = false;

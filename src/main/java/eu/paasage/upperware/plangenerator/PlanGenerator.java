@@ -334,6 +334,7 @@ public class PlanGenerator {
 							//Set<InternalComponentInstance> providerCIs = new HashSet<InternalComponentInstance>();
 							for(RequiredCommunicationInstance rci: rcis){
 								if(reqCommTypes.contains(rci.getType())){//if same RequiredCommunication type
+									//utility screens out instances that are same provider/consumer								
 									providerCIs.addAll(ModelUtil.getProviderIC(rci, this.targetDM.getCommunicationInstances()));
 								}
 							}
@@ -350,7 +351,7 @@ public class PlanGenerator {
 								ConfigurationTask depended = getDepended(compInsTasks, ici1.getName(), TaskType.CREATE);
 								ConfigurationTask target = getDepended(compInsTasks, ici.getName(), TaskType.CREATE); 
 								if(target != null && depended != null){
-									log.debug("Failed to find the mandatory comm provider conf task for " + ici1.getName() + ". " + ici.getName() + " task depeds on it!");
+									log.debug("Found the mandatory comm provider conf task for " + ici1.getName() + ". " + ici.getName() + " task depeds on it!");
 									target.getDependencies().add(depended);
 								}else {//either one is null
 									log.error("Failed to find the mandatory comm provider conf task for " + ici1.getName() + " or the " + ici.getName() + " task itself.  Something is wrong!");
