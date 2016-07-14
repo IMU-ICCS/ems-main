@@ -474,7 +474,9 @@ public class CPSolver {
 				for (int i = 0; i < size; i++){
 					RealConstraint rc = new RealConstraint(solver);
 					Goal goal = goals.get(i);
+					logger.info("Processing goal: " + goal.getId());
 					vars[i] = parseRealExpression(goal.getExpression(),rc);
+					logger.info("var created was: " + vars[i]);
 					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
 					solver.post(rc);
 				}
@@ -724,6 +726,15 @@ public class CPSolver {
 					if (iv != null){
 						v = VariableFactory.real(iv,epsilon);
 						logger.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
+					}
+					else{
+						MetricVariable mv = (MetricVariable)expr;
+						BasicTypeEnum type = mv.getType();
+						RealVar var = VariableFactory.real("RealVar" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+						logger.info("RealVar: " + var);
+						idToRealVar.put(var.getName(), var);
+						rc.addFunction("{0} >= 0",var);
+						return var;
 					}
 				}
 				return v;
