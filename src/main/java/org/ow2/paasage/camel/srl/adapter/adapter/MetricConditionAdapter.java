@@ -11,12 +11,15 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
+
 import eu.paasage.camel.metric.MetricCondition;
 import eu.paasage.camel.metric.MetricContext;
 import eu.paasage.camel.scalability.NonFunctionalEvent;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
+import org.ow2.paasage.camel.srl.adapter.utils.ExternalReferenceHelper;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 
 import java.util.ArrayList;
@@ -28,12 +31,19 @@ import java.util.List;
 public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
     private final MetricCondition metricCondition;
     private final NonFunctionalEvent event;
+    private final String prefix;
 
     public MetricConditionAdapter(FrontendCommunicator fc, MetricCondition metricCondition,
-        NonFunctionalEvent event) {
+                                  NonFunctionalEvent event) {
+        this(fc, metricCondition, event, null);
+    }
+
+    public MetricConditionAdapter(FrontendCommunicator fc, MetricCondition metricCondition,
+        NonFunctionalEvent event, String prefix) {
         super(fc);
         this.metricCondition = metricCondition;
         this.event = event;
+        this.prefix = prefix;
     }
 
     @Override public ComposedMonitor adapt() {
@@ -47,10 +57,14 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
 
         int amountInstances = 0;
         for (Monitor m : getFc().getMonitors()) {
-            for (String s : m.getExternalReferences()) {
-                if (s.equals(metricContext.getName())) {
-                    composedMonitors.add(m);
-                    amountInstances += getFc().getMonitorInstances(m.getId()).size();
+            for (KeyValue s : m.getExternalReferences()) {
+                String k = s.getKey();
+                // TODO make this more generic, not just CAMEL or CDO!
+                if("CDOID".equals(k) || "CAMEL".equals(k)) {
+                    if (k.equals(metricContext.getName())) {
+                        composedMonitors.add(m);
+                        amountInstances += getFc().getMonitorInstances(m.getId()).size();
+                    }
                 }
             }
         }
@@ -120,27 +134,17 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         // TODO not save condition id, since it is never referenced furthermore?
         //fc.addExternalId(composedMonitor, condition.getName());
         // NFE:
-        final String idNFE;
+        final KeyValue kvNFE;
         if (event == null) {
-            if (metricCondition.cdoID() != null) {
-                idNFE = metricCondition.cdoID().toString();
-            } else {
-                idNFE = metricCondition.getName(); /* TODO if CDO is not available this ID might not by
-                                                      TODO unique through different model instances */
-            }
+            kvNFE = ExternalReferenceHelper.getExternalReference(metricCondition, prefix);
         } else {
-            if (event.cdoID() != null) {
-                idNFE = event.cdoID().toString();
-            } else {
-                idNFE = event.getName(); /* TODO if CDO is not available this ID might not by
-                                        TODO unique through different model instances */
-            }
+            kvNFE = ExternalReferenceHelper.getExternalReference(event, prefix);
         }
 
 
         //1. compute which apply:
-        List<String> externalReferencesThreshold = new ArrayList<>();
-        externalReferencesThreshold.add(idNFE + "_threshold");
+        List<KeyValue> externalReferencesThreshold = new ArrayList<>();
+        externalReferencesThreshold.add(new KeyValue(kvNFE.getKey(), kvNFE.getValue() + "_threshold"));
         ComposedMonitor thresholdMonitor = (ComposedMonitor) getFc()
             .mapAggregatedMonitors(quantifierAll /* quantifier TODO currently only ALL is implemented, minimum applies is used for constant monitor*/,
                 schedule, window_1_measurment, operator, composedMonitors, null,
@@ -150,8 +154,8 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         thresholdMonitors.add(thresholdMonitor);
 
         //2. sum all applied up
-        List<String> externalReferencesApply = new ArrayList<>();
-        externalReferencesApply.add(idNFE + "_apply");
+        List<KeyValue> externalReferencesApply = new ArrayList<>();
+        externalReferencesApply.add(new KeyValue(kvNFE.getKey(), kvNFE.getValue() + "_threshold"));
         ComposedMonitor applyMonitor = (ComposedMonitor) getFc()
             .reduceAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
                 FormulaOperator.SUM, thresholdMonitors, null, externalReferencesApply);
@@ -163,11 +167,11 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         applyMonitors.add(quantifierMonitor);
 
         //3. compute with condition is violated
-        List<String> externalReferencesCondition = new ArrayList<>();
-        externalReferencesCondition.add(idNFE);
+        List<KeyValue> externalReferencesCondition = new ArrayList<>();
+        externalReferencesCondition.add(new KeyValue(kvNFE.getKey(), kvNFE.getValue()));
         ComposedMonitor conditionMonitor = (ComposedMonitor) getFc()
             .mapAggregatedMonitors(quantifierAll, schedule, window_1_measurment,
-                FormulaOperator.GTE, applyMonitors, Execution.getScalingActionByEventId(idNFE),
+                FormulaOperator.GTE, applyMonitors, Execution.getScalingActionByEventId(kvNFE.getValue()),
                 externalReferencesCondition);
 
 
@@ -187,7 +191,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
 
         for (MonitorInstance monitorInstance : getFc()
             .getMonitorInstances(conditionMonitor.getId())) {
-            getFc().addExternalId(monitorInstance, idNFE);
+            getFc().addExternalId(monitorInstance, kvNFE.getKey(), kvNFE.getValue());
         }
 
         return conditionMonitor;

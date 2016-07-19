@@ -11,9 +11,12 @@ package org.ow2.paasage.camel.srl.adapter.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
+
 import eu.paasage.camel.scalability.BinaryEventPattern;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
+import org.ow2.paasage.camel.srl.adapter.utils.ExternalReferenceHelper;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 
 import java.util.ArrayList;
@@ -24,10 +27,16 @@ import java.util.List;
  */
 public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> {
     private final BinaryEventPattern eventPattern;
+    private final String prefix;
 
     public BinaryEventPatternAdapter(FrontendCommunicator fc, BinaryEventPattern eventPattern) {
+        this(fc, eventPattern, null);
+    }
+
+    public BinaryEventPatternAdapter(FrontendCommunicator fc, BinaryEventPattern eventPattern, String prefix) {
         super(fc);
         this.eventPattern = eventPattern;
+        this.prefix = prefix;
     }
 
     @Override public ComposedMonitor adapt() {
@@ -36,11 +45,17 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         List<Monitor> composedMonitors = new ArrayList<Monitor>();
 
         for (Monitor m : getFc().getMonitors()) {
-            for (String s : m.getExternalReferences()) {
-                String left = eventPattern.getLeftEvent().getName();
-                String right = eventPattern.getRightEvent().getName();
-                if (s.equals(left) || s.equals(right)) {
-                    composedMonitors.add(m);
+            for (KeyValue kv : m.getExternalReferences()) {
+                String k = kv.getKey();
+                // TODO make this more generic, not just CAMEL or CDO!
+                if("CDOID".equals(k) || "CAMEL".equals(k)) {
+                    String v = kv.getValue();
+
+                    String left = eventPattern.getLeftEvent().getName();
+                    String right = eventPattern.getRightEvent().getName();
+                    if (v.equals(left) || v.equals(right)) {
+                        composedMonitors.add(m);
+                    }
                 }
             }
         }
@@ -60,19 +75,16 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
         FormulaQuantifier quantifier = getFc().saveFormulaQuantifier(true, 1.0); /* TODO implement occurrences as quantifier */
 
 
-        List<String> externalReferences = new ArrayList<>();
-        externalReferences.add(eventPattern.getName());
+        List<KeyValue> externalReferences = new ArrayList<>();
 
-        final String externalEventPatternId;
-        if (eventPattern.cdoID() != null) {
-            externalEventPatternId = eventPattern.cdoID().toString();
-        } else {
-            externalEventPatternId = eventPattern.getName(); /* TODO if CDO is not available this ID might not by
-                                                        TODO unique through different model instances */
-        }
+        KeyValue kv = ExternalReferenceHelper.getExternalReference(eventPattern, prefix);
+
+        externalReferences.add(kv);
+
+
         ComposedMonitor composedMonitor = (ComposedMonitor) getFc()
             .reduceAggregatedMonitors(quantifier, schedule, window, operator, composedMonitors,
-                Execution.getScalingActionByEventId(externalEventPatternId), externalReferences);
+                Execution.getScalingActionByEventId(kv.getKey()), externalReferences);
 
 
 
@@ -85,15 +97,8 @@ public class BinaryEventPatternAdapter extends AbstractAdapter<ComposedMonitor> 
 
         for (MonitorInstance monitorInstance : getFc()
             .getMonitorInstances(composedMonitor.getId())) {
-            final String externalId;
-            if (eventPattern.cdoID() != null) {
-                externalId = eventPattern.cdoID().toString();
-            } else {
-                externalId = eventPattern.getName(); /* TODO if CDO is not available this ID might not by
-                                                        TODO unique through different model instances */
-            }
 
-            getFc().addExternalId(monitorInstance, externalId);
+            getFc().addExternalId(monitorInstance, kv.getKey(), kv.getValue());
         }
 
 

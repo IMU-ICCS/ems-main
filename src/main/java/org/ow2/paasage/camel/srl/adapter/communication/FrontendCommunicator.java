@@ -16,6 +16,7 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
 
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ public interface FrontendCommunicator {
      * all vms of this application running a component instance of this component
      */
     Monitor doMonitorVms(Application app, Component component, Schedule schedule,
-        SensorDescription desc, List<String> externalReferences,
+        SensorDescription desc, List<KeyValue> externalReferences,
         Map<String, String> sensorConfiguration);
 
     /**
@@ -84,11 +85,11 @@ public interface FrontendCommunicator {
      **/
     Monitor mapAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule, Window window,
         FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions,
-        List<String> externalReferences);
+        List<KeyValue> externalReferences);
 
     Monitor reduceAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule, Window window,
         FormulaOperator formulaOperator, List<Monitor> monitors, List<Long> scalingActions,
-        List<String> externalReferences);
+        List<KeyValue> externalReferences);
 
     /**
      * remove a monitor
@@ -156,14 +157,14 @@ public interface FrontendCommunicator {
     /**
      * External IDs
      */
-    void addExternalId(Monitor monitor, String externalId);
+    void addExternalId(Monitor monitor, String externalKey, String externalId);
 
-    void addExternalId(MonitorInstance monitorInstance, String externalId);
+    void addExternalId(MonitorInstance monitorInstance, String externalKey, String externalId);
 
-    void addExternalIdToMonitorInstance(Monitor monitor, String externalId,
+    void addExternalIdToMonitorInstance(Monitor monitor, String externalKey, String externalId,
         VirtualMachine virtualMachine);
 
-    void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalId);
+    void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalKey, String externalId);
 
     /**
      * Initializing
@@ -174,7 +175,7 @@ public interface FrontendCommunicator {
         FilterType filterType, double filterValue);
 
     Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc, List<String> externalReferences,
+        Schedule schedule, SensorDescription desc, List<KeyValue> externalReferences,
         Map<String, String> sensorConfiguration);
 
     public void removeMonitorSubscription(Long id);

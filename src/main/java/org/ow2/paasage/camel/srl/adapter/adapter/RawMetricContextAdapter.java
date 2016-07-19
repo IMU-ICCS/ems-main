@@ -14,9 +14,12 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.SensorDescription;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Component;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
+
 import eu.paasage.camel.metric.*;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
+import org.ow2.paasage.camel.srl.adapter.utils.ExternalReferenceHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,12 +33,19 @@ import java.util.Map;
 public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
     private final RawMetricContext rawMetricContext;
     private final List<MetricInstance> metricInstances;
+    private final String prefix;
 
     public RawMetricContextAdapter(FrontendCommunicator fc, RawMetricContext rawMetricContext,
-        List<MetricInstance> metricInstances) {
+                                   List<MetricInstance> metricInstances) {
+        this(fc, rawMetricContext, metricInstances, null);
+    }
+
+    public RawMetricContextAdapter(FrontendCommunicator fc, RawMetricContext rawMetricContext,
+        List<MetricInstance> metricInstances, String prefix) {
         super(fc);
         this.rawMetricContext = rawMetricContext;
         this.metricInstances = metricInstances;
+        this.prefix = prefix;
     }
 
     @Override public Monitor adapt() {
@@ -104,8 +114,11 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
         //SensorConfigurations sensorConfigurations = getFc().saveSensorConfiguration(sensorConfiguration);
 
         Monitor rawMonitor = null;
-        List<String> externalReferences = new ArrayList<>();
-        externalReferences.add(rawMetricContext.getName());
+        List<KeyValue> externalReferences = new ArrayList<>();
+
+        KeyValue kv = ExternalReferenceHelper.getExternalReference(rawMetricContext, prefix);
+
+        externalReferences.add(kv);
 
         if (app == null && component != null) {
             rawMonitor = getFc().doMonitorVms(null, /*TODO*/ component, schedule, sensorDescription,
@@ -131,13 +144,8 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
         }
 
         for (MetricInstance metricInstance : metricInstances) {
-            final String externalId;
-            if (metricInstance.cdoID() != null) {
-                externalId = metricInstance.cdoID().toString();
-            } else {
-                externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
-                                                          TODO unique through different model instances */
-            }
+
+            KeyValue kvmi = ExternalReferenceHelper.getExternalReference(metricInstance, prefix);
 
             if (metricInstance.getMetricContext() == rawMetricContext) {
 
@@ -148,22 +156,22 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
                     VirtualMachine frontendVM =
                         getFc().getVirtualMachineToIP(metricVMBinding.getVmInstance().getIp());
 
-                    getFc().addExternalIdToMonitorInstance(rawMonitor, externalId, frontendVM);
+                    getFc().addExternalIdToMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue(), frontendVM);
                 } else if (metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
                     logger.info("Raw metric is bound to a component - add to linked VM.");
                     MetricComponentBinding metricComponentBinding =
                         (MetricComponentBinding) metricInstance.getObjectBinding();
 
                     if (metricComponentBinding.getVmInstance() == null) {
-                        getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, externalId);
+                        getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue());
                     } else {
                         VirtualMachine frontendVM = getFc()
                             .getVirtualMachineToIP(metricComponentBinding.getVmInstance().getIp());
 
-                        getFc().addExternalIdToMonitorInstance(rawMonitor, externalId, frontendVM);
+                        getFc().addExternalIdToMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue(), frontendVM);
                     }
                 } else if (metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
-                    getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, externalId);
+                    getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue());
                     logger.error("Raw metric is bound to an application - just add any cdo id.");
                 } else {
                     logger.error("Raw metric is bound to something else. NOT IMPLEMENTED.");

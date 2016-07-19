@@ -12,6 +12,8 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.ComposedMonitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.MonitorInstance;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.RawMonitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.SensorDescription;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
+
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 
 /**
@@ -31,8 +33,8 @@ public class Printer {
             result += "------------ MONITOR INSTANCES ---------" + lf;
             result += "ID: " + monitor.getId() + lf;
             String externalId = "";
-            for (String s : monitor.getExternalReferences()) {
-                externalId += (s + ";");
+            for (KeyValue s : monitor.getExternalReferences()) {
+                externalId += (s.getKey() + " # " + s.getValue() + ";");
             }
             result += "Ex ID: " + externalId + lf;
             result += "IP ID: " + monitor.getIpAddress() + lf;
@@ -46,8 +48,8 @@ public class Printer {
             result += "------------ RAW MONITOR ---------" + lf;
             result += "ID: " + monitor.getId() + lf;
             String externalId = "";
-            for (String s : monitor.getExternalReferences()) {
-                externalId += (s + ";");
+            for (KeyValue s : monitor.getExternalReferences()) {
+                externalId += (s.getKey() + " # " + s.getValue() + ";");
             }
             result += "Ex ID: " + externalId + lf;
             SensorDescription sensorDescription =
@@ -63,8 +65,8 @@ public class Printer {
             result += "------------ AGGREGATED MONITORS ---------" + lf;
             result += "ID: " + monitor.getId() + lf;
             String externalId = "";
-            for (String s : monitor.getExternalReferences()) {
-                externalId += (s + ";");
+            for (KeyValue s : monitor.getExternalReferences()) {
+                externalId += (s.getKey() + " # " + s.getValue() + ";");
             }
             result += "Ex ID: " + externalId + lf;
             result += "Class: " + monitor.getFunction() + lf;

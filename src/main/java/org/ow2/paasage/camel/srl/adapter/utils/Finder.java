@@ -20,7 +20,7 @@ public class Finder {
         List<Long> result = new ArrayList<>();
 
         for (Map.Entry<Long, String> entrySet : map.entrySet()) {
-            if (entrySet.getValue().equals(eventId)) {
+            if (entrySet.getValue().equals(eventId) || entrySet.getValue().endsWith("_" + eventId) /* risky: better pass prefix id */) {
                 result.add(entrySet.getKey());
             }
         }

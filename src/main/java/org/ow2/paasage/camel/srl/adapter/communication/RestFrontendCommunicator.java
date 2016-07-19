@@ -78,7 +78,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override public Monitor doMonitorVms(Application app, Component component, Schedule schedule,
-        SensorDescription desc, List<String> externalReferences,
+        SensorDescription desc, List<KeyValue> externalReferences,
         Map<String, String> sensorConfiguration) {
         return doMonitor(app, component, null, null, schedule, desc, externalReferences,
             sensorConfiguration);
@@ -91,7 +91,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     @Override
     public Monitor doMonitor(Application app, Component component, Instance instance, Cloud cloud,
-        Schedule schedule, SensorDescription desc, List<String> externalReferences,
+        Schedule schedule, SensorDescription desc, List<KeyValue> externalReferences,
         Map<String, String> sensorConfiguration) {
 
         RawMonitor rm = new RawMonitor((app == null ? null : app.getId()),
@@ -111,7 +111,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     @Override public Monitor mapAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule,
         Window window, FormulaOperator formulaOperator, List<Monitor> monitors,
-        List<Long> scalingActions, List<String> externalReferences) {
+        List<Long> scalingActions, List<KeyValue> externalReferences) {
         return this
             .doAggregateMonitor(FlowOperator.MAP, quantifier, schedule, window, formulaOperator,
                 monitors, scalingActions, externalReferences);
@@ -120,7 +120,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     @Override
     public Monitor reduceAggregatedMonitors(FormulaQuantifier quantifier, Schedule schedule,
         Window window, FormulaOperator formulaOperator, List<Monitor> monitors,
-        List<Long> scalingActions, List<String> externalReferences) {
+        List<Long> scalingActions, List<KeyValue> externalReferences) {
         return this
             .doAggregateMonitor(FlowOperator.REDUCE, quantifier, schedule, window, formulaOperator,
                 monitors, scalingActions, externalReferences);
@@ -128,7 +128,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
     private Monitor doAggregateMonitor(FlowOperator flowOperator, FormulaQuantifier quantifier,
         Schedule schedule, Window window, FormulaOperator formulaOperator, List<Monitor> monitors,
-        List<Long> scalingActions, List<String> externalReferences) {
+        List<Long> scalingActions, List<KeyValue> externalReferences) {
         List<Long> monitorIds = new ArrayList<>();
         for (Monitor monitor : monitors) {
             monitorIds.add(monitor.getId());
@@ -312,7 +312,7 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         List<ComposedMonitor> cms = client.controller(ComposedMonitor.class).getList();
 
         for (ComposedMonitor m : cms) {
-            for (String s : m.getExternalReferences()) {
+            for (KeyValue s : m.getExternalReferences()) {
                 if (s.equals(name)) {
                     return m;
                 }
@@ -366,46 +366,47 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
         return searchById(client.controller(SensorDescription.class).getList(), id);
     }
 
-    @Override public void addExternalId(Monitor monitor, String externalId) {
-        _addExternalId(monitor, externalId);
+    @Override public void addExternalId(Monitor monitor, String externalKey, String externalId) {
+        _addExternalId(monitor, externalKey, externalId);
     }
 
-    @Override public void addExternalId(MonitorInstance monitorInstance, String externalId) {
-        _addExternalId(monitorInstance, externalId);
+    @Override public void addExternalId(MonitorInstance monitorInstance, String externalKey, String externalId) {
+        _addExternalId(monitorInstance, externalKey, externalId);
     }
 
-    @Override public void addExternalIdToMonitorInstance(Monitor monitor, String externalId,
+    @Override public void addExternalIdToMonitorInstance(Monitor monitor, String externalKey, String externalId,
         VirtualMachine virtualMachine) {
         List<MonitorInstance> instances = getMonitorInstances(monitor.getId());
         for (MonitorInstance mi : instances) {
             if (mi.getVirtualMachine().equals(virtualMachine.getId())) {
-                _addExternalId(mi, externalId);
+                _addExternalId(mi, externalKey, externalId);
             }
         }
     }
 
-    @Override public void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalId) {
+    @Override public void addExternalIdToEmptyMonitorInstance(Monitor monitor, String externalKey, String externalId) {
         List<MonitorInstance> instances = getMonitorInstances(monitor.getId());
         for (MonitorInstance mi : instances) {
             boolean hasCdoReference = false;
-            for (String er : mi.getExternalReferences()) {
-                if (er.startsWith("OID")) {
+            for (KeyValue er : mi.getExternalReferences()) {
+                if ("CDOID".equals(er.getKey())) {
                     hasCdoReference = true;
                 }
             }
             if (!hasCdoReference) {
-                _addExternalId(mi, externalId);
+                _addExternalId(mi, externalKey, externalId);
                 return;
             }
         }
     }
 
-    private <T extends ExternalReferencedEntity> void _addExternalId(T t, String externalId) {
+    private <T extends ExternalReferencedEntity> void _addExternalId(T t, String externalKey, String externalId) {
         ClientController<T> ctrlr = client.controller((Class<T>) t.getClass());
         for (T onlineObj : ctrlr.getList()) {
             if (onlineObj.equals(t)) {
-                if (!t.getExternalReferences().contains(externalId)) {
-                    t.getExternalReferences().add(externalId);
+                KeyValue kv = new KeyValue(externalKey, externalId);
+                if (!t.getExternalReferences().contains(kv)) {
+                    t.getExternalReferences().add(kv);
                 }
                 ctrlr.update(t);
             }

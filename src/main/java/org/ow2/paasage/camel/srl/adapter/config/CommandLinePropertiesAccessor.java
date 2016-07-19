@@ -51,4 +51,6 @@ public interface CommandLinePropertiesAccessor {
     String getZeroMqTestmessage();
 
     ModelSourceType getModelSourceType();
+
+    String getDeploymentNamePrefix();
 }

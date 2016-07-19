@@ -14,10 +14,13 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.MonitorInstance;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
+
 import eu.paasage.camel.metric.*;
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.execution.Execution;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
+import org.ow2.paasage.camel.srl.adapter.utils.ExternalReferenceHelper;
 import org.ow2.paasage.camel.srl.adapter.utils.Transform;
 
 import java.util.ArrayList;
@@ -29,12 +32,19 @@ import java.util.List;
 public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
     private final CompositeMetricContext context;
     private final List<MetricInstance> metricInstances;
+    private final String prefix;
 
     public CompositeMetricContextAdapter(FrontendCommunicator fc, CompositeMetricContext context,
-        List<MetricInstance> metricInstances) {
+                                         List<MetricInstance> metricInstances) {
+        this(fc, context, metricInstances, null);
+    }
+
+    public CompositeMetricContextAdapter(FrontendCommunicator fc, CompositeMetricContext context,
+        List<MetricInstance> metricInstances, String prefix) {
         super(fc);
         this.context = context;
         this.metricInstances = metricInstances;
+        this.prefix = prefix;
     }
 
     @Override public Monitor adapt() {
@@ -108,45 +118,39 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
         List<Monitor> composedMonitors = new ArrayList<>();
         for (Monitor monitor : getFc().getMonitors()) {
             for (MetricContext mc : context.getComposingMetricContexts()) {
-                for (String s : monitor.getExternalReferences()) {
-                    final String id;
-                    if (mc.cdoID() != null) {
-                        id = mc.cdoID().toString();
-                    } else {
-                        id = mc.getName(); /* TODO if CDO is not available this ID might not by
-                                              TODO unique through different model instances */
-                    }
+                for (KeyValue s : monitor.getExternalReferences()) {
+                    // TODO check for different external references
+                    if ("CDOID".equals(s.getKey()) || "CAMEL".equals(s.getKey())) {
 
-                    if (s.equals(id)) { // instead of checking by name mc.getName()
-                        composedMonitors.add(monitor);
+                        KeyValue kvmc = ExternalReferenceHelper.getExternalReference(mc, prefix);
+
+                        if (s.getValue().equals(kvmc.getValue())) { // instead of checking by name mc.getName()
+                            composedMonitors.add(monitor);
+                        }
                     }
                 }
             }
         }
 
         Monitor compositeMonitor = null;
-        List<String> externalReferences = new ArrayList<>();
-        externalReferences.add(context.getName());
+        List<KeyValue> externalReferences = new ArrayList<>();
+        KeyValue kv = ExternalReferenceHelper.getExternalReference(context, prefix);
+        externalReferences.add(kv);
 
         logger.info("Add aggregator.");
-        final String externalContextId;
-        if (context.cdoID() != null) {
-            externalContextId = context.cdoID().toString();
-        } else {
-            externalContextId = context.getName(); /* TODO if CDO is not available this ID might not by
-                                                        TODO unique through different model instances */
-        }
+
+
         if (functionPattern == FunctionPatternType.MAP) {
             compositeMonitor = (ComposedMonitor) getFc()
                 .mapAggregatedMonitors(quantifier, schedule, window, operator, composedMonitors,
-                    Execution.getScalingActionByEventId(externalContextId)
+                    Execution.getScalingActionByEventId(kv.getValue())
                             /*TODO this will never return an action, since no scaling action
                               TODO is ever directly added to a composed monitor context */,
                     externalReferences);
         } else if (functionPattern == FunctionPatternType.REDUCE) {
             compositeMonitor = (ComposedMonitor) getFc()
                 .reduceAggregatedMonitors(quantifier, schedule, window, operator, composedMonitors,
-                    Execution.getScalingActionByEventId(externalContextId)
+                    Execution.getScalingActionByEventId(kv.getValue())
                             /*TODO this will never return an action, since no scaling action
                               TODO is ever directly added to a composed monitor context */,
                     externalReferences);
@@ -172,24 +176,21 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
                 Boolean isAlreadyTagged = false;
 
                 for (MetricInstance tempMetricInstance : metricInstances) {
-                    for (String s : monitorInstance.getExternalReferences()) {
-                        if (s.equals(tempMetricInstance.getName())) {
-                            isAlreadyTagged = true;
-                            break;
+                    for (KeyValue s : monitorInstance.getExternalReferences()) {
+                        // TODO check for different external references
+                        if ("CDOID".equals(s.getKey()) || "CAMEL".equals(s.getKey())){
+                            if (s.getValue().equals(tempMetricInstance.getName())) {
+                                isAlreadyTagged = true;
+                                break;
+                            }
                         }
                     }
                 }
 
                 if (!isAlreadyTagged) {
-                    final String id;
-                    if (metricInstance.cdoID() != null) {
-                        id = metricInstance.cdoID().toString();
-                    } else {
-                        id = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
-                                                          TODO unique through different model instances */
-                    }
+                    KeyValue kvmi = ExternalReferenceHelper.getExternalReference(metricInstance, prefix);
 
-                    getFc().addExternalId(monitorInstance, id);
+                    getFc().addExternalId(monitorInstance, kvmi.getKey(), kvmi.getValue());
                     break; // go to next metric instance
                 }
             }

@@ -74,6 +74,8 @@ public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesA
             .desc("Endpoint for the ZeroMQ server to listen to.").hasArg().build());
         options.addOption(Option.builder("ZeroMqQueue").longOpt("ZeroMqQueue")
             .desc("Name of the Queue of the ZeroMQ.").hasArg().build());
+        options.addOption(Option.builder("DeploymentNamePrefix").longOpt("DeploymentNamePrefix")
+                .desc("Prefix of deployment. Not mandatory.").hasArg().build());
     }
 
     public void printHelp() {
@@ -136,6 +138,8 @@ public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesA
                 return "resourceName:modelName:executionContextName";
             case "cleanMonitoring":
                 return "true";
+            case "DeploymentNamePrefix":
+                return null;
             default:
                 return null;
         }
@@ -219,5 +223,10 @@ public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesA
 
     @Override public String getZeroMqTestmessage() {
         return this.getCommandLineOption("ZeroMqTestmessage");
+    }
+
+    @Override
+    public String getDeploymentNamePrefix() {
+        return this.getCommandLineOption("DeploymentNamePrefix");
     }
 }

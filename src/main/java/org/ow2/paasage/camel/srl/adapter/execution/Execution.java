@@ -81,6 +81,7 @@ public class Execution {
         String colUser = conf.getColosseumUser();
         String colPassword = conf.getColosseumPassword();
         String colTenant = conf.getColosseumTenant();
+        String prefix = conf.getDeploymentNamePrefix();
 
 
         if (dynamicModelName != null) {
@@ -226,7 +227,11 @@ public class Execution {
                         if (rule.getEvent().cdoID() != null) {
                             id = rule.getEvent().cdoID().toString();
                         } else {
-                            id = rule.getEvent().getName(); /* TODO if now CDO available this ID might not be unique */
+                            if(prefix != null){
+                                id = prefix + "_" + rule.getEvent().getName();
+                            } else {
+                                id = rule.getEvent().getName(); /* TODO if now CDO available this ID might not be unique */
+                            }
                         }
 
                         mapScalingActionEventName.put(componentHorizontalScalingAction.getId(), id);
@@ -278,15 +283,25 @@ public class Execution {
                         for (MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())) {
                             for (MetricInstance metricInstance : mis) {
                                 final String externalId;
+                                final String externalKey;
+
                                 if (metricInstance.cdoID() != null) {
+                                    externalKey = "CDOID";
                                     externalId = metricInstance.cdoID().toString();
                                 } else {
-                                    externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
+                                    externalKey = "CAMEL";
+
+                                    if(prefix != null) {
+                                        externalId = prefix + "_" + metricInstance.getName();
+                                    } else {
+                                        externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
                                                           TODO unique through different model instances */
+                                    }
+
                                 }
 
                                 if (mi.getExternalReferences().isEmpty()) {
-                                    fc.addExternalId(mi, externalId);
+                                    fc.addExternalId(mi, externalKey, externalId);
                                     break; // only one CDOID/name per monitor instance
                                 }
                             }
