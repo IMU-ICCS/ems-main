@@ -18,6 +18,8 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FlowOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
+
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.metric.*;
@@ -32,6 +34,7 @@ import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.communication.RestFrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.config.CommandLinePropertiesAccessor;
 import org.ow2.paasage.camel.srl.adapter.utils.CamelFinder;
+import org.ow2.paasage.camel.srl.adapter.utils.ExternalReferenceHelper;
 import org.ow2.paasage.camel.srl.adapter.utils.Finder;
 import org.ow2.paasage.camel.srl.adapter.utils.Printer;
 
@@ -223,18 +226,10 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     for (ScalabilityRule rule : associatedRules) {
-                        final String id;
-                        if (rule.getEvent().cdoID() != null) {
-                            id = rule.getEvent().cdoID().toString();
-                        } else {
-                            if(prefix != null){
-                                id = prefix + "_" + rule.getEvent().getName();
-                            } else {
-                                id = rule.getEvent().getName(); /* TODO if now CDO available this ID might not be unique */
-                            }
-                        }
 
-                        mapScalingActionEventName.put(componentHorizontalScalingAction.getId(), id);
+                        final KeyValue kv = ExternalReferenceHelper.getExternalReference(rule.getEvent(), prefix);
+
+                        mapScalingActionEventName.put(componentHorizontalScalingAction.getId(), kv.getValue());
                     }
                 }
 
@@ -282,26 +277,12 @@ public class Execution {
 
                         for (MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())) {
                             for (MetricInstance metricInstance : mis) {
-                                final String externalId;
-                                final String externalKey;
 
-                                if (metricInstance.cdoID() != null) {
-                                    externalKey = "CDOID";
-                                    externalId = metricInstance.cdoID().toString();
-                                } else {
-                                    externalKey = "CAMEL";
+                                final KeyValue kv = ExternalReferenceHelper.getExternalReference(metricInstance, prefix);
 
-                                    if(prefix != null) {
-                                        externalId = prefix + "_" + metricInstance.getName();
-                                    } else {
-                                        externalId = metricInstance.getName(); /* TODO if CDO is not available this ID might not by
-                                                          TODO unique through different model instances */
-                                    }
-
-                                }
 
                                 if (mi.getExternalReferences().isEmpty()) {
-                                    fc.addExternalId(mi, externalKey, externalId);
+                                    fc.addExternalId(mi, kv.getKey(), kv.getValue());
                                     break; // only one CDOID/name per monitor instance
                                 }
                             }

@@ -313,8 +313,10 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
 
         for (ComposedMonitor m : cms) {
             for (KeyValue s : m.getExternalReferences()) {
-                if (s.equals(name)) {
-                    return m;
+                if ("CDOID".equals(s.getKey()) || "CAMEL".equals(s.getKey())){
+                    if (s.getValue().equals(name)) {
+                        return m;
+                    }
                 }
             }
         }
