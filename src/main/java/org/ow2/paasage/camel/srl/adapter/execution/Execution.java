@@ -8,6 +8,8 @@
 
 package org.ow2.paasage.camel.srl.adapter.execution;
 
+import com.google.common.base.Throwables;
+
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import de.uniulm.omi.cloudiator.colosseum.client.SingletonFactory;
@@ -407,9 +409,8 @@ public class Execution {
             ims.terminate();
             logger.info("The SRL adapter was executed.");
         } catch (Exception ex) {
+            logger.error("Error occurred during execution of the SRL adapter, exception: " + Throwables.getStackTraceAsString(ex));
             ims.terminate();
-            logger.error("Error occurred during execution of the SRL adapter.");
-            ex.printStackTrace();
         }
     }
 
