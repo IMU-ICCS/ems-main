@@ -59,9 +59,10 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
         for (Monitor m : getFc().getMonitors()) {
             for (KeyValue s : m.getExternalReferences()) {
                 String k = s.getKey();
+                String v = s.getValue();
                 // TODO make this more generic, not just CAMEL or CDO!
                 if("CDOID".equals(k) || "CAMEL".equals(k)) {
-                    if (k.equals(metricContext.getName())) {
+                    if (v.equals(metricContext.getName())) {
                         composedMonitors.add(m);
                         amountInstances += getFc().getMonitorInstances(m.getId()).size();
                     }
