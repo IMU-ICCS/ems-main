@@ -134,7 +134,7 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
                     ObjectMapper objectMapper = new ObjectMapper();
                     sensorConfiguration = objectMapper.readValue(jsonConfig, HashMap.class);
 
-                    _isVmSensor = false; /* TODO only when linked to component */
+                    //_isVmSensor = false; /* TODO only when linked to component */
                 }
             } catch (IOException e) {
                 e.printStackTrace();
