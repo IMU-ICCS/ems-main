@@ -102,7 +102,7 @@ public interface FrontendCommunicator {
      * side-effected getters
      */
     SensorDescription saveSensorDescription(String className, String metricName,
-        Boolean isVmSensor);
+        Boolean isVmSensor, Boolean isPush);
 
     TimeWindow saveTimeWindow(Long timeSize, TimeUnit timeUnit);
 

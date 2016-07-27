@@ -173,8 +173,8 @@ public class RestFrontendCommunicator implements FrontendCommunicator {
     }
 
     @Override public SensorDescription saveSensorDescription(String className, String metricName,
-        Boolean isVmSensor) {
-        return factory.singleton(new SensorDescription(className, metricName, isVmSensor));
+        Boolean isVmSensor, Boolean isPush) {
+        return factory.singleton(new SensorDescription(className, metricName, isVmSensor, isPush));
     }
 
     @Override public TimeWindow saveTimeWindow(Long timeSize, TimeUnit timeUnit) {

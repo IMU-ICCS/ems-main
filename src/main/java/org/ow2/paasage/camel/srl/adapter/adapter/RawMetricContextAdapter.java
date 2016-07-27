@@ -9,6 +9,7 @@
 package org.ow2.paasage.camel.srl.adapter.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Application;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.SensorDescription;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
@@ -16,7 +17,13 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Component;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
 
-import eu.paasage.camel.metric.*;
+import eu.paasage.camel.metric.MetricApplicationBinding;
+import eu.paasage.camel.metric.MetricComponentBinding;
+import eu.paasage.camel.metric.MetricInstance;
+import eu.paasage.camel.metric.MetricVMBinding;
+import eu.paasage.camel.metric.RawMetric;
+import eu.paasage.camel.metric.RawMetricContext;
+
 import org.ow2.paasage.camel.srl.adapter.communication.FrontendCommunicator;
 import org.ow2.paasage.camel.srl.adapter.utils.Convert;
 import org.ow2.paasage.camel.srl.adapter.utils.ExternalReferenceHelper;
@@ -41,14 +48,15 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
     }
 
     public RawMetricContextAdapter(FrontendCommunicator fc, RawMetricContext rawMetricContext,
-        List<MetricInstance> metricInstances, String prefix) {
+                                   List<MetricInstance> metricInstances, String prefix) {
         super(fc);
         this.rawMetricContext = rawMetricContext;
         this.metricInstances = metricInstances;
         this.prefix = prefix;
     }
 
-    @Override public Monitor adapt() {
+    @Override
+    public Monitor adapt() {
         logger.info("Save RawMetricContext to colosseum: " + rawMetricContext.getName());
 
 
@@ -72,44 +80,69 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
 
         if (camelSchedule == null) {
             throw new RuntimeException(
-                "No schedule assigned for RawMetricContext " + rawMetricContext.getName());
+                    "No schedule assigned for RawMetricContext " + rawMetricContext.getName());
         }
 
         de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule schedule = getFc()
-            .saveSchedule(camelSchedule.getInterval(),
-                Convert.toJavaTimeUnit(camelSchedule.getUnit()));
+                .saveSchedule(camelSchedule.getInterval(),
+                        Convert.toJavaTimeUnit(camelSchedule.getUnit()));
 
         // Classname and metricname decompilation:
         final String[] configurationSplit =
-            rawMetricContext.getSensor().getConfiguration().split(";");
+                rawMetricContext.getSensor().getConfiguration().split(";");
 
-        String _className = configurationSplit[1];
-        String _metricName = configurationSplit[0];
+
+        String _className;
+        String _metricName;
         Boolean _isVmSensor = true; /* TODO */
-
-        /**
-         * TODO
-         * Integration of sensor configuration until integrated also in CAMEL natively.
-         */
+        Boolean _isPush = rawMetricContext.getSensor().isIsPush();
         Map<String, String> sensorConfiguration = new HashMap<String, String>();
-        try {
-            if (configurationSplit.length > 2) {
-                int index = rawMetricContext.getSensor().getConfiguration()
-                    .indexOf(";", _className.length() + _metricName.length() + 1);
-                String jsonConfig =
-                    rawMetricContext.getSensor().getConfiguration().substring(index + 1);
 
-                ObjectMapper objectMapper = new ObjectMapper();
-                sensorConfiguration = objectMapper.readValue(jsonConfig, HashMap.class);
-
-                _isVmSensor = false; /* TODO only when linked to component */
+        if (_isPush) {
+            if (configurationSplit.length != 1) {
+                throw new IllegalArgumentException("Wrong definition of configuration in sensor " +
+                        "for push sensor. Expected configuration schema: configuration" +
+                        " = \"[metric_name]\". Found illegal configuration:" +
+                        rawMetricContext.getSensor().getConfiguration());
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            _className = "_no_class_name_";
+            _metricName = configurationSplit[0];
+
+        } else {
+            if (configurationSplit.length != 1) {
+                throw new IllegalArgumentException("Wrong definition of configuration in sensor " +
+                        "for pull sensor. Expected configuration schema: configuration" +
+                        " = \"[metric_name;class_name(;configuration_json)]\". Found illegal configuration:" +
+                        rawMetricContext.getSensor().getConfiguration());
+            }
+
+            _className = configurationSplit[1];
+            _metricName = configurationSplit[0];
+
+            /**
+             * TODO
+             * Integration of sensor configuration until integrated also in CAMEL natively.
+             */
+            try {
+                if (configurationSplit.length > 2) {
+                    int index = rawMetricContext.getSensor().getConfiguration()
+                            .indexOf(";", _className.length() + _metricName.length() + 1);
+                    String jsonConfig =
+                            rawMetricContext.getSensor().getConfiguration().substring(index + 1);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    sensorConfiguration = objectMapper.readValue(jsonConfig, HashMap.class);
+
+                    _isVmSensor = false; /* TODO only when linked to component */
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         SensorDescription sensorDescription =
-            getFc().saveSensorDescription(_className, _metricName, _isVmSensor);
+                getFc().saveSensorDescription(_className, _metricName, _isVmSensor, _isPush);
 
         //SensorConfigurations sensorConfigurations = getFc().saveSensorConfiguration(sensorConfiguration);
 
@@ -122,18 +155,17 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
 
         if (app == null && component != null) {
             rawMonitor = getFc().doMonitorVms(null, /*TODO*/ component, schedule, sensorDescription,
-                externalReferences, sensorConfiguration);
+                    externalReferences, sensorConfiguration);
         } else if (app != null && component != null) {
             rawMonitor = getFc()
-                .doMonitorVms(app, component, schedule, sensorDescription, externalReferences,
-                    sensorConfiguration);
+                    .doMonitorVms(app, component, schedule, sensorDescription, externalReferences,
+                            sensorConfiguration);
         } else {
             /**
              * TODO: implement other Monitor filters
              */
             throw new RuntimeException("Monitor filter not implemented!");
         }
-
 
 
         try {
@@ -151,22 +183,22 @@ public class RawMetricContextAdapter extends AbstractAdapter<Monitor> {
 
                 if (metricInstance.getObjectBinding() instanceof MetricVMBinding) {
                     MetricVMBinding metricVMBinding =
-                        (MetricVMBinding) metricInstance.getObjectBinding();
+                            (MetricVMBinding) metricInstance.getObjectBinding();
 
                     VirtualMachine frontendVM =
-                        getFc().getVirtualMachineToIP(metricVMBinding.getVmInstance().getIp());
+                            getFc().getVirtualMachineToIP(metricVMBinding.getVmInstance().getIp());
 
                     getFc().addExternalIdToMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue(), frontendVM);
                 } else if (metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
                     logger.info("Raw metric is bound to a component - add to linked VM.");
                     MetricComponentBinding metricComponentBinding =
-                        (MetricComponentBinding) metricInstance.getObjectBinding();
+                            (MetricComponentBinding) metricInstance.getObjectBinding();
 
                     if (metricComponentBinding.getVmInstance() == null) {
                         getFc().addExternalIdToEmptyMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue());
                     } else {
                         VirtualMachine frontendVM = getFc()
-                            .getVirtualMachineToIP(metricComponentBinding.getVmInstance().getIp());
+                                .getVirtualMachineToIP(metricComponentBinding.getVmInstance().getIp());
 
                         getFc().addExternalIdToMonitorInstance(rawMonitor, kvmi.getKey(), kvmi.getValue(), frontendVM);
                     }
