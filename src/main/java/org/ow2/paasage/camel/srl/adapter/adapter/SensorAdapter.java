@@ -53,7 +53,7 @@ public class SensorAdapter extends AbstractAdapter<SensorDescription> {
             _metricName = configurationSplit[0];
 
         } else {
-            if (configurationSplit.length != 1) {
+            if (configurationSplit.length < 2) {
                 throw new IllegalArgumentException("Wrong definition of configuration in sensor " +
                         "for pull sensor (1). Expected configuration schema: configuration" +
                         " = \"[metric_name;class_name(;configuration_json)]\". Found illegal configuration:" +
