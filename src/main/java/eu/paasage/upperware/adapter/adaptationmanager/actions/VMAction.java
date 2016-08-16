@@ -412,7 +412,7 @@ public class VMAction implements Action {
 					}else if(cloudName.equalsIgnoreCase("Omistack")){
 						uname = execInterfacer.getCloudUname("Omistack");
 						pass = execInterfacer.getCloudPass("Omistack");
-						//endpoint = execInterfacer.getCloudEndpoint("Omistack");
+						endpoint = execInterfacer.getCloudEndpoint("Omistack");
 					}else if(cloudName.equalsIgnoreCase("GWDG")){
 						uname = execInterfacer.getCloudUname("GWDG");
 						pass = execInterfacer.getCloudPass("GWDG");
@@ -635,6 +635,8 @@ public class VMAction implements Action {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			} else {
+				APIid = execInterfacer.trimResponseID(tempAPIid);
 			}
 			
 			try {
