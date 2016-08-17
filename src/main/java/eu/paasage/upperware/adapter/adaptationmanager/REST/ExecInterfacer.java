@@ -2832,7 +2832,258 @@ public class ExecInterfacer {
     	//return jArr;
 	}
 	
-	public boolean updateOSandLoginForSpecificImage(String imgID, String OSVendorType, String login, String pass, String OSArchitecture, String OSVersion) throws IOException, ParseException{
+	public String createOS(String OSArchitecture, String OSFamily, String OSVersion){
+		
+		boolean status = false;
+		//String API_OS = "/api/os";
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("operatingSystemArchitecture", OSArchitecture);
+			inBody.put("operatingSystemFamily", OSFamily);
+	        inBody.put("version", OSVersion);
+
+	        HttpResponse resp = postRequest(API_OS, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        //{"virtualMachineTemplate":["The virtual machine template is required."]}
+	        Object obj = null;
+
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+	            //JSONObject result = (JSONObject)parser.parse(respString);
+	            //execUser.setCreatedOn((long)result.get("createdOn"));
+
+        		try {
+        			obj = parser.parse(new String(respString));
+        		} catch (ParseException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
+        		JSONObject jObj = (JSONObject) obj;
+        		
+        		// loop array
+        		JSONArray links = (JSONArray) jObj.get("link");
+        		Iterator<JSONObject> iterator = links.iterator();
+        		while (iterator.hasNext()) {
+        			JSONObject factObj = (JSONObject) iterator.next();
+        			String href = (String) factObj.get("href");
+        			System.out.println("New OS entity is located at " + href);
+        			return href;
+        		}
+        		status = true;
+
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		return "";
+		//return status;
+	}
+	
+	public boolean updateOSandLoginForSpecificImage(String imgID, String OSFamily, String login, String pass, String OSArchitecture, String OSVersion) throws IOException, ParseException{
+		boolean status = false;
+		
+		JSONObject imgJObj = null;
+		
+		String /*vendorID = "", defLogin = "", defPass = "",*/ OSID = "";
+		
+		HttpResponse resp = getRequest(API_IMAGE + "/" + imgID, null);
+        HttpEntity respEntity = resp.getEntity();
+        
+        String respString = EntityUtils.toString(respEntity);
+        JSONParser parser = new JSONParser();
+        JSONObject specImg = null;
+        JSONArray jArr = null;
+        Iterator<JSONObject> jArrIt;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+    		specImg = (JSONObject)parser.parse(respString);
+//    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+    	if(specImg.get("operatingSystem")!=null && (!specImg.get("operatingSystem").toString().equalsIgnoreCase(""))){
+			status = true;
+			return status;
+		} else{
+			imgJObj = specImg;
+			status = true;
+		} 
+    	
+/*		//fetching the OS Vendor
+		
+		resp = getRequest(API_OSVENDOR, null);
+        respEntity = resp.getEntity();
+        
+        respString = EntityUtils.toString(respEntity);
+        parser = new JSONParser();
+        //JSONObject result = null;
+        jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+		jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			if(jObj.get("operatingSystemVendorType").toString().equalsIgnoreCase(OSVendorType)){
+				
+				JSONArray links= (JSONArray) jObj.get("link");
+				defLogin = jObj.get("defaultLoginName").toString();
+				
+				if(jObj.get("defaultPassword") != null)
+					defPass = jObj.get("defaultPassword").toString();
+				else
+					defPass	= null;
+				
+				Iterator<JSONObject> jArrLinksIt = links.iterator();
+				while (jArrLinksIt.hasNext()){
+					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
+					String vend = (String) jObjLinks.get("href");
+					System.out.println("Found vendor " + OSVendorType + " id: " + vend);
+					vendorID = vend.substring(vend.lastIndexOf('/')+1);
+					status = status && true;
+				}
+			}
+		}*/
+		
+		//fetching the OS
+		resp = getRequest(API_OS, null);
+        respEntity = resp.getEntity();
+        
+        respString = EntityUtils.toString(respEntity);
+        parser = new JSONParser();
+        //JSONObject result = null;
+        jArr = null;
+        boolean osFound = false;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+		jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			if(jObj.get("operatingSystemFamily").toString().equalsIgnoreCase(OSFamily) && jObj.get("operatingSystemArchitecture").toString().equalsIgnoreCase(OSArchitecture) && jObj.get("version").toString().equalsIgnoreCase(OSVersion)){
+				
+				JSONArray links= (JSONArray) jObj.get("link");
+				
+				Iterator<JSONObject> jArrLinksIt = links.iterator();
+				while (jArrLinksIt.hasNext()){
+					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
+					String os = (String) jObjLinks.get("href");
+					System.out.println("Found OS for family: " + OSFamily +" version: " + OSVersion + " Arch: " + OSArchitecture + " id: " + os);
+					OSID = os.substring(os.lastIndexOf('/')+1);
+					osFound = true;
+					status = status && true;
+				}
+			}
+		}
+		
+		if(!osFound){
+			String os = createOS(OSArchitecture, OSFamily, OSVersion);
+			OSID = os.substring(os.lastIndexOf('/')+1);
+			if(!OSID.equalsIgnoreCase("")){
+				osFound = true;
+				status = status && true;
+			} else
+				status = false;
+		}
+		
+		if(status == true){//update the image with OS and LoginUsername
+			
+			
+			JSONObject inBody = new JSONObject();
+			inBody.put("remoteId", imgJObj.get("remoteId"));
+			inBody.put("providerId", imgJObj.get("providerId"));
+			inBody.put("swordId", imgJObj.get("swordId"));
+			inBody.put("name", imgJObj.get("name"));
+			inBody.put("cloud", imgJObj.get("cloud"));
+			inBody.put("location", imgJObj.get("location"));
+			inBody.put("cloudCredentials", imgJObj.get("cloudCredentials"));
+			inBody.put("operatingSystem", Integer.parseInt(OSID));
+			inBody.put("defaultLoginUsername", login);
+			inBody.put("defaultLoginPassword", pass);
+			
+			/*if(login != null){
+				if(!login.equalsIgnoreCase(defLogin))
+					inBody.put("defaultLoginUsername", login);
+				else
+					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+			}*/
+			
+			
+/*			switch (OSFamily.toUpperCase()) {
+			case "WINDOWS":
+				
+				if(login != null && imgJObj.get("defaultLoginUsername")==null){//populate from the model
+					inBody.put("defaultLoginUsername", login);
+					inBody.put("defaultLoginPassword", pass);
+				}
+				else if(defLogin!= null && imgJObj.get("defaultLoginUsername")==null){//populate from Execware default
+					inBody.put("defaultLoginUsername", defLogin);
+					inBody.put("defaultLoginPassword", defPass);
+				}else if(imgJObj.get("defaultLoginUsername")!=null){//rewrite the one set in image already
+					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+					inBody.put("defaultLoginPassword", imgJObj.get("defaultLoginPassword"));
+				}
+				
+				if(defPass!= null && imgJObj.get("defaultPassword")==null){
+					inBody.put("defaultPassword", defPass);
+				}else if(imgJObj.get("defaultPassword")!=null){
+					inBody.put("defaultPassword", imgJObj.get("defaultPassword"));
+				}
+				
+				break;
+
+			default://case NIX
+				
+				if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")==null){//populate from the model
+					inBody.put("defaultLoginUsername", login);
+					inBody.put("defaultLoginPassword", pass);
+				}else if(defLogin!= null && imgJObj.get("defaultLoginUsername")==null){//populate from Execware default
+					inBody.put("defaultLoginUsername", defLogin);
+					inBody.put("defaultLoginPassword", defPass);
+				}else if(login != null && defLogin!= null && imgJObj.get("defaultLoginUsername")!=null){//rewrite the one set in image already
+					inBody.put("defaultLoginUsername", imgJObj.get("defaultLoginUsername"));
+					inBody.put("defaultLoginPassword", imgJObj.get("defaultLoginPassword"));
+				}
+				
+				break;
+			}*/
+			
+			resp = putRequest(API_IMAGE + "/" + imgID, null, inBody);
+	        respEntity = resp.getEntity();
+	        
+	        respString = EntityUtils.toString(respEntity);
+	        parser = new JSONParser();
+	        JSONObject result = null;
+	        
+	    	if(resp.getStatusLine().getStatusCode()==200){
+	        	
+	            result = (JSONObject)parser.parse(respString);
+	            status = status && true;
+	            
+	    	} else{
+	    		status = false;
+	    	}
+		}
+		
+		return status;
+	}
+	
+	public boolean updateOSandLoginForSpecificImageOld(String imgID, String OSVendorType, String login, String pass, String OSArchitecture, String OSVersion) throws IOException, ParseException{
 		boolean status = false;
 		
 		JSONObject imgJObj = null;

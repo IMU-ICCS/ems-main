@@ -365,9 +365,9 @@ public class VMAction implements Action {
 		//String OSVendorType = "NIX", login = "ubuntu", OSArchitecture = "AMD64", OSVersion = "14.04.2";//putting default values
 		//getting values from plan generator
 		//String OSVendorType = "NIX";//vmiParams.get("OSVendorType").asString();
-		String OSVendorType = vmiParams.get("OSVendorType").asString();
-		if(OSVendorType == null)
-			OSVendorType = "NIX";
+		String OSFamily = vmiParams.get("OSVendorType").asString();
+		if(OSFamily == null)
+			OSFamily = "NIX";
 		JsonObject defaultCred = (JsonObject) vmiParams.get("defaultCredential");
 		//String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
 		String login = defaultCred.get("defaultLoginName").asString();
@@ -377,9 +377,14 @@ public class VMAction implements Action {
 		
 		String OSArchitecture = vmiParams.get("OSArchitecture").asString();
 		
-		String OSVersion = "14.04.2";//default value - to be provided in Model
-		if(OSVendorType.equalsIgnoreCase("WINDOWS"))
+		//String OSVersion = "14.04.2";//default value - to be provided in Model
+		String OSVersion = "null";//default value - to be provided in Model
+		if(OSFamily.equalsIgnoreCase("WINDOWS")){
 			OSVersion = "Server 2012 R2";
+		} else if(OSFamily.equalsIgnoreCase("NIX") || OSFamily.equalsIgnoreCase("UBUNTU")){
+			OSFamily = "UBUNTU";
+			OSVersion = "14.04.2";
+		}
 		
 		
 		if((vmt=dataShare.getEntityVMTid(vmType))==null){//entity non existant in ExecWare
@@ -541,7 +546,7 @@ public class VMAction implements Action {
 					LOGGER.log(Level.INFO, "Timeout! ExecWare could not yet find image id " +  imgCloudProviderId +" Please verify. Quitting");
 					throw new InterruptedException("Timeout error looking for cloud image id " + imgCloudProviderId);
 				} else
-					status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, imgPass, OSArchitecture, OSVersion);
+					status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSFamily, login, imgPass, OSArchitecture, OSVersion);
 				
 				//boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
 				
