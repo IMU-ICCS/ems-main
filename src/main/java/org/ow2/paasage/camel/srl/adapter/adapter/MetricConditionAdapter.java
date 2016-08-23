@@ -62,7 +62,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
                 String v = s.getValue();
                 // TODO make this more generic, not just CAMEL or CDO!
                 if("CDOID".equals(k) || "CAMEL".equals(k)) {
-                    if (v.equals(metricContext.getName())) {
+                    if (v.equals(metricContext.cdoID().toString()) || v.equals(metricContext.getName())) {
                         composedMonitors.add(m);
                         amountInstances += getFc().getMonitorInstances(m.getId()).size();
                     }
@@ -145,7 +145,7 @@ public class MetricConditionAdapter extends AbstractAdapter<ComposedMonitor> {
 
         //1. compute which apply:
         List<KeyValue> externalReferencesThreshold = new ArrayList<>();
-        externalReferencesThreshold.add(new KeyValue(kvNFE.getKey(), kvNFE.getValue() + "_threshold"));
+        externalReferencesThreshold.add(new KeyValue(kvNFE.getKey(), kvNFE.getValue() + "_apply"));
         ComposedMonitor thresholdMonitor = (ComposedMonitor) getFc()
             .mapAggregatedMonitors(quantifierAll /* quantifier TODO currently only ALL is implemented, minimum applies is used for constant monitor*/,
                 schedule, window_1_measurment, operator, composedMonitors, null,
