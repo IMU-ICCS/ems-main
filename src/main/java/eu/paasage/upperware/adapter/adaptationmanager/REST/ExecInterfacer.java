@@ -1050,6 +1050,8 @@ public class ExecInterfacer {
 			e.printStackTrace();
 		}*/
 		
+		if((execUser.getExpiresAt() - System.currentTimeMillis()) > 30000)//token not renewed for validity > 30 seconds
+			return;
 		
 		/*
 		 * Authentication Actions
@@ -4663,6 +4665,8 @@ public class ExecInterfacer {
 		void setExpiresAt(long expiresAt){
 			this.expiresAt = expiresAt;
 		}
+		
+		long getExpiresAt(){return this.expiresAt;}
 		
 		void setToken(String token){
 			this.token = new String(token);
