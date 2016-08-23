@@ -2881,6 +2881,44 @@ public class ExecInterfacer {
 		//return status;
 	}
 	
+	public String getUnknownOSId() throws IOException, ParseException{
+		//fetching the OS
+		HttpResponse resp = getRequest(API_OS, null);
+		HttpEntity respEntity = resp.getEntity();
+        String OSID = "";
+		
+		String respString = EntityUtils.toString(respEntity);
+		JSONParser parser = new JSONParser();
+        //JSONObject result = null;
+		JSONArray jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+    	Iterator<JSONObject> jArrIt = jArr.iterator();
+		while(jArrIt.hasNext()){
+			JSONObject jObj = (JSONObject) jArrIt.next();
+			
+			if(jObj.get("operatingSystemFamily").toString().equalsIgnoreCase("UNKNOWN") && jObj.get("operatingSystemArchitecture").toString().equalsIgnoreCase("UNKNOWN") && jObj.get("version")==null){
+				
+				JSONArray links= (JSONArray) jObj.get("link");
+				
+				Iterator<JSONObject> jArrLinksIt = links.iterator();
+				while (jArrLinksIt.hasNext()){
+					JSONObject jObjLinks = (JSONObject) jArrLinksIt.next();
+					String os = (String) jObjLinks.get("href");
+					OSID = os.substring(os.lastIndexOf('/')+1);
+				}
+			}
+		}
+		
+		return OSID;		
+	}
+	
 	public boolean updateOSandLoginForSpecificImage(String imgID, String OSFamily, String login, String pass, String OSArchitecture, String OSVersion) throws IOException, ParseException{
 		boolean status = false;
 		
@@ -2904,12 +2942,16 @@ public class ExecInterfacer {
 //    		jArr = (JSONArray)parser.parse(respString);
     	}
     	
-    	if(specImg.get("operatingSystem")!=null && (!specImg.get("operatingSystem").toString().equalsIgnoreCase(""))){
+    	String unknownOSId = getUnknownOSId();
+    	
+    	if(specImg.get("operatingSystem")!=null && (!(specImg.get("operatingSystem").toString().equalsIgnoreCase("") || specImg.get("operatingSystem").toString().equalsIgnoreCase(unknownOSId)))){
 			status = true;
+			LOGGER.log(Level.INFO, "OS, Default Login and/or password already up-to-date for image " + imgID);
 			return status;
 		} else{
 			imgJObj = specImg;
 			status = true;
+			LOGGER.log(Level.INFO, "OS, Default Login and/or password require updation for image " + imgID);
 		} 
     	
 /*		//fetching the OS Vendor

@@ -550,10 +550,14 @@ public class VMAction implements Action {
 				
 				//boolean status = execInterfacer.updateOSandLoginForSpecificImage(imageID, OSVendorType, login, OSArchitecture, OSVersion);
 				
-				if(status)
+				/*if(status)
 					LOGGER.log(Level.INFO, "Updated OS/Default Login for image " + imageID);
 				else
-					LOGGER.log(Level.INFO, "NOT updated OS/Default Login for image " + imageID);
+					LOGGER.log(Level.INFO, "NOT updated OS/Default Login for image " + imageID);*/
+				
+				if(!status)
+					LOGGER.log(Level.INFO, "OS, Default Login and/or password could not be updated for image " + imageID);
+				
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
