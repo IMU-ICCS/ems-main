@@ -14,6 +14,7 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.ScalingAction;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FilterType;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FlowOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.FormulaOperator;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.enums.SubscriptionType;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.internal.KeyValue;
@@ -187,4 +188,6 @@ public interface FrontendCommunicator {
     String getPublicIpOfVmByName(String name);
 
     SensorConfigurations saveSensorConfiguration(Map<String, String> sensorConfiguration);
+
+    ComposedMonitor saveComposedMonitor(FlowOperator flowOperator, FormulaOperator operator, Long idQuantifier, Long idWindow, List<Long> monitors, List<Long> scalingActions, Long schedule);
 }
