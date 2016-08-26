@@ -267,7 +267,7 @@ public class AdaptationManager {
 				taskInProgress = false;
 			}
 			
-			if( !taskInProgress && (Math.random() <= CDOUpdateProbability)){//check for CDO update occasionally (with 1/2500000th probability as default or set in Adapter property)
+			if( !taskInProgress && !terminate && depModelIndex > 0 && (Math.random() <= CDOUpdateProbability)){//check for CDO update occasionally (with 1/2500000th probability as default or set in Adapter property)
 				
 				taskInProgress = true;
 				
