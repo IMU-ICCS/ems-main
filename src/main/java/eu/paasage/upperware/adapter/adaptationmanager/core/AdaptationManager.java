@@ -65,6 +65,8 @@ public class AdaptationManager {
 	
 	private static String fakeDeployment = null;
 	private static int fakeDeploymentTimeout = -1;
+	
+	private static double CDOUpdateProbability = 0.0000004;
 
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
@@ -80,6 +82,11 @@ public class AdaptationManager {
 		fakeDeployment = properties.getProperty("FakeDeploymentTimeoutSeconds");
 		if (fakeDeployment != null)
 			fakeDeploymentTimeout = Integer.parseInt(fakeDeployment);
+		
+		String probability = null;
+		probability = properties.getProperty("CDOUpdateProbabilityForEWScaling");
+		if(probability != null)
+			CDOUpdateProbability = Double.parseDouble(probability);
 
 		/*
 		 * //Running the 0MQ Server try { new ZeromqServer().start(); } catch
@@ -257,6 +264,19 @@ public class AdaptationManager {
 					ex.printStackTrace();
 				}
 
+				taskInProgress = false;
+			}
+			
+			if( !taskInProgress && (Math.random() <= CDOUpdateProbability)){//check for CDO update occasionally (with 1/2500000th probability as default or set in Adapter property)
+				
+				taskInProgress = true;
+				
+				if(c.updateRunningCDOModel(depModelIndex)){
+					
+					depModelIndex = c.getNewDMIndexAndReset();
+					LOGGER.log(Level.INFO, "CDO updated with the deployment model written at index = " + depModelIndex);
+				}
+				
 				taskInProgress = false;
 			}
 			
