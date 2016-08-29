@@ -259,6 +259,26 @@ public class CDOUpdater {
 		registerDataHolderToCDO();
 	}
 	
+	public boolean updateDecision(LinkedList<ExecwareInstance> instances, CamelExecwareMapping mapping){
+		
+		if(instances == null)
+			return false;
+		
+		int instancesInEW = 0;
+		
+		for(ExecwareInstance ewInst : instances)
+			if(ewInst.isStateOK())//counting EW instances in OK state to avoid when EW is in the process of scaling/descaling
+				instancesInEW++;
+		
+		if(instancesInEW == mapping.getInstancesCount()){//very likely no changes in EW with Adapter info (since equal number of instances)
+			LOGGER.log(Level.INFO, "CDOUpdateAction - Nothing to update since #instances have not changed");
+			return false;
+		}else{
+			LOGGER.log(Level.INFO, "CDOUpdateAction - Update required since #instances have changed");
+			return true;
+		}
+	}
+	
 	public int updateFromMapping(LinkedList<ExecwareInstance> instances, CamelExecwareMapping mapping){
 		this.targetDepModel = copyDeploymentModel(instances);
 		

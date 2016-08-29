@@ -279,6 +279,8 @@ public class CamelExecwareMapping {
 		}
 	}
 	
+	public int getInstancesCount(){synchronized(VMIs){return VMIs.size();}}
+	
 	public boolean deleteVMI(String name_Camel){
 		boolean status = false;
 		synchronized(VMIs){

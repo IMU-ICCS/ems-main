@@ -55,6 +55,8 @@ public class ExecwareInstance {
 		this.InstanceId = instanceId;
 	}
 	
+	public boolean isStateOK(){return (this.remoteState == State.OK);}
+	
 	public void setScaledState(scaledState sState){this.scState = sState;}
 	
 	public scaledState getScaledState(){return this.scState;}

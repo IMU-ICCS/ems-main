@@ -64,7 +64,7 @@ public class CDOUpdateAction implements Action {
 		
 		if(instances == null || instances.size() == 0){
 			LOGGER.log(Level.INFO, "CDOUpdateAction execute block. Nothing to update");
-		}else{
+		}else if(cdoUpdater.updateDecision(instances, dataShare)){
 			//cdoUpdater.updateCDO(instances);
 			int index = cdoUpdater.updateFromMapping(instances, dataShare);
 			if(index > -1)
