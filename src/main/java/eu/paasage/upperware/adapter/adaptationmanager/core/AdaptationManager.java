@@ -66,7 +66,7 @@ public class AdaptationManager {
 	private static String fakeDeployment = null;
 	private static int fakeDeploymentTimeout = -1;
 	
-	private static double CDOUpdateProbability = 0.0000004;
+	private static int CDOUpdatePollTimeInMins = 10;
 
 	public static void main(String[] args) {
 		Properties props = System.getProperties();
@@ -83,10 +83,10 @@ public class AdaptationManager {
 		if (fakeDeployment != null)
 			fakeDeploymentTimeout = Integer.parseInt(fakeDeployment);
 		
-		String probability = null;
-		probability = properties.getProperty("CDOUpdateProbabilityForEWScaling");
-		if(probability != null)
-			CDOUpdateProbability = Double.parseDouble(probability);
+		String time = null;
+		time = properties.getProperty("CDOUpdatePollTimeForEWScaling");
+		if(time != null)
+			CDOUpdatePollTimeInMins = Integer.parseInt(time);
 
 		/*
 		 * //Running the 0MQ Server try { new ZeromqServer().start(); } catch
@@ -204,6 +204,8 @@ public class AdaptationManager {
 		
 		int depModelIndex = 0;
 		
+		long lastTime =  System.currentTimeMillis();
+		
 		while(!terminate){
 			
 			if(!zmsScaleSub.readMessage(true).equalsIgnoreCase("")){//an auto-scale event has happened
@@ -267,7 +269,8 @@ public class AdaptationManager {
 				taskInProgress = false;
 			}
 			
-			if( !taskInProgress && !terminate && depModelIndex > 0 && (Math.random() <= CDOUpdateProbability)){//check for CDO update occasionally (with 1/2500000th probability as default or set in Adapter property)
+			long current = System.currentTimeMillis();
+			if( !taskInProgress && !terminate && depModelIndex > 0 && (((current - lastTime)/60000) >= CDOUpdatePollTimeInMins)){//check for CDO update occasionally (every 10 minutes as default or as set in Adapter property)
 				
 				taskInProgress = true;
 				
@@ -276,7 +279,7 @@ public class AdaptationManager {
 					depModelIndex = c.getNewDMIndexAndReset();
 					LOGGER.log(Level.INFO, "CDO updated with the deployment model written at index = " + depModelIndex);
 				}
-				
+				lastTime = current;
 				taskInProgress = false;
 			}
 			
