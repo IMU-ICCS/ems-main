@@ -286,6 +286,8 @@ public class Execution {
                         }
 
 
+                        logger.debug("Adding monitor subscription for raw monitor: " + rmc.getName() + " with identity " + identityMonitor.getId());
+
                         fc.addMonitorSubscription(identityMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO, FilterType.ANY, 0);
                     }
@@ -310,6 +312,8 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for composite metric context: " + cmc.getName());
+
                         fc.addMonitorSubscription(compositeMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO, FilterType.ANY, 0);
                     }
@@ -334,6 +338,8 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for metric condition / nfe: " + mc.getName());
+
                         fc.addMonitorSubscription(conditionMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
@@ -357,6 +363,8 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for event pattern: " + ep.getName());
+
                         fc.addMonitorSubscription(composedMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
@@ -378,10 +386,17 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for scaling action.");
+
                         ComposedMonitor m = fc.getComposedMonitorByExternalId(entrySet.getValue());
+
+                        logger.debug("Scaling action refers to composed monitor: " + m.getId());
 
                         fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+
+                        fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
+                                SubscriptionType.SCALING, FilterType.GT, 0.99);
                     }
                 }
 
