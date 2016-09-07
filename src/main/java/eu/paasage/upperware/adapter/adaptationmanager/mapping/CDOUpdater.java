@@ -26,6 +26,8 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.CommunicationPort;
+import eu.paasage.camel.deployment.CommunicationPortInstance;
+import eu.paasage.camel.deployment.Component;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
@@ -92,6 +94,26 @@ public class CDOUpdater {
 		reasonerInterfacer.commitAndCloseTransaction();
 	}
 	
+	public void printIcinstances(){
+		EList<InternalComponentInstance> iciList = srcDepModel.getInternalComponentInstances();
+		for (Iterator iterator = iciList.iterator(); iterator.hasNext();){
+			InternalComponentInstance icInst = (InternalComponentInstance) iterator.next();
+			System.out.println("\n\nICI " + icInst.getName() + " " + icInst.getType().getName());
+			
+			EList<ProvidedCommunicationInstance> PCIList = icInst.getProvidedCommunicationInstances();
+			for (Iterator PCiterator = PCIList.iterator(); PCiterator.hasNext();){
+				ProvidedCommunicationInstance pci = (ProvidedCommunicationInstance) PCiterator.next();
+				System.out.println("Prov Comm " + pci.getName() + " " + pci.getType().getName() + " " + pci.getType().getPortNumber());
+			}
+			
+			EList<RequiredCommunicationInstance> RCIList = icInst.getRequiredCommunicationInstances();
+			for (Iterator RCiterator = RCIList.iterator(); RCiterator.hasNext();){
+				RequiredCommunicationInstance rci = (RequiredCommunicationInstance) RCiterator.next();
+				System.out.println("Req Comm " + rci.getName() + " " + rci.getType().getName() + " " + rci.getType().getPortNumber());
+			}
+		}
+	}
+	
 	public void printVMInstances(){
 		EList<VMInstance> vmiList = srcDepModel.getVmInstances();
 		for (Iterator iterator = vmiList.iterator(); iterator.hasNext();) {
@@ -100,6 +122,19 @@ public class CDOUpdater {
 			System.out.println(vmInst.getVmType().getName() + " " + vmInst.getVmType().getUnitType() + " " + vmInst.getVmType().getValue() + " " + vmInst.getVmType().getValueType());
 			
 			System.out.println(getVMTypeFromProvModel(vmInst.getVmType()));
+		}
+	}
+	
+	public void printCommInstances(){
+		EList<CommunicationInstance> commInstList = srcDepModel.getCommunicationInstances();
+		for (Iterator iterator = commInstList.iterator(); iterator.hasNext();) {
+			CommunicationInstance commInst = (CommunicationInstance) iterator.next();
+			//System.out.println(vmInst.getVmType().toString());
+			System.out.println("Comm " + commInst.getName() + " " + commInst.getType().getName());
+			
+			System.out.println("Prov Comm " + commInst.getProvidedCommunicationInstance().getName() + " " + commInst.getProvidedCommunicationInstance().getType().getName() + " " + commInst.getProvidedCommunicationInstance().getType().getPortNumber());
+			
+			System.out.println("Reqd Comm " + commInst.getRequiredCommunicationInstance().getName() + " " + commInst.getRequiredCommunicationInstance().getType().getName() + " " + commInst.getRequiredCommunicationInstance().getType().getPortNumber());
 		}
 	}
 	
@@ -288,6 +323,7 @@ public class CDOUpdater {
 		
 		computeDatasToRegister(instances, this.targetDepModel);
 		computeDatasToRemove(instances, this.targetDepModel);
+		recreateCommunicationInstances();
 		registerDataHolderToCDO();
 		addToMapping(instances, mapping);
 		if((this.newDMIndex = addToCDO()) > this.DMIndex)
@@ -302,6 +338,178 @@ public class CDOUpdater {
 		return (this.newDMIndex > this.DMIndex);
 	}
 	
+	private void recreateCommunicationInstances(){
+		
+		//deleting the existing Comm Instances in the deployment model
+		
+		int i = this.targetDepModel.getCommunicationInstances().size() - 1;
+		for( ; i >= 0; i--){
+			this.targetDepModel.getCommunicationInstances().remove(i);
+		}		
+		
+		EList<InternalComponentInstance> ici = this.targetDepModel.getInternalComponentInstances();
+		EList<CommunicationInstance> communicationInstances = new BasicEList<CommunicationInstance>();
+		
+		EList<Communication> communications = this.targetDepModel.getCommunications();
+		for (Communication communication : communications)
+		{
+			LOGGER.log(Level.INFO, "Dealing with communication : " + communication.getName());
+			EList<CommunicationInstance> commInstances = createCommunicationInstanceFromDemand(communication, this.targetDepModel, ici);
+			communicationInstances.addAll(commInstances);
+		}
+		
+		this.dataHolder.setCommunicationInstancesToRegister(communicationInstances);
+	}
+	
+	private EList<CommunicationInstance> createCommunicationInstanceFromDemand(Communication communication, DeploymentModel deploymentModel, EList<InternalComponentInstance> ici){
+		
+		// Gathering information
+		CommunicationProvidedRequiredDomain result = findComponentFromCommunication(communication, deploymentModel);
+		EList<CommunicationInstance> communicationInstances = new BasicEList<CommunicationInstance>();
+
+		EList<InternalComponentInstance> reqInstances  = null;
+		EList<InternalComponentInstance> provInstances = null;
+		if(ici == null){
+			reqInstances  = findComponentInstanceFromComponent(result.reqComponent, deploymentModel);
+			provInstances = findComponentInstanceFromComponent(result.provComponent, deploymentModel);
+		}
+		else{
+			reqInstances  = findComponentInstanceFromComponent(result.reqComponent, ici);
+			provInstances = findComponentInstanceFromComponent(result.provComponent, ici);
+		}
+		
+		if ((reqInstances == null)||reqInstances.isEmpty())
+		{
+			LOGGER.log(Level.WARNING, "WARNING: ignoring communication " + communication.getName());
+			return communicationInstances;
+		}
+		
+		if ((provInstances == null)||provInstances.isEmpty())
+		{
+			LOGGER.log(Level.WARNING, "WARNING: ignoring communication " + communication.getName());
+			return communicationInstances;
+		}
+		
+		
+		LOGGER.log(Level.INFO, "Looking for ComPI...");
+		EList<CommunicationPortInstance> providedCommunicationPortInstances = new BasicEList<CommunicationPortInstance>();
+		EList<CommunicationPortInstance> requiredCommunicationPortInstances = new BasicEList<CommunicationPortInstance>();
+		
+		for(InternalComponentInstance iCI : provInstances){
+			CommunicationPortInstance providedCommunicationPortInstance = findCommuniCationPortInstanceFor(result.communication.getProvidedCommunication(), iCI.getProvidedCommunicationInstances());
+			if (providedCommunicationPortInstance!=null)
+				providedCommunicationPortInstances.add(providedCommunicationPortInstance);
+			else
+				LOGGER.log(Level.WARNING, "Unable to find providedCommunicationPortInstance for " + iCI.getName()+" for communication " + communication.getName());
+		}
+		
+		for(InternalComponentInstance iCI : reqInstances){
+			CommunicationPortInstance requiredCommunicationPortInstance = findCommuniCationPortInstanceFor(result.communication.getRequiredCommunication(), iCI.getRequiredCommunicationInstances());
+			if (requiredCommunicationPortInstance!=null)
+				requiredCommunicationPortInstances.add(requiredCommunicationPortInstance);
+			else
+				LOGGER.log(Level.WARNING, "Unable to find requiredCommunicationPortInstance for " + iCI.getName()+" for communication " + communication.getName());
+		}
+		
+		// Creating Communication Instances
+		//int cnt=0;
+		for(CommunicationPortInstance providedPI : providedCommunicationPortInstances){
+			for(CommunicationPortInstance requiredPI : requiredCommunicationPortInstances){
+				CommunicationInstance communicationInstance = DeploymentFactory.eINSTANCE.createCommunicationInstance();
+				//communicationInstance.setName(result.communication.getName() + "Instance_" + Integer.toString(cnt));
+				communicationInstance.setName(result.communication.getName() + "Instance_" + getUniqueId());
+				LOGGER.log(Level.INFO, "Creating CommunicationInstance " + communicationInstance.getName());
+				communicationInstance.setProvidedCommunicationInstance((ProvidedCommunicationInstance) providedPI);
+				communicationInstance.setRequiredCommunicationInstance((RequiredCommunicationInstance) requiredPI);
+				communicationInstance.setType(result.communication);
+				
+				communicationInstances.add(communicationInstance);
+				//cnt++;
+			}
+		}
+		
+		return communicationInstances;
+	}
+	
+	private CommunicationProvidedRequiredDomain findComponentFromCommunication(Communication com, DeploymentModel deployementModel){
+		CommunicationProvidedRequiredDomain communicationProducerConsumerDomain = new CommunicationProvidedRequiredDomain();
+
+		InternalComponent internalComponentProv = (InternalComponent)(com.getProvidedCommunication().eContainer());
+		InternalComponent internalComponentReq = (InternalComponent)(com.getRequiredCommunication().eContainer()); 
+
+		LOGGER.log(Level.INFO, "--> "+internalComponentProv.getName()+" -- "+internalComponentReq.getName());
+
+		communicationProducerConsumerDomain.communication = com;
+		communicationProducerConsumerDomain.reqComponent = internalComponentReq;
+		communicationProducerConsumerDomain.provComponent = internalComponentProv ;
+
+		return communicationProducerConsumerDomain;
+	}
+
+	private EList<InternalComponentInstance> findComponentInstanceFromComponent(Component component, DeploymentModel deploymentModel)
+	{
+		EList<InternalComponentInstance> internalComponentInstances = deploymentModel.getInternalComponentInstances();
+		EList<InternalComponentInstance> internalCIs = new BasicEList<InternalComponentInstance>();
+		
+		LOGGER.log(Level.INFO, "Looking for ComponentInstance (InternalCI from DM) for type: "+component.getName());
+		String logTxt = "";
+		for(InternalComponentInstance internalCI : internalComponentInstances)
+		{
+			LOGGER.log(Level.INFO, "finComponentInstance: testing"+internalCI.getName()+" of type "+internalCI.getType().getName());
+			logTxt += "Compare " +  internalCI.getType()  + " AND " + component;
+			if(internalCI.getType().getName().equals(component.getName()))
+			{
+				LOGGER.log(Level.WARNING, "Ok Component Instance Find " + logTxt);
+				internalCIs.add(internalCI);
+			}
+		}
+		if (internalCIs.isEmpty())
+			LOGGER.log(Level.INFO, "**WARNING. Component Instance not found for component : " + component.getName());
+		return internalCIs;
+	}
+	
+	private EList<InternalComponentInstance> findComponentInstanceFromComponent(Component component, List<InternalComponentInstance> internalComponentInstances)
+	{
+		EList<InternalComponentInstance> internalCIs = new BasicEList<InternalComponentInstance>();
+
+		String logTxt = "";
+		LOGGER.log(Level.INFO, "Looking for ComponentInstance (InternalCI list) for type: "+component.getName());
+		for (InternalComponentInstance internalCI : internalComponentInstances)
+		{
+			LOGGER.log(Level.INFO, "finComponentInstance: testing "+internalCI.getName()+" of type "+internalCI.getType().getName());
+			logTxt += "Compare " +  internalCI.getType()  + " AND " + component;
+			if(internalCI.getType().getName().equals(component.getName()))
+			{
+				LOGGER.log(Level.INFO, "Ok Component Instance Find " + logTxt);
+				internalCIs.add(internalCI);
+			}
+		}
+		if (internalCIs.isEmpty())
+			LOGGER.log(Level.INFO, "WARNING. Component Instance not found for component : " + component.getName());
+		
+		return internalCIs;
+	}
+	
+	private CommunicationPortInstance findCommuniCationPortInstanceFor(CommunicationPort communication, EList<? extends CommunicationPortInstance> requiredCommunicationInstances){
+		if(communication == null){
+			LOGGER.log(Level.WARNING, "Try to find Communication port instance with commmunication port equal to null !!");
+			return null;
+		}
+		
+		CommunicationPortInstance result = null;
+		for (CommunicationPortInstance requiredCommunicationInstance : requiredCommunicationInstances){
+			if(requiredCommunicationInstance.getType().getName().equals(communication.getName())) {
+				result = requiredCommunicationInstance; 
+				break;
+			}
+		}
+
+		if(result == null){
+			LOGGER.log(Level.WARNING, "Unable to find CommunicationPortInstance for " +communication.getName() + "!!" );
+		}
+		return result;
+	}
+
 	private void addToMapping(LinkedList<ExecwareInstance> instances, CamelExecwareMapping mapping){
 		
 		for(ExecwareInstance ewInst : instances){
@@ -550,7 +758,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 		EList<InternalComponentInstance> componentInstancesToRegister = new BasicEList<InternalComponentInstance>();
 		EList<VMInstance> vmInstancesToRegister = new BasicEList<VMInstance>();
 		EList<HostingInstance> hostingInstancesToRegister = new BasicEList<HostingInstance>();
-		EList<CommunicationInstance> communicationInstances = new BasicEList<CommunicationInstance>();
+		
 		
 		// Create CI Instance
 		/*EList<InternalComponentInstance> internalComponentInstanceToRegisters = dataHolder.getDM().getInternalComponentInstances();
@@ -711,7 +919,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			
 			hostingInstancesToRegister.add(hInst);
 			
-			
+			//added createCommunicationInstanceFromDemand(...) function to handle communication instances
 			//create a copy of the CommunicationInstance
 			//#CommInstances equals #Comm - so not required to replicate
 			/*CommunicationInstance commInstToBeReplicated = depModel.getCommunicationInstances().get(index);
@@ -722,8 +930,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 		//Adding the new Instance types to the dataHolder
 		this.dataHolder.setComponentInstancesToRegister(componentInstancesToRegister);
 		this.dataHolder.setVmInstancesToRegister(vmInstancesToRegister);
-		this.dataHolder.setHostingInstancesToRegisters(hostingInstancesToRegister);
-		this.dataHolder.setCommunicationInstances(communicationInstances);
+		this.dataHolder.setHostingInstancesToRegister(hostingInstancesToRegister);
 		
 	}
 	
@@ -782,14 +989,25 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			this.targetDepModel.getHostingInstances().add(hostingInstance);
 		}
 		
+		List<CommunicationInstance> communicationInstancesToRegister = dataHolder.getCommunicationInstancesToRegister();
+		for(CommunicationInstance communicationInstance : communicationInstancesToRegister){
+			this.targetDepModel.getCommunicationInstances().add(communicationInstance);
+		}
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
 	}
-
 	
+	private class CommunicationProvidedRequiredDomain {
+		
+		//private final static Logger LOGGER = Logger.getLogger(CommunicationProvidedRequiredDomain.class.getName());
+
+		public Component provComponent, reqComponent;
+		public InternalComponentInstance provComponentInstance, reqComponentInstance;
+		public Communication communication;
+	}
 	
 	private class DataHolder {
 
@@ -798,7 +1016,7 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 		private List<InternalComponentInstance> componentInstancesToRegister = new ArrayList<>();
 		private List<VMInstance> vmInstancesToRegister = new ArrayList<>();
 		private List<HostingInstance> hostingInstancesToRegister = new ArrayList<>();
-		private List<CommunicationInstance> communicationInstances = new ArrayList<>();
+		private List<CommunicationInstance> communicationInstancesToRegister = new ArrayList<>();
 		
 		/*private DeploymentModel dm;
 		private int dmId;*/
@@ -825,16 +1043,16 @@ private void fillDataFromDM(LinkedList<ExecwareInstance> instances, DeploymentMo
 			return hostingInstancesToRegister;
 		}
 		
-		public boolean setHostingInstancesToRegisters(List<HostingInstance> hostingInstancesToRegister) {
+		public boolean setHostingInstancesToRegister(List<HostingInstance> hostingInstancesToRegister) {
 			return this.hostingInstancesToRegister.addAll(hostingInstancesToRegister);
 		}
 		
-		public List<CommunicationInstance> getCommunicationInstances() {
-			return communicationInstances;
+		public List<CommunicationInstance> getCommunicationInstancesToRegister() {
+			return communicationInstancesToRegister;
 		}
 		
-		public boolean setCommunicationInstances(List<CommunicationInstance> communicationInstances) {
-			return this.communicationInstances.addAll(communicationInstances);
+		public boolean setCommunicationInstancesToRegister(List<CommunicationInstance> communicationInstancesToRegister) {
+			return this.communicationInstancesToRegister.addAll(communicationInstancesToRegister);
 		}
 		
 		/*public void setDM(DeploymentModel d) { dm = d; }
