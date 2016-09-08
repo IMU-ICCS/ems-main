@@ -85,7 +85,7 @@ public class CDOUpdater {
 		reasonerInterfacer.openTransaction();
 		this.srcDepModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
 		this.rescname = reasonerInterfacer.getresourceName();
-		System.out.println("The resource name is " + this.rescname);
+		LOGGER.log(Level.INFO, "----------------------------\nThe resource name is " + this.rescname);
 		this.dataHolder = new DataHolder();
 		this.DMIndex = dmIndex;
 	}
@@ -309,7 +309,7 @@ public class CDOUpdater {
 			LOGGER.log(Level.INFO, "CDOUpdateAction - Nothing to update since #instances have not changed");
 			return false;
 		}else{
-			LOGGER.log(Level.INFO, "CDOUpdateAction - Update required since #instances have changed");
+			LOGGER.log(Level.INFO, "CDOUpdateAction - Update required since #instances has changed from #" + mapping.getInstancesCount() + " to #" + instancesInEW);
 			return true;
 		}
 	}

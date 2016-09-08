@@ -169,7 +169,7 @@ public class ReasonerInterfacer {
 		if(resourceName != null)
 			cdoRes = transaction.getOrCreateResource(resourceName);
 		List<EObject> results = cdoRes.getContents();
-		System.out.println("The results of the query are:" + results); //CamelModel@OID:http://www.paasage.eu/2015/06/camel#CamelModel#1
+		LOGGER.log(Level.INFO, "The results of the query are:" + results); //CamelModel@OID:http://www.paasage.eu/2015/06/camel#CamelModel#1
 		CamelModel model = (CamelModel) results.get(0);
 		if(model == null){
 			try {
@@ -179,6 +179,7 @@ public class ReasonerInterfacer {
 			}
 		}
 		LOGGER.log(Level.INFO, "#Deployment_Models in CDO : " + model.getDeploymentModels().size() + ". Getting model# " + dmIndex);
+		LOGGER.log(Level.INFO, "----------------------------\n");
 		DeploymentModel depModel = null;
 		if(dmIndex < model.getDeploymentModels().size())
 			depModel = model.getDeploymentModels().get(dmIndex);

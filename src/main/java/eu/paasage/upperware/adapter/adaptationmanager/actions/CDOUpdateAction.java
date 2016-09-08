@@ -31,7 +31,7 @@ public class CDOUpdateAction implements Action {
 
 	public CDOUpdateAction(CDOUpdater cdoUpdater, ExecInterfacer execInterfacer){
 		this.cdoUpdater = cdoUpdater;
-		System.out.println("CDOUpdateAction thread ");
+		LOGGER.log(Level.INFO, 	"CDOUpdateAction thread ");
 		this.execInterfacer = execInterfacer;
 	}
 
