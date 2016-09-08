@@ -278,8 +278,8 @@ public class AdaptationManager {
 					
 					depModelIndex = c.getNewDMIndexAndReset();
 					LOGGER.log(Level.INFO, "CDO updated with the deployment model written at index = " + depModelIndex);
-					LOGGER.log(Level.INFO, "----------------------------\n");
 				}
+				LOGGER.log(Level.INFO, "----------------------------\n");
 				lastTime = current;
 				taskInProgress = false;
 			}
