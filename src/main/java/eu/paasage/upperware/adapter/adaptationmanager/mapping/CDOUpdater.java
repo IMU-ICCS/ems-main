@@ -85,7 +85,7 @@ public class CDOUpdater {
 		reasonerInterfacer.openTransaction();
 		this.srcDepModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
 		this.rescname = reasonerInterfacer.getresourceName();
-		LOGGER.log(Level.INFO, "----------------------------\nThe resource name is " + this.rescname);
+		LOGGER.log(Level.INFO, "The resource name is " + this.rescname);
 		this.dataHolder = new DataHolder();
 		this.DMIndex = dmIndex;
 	}
