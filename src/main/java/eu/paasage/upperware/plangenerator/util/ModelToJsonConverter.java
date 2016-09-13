@@ -404,14 +404,15 @@ public final class ModelToJsonConverter {
 		        	String key = (String) it.next();
 		        	if(cloudProviderInfo.get(key) instanceof JsonArray){
 		        		result.add(key, (JsonArray) cloudProviderInfo.get(key));
-		        	}else if(cloudProviderInfo.get(key) instanceof String){ 
+		        	}else if(cloudProviderInfo.get(key) instanceof String){			        	
 		        		result.add(key,cloudProviderInfo.get(key).toString());
 		        	}else if(cloudProviderInfo.get(key) instanceof Integer){ //23Nov15, there are 3 integers
 		        		result.add(key, (Integer) cloudProviderInfo.get(key));
-		        	}else if(cloudProviderInfo.get(key) instanceof JsonObject){//23Nov15, there is 1 json object
+		        	}else if(cloudProviderInfo.get(key) instanceof JsonObject){//23Nov15, there is 1 json object (defaultCredentials)
 		        		result.add(key, (JsonObject) cloudProviderInfo.get(key));
 		        	}
 		            //LOGGER.debug("Added " + key + ", " +  cloudProviderInfo.get(key) + " to Json model.");
+		        	
 		        }
 			}
 		}//end if VMType !=null		
@@ -440,8 +441,7 @@ public final class ModelToJsonConverter {
 		if(!pci.isEmpty()){
 			JsonArray providedComInstances = new JsonArray();
 			for(String s : pci){
-				providedComInstances.add(s);
-				
+				providedComInstances.add(s);				
 			}
 			result.add("providedCommunicationInstances", providedComInstances);
 		}
@@ -917,9 +917,10 @@ public final class ModelToJsonConverter {
 			if(subFeatures != null && !subFeatures.isEmpty()){
 				JsonArray locsStr = new JsonArray();
 				JsonObject defCredential = new JsonObject();
-		    	//set default empty strings
+		    	/*set default empty strings commented out 12Sep2016 
 				defCredential.add("defaultLoginName", "");
 				defCredential.add("defaultLoginPassword", "");
+				*/
 				for(Feature sf : subFeatures){
 					if(sf.getName().equals("Location")){
 						/*19Nov15 model changed 
@@ -967,27 +968,33 @@ public final class ModelToJsonConverter {
 									hm.put("VMTypeCloudProviderId",ModelUtil.switchValue(attr.getValue()));
 								}else if(attr.getName().equals("DefaultLoginName")){
 									String dln = ModelUtil.switchValue(attr.getValue());
-									if(dln != null){
-										defCredential.remove("defaultLoginName");	//there is no update method, has to remove then add
+									//updated 12Sep16 to provide json null as EW relies on NULL in its logic
+									if(dln != null && !dln.equals("") && !dln.equals("\"\"")){
+										//defCredential.remove("defaultLoginName");	//there is no update method, has to remove then add
 				    					defCredential.add("defaultLoginName", dln);
 				    					logger.debug("defaultLoginName : " + dln);
 									}else{
-										logger.error("failed to switch defaultLoginName!");
+										defCredential.add("defaultLoginName", JsonObject.NULL);
+										logger.error("failed to switch/no defaultLoginName!");
 									}
 								}else if(attr.getName().equals("DefaultLoginPassword")){
 									String dlp = ModelUtil.switchValue(attr.getValue());
-									if(dlp != null){
-										defCredential.remove("defaultLoginPassword");	//there is no update method, has to remove then add
+									if(dlp != null && !dlp.equals("") && !dlp.equals("\"\"")){
+										//defCredential.remove("defaultLoginPassword");	//there is no update method, has to remove then add
 				    					defCredential.add("defaultLoginPassword", dlp);
 				    					logger.debug("defaultLoginPassword : NOT NULL, have switched value...."); //28Jan16 avoid printing password
 									}else{
-										logger.error("failed to switch defaultLoginPassword!");
+										defCredential.add("defaultLoginPassword", JsonObject.NULL);
+										logger.error("failed to switch/no defaultLoginPassword!");
 									}
 								}
 							}
 						}//end if attrs is empty
 						//now add the default credential
-						hm.put("defaultCredential",defCredential);
+						if(!defCredential.isEmpty()){
+							hm.put("defaultCredential",defCredential);
+						}
+						//end 12Sep2016 update
 					}
 				}//end for sub-features
 			}
@@ -1077,7 +1084,7 @@ public final class ModelToJsonConverter {
 		String username = "";
 		//
     	//go ahead
-    	CamelModel model = (CamelModel) vmi.eContainer().eContainer(); //vmi parent is DeployomentModel whose parent is CamelModel
+    	CamelModel model = (CamelModel) vmi.eContainer().eContainer(); //vmi parent is DeploymentModel whose parent is CamelModel
     	int size = model.getApplications().size();
     	Entity owner = model.getApplications().get(size-1).getOwner(); //get the ?latest? one.  Not sure if CDO returns the objects in the same order each time you get them
     	PaaSageCredentials cc = null;
