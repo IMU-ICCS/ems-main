@@ -53,4 +53,8 @@ public interface CommandLinePropertiesAccessor {
     ModelSourceType getModelSourceType();
 
     String getDeploymentNamePrefix();
+
+    int getMcaZeroMqPort();
+
+    String getMcaZeroMqQueue();
 }

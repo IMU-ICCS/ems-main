@@ -76,6 +76,10 @@ public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesA
             .desc("Name of the Queue of the ZeroMQ.").hasArg().build());
         options.addOption(Option.builder("DeploymentNamePrefix").longOpt("DeploymentNamePrefix")
                 .desc("Prefix of deployment. Not mandatory.").hasArg().build());
+        options.addOption(Option.builder("McaZeroMqPort").longOpt("McaZeroMqPort")
+                .desc("Port of the ZeroMQ server of MCA listens to.").hasArg().build());
+        options.addOption(Option.builder("McaZeroMqQueue").longOpt("McaZeroMqQueue")
+                .desc("Name of the Queue of the ZeroMQ of the MCA.").hasArg().build());
     }
 
     public void printHelp() {
@@ -140,6 +144,10 @@ public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesA
                 return "true";
             case "DeploymentNamePrefix":
                 return null;
+            case "McaZeroMqPort":
+                return "5564";
+            case "McaZeroMqQueue":
+                return "newResourceArrival";
             default:
                 return null;
         }
@@ -228,5 +236,15 @@ public class CommandLinePropertiesAccessorImpl implements CommandLinePropertiesA
     @Override
     public String getDeploymentNamePrefix() {
         return this.getCommandLineOption("DeploymentNamePrefix");
+    }
+
+    @Override
+    public int getMcaZeroMqPort() {
+        return Integer.parseInt(this.getCommandLineOption("McaZeroMqPort"));
+    }
+
+    @Override
+    public String getMcaZeroMqQueue() {
+        return this.getCommandLineOption("McaZeroMqQueue");
     }
 }

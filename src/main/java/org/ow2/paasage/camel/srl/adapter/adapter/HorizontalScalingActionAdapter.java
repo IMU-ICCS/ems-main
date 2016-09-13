@@ -50,7 +50,7 @@ public class HorizontalScalingActionAdapter
         for (HorizontalScaleRequirement horizontalScaleRequirement : associatedScaleRequirements) {
             count = (long) scalingAction.getCount();
             min = (long) horizontalScaleRequirement.getMinInstances();
-            max = (long) horizontalScaleRequirement.getMinInstances();
+            max = (long) horizontalScaleRequirement.getMaxInstances();
         }
 
         Component component =
