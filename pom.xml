@@ -7,6 +7,7 @@
           <artifactId>paasage-pom</artifactId>
           <version>2015.9.1-SNAPSHOT</version> <!-- 0 mq release dev branch only-->
         </parent>
+        <!-- useless modif done by ETIENNE for jenkins testing -->
 	<name>PaaSage Plan Generator</name>
 	<description>Plan Generator for computing re-configuation plan for modifying the configuration of the running cloud.</description>
 	<url>http://www.paasage.eu/software/paasage-architecture</url>
