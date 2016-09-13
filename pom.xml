@@ -56,7 +56,8 @@
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>plan-generator</artifactId>
 			<!-- <version>2015.06-SNAPSHOT</version> -->
-			<version>${paasage.version}</version>
+			<!--<version>${paasage.version}</version> -->
+			<version>2015.9.1-SNAPSHOT</version>
 			<!-- <scope>test</scope> -->
 		</dependency>
 		<dependency>
