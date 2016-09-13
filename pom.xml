@@ -5,7 +5,6 @@
         <parent>
           <groupId>org.ow2.paasage</groupId>
           <artifactId>paasage-pom</artifactId>
-<!--           <version>2015.9.1-SNAPSHOT</version> -->
           <version>2015.9.1-SNAPSHOT</version> <!-- 0 mq release dev branch only-->
         </parent>
 	<name>PaaSage Plan Generator</name>
