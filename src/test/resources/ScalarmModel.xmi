@@ -494,7 +494,7 @@
           cloudProvider="//@organisationModels.1/@provider"
           securityGroup=""
           username="username-gwdg"
-          password="password"/>
+          password=""/>
       <paasageCredentials
           password="morzech_at_agh_dot_edu_dot_pl"/>
     </users>

@@ -185,8 +185,9 @@ public class CloudProviderTest {
 			assertEquals("VMInstance VMTypeCloudProviderId is not the same!", "e92bb306-72cd-33a2-a952-908db2f47e98/c59a9066-d2f8-32e0-a227-6d90cbe3c9e2:2aedbbc7-41de-3628-918f-2c909fa81054", appObj.get("VMTypeCloudProviderId").asString());
 			//
 			JsonObject defCred = (JsonObject) appObj.get("defaultCredential");
-			assertEquals("VMInstance defaultLoginName is not the same!", "\"\"", defCred.get("defaultLoginName").asString());
-			assertEquals("VMInstance defaultLoginPassword is not the same!", "\"\"", defCred.get("defaultLoginPassword").asString());
+			//12Sept2016 updated to "" should be represented as null
+			assertTrue("VMInstance defaultLoginName should be null!", defCred.get("defaultLoginName").equals(JsonObject.NULL));
+			assertTrue("VMInstance defaultLoginPassword should be null!", defCred.get("defaultLoginPassword").equals(JsonObject.NULL));
 			//updated items
 			JsonObject cred = (JsonObject) appObj.get("credential");
 			assertEquals("VMInstance credential username is not the same!", "vanraesf", cred.get("username").asString());
