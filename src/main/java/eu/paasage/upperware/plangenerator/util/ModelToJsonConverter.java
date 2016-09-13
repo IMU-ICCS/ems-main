@@ -970,7 +970,6 @@ public final class ModelToJsonConverter {
 									String dln = ModelUtil.switchValue(attr.getValue());
 									//updated 12Sep16 to provide json null as EW relies on NULL in its logic
 									if(dln != null && !dln.equals("") && !dln.equals("\"\"")){
-										//defCredential.remove("defaultLoginName");	//there is no update method, has to remove then add
 				    					defCredential.add("defaultLoginName", dln);
 				    					logger.debug("defaultLoginName : " + dln);
 									}else{
