@@ -3006,6 +3006,7 @@ public class ExecInterfacer {
 			
 			JSONObject inBody = new JSONObject();
 			inBody.put("remoteId", specImg.get("remoteId"));
+			inBody.put("remoteState", specImg.get("remoteState"));
 			inBody.put("providerId", specImg.get("providerId"));
 			inBody.put("swordId", specImg.get("swordId"));
 			inBody.put("name", specImg.get("name"));

@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import org.json.simple.parser.ParseException;
 
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.adapter.adaptationmanager.REST.ExecInterfacer;
@@ -370,8 +371,14 @@ public class VMAction implements Action {
 			OSFamily = "NIX";
 		JsonObject defaultCred = (JsonObject) vmiParams.get("defaultCredential");
 		//String login = "ubuntu";//defaultCred.get("defaultLoginName").asString();
-		String login = defaultCred.get("defaultLoginName").asString();
-		String imgPass = defaultCred.get("defaultLoginPassword").asString();
+		
+		String login = null;
+		if(defaultCred.get("defaultLoginName") != JsonValue.NULL)
+			login = defaultCred.get("defaultLoginName").asString();
+		
+		String imgPass = null;
+		if(defaultCred.get("defaultLoginPassword") != JsonValue.NULL)
+			imgPass= defaultCred.get("defaultLoginPassword").asString();
 		/*if(login == null)
 			login = "ubuntu";*/
 		
