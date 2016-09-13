@@ -105,7 +105,11 @@ public class InternalComponentInstanceAction implements Action {
 					appliInstCamelName = dataShare.getApplicationInstanceName_Camel();
 				}
 				
-				System.out.println("AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
+				if(appCompTypeName.equalsIgnoreCase("")){
+					appCompTypeName = objParams.get("type").asString();
+				}
+				
+				LOGGER.log(Level.INFO, "AppInstName: " + appliInstCamelName + " VMInst name: " + vmiCamelName + " IntComp name: " + appCompTypeName);
 			} catch(Exception e){/*
 				try {
 				throw new ActionError();
