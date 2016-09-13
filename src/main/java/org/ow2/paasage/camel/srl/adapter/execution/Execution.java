@@ -12,7 +12,6 @@ import com.google.common.base.Throwables;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
-import de.uniulm.omi.cloudiator.colosseum.client.SingletonFactory;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Monitor;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.ScalingAction;
@@ -256,26 +255,22 @@ public class Execution {
                         List<Long> rawMonitors = new ArrayList<>();
                         rawMonitors.add(rawMonitor.getId());
 
-                        SingletonFactory factory = new SingletonFactory(colosseumClient);
                         de.uniulm.omi.cloudiator.colosseum.client.entities.abstracts.Window
-                            in5minutes = factory.singleton(new TimeWindow(5l, TimeUnit.MINUTES));
+                            in5minutes = fc.saveTimeWindow(5l, TimeUnit.MINUTES);
                         FormulaQuantifier quantifier =
-                            factory.singleton(new FormulaQuantifier(true, 1.0));
+                            fc.saveFormulaQuantifier(true, 1.0);
 
                         de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule secondly =
-                            factory.singleton(
-                                new de.uniulm.omi.cloudiator.colosseum.client.entities.Schedule(1l,
-                                    TimeUnit.SECONDS));
+                            fc.saveSchedule(1l, TimeUnit.SECONDS);
                         Long schedule;
                         if (rawMonitor instanceof RawMonitor) {
                             schedule = ((RawMonitor) rawMonitor).getSchedule();
                         } else {
                             schedule = secondly.getId();
                         }
-                        ComposedMonitor identityMonitor = factory.singleton(
-                            new ComposedMonitor(FlowOperator.MAP, FormulaOperator.IDENTITY,
-                                quantifier.getId(), in5minutes.getId(), rawMonitors, null,
-                                schedule));
+                        ComposedMonitor identityMonitor = fc.saveComposedMonitor(FlowOperator.MAP,
+                                FormulaOperator.IDENTITY, quantifier.getId(), in5minutes.getId(),
+                                rawMonitors, null, schedule);
 
                         for (MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())) {
                             for (MetricInstance metricInstance : mis) {
@@ -290,6 +285,8 @@ public class Execution {
                             }
                         }
 
+
+                        logger.debug("Adding monitor subscription for raw monitor: " + rmc.getName() + " with identity " + identityMonitor.getId());
 
                         fc.addMonitorSubscription(identityMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO, FilterType.ANY, 0);
@@ -315,6 +312,8 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for composite metric context: " + cmc.getName());
+
                         fc.addMonitorSubscription(compositeMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO, FilterType.ANY, 0);
                     }
@@ -339,6 +338,8 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for metric condition / nfe: " + mc.getName());
+
                         fc.addMonitorSubscription(conditionMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
@@ -362,6 +363,8 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for event pattern: " + ep.getName());
+
                         fc.addMonitorSubscription(composedMonitor.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
                     }
@@ -383,10 +386,17 @@ public class Execution {
                     //
                     ///////////////////////////////////////////////////////////////////////////
                     if (createMonitorSubscriptions) {
+                        logger.debug("Adding monitor subscription for scaling action.");
+
                         ComposedMonitor m = fc.getComposedMonitorByExternalId(entrySet.getValue());
+
+                        logger.debug("Scaling action refers to composed monitor: " + m.getId());
 
                         fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
                             SubscriptionType.CDO_EVENT, FilterType.GT, 0.99);
+
+                        fc.addMonitorSubscription(m.getId(), conf.getVisorEndpoint(),
+                                SubscriptionType.SCALING, FilterType.GT, 0.99);
                     }
                 }
 
