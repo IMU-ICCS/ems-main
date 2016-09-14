@@ -95,9 +95,10 @@ public class ZeroMqSubscriber implements Runnable {
                             + converted.getDeploymentModelName());
                 }
 
-                logger.info("Forward this message to the ZeroMQ of Metrics-Collector-Accessor.");
+                logger.info("Forward this message to the ZeroMQ of Metrics-Collector-Accessor. Port: " + conf.getMcaZeroMqPort());
                 org.ow2.paasage.camel.srl.metrics_collector_accessor.communication.ZeroMqServer server =
                         new org.ow2.paasage.camel.srl.metrics_collector_accessor.communication.ZeroMqServer(conf.getMcaZeroMqPort());
+                logger.info("Sending MCA message: " + conf.getMcaZeroMqQueue() + " and " + converted.getResourceName());
                 server.submitValue(conf.getMcaZeroMqQueue(), converted.getResourceName());
 
                 logger.info("Run execution based on incoming ZMQ message.");
