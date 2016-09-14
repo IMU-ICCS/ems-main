@@ -37,7 +37,7 @@ public class Printer {
                 externalId += (s.getKey() + " # " + s.getValue() + ";");
             }
             result += "Ex ID: " + externalId + lf;
-            result += "IP ID: " + monitor.getIpAddress() + lf;
+            result += "Endpoint: " + monitor.getApiEndpoint() + lf;
         }
         return result;
     }
