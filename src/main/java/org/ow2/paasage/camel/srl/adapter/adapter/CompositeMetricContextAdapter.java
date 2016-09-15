@@ -167,44 +167,43 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
             e.printStackTrace();
         }
 
-        for (MetricInstance metricInstance : metricInstances) {
+        /**
+         * Tag all monitor instance with one ID of a metric instance uniquely!
+         */
+        List<String> alreadyUsedMonitorInstanceCDOIDs = new ArrayList<>();
 
-            // Not VM specific, so add all just another one /* TODO THIS IS SEMANTICALLY WRONG */
-            for (MonitorInstance monitorInstance : getFc()
-                .getMonitorInstances(compositeMonitor.getId())) {
+        // Not VM specific, so add all just another one /* TODO THIS IS SEMANTICALLY WRONG */
+        for (MonitorInstance monitorInstance : getFc()
+            .getMonitorInstances(compositeMonitor.getId())) {
 
-                Boolean isAlreadyTagged = false;
+            MetricInstance instanceToUse = null;
 
-                for (MetricInstance tempMetricInstance : metricInstances) {
-                    for (KeyValue s : monitorInstance.getExternalReferences()) {
-                        // TODO check for different external references
-                        if ("CDOID".equals(s.getKey()) || "CAMEL".equals(s.getKey())){
-                            if (s.getValue().equals(tempMetricInstance.getName())) {
-                                isAlreadyTagged = true;
-                            }
-                        }
-                    }
-                }
-
-                if (!isAlreadyTagged) {
-                    KeyValue kvmi = ExternalReferenceHelper.getExternalReference(metricInstance, prefix);
-
-                    getFc().addExternalId(monitorInstance, kvmi.getKey(), kvmi.getValue());
+            for (MetricInstance tempMetricInstance : metricInstances) {
+                if (instanceToUse == null &&
+                    !alreadyUsedMonitorInstanceCDOIDs.contains(tempMetricInstance.cdoID().toString())){
+                    instanceToUse = tempMetricInstance;
+                    alreadyUsedMonitorInstanceCDOIDs.add(tempMetricInstance.cdoID().toString());
                 }
             }
 
-                /*
-                TODO correlate the metric instances together with the composed metric instances
-                TODO curently not possible, since the IP is not stored with the monitor instance
+            if (instanceToUse != null) {
+                KeyValue kvmi = ExternalReferenceHelper.getExternalReference(instanceToUse, prefix);
 
-                if(metricInstance.getObjectBinding() instanceof MetricVMBinding){
-                    VirtualMachine frontendVM = fc.getVirtualMachineToIP(((MetricVMBinding) metricInstance.getObjectBinding()).getVmInstance().getIp());
-                    fc.addExternalIdToMonitorInstance(compositeMonitor,
-                        metricInstance.getName(), frontendVM);
-                } else if(metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
-                } else if(metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
-                }
-                */
+                getFc().addExternalId(monitorInstance, kvmi.getKey(), kvmi.getValue());
+            }
+
+            /*
+            TODO correlate the metric instances together with the composed metric instances
+            TODO curently not possible, since the IP is not stored with the monitor instance
+
+            if(metricInstance.getObjectBinding() instanceof MetricVMBinding){
+                VirtualMachine frontendVM = fc.getVirtualMachineToIP(((MetricVMBinding) metricInstance.getObjectBinding()).getVmInstance().getIp());
+                fc.addExternalIdToMonitorInstance(compositeMonitor,
+                    metricInstance.getName(), frontendVM);
+            } else if(metricInstance.getObjectBinding() instanceof MetricComponentBinding) {
+            } else if(metricInstance.getObjectBinding() instanceof MetricApplicationBinding) {
+            }
+            */
         }
 
         return compositeMonitor;
