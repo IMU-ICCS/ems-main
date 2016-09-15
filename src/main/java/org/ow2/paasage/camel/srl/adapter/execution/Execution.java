@@ -272,9 +272,8 @@ public class Execution {
                                 FormulaOperator.IDENTITY, quantifier.getId(), in5minutes.getId(),
                                 rawMonitors, null, schedule);
 
-                        for (MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())) {
-                            for (MetricInstance metricInstance : mis) {
-
+                        for (MetricInstance metricInstance : mis) {
+                            for (MonitorInstance mi : fc.getMonitorInstances(identityMonitor.getId())) {
                                 final KeyValue kv = ExternalReferenceHelper.getExternalReference(metricInstance, prefix);
 
 
