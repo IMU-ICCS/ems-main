@@ -181,7 +181,6 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
                         if ("CDOID".equals(s.getKey()) || "CAMEL".equals(s.getKey())){
                             if (s.getValue().equals(tempMetricInstance.getName())) {
                                 isAlreadyTagged = true;
-                                break;
                             }
                         }
                     }
@@ -191,7 +190,6 @@ public class CompositeMetricContextAdapter extends AbstractAdapter<Monitor> {
                     KeyValue kvmi = ExternalReferenceHelper.getExternalReference(metricInstance, prefix);
 
                     getFc().addExternalId(monitorInstance, kvmi.getKey(), kvmi.getValue());
-                    break; // go to next metric instance
                 }
             }
 
