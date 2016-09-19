@@ -4309,7 +4309,11 @@ public class ExecInterfacer {
 			String remoteState, applicationComponent, applicationInstance, virtualMachineName, instanceId = "not_found";
 			int virtualMachineId, applicationComponentId;
 			
-			remoteState = jObj.get("remoteState").toString();
+			if(jObj.get("remoteState") != null)
+				remoteState = jObj.get("remoteState").toString();
+			else
+				remoteState = "INPROGRESS";
+			
 			applicationComponent = jObj.get("applicationComponent").toString();
 			applicationInstance = jObj.get("applicationInstance").toString();
 			virtualMachineId = Integer.parseInt(jObj.get("virtualMachine").toString());

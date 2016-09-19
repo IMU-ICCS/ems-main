@@ -301,9 +301,14 @@ public class CDOUpdater {
 		
 		int instancesInEW = 0;
 		
-		for(ExecwareInstance ewInst : instances)
+		for(ExecwareInstance ewInst : instances){
 			if(ewInst.isStateOK())//counting EW instances in OK state to avoid when EW is in the process of scaling/descaling
 				instancesInEW++;
+			else if(ewInst.isStateInprogress()){//atleast one of the EW instances is in the process of scaling/descaling
+				LOGGER.log(Level.INFO, "CDOUpdateAction - ExecutionWare is in the process of scaling/descaling. Will check again later.");
+				return false;
+			}
+		}
 		
 		if(instancesInEW == mapping.getInstancesCount()){//very likely no changes in EW with Adapter info (since equal number of instances)
 			LOGGER.log(Level.INFO, "CDOUpdateAction - Nothing to update since #instances have not changed");

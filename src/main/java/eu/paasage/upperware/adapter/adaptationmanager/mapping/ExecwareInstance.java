@@ -57,6 +57,8 @@ public class ExecwareInstance {
 	
 	public boolean isStateOK(){return (this.remoteState == State.OK);}
 	
+	public boolean isStateInprogress(){return (this.remoteState == State.INPROGRESS);}
+	
 	public void setScaledState(scaledState sState){this.scState = sState;}
 	
 	public scaledState getScaledState(){return this.scState;}
