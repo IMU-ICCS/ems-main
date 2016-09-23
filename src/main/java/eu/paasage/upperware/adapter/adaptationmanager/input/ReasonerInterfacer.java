@@ -201,40 +201,7 @@ public class ReasonerInterfacer {
 			openTransaction();
 			DeploymentModel depModel = getLiveDeploymentModel(dmIndex);
 			
-			CamelModel cModel = (CamelModel) depModel.eContainer();
-			
-			ExecutionModel execModel = null;
-			ExecutionContext execContext = null;
-			
-			boolean found = false;
-			if (cModel.getExecutionModels().isEmpty()) {
-	            execModel = ExecutionFactory.eINSTANCE.createExecutionModel();
-	            execModel.setName(modelName);
-	            cModel.getExecutionModels().add(execModel);
-	            found = true;
-	        }else{
-	        	for (ExecutionModel eModel : cModel.getExecutionModels()){
-	        		if(eModel.getName().equalsIgnoreCase(modelName)){
-	        			execModel = eModel;
-	        			found = true;
-	        			break;
-	        		}
-	        	}
-	        }
-			
-			status = status && found;
-			
-			if(status){
-				
-				Application app = cModel.getApplications().get(0);
-				
-				execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
-	            execContext.setName(executionContextName);
-	            execContext.setApplication(app);
-	            execContext.setDeploymentModel(depModel);
-	            status = status && execModel.getExecutionContexts().add(execContext);
-	            
-			}
+			status = setExecutionContext(depModel, modelName, executionContextName);
 
             closeTransaction();// closing the live transaction execution context created
 			
@@ -247,6 +214,47 @@ public class ReasonerInterfacer {
 			LOGGER.log(Level.INFO, "Created execution context in CDO : " + executionContextName);
 		else
 			LOGGER.log(Level.WARNING, "Could not create execution context in CDO");
+		
+		return status;
+	}
+	
+	public boolean setExecutionContext(DeploymentModel depModel, String modelName, String executionContextName){
+		boolean status = true;
+		
+		CamelModel cModel = (CamelModel) depModel.eContainer();
+		
+		ExecutionModel execModel = null;
+		ExecutionContext execContext = null;
+		
+		boolean found = false;
+		if (cModel.getExecutionModels().isEmpty()) {
+            execModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+            execModel.setName(modelName);
+            cModel.getExecutionModels().add(execModel);
+            found = true;
+        }else{
+        	for (ExecutionModel eModel : cModel.getExecutionModels()){
+        		if(eModel.getName().equalsIgnoreCase(modelName)){
+        			execModel = eModel;
+        			found = true;
+        			break;
+        		}
+        	}
+        }
+		
+		status = status && found;
+		
+		if(status){
+			
+			Application app = cModel.getApplications().get(0);
+			
+			execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
+            execContext.setName(executionContextName);
+            execContext.setApplication(app);
+            execContext.setDeploymentModel(depModel);
+            status = status && execModel.getExecutionContexts().add(execContext);
+            
+		}
 		
 		return status;
 	}

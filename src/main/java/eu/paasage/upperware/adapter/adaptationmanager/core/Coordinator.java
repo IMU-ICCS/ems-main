@@ -617,6 +617,7 @@ public class Coordinator {
 		DeploymentModel runningDepModel = null;
 		CDOUpdater updater;
 		
+		String modelName = "some_model";
 		
 		/*reasonerInterfacer.openTransaction();
 		runningDepModel = reasonerInterfacer.getLiveDeploymentModel(dmIndex);
@@ -649,6 +650,18 @@ public class Coordinator {
 			this.newDMIndex = updater.getNewDMIndex();
 			reasonerInterfacer.openTransaction();
 			this.targetModel = reasonerInterfacer.getLiveDeploymentModel(this.newDMIndex);
+			
+			//Actions for SRL-Adapter
+			modelName = reasonerInterfacer.getModelName(this.targetModel);
+			String executionContextName = appController.getRandomExecutionContextName();
+			
+			if(!reasonerInterfacer.setExecutionContext(this.targetModel, modelName, executionContextName))
+				LOGGER.log(Level.WARNING, "Error setting the execution context");
+
+			//Deployment completed successfully. So publish to metrics collector
+			if(!appController.publishToMetric(modelName, executionContextName))
+				LOGGER.log(Level.WARNING, "Error publishing to metrics collector");
+			
 			//reasonerInterfacer.commitAndCloseTransaction();
 			return true;
 		}
