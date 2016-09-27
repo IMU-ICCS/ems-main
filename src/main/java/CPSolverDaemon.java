@@ -92,7 +92,8 @@ public class CPSolverDaemon implements Runnable{
             boolean hasSolution = false;
             try{
             	hasSolution = cp.solve();
-            	logger.info("Solution has been produced");
+            	if (hasSolution) logger.info("Solution has been produced");
+            	else logger.info("Problem is infeasible");
             }
             catch(Exception e){
             	logger.error("Something went wrong while trying to solve the problem",e);
@@ -104,6 +105,12 @@ public class CPSolverDaemon implements Runnable{
 	            servSocket.sendMore("CPSolutionAvailable");
 				servSocket.sendMore(camelModelRef);
 				servSocket.send(cpModelRef);
+            }
+            else{
+            	logger.info("Warning subscriber for problem infeasibility");
+	            servSocket.sendMore("CPSolutionAvailable");
+				servSocket.sendMore(camelModelRef);
+				servSocket.send("");
             }
         }
         servSocket.close();
