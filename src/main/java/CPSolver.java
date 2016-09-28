@@ -251,21 +251,36 @@ public class CPSolver {
 		if (policy != null){
 			if (realGoal != null){
 				solver.findOptimalSolution(policy, realGoal);
-				logger.info("Optimal value is: " + realGoal.getUB());
+				logger.info("1. Optimal value is: " + realGoal.getUB());
 			}
 			else{
 				solver.findOptimalSolution(policy, intGoal);
-				logger.info("Optimal value is: " + intGoal.getValue());
+				logger.info("2. Optimal value is: " + intGoal.getValue());
 			}
+			logger.info("1. Checking if solver has solutions");
 			hasSolutions = (solver.isFeasible() == ESat.TRUE);
+			logger.info("1. Does solver has solutions? " + hasSolutions);
 			if (hasSolutions) saveSolution();
-			dispose();
-			solver.getIbex().release();
+			try{
+				dispose();
+				solver.getIbex().release();
+			}
+			catch(Exception e){
+				logger.error("1. Something went wrong while disposing the solver", e);
+			}
 		}
 		else{
+			logger.info("2. Checking if solver has solutions");
 			hasSolutions = solver.findSolution();
+			logger.info("2. Does solver has solutions? " + hasSolutions);
 			if (hasSolutions) saveSolution();
-			dispose();
+			try{
+				dispose();
+				solver.getIbex().release();
+			}
+			catch(Exception e){
+				logger.error("2. Something went wrong while disposing the solver", e);
+			}
 		}
 		return hasSolutions;
 	}
