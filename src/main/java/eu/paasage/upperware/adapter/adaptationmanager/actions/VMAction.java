@@ -411,6 +411,9 @@ public class VMAction implements Action {
 				String tempCloudID = execInterfacer.getMatchingJSONArrayHref(execInterfacer.getClouds(), cloudName);
 				
 				if(tempCloudID.equalsIgnoreCase("")){//need to add the cloud provider
+					
+					execInterfacer.refreshCredentials();//refreshing the cloud credentials from the new property file at runtime just before using it
+					
 					String driver = vmiParams.get("driver").asString();
 					String endpoint = vmiParams.get("endpoint").asString();
 					String uname = ((JsonObject) vmiParams.get("credential")).get("username").asString();

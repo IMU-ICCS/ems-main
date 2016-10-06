@@ -192,6 +192,13 @@ public class ExecInterfacer {
 					"Executionware login timeout");
 		}
 	}
+	
+	public void refreshCredentials(){
+		LOGGER.log(Level.INFO, "Refreshing from the Adapter cloud credential file");
+		this.clouds = new ArrayList<Cloud>();
+		Properties newCredentials = AdaptationManager.loadAndGetCredentials();
+		setCloudCredentials(newCredentials);
+	}
 
 	public ExecInterfacer() {
 		//Properties properties = AdaptationManager.getProperties();
