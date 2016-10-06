@@ -141,6 +141,7 @@ public class ExecInterfacer {
 	//public static final String API_FRONTENDUSER = "/api/frontendUser";
 	//public static final String API_GEOLOCATION = "/api/geo";
 	public static final String API_HARDWARE = "/api/hardware";
+	public static final String API_HARDWAREOFFER = "/api/hardwareOffer";
 	//public static final String API_HARDWAREOFFER = "/api/hardwareOffer";
 	public static final String API_IMAGE = "/api/image";//DONE Need to do getter from multiple locations
 	public static final String API_OSVENDOR = "/api/osVendor";
@@ -2589,6 +2590,29 @@ public class ExecInterfacer {
 		//Header inHeader = new BasicHeader(name, value);
 		
 		HttpResponse resp = getRequest(API_HARDWARE, null);
+        HttpEntity respEntity = resp.getEntity();
+        
+        String respString = EntityUtils.toString(respEntity);
+        JSONParser parser = new JSONParser();
+        //JSONObject result = null;
+        JSONArray jArr = null;
+        
+    	if(resp.getStatusLine().getStatusCode()==200){
+        	
+    		//result = new JSONObject(respString);
+//            result = (JSONObject)parser.parse(respString);
+    		jArr = (JSONArray)parser.parse(respString);
+    	}
+    	
+    	System.out.println(respString);
+    	return jArr;
+	}
+	
+	public JSONArray getHardwareOffers() throws IOException, ParseException{
+
+		//Header inHeader = new BasicHeader(name, value);
+		
+		HttpResponse resp = getRequest(API_HARDWAREOFFER, null);
         HttpEntity respEntity = resp.getEntity();
         
         String respString = EntityUtils.toString(respEntity);
