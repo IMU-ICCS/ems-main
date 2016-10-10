@@ -15,9 +15,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -132,6 +134,7 @@ public class ExecInterfacer {
 	public static final String API_APPLICATIONCOMPONENT = "/api/ac";//DONE
 	public static final String API_APPLICATIONINSTANCE = "/api/applicationInstance";//DONE
 	public static final String API_CLOUD = "/api/cloud";//need to get its id for /location - DONE
+	public static final String API_CLOUDPROPERTY = "/api/cloudProperty";//for adding cloud specific configuration filters - DONE
 	public static final String API_CLOUDCREDENTIAL = "/api/cloudCredential";
 	public static final String API_PORTPROV = "/api/portProv";
 	public static final String API_PORTREQ = "/api/portReq";
@@ -257,6 +260,8 @@ public class ExecInterfacer {
             	String cloudPass = null;
             	String cloudEndpoint = null;
             	
+            	HashMap<String, String> filters = new HashMap<String, String>();
+            	
             	for(Object l:keys){
             		
             		String key = (String)l;
@@ -266,10 +271,26 @@ public class ExecInterfacer {
             		
             		if(CPassPos==0 && key.toLowerCase().indexOf("-endpoint")>-1)
             			cloudEndpoint = prop.getProperty(key);
+            		
+            		if(CPassPos==0 && key.toLowerCase().indexOf("-key-")>-1){
+            			int N = getFilterIndex(key);
+            			
+            			for(Object m:keys){
+                    		
+                    		String valueKey = (String)m;
+                    		int valPos = valueKey.toLowerCase().indexOf(cloudProvName.toLowerCase());
+                    		
+                    		if(valPos==0 && valueKey.toLowerCase().indexOf("-value-")>-1){
+                    			int M = getFilterIndex(valueKey);
+                    			if(N == M)
+                    				filters.put(prop.getProperty(key), prop.getProperty(valueKey));
+                    		}
+            			}
+            		}
             	}
             	
             	if(!cloudProvName.equalsIgnoreCase("") && !cloudUName.equalsIgnoreCase("") && cloudPass!=null && cloudEndpoint!=null){
-            		clouds.add(new Cloud(cloudProvName, cloudUName, cloudPass, cloudEndpoint));
+            		clouds.add(new Cloud(cloudProvName, cloudUName, cloudPass, cloudEndpoint, filters));
             		//LOGGER.log(Level.INFO, "Retrieved & stored from Adapter Property file " + cloudProvName + " " + cloudUName + " " + cloudPass + " " + cloudEndpoint);
             		count++;
             	}
@@ -277,6 +298,16 @@ public class ExecInterfacer {
         }
         LOGGER.log(Level.INFO, "Retrieved from Adapter Credential file " + count + " cloud credentials");
     	return count;
+    }
+    
+    public int getFilterIndex(String s){
+    	int pos = s.lastIndexOf('-');
+    	int N= -1;
+    	if(pos > -1){
+    		String index = s.substring(pos + 1);
+    		N = Integer.parseInt(index);
+    	}
+    	return N;
     }
     
     private String replaceByChar(String str, char replacement){
@@ -322,7 +353,19 @@ public class ExecInterfacer {
     	LOGGER.log(Level.WARNING, "Cloud Provider: " + provider + " NOT FOUND");
     	return "";
     }
-	
+    
+    public HashMap<String, String> getCloudFilters(String provider){
+    	HashMap<String, String> filters = new HashMap<String, String>();
+    	for (Cloud cld: clouds){
+    		if(((Cloud)cld).getCloudProvName().toLowerCase().equalsIgnoreCase(provider.toLowerCase())){
+    			filters = ((Cloud)cld).getFilters();
+    			LOGGER.log(Level.INFO, "Cloud Provider: " + provider + ", #fetched configuration filters: " + filters.size());
+    			return filters;
+    		}
+    	}
+    	LOGGER.log(Level.WARNING, "Cloud Provider: " + provider + " configuration filters NOT FOUND");
+    	return filters;
+    }
 
 	public JsonObject getDeployed() {
 		return deployed;
@@ -1658,6 +1701,69 @@ public class ExecInterfacer {
     	
     	System.out.println(respString);
     	return jArr;
+	}
+	
+	public void createCloudProperties(Integer cloud, HashMap<String, String> filters) throws ExecutionwareError{
+		
+		if(filters == null)
+			return;
+		
+		for(Map.Entry<String, String> entry : filters.entrySet()){
+			String key= entry.getKey();
+			String value = entry.getValue();
+			createCloudProperty(cloud, key, value);
+		}
+	}
+	
+	private String createCloudProperty(Integer cloud, String key, String value) throws ExecutionwareError{
+		
+		HttpResponse resp = null;
+		
+		try{
+
+			JSONObject inBody = new JSONObject();
+	        inBody.put("cloud", cloud);
+	        inBody.put("key", key);
+	        inBody.put("value", value);
+
+	        resp = postRequest(API_CLOUDPROPERTY, null, inBody);
+	        HttpEntity respEntity = resp.getEntity();
+
+	        String respString = EntityUtils.toString(respEntity);
+	        JSONParser parser = new JSONParser();
+	        Object obj = null;
+	        
+        	if(resp.getStatusLine().getStatusCode()==200){
+
+        		try {
+        			obj = parser.parse(new String(respString));
+        		} catch (ParseException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
+        		JSONObject jObj = (JSONObject) obj;
+        		
+        		// loop array
+        		JSONArray links = (JSONArray) jObj.get("link");
+        		Iterator<JSONObject> iterator = links.iterator();
+        		while (iterator.hasNext()) {
+        			JSONObject factObj = (JSONObject) iterator.next();
+        			String href = (String) factObj.get("href");
+        			LOGGER.log(Level.INFO, "New cloud property located at " + href);
+        			return href;
+        		}
+        	}
+        }catch(Exception ex){ex.printStackTrace();}
+		
+		int responseCode = resp.getStatusLine().getStatusCode();
+		if ((responseCode < 200) || (responseCode >= 300)) {
+			LOGGER.log(Level.SEVERE,
+					"Adding cloud property: Failed with response code "
+							+ responseCode);
+			throw new ExecutionwareError();
+		}
+
+		return "";
 	}
 	
 	public String createCloudCredential(String userName, String password, Integer cloud, Integer tenant) throws ExecutionwareError{
@@ -4442,14 +4548,27 @@ public class ExecInterfacer {
 		String pass;
 		String endpoint;
 		
+		//stores the Cloud specific configuration options for Executionware
+		HashMap<String, String> filters;
+		
 		Cloud(String providerName, String uname, String pass, String endpoint){
 			this.providerName = providerName;
 			this.uname = new String(uname);
 			this.pass = new String(pass);
-			if(endpoint.equalsIgnoreCase("optional"))
+			if(endpoint.equalsIgnoreCase("optional")){//this option is deprecated from the current version
 				this.endpoint = "";
-			else
+				LOGGER.log(Level.WARNING, "Deprecated! " + providerName + " endpoint no more optional in Adapter cloud credential property file.");
+			}else
 				this.endpoint = new String(endpoint);
+			
+			this.filters = new HashMap<String, String>();
+			
+		}
+		
+		Cloud(String providerName, String uname, String pass, String endpoint, HashMap<String, String> filters){
+			this(providerName, uname, pass, endpoint);
+			if(filters != null)
+				this.filters.putAll(filters);
 		}
 		
 		protected String getCloudProvName() {
@@ -4467,5 +4586,11 @@ public class ExecInterfacer {
 		protected String getCloudEndpoint(){
 			return this.endpoint;
 		}
+		
+		protected HashMap<String, String> getFilters(){
+			return this.filters;
+		}
+		
+		protected boolean hasFilters(){return this.filters.size() > 0? true : false;}
 	}
 }

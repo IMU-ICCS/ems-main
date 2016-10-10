@@ -70,7 +70,7 @@ public class AdaptationManagerTest
 	public ClientDriverRule driver = new ClientDriverRule(port);
 	
 	@Test
-//	@Ignore
+	@Ignore
 	public void cloudCredentialsLoad(){
 		
 		driver.addExpectation(RestClientDriver.onRequestTo(ExecInterfacer.API_LOGIN)
@@ -108,7 +108,7 @@ public class AdaptationManagerTest
 	}
 	
 	@Test
-	@Ignore
+	//@Ignore
 	public void deployTestFileOnCloud(){
 		ReasonerInterfacer currentReasonerInterfacer = null;
 		currentReasonerInterfacer = new ReasonerInterfacer(TEST_INPUTFILE_SimpleDeployment, true);
@@ -136,7 +136,7 @@ public class AdaptationManagerTest
 	}
 	
 	@Test
-//	@Ignore
+	@Ignore
 	public void testZMQ(){
 		ZeroMQPublisher zmpMetric = null;
 		ZeroMQPublisher zmpModelreq = new ZeroMQPublisher("ModelReqPub", "newModelArrival", 5551);
