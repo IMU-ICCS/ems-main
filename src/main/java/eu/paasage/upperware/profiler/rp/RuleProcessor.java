@@ -409,7 +409,7 @@ public class RuleProcessor {
 						if (providersToKeep.size() >= 1) {
 							String shortName = null;
 							try {
-								shortName = pId.split("-")[0];
+								shortName = pId.split("_")[0];
 							} catch (Exception e) {
 								// we should report a warning
 							}
@@ -905,7 +905,8 @@ public class RuleProcessor {
 					continue;
 				}
 			} else {
-				throw new UnsupportedOperationException(ex.getId());
+				// skipping all other types of expressions
+				System.out.println("    -> SKIP " + ex.getId());
 			}
 		}
 
