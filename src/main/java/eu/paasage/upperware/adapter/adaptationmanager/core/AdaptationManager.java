@@ -286,6 +286,17 @@ public class AdaptationManager {
 			
 			if(zmsTermSub.readMessage(true).contains("terminate") || depModelIndex > 100)
 				terminate = true;
+			
+			try {
+				
+				Thread.sleep(30000);
+				
+			} catch (Exception ex) {
+				// TODO: handle exception
+				if(ex instanceof InterruptedException)
+					System.out.println("Interrupted sleep within daemon mode");
+				ex.printStackTrace();
+			}
 		}
 		
 		LOGGER.log(Level.INFO, "Adaptation manager: stopped");
