@@ -136,6 +136,10 @@ public class CPSolver {
 			EList<Solution> sols = cp.getSolution();
 			if (sols != null && !sols.isEmpty()) checkSolution(sols);
 		}
+		else{
+			EList<Solution> sols = cp.getSolution();
+			if (sols != null && sols.size() == 1) checkSolution(sols);
+		}
 		//Create optimisation goal
 		EList<Goal> goals = cp.getGoals();
 		createGoals(goals);
