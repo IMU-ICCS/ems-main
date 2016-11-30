@@ -138,7 +138,11 @@ public class CPSolver {
 		}
 		else{
 			EList<Solution> sols = cp.getSolution();
-			if (sols != null && sols.size() == 1) checkSolution(sols);
+			//Initial solution maps to default values for the metric variables 
+			if (sols != null && sols.size() == 1){
+                timestamp = sols.get(0).getTimestamp();
+                checkSolution(sols);
+			}
 		}
 		//Create optimisation goal
 		EList<Goal> goals = cp.getGoals();
@@ -155,12 +159,13 @@ public class CPSolver {
 				}
 			}
 			if (sol != null){
-				System.out.println("Found solution with the timestamp given");
+				logger.info("Found solution with the timestamp given");
 				for (MetricVariableValue mvv: sol.getMetricVariableValue()){
 					MetricVariable mv = mvv.getVariable();
 					NumericValueUpperware val = mvv.getValue();
 					String mvName = mv.getId();
 					IntVar intVar = idToIntVar.get(mvName);
+					logger.info("CHECKING METRIC VARIABLE TO ASSIGN IT A CONSTANT VALUE");
 					if (intVar != null){
 						int actualVal = 1;
 						if (val instanceof IntegerValueUpperware){
@@ -175,7 +180,15 @@ public class CPSolver {
 							FloatValueUpperware floatVal = (FloatValueUpperware)val;
 							actualVal = (int)floatVal.getValue();
 						}
-						solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
+						//solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
+						try{
+							intVar.updateLowerBound(actualVal,null);
+							intVar.updateUpperBound(actualVal,null);
+							logger.info("UPDATING INTEGER VARIABLE!!!: " + intVar);
+						}
+						catch(Exception e){
+							e.printStackTrace();
+						}
 					}
 					else{
 						RealVar realVar = idToRealVar.get(mvName);
@@ -196,6 +209,7 @@ public class CPSolver {
 							try{
 								realVar.updateLowerBound(actualVal,null);
 								realVar.updateUpperBound(actualVal,null);
+								logger.info("UPDATING REAL VARIABLE!!!: " + realVar);
 							}
 							catch(Exception e){
 								e.printStackTrace();
