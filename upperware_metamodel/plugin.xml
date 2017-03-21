@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasage -->
+      <package
+            uri="cp"
+            class="fr.inria.paasage.metamodel.cp.CpPackage"
+            genModel="src/main/resources/metamodels/paasage.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasage -->
+      <package
+            uri="application"
+            class="fr.inria.paasage.metamodel.application.ApplicationPackage"
+            genModel="src/main/resources/metamodels/paasage.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasage -->
+      <package
+            uri="types"
+            class="fr.inria.paasage.metamodel.types.TypesPackage"
+            genModel="src/main/resources/metamodels/paasage.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasage -->
+      <package
+            uri="typesPaasage"
+            class="fr.inria.paasage.metamodel.types.typesPaasage.TypesPaasagePackage"
+            genModel="src/main/resources/metamodels/paasage.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageApplication -->
+      <package
+            uri="http://paasage.inria.fr/eu/paasage/upperware/metamodel/application"
+            class="eu.paasage.upperware.metamodel.application.ApplicationPackage"
+            genModel="src/main/resources/metamodels/paasageApplication.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated cp -->
+      <package
+            uri="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp"
+            class="eu.paasage.upperware.metamodel.cp.CpPackage"
+            genModel="src/main/resources/metamodels/cp.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageTypes -->
+      <package
+            uri="http://www.paasage.eu/eu/paasage/upperware/metamodel/types"
+            class="eu.paasage.upperware.metamodel.types.TypesPackage"
+            genModel="src/main/resources/metamodels/paasageTypes.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageTypes -->
+      <package
+            uri="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
+            class="eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage"
+            genModel="src/main/resources/metamodels/paasageTypes.genmodel"/>
+   </extension>
+</plugin>

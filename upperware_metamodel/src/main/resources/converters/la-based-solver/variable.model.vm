@@ -1,0 +1,12 @@
+#foreach( $var in $variablesWithDomainInit )
+Variable<$var.domainType> ${var.name}($var.id, $var.label, $var.domainInit); 
+#end
+
+#foreach( $var in $variablesWithoutDomainInit )
+Variable<$var.domainType> ${var.name}($var.id, $var.label);
+#end
+
+#foreach( $var in $variablesWithMultiRangeDomain )
+$var.domainInit	
+Variable<$var.domainType> $var.name($var.id, $var.label, $var.multiRangeName); 
+#end

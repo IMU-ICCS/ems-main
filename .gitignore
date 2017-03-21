@@ -8,6 +8,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -208,3 +209,8 @@ out
 logs/*
 conf/configuration.properties
 >>>>>>> srl-adapter-merge
+=======
+target/
+
+/bin/
+>>>>>>> upperware_metamodel-merge
