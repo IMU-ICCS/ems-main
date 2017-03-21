@@ -5,10 +5,16 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
 .project
+=======
+# Created by .ignore support plugin (hsz.mobi)
+### Java template
+*.class
+>>>>>>> rule_processor-merge
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -31,7 +37,10 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 
+<<<<<<< HEAD
 pom-orig.xml
+=======
+>>>>>>> rule_processor-merge
 
 
 ### JetBrains template
@@ -40,7 +49,11 @@ pom-orig.xml
 *.iml
 
 ## Directory-based project format:
+<<<<<<< HEAD
 .idea/
+=======
+#.idea/
+>>>>>>> rule_processor-merge
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
@@ -83,6 +96,7 @@ crashlytics.properties
 crashlytics-build.properties
 
 
+<<<<<<< HEAD
 =======
 # Eclipse
 .classpath
@@ -169,3 +183,5 @@ project/project
 /PlanGenerator.log
 /PlanGenerator.log.1
 >>>>>>> plan_generator-merge
+=======
+>>>>>>> rule_processor-merge
