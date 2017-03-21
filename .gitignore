@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -97,3 +98,6 @@ target/
 
 /bin/
 >>>>>>> cdo_client-merge
+=======
+/target
+>>>>>>> cdo_server-merge
