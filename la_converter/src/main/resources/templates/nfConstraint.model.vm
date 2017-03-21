@@ -1,0 +1,11 @@
+#foreach( $constraint in $inequalityConstraints )
+make_inequality_constraint( [&](void){ return 
+	$constraint.expression
+});
+#end
+
+#foreach( $constraint in $equalityConstraints )
+make_equality_constraint( [&](void){ return 
+	$constraint.expression
+});
+#end

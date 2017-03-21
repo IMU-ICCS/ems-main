@@ -1,0 +1,20 @@
+#This is a comment
+number_vm_ML 50
+#
+number_vm_SL 50
+number_vm_LL 50
+app_component_SensApp_in_vm_ML 1
+#
+app_component_SensApp_in_vm_SL 1
+app_component_SensApp_in_vm_LL 1
+app_component_MongoDB_in_vm_ML 1
+app_component_MongoDB_in_vm_SL 1
+app_component_MongoDB_in_vm_LL 1
+app_component_JettySC_in_vm_ML 1
+app_component_JettySC_in_vm_SL 1
+app_component_JettySC_in_vm_LL 1
+#
+app_component_Admin_in_vm_ML 1
+app_component_Admin_in_vm_SL 1
+app_component_Admin_in_vm_LL 1
+#

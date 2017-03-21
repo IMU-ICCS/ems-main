@@ -2,19 +2,26 @@
 <classpath>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
 =======
 	<classpathentry kind="src" output="target/classes" path="src/main/java">
 >>>>>>> cp_solver-merge
+=======
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+>>>>>>> la_converter-merge
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> cp_generator-merge
 =======
+=======
+>>>>>>> la_converter-merge
 	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -26,6 +33,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+<<<<<<< HEAD
 	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -33,15 +41,24 @@
 	</classpathentry>
 >>>>>>> cp_solver-merge
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
+=======
+	<classpathentry including="**/*.java" kind="src" path="src/test/resources"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+>>>>>>> la_converter-merge
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+<<<<<<< HEAD
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+=======
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+>>>>>>> la_converter-merge
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -49,5 +66,7 @@
 >>>>>>> cp_generator-merge
 =======
 >>>>>>> cp_solver-merge
+=======
+>>>>>>> la_converter-merge
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

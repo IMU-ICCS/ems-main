@@ -1,0 +1,20 @@
+#foreach( $var in $variablesWithDomainInit )
+Variable<$var.domainType> ${var.name}("$var.label",$var.hasInitValue,$var.initialValue,$var.domainInit); 
+#end
+
+#foreach( $var in $variablesWithoutDomainInit )
+Variable<$var.domainType> ${var.name}("$var.label", $var.hasInitValue,$var.initialValue);
+#end
+
+#foreach( $var in $variablesWithMultiRangeDomain )
+$var.domainInit	
+Variable<$var.domainType> $var.name("$var.label",$var.hasInitValue,$var.initialValue,$var.multiRangeName); 
+#end
+
+#foreach( $metric in $metricVariables)
+Metric<$metric.domainType> ${metric.name}("$metric.label", $metric.initialValue);
+#end
+
+Solver::ObjectiveFunction Solver::UtilityFunction( [&](void){ return
+  ${utilityFunctionExpression};
+});
