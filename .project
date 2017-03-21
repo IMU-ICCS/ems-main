@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 <<<<<<< HEAD
+<<<<<<< HEAD
 	<name>MyCDOServer</name>
 =======
 	<name>paasage-wp3-profiler</name>
 >>>>>>> cp_generator-merge
+=======
+	<name>cp-solver</name>
+>>>>>>> cp_solver-merge
 	<comment></comment>
 	<projects>
 	</projects>
@@ -19,6 +23,7 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+<<<<<<< HEAD
 <<<<<<< HEAD
 	</buildSpec>
 	<natures>
@@ -35,11 +40,16 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+=======
+>>>>>>> cp_solver-merge
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
+<<<<<<< HEAD
 		<nature>org.eclipse.pde.PluginNature</nature>
 >>>>>>> cp_generator-merge
+=======
+>>>>>>> cp_solver-merge
 	</natures>
 </projectDescription>
