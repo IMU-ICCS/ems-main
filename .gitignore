@@ -6,6 +6,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -185,3 +186,8 @@ project/project
 >>>>>>> plan_generator-merge
 =======
 >>>>>>> rule_processor-merge
+=======
+.project
+.settings/
+target/
+>>>>>>> solver_to_deployment-merge

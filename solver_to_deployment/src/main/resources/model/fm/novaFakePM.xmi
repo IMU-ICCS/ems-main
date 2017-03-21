@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="ASCII"?>
+<provider:ProviderModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:provider="http://www.paasage.eu/camel/saloon/feature" xmlns:type="http://www.paasage.eu/camel/type" xsi:schemaLocation="http://www.paasage.eu/camel/saloon/feature ../../metamodel/camel.ecore#//paasage/camel/provider http://www.paasage.eu/camel/type ../../metamodel/camel.ecore#//paasage/camel/type">
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3">
+      <fromValue xsi:type="type:EnumerateValue" name="M"/>
+      <toValue xsi:type="type:IntValue" value="1"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2">
+      <fromValue xsi:type="type:EnumerateValue" name="M"/>
+      <toValue xsi:type="type:FloatValue" value="3.75"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.4">
+      <fromValue xsi:type="type:EnumerateValue" name="M"/>
+      <toValue xsi:type="type:IntValue" value="4"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3">
+      <fromValue xsi:type="type:EnumerateValue" value="1" name="L"/>
+      <toValue xsi:type="type:IntValue" value="2"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2">
+      <fromValue xsi:type="type:EnumerateValue" value="1" name="L"/>
+      <toValue xsi:type="type:FloatValue" value="7.5"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.4">
+      <fromValue xsi:type="type:EnumerateValue" value="1" name="L"/>
+      <toValue xsi:type="type:IntValue" value="32"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3">
+      <fromValue xsi:type="type:EnumerateValue" value="2" name="XL"/>
+      <toValue xsi:type="type:IntValue" value="4"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2">
+      <fromValue xsi:type="type:EnumerateValue" value="2" name="XL"/>
+      <toValue xsi:type="type:FloatValue" value="15.0"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.4">
+      <fromValue xsi:type="type:EnumerateValue" value="2" name="XL"/>
+      <toValue xsi:type="type:IntValue" value="80"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3">
+      <fromValue xsi:type="type:EnumerateValue" value="3" name="XXL"/>
+      <toValue xsi:type="type:IntValue" value="8"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2">
+      <fromValue xsi:type="type:EnumerateValue" value="1" name="XXL"/>
+      <toValue xsi:type="type:FloatValue" value="30.0"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <constraints xsi:type="provider:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.4">
+      <fromValue xsi:type="type:EnumerateValue" value="3" name="XXL"/>
+      <toValue xsi:type="type:IntValue" value="160"/>
+    </attributeConstraints>
+    <cardFrom cardinalityMin="1" cardinalityMax="1"/>
+    <cardTo cardinalityMin="1" cardinalityMax="1"/>
+  </constraints>
+  <rootFeature name="nova">
+    <attributes name="deploymentModel">
+      <value xsi:type="type:StringValue" value="Public"/>
+      <valueType xsi:type="type:StringValueType"/>
+    </attributes>
+    <attributes name="serviceModel">
+      <value xsi:type="type:StringValue" value="IaaS"/>
+      <valueType xsi:type="type:StringValueType"/>
+    </attributes>
+    <subFeatures name="Virtual Machine">
+      <attributes name="vmOS">
+        <valueType xsi:type="type:Enumeration">
+          <values name="Ubuntu"/>
+          <values value="1" name="WindowsServer"/>
+          <values value="2" name="RedHatEnterpriseLinux"/>
+        </valueType>
+      </attributes>
+      <attributes name="vmSize">
+        <valueType xsi:type="type:Enumeration">
+          <values name="M"/>
+          <values value="1" name="L"/>
+          <values value="2" name="XL"/>
+          <values value="3" name="XXL"/>
+        </valueType>
+      </attributes>
+      <attributes name="vmMemorySize" unitType="GIGABYTES">
+        <valueType xsi:type="type:List" primitiveType="FloatType">
+          <values xsi:type="type:FloatValue" value="3.75"/>
+          <values xsi:type="type:FloatValue" value="7.5"/>
+          <values xsi:type="type:FloatValue" value="15.0"/>
+          <values xsi:type="type:FloatValue" value="30.0"/>
+          <values xsi:type="type:FloatValue" value="3.75"/>
+        </valueType>
+      </attributes>
+      <attributes name="vmCpuCores">
+        <valueType xsi:type="type:List">
+          <values xsi:type="type:IntValue" value="1"/>
+          <values xsi:type="type:IntValue" value="2"/>
+          <values xsi:type="type:IntValue" value="4"/>
+          <values xsi:type="type:IntValue" value="8"/>
+        </valueType>
+      </attributes>
+      <attributes name="vmStorage" unitType="GIGABYTES">
+        <valueType xsi:type="type:List">
+          <values xsi:type="type:IntValue" value="4"/>
+          <values xsi:type="type:IntValue" value="32"/>
+          <values xsi:type="type:IntValue" value="80"/>
+          <values xsi:type="type:IntValue" value="160"/>
+          <values xsi:type="type:IntValue" value="4"/>
+        </valueType>
+      </attributes>
+      <featureCardinality cardinalityMin="1" cardinalityMax="-1"/>
+    </subFeatures>
+    <subFeatures name="Services">
+      <subFeatures name="Amazon VPC">
+        <subFeatures name="VPN Connection">
+          <featureCardinality cardinalityMax="1"/>
+        </subFeatures>
+        <featureCardinality cardinalityMin="1" cardinalityMax="1" value="1"/>
+      </subFeatures>
+      <featureCardinality cardinalityMax="1"/>
+    </subFeatures>
+    <subFeatures xsi:type="provider:Exclusive" name="Location">
+      <featureCardinality cardinalityMin="1" cardinalityMax="1" value="1"/>
+      <groupCardinality cardinalityMin="1" cardinalityMax="1"/>
+      <variants name="EU">
+        <featureCardinality cardinalityMax="1"/>
+      </variants>
+      <variants name="US East">
+        <featureCardinality cardinalityMax="1"/>
+      </variants>
+      <variants name="Norway">
+        <featureCardinality cardinalityMax="1"/>
+      </variants>
+    </subFeatures>
+    <subFeatures name="Pricing Model">
+      <subFeatures name="Per Hour">
+        <featureCardinality cardinalityMax="1" value="1"/>
+      </subFeatures>
+      <featureCardinality cardinalityMax="1"/>
+    </subFeatures>
+    <featureCardinality cardinalityMin="1" cardinalityMax="1" value="1"/>
+  </rootFeature>
+</provider:ProviderModel>

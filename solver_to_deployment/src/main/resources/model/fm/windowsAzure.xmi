@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="ASCII"?>
+<featuremodel:FeatureModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:featuremodel="http://fr.saloon.model.featuremodel" xmlns:type="http://fr.saloon.model.type" xsi:schemaLocation="http://fr.saloon.model.featuremodel ../../metamodel/FeatureModel.ecore http://fr.saloon.model.type ../../metamodel/Type.ecore">
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.0"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.0"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.1" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.1" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.2" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.2" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.2"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.3" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.3" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.3"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.4" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.4" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.4"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.5" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.5" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.5"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.3" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.6" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.0" to="//@rootFeature/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.0/@attributes.1" to="//@rootFeature/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.6" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.6"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.0"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.0"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.1" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.1" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.2" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.2" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.2"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.3" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.3" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.3"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.4" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.4" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.4"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.5" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.5" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.5"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.6" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0">
+    <attributeConstraints from="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0" to="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.6" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.6"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.0"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.0"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.1" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.1" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.2" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.2" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.2"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.3" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.3" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.3"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.4" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.4" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.4"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.2/@subFeatures.0" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.5" toValue="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.5" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.5"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.1" fromValue="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0/@value/@values.6" toValue="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2/@value/@values.1"/>
+  </constraints>
+  <constraints xsi:type="featuremodel:Requires" from="//@rootFeature/@subFeatures.3" to="//@rootFeature/@subFeatures.3">
+    <attributeConstraints from="//@rootFeature/@subFeatures.3/@attributes.0" to="//@rootFeature/@subFeatures.3/@attributes.2" fromValue="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.6" toValue="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.6"/>
+  </constraints>
+  <rootFeature name="Windows Azure">
+    <subFeatures name="Virtual Machine">
+      <attributes name="os">
+        <value xsi:type="type:ListValue" type="StringType" value="//@rootFeature/@subFeatures.0/@attributes.0/@value/@values.0">
+          <values xsi:type="type:StringValue" value="Linux"/>
+          <values xsi:type="type:StringValue" value="Windows"/>
+        </value>
+      </attributes>
+      <attributes name="vmSize">
+        <value xsi:type="type:EnumerateListValue" value="//@rootFeature/@subFeatures.0/@attributes.1/@value/@values.0">
+          <values name="XS"/>
+          <values value="1" name="S"/>
+          <values value="2" name="M"/>
+          <values value="3" name="L"/>
+          <values value="4" name="XL"/>
+          <values value="5" name="A6"/>
+          <values value="6" name="A7"/>
+        </value>
+      </attributes>
+      <attributes name="vmMemorySize">
+        <value xsi:type="type:ListValue" value="//@rootFeature/@subFeatures.0/@attributes.2/@value/@values.0">
+          <values xsi:type="type:IntValue" unit="MB" value="768"/>
+          <values xsi:type="type:IntValue" unit="MB" value="1792"/>
+          <values xsi:type="type:IntValue" unit="MB" value="3584"/>
+          <values xsi:type="type:IntValue" unit="MB" value="7168"/>
+          <values xsi:type="type:IntValue" unit="MB" value="14336"/>
+          <values xsi:type="type:IntValue" unit="MB" value="28672"/>
+          <values xsi:type="type:IntValue" unit="MB" value="57344"/>
+        </value>
+      </attributes>
+      <attributes name="vmCpuFrequencyValue">
+        <value xsi:type="type:ListValue" type="FloatType" value="//@rootFeature/@subFeatures.0/@attributes.3/@value/@values.0">
+          <values xsi:type="type:FloatValue" unit="GHz" value="1.0"/>
+          <values xsi:type="type:FloatValue" unit="GHz" value="1.6"/>
+        </value>
+      </attributes>
+      <featureCardinality cardinalityMax="40"/>
+    </subFeatures>
+    <subFeatures name="Resource">
+      <subFeatures name="Bandwidth">
+        <attributes name="transferRate">
+          <value xsi:type="type:RangeValue" value="//@rootFeature/@subFeatures.1/@subFeatures.0/@attributes.0/@value/@from">
+            <from xsi:type="type:IntValue" unit="GBPerSecond" value="1"/>
+            <to xsi:type="type:IntValue" unit="GBPerSecond" value="4000"/>
+          </value>
+        </attributes>
+        <featureCardinality cardinalityMin="1" cardinalityMax="4000"/>
+      </subFeatures>
+      <featureCardinality cardinalityMax="1"/>
+    </subFeatures>
+    <subFeatures name="Service">
+      <subFeatures name="Server">
+        <attributes name="serverSize">
+          <value xsi:type="type:EnumerateListValue" value="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.0/@value/@values.0">
+            <values name="XS"/>
+            <values value="1" name="S"/>
+            <values value="2" name="M"/>
+            <values value="3" name="L"/>
+            <values value="4" name="XL"/>
+            <values value="5" name="A6"/>
+            <values value="6" name="A7"/>
+          </value>
+        </attributes>
+        <attributes name="serverMemorySize">
+          <value xsi:type="type:ListValue" value="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.1/@value/@values.0">
+            <values xsi:type="type:IntValue" unit="MB" value="768"/>
+            <values xsi:type="type:IntValue" unit="MB" value="1792"/>
+            <values xsi:type="type:IntValue" unit="MB" value="3584"/>
+            <values xsi:type="type:IntValue" unit="MB" value="7168"/>
+            <values xsi:type="type:IntValue" unit="MB" value="14336"/>
+            <values xsi:type="type:IntValue" unit="MB" value="28672"/>
+            <values xsi:type="type:IntValue" unit="MB" value="57344"/>
+          </value>
+        </attributes>
+        <attributes name="serverCpuFrequencyValue">
+          <value xsi:type="type:ListValue" type="FloatType" value="//@rootFeature/@subFeatures.2/@subFeatures.0/@attributes.2/@value/@values.0">
+            <values xsi:type="type:FloatValue" unit="GHz" value="1.0"/>
+            <values xsi:type="type:FloatValue" unit="GHz" value="1.6"/>
+          </value>
+        </attributes>
+        <subFeatures xsi:type="featuremodel:Exclusive" name="Server Type">
+          <featureCardinality cardinalityMin="1" cardinalityMax="1"/>
+          <groupCardinality cardinalityMin="1" cardinalityMax="1"/>
+          <variants name="BizTalk Server">
+            <featureCardinality cardinalityMax="1"/>
+          </variants>
+          <variants name="SQL Server">
+            <featureCardinality cardinalityMax="1"/>
+          </variants>
+        </subFeatures>
+        <subFeatures xsi:type="featuremodel:Exclusive" name="Server Profile">
+          <featureCardinality cardinalityMin="1" cardinalityMax="1"/>
+          <groupCardinality cardinalityMin="1" cardinalityMax="1"/>
+          <variants name="SP Web">
+            <featureCardinality cardinalityMax="1"/>
+          </variants>
+          <variants name="SP Enterprise">
+            <featureCardinality cardinalityMax="1"/>
+          </variants>
+          <variants name="SP Standard">
+            <featureCardinality cardinalityMax="1"/>
+          </variants>
+        </subFeatures>
+        <featureCardinality cardinalityMax="100"/>
+      </subFeatures>
+      <subFeatures name="Backup">
+        <attributes name="backupDiskSize">
+          <value xsi:type="type:IntValue" unit="GB" value="500000"/>
+        </attributes>
+        <featureCardinality cardinalityMax="1"/>
+      </subFeatures>
+      <subFeatures name="Trafffic Manager">
+        <featureCardinality cardinalityMin="1" cardinalityMax="1"/>
+      </subFeatures>
+      <subFeatures xsi:type="featuremodel:Alternative" name="Mobile Service">
+        <featureCardinality cardinalityMin="1" cardinalityMax="30"/>
+        <variants name="MS Free">
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+        <variants name="MS Standard">
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+        <variants name="MS Premium">
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+      </subFeatures>
+      <subFeatures xsi:type="featuremodel:Alternative" name="Storage">
+        <featureCardinality cardinalityMax="1"/>
+        <groupCardinality cardinalityMax="2"/>
+        <variants name="Geo Redundant">
+          <attributes name="geoRDiskSize">
+            <value xsi:type="type:RangeValue" value="//@rootFeature/@subFeatures.2/@subFeatures.4/@variants.1/@attributes.0/@value/@from">
+              <from xsi:type="type:IntValue" unit="GB"/>
+              <to xsi:type="type:IntValue" unit="GB" value="100000"/>
+            </value>
+          </attributes>
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+        <variants name="Locally Redundant">
+          <attributes name="locallyRDiskSize">
+            <value xsi:type="type:RangeValue" value="//@rootFeature/@subFeatures.2/@subFeatures.4/@variants.0/@attributes.0/@value/@from">
+              <from xsi:type="type:IntValue" unit="GB"/>
+              <to xsi:type="type:IntValue" unit="GB" value="100000"/>
+            </value>
+          </attributes>
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+      </subFeatures>
+      <subFeatures xsi:type="featuremodel:Alternative" name="Database">
+        <featureCardinality cardinalityMax="160"/>
+        <variants name="SQL Premium">
+          <attributes name="premiumDiskSize">
+            <value xsi:type="type:IntValue" unit="GB" value="15"/>
+          </attributes>
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+        <variants name="SQL Web and Business">
+          <attributes name="businessDiskSize">
+            <value xsi:type="type:IntValue" unit="GB" value="150"/>
+          </attributes>
+          <featureCardinality cardinalityMax="1"/>
+        </variants>
+      </subFeatures>
+      <featureCardinality cardinalityMin="1" cardinalityMax="1"/>
+    </subFeatures>
+    <subFeatures name="Worker Instance">
+      <attributes name="wiSize">
+        <value xsi:type="type:EnumerateListValue" value="//@rootFeature/@subFeatures.3/@attributes.0/@value/@values.0">
+          <values name="XS"/>
+          <values value="1" name="S"/>
+          <values value="2" name="M"/>
+          <values value="3" name="L"/>
+          <values value="4" name="XL"/>
+          <values value="5" name="A6"/>
+          <values value="6" name="A7"/>
+        </value>
+      </attributes>
+      <attributes name="wiCpuFrequencyValue">
+        <value xsi:type="type:ListValue" type="FloatType" value="//@rootFeature/@subFeatures.3/@attributes.1/@value/@values.0">
+          <values xsi:type="type:FloatValue" unit="GHz" value="1.0"/>
+          <values xsi:type="type:FloatValue" unit="GHz" value="1.6"/>
+        </value>
+      </attributes>
+      <attributes name="wiMemorySize">
+        <value xsi:type="type:ListValue" value="//@rootFeature/@subFeatures.3/@attributes.2/@value/@values.0">
+          <values xsi:type="type:IntValue" unit="MB" value="768"/>
+          <values xsi:type="type:IntValue" unit="MB" value="1792"/>
+          <values xsi:type="type:IntValue" unit="MB" value="3584"/>
+          <values xsi:type="type:IntValue" unit="MB" value="7168"/>
+          <values xsi:type="type:IntValue" unit="MB" value="14336"/>
+          <values xsi:type="type:IntValue" unit="MB" value="28672"/>
+          <values xsi:type="type:IntValue" unit="MB" value="57344"/>
+        </value>
+      </attributes>
+      <featureCardinality cardinalityMax="20"/>
+    </subFeatures>
+    <subFeatures xsi:type="featuremodel:Exclusive" name="Location">
+      <featureCardinality cardinalityMax="1"/>
+      <groupCardinality cardinalityMax="1"/>
+      <variants name="EU">
+        <featureCardinality cardinalityMax="1"/>
+      </variants>
+      <variants name="US">
+        <featureCardinality cardinalityMax="1"/>
+      </variants>
+    </subFeatures>
+    <featureCardinality cardinalityMin="1" cardinalityMax="1"/>
+  </rootFeature>
+</featuremodel:FeatureModel>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ASCII"?>
+<typesPaasage:ActionTypes xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
+    xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
+  <types id="resumeNode"/>
+  <types id="suspendNode"/>
+  <types id="stopService"/>
+  <types id="deleteService"/>
+  <types id="stopNode"/>
+  <types id="addNode"/>
+  <types id="startService"/>
+  <types id="cloneNode"/>
+  <types id="migrateNode"/>
+  <types id="addService"/>
+  <types id="startNode"/>
+  <types id="deleteNode"/>
+</typesPaasage:ActionTypes>
