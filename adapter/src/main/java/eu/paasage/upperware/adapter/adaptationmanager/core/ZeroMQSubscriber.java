@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2016 INRIA, INSA Rennes
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.paasage.upperware.adapter.adaptationmanager.core;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.zeromq.ZMQ;
+
+public class ZeroMQSubscriber extends Thread {
+	
+	private String subscriberName;
+	private int port;
+	private String topic;
+	
+	ZMQ.Context context;
+	ZMQ.Socket subscriber;
+	
+	long sleepTime = 0;
+	private volatile String message = "";
+	
+	private final static Logger LOGGER = Logger
+		.getLogger(ZeroMQSubscriber.class.getName());
+		
+	public ZeroMQSubscriber(String subscriberName, String ipAddress, String topic, int port){
+		super(subscriberName);
+		this.subscriberName = subscriberName;
+		this.port = port;
+		this.topic = topic;
+		LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " subscribing to topic "+topic);
+		setDaemon(true);
+		context = ZMQ.context(1);
+		subscriber = context.socket(ZMQ.SUB);
+		subscriber.connect("tcp://" + ipAddress + ":" + port);
+		subscriber.subscribe(topic.getBytes());
+		LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " subscribed");
+	}
+	
+	public ZeroMQSubscriber(String subscriberName, String ipAddress, String topic, int port, long sleepMillis){
+		this(subscriberName, ipAddress, topic, port);
+		this.sleepTime = sleepMillis;
+	}
+	
+	private void setMessage(String message){
+		this.message = message;
+	}
+	
+	private void setMessage(){
+		String contents;
+		if(this.message.equals("")){
+			contents = subscriber.recvStr();
+			this.message = contents;
+			LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " received msg: " + contents);
+		}
+	}
+	
+	public String readResetMessage(){
+		String msg = this.message;
+		this.message = "";
+		return msg;
+	}
+	
+	public String readMessage(){
+		String msg = this.message;
+		return msg;
+	}
+	
+	public boolean isMessageEmpty(){return this.message.equals("");}
+	
+	public void finalize() throws Throwable{
+		try{
+			subscriber.close();
+			context.term();
+		}catch (Exception e) {
+			e.printStackTrace();
+        } finally {
+        	LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " closed");
+        	super.finalize();
+    	}
+	}
+    
+    public void run(){
+    	LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " Listen mode on topic" + this.topic);
+		while(true){
+			try {					
+				if (!Thread.currentThread ().isInterrupted ()) {
+					// Read message contents
+					setMessage();
+					/*String contents = subscriber.recvStr();
+					setMessage(contents);
+					LOGGER.log(Level.INFO, "0MQ Subscriber " + this.subscriberName + ":" + this.port + " received msg: " +contents);*/
+					//Thread.currentThread().sleep(sleepTime);
+				}
+			} catch (Exception e){
+				LOGGER.log(Level.SEVERE, "0MQ Subscriber " + this.subscriberName + " failed running");
+			}
+		}
+	}
+}
