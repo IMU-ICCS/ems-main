@@ -3,6 +3,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -127,3 +128,36 @@ target/
 
 /Metasolver.log
 >>>>>>> meta_solver-merge
+=======
+outs/
+tmp/
+*.osol
+*.osil
+*.cFconf
+out.txt
+
+# Java/Scala/Eclipse ignores
+/target/
+/bin/
+/.cache
+/.settings/
+/.history/
+/.lib/
+
+*.class
+*.log
+
+# sbt specific
+/.lib/
+/dist/*
+/target/
+/lib_managed/
+/src_managed/
+/project/boot/
+/project/target
+/project/plugins/project/
+
+.idea
+.iml
+project/project
+>>>>>>> milp_solver-merge
