@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="fr" nsURI="fr" nsPrefix="fr">
+  <eSubpackages name="inria" nsURI="inria" nsPrefix="inria">
+    <eSubpackages name="paasage" nsURI="paasage" nsPrefix="paasage">
+      <eSubpackages name="saloon" nsURI="saloon" nsPrefix="saloon">
+        <eSubpackages name="camel" nsURI="camel" nsPrefix="camel">
+          <eSubpackages name="ontology" nsURI="http://fr.inria.saloon.model.camel.ontology"
+              nsPrefix="ontology">
+            <eClassifiers xsi:type="ecore:EClass" name="ConceptCamel" eSuperTypes="#//inria/paasage/saloon/camel/ontology/ElementCamel">
+              <eStructuralFeatures xsi:type="ecore:EReference" name="inherits" eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel"/>
+              <eStructuralFeatures xsi:type="ecore:EReference" name="hasIndividuals"
+                  upperBound="-1" eType="#//inria/paasage/saloon/camel/ontology/IndividualCamel"
+                  containment="true"/>
+              <eStructuralFeatures xsi:type="ecore:EReference" name="subConcept" upperBound="-1"
+                  eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel" containment="true"/>
+              <eStructuralFeatures xsi:type="ecore:EReference" name="referencedConcept"
+                  upperBound="-1" eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="IndividualCamel" eSuperTypes="#//inria/paasage/saloon/camel/ontology/ElementCamel"/>
+            <eClassifiers xsi:type="ecore:EClass" name="OntologyCamel">
+              <eStructuralFeatures xsi:type="ecore:EReference" name="concepts" upperBound="-1"
+                  eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel" containment="true"/>
+              <eStructuralFeatures xsi:type="ecore:EReference" name="reusedConcept"
+                  upperBound="-1" eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel"
+                  containment="true"/>
+              <eStructuralFeatures xsi:type="ecore:EReference" name="objectiveFunctions"
+                  upperBound="-1" eType="#//inria/paasage/saloon/camel/ontology/ObjectiveFunctionCamel"
+                  containment="true"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="QuantifiableElementCamel"
+                eSuperTypes="#//inria/paasage/saloon/camel/ontology/NumericalElementCamel">
+              <eStructuralFeatures xsi:type="ecore:EReference" name="unit" lowerBound="1"
+                  eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="CountableElementCamel" eSuperTypes="#//inria/paasage/saloon/camel/ontology/NumericalElementCamel"/>
+            <eClassifiers xsi:type="ecore:EClass" name="NumericalElementCamel" abstract="true"
+                eSuperTypes="#//inria/paasage/saloon/camel/ontology/ConceptCamel">
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloat"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="ElementCamel" abstract="true">
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1"
+                  eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="selected" lowerBound="1"
+                  eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="BoundedElementCamel" eSuperTypes="#//inria/paasage/saloon/camel/ontology/NumericalElementCamel">
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="maxValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="minValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="ObjectiveFunctionCamel">
+              <eStructuralFeatures xsi:type="ecore:EReference" name="concept" lowerBound="1"
+                  eType="#//inria/paasage/saloon/camel/ontology/QuantifiableElementCamel"/>
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+                  eType="#//inria/paasage/saloon/camel/ontology/ComparisonOperatorCamel"/>
+              <eStructuralFeatures xsi:type="ecore:EReference" name="objectiveValue"
+                  lowerBound="1" eType="ecore:EClass camel.ecore#//type/IntegerValue"
+                  containment="true"/>
+              <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit" lowerBound="1"
+                  eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EEnum" name="ComparisonOperatorCamel">
+              <eLiterals name="EQ"/>
+              <eLiterals name="LEQ" value="1"/>
+              <eLiterals name="GEQ" value="2"/>
+              <eLiterals name="LT" value="3"/>
+              <eLiterals name="GT" value="4"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EClass" name="QuantifiableBoundedElementCamel"
+                eSuperTypes="#//inria/paasage/saloon/camel/ontology/BoundedElementCamel">
+              <eStructuralFeatures xsi:type="ecore:EReference" name="unit" lowerBound="1"
+                  eType="#//inria/paasage/saloon/camel/ontology/ConceptCamel"/>
+            </eClassifiers>
+          </eSubpackages>
+        </eSubpackages>
+      </eSubpackages>
+    </eSubpackages>
+  </eSubpackages>
+</ecore:EPackage>

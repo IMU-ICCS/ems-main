@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageApplication -->
+      <package
+            uri="application"
+            class="fr.inria.paasage.metamodel.application.ApplicationPackage"
+            genModel="wp3-cp-models/src/main/resources/metamodels/paasageApplication.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageApplication -->
+      <package
+            uri="cp"
+            class="fr.inria.paasage.metamodel.cp.CpPackage"
+            genModel="wp3-cp-models/src/main/resources/metamodels/paasageApplication.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageApplication -->
+      <package
+            uri="types"
+            class="fr.inria.paasage.metamodel.types.TypesPackage"
+            genModel="wp3-cp-models/src/main/resources/metamodels/paasageApplication.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated paasageApplication -->
+      <package
+            uri="typesPaasage"
+            class="fr.inria.paasage.metamodel.types.typesPaasage.TypesPaasagePackage"
+            genModel="wp3-cp-models/src/main/resources/metamodels/paasageApplication.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated Mapping -->
+      <package
+            uri="http://fr.saloon.model.mapping"
+            class="mapping.MappingPackage"
+            genModel="inria-saloon/src/main/resources/metamodel/Mapping.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated Mapping -->
+      <package
+            uri="http://fr.saloon.model.ontology"
+            class="ontology.OntologyPackage"
+            genModel="inria-saloon/src/main/resources/metamodel/Mapping.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated Mapping -->
+      <package
+            uri="http://fr.saloon.model.featuremodel"
+            class="featureModel.FeatureModelPackage"
+            genModel="inria-saloon/src/main/resources/metamodel/Mapping.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated Mapping -->
+      <package
+            uri="http://fr.saloon.model.type"
+            class="type.TypePackage"
+            genModel="inria-saloon/src/main/resources/metamodel/Mapping.genmodel"/>
+   </extension>
+</plugin>
