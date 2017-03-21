@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -76,3 +77,23 @@ crashlytics.properties
 crashlytics-build.properties
 
 
+=======
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+/bin/
+>>>>>>> cdo_client-merge
