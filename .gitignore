@@ -2,6 +2,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -114,3 +115,15 @@ src/main/java/Test.java
 =======
 /target/
 >>>>>>> la_converter-merge
+=======
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Maven
+log/
+target/
+
+/Metasolver.log
+>>>>>>> meta_solver-merge

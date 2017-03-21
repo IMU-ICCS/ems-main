@@ -3,6 +3,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	<name>MyCDOServer</name>
 =======
 	<name>paasage-wp3-profiler</name>
@@ -13,6 +14,9 @@
 =======
 	<name>la-converter</name>
 >>>>>>> la_converter-merge
+=======
+	<name>metasolver</name>
+>>>>>>> meta_solver-merge
 	<comment></comment>
 	<projects>
 	</projects>
@@ -27,6 +31,7 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -49,10 +54,13 @@
 >>>>>>> cp_solver-merge
 =======
 >>>>>>> la_converter-merge
+=======
+>>>>>>> meta_solver-merge
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 		<nature>org.eclipse.pde.PluginNature</nature>
@@ -62,5 +70,7 @@
 =======
 
 >>>>>>> la_converter-merge
+=======
+>>>>>>> meta_solver-merge
 	</natures>
 </projectDescription>
