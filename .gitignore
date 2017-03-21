@@ -4,6 +4,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -117,6 +118,8 @@ src/main/java/Test.java
 /target/
 >>>>>>> la_converter-merge
 =======
+=======
+>>>>>>> plan_generator-merge
 # Eclipse
 .classpath
 .project
@@ -125,6 +128,7 @@ src/main/java/Test.java
 # Maven
 log/
 target/
+<<<<<<< HEAD
 
 /Metasolver.log
 >>>>>>> meta_solver-merge
@@ -161,3 +165,7 @@ out.txt
 .iml
 project/project
 >>>>>>> milp_solver-merge
+=======
+/PlanGenerator.log
+/PlanGenerator.log.1
+>>>>>>> plan_generator-merge
