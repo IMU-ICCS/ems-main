@@ -7,6 +7,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
@@ -191,3 +192,19 @@ project/project
 .settings/
 target/
 >>>>>>> solver_to_deployment-merge
+=======
+/bin/
+.settings
+.project
+.classpath
+/target/
+target
+target/
+.idea
+.idea/
+/.idea/
+*.iml
+out
+logs/*
+conf/configuration.properties
+>>>>>>> srl-adapter-merge
