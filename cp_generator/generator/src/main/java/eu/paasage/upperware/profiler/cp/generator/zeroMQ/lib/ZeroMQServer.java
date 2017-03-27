@@ -12,6 +12,7 @@ public class ZeroMQServer
 {
 	
 	//PROPERTY NAMES
+	//test commit
 	
 	private static String SUBSCRIBER_PORT_PROPERTY= "zeromqSubscriberPort";
 	
