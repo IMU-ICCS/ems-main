@@ -9,6 +9,20 @@
         </parent>
         <!-- useless modif done by ETIENNE for jenkins testing -->
         <!-- antother useless modif done by ETIENNE for jenkins testing -->
+
+	<distributionManagement>
+    	  <repository>
+      	    <id>deployment</id>
+      	    <name>Internal Releases</name>
+      	    <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+    	  </repository>
+    	  <snapshotRepository>
+      	    <id>deployment</id>
+      	    <name>Internal Releases</name>
+      	    <url>http://repository.ow2.org/nexus/content/repositories/snapshots</url>
+    	  </snapshotRepository>
+  	</distributionManagement>
+
 	<name>PaaSage Plan Generator</name>
 	<description>Plan Generator for computing re-configuation plan for modifying the configuration of the running cloud.</description>
 	<url>http://www.paasage.eu/software/paasage-architecture</url>
@@ -106,6 +120,23 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<repositories>
+	    <repository>
+	      <id>ow2.releases</id>
+	      <name>OW2 repository</name>
+	      <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+	    </repository>
+	    <repository>
+	      <id>ow2.snapshots</id>
+	      <name>OW2 repository</name>
+	      <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+	    </repository>
+	    <repository>
+	      <id>paasage.repo</id>
+	      <name>PaaSage repository</name>
+	      <url>http://jenkins.paasage.cetic.be/repository/</url>
+	    </repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>log4j</groupId>
