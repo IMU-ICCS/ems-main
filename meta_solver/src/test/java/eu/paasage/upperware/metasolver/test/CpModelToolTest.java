@@ -256,7 +256,7 @@ public class CpModelToolTest {
 
 	@Test
 	public void testSample(){
-		int i =0;
+		int i =1;
 		assertEquals(0,i);
 	}
 }
