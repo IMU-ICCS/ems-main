@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (C) 2017 7bulls.com
+
+  ~ This Source Code Form is subject to the terms of the
+  ~ Mozilla Public License, v. 2.0. If a copy of the MPL
+  ~ was not distributed with this file, You can obtain one at
+  ~ http://mozilla.org/MPL/2.0/.
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -9,7 +19,8 @@
   <packaging>jar</packaging>
 
   <name>Adapter</name>
-  <description>Component of PaaSage responsible for generating, validating and applying deployment plan based on CAMEL
+  <description>
+    Component of PaaSage responsible for generating, validating and applying deployment plan based on CAMEL
     Model received from CDO Server. This component displaces both Adapter Manager and Plan Generator repositories.
   </description>
 
@@ -22,6 +33,10 @@
 
   <properties>
     <paasage.version>2015.9.1-SNAPSHOT</paasage.version>
+    <colloseum-client.version>0.2.0-SNAPSHOT</colloseum-client.version>
+    <jgraph.version>1.0.1</jgraph.version>
+    <validation-api.version>1.1.0.Final</validation-api.version>
+    <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
     <commons-collections.version>4.1</commons-collections.version>
     <commons-io.version>2.5</commons-io.version>
     <lombok.version>1.16.14</lombok.version>
@@ -42,9 +57,38 @@
     </dependency>
 
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.ow2.paasage.mddb.cdo</groupId>
       <artifactId>client</artifactId>
       <version>${paasage.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.cloudiator</groupId>
+      <artifactId>colosseum-client</artifactId>
+      <version>${colloseum-client.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
+      <version>${jgraph.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>${validation-api.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate-validator.version}</version>
     </dependency>
 
     <dependency>
