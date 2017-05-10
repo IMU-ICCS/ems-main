@@ -18,13 +18,8 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Application {
+public class VirtualMachineInstance {
 
-  private String name;
-  private String version;
-  private String description;
-  private String owner;
-
-  private String oldName;
+  // TODO
 
 }

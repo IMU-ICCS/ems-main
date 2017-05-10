@@ -21,6 +21,6 @@ import lombok.ToString;
 public class ApplicationInstance {
 
   private String name;
-  private String type;
+  private String appName;
 
 }

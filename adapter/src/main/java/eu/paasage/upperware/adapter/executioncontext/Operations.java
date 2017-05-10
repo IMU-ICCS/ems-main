@@ -11,8 +11,6 @@ package eu.paasage.upperware.adapter.executioncontext;
 
 public interface Operations {
 
-  // TODO create operations on running context here
-  // examples:
-  // public void refreshExecutionContext();
+  void refreshContext();
 
 }

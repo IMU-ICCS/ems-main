@@ -18,13 +18,18 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Application {
+public class VirtualMachine {
 
   private String name;
-  private String version;
-  private String description;
-  private String owner;
+  private String cloudName;
 
-  private String oldName;
+  private String location;
+  private Long locationTimeout;
+
+  private String hardware;
+  private Long hardwareTimeout;
+
+  private String image;
+  private Long imageTimeout;
 
 }

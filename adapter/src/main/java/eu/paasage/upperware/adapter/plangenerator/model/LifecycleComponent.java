@@ -18,13 +18,26 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Application {
+public class LifecycleComponent {
 
   private String name;
-  private String version;
-  private String description;
-  private String owner;
 
-  private String oldName;
+  private String initCmd;
+
+  private String preInstallCmd;
+  private String installCmd;
+  private String postInstallCmd;
+
+  private String preStartCmd;
+  private String startCmd;
+  private String startDetectionCmd;
+  private String postStartCmd;
+
+  private String preStopCmd;
+  private String stopCmd;
+  private String stopDetectionCmd;
+  private String postStopCmd;
+
+  private String shutdownCmd;
 
 }

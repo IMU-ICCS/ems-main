@@ -12,7 +12,7 @@ package eu.paasage.upperware.adapter.plangenerator.converter;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.upperware.adapter.plangenerator.model.ComparableModel;
 
-public class DefaultModelConverter implements ModelConverter<CamelModel, ComparableModel> {
+public class CamelModelConverter implements ModelConverter<CamelModel, ComparableModel> {
 
   // TODO default implementation of Camel Model Converter
 

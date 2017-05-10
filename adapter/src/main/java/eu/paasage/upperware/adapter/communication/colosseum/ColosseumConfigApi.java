@@ -11,24 +11,42 @@ package eu.paasage.upperware.adapter.communication.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface ColosseumConfigApi {
 
-  Api createApi(String name, String internalProviderName);
+  Api createApi(Api api);
 
-  Api getApi(String name);
+  List<Api> getApis();
 
-  Cloud createCloud(String name, String endpointName, long apiId);
+  Cloud createCloud(Cloud cloud);
 
-  Cloud getCloud(String name);
+  List<Cloud> getClouds();
 
-  CloudProperty createCloudProperty(long cloudId, String key, String value);
+  CloudProperty createCloudProperty(CloudProperty cloudProperty);
 
-  CloudCredential createCloudCredential(int cloudId, String user, String password, String tenant);
+  List<CloudProperty> getCloudProperties();
 
-  Location getLocation(long cloudId, long cloudProviderId);
+  CloudCredential createCloudCredential(CloudCredential cloudCredential);
 
-  Hardware getHardware(long cloudId, long cloudProviderId);
+  List<CloudCredential> getCloudCredentials();
 
-  Image getImage(long cloudId, long cloudProviderId);
+  Image updateImage(Image image);
 
+  Optional<Image> getImage(Long cloudId, String name);
+
+  Optional<Image> getImageWithWait(Long cloudId, String name, long timeout);
+
+  OperatingSystem updateOperatingSystem(OperatingSystem operatingSystem);
+
+  Optional<OperatingSystem> getOperatingSystemWithWait(Long id, long timeout);
+
+  Optional<Location> getLocation(Long cloudId, String name);
+
+  Optional<Location> getLocationWithWait(Long cloudId, String name, long timeout);
+
+  Optional<Hardware> getHardware(Long cloudId, String name);
+
+  Optional<Hardware> getHardwareWithWait(Long cloudId, String name, long timeout);
 }

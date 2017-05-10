@@ -10,15 +10,27 @@
 package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
+import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.paasage.upperware.adapter.planexecutor.TaskExecutor;
-import lombok.AllArgsConstructor;
+import eu.paasage.upperware.adapter.planexecutor.RunnableTaskExecutor;
+import eu.paasage.upperware.adapter.plangenerator.tasks.Task;
 
-@AllArgsConstructor
-public abstract class ColosseumTaskExecutor<T> implements TaskExecutor<T> {
+import java.util.Collection;
+import java.util.concurrent.Future;
+
+public abstract class ColosseumTaskExecutor<T> extends RunnableTaskExecutor<T> {
 
   protected ColosseumApi api;
 
-  protected ColosseumContext executionContext;
+  protected ColosseumConfigApi configApi;
 
+  protected ColosseumContext context;
+
+  ColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api,
+                        ColosseumConfigApi configApi, ColosseumContext context) {
+    super(task, predecessors);
+    this.api = api;
+    this.configApi = configApi;
+    this.context = context;
+  }
 }

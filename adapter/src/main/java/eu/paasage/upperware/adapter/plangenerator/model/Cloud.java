@@ -14,17 +14,24 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.util.Map;
+
 @Getter
 @Builder
-@ToString
+@ToString(exclude = "password")
 @EqualsAndHashCode
-public class Application {
+public class Cloud {
 
   private String name;
-  private String version;
-  private String description;
-  private String owner;
 
-  private String oldName;
+  private String login;
+  private String password;
+  private Long tenant;
+
+  private String endpoint;
+  private String provider;
+  private String driver;
+
+  private Map<String, String> filters;
 
 }

@@ -11,6 +11,6 @@ package eu.paasage.upperware.adapter.plangenerator.converter;
 
 public interface ModelConverter<T, G> {
 
-  G toComparableModel(T camelModel);
+  G toComparableModel(T model);
 
 }

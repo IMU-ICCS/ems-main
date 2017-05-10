@@ -11,60 +11,81 @@ package eu.paasage.upperware.adapter.communication.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 
+import java.util.List;
+
 public interface ColosseumApi {
 
-  Application createApplication(String name);
+  Application createApplication(Application application);
 
-  Application updateApplication(long applicationId, String name);
+  Application updateApplication(Application application);
 
-  void deleteApplication(long applicationId);
+  void deleteApplication(Application application);
 
-  ApplicationInstance createApplicationInstance(long applicationId);
+  List<Application> getApplications();
 
-  ApplicationInstance updateApplicationInstance(long applicationId, long applicationInstanceId);
+  ApplicationInstance createApplicationInstance(ApplicationInstance applicationInstance);
 
-  void deleteApplicationInstance(long applicationInstanceId);
+  void deleteApplicationInstance(ApplicationInstance applicationInstance);
 
-  VirtualMachineTemplate createVirtualMachine(String name, long cloudId, long locationId, long hardwareId, long imageId);
+  List<ApplicationInstance> getApplicationInstances();
 
-  void deleteVirtualMachine(long virtualMachineId);
+  VirtualMachineTemplate createVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
 
-  VirtualMachine createVirtualMachineInstance(String name, long cloudId, long locationId, long hardwareId, long imageId);
+  VirtualMachineTemplate updateVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
 
-  void deleteVirtualMachineInstance(long virtualMachineInstanceId);
+  void deleteVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
 
-  LifecycleComponent createLifecycleComponent(String name, String preInstall, String install, String postInstall, String start, String stop);
+  List<VirtualMachineTemplate> getVirtualMachines();
 
-  LifecycleComponent updateLifecycleComponent(long lifecycleComponentId, String name, String preInstall, String install, String postInstall, String start, String stop);
+  VirtualMachine createVirtualMachineInstance(VirtualMachine virtualMachine);
 
-  void deleteLifecycleComponent(long lifecycleComponentId);
+  void deleteVirtualMachineInstance(VirtualMachine virtualMachine);
 
-  ApplicationComponent createApplicationComponent(long applicationId, long virtualMachineId, long lifecycleComponentId);
+  List<VirtualMachine> getVirtualMachineInstances();
 
-  ApplicationComponent updateApplicationComponent(long applicationId, long applicationComponentId, long virtualMachineId, long lifecycleComponentId);
+  LifecycleComponent createLifecycleComponent(LifecycleComponent lifecycleComponent);
 
-  void deleteApplicationComponent(long applicationComponentId);
+  LifecycleComponent updateLifecycleComponent(LifecycleComponent lifecycleComponent);
 
-  Instance createApplicationComponentInstance(long applicationInstanceId, long virtualMachineInstanceId, long applicationComponentId);
+  void deleteLifecycleComponent(LifecycleComponent lifecycleComponent);
 
-  void deleteApplicationComponentInstance(long applicationComponentInstanceId);
+  List<LifecycleComponent> getLifecycleComponents();
 
-  PortProvided createProvidedPort(String name, long applicationComponentId, int portNumber);
+  ApplicationComponent createApplicationComponent(ApplicationComponent applicationComponent);
 
-  PortProvided updateProvidedPort(long portId, String name, long applicationComponentId, int portNumber);
+  ApplicationComponent updateApplicationComponent(ApplicationComponent applicationComponent);
 
-  void deleteProvidedPort(long portId);
+  void deleteApplicationComponent(ApplicationComponent applicationComponent);
 
-  PortRequired createRequiredPort(String name, long applicationComponentId, boolean isMandatory, boolean requiredPortStartCmd);
+  List<ApplicationComponent> getApplicationComponents();
 
-  PortRequired updateRequiredPort(long portId, String name, long applicationComponentId, boolean isMandatory, boolean requiredPortStartCmd);
+  Instance createApplicationComponentInstance(Instance instance);
 
-  void deleteRequiredPort(long portId);
+  void deleteApplicationComponentInstance(Instance instance);
 
-  Communication createCommunication(long providedPortId, long requiredPortId);
+  List<Instance> getApplicationComponentInstances();
 
-  Communication updateCommunication(long communicationId, long providedPortId, long requiredPortId);
+  PortProvided createPortProvided(PortProvided portProvided);
 
-  void deleteCommunication(long communicationId);
+  PortProvided updatePortProvided(PortProvided portProvided);
 
+  void deletePortProvided(PortProvided portProvided);
+
+  List<PortProvided> getPortsProvided();
+
+  PortRequired createPortRequired(PortRequired portRequired);
+
+  PortRequired updatePortRequired(PortRequired portRequired);
+
+  void deletePortRequired(PortRequired portRequired);
+
+  List<PortRequired> getPortsRequired();
+
+  Communication createCommunication(Communication communication);
+
+  Communication updateCommunication(Communication communication);
+
+  void deleteCommunication(Communication communication);
+
+  List<Communication> getCommunications();
 }
