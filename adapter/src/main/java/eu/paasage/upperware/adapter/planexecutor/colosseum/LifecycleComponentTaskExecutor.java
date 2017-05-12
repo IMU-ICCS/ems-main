@@ -59,7 +59,6 @@ public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<Lifecy
       new de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent(
         name, initCmd, preInstallCmd, installCmd, postInstallCmd, startCmd, startDetectionCmd,
         stopDetectionCmd, preStartCmd, postStartCmd, preStopCmd, stopCmd, postStopCmd, shutdownCmd);
-
     lcEntity = api.createLifecycleComponent(lcEntity);
     context.addLifecycleComponent(lcEntity);
 

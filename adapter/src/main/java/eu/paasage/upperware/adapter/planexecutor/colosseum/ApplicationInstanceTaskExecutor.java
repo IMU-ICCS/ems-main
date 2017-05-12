@@ -40,7 +40,8 @@ public class ApplicationInstanceTaskExecutor extends ColosseumTaskExecutor<Appli
     log.info("Executing Create Application Instance {} task for application {}", name, appName);
 
     de.uniulm.omi.cloudiator.colosseum.client.entities.Application appEntity = context.getApplication(appName)
-      .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum - instance cannot be created", appName)));
+      .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum " +
+        "- instance cannot be created", appName)));
 
     Long appId = appEntity.getId();
     checkNotNull(appId);
@@ -68,7 +69,8 @@ public class ApplicationInstanceTaskExecutor extends ColosseumTaskExecutor<Appli
     log.info("Executing Delete Application Instance {} task of application {}", name, appName);
 
     de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance appInstEntity = context.getApplicationInstance(appName)
-      .orElseThrow(() -> new IllegalStateException(format("Application Instance of application %s does not exist in Colosseum - cannot be deleted", appName)));
+      .orElseThrow(() -> new IllegalStateException(format("Application Instance of application %s does not exist in Colosseum " +
+        "- cannot be deleted", appName)));
     api.deleteApplicationInstance(appInstEntity);
     context.deleteApplicationInstance(appInstEntity);
 

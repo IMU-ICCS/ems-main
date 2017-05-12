@@ -62,16 +62,16 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
     checkNotNull(cloudId);
 
     Location locationEntity = configApi.getLocationWithWait(cloudId, location, locationTimeout)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Location %s in cloud %s (id=%s) does not exist in Colosseum - VM cannot be created", location, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be created", location, cloudName, cloudId)));
 
     Hardware hardwareEntity = configApi.getHardwareWithWait(cloudId, hardware, hardwareTimeout)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Hardware %s in cloud %s (id=%s) does not exist in Colosseum - VM cannot be created", hardware, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be created", hardware, cloudName, cloudId)));
 
     Image imageEntity = configApi.getImageWithWait(cloudId, image, imageTimeout)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Image %s in cloud %s (id=%s) does not exist in Colosseum - VM cannot be created", image, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be created", image, cloudName, cloudId)));
 
     Long locationId = locationEntity.getId();
     checkNotNull(locationId);

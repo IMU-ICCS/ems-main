@@ -45,12 +45,12 @@ public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communicati
     log.info("Executing Create Communication task for communication {}", name);
 
     PortProvided portProvEntity = context.getPortProvided(portProvName)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Port provided %s does not exist in Colosseum - communication cannot be created", portProvName)));
+      .orElseThrow(() -> new IllegalStateException(format("Port provided %s does not exist in Colosseum " +
+        "- communication cannot be created", portProvName)));
 
     PortRequired portReqEntity = context.getPortRequired(portReqName)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Port required %s does not exist in Colosseum - communication cannot be created", portReqName)));
+      .orElseThrow(() -> new IllegalStateException(format("Port required %s does not exist in Colosseum " +
+        "- communication cannot be created", portReqName)));
 
     Long portProvId = portProvEntity.getId();
     checkNotNull(portProvId);

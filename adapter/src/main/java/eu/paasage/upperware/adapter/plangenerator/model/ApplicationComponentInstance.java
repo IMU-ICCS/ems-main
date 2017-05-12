@@ -20,6 +20,24 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class ApplicationComponentInstance {
 
-  // TODO
+  private String name;
+  private String acName;
+  private String vmInstName;
+
+  // Fields below are redundant but necessary because we are not able to
+  // easily connect application component instances with virtual machine
+  // templates and application components (Colosseum does not share unique
+  // identifiers like 'name' for virtual machine templates and application
+  // components so we have to create combined identifiers)
+  // TODO: can we add 'name' attribute to virtual machine template and application component?
+
+  private String cloudName;
+  private String appName;
+  private String lcName;
+  private String vmName;
+
+  private String location;
+  private String hardware;
+  private String image;
 
 }

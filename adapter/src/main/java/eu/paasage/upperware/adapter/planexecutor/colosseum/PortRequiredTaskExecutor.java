@@ -66,16 +66,16 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<PortRequired
     checkNotNull(cloudId);
 
     Location locationEntity = configApi.getLocation(cloudId, location)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Location %s in cloud %s (id=%s) does not exist in Colosseum - port required cannot be created", location, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port required cannot be created", location, cloudName, cloudId)));
 
     Hardware hardwareEntity = configApi.getHardware(cloudId, hardware)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Hardware %s in cloud %s (id=%s) does not exist in Colosseum - port required cannot be created", hardware, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port required cannot be created", hardware, cloudName, cloudId)));
 
     Image imageEntity = configApi.getImage(cloudId, image)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Image %s in cloud %s (id=%s) does not exist in Colosseum - port required cannot be created", image, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port required cannot be created", image, cloudName, cloudId)));
 
     Long locationId = locationEntity.getId();
     checkNotNull(locationId);
@@ -85,13 +85,12 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<PortRequired
     checkNotNull(imageId);
 
     LifecycleComponent lcComponent = context.getLifecycleComponent(lcName)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Lifecycle component %s does not exist in Colosseum - port required cannot be created", lcName)));
+      .orElseThrow(() -> new IllegalStateException(format("Lifecycle component %s does not exist in Colosseum " +
+        "- port required cannot be created", lcName)));
 
     VirtualMachineTemplate vmEntity = context.getVirtualMachine(cloudId, locationId, hardwareId, imageId)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) does not exist in Colosseum " +
-          "- port required cannot be created", vmName, cloudId, locationId, hardwareId, imageId)));
+      .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) " +
+        "does not exist in Colosseum - port required cannot be created", vmName, cloudId, locationId, hardwareId, imageId)));
 
     Long lcId = lcComponent.getId();
     checkNotNull(lcId);
@@ -99,9 +98,8 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<PortRequired
     checkNotNull(vmId);
 
     ApplicationComponent acEntity = context.getApplicationComponent(appName, lcId, vmId)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Application component %s (appName=%s, lcId=%s, vmId=%s) does not exist in Colosseum " +
-          "- port required cannot be created", acName, appName, lcId, vmId)));
+      .orElseThrow(() -> new IllegalStateException(format("Application component %s (appName=%s, lcId=%s, vmId=%s) " +
+        "does not exist in Colosseum - port required cannot be created", acName, appName, lcId, vmId)));
 
     Long acId = acEntity.getId();
     checkNotNull(acId);

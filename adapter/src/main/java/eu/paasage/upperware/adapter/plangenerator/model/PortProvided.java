@@ -39,4 +39,5 @@ public class PortProvided {
   private String location;
   private String hardware;
   private String image;
+
 }

@@ -20,6 +20,12 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class VirtualMachineInstance {
 
-  // TODO
+  private String name;
+  private String vmName;
+  private String cloudName;
+
+  private String location;
+  private String hardware;
+  private String image;
 
 }

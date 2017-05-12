@@ -61,16 +61,16 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<Appl
     checkNotNull(cloudId);
 
     Location locationEntity = configApi.getLocation(cloudId, location)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Location %s in cloud %s (id=%s) does not exist in Colosseum - application component cannot be created", location, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- application component cannot be created", location, cloudName, cloudId)));
 
     Hardware hardwareEntity = configApi.getHardware(cloudId, hardware)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Hardware %s in cloud %s (id=%s) does not exist in Colosseum - application component cannot be created", hardware, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- application component cannot be created", hardware, cloudName, cloudId)));
 
     Image imageEntity = configApi.getImage(cloudId, image)
-      .orElseThrow(() -> new IllegalArgumentException(format(
-        "Image %s in cloud %s (id=%s) does not exist in Colosseum - application component cannot be created", image, cloudName, cloudId)));
+      .orElseThrow(() -> new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- application component cannot be created", image, cloudName, cloudId)));
 
     Long locationId = locationEntity.getId();
     checkNotNull(locationId);
@@ -80,18 +80,16 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<Appl
     checkNotNull(imageId);
 
     Application appEntity = context.getApplication(appName)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Application %s does not exist in Colosseum - application component cannot be created", appName)));
+      .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum " +
+        "- application component cannot be created", appName)));
 
     LifecycleComponent lcComponent = context.getLifecycleComponent(lcName)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Lifecycle component %s does not exist in Colosseum - application component cannot be created", lcName)));
-
+      .orElseThrow(() -> new IllegalStateException(format("Lifecycle component %s does not exist in Colosseum " +
+        "- application component cannot be created", lcName)));
 
     VirtualMachineTemplate vmEntity = context.getVirtualMachine(cloudId, locationId, hardwareId, imageId)
-      .orElseThrow(() -> new IllegalStateException(format(
-        "Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) does not exist in Colosseum " +
-          "- application component cannot be created", vmName, cloudId, locationId, hardwareId, imageId)));
+      .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) " +
+        "does not exist in Colosseum - application component cannot be created", vmName, cloudId, locationId, hardwareId, imageId)));
 
     Long appId = appEntity.getId();
     checkNotNull(appId);
@@ -102,7 +100,6 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<Appl
 
     de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent acEntity =
       new de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent(appId, lcId, vmId);
-
     acEntity = api.createApplicationComponent(acEntity);
     context.addApplicationComponent(acEntity);
 

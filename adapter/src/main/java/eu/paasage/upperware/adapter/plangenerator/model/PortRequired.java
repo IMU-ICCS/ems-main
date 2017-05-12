@@ -40,4 +40,5 @@ public class PortRequired {
   private String location;
   private String hardware;
   private String image;
+
 }
