@@ -9,12 +9,12 @@
 
 package eu.paasage.upperware.adapter.plangenerator;
 
-import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.DeploymentModel;
 
 public interface PlanGenerator {
 
-  Plan buildConfigurationPlan(CamelModel camelModel);
+  Plan buildConfigurationPlan(DeploymentModel model);
 
-  Plan buildReconfigurationPlan(CamelModel oldCamelModel, CamelModel newCamelModel);
+  Plan buildReconfigurationPlan(DeploymentModel oldModel, DeploymentModel newModel);
 
 }

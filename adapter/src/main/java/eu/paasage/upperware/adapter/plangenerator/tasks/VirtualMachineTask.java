@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.VirtualMachine;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class VirtualMachineTask extends ConfigurationTask<VirtualMachine> {
 
-  public VirtualMachineTask(String name, Type type, VirtualMachine data) {
-    super(name, type, data);
+  public VirtualMachineTask(Type type, VirtualMachine data) {
+    super(type, data);
   }
 }

@@ -10,18 +10,14 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 
+@ToString
 @AllArgsConstructor
 public abstract class ConfigurationTask<T> implements Task<T> {
 
-  private String name;
   private Type type;
   private T data;
-
-  @Override
-  public String getName() {
-    return name;
-  }
 
   @Override
   public Type getType() {

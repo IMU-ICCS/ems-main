@@ -20,9 +20,21 @@ import java.util.Collection;
 @EqualsAndHashCode
 public class ComparableModel {
 
-  private Collection<Application> applications;
-  private Collection<ApplicationInstance> applicationInstances;
+  private Collection<Cloud> clouds;
 
-  // TODO create rest of attributes
+  private Application application;
+  private ApplicationInstance applicationInstance;
+
+  private Collection<LifecycleComponent> lifecycleComponents;
+
+  private Collection<VirtualMachine> virtualMachines;
+  private Collection<VirtualMachineInstance> virtualMachineInstances;
+
+  private Collection<ApplicationComponent> applicationComponents;
+  private Collection<ApplicationComponentInstance> applicationComponentInstances;
+
+  private Collection<Communication> communications;
+  private Collection<PortProvided> portsProvided;
+  private Collection<PortRequired> portsRequired;
 
 }

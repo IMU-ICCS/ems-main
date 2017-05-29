@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.ApplicationComponentInstance;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class ApplicationComponentInstanceTask extends ConfigurationTask<ApplicationComponentInstance> {
 
-  public ApplicationComponentInstanceTask(String name, Type type, ApplicationComponentInstance data) {
-    super(name, type, data);
+  public ApplicationComponentInstanceTask(Type type, ApplicationComponentInstance data) {
+    super(type, data);
   }
 }

@@ -30,8 +30,8 @@ public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnab
   public void run() {
     try {
       T data = task.getData();
-      log.debug("Starting task executor thread for {}(name={}, type={}, data={})",
-        task.getClass().getSimpleName(), task.getName(), task.getType(), data);
+      log.info("Starting task executor thread for {}(type={}, data={})",
+        task.getClass().getSimpleName(), task.getType(), data);
       waitForPredecessors();
       switch (task.getType()) {
         case CREATE:
@@ -44,8 +44,8 @@ public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnab
           delete(data);
           break;
       }
-      log.debug("Task executor thread for {}(name={}, type={}) was successfully finished",
-        task.getClass().getSimpleName(), task.getName(), task.getType());
+      log.info("Task executor thread for {}(type={}) was successfully finished",
+        task.getClass().getSimpleName(), task.getType());
     } catch (ExecutionException e) {
       log.error("An exception occurred while executing dependent task - execution of successor thread will be interrupted as well", e);
     } catch (InterruptedException e) {
@@ -63,11 +63,11 @@ public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnab
       if (future.isDone() || future.isCancelled()) {
         continue;
       }
-      log.info("{}(name={}, type={}) is waiting for finish dependent task executions",
-        task.getClass().getSimpleName(), task.getName(), task.getType());
+      log.info("{}(type={}) is waiting for finish dependent task executions",
+        task.getClass().getSimpleName(), task.getType());
       future.get();
     }
-    log.info("Dependent task executions of {}(name={}, type={}) were finished",
-      task.getClass().getSimpleName(), task.getName(), task.getType());
+    log.info("Dependent task executions of {}(type={}) were finished",
+      task.getClass().getSimpleName(), task.getType());
   }
 }

@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.Communication;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class CommunicationTask extends ConfigurationTask<Communication> {
 
-  public CommunicationTask(String name, Type type, Communication data) {
-    super(name, type, data);
+  public CommunicationTask(Type type, Communication data) {
+    super(type, data);
   }
 }

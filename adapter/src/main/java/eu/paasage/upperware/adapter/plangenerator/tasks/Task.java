@@ -11,8 +11,6 @@ package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 public interface Task<T> {
 
-  String getName();
-
   Type getType();
 
   T getData();

@@ -9,12 +9,13 @@
 
 package eu.paasage.upperware.adapter.communication.cdoserver;
 
-import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.DeploymentModel;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-public interface CdoServerCamelApi extends CdoServerApi<CamelModel> {
+public interface CdoServerCamelApi extends CdoServerApi<DeploymentModel> {
 
-  CamelModel loadModel(String modelId);
+  DeploymentModel loadDeploymentModel(String resourceName, int deploymentModelIndex, CDOTransaction trans);
 
-  void setExecutionContext(CamelModel model, String executionContextName);
+  void setExecutionContext(DeploymentModel deploymentModel, String executionContextName, CDOTransaction trans);
 
 }

@@ -11,9 +11,11 @@ package eu.paasage.upperware.adapter.plangenerator;
 
 import eu.paasage.upperware.adapter.plangenerator.tasks.Task;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
+@ToString
 @AllArgsConstructor
 public class WeightedPlan implements Plan {
 

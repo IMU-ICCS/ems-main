@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
@@ -108,15 +109,30 @@ public class AdapterProperties {
     private Filters filters;
 
     public String getEndpoint(String cloud) {
-      return endpoints.get(cloud);
+      if (cloud == null) {
+        return null;
+      }
+      Optional<String> endpointKey = endpoints.keySet().stream()
+        .filter(key -> cloud.toLowerCase().equals(key.toLowerCase())).findAny();
+      return endpointKey.map(s -> endpoints.get(s)).orElse(null);
     }
 
     public String getLogin(String cloud) {
-      return logins.get(cloud);
+      if (cloud == null) {
+        return null;
+      }
+      Optional<String> loginKey = logins.keySet().stream()
+        .filter(key -> cloud.toLowerCase().equals(key.toLowerCase())).findAny();
+      return loginKey.map(s -> logins.get(s)).orElse(null);
     }
 
     public String getPassword(String cloud) {
-      return passwords.get(cloud);
+      if (cloud == null) {
+        return null;
+      }
+      Optional<String> passwordKey = passwords.keySet().stream()
+        .filter(key -> cloud.toLowerCase().equals(key.toLowerCase())).findAny();
+      return passwordKey.map(s -> passwords.get(s)).orElse(null);
     }
 
     @Getter

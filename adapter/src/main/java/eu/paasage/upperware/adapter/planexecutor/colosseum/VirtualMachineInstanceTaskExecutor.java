@@ -79,7 +79,7 @@ public class VirtualMachineInstanceTaskExecutor extends ColosseumTaskExecutor<Vi
     vmEntity = api.createVirtualMachineInstance(vmEntity);
     context.addVirtualMachineInstance(vmEntity);
 
-    log.debug("Virtual Machine Instance {} was successfully created at {}", name, vmEntity.getSelfLink());
+    log.info("Virtual Machine Instance {} was successfully created at {}", name, vmEntity.getSelfLink());
   }
 
   @Override

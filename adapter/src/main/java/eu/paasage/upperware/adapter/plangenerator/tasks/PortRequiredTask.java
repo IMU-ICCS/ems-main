@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.PortRequired;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class PortRequiredTask extends ConfigurationTask<PortRequired> {
   
-  public PortRequiredTask(String name, Type type, PortRequired data) {
-    super(name, type, data);
+  public PortRequiredTask(Type type, PortRequired data) {
+    super(type, data);
   }
 }

@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.Cloud;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class CloudTask extends ConfigurationTask<Cloud> {
 
-  public CloudTask(String name, Type type, Cloud data) {
-    super(name, type, data);
+  public CloudTask(Type type, Cloud data) {
+    super(type, data);
   }
 }

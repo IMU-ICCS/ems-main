@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.PortProvided;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class PortProvidedTask extends ConfigurationTask<PortProvided> {
 
-  public PortProvidedTask(String name, Type type, PortProvided data) {
-    super(name, type, data);
+  public PortProvidedTask(Type type, PortProvided data) {
+    super(type, data);
   }
 }

@@ -10,10 +10,12 @@
 package eu.paasage.upperware.adapter.plangenerator.tasks;
 
 import eu.paasage.upperware.adapter.plangenerator.model.LifecycleComponent;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class LifecycleComponentTask extends ConfigurationTask<LifecycleComponent> {
 
-  public LifecycleComponentTask(String name, Type type, LifecycleComponent data) {
-    super(name, type, data);
+  public LifecycleComponentTask(Type type, LifecycleComponent data) {
+    super(type, data);
   }
 }

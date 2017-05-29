@@ -52,7 +52,7 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<Appl
     String image = ac.getImage();
     checkNotNull(image);
 
-    log.debug("Executing Create Application Component task for component {}", name);
+    log.info("Executing Create Application Component task for component {}", name);
 
     Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
       format("Cloud %s was not configured in Colosseum - application component cannot be created", cloudName)));
@@ -103,7 +103,7 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<Appl
     acEntity = api.createApplicationComponent(acEntity);
     context.addApplicationComponent(acEntity);
 
-    log.debug("Application Component {} was successfully created at {}", name, acEntity.getSelfLink());
+    log.info("Application Component {} was successfully created at {}", name, acEntity.getSelfLink());
   }
 
   @Override

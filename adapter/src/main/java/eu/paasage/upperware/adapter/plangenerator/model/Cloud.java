@@ -12,13 +12,11 @@ package eu.paasage.upperware.adapter.plangenerator.model;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.Map;
 
 @Getter
 @Builder
-@ToString(exclude = "password")
 @EqualsAndHashCode
 public class Cloud {
 
@@ -34,4 +32,8 @@ public class Cloud {
 
   private Map<String, String> filters;
 
+  public String toString() {
+    return "Cloud(name=" + this.getName() + ", login=***, password=***, tenant=***, endpoint=" + this.getEndpoint() +
+      ", provider=" + this.getProvider() + ", driver=" + this.getDriver() + ", filters=" + this.getFilters() + ")";
+  }
 }

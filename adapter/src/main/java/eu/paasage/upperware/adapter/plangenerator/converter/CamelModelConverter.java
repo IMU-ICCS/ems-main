@@ -9,15 +9,47 @@
 
 package eu.paasage.upperware.adapter.plangenerator.converter;
 
-import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.adapter.plangenerator.model.ComparableModel;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class CamelModelConverter implements ModelConverter<CamelModel, ComparableModel> {
+@Service
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class CamelModelConverter implements ModelConverter<DeploymentModel, ComparableModel> {
 
-  // TODO default implementation of Camel Model Converter
+  private CloudConverter cloudConverter;
+
+  private ApplicationConverter applicationConverter;
+  private ApplicationInstanceConverter applicationInstanceConverter;
+
+  private LifecycleComponentConverter lifecycleComponentConverter;
+
+  private VirtualMachineConverter virtualMachineConverter;
+  private VirtualMachineInstanceConverter virtualMachineInstanceConverter;
+
+  private ApplicationComponentConverter applicationComponentConverter;
+  private ApplicationComponentInstanceConverter applicationComponentInstanceConverter;
+
+  private CommunicationConverter communicationConverter;
+  private PortProvidedConverter portProvidedConverter;
+  private PortRequiredConverter portRequiredConverter;
 
   @Override
-  public ComparableModel toComparableModel(CamelModel camelModel) {
-    return null;
+  public ComparableModel toComparableModel(DeploymentModel deploymentModel) {
+    return ComparableModel.builder()
+      .clouds(cloudConverter.toComparableModel(deploymentModel))
+      .application(applicationConverter.toComparableModel(deploymentModel))
+      .applicationInstance(applicationInstanceConverter.toComparableModel(deploymentModel))
+      .lifecycleComponents(lifecycleComponentConverter.toComparableModel(deploymentModel))
+      .virtualMachines(virtualMachineConverter.toComparableModel(deploymentModel))
+      .virtualMachineInstances(virtualMachineInstanceConverter.toComparableModel(deploymentModel))
+      .applicationComponents(applicationComponentConverter.toComparableModel(deploymentModel))
+      .applicationComponentInstances(applicationComponentInstanceConverter.toComparableModel(deploymentModel))
+      .communications(communicationConverter.toComparableModel(deploymentModel))
+      .portsProvided(portProvidedConverter.toComparableModel(deploymentModel))
+      .portsRequired(portRequiredConverter.toComparableModel(deploymentModel))
+      .build();
   }
 }

@@ -84,14 +84,14 @@ public class ColosseumConfigClientApi implements ColosseumConfigApi {
   @Override
   public Optional<Image> getImage(Long cloudId, String name) {
     return client.controller(Image.class)
-      .getSingle(image -> cloudId.equals(image.getCloud()) && name.equals(image.getProviderId()))
+      .getSingle(image -> cloudId.equals(image.getCloud()) && name.equals(image.getSwordId()))
       .transform(Optional::ofNullable).or(Optional.empty());
   }
 
   @Override
   public Optional<Image> getImageWithWait(@NonNull Long cloudId, @NonNull String name, long timeout) {
     return client.controller(Image.class)
-      .waitAndGetSingle(image -> cloudId.equals(image.getCloud()) && name.equals(image.getProviderId()), timeout, MILLISECONDS)
+      .waitAndGetSingle(image -> cloudId.equals(image.getCloud()) && name.equals(image.getSwordId()), timeout, MILLISECONDS)
       .transform(Optional::ofNullable).or(Optional.empty());
   }
 

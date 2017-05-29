@@ -9,10 +9,16 @@
 
 package eu.paasage.upperware.adapter.communication.cdoserver;
 
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+
 public interface CdoServerApi<T> {
 
-  T loadModel(String modelId);
+  T loadDeploymentModel(String resourceName, int deploymentModelIndex, CDOTransaction trans);
 
-  void setExecutionContext(T model, String executionContextName);
+  void setExecutionContext(T deploymentModel, String executionContextName, CDOTransaction trans);
+
+  CDOTransaction openTransaction();
+
+  void closeTransaction(CDOTransaction trans);
 
 }

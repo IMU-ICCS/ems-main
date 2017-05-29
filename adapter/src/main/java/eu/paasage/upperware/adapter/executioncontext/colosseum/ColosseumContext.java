@@ -78,7 +78,7 @@ public class ColosseumContext implements Operations {
         $cloud -> name.equals($cloud.getName()));
       if ($clouds.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one cloud with the same name %s", name));
+          "more than one cloud with the same name %s", name));
       }
       return $clouds.get().findAny();
     }
@@ -102,7 +102,7 @@ public class ColosseumContext implements Operations {
         application -> name.equals(application.getName()));
       if ($applications.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one application with the same name %s", name));
+          "more than one application with the same name %s", name));
       }
       return $applications.get().findAny();
     }
@@ -128,7 +128,7 @@ public class ColosseumContext implements Operations {
         $applicationInstance -> appId.equals($applicationInstance.getApplication()));
       if ($applicationInstances.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one application instance with the same application id %s", appId));
+          "more than one application instance with the same application id %s", appId));
       }
       return $applicationInstances.get().findAny();
     }
@@ -149,7 +149,7 @@ public class ColosseumContext implements Operations {
         $virtualMachine -> cloudId.equals($virtualMachine.getCloud()) && locationId.equals($virtualMachine.getLocation())
           && hardwareId.equals($virtualMachine.getHardware()) && imageId.equals($virtualMachine.getImage()));
       if ($virtualMachines.get().count() > 1) {
-        throw new IllegalStateException(format("Ambiguous search result - there are more then one virtual machine with the " +
+        throw new IllegalStateException(format("Ambiguous search result - there are more than one virtual machine with the " +
           "same params (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s)", cloudId, locationId, hardwareId, imageId));
       }
       return $virtualMachines.get().findAny();
@@ -170,7 +170,7 @@ public class ColosseumContext implements Operations {
         $virtualMachineInstance -> name.equals($virtualMachineInstance.getName()));
       if ($virtualMachineInstances.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one virtual machine instance with the same name %s", name));
+          "more than one virtual machine instance with the same name %s", name));
       }
       return $virtualMachineInstances.get().findAny();
     }
@@ -190,7 +190,7 @@ public class ColosseumContext implements Operations {
         $lifecycleComponent -> name.equals($lifecycleComponent.getName()));
       if ($lifecycleComponents.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one lifecycle component with the same name %s", name));
+          "more than one lifecycle component with the same name %s", name));
       }
       return $lifecycleComponents.get().findAny();
     }
@@ -216,7 +216,7 @@ public class ColosseumContext implements Operations {
         $applicationComponent -> appId.equals($applicationComponent.getApplication())
           && lcId.equals($applicationComponent.getComponent()) && vmId.equals($applicationComponent.getVirtualMachineTemplate()));
       if ($applicationComponents.get().count() > 1) {
-        throw new IllegalStateException(format("Ambiguous search result - there are more then one application component " +
+        throw new IllegalStateException(format("Ambiguous search result - there are more than one application component " +
           "with the same params (appName=%s, lcId=%s, vmId=%s)", appName, lcId, vmId));
       }
       return $applicationComponents.get().findAny();
@@ -245,7 +245,7 @@ public class ColosseumContext implements Operations {
         $portProvided -> name.equals($portProvided.getName()));
       if ($portsProvided.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one port provided with the same name %s", name));
+          "more than one port provided with the same name %s", name));
       }
       return $portsProvided.get().findAny();
     }
@@ -265,7 +265,7 @@ public class ColosseumContext implements Operations {
         $portRequired -> name.equals($portRequired.getName()));
       if ($portsRequired.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are " +
-          "more then one port required with the same name %s", name));
+          "more than one port required with the same name %s", name));
       }
       return $portsRequired.get().findAny();
     }
