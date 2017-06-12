@@ -9,8 +9,10 @@
 
 package eu.paasage.upperware.adapter.executioncontext;
 
-public interface Operations {
+public interface ContextOperations {
 
   void refreshContext();
+
+  boolean isLoaded();
 
 }

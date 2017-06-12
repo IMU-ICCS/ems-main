@@ -9,7 +9,8 @@
 
 package eu.paasage.upperware.adapter.executioncontext.cdoserver;
 
-import eu.paasage.upperware.adapter.communication.cdoserver.CdoServerCamelApi;
+import eu.paasage.upperware.adapter.communication.cdoserver.CdoServerApi;
+import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CdoServerCamelUpdater implements CdoServerUpdater {
+public class CdoServerClientUpdater implements CdoServerUpdater {
 
-  private CdoServerCamelApi cdoServerCamelApi;
+  // TODO
+
+  private CdoServerApi cdoServerApi;
+  private ColosseumContext context;
   
 }

@@ -23,28 +23,34 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CdoServerCamelClientApi implements CdoServerCamelApi {
+public class CdoServerClientApi implements CdoServerApi {
 
   private CDOClient cdoClient;
 
   @Override
-  public DeploymentModel loadDeploymentModel(@NonNull String resourceName, int deploymentModelIndex, CDOTransaction trans) {
-    EList<EObject> contents = trans.getOrCreateResource(resourceName).getContents();
+  public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
+    EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
       CamelModel model = (CamelModel) contents.get(0);
       if (model != null) {
         EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
-        if (CollectionUtils.size(deploymentModels) > deploymentModelIndex) {
-          return deploymentModels.get(deploymentModelIndex);
+        if (CollectionUtils.isNotEmpty(deploymentModels)) {
+          return deploymentModels.get(deploymentModels.size() - 1);
         }
       }
     }
-    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s, deploymentModelIndex=%s. " +
-      "Check both values are valid and the model is available in CDO Server.", resourceName, deploymentModelIndex));
+    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
+      "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
 
   @Override
-  public void setExecutionContext(DeploymentModel deploymentModel, String executionContextName, CDOTransaction trans) {
+  public DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr) {
+    // TODO
+    return null;
+  }
+
+  @Override
+  public void setExecutionContext(DeploymentModel deploymentModel, String execContextName, CDOTransaction tr) {
     // TODO
   }
 
@@ -54,7 +60,7 @@ public class CdoServerCamelClientApi implements CdoServerCamelApi {
   }
 
   @Override
-  public void closeTransaction(CDOTransaction trans) {
-    trans.close();
+  public void closeTransaction(CDOTransaction tr) {
+    tr.close();
   }
 }

@@ -13,7 +13,7 @@ import com.google.common.collect.Lists;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
-import eu.paasage.upperware.adapter.executioncontext.Operations;
+import eu.paasage.upperware.adapter.executioncontext.ContextOperations;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Synchronized;
@@ -30,7 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 @Service
-public class ColosseumContext implements Operations {
+public class ColosseumContext implements ContextOperations {
 
   private ColosseumApi api;
   private ColosseumConfigApi configApi;

@@ -9,8 +9,15 @@
 
 package eu.paasage.upperware.adapter.validation;
 
-import eu.paasage.camel.CamelModel;
+import eu.paasage.upperware.adapter.plangenerator.Plan;
+import org.springframework.stereotype.Service;
 
-public interface CamelValidator extends Validator<CamelModel> {
+@Service
+public class DefaultPlanValidator implements PlanValidator {
 
+  @Override
+  public boolean validate(Plan validatedObj) {
+    // TODO
+    return true;
+  }
 }

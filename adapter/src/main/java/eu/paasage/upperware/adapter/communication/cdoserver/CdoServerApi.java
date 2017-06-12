@@ -9,16 +9,19 @@
 
 package eu.paasage.upperware.adapter.communication.cdoserver;
 
+import eu.paasage.camel.deployment.DeploymentModel;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-public interface CdoServerApi<T> {
+public interface CdoServerApi {
 
-  T loadDeploymentModel(String resourceName, int deploymentModelIndex, CDOTransaction trans);
+  DeploymentModel getModelToDeploy(String resourceName, CDOTransaction tr);
 
-  void setExecutionContext(T deploymentModel, String executionContextName, CDOTransaction trans);
+  DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr);
+
+  void setExecutionContext(DeploymentModel deploymentModel, String execContextName, CDOTransaction tr);
 
   CDOTransaction openTransaction();
 
-  void closeTransaction(CDOTransaction trans);
+  void closeTransaction(CDOTransaction tr);
 
 }
