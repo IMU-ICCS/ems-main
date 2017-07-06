@@ -115,7 +115,8 @@
 		</plugins>
 	</build>
 
-
+  	<repositories>
+		<repository>
 	      <id>ow2.releases</id>
 	      <name>OW2 repository</name>
 	      <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
