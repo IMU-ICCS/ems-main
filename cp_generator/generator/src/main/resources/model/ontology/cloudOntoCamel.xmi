@@ -132,6 +132,7 @@
       <subConcept name="Virgina"/>
       <subConcept name="UK"/>
       <subConcept name="DE"/>
+      <subConcept name="Cyprus"/>
     </subConcept>
     <subConcept name="Deployment Model">
       <subConcept name="Public"/>
@@ -142,7 +143,7 @@
       <subConcept name="IaaS"/>
     </subConcept>
     <subConcept name="OS">
-      <subConcept name="Windows Server"/>
+      <subConcept name="Windows"/>
       <subConcept name="Ubuntu"/>
       <subConcept name="ubuntu"/>
     </subConcept>

@@ -2,17 +2,17 @@ name := "milp-solver"
 
 organization := "org.ow2.paasage"
 
-val suffix = SettingKey[String]("version-suffix", "Version suffix, i.e. branch name")
+val suffix = settingKey[String]("Version suffix, i.e. branch name")
 
-val paasageVersion = SettingKey[String]("paasage-version", "PaaSage version")
+val paasageVersion = settingKey[String]("PaaSage version")
 
-paasageVersion := sys.props.getOrElse("paasage.version", default = "2015.9.1-SNAPSHOT")
+paasageVersion := sys.props.getOrElse("paasage.version", default = "2016.4.0-SNAPSHOT")
 
 suffix := sys.props.getOrElse("suffix", default = "SNAPSHOT")
 
-version := "2015.9.1" + "-" + suffix.value
+version := "2016.4.0" + "-" + suffix.value
 
-mainClass := Some("eu.paasage.upperware.milp_solver.exec.MainCDO")
+mainClass := Some("eu.paasage.upperware.milp_solver.exec.Daemon")
 
 scalaVersion := "2.11.1"
 
@@ -30,8 +30,8 @@ libraryDependencies ++= Seq(
   "org.apache.commons"          % "commons-lang3"        % "3.0", // required by jCMPL.jar
   "cmpl"                        % "jcmpl"                % "1.10.0",
   "org.scala-lang"              % "scala-reflect"        % scalaVersion.value,
-  ("org.ow2.paasage.mddb.cdo"   % "client"               % paasageVersion.value).exclude("org.eclipse.runtime", "runtime-registry-compatibility").exclude("asm", "asm"),
-  "org.ow2.paasage"             % "upperware-metamodel"  % paasageVersion.value intransitive(),
+  ("org.ow2.paasage.mddb.cdo"   % "client"               % "2015.9.1-SNAPSHOT").exclude("org.eclipse.runtime", "runtime-registry-compatibility").exclude("asm", "asm"),
+  "org.ow2.paasage"             % "upperware-metamodel"  % "2016.4.0-SNAPSHOT" intransitive(),
   "com.typesafe.scala-logging" %% "scala-logging-slf4j"  % "2.1.2",
   "com.typesafe"                %  "config"              % "1.2.1",
   "ch.qos.logback"              % "logback-classic"      % "1.1.2"

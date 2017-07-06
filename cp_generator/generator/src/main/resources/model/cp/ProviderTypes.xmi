@@ -9,4 +9,7 @@
   <types id="GWDG"/>
   <types id="Omistack"/>
   <types id="AmazonEC2"/>
+  <types id="WindowsAzure"/>
+  <types id="TryStack"/>
+  <types id="Ucystack"/>
 </typesPaasage:ProviderTypes>

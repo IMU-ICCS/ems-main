@@ -63,7 +63,7 @@ public class AmazonEC2PriceEstimator implements IProviderPriceEstimator
 	protected double computeVmsPrice(Feature vm, ProviderModel fm)
 	{
 		logger.debug("AmazonEC2PriceEstimator - computeVmsPrice- Computing the price... ");
-		double price= 0; 
+		double price= Constants.DEFAULT_PRICE_VM*vm.getFeatureCardinality().getValue(); ; 
 
 		Feature f = ProviderModelTool.getFeatureByName(fm.getRootFeature(), ProviderModelTool.LOCATION_FEATURE);
 		Feature location=ProviderModelTool.getSelectedFeatureFromList(f.getSubFeatures()); 
@@ -104,28 +104,28 @@ public class AmazonEC2PriceEstimator implements IProviderPriceEstimator
 								logger.info("AmazonEC2PriceEstimator - computeVmsPrice- Computed price: "+price);
 							}
 							else
-								logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The price for the OS "+os+" does not exist. The price will be not computed!");
+								logger.warn("AmazonEC2PriceEstimator - computeVmsPrice- The price for the OS "+os+" does not exist. The default value will be used!");
 
 						}
 						else
-							logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The OS does not exist. The price will be not computed!"); 
+							logger.warn("AmazonEC2PriceEstimator - computeVmsPrice- The OS does not exist. The default value will be used!"); 
 
 					}
 					else
-						logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The prices for the VM size "+ vmType +" does not exist!"); 
+						logger.warn("AmazonEC2PriceEstimator - computeVmsPrice- The prices for the VM size "+ vmType +" does not exist. The default value will be used!"); 
 
 
 
 				}
 				else
-					logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The VM Size value does not exist. The price will be not computed!"); 
+					logger.warn("AmazonEC2PriceEstimator - computeVmsPrice- The VM Size value does not exist. The default value will be used!"); 
 			}
 			else
-				logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The location "+location.getName()+" does not exist. The price will be not computed!"); 
+				logger.warn("AmazonEC2PriceEstimator - computeVmsPrice- The location "+location.getName()+" does not exist. The default value will be used!"); 
 
 		}
 		else
-			logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The location is not selected. The price will be not computed!"); 
+			logger.warn("AmazonEC2PriceEstimator - computeVmsPrice- The location is not selected. The default value will be used!"); 
 		//		}
 		//		else
 		//			logger.error("AmazonEC2PriceEstimator - computeVmsPrice- The location feature group does not exist. The price will be not computed!"); 

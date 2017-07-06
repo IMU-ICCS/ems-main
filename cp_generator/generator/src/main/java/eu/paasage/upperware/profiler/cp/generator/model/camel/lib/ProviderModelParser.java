@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -27,6 +28,8 @@ import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
+import eu.paasage.upperware.metamodel.types.typesPaasage.ContinentUpperware;
+import eu.paasage.upperware.metamodel.types.typesPaasage.CountryUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.LocationUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderType;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
@@ -108,7 +111,13 @@ public class ProviderModelParser
 			boolean found= false;
 			if(candidate.getLocation()!=null)
 			{
-				logger.debug("ProviderModelParser - parseOntology - Searching Candidate with Location "+candidate.getLocation().getName());
+				logger.debug("ProviderModelParser - parseOntology - Searching Candidate with Location "+candidate.getLocation().getName() +" and Id "+candidate.getId());
+				logger.debug("ProviderModelParser - parseOntology - Candidate list: ");
+				for(Provider c: candidates)
+				{
+					logger.debug("ProviderModelParser - parseOntology - "+c.getId());
+				}
+				
 				Provider aux= PaasageModelTool.searchProviderWithLocationInList(candidates, candidate); 
 				
 				if(aux!=null)
@@ -183,12 +192,12 @@ public class ProviderModelParser
 	
 	
 	public void removeNoCandidateProviders(PaasageConfiguration configuration, List<Provider> candidates)
-	{	logger.debug("** 		Candidates size: "+candidates.size()); 
+	{	logger.debug("ProviderModelParser - removeNoCandidateProviders	-	Candidates size: "+candidates.size()); 
 	
 	
 		for(Provider c: candidates)
 		{
-			logger.debug("** 		Candidates ID: "+c.getId()); 
+			logger.debug("ProviderModelParser - removeNoCandidateProviders	- 	Candidates ID: "+c.getId()); 
 		}
 		
 		for(int i=0; i<configuration.getProviders().size(); i++ )
@@ -212,6 +221,8 @@ public class ProviderModelParser
 	{
 		List<VirtualMachineProfile> vmProfiles= PaasageModelTool.searchRelatedVMProfiles(pcw.getPaasageConfiguration().getVmProfiles(), vm.getName());
 		
+		logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - Profiles size "+vmProfiles.size());
+		
 		List<Provider> vmProviders= PaasageModelTool.getProvidersFromVirtualMachineProfiles(vmProfiles);
 		
 		LocationUpperware location= PaasageModelTool.getLocationFromName(locationId, pcw);
@@ -220,10 +231,16 @@ public class ProviderModelParser
 		{
 			if(current.getType().getId().equals(providerId) && current.getLocation()!=null)
 			{
-				if(location!=null && location.getName().equals(current.getLocation().getName()))
+				if(location!=null)
 				{
-					logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - removing candidates with location "+location.getName()+" and provider "+current.getId());
-					PaasageModelTool.removeVirtualMahineProfilesByProvider(vmProfiles, current, pcw);
+					logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - location "+location.getName()+" and candidate location "+current.getLocation().getName());
+					if(location.getName().equals(current.getLocation().getName()) || PaasageModelTool.isInList(current.getLocation().getAlternativeNames(), locationId) || 
+							(location instanceof CountryUpperware && (PaasageModelTool.isProviderInCountry((CountryUpperware) location, current) || (current.getLocation() instanceof ContinentUpperware &&
+									PaasageModelTool.isCountryInContinent((CountryUpperware) location, (ContinentUpperware) current.getLocation())))) || (location instanceof ContinentUpperware && PaasageModelTool.isProviderInContinent((ContinentUpperware) location, current)))
+					{
+						logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - removing candidates with location "+location.getName()+" and provider "+current.getId());
+						PaasageModelTool.removeVirtualMahineProfilesByProvider(vmProfiles, current, pcw);
+					}
 				}
 			}
 		}
@@ -339,7 +356,7 @@ public class ProviderModelParser
 		logger.debug("ProviderModelParser - processCloud - CPU concept unit 2 "+cpuConcept.getUnit().getName());
 		
 		SaloonCamelSolver solver= new SaloonCamelSolver(pmw); 
-		//SaloonCamelSolver.logger.setLevel(Level.ALL);
+		SaloonCamelSolver.logger.setLevel(Level.OFF);
 		boolean allRespected= solver.verifyConceptsMapping(selectedConcepts); 
 		
 		cpuConcept= (QuantifiableElementCamel) ProviderModelParser.getConceptByName("CPU", ontology.getConcepts()); 
@@ -434,7 +451,7 @@ public class ProviderModelParser
 		
 		for(ConceptCamel c: concepts)
 		{
-			logger.debug("ProviderModelParser- getSelectedConcepts - concept "+c.getName()+" selected: "+c.isSelected());
+			//logger.debug("ProviderModelParser- getSelectedConcepts - concept "+c.getName()+" selected: "+c.isSelected());
 			if(c.isSelected() && !isOptimisationConcept(c))
 			{	
 				selected.add(c); 

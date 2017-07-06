@@ -59,6 +59,7 @@ import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
+import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionType;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderType;
 import eu.paasage.upperware.metamodel.types.typesPaasage.VariableElementTypeEnum;
@@ -127,6 +128,8 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	protected DimensionDerivator dimensionsDerivator; 
 	
+	protected DeltaFunctionDerivator deltaFunctionDerivator;
+	
 	/*
 	 * Factory of Cp objects
 	 */
@@ -148,6 +151,9 @@ public class CPModelDerivator implements ICPModelDerivator
 		createFunctionCreators(creatorsFile, database);
 		//createFactories(factoryFile); 
 		dimensionsDerivator= new DimensionDerivator(); 
+		deltaFunctionDerivator= new DeltaFunctionDerivator();
+		
+		
 	}
 	
 	/*
@@ -206,11 +212,15 @@ public class CPModelDerivator implements ICPModelDerivator
 			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! "); 
 		}
 		
+		logger.info("** 		Creating Delta Utility Function "); 
+		
+		deltaFunctionDerivator.createDeltaFunction(cp);
+		
 		logger.info("** 		Creating User constraints "); 
 		
 		dimensionsDerivator.createConstraints(camel, cp);
 		
-/*		if(configuration.getGoals().size()>0)
+		/*if(configuration.getGoals().size()>0)
 		{	
 			logger.debug("CPModelDerivator - derivateConstraintProblem - Goals! "); 
 			for(PaaSageGoal goal:configuration.getGoals())
@@ -414,7 +424,7 @@ public class CPModelDerivator implements ICPModelDerivator
 					logger.debug("CPModelDerivator - createConstraints - 36");
 					List<Variable> requiredVariables= CPModelTool.getVariablesRelatedToAppComponent(required, cp); 
 					logger.debug("CPModelDerivator - createConstraints - 37");
-					if(!rf.isRemote()) 
+					if(rf.getCommunicationType().getValue()==CommunicationTypeUpperware.LOCAL_VALUE) 
 					{
 						logger.debug("CPModelDerivator - createConstraints - 38");
 						List<ComposedExpression> numericExpressions= new ArrayList<>(); 
@@ -522,7 +532,7 @@ public class CPModelDerivator implements ICPModelDerivator
 						}	
 						
 					}
-					else //DIFFERENT LOCATION - At least one of the VM in variables have a different value
+					else if(rf.getCommunicationType().getValue()==CommunicationTypeUpperware.REMOTE_VALUE)  //DIFFERENT LOCATION - At least one of the VM in variables have a different value
 					{
 						
 						logger.debug("CPModelDerivator - createConstraints - Different location");
@@ -565,14 +575,6 @@ public class CPModelDerivator implements ICPModelDerivator
 								addVariablesToList(vmp, v1, v2, differentLocations);
 							}
 							
-
-							
-							
-
-								
-								
-								
-
 						}
 					}
 					

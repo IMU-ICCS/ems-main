@@ -441,14 +441,21 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		String pcId= pc.getId(); 
 		
+		logger.debug("CDODatabaseProxy - saveModels - Storing Models ");
+		
 		cdoClient.storeModels(objects, CDO_SERVER_PATH+pcId);
 		
+		
+		
+		
+		logger.debug("CDODatabaseProxy - saveModels - Models stored! ");
 		
 		File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pcId); 
 		
 		File paasageConfigModel= new File(paasageConfigurationDir, Constants.PAASAGE_CONFIGURATION_MODEL_FILE_NAME); 
 		
 		File cpModel= new File(paasageConfigurationDir, Constants.CP_MODEL_FILE_NAME); 
+	
 		
 		CDOTransaction view= cdoClient.openTransaction();
 		CDOResource resource = view.getResource(CDO_SERVER_PATH+pcId);

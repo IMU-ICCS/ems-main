@@ -12,7 +12,6 @@ public class ZeroMQServer
 {
 	
 	//PROPERTY NAMES
-	//test commit
 	
 	private static String SUBSCRIBER_PORT_PROPERTY= "zeromqSubscriberPort";
 	
@@ -122,46 +121,65 @@ public class ZeroMQServer
         while (!Thread.currentThread().isInterrupted()) {
         	
         	try{
-            // Wait for next message from the publisher
-        	System.out.println("Waiting for Model Id");
-            byte[] request = subscriber.recv();
-            
-            request = subscriber.recv();
-            
-            modelId= new String(request,StandardCharsets.UTF_8); 
-            
-            System.out.println("model id "+modelId);
-
-            //List<ModelFileInfo> modelInfos=  null; 
-        	
-			//ModelFileInfo mfi= new ModelFileInfo(modelId, "camel");
-			
-			//modelInfos= new ArrayList<ModelFileInfo>(); 
-			
-			//modelInfos.add(mfi); 
-			
-			System.out.println("Creating GenerationOrchestrator");
-			
-			GenerationOrchestrator go= new GenerationOrchestrator(); 
+	            // Wait for next message from the publisher
+	        	System.out.println("Waiting for Model Id");
+	            byte[] request = subscriber.recv();
+	            
+	            request = subscriber.recv();
+	            
+	            modelId= new String(request,StandardCharsets.UTF_8); 
+	            
+	            System.out.println("model id "+modelId);
+	
+	            //List<ModelFileInfo> modelInfos=  null; 
+	        	
+				//ModelFileInfo mfi= new ModelFileInfo(modelId, "camel");
 				
-			System.out.println("Generating CP Model");
-			String paasageConfigID= go.generateCPModel(modelId); 
-			System.out.println("CP Model Generated");
-            
-			publisher.sendMore(cpModelIdTopic); 
-			publisher.sendMore(modelId);
-            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
-            System.out.println("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
-            
-	    //EC
-            publisher.sendMore(camelModelIdTopic); 
-            publisher.sendMore(modelId); 
-            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+				//modelInfos= new ArrayList<ModelFileInfo>(); 
+				
+				//modelInfos.add(mfi); 
+				
+				System.out.println("Creating GenerationOrchestrator");
+				
+				GenerationOrchestrator go= new GenerationOrchestrator(); 
+					
+				System.out.println("Generating CP Model");
+				String paasageConfigID= go.generateCPModel(modelId); 
+				
+				if(!paasageConfigID.equals(""))
+				{
+					System.out.println("CP Model Generated");
+	            
+					publisher.sendMore(cpModelIdTopic); 
+					publisher.sendMore(modelId);
+		            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+		            System.out.println("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+		            
+		            //EC
+		            publisher.sendMore(camelModelIdTopic); 
+		            publisher.sendMore(modelId); 
+		            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+				}
+				else
+				{
+					String errorMessage= "Le CP Model was not generated";
+					System.out.println(errorMessage);
+					publisher.sendMore(camelModelIdTopic); 
+	                publisher.sendMore(modelId); 
+	                publisher.send("ERROR: "+errorMessage);
+				}
+	        
             
         	}
         	catch(Exception e)
         	{
-        		System.out.println("Problems dealing with the camel model"+modelId+". Error Message "+e.getMessage());
+        		String message= "Problems dealing with the camel model"+modelId+". Le CP Model was not generated. Error Message "+e.getMessage();
+        		System.out.println(message);
+        	    
+                publisher.sendMore(camelModelIdTopic); 
+                publisher.sendMore(modelId); 
+                publisher.send("ERROR: "+message);
+        		
         		continue;
         	}
         }

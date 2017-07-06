@@ -84,7 +84,7 @@ public class CostFunctionCreator implements IFunctionCreator {
 			goalExpression= createMultiplication(cp, v, appId); 
 		}
 		
-		Goal goalCP= CPModelTool.createGoal(GoalOperatorEnum.MIN, goal.getId(), goalExpression, 0); //0 is the default priority as here we are not using an optimisation requirement for the creation of the goal  
+		Goal goalCP= CPModelTool.createGoal(GoalOperatorEnum.MIN, goal.getId(), goalExpression, 1); //1 is the default priority as here we are not using an optimisation requirement for the creation of the goal  
 		
 		cp.getGoals().add(goalCP); 
 			

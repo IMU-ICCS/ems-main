@@ -23,10 +23,13 @@ import eu.paasage.camel.requirement.OptimisationRequirement;
 import eu.paasage.camel.requirement.Requirement;
 import eu.paasage.camel.requirement.RequirementModel;
 import eu.paasage.camel.requirement.ServiceLevelObjective;
+import eu.paasage.camel.type.BoolValue;
 import eu.paasage.camel.type.DoublePrecisionValue;
+import eu.paasage.camel.type.EnumerateValue;
 import eu.paasage.camel.type.FloatsValue;
 import eu.paasage.camel.type.IntegerValue;
 import eu.paasage.camel.type.Range;
+import eu.paasage.camel.type.SingleValue;
 import eu.paasage.camel.type.TypeEnum;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
 import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
@@ -43,6 +46,7 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
+import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
@@ -69,9 +73,9 @@ public class DimensionDerivator
 	
 	public void createDimensions(CamelModel camel, ConstraintProblem cp, List<OptimisationRequirement> complexOptRequirements)
 	{
-		logger.debug("DimensionDerivator - createDimensions 1");
+		//logger.debug("DimensionDerivator - createDimensions 1");
 		RequirementModel reqs= camel.getRequirementModels().get(0); 
-		logger.debug("DimensionDerivator - createDimensions 2");
+
 		
 		//List<OptimisationRequirement> complexOptRequirements= new ArrayList<>();
 		
@@ -79,17 +83,17 @@ public class DimensionDerivator
 		 
 		for(Requirement req: reqs.getRequirements())
 		{
-			logger.debug("DimensionDerivator - createDimensions 4");
+			
 			if(req instanceof OptimisationRequirement)
 			{
-				logger.debug("DimensionDerivator - createDimensions 5");
+				
 				OptimisationRequirement optReq= (OptimisationRequirement) req; 
 								
 				
 				if(optReq.getMetric()!=null)
 				{
 					
-					if(optReq.getMetricContext()!=null)
+					//if(optReq.getMetricContext()!=null)
 					{
 						Metric metric= optReq.getMetric(); 
 						MetricContext metricContext= optReq.getMetricContext(); 
@@ -100,8 +104,9 @@ public class DimensionDerivator
 						
 						if(metric instanceof RawMetric)
 						{	
+							
 							expressions=processRawMetric((RawMetric)metric, (RawMetricContext) metricContext, camel, cp);
-						
+							
 							
 							
 //							if(!metric.getName().toLowerCase().contains(NUMBER_OF_VMS_SUBSTRING)) // The dimension is created only if it is not a "Instace" variable 
@@ -116,9 +121,13 @@ public class DimensionDerivator
 						}
 						else
 						{
+							
 							complexOptRequirements.add(optReq);
 							
+							
 							NumericExpression expression= processCompositeMetric((CompositeMetric) metric, (CompositeMetricContext) metricContext, camel, cp);
+							
+							
 							
 							if(expression!=null)
 								expressions.add(expression);
@@ -134,10 +143,10 @@ public class DimensionDerivator
 						}
 						
 					}
-					else
+/*					else
 					{
 						logger.warn("DimensionDerivator - createDimensions - The optimisation requirement "+optReq.getName()+"does not have a related metric context. The dimension will be not generated!");
-					}
+					}*/
 
 					
 				}
@@ -145,9 +154,7 @@ public class DimensionDerivator
 				{	
 					logger.warn("DimensionDerivator - createDimensions - The optimisation requirement "+optReq.getName()+"does not have a related metric. The dimension will be not generated!");
 				}	
-				
-				logger.debug("DimensionDerivator - createDimensions 7");
-				
+					
 				
 			}
 				
@@ -258,12 +265,65 @@ public class DimensionDerivator
 	
 	protected void createValueInSolutionForMetricVariable(RawMetric metric, ConstraintProblem cp, InternalComponent ic, Solution solution)
 	{
+		NumericValueUpperware actualValue= null;
 		
-		DoubleValueUpperware actualVal= TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		DoubleValueUpperware doubleVal= TypesFactory.eINSTANCE.createDoubleValueUpperware();
 		
-		actualVal.setValue(DEFAULT_METRIC_VALUE);
+		doubleVal.setValue(DEFAULT_METRIC_VALUE);
 		
-		createValueInSolutionForMetricVariable(metric, cp, ic, solution, actualVal);
+		actualValue= doubleVal;
+		
+		if(metric.getValue()!=null)
+		{
+			SingleValue singleVal= metric.getValue();
+			
+			if(singleVal instanceof BoolValue)
+			{
+				BoolValue value= (BoolValue) singleVal;
+				int val= 0;
+					if(value.isValue())
+						val=1;
+				
+				IntegerValueUpperware booleanVal= TypesFactory.eINSTANCE.createIntegerValueUpperware();
+				booleanVal.setValue(val);
+				actualValue= booleanVal;
+			}
+			else if(singleVal instanceof EnumerateValue)
+			{
+				EnumerateValue value= (EnumerateValue) singleVal;
+				int val= value.getValue();
+				
+				IntegerValueUpperware enumVal= TypesFactory.eINSTANCE.createIntegerValueUpperware();
+				enumVal.setValue(val);
+				actualValue= enumVal;
+			}
+			else if(singleVal instanceof IntegerValue)
+			{
+				IntegerValue value= (IntegerValue) singleVal;
+				int val= value.getValue();
+				
+				IntegerValueUpperware intVal= TypesFactory.eINSTANCE.createIntegerValueUpperware();
+				intVal.setValue(val);
+				actualValue= intVal;
+			}
+			else if(singleVal instanceof FloatsValue)
+			{
+				FloatsValue value= (FloatsValue) singleVal;
+				float val= value.getValue();
+				
+				doubleVal.setValue(val);
+			}
+			else if(singleVal instanceof DoublePrecisionValue)
+			{
+				DoublePrecisionValue value= (DoublePrecisionValue) singleVal;
+				double val= value.getValue();
+				
+				doubleVal.setValue(val);
+			}
+			
+		}
+		
+		createValueInSolutionForMetricVariable(metric, cp, ic, solution, actualValue);
 	}
 	
 	protected void createValueInSolutionForMetricVariable(RawMetric metric, ConstraintProblem cp, InternalComponent ic, Solution solution, NumericValueUpperware actualVal)
@@ -291,19 +351,24 @@ public class DimensionDerivator
 		List<NumericExpression> expressions= new ArrayList<NumericExpression>();
 		List<InternalComponent> components = new ArrayList<>();
 		
-		
+		//logger.debug("DimensionDerivator - processRawMetric 1");
 		//The context is a raw context - It is mandatory
 		if(metricContext!=null && metricContext.getComponent()!=null && metricContext.getComponent() instanceof InternalComponent)
 		{
+			
 			components.add((InternalComponent) metricContext.getComponent());
+			
 		}
 		else
 		{
+			
 			components.addAll(camel.getApplications().get(0).getDeploymentModels().get(0).getInternalComponents());
+			
 		}
 		
 		if(metric.isIsVariable() && !metric.getName().toLowerCase().contains(NUMBER_OF_VMS_SUBSTRING.toLowerCase()))
 		{
+			
 			for(InternalComponent ic: components)
 			{
 				String varName= CPModelTool.getUserVariableName(metric, ic); 
@@ -318,9 +383,11 @@ public class DimensionDerivator
 			}
 			
 			
+			
 		}
 		else if(metric.isIsVariable())
 		{
+			
 			List<Variable> variables= CPModelTool.getAllComponentInVMVariables(cp.getVariables());
 			
 			for(InternalComponent ic: components)
@@ -332,18 +399,24 @@ public class DimensionDerivator
 		}
 		else //if(!metric.isIsVariable()) // It is a metric
 		{
+			
 			Solution sol= CPModelTool.searchLastSolution(cp.getSolution());  
+			
 			
 			for(InternalComponent ic: components)
 			{
+			
 				String metricName= CPModelTool.getUserVariableName(metric, ic); 
+				
 				
 				MetricVariable metricVar= CPModelTool.searchMetricVariableByName(metricName, cp.getMetricVariables()); 
 				
 				
 				if(metricVar==null)
 				{	
+					
 					metricVar= createMetricVariable(metric, cp, ic);
+					
 					
 					if(metricVar!=null) //A solution is required
 					{						
@@ -373,24 +446,30 @@ public class DimensionDerivator
 	}
 	
 	protected NumericExpression processFormula(CompositeMetric parentMetric, MetricFormula formula, CompositeMetricContext context, CamelModel camel, ConstraintProblem cp)
-	{
+	{	
 		List<NumericExpression> expressions= new ArrayList<>();
 		NumericExpression exp= null;
 		
+		//logger.debug("DimensionDerivator - processFormula 1");
 		for(MetricFormulaParameter parameter:formula.getParameters())
 		{
+			
 			if(parameter instanceof Metric)
 			{
+				
 				Metric theMetric= (Metric) parameter;
 				MetricContext theContext= null;
 				
 				if(context!=null)
 				{	
+					
 					EList<MetricContext> contexts= context.getComposingMetricContexts();
 					
 					for(int i=0; i<contexts.size() && theContext==null; i++)
 					{
+						
 						theContext= searchForMetricContext((Metric) parameter, context);
+						
 					}
 					
 				}
@@ -398,10 +477,20 @@ public class DimensionDerivator
 				
 				//if(theContext!=null)
 				{
+					
 					if(theMetric instanceof RawMetric)
+					{
+		
 						expressions.addAll(processRawMetric((RawMetric) theMetric, (RawMetricContext) theContext, camel, cp));
+						
+					}
 					else
+					{	
 						expressions.add(processCompositeMetric((CompositeMetric) theMetric, (CompositeMetricContext) theContext, camel, cp));
+						
+		
+						
+					}
 				}
 /*				else
 				{
@@ -409,8 +498,73 @@ public class DimensionDerivator
 				}*/
 				
 			}
-			else
+			else if(parameter instanceof MetricFormula)
+			{
 				expressions.add(processFormula(null, (MetricFormula) parameter, context, camel, cp));
+			}
+			else
+			{
+				if(parameter instanceof BoolValue)
+				{
+					BoolValue value= (BoolValue) parameter;
+					int val= 0;
+						if(value.isValue())
+							val=1;
+					
+					Constant cVal= CPModelTool.createIntegerConstant(val, parameter.getName());
+					cp.getConstants().add(cVal);
+					expressions.add(cVal);
+				}
+				else if(parameter instanceof EnumerateValue)
+				{
+					EnumerateValue value= (EnumerateValue) parameter;
+					int val= value.getValue();
+					
+					Constant cVal= CPModelTool.createIntegerConstant(val, parameter.getName());
+					cp.getConstants().add(cVal);
+					expressions.add(cVal);
+				}
+				else if(parameter instanceof IntegerValue)
+				{
+					IntegerValue value= (IntegerValue) parameter;
+					int val= value.getValue();
+					
+					Constant cVal= CPModelTool.createIntegerConstant(val, parameter.getName());
+					cp.getConstants().add(cVal);
+					expressions.add(cVal);
+				}
+				else if(parameter instanceof FloatsValue)
+				{
+					FloatsValue value= (FloatsValue) parameter;
+					float val= value.getValue();
+					
+					Constant cVal= CPModelTool.createDoubleConstant(val, parameter.getName());
+					cp.getConstants().add(cVal);
+					expressions.add(cVal);
+				}
+				else if(parameter instanceof DoublePrecisionValue)
+				{
+					DoublePrecisionValue value= (DoublePrecisionValue) parameter;
+					double val= value.getValue();
+					
+					Constant cVal= CPModelTool.createDoubleConstant(val, parameter.getName());
+					cp.getConstants().add(cVal);
+					expressions.add(cVal);
+				}
+				else
+				{
+					int val= 1; //Type not processsed, we use 1 as default value
+					
+					Constant cVal= CPModelTool.createIntegerConstant(val, parameter.getName());
+					cp.getConstants().add(cVal);
+					expressions.add(cVal);
+				}
+				
+				
+				
+					
+			}
+				
 		}
 		
 		OperatorEnum operator= CPModelTool.getOperatorEnumFromMetricFunctionType(formula.getFunction());
