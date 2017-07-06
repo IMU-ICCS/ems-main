@@ -253,4 +253,10 @@ public class CpModelToolTest {
 		cloneId =  CpModelTool.getCloneId("OpenFoamApplication1447777579963", "upperware-models/OpenFoamApplication1447777579963");
 		assertEquals("Error getting cloned id 2, got : " + cloneId, "OpenFoamApplication1447777579963v1", cloneId );
 	}
+
+	@Test
+	public void testSample(){
+		int i =0;
+		assertEquals(0,i);
+	}
 }
