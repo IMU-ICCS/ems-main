@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2015 INRIA, Université Lille 1
-
-   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
-   - Date: 09/2015
-   - This Source Code Form is subject to the terms of the Mozilla Public 
-   - License, v. 2.0. If a copy of the MPL was not distributed with this 
-   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="eu" nsURI="http://paasage.inria.fr/eu" nsPrefix="eu">
   <eSubpackages name="paasage" nsURI="http://paasage.inria.fr/eu/paasage" nsPrefix="paasage">
@@ -169,8 +162,8 @@
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="providedBy" lowerBound="1"
                 eType="#//paasage/upperware/metamodel/application/CloudMLElementUpperware"/>
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="remote" lowerBound="1"
-                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="communicationType"
+                lowerBound="1" eType="ecore:EEnum paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage/CommunicationTypeUpperware"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="optional" lowerBound="1"
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="contaiment" lowerBound="1"

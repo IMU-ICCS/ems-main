@@ -1,21 +1,12 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.CloudMLElementUpperware;
 import eu.paasage.upperware.metamodel.application.RequiredFeature;
-
+import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
 /**
@@ -27,19 +18,19 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#getFeature <em>Feature</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#getProvidedBy <em>Provided By</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#isRemote <em>Remote</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#getCommunicationType <em>Communication Type</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#isOptional <em>Optional</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#isContaiment <em>Contaiment</em>}</li>
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeature {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected RequiredFeatureImpl() {
 		super();
@@ -48,7 +39,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -58,7 +49,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -68,7 +59,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getFeature() {
 		return (String)eGet(ApplicationPackage.Literals.REQUIRED_FEATURE__FEATURE, true);
@@ -77,7 +68,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setFeature(String newFeature) {
 		eSet(ApplicationPackage.Literals.REQUIRED_FEATURE__FEATURE, newFeature);
@@ -86,7 +77,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CloudMLElementUpperware getProvidedBy() {
 		return (CloudMLElementUpperware)eGet(ApplicationPackage.Literals.REQUIRED_FEATURE__PROVIDED_BY, true);
@@ -95,7 +86,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setProvidedBy(CloudMLElementUpperware newProvidedBy) {
 		eSet(ApplicationPackage.Literals.REQUIRED_FEATURE__PROVIDED_BY, newProvidedBy);
@@ -104,25 +95,25 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
-	public boolean isRemote() {
-		return (Boolean)eGet(ApplicationPackage.Literals.REQUIRED_FEATURE__REMOTE, true);
+	public CommunicationTypeUpperware getCommunicationType() {
+		return (CommunicationTypeUpperware)eGet(ApplicationPackage.Literals.REQUIRED_FEATURE__COMMUNICATION_TYPE, true);
 	}
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
-	public void setRemote(boolean newRemote) {
-		eSet(ApplicationPackage.Literals.REQUIRED_FEATURE__REMOTE, newRemote);
+	public void setCommunicationType(CommunicationTypeUpperware newCommunicationType) {
+		eSet(ApplicationPackage.Literals.REQUIRED_FEATURE__COMMUNICATION_TYPE, newCommunicationType);
 	}
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public boolean isOptional() {
 		return (Boolean)eGet(ApplicationPackage.Literals.REQUIRED_FEATURE__OPTIONAL, true);
@@ -131,7 +122,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setOptional(boolean newOptional) {
 		eSet(ApplicationPackage.Literals.REQUIRED_FEATURE__OPTIONAL, newOptional);
@@ -140,7 +131,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public boolean isContaiment() {
 		return (Boolean)eGet(ApplicationPackage.Literals.REQUIRED_FEATURE__CONTAIMENT, true);
@@ -149,7 +140,7 @@ public class RequiredFeatureImpl extends CDOObjectImpl implements RequiredFeatur
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setContaiment(boolean newContaiment) {
 		eSet(ApplicationPackage.Literals.REQUIRED_FEATURE__CONTAIMENT, newContaiment);

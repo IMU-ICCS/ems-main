@@ -73,6 +73,11 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 			case CpPackage.SOLUTION: return (EObject)createSolution();
 			case CpPackage.VARIABLE_VALUE: return (EObject)createVariableValue();
 			case CpPackage.METRIC_VARIABLE_VALUE: return (EObject)createMetricVariableValue();
+			case CpPackage.PARAMETER: return (EObject)createParameter();
+			case CpPackage.NORMALISED_UTILITY_DIMENSION: return (EObject)createNormalisedUtilityDimension();
+			case CpPackage.FUNCTION: return (EObject)createFunction();
+			case CpPackage.CONFIGURATION_UPPERWARE: return (EObject)createConfigurationUpperware();
+			case CpPackage.DELTA_UTILITY: return (EObject)createDeltaUtility();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -282,6 +287,56 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	public MetricVariableValue createMetricVariableValue() {
 		MetricVariableValueImpl metricVariableValue = new MetricVariableValueImpl();
 		return metricVariableValue;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Parameter createParameter() {
+		ParameterImpl parameter = new ParameterImpl();
+		return parameter;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public NormalisedUtilityDimension createNormalisedUtilityDimension() {
+		NormalisedUtilityDimensionImpl normalisedUtilityDimension = new NormalisedUtilityDimensionImpl();
+		return normalisedUtilityDimension;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Function createFunction() {
+		FunctionImpl function = new FunctionImpl();
+		return function;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public ConfigurationUpperware createConfigurationUpperware() {
+		ConfigurationUpperwareImpl configurationUpperware = new ConfigurationUpperwareImpl();
+		return configurationUpperware;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public DeltaUtility createDeltaUtility() {
+		DeltaUtilityImpl deltaUtility = new DeltaUtilityImpl();
+		return deltaUtility;
 	}
 
 	/**

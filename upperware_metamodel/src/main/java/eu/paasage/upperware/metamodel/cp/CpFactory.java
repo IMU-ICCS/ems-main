@@ -166,6 +166,51 @@ public interface CpFactory extends EFactory {
 	MetricVariableValue createMetricVariableValue();
 
 	/**
+	 * Returns a new object of class '<em>Parameter</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Parameter</em>'.
+	 * @generated
+	 */
+	Parameter createParameter();
+
+	/**
+	 * Returns a new object of class '<em>Normalised Utility Dimension</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Normalised Utility Dimension</em>'.
+	 * @generated
+	 */
+	NormalisedUtilityDimension createNormalisedUtilityDimension();
+
+	/**
+	 * Returns a new object of class '<em>Function</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Function</em>'.
+	 * @generated
+	 */
+	Function createFunction();
+
+	/**
+	 * Returns a new object of class '<em>Configuration Upperware</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Configuration Upperware</em>'.
+	 * @generated
+	 */
+	ConfigurationUpperware createConfigurationUpperware();
+
+	/**
+	 * Returns a new object of class '<em>Delta Utility</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Delta Utility</em>'.
+	 * @generated
+	 */
+	DeltaUtility createDeltaUtility();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

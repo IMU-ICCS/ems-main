@@ -21,6 +21,7 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getAuxExpressions <em>Aux Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables <em>Metric Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getSolution <em>Solution</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeltaUtility <em>Delta Utility</em>}</li>
  * </ul>
  * </p>
  *
@@ -141,5 +142,31 @@ public interface ConstraintProblem extends CDOObject {
 	 * @generated
 	 */
 	EList<Solution> getSolution();
+
+	/**
+	 * Returns the value of the '<em><b>Delta Utility</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Delta Utility</em>' reference isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Delta Utility</em>' containment reference.
+	 * @see #setDeltaUtility(DeltaUtility)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_DeltaUtility()
+	 * @model containment="true" required="true"
+	 * @generated
+	 */
+	DeltaUtility getDeltaUtility();
+
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeltaUtility <em>Delta Utility</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Delta Utility</em>' containment reference.
+	 * @see #getDeltaUtility()
+	 * @generated
+	 */
+	void setDeltaUtility(DeltaUtility value);
 
 } // ConstraintProblem

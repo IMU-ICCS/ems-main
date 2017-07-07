@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -41,13 +33,13 @@ import org.eclipse.emf.ecore.EClass;
  * </ul>
  * </p>
  *
- * 
+ * @generated
  */
 public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implements ApplicationComponent {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ApplicationComponentImpl() {
 		super();
@@ -56,7 +48,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -66,7 +58,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VirtualMachine getVm() {
 		return (VirtualMachine)eGet(ApplicationPackage.Literals.APPLICATION_COMPONENT__VM, true);
@@ -75,7 +67,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setVm(VirtualMachine newVm) {
 		eSet(ApplicationPackage.Literals.APPLICATION_COMPONENT__VM, newVm);
@@ -84,7 +76,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<LocationUpperware> getPreferredLocations() {
@@ -94,7 +86,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<VirtualMachineProfile> getRequiredProfile() {
@@ -104,7 +96,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<String> getFeatures() {
@@ -114,7 +106,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<RequiredFeature> getRequiredFeatures() {
@@ -124,7 +116,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<ProviderType> getPreferredProviders() {
@@ -134,7 +126,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public int getMin() {
 		return (Integer)eGet(ApplicationPackage.Literals.APPLICATION_COMPONENT__MIN, true);
@@ -143,7 +135,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setMin(int newMin) {
 		eSet(ApplicationPackage.Literals.APPLICATION_COMPONENT__MIN, newMin);
@@ -152,7 +144,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public int getMax() {
 		return (Integer)eGet(ApplicationPackage.Literals.APPLICATION_COMPONENT__MAX, true);
@@ -161,7 +153,7 @@ public class ApplicationComponentImpl extends CloudMLElementUpperwareImpl implem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setMax(int newMax) {
 		eSet(ApplicationPackage.Literals.APPLICATION_COMPONENT__MAX, newMax);

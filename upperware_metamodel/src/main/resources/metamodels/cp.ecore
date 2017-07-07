@@ -29,6 +29,8 @@
                 containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="solution" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/Solution" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="deltaUtility" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/DeltaUtility" containment="true"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="Expression" abstract="true"
               eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement"/>
@@ -80,6 +82,8 @@
             <eLiterals name="times" value="2"/>
             <eLiterals name="div" value="3"/>
             <eLiterals name="mean" value="4" literal="mean"/>
+            <eLiterals name="min" value="5"/>
+            <eLiterals name="max" value="6"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EEnum" name="GoalOperatorEnum">
             <eLiterals name="max" literal="max"/>
@@ -174,6 +178,35 @@
             <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
                 eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
                 containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Parameter">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="solution" eType="#//paasage/upperware/metamodel/cp/Solution"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="NormalisedUtilityDimension"
+              eSuperTypes="#//paasage/upperware/metamodel/cp/Function">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="solutions" upperBound="2"
+                eType="#//paasage/upperware/metamodel/cp/Parameter"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="goal" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/Goal"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="Function" eSuperTypes="#//paasage/upperware/metamodel/cp/ComposedExpression">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="ConfigurationUpperware" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="solution" eType="#//paasage/upperware/metamodel/cp/Parameter"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="goal" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/Goal"/>
+          </eClassifiers>
+          <eClassifiers xsi:type="ecore:EClass" name="DeltaUtility" eSuperTypes="#//paasage/upperware/metamodel/cp/Function">
+            <eStructuralFeatures xsi:type="ecore:EReference" name="solutions" upperBound="2"
+                eType="#//paasage/upperware/metamodel/cp/Parameter" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="selectedSolution"
+                eType="#//paasage/upperware/metamodel/cp/Parameter"/>
           </eClassifiers>
         </eSubpackages>
       </eSubpackages>

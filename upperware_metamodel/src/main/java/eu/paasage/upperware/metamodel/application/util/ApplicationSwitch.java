@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.util;
 
@@ -34,14 +26,14 @@ import org.eclipse.emf.ecore.util.Switch;
  * which is the result of the switch.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage
- * 
+ * @generated
  */
 public class ApplicationSwitch<T> extends Switch<T> {
 	/**
 	 * The cached model package
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static ApplicationPackage modelPackage;
 
@@ -49,7 +41,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * Creates an instance of the switch.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationSwitch() {
 		if (modelPackage == null) {
@@ -63,7 +55,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * <!-- end-user-doc -->
 	 * @parameter ePackage the package in question.
 	 * @return whether this is a switch for the given package.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected boolean isSwitchFor(EPackage ePackage) {
@@ -75,7 +67,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the first non-null result returned by a <code>caseXXX</code> call.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected T doSwitch(int classifierID, EObject theEObject) {
@@ -227,7 +219,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Paasage Configuration</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T casePaasageConfiguration(PaasageConfiguration object) {
 		return null;
@@ -242,7 +234,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Virtual Machine</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseVirtualMachine(VirtualMachine object) {
 		return null;
@@ -257,7 +249,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Virtual Machine Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseVirtualMachineProfile(VirtualMachineProfile object) {
 		return null;
@@ -272,7 +264,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Cloud ML Element Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseCloudMLElementUpperware(CloudMLElementUpperware object) {
 		return null;
@@ -287,7 +279,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Resource Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseResourceUpperware(ResourceUpperware object) {
 		return null;
@@ -302,7 +294,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Memory</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseMemory(Memory object) {
 		return null;
@@ -317,7 +309,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Storage</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseStorage(Storage object) {
 		return null;
@@ -332,7 +324,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>CPU</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseCPU(CPU object) {
 		return null;
@@ -347,7 +339,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Provider</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseProvider(Provider object) {
 		return null;
@@ -362,7 +354,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Component</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseApplicationComponent(ApplicationComponent object) {
 		return null;
@@ -377,7 +369,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Elasticity Rule</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseElasticityRule(ElasticityRule object) {
 		return null;
@@ -392,7 +384,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Action Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseActionUpperware(ActionUpperware object) {
 		return null;
@@ -407,7 +399,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Condition Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseConditionUpperware(ConditionUpperware object) {
 		return null;
@@ -422,7 +414,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Paa Sage Variable</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T casePaaSageVariable(PaaSageVariable object) {
 		return null;
@@ -437,7 +429,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Paa Sage Goal</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T casePaaSageGoal(PaaSageGoal object) {
 		return null;
@@ -452,7 +444,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Required Feature</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseRequiredFeature(RequiredFeature object) {
 		return null;
@@ -467,7 +459,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Dimension</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseDimension(Dimension object) {
 		return null;
@@ -482,7 +474,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Provider Dimension</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseProviderDimension(ProviderDimension object) {
 		return null;
@@ -497,7 +489,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Image Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseImageUpperware(ImageUpperware object) {
 		return null;
@@ -512,7 +504,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Component Metric Relationship</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseComponentMetricRelationship(ComponentMetricRelationship object) {
 		return null;
@@ -527,7 +519,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Paa Sage CP Element</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T casePaaSageCPElement(PaaSageCPElement object) {
 		return null;
@@ -542,7 +534,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>CP Element</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseCPElement(CPElement object) {
 		return null;
@@ -557,7 +549,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseExpression(Expression object) {
 		return null;
@@ -572,7 +564,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Boolean Expression</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseBooleanExpression(BooleanExpression object) {
 		return null;
@@ -587,7 +579,7 @@ public class ApplicationSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>EObject</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject)
-	 * 
+	 * @generated
 	 */
 	@Override
 	public T defaultCase(EObject object) {

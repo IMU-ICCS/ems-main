@@ -1,19 +1,13 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage.impl;
 
+import eu.paasage.upperware.metamodel.application.ApplicationPackage;
+import eu.paasage.upperware.metamodel.application.impl.ApplicationPackageImpl;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-
 import eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl;
-
 import eu.paasage.upperware.metamodel.types.typesPaasage.ActionType;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ActionTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentProfile;
@@ -22,6 +16,7 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentTyp
 import eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationServerProfile;
 import eu.paasage.upperware.metamodel.types.typesPaasage.CityUpperware;
+import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ContinentUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.CountryUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.DataUnitEnum;
@@ -44,224 +39,229 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.VMSizeEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.VariableElementTypeEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.WarProfile;
 import eu.paasage.upperware.metamodel.types.typesPaasage.WebServerProfile;
-
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
-
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Package</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasagePackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass paaSageCPElementEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass osEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass locationUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass continentUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass countryUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass cityUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass locationsEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass applicationComponentProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass applicationComponentProfilesEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass operatingSystemsEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass databaseProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass webServerProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass applicationServerProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass warProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass jarProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass applicationComponentTypeEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass providerTypeEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass providerTypesEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass applicationComponentTypesEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass actionTypeEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass actionTypesEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass functionTypeEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass functionTypesEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum frequencyEnumEEnum = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum vmSizeEnumEEnum = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum logicOperatorEnumEEnum = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum dataUnitEnumEEnum = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum variableElementTypeEnumEEnum = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum osArchitectureEnumEEnum = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EEnum communicationTypeUpperwareEEnum = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -276,7 +276,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	 * @see org.eclipse.emf.ecore.EPackage.Registry
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#eNS_URI
 	 * @see #init()
-	 * 
+	 * @generated
 	 */
 	private TypesPaasagePackageImpl() {
 		super(eNS_URI, TypesPaasageFactory.eINSTANCE);
@@ -285,7 +285,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static boolean isInited = false;
 
@@ -299,7 +299,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	 * @see #eNS_URI
 	 * @see #createPackageContents()
 	 * @see #initializePackageContents()
-	 * 
+	 * @generated
 	 */
 	public static TypesPaasagePackage init() {
 		if (isInited) return (TypesPaasagePackage)EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI);
@@ -310,14 +310,20 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 		isInited = true;
 
 		// Obtain or create and register interdependencies
+		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
+		CpPackageImpl theCpPackage = (CpPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) instanceof CpPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) : CpPackage.eINSTANCE);
 		TypesPackageImpl theTypesPackage = (TypesPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) instanceof TypesPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) : TypesPackage.eINSTANCE);
 
 		// Create package meta-data objects
 		theTypesPaasagePackage.createPackageContents();
+		theApplicationPackage.createPackageContents();
+		theCpPackage.createPackageContents();
 		theTypesPackage.createPackageContents();
 
 		// Initialize created meta-data
 		theTypesPaasagePackage.initializePackageContents();
+		theApplicationPackage.initializePackageContents();
+		theCpPackage.initializePackageContents();
 		theTypesPackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed
@@ -332,7 +338,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getPaaSageCPElement() {
 		return paaSageCPElementEClass;
@@ -341,7 +347,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaaSageCPElement_TypeId() {
 		return (EAttribute)paaSageCPElementEClass.getEStructuralFeatures().get(0);
@@ -350,7 +356,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getOS() {
 		return osEClass;
@@ -359,7 +365,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getOS_Name() {
 		return (EAttribute)osEClass.getEStructuralFeatures().get(0);
@@ -368,7 +374,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getOS_Vers() {
 		return (EAttribute)osEClass.getEStructuralFeatures().get(1);
@@ -377,7 +383,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getOS_Architecture() {
 		return (EAttribute)osEClass.getEStructuralFeatures().get(2);
@@ -386,7 +392,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getLocationUpperware() {
 		return locationUpperwareEClass;
@@ -395,7 +401,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getLocationUpperware_Name() {
 		return (EAttribute)locationUpperwareEClass.getEStructuralFeatures().get(0);
@@ -404,7 +410,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getLocationUpperware_AlternativeNames() {
 		return (EAttribute)locationUpperwareEClass.getEStructuralFeatures().get(1);
@@ -413,7 +419,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getContinentUpperware() {
 		return continentUpperwareEClass;
@@ -422,7 +428,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getCountryUpperware() {
 		return countryUpperwareEClass;
@@ -431,7 +437,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getCountryUpperware_Continent() {
 		return (EReference)countryUpperwareEClass.getEStructuralFeatures().get(0);
@@ -440,7 +446,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getCityUpperware() {
 		return cityUpperwareEClass;
@@ -449,7 +455,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getCityUpperware_Country() {
 		return (EReference)cityUpperwareEClass.getEStructuralFeatures().get(0);
@@ -458,7 +464,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getLocations() {
 		return locationsEClass;
@@ -467,7 +473,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getLocations_Locations() {
 		return (EReference)locationsEClass.getEStructuralFeatures().get(0);
@@ -476,7 +482,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getApplicationComponentProfile() {
 		return applicationComponentProfileEClass;
@@ -485,7 +491,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getApplicationComponentProfile_Name() {
 		return (EAttribute)applicationComponentProfileEClass.getEStructuralFeatures().get(0);
@@ -494,7 +500,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getApplicationComponentProfile_Vers() {
 		return (EAttribute)applicationComponentProfileEClass.getEStructuralFeatures().get(1);
@@ -503,7 +509,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponentProfile_Type() {
 		return (EReference)applicationComponentProfileEClass.getEStructuralFeatures().get(2);
@@ -512,7 +518,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getApplicationComponentProfiles() {
 		return applicationComponentProfilesEClass;
@@ -521,7 +527,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponentProfiles_Profiles() {
 		return (EReference)applicationComponentProfilesEClass.getEStructuralFeatures().get(0);
@@ -530,7 +536,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getOperatingSystems() {
 		return operatingSystemsEClass;
@@ -539,7 +545,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getOperatingSystems_Oss() {
 		return (EReference)operatingSystemsEClass.getEStructuralFeatures().get(0);
@@ -548,7 +554,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getDatabaseProfile() {
 		return databaseProfileEClass;
@@ -557,7 +563,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getWebServerProfile() {
 		return webServerProfileEClass;
@@ -566,7 +572,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getApplicationServerProfile() {
 		return applicationServerProfileEClass;
@@ -575,7 +581,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getWarProfile() {
 		return warProfileEClass;
@@ -584,7 +590,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getJarProfile() {
 		return jarProfileEClass;
@@ -593,7 +599,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getApplicationComponentType() {
 		return applicationComponentTypeEClass;
@@ -602,7 +608,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getApplicationComponentType_Id() {
 		return (EAttribute)applicationComponentTypeEClass.getEStructuralFeatures().get(0);
@@ -611,7 +617,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getProviderType() {
 		return providerTypeEClass;
@@ -620,7 +626,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getProviderType_Id() {
 		return (EAttribute)providerTypeEClass.getEStructuralFeatures().get(0);
@@ -629,7 +635,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getProviderTypes() {
 		return providerTypesEClass;
@@ -638,7 +644,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getProviderTypes_Types() {
 		return (EReference)providerTypesEClass.getEStructuralFeatures().get(0);
@@ -647,7 +653,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getApplicationComponentTypes() {
 		return applicationComponentTypesEClass;
@@ -656,7 +662,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponentTypes_Types() {
 		return (EReference)applicationComponentTypesEClass.getEStructuralFeatures().get(0);
@@ -665,7 +671,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getActionType() {
 		return actionTypeEClass;
@@ -674,7 +680,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getActionType_Id() {
 		return (EAttribute)actionTypeEClass.getEStructuralFeatures().get(0);
@@ -683,7 +689,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getActionTypes() {
 		return actionTypesEClass;
@@ -692,7 +698,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getActionTypes_Types() {
 		return (EReference)actionTypesEClass.getEStructuralFeatures().get(0);
@@ -701,7 +707,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getFunctionType() {
 		return functionTypeEClass;
@@ -710,7 +716,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getFunctionType_Id() {
 		return (EAttribute)functionTypeEClass.getEStructuralFeatures().get(0);
@@ -719,7 +725,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getFunctionTypes() {
 		return functionTypesEClass;
@@ -728,7 +734,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getFunctionTypes_Types() {
 		return (EReference)functionTypesEClass.getEStructuralFeatures().get(0);
@@ -737,7 +743,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getFrequencyEnum() {
 		return frequencyEnumEEnum;
@@ -746,7 +752,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getVMSizeEnum() {
 		return vmSizeEnumEEnum;
@@ -755,7 +761,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getLogicOperatorEnum() {
 		return logicOperatorEnumEEnum;
@@ -764,7 +770,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getDataUnitEnum() {
 		return dataUnitEnumEEnum;
@@ -773,7 +779,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getVariableElementTypeEnum() {
 		return variableElementTypeEnumEEnum;
@@ -782,7 +788,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getOSArchitectureEnum() {
 		return osArchitectureEnumEEnum;
@@ -791,7 +797,16 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
+	 */
+	public EEnum getCommunicationTypeUpperware() {
+		return communicationTypeUpperwareEEnum;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
 	 */
 	public TypesPaasageFactory getTypesPaasageFactory() {
 		return (TypesPaasageFactory)getEFactoryInstance();
@@ -800,7 +815,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private boolean isCreated = false;
 
@@ -809,7 +824,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	 * guarded to have no affect on any invocation but its first.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void createPackageContents() {
 		if (isCreated) return;
@@ -891,12 +906,13 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 		dataUnitEnumEEnum = createEEnum(DATA_UNIT_ENUM);
 		variableElementTypeEnumEEnum = createEEnum(VARIABLE_ELEMENT_TYPE_ENUM);
 		osArchitectureEnumEEnum = createEEnum(OS_ARCHITECTURE_ENUM);
+		communicationTypeUpperwareEEnum = createEEnum(COMMUNICATION_TYPE_UPPERWARE);
 	}
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private boolean isInitialized = false;
 
@@ -905,7 +921,7 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 	 * method is guarded to have no affect on any invocation but its first.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void initializePackageContents() {
 		if (isInitialized) return;
@@ -1037,6 +1053,11 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 		initEEnum(osArchitectureEnumEEnum, OSArchitectureEnum.class, "OSArchitectureEnum");
 		addEEnumLiteral(osArchitectureEnumEEnum, OSArchitectureEnum.THIRTY_TWO_BITS);
 		addEEnumLiteral(osArchitectureEnumEEnum, OSArchitectureEnum.SIXTY_FOUR_BITS);
+
+		initEEnum(communicationTypeUpperwareEEnum, CommunicationTypeUpperware.class, "CommunicationTypeUpperware");
+		addEEnumLiteral(communicationTypeUpperwareEEnum, CommunicationTypeUpperware.LOCAL);
+		addEEnumLiteral(communicationTypeUpperwareEEnum, CommunicationTypeUpperware.REMOTE);
+		addEEnumLiteral(communicationTypeUpperwareEEnum, CommunicationTypeUpperware.ANY);
 	}
 
 } //TypesPaasagePackageImpl

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage.impl;
 
@@ -25,14 +17,14 @@ import org.eclipse.emf.ecore.plugin.EcorePlugin;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Factory</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasageFactory {
 	/**
 	 * Creates the default factory implementation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static TypesPaasageFactory init() {
 		try {
@@ -51,7 +43,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	 * Creates an instance of the factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesPaasageFactoryImpl() {
 		super();
@@ -60,7 +52,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public EObject create(EClass eClass) {
@@ -93,7 +85,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Object createFromString(EDataType eDataType, String initialValue) {
@@ -110,6 +102,8 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 				return createVariableElementTypeEnumFromString(eDataType, initialValue);
 			case TypesPaasagePackage.OS_ARCHITECTURE_ENUM:
 				return createOSArchitectureEnumFromString(eDataType, initialValue);
+			case TypesPaasagePackage.COMMUNICATION_TYPE_UPPERWARE:
+				return createCommunicationTypeUpperwareFromString(eDataType, initialValue);
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
@@ -118,7 +112,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public String convertToString(EDataType eDataType, Object instanceValue) {
@@ -135,6 +129,8 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 				return convertVariableElementTypeEnumToString(eDataType, instanceValue);
 			case TypesPaasagePackage.OS_ARCHITECTURE_ENUM:
 				return convertOSArchitectureEnumToString(eDataType, instanceValue);
+			case TypesPaasagePackage.COMMUNICATION_TYPE_UPPERWARE:
+				return convertCommunicationTypeUpperwareToString(eDataType, instanceValue);
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
@@ -143,7 +139,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public OS createOS() {
 		OSImpl os = new OSImpl();
@@ -153,7 +149,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ContinentUpperware createContinentUpperware() {
 		ContinentUpperwareImpl continentUpperware = new ContinentUpperwareImpl();
@@ -163,7 +159,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CountryUpperware createCountryUpperware() {
 		CountryUpperwareImpl countryUpperware = new CountryUpperwareImpl();
@@ -173,7 +169,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CityUpperware createCityUpperware() {
 		CityUpperwareImpl cityUpperware = new CityUpperwareImpl();
@@ -183,7 +179,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Locations createLocations() {
 		LocationsImpl locations = new LocationsImpl();
@@ -193,7 +189,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationComponentProfiles createApplicationComponentProfiles() {
 		ApplicationComponentProfilesImpl applicationComponentProfiles = new ApplicationComponentProfilesImpl();
@@ -203,7 +199,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public OperatingSystems createOperatingSystems() {
 		OperatingSystemsImpl operatingSystems = new OperatingSystemsImpl();
@@ -213,7 +209,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public DatabaseProfile createDatabaseProfile() {
 		DatabaseProfileImpl databaseProfile = new DatabaseProfileImpl();
@@ -223,7 +219,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public WebServerProfile createWebServerProfile() {
 		WebServerProfileImpl webServerProfile = new WebServerProfileImpl();
@@ -233,7 +229,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationServerProfile createApplicationServerProfile() {
 		ApplicationServerProfileImpl applicationServerProfile = new ApplicationServerProfileImpl();
@@ -243,7 +239,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public WarProfile createWarProfile() {
 		WarProfileImpl warProfile = new WarProfileImpl();
@@ -253,7 +249,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public JarProfile createJarProfile() {
 		JarProfileImpl jarProfile = new JarProfileImpl();
@@ -263,7 +259,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationComponentType createApplicationComponentType() {
 		ApplicationComponentTypeImpl applicationComponentType = new ApplicationComponentTypeImpl();
@@ -273,7 +269,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ProviderType createProviderType() {
 		ProviderTypeImpl providerType = new ProviderTypeImpl();
@@ -283,7 +279,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ProviderTypes createProviderTypes() {
 		ProviderTypesImpl providerTypes = new ProviderTypesImpl();
@@ -293,7 +289,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationComponentTypes createApplicationComponentTypes() {
 		ApplicationComponentTypesImpl applicationComponentTypes = new ApplicationComponentTypesImpl();
@@ -303,7 +299,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ActionType createActionType() {
 		ActionTypeImpl actionType = new ActionTypeImpl();
@@ -313,7 +309,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ActionTypes createActionTypes() {
 		ActionTypesImpl actionTypes = new ActionTypesImpl();
@@ -323,7 +319,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public FunctionType createFunctionType() {
 		FunctionTypeImpl functionType = new FunctionTypeImpl();
@@ -333,7 +329,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public FunctionTypes createFunctionTypes() {
 		FunctionTypesImpl functionTypes = new FunctionTypesImpl();
@@ -343,7 +339,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public FrequencyEnum createFrequencyEnumFromString(EDataType eDataType, String initialValue) {
 		FrequencyEnum result = FrequencyEnum.get(initialValue);
@@ -354,7 +350,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertFrequencyEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -363,7 +359,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VMSizeEnum createVMSizeEnumFromString(EDataType eDataType, String initialValue) {
 		VMSizeEnum result = VMSizeEnum.get(initialValue);
@@ -374,7 +370,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertVMSizeEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -383,7 +379,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public LogicOperatorEnum createLogicOperatorEnumFromString(EDataType eDataType, String initialValue) {
 		LogicOperatorEnum result = LogicOperatorEnum.get(initialValue);
@@ -394,7 +390,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertLogicOperatorEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -403,7 +399,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public DataUnitEnum createDataUnitEnumFromString(EDataType eDataType, String initialValue) {
 		DataUnitEnum result = DataUnitEnum.get(initialValue);
@@ -414,7 +410,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertDataUnitEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -423,7 +419,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VariableElementTypeEnum createVariableElementTypeEnumFromString(EDataType eDataType, String initialValue) {
 		VariableElementTypeEnum result = VariableElementTypeEnum.get(initialValue);
@@ -434,7 +430,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertVariableElementTypeEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -443,7 +439,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public OSArchitectureEnum createOSArchitectureEnumFromString(EDataType eDataType, String initialValue) {
 		OSArchitectureEnum result = OSArchitectureEnum.get(initialValue);
@@ -454,7 +450,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertOSArchitectureEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -463,7 +459,27 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
+	 */
+	public CommunicationTypeUpperware createCommunicationTypeUpperwareFromString(EDataType eDataType, String initialValue) {
+		CommunicationTypeUpperware result = CommunicationTypeUpperware.get(initialValue);
+		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+		return result;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String convertCommunicationTypeUpperwareToString(EDataType eDataType, Object instanceValue) {
+		return instanceValue == null ? null : instanceValue.toString();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
 	 */
 	public TypesPaasagePackage getTypesPaasagePackage() {
 		return (TypesPaasagePackage)getEPackage();
@@ -473,7 +489,7 @@ public class TypesPaasageFactoryImpl extends EFactoryImpl implements TypesPaasag
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @deprecated
-	 * 
+	 * @generated
 	 */
 	@Deprecated
 	public static TypesPaasagePackage getPackage() {

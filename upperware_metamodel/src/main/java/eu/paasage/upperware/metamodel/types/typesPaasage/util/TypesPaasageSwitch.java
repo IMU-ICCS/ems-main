@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage.util;
 
@@ -28,14 +20,14 @@ import org.eclipse.emf.ecore.util.Switch;
  * which is the result of the switch.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage
- * 
+ * @generated
  */
 public class TypesPaasageSwitch<T> extends Switch<T> {
 	/**
 	 * The cached model package
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static TypesPaasagePackage modelPackage;
 
@@ -43,7 +35,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * Creates an instance of the switch.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesPaasageSwitch() {
 		if (modelPackage == null) {
@@ -55,9 +47,9 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param ePackage the package in question.
+	 * @parameter ePackage the package in question.
 	 * @return whether this is a switch for the given package.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected boolean isSwitchFor(EPackage ePackage) {
@@ -69,7 +61,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the first non-null result returned by a <code>caseXXX</code> call.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected T doSwitch(int classifierID, EObject theEObject) {
@@ -238,7 +230,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Paa Sage CP Element</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T casePaaSageCPElement(PaaSageCPElement object) {
 		return null;
@@ -253,7 +245,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>OS</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseOS(OS object) {
 		return null;
@@ -268,7 +260,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Location Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseLocationUpperware(LocationUpperware object) {
 		return null;
@@ -283,7 +275,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Continent Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseContinentUpperware(ContinentUpperware object) {
 		return null;
@@ -298,7 +290,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Country Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseCountryUpperware(CountryUpperware object) {
 		return null;
@@ -313,7 +305,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>City Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseCityUpperware(CityUpperware object) {
 		return null;
@@ -328,7 +320,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Locations</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseLocations(Locations object) {
 		return null;
@@ -343,7 +335,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Application Component Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseApplicationComponentProfile(ApplicationComponentProfile object) {
 		return null;
@@ -358,7 +350,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Application Component Profiles</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseApplicationComponentProfiles(ApplicationComponentProfiles object) {
 		return null;
@@ -373,7 +365,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Operating Systems</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseOperatingSystems(OperatingSystems object) {
 		return null;
@@ -388,7 +380,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Database Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseDatabaseProfile(DatabaseProfile object) {
 		return null;
@@ -403,7 +395,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Web Server Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseWebServerProfile(WebServerProfile object) {
 		return null;
@@ -418,7 +410,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Application Server Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseApplicationServerProfile(ApplicationServerProfile object) {
 		return null;
@@ -433,7 +425,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>War Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseWarProfile(WarProfile object) {
 		return null;
@@ -448,7 +440,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Jar Profile</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseJarProfile(JarProfile object) {
 		return null;
@@ -463,7 +455,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Application Component Type</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseApplicationComponentType(ApplicationComponentType object) {
 		return null;
@@ -478,7 +470,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Provider Type</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseProviderType(ProviderType object) {
 		return null;
@@ -493,7 +485,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Provider Types</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseProviderTypes(ProviderTypes object) {
 		return null;
@@ -508,7 +500,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Application Component Types</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseApplicationComponentTypes(ApplicationComponentTypes object) {
 		return null;
@@ -523,7 +515,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Action Type</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseActionType(ActionType object) {
 		return null;
@@ -538,7 +530,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Action Types</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseActionTypes(ActionTypes object) {
 		return null;
@@ -553,7 +545,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Function Type</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseFunctionType(FunctionType object) {
 		return null;
@@ -568,7 +560,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Function Types</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseFunctionTypes(FunctionTypes object) {
 		return null;
@@ -583,7 +575,7 @@ public class TypesPaasageSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>EObject</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject)
-	 * 
+	 * @generated
 	 */
 	@Override
 	public T defaultCase(EObject object) {

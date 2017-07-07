@@ -251,6 +251,53 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case CpPackage.PARAMETER: {
+				Parameter parameter = (Parameter)theEObject;
+				T result = caseParameter(parameter);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case CpPackage.NORMALISED_UTILITY_DIMENSION: {
+				NormalisedUtilityDimension normalisedUtilityDimension = (NormalisedUtilityDimension)theEObject;
+				T result = caseNormalisedUtilityDimension(normalisedUtilityDimension);
+				if (result == null) result = caseFunction(normalisedUtilityDimension);
+				if (result == null) result = caseComposedExpression(normalisedUtilityDimension);
+				if (result == null) result = caseNumericExpression(normalisedUtilityDimension);
+				if (result == null) result = caseExpression(normalisedUtilityDimension);
+				if (result == null) result = caseCPElement(normalisedUtilityDimension);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case CpPackage.FUNCTION: {
+				Function function = (Function)theEObject;
+				T result = caseFunction(function);
+				if (result == null) result = caseComposedExpression(function);
+				if (result == null) result = caseNumericExpression(function);
+				if (result == null) result = caseExpression(function);
+				if (result == null) result = caseCPElement(function);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case CpPackage.CONFIGURATION_UPPERWARE: {
+				ConfigurationUpperware configurationUpperware = (ConfigurationUpperware)theEObject;
+				T result = caseConfigurationUpperware(configurationUpperware);
+				if (result == null) result = caseNumericExpression(configurationUpperware);
+				if (result == null) result = caseExpression(configurationUpperware);
+				if (result == null) result = caseCPElement(configurationUpperware);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case CpPackage.DELTA_UTILITY: {
+				DeltaUtility deltaUtility = (DeltaUtility)theEObject;
+				T result = caseDeltaUtility(deltaUtility);
+				if (result == null) result = caseFunction(deltaUtility);
+				if (result == null) result = caseComposedExpression(deltaUtility);
+				if (result == null) result = caseNumericExpression(deltaUtility);
+				if (result == null) result = caseExpression(deltaUtility);
+				if (result == null) result = caseCPElement(deltaUtility);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -612,6 +659,81 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseMetricVariableValue(MetricVariableValue object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Parameter</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Parameter</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseParameter(Parameter object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Normalised Utility Dimension</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Normalised Utility Dimension</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseNormalisedUtilityDimension(NormalisedUtilityDimension object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Function</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Function</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseFunction(Function object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Configuration Upperware</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Configuration Upperware</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseConfigurationUpperware(ConfigurationUpperware object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Delta Utility</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Delta Utility</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseDeltaUtility(DeltaUtility object) {
 		return null;
 	}
 
