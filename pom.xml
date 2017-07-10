@@ -1,0 +1,167 @@
+<!--
+  ~ Copyright (c) 2015.  CETIC ASBL etienne.Charlier@cetic.be
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public
+  ~ License, v. 2.0. If a copy of the MPL was not distributed with this file,
+  ~ You can obtain one at http://mozilla.org/MPL/2.0/.
+  ~
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.4.RELEASE</version>
+    </parent>
+
+    <groupId>org.ow2.paasage</groupId>
+    <artifactId>upperware</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Upperware</name>
+
+    <modules>
+        <module>upperware_metamodel</module>
+        <module>cdo_client</module>
+        <module>cdo_server</module>
+        <module>adapter</module>
+        <module>cp_generator</module>
+        <module>meta_solver</module>
+        <module>solver_to_deployment</module>
+        <module>plan_generator</module>
+        <module>srl-adapter</module>
+        <module>cp_solver</module>
+        <module>la_converter</module>
+        <module>rule_processor</module>
+    </modules>
+
+    <properties>
+        <!-- version for all paasage components-->
+        <paasage.version.old>2015.9.1-SNAPSHOT</paasage.version.old>
+
+        <!-- Source encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Versions for common dependencies -->
+        <!-- Unused at the moment -->
+        <jeromq.version>0.3.5</jeromq.version>
+        <junit.version>4.12</junit.version>
+        <log4j.version>1.2.17</log4j.version>
+
+        <!-- Versions for common plugins -->
+        <source-plugin.version>2.4</source-plugin.version>
+        <maven-compiler.version>3.2</maven-compiler.version>
+        <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
+        <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
+
+
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>doclint-java8-disable</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <javadoc.opts>-Xdoclint:none</javadoc.opts>
+            </properties>
+        </profile>
+    </profiles>
+
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${source-plugin.version}</version>
+                    <inherited>true</inherited>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler.version}</version>
+                    <inherited>true</inherited>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${javadoc-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>aggregate</id>
+                            <goals>
+                                <goal>aggregate</goal>
+                            </goals>
+                            <phase>package</phase>
+                            <configuration>
+                                <additionalparam>-Xdoclint:none</additionalparam>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                            <configuration>
+                                <additionalparam>-Xdoclint:none</additionalparam>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <repositories>
+        <repository>
+            <id>ow2.release</id>
+            <name>OW2 repository</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ow2.snapshot</id>
+            <name>OW2 repository</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>gforge.inria.fr-release</id>
+            <name>Maven Repository for Saloon</name>
+            <url>http://saloon.gforge.inria.fr/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>paasage.repo</id>
+            <name>PaaSage repository</name>
+            <url>http://jenkins.paasage.cetic.be/repository/</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>ow2.release</id>
+            <name>Internal Releases</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ow2.snapshot</id>
+            <name>Internal Releases</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+</project>
