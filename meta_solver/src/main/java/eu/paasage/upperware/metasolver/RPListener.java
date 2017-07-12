@@ -23,7 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
-import org.jeromq.*;
+
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
 import eu.paasage.upperware.metasolver.exception.MetricMapperException;
@@ -43,7 +43,6 @@ public class RPListener implements Runnable{
 	//private String metricId;
 	private boolean run = true;
 
-	static ZMQ zmq = new ZMQ();
 	public RPListener(){
 
 
@@ -69,10 +68,10 @@ public class RPListener implements Runnable{
 			metasolver mslv = new metasolver();
 			System.out.println("lets go for a subscription .....");
 			System.out.println("setting context ....");	
-			Context cntx1 = zmq.context(1);
+			Context cntx1 = ZMQ.context(1);
 
 			System.out.println("context set .....");
-			Socket	subscriber1 = cntx1.socket (zmq.SUB);
+			Socket	subscriber1 = cntx1.socket (ZMQ.SUB);
 
 			System.out.println("socket set .....");
 			subscriber1.connect ("tcp://localhost:5545");

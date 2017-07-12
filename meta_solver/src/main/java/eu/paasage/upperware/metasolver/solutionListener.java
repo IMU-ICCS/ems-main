@@ -23,7 +23,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
-import org.jeromq.*;
 
 import eu.paasage.upperware.metasolver.exception.MetricMapperException;
 
@@ -46,20 +45,18 @@ public class solutionListener implements Runnable{
 
 	private String metricId;
 	private boolean run = true;
-
-	static ZMQ zmq = new ZMQ();
-	static ZMQ ZMQ = new ZMQ();
+	
 	public solutionListener(String CAMELmodel, String CPmodel, long timestamp){
         this.CAMELmodel = CAMELmodel;
         this.CPmodel = CPmodel;
         this.timestamp = timestamp;
-        Context cntx1 = zmq.context(1);
-		Context cntx2 = zmq.context(1);
-		Context cntx3 = zmq.context(1);
+        Context cntx1 = ZMQ.context(1);
+		Context cntx2 = ZMQ.context(1);
+		Context cntx3 = ZMQ.context(1);
 		System.out.println("context set .....");
-		Socket	subscriber1 = cntx1.socket (zmq.SUB);
-		Socket	subscriber2 = cntx2.socket (zmq.SUB);
-		Socket	subscriber3 = cntx3.socket (zmq.SUB);
+		Socket	subscriber1 = cntx1.socket (ZMQ.SUB);
+		Socket	subscriber2 = cntx2.socket (ZMQ.SUB);
+		Socket	subscriber3 = cntx3.socket (ZMQ.SUB);
 		System.out.println("socket set .....");
 		subscriber1.connect ("tcp://localhost:5540");
 		subscriber2.connect ("tcp://localhost:5554");
@@ -77,13 +74,13 @@ public class solutionListener implements Runnable{
 		    solutionPublisherMQ spq = new solutionPublisherMQ();
 			System.out.println("lets go for a subscription .....");
 			System.out.println("setting context ....");	
-			Context cntx1 = zmq.context(1);
-			Context cntx2 = zmq.context(1);
-			Context cntx3 = zmq.context(1);
+			Context cntx1 = ZMQ.context(1);
+			Context cntx2 = ZMQ.context(1);
+			Context cntx3 = ZMQ.context(1);
 			System.out.println("context set .....");
-			Socket	subscriber1 = cntx1.socket (zmq.SUB);
-			Socket	subscriber2 = cntx2.socket (zmq.SUB);
-			Socket	subscriber3 = cntx3.socket (zmq.SUB);
+			Socket	subscriber1 = cntx1.socket (ZMQ.SUB);
+			Socket	subscriber2 = cntx2.socket (ZMQ.SUB);
+			Socket	subscriber3 = cntx3.socket (ZMQ.SUB);
 			System.out.println("socket set .....");
 			subscriber1.connect ("tcp://localhost:5540");
 			subscriber2.connect ("tcp://localhost:5554");
