@@ -163,4 +163,8 @@ public interface PaaSageGoal extends CDOObject {
 	 */
 	void setApplicationMetric(String value);
 
+	void setOptimisationAttribute(String value);
+
+	String getOptimisationAttribute();
+
 } // PaaSageGoal

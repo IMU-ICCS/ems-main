@@ -1447,7 +1447,14 @@ public class PaasageModelTool
 		
 		return null; 
 	}
-	
+
+	public static List<String> getFunctionNames(IDatabaseProxy proxy) {
+		List<String> result = new ArrayList<>();
+		for(FunctionType ft: proxy.getFunctionTypes().getTypes()) {
+			result.add(ft.getId().toLowerCase());
+		}
+		return result;
+	}
 	
 	public static List<Provider> getProvidersFromVirtualMachineProfiles(List<VirtualMachineProfile> profiles)
 	{

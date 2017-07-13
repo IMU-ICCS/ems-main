@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import eu.paasage.upperware.metamodel.cp.*;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -41,20 +42,6 @@ import eu.paasage.upperware.metamodel.application.ProviderDimension;
 import eu.paasage.upperware.metamodel.application.RequiredFeature;
 import eu.paasage.upperware.metamodel.application.VirtualMachine;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
-import eu.paasage.upperware.metamodel.cp.BooleanDomain;
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedExpression;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.NumericDomain;
-import eu.paasage.upperware.metamodel.cp.NumericExpression;
-import eu.paasage.upperware.metamodel.cp.NumericListDomain;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
@@ -91,11 +78,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	private static final String COST_METRIC_PREFIX= "vm_profile_cost_"; 
 	
 	private static final String NAME_SEPARATOR= "_"; 
-	
-	
-	
-	private static final String CONSTRAINT_PREFIX= "c_"; 
-	
+
 	private static final String VM_PROFILE_VAR_PREFIX= "number_vm_"; 
 	
 	//private static final String MIN_COST_FUNCT_PREFIX= "min_cost_"; 
@@ -152,8 +135,6 @@ public class CPModelDerivator implements ICPModelDerivator
 		//createFactories(factoryFile); 
 		dimensionsDerivator= new DimensionDerivator(); 
 		deltaFunctionDerivator= new DeltaFunctionDerivator();
-		
-		
 	}
 	
 	/*
@@ -164,106 +145,124 @@ public class CPModelDerivator implements ICPModelDerivator
 	 * (non-Javadoc)
 	 * @see eu.paasage.upperware.profiler.cp.generator.model.derivator.api.ICPModelDerivator#derivateConstraintProblem(eu.paasage.upperware.metamodel.application.PaasageConfiguration, eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy)
 	 */
-	public ConstraintProblem derivateConstraintProblem(CamelModel camel, PaasageConfiguration configuration, IDatabaseProxy database) 
-	{
-		logger.debug("CPModelDerivator - derivateConstraintProblem - Deriving CP "+configuration.getGoals().size()); 
-		logger.info("** 	Derivating Constraint Problem Model"); 
-		CPModelTool.auxExpressionCount= 0; 
-		CPModelTool.constantCount= 0; 
+	public ConstraintProblem derivateConstraintProblem(CamelModel camel, PaasageConfiguration configuration, IDatabaseProxy database) {
+		logger.debug("CPModelDerivator - derivateConstraintProblem - Deriving CP " + configuration.getGoals().size());
+		logger.info("** 	Derivating Constraint Problem Model");
+		CPModelTool.auxExpressionCount = 0;
+		CPModelTool.constantCount = 0;
 
-		List<OptimisationRequirement> complexOptRequirements= new ArrayList<OptimisationRequirement>(); 
-		
+		List<OptimisationRequirement> complexOptRequirements = new ArrayList<>();
+
 		//CP creation
-		ConstraintProblem cp= cpFactory.createConstraintProblem(); 
-		
-		logger.info("** 		Creating constants"); 
-		createConstants(cp, configuration); 
-		
-		logger.info("** 		Creating default variables"); 
-		createVariables(cp, configuration); 
-		
-		logger.info("** 		Creating default constraints"); 
-		createConstraints(cp, configuration); 
-		
-		logger.info("** 		Creating User objective functions "); 
-		
+		ConstraintProblem cp = cpFactory.createConstraintProblem();
+
+		logger.info("**         Creating constants");
+		createConstants(cp, configuration);
+
+		logger.info("** 		Creating default variables");
+		createVariables(cp, configuration);
+
+		logger.info("** 		Creating default constraints");
+		createConstraints(cp, configuration);
+
+		logger.info("** 		Creating User objective functions ");
 		dimensionsDerivator.createDimensions(camel, cp, complexOptRequirements);
-		
-		if(complexOptRequirements.size()==0) // A default objective function is created
-		{
-			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost! "); 
-			//By default a function the price is created
-			
-			PaaSageGoal goal= ApplicationFactory.eINSTANCE.createPaaSageGoal();
 
-			GoalOperatorEnum goalType= GoalOperatorEnum.MIN; 
-			
-			FunctionType ft= PaasageModelTool.getFunctionTypeByName(COST, database); 
-			goal.setFunction(ft); 
-			goal.setGoal(goalType); 
-			goal.setId(goalType.getName()+ft.getId());
-			
-			configuration.getGoals().add(goal); 
-			
-			//Create the Cost creator
-			CostFunctionCreator costCreator= new CostFunctionCreator(selectExistingPriceFile());
-			costCreator.setDatabaseProxy(database);
-			costCreator.createFunction(cp, goal);
-			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! "); 
-		}
-		
-		logger.info("** 		Creating Delta Utility Function "); 
-		
-		deltaFunctionDerivator.createDeltaFunction(cp);
-		
-		logger.info("** 		Creating User constraints "); 
-		
+		logger.info("** 		Creating User constraints ");
 		dimensionsDerivator.createConstraints(camel, cp);
-		
-		/*if(configuration.getGoals().size()>0)
-		{	
-			logger.debug("CPModelDerivator - derivateConstraintProblem - Goals! "); 
-			for(PaaSageGoal goal:configuration.getGoals())
-			{
-				IFunctionCreator creator= creatorsMap.get(goal.getFunction().getId());
-				
-				logger.debug("CPModelDerivator - derivateConstraintProblem - Creator "+creator+ " id "+goal.getFunction().getId()); 
-				
-				creator.createFunction(cp, goal);
-				
-				logger.debug("CPModelDerivator - derivateConstraintProblem - Function created! "); 
-			}
-		}
-		else
-		{
-			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost! "); 
-			//By default a function the price is created
-			
-			PaaSageGoal goal= ApplicationFactory.eINSTANCE.createPaaSageGoal();
 
-			GoalOperatorEnum goalType= GoalOperatorEnum.MIN; 
-			
-			FunctionType ft= PaasageModelTool.getFunctionTypeByName(COST, database); 
-			goal.setFunction(ft); 
-			goal.setGoal(goalType); 
-			goal.setId(goalType.getName()+ft.getId());
-			
-			configuration.getGoals().add(goal); 
-			
-			//Create the Cost creator
-			CostFunctionCreator costCreator= new CostFunctionCreator(selectExistingPriceFile());
-			costCreator.setDatabaseProxy(database);
-			costCreator.createFunction(cp, goal);
-			logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! "); 
-			
-		}*/
-		
-		logger.debug("** 		CP Creation ended"); 
-		//createObjetiveFunction(cp, configuration); 
-		
+		logger.info("** 		Creating Delta Utility Function ");
+		deltaFunctionDerivator.createDeltaFunction(cp);
+
+		if(configuration.getGoals().size()>0) {
+			logger.debug("CPModelDerivator - derivateConstraintProblem - Goals! ");
+			for(PaaSageGoal goal:configuration.getGoals()) {
+				IFunctionCreator creator= creatorsMap.get(goal.getFunction().getId());
+				logger.debug("CPModelDerivator - derivateConstraintProblem - Creator "+creator+ " id "+goal.getFunction().getId());
+				creator.createFunction(cp, goal);
+				logger.debug("CPModelDerivator - derivateConstraintProblem - Function created! ");
+			}
+		} else {
+			createDefaultFunction(configuration, cp, database);
+		}
+
+		logger.debug("** 		CP Creation ended");
+		logger.debug(cp.toString());
+		printCpModel(cp);
+		logger.debug("** 		CP Creation ended2");
 		return cp;
 	}
-		
+
+	private void createDefaultFunction(PaasageConfiguration configuration, ConstraintProblem cp, IDatabaseProxy database){
+		//By default a function the price is created
+
+		logger.debug("CPModelDerivator - derivateConstraintProblem - Cost! ");
+
+		PaaSageGoal goal = ApplicationFactory.eINSTANCE.createPaaSageGoal();
+
+		GoalOperatorEnum defaultGoalType = GoalOperatorEnum.MIN;
+
+		FunctionType defaultFunctionType = PaasageModelTool.getFunctionTypeByName(COST, database);
+		goal.setFunction(defaultFunctionType);
+		goal.setGoal(defaultGoalType);
+		goal.setId(defaultGoalType.getName() + defaultFunctionType.getId());
+
+		configuration.getGoals().add(goal);
+
+		//Create the Cost creator
+		CostFunctionCreator costCreator = new CostFunctionCreator(selectExistingPriceFile());
+		costCreator.setDatabaseProxy(database);
+		costCreator.createFunction(cp, goal);
+		logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
+	}
+
+
+	/**
+	 * supplementary function to printout the CP object creater
+	 * @param cp The constraint problem to display
+	 */
+	protected void printCpModel(ConstraintProblem cp)
+	{
+
+		//print constants
+		logger.debug("********* CP MODEL **************");
+		logger.debug("CONSTANTS");
+		for(Constant cons : cp.getConstants()) {
+			logger.debug("   " + CPModelTool.toString(cons));
+		}
+
+		logger.debug("VARIABLES");
+		for(Variable var : cp.getVariables()){
+			logger.debug(CPModelTool.toString(var));
+		}
+
+		logger.debug("CONSTRAINTS");
+		for(ComparisonExpression ce : cp.getConstraints()){
+			logger.debug(ce.getId() + ": " +CPModelTool.toString(ce));
+		}
+
+		logger.debug("AUX Expressions");
+		for(Expression aux : cp.getAuxExpressions()){
+			logger.debug(aux.getId() + ": " +CPModelTool.toString(aux));
+		}
+
+		logger.debug("METRICS");
+		for(MetricVariable met : cp.getMetricVariables()){
+			logger.debug(met.getId() + ": " +CPModelTool.toString(met));
+		}
+
+		logger.debug("SOLUTION");
+		for(Solution sol : cp.getSolution()){
+			logger.debug("Solution: " + sol.getClass());
+		}
+
+		logger.debug("GOAL");
+		for(Goal goal : cp.getGoals()){
+			logger.debug(CPModelTool.toString(goal));
+		}
+
+	}
+
 	/**
 	 * Creates constraints for the constraint problem model
 	 * @param cp The constraint problem being created
@@ -271,6 +270,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	 */
 	protected void createConstraints(ConstraintProblem cp, PaasageConfiguration configuration)
 	{
+		ConstantIdGenerator constantIdGenerator = new ConstantIdGenerator();
 		int constraintsCount=0; 
 		logger.debug("CPModelDerivator - createConstraints - 1"); 
 		Constant ceroConstant= CPModelTool.searchConstantByName(cp.getConstants(), CPModelTool.CERO_CONSTANT); 
@@ -321,12 +321,10 @@ public class CPModelDerivator implements ICPModelDerivator
 			
 			//c1: The number of vms for the component is less or equals to MAX
 			ComparisonExpression ce= cpFactory.createComparisonExpression(); 
-			ce.setId(CONSTRAINT_PREFIX+constraintsCount); 
-			constraintsCount++; 
+			ce.setId(constantIdGenerator.generate());
 			logger.debug("CPModelDerivator - createConstraints - 16"); 
 			ComparisonExpression ce2= cpFactory.createComparisonExpression(); 
-			ce2.setId(CONSTRAINT_PREFIX+constraintsCount); 
-			constraintsCount++; 
+			ce2.setId(constantIdGenerator.generate());
 			logger.debug("CPModelDerivator - createConstraints - 17 "+vars); 
 			if(vars.size()>1) //Create a sum with the concerned variables
 			{	logger.debug("CPModelDerivator - createConstraints - 18"); 
@@ -525,7 +523,7 @@ public class CPModelDerivator implements ICPModelDerivator
 
 							ce1.setExp2(ceroConstant); //TODO IS IT REALLY CORRECT ?
 							ce1.setComparator(ComparatorEnum.EQUAL_TO); //SAME LOCATION
-							ce1.setId(CONSTRAINT_PREFIX+constraintsCount); 
+							ce1.setId(constantIdGenerator.generate());
 							constraintsCount++; 
 							
 							cp.getConstraints().add(ce1);
@@ -618,7 +616,7 @@ public class CPModelDerivator implements ICPModelDerivator
 			ce1.setExp1(auxExp); 
 			ce1.setExp2(ceroConstant); 
 			ce1.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO); 
-			ce1.setId(CONSTRAINT_PREFIX+constraintsCount); 
+			ce1.setId(constantIdGenerator.generate());
 			constraintsCount++; 
 			
 			cp.getConstraints().add(ce1); 
@@ -651,8 +649,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		
 		
 		ComparisonExpression ce1= cpFactory.createComparisonExpression(); 
-		ce1.setId(CONSTRAINT_PREFIX+constraintsCount); 
-		constraintsCount++; 
+		ce1.setId(constantIdGenerator.generate());
 		ce1.setComparator(ComparatorEnum.GREATER_THAN); 
 		
 		ce1.setExp1(auxExp); 
@@ -1434,6 +1431,21 @@ public class CPModelDerivator implements ICPModelDerivator
 			}
 		
 		return is; 
+	}
+
+	class ConstantIdGenerator {
+
+		private static final String CONSTRAINT_PREFIX= "c_";
+
+		private int constraintsCount;
+
+		ConstantIdGenerator() {
+			this.constraintsCount = 0;
+		}
+
+		String generate(){
+			return CONSTRAINT_PREFIX + constraintsCount++;
+		}
 	}
 
 }

@@ -901,6 +901,10 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(4);
 	}
 
+	public EAttribute getPaaSageGoal_ExtOptimisationAttribute() {
+		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(5);
+	}
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1167,6 +1171,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		createEReference(paaSageGoalEClass, PAA_SAGE_GOAL__FUNCTION);
 		createEReference(paaSageGoalEClass, PAA_SAGE_GOAL__APPLICATION_COMPONENT);
 		createEAttribute(paaSageGoalEClass, PAA_SAGE_GOAL__APPLICATION_METRIC);
+		createEAttribute(paaSageGoalEClass, PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE);
 
 		requiredFeatureEClass = createEClass(REQUIRED_FEATURE);
 		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__FEATURE);
@@ -1320,6 +1325,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		initEReference(getPaaSageGoal_Function(), theTypesPaasagePackage.getFunctionType(), null, "function", null, 1, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getPaaSageGoal_ApplicationComponent(), this.getComponentMetricRelationship(), null, "applicationComponent", null, 0, -1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getPaaSageGoal_ApplicationMetric(), ecorePackage.getEString(), "applicationMetric", null, 0, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getPaaSageGoal_ExtOptimisationAttribute(), ecorePackage.getEString(), "optimisationAttribute", null, 1, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(requiredFeatureEClass, RequiredFeature.class, "RequiredFeature", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getRequiredFeature_Feature(), ecorePackage.getEString(), "feature", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
