@@ -40,7 +40,7 @@ public class CPCloner
 	public final static String CDO_SERVER_PATH= "upperware-models/"; 
 	
 	//Log
-	public static Logger logger= Logger.getLogger("paasage-cp-clonner-log");
+	public static Logger logger= Logger.getLogger("paasage-profiler");
 	
 	public static CDOClientExtended client= null; 
 

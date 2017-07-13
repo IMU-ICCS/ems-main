@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import eu.paasage.upperware.metamodel.cp.*;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -41,20 +42,6 @@ import eu.paasage.upperware.metamodel.application.ProviderDimension;
 import eu.paasage.upperware.metamodel.application.RequiredFeature;
 import eu.paasage.upperware.metamodel.application.VirtualMachine;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
-import eu.paasage.upperware.metamodel.cp.BooleanDomain;
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedExpression;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.NumericDomain;
-import eu.paasage.upperware.metamodel.cp.NumericExpression;
-import eu.paasage.upperware.metamodel.cp.NumericListDomain;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
@@ -152,8 +139,6 @@ public class CPModelDerivator implements ICPModelDerivator
 		//createFactories(factoryFile); 
 		dimensionsDerivator= new DimensionDerivator(); 
 		deltaFunctionDerivator= new DeltaFunctionDerivator();
-		
-		
 	}
 	
 	/*
@@ -259,11 +244,63 @@ public class CPModelDerivator implements ICPModelDerivator
 		}*/
 		
 		logger.debug("** 		CP Creation ended"); 
-		//createObjetiveFunction(cp, configuration); 
+		//createObjetiveFunction(cp, configuration);
+
+		logger.debug(cp.toString());
+
+		printCpModel(cp);
+
+		logger.debug("** 		CP Creation ended2");
 		
 		return cp;
 	}
-		
+
+	/**
+	 * supplementary function to printout the CP object creater
+	 * @param cp The constraint problem to display
+	 */
+	protected void printCpModel(ConstraintProblem cp)
+	{
+
+		//print constants
+		logger.debug("********* CP MODEL **************");
+		logger.debug("CONSTANTS");
+		for(Constant cons : cp.getConstants()) {
+			logger.debug("   " + CPModelTool.toString(cons));
+		}
+
+		logger.debug("VARIABLES");
+		for(Variable var : cp.getVariables()){
+			logger.debug(CPModelTool.toString(var));
+		}
+
+		logger.debug("CONSTRAINTS");
+		for(ComparisonExpression ce : cp.getConstraints()){
+			logger.debug(ce.getId() + ": " +CPModelTool.toString(ce));
+		}
+
+		logger.debug("AUX Expressions");
+		for(Expression aux : cp.getAuxExpressions()){
+			logger.debug(aux.getId() + ": " +CPModelTool.toString(aux));
+		}
+
+		logger.debug("METRICS");
+		for(MetricVariable met : cp.getMetricVariables()){
+			logger.debug(met.getId() + ": " +CPModelTool.toString(met));
+		}
+
+		logger.debug("SOLUTION");
+		for(Solution sol : cp.getSolution()){
+			logger.debug("Solution: " + sol.getClass());
+		}
+
+		logger.debug("GOAL");
+		for(Goal goal : cp.getGoals()){
+			logger.debug(CPModelTool.toString(goal));
+		}
+
+	}
+
 	/**
 	 * Creates constraints for the constraint problem model
 	 * @param cp The constraint problem being created

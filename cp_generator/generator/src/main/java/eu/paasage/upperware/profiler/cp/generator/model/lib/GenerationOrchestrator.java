@@ -207,7 +207,7 @@ public class GenerationOrchestrator
 		
 			ResourceSet resSet= new ResourceSetImpl(); 
 			
-			database.saveRelatedModels(resSet, paasageConfigurationDir);
+			database.saveRelatedModels(resSet, paasageConfigurationDir); // IS THIS DOING ANYTHING?
 			
 			PaaSageConfigurationWrapper pcw= new PaaSageConfigurationWrapper(pc);//, paasageConfigurationDir, resSet); 
 			
@@ -287,7 +287,7 @@ public class GenerationOrchestrator
 		InputStream inpFile= selectExistingLog4File(); 
 		
 		PropertyConfigurator.configure(inpFile);
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.DEBUG);
 		
 		//Configures the CDO Client logger
 		Logger templogger = org.apache.log4j.Logger.getLogger(CDOClient.class);
@@ -398,8 +398,8 @@ public class GenerationOrchestrator
 	 * Launch the CP Generator
 	 * @param args The CDO id of the model
 	 */
-	public static void main(String[] args) 
-	{	
+	public static void main(String[] args) {
+		System.out.println("Executing main method of the GeneralOrchestrator");
 		if (args.length==1 && args[0].equals("-daemon"))
 		{
 			ZeroMQServer.main(args);
