@@ -1092,6 +1092,8 @@ public interface ApplicationPackage extends EPackage {
 	 */
 	int PAA_SAGE_GOAL_OPERATION_COUNT = 0;
 
+	int PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE = 10000;
+
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl <em>Required Feature</em>}' class.
 	 * <!-- begin-user-doc -->
@@ -2107,6 +2109,8 @@ public interface ApplicationPackage extends EPackage {
 	 */
 	EAttribute getPaaSageGoal_ApplicationMetric();
 
+	EAttribute getPaaSageGoal_ExtOptimisationAttribute();
+
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.application.RequiredFeature <em>Required Feature</em>}'.
 	 * <!-- begin-user-doc -->
@@ -2877,6 +2881,8 @@ public interface ApplicationPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute PAA_SAGE_GOAL__ID = eINSTANCE.getPaaSageGoal_Id();
+
+		EAttribute PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE_ID = eINSTANCE.getPaaSageGoal_ExtOptimisationAttribute();
 
 		/**
 		 * The meta object literal for the '<em><b>Goal</b></em>' attribute feature.

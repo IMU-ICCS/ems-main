@@ -153,4 +153,14 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__APPLICATION_METRIC, newApplicationMetric);
 	}
 
+	@Override
+	public void setOptimisationAttribute(String optimisationAttribute) {
+		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE_ID, optimisationAttribute);
+	}
+
+	@Override
+	public String getOptimisationAttribute() {
+		return (String)eGet(ApplicationPackage.Literals.PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE_ID, true);
+	}
+
 } //PaaSageGoalImpl
