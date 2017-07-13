@@ -214,7 +214,20 @@ public class CPModelTool {
 		
 		return constant; 
 	}
-	
+
+	public static Constant createFloatConstant(float value, String name)
+	{
+		Constant constant= CpFactory.eINSTANCE.createConstant();
+		constant.setId(name);
+		constant.setType(BasicTypeEnum.FLOAT);
+		FloatValueUpperware val= TypesFactory.eINSTANCE.createFloatValueUpperware();
+		val.setValue(value);
+		constant.setValue(val);
+
+		return constant;
+	}
+
+
 	/**
 	 * Createsa metric variable
 	 * @param metricID Metric Id 
