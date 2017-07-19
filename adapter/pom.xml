@@ -34,6 +34,7 @@
   <properties>
     <paasage.version>2015.9.1-SNAPSHOT</paasage.version>
     <colloseum-client.version>0.2.0-SNAPSHOT</colloseum-client.version>
+    <cdo-client.version>2.0.0-SNAPSHOT</cdo-client.version>
     <jgrapht.version>1.0.1</jgrapht.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
@@ -69,7 +70,7 @@
     <dependency>
       <groupId>org.ow2.paasage.mddb.cdo</groupId>
       <artifactId>client</artifactId>
-      <version>${paasage.version}</version>
+      <version>${cdo-client.version}</version>
     </dependency>
 
     <dependency>
