@@ -44,8 +44,6 @@ public class metricsListener implements Runnable{
 	private String metricId;
 	private boolean run = true;
 
-	static ZMQ zmq = new ZMQ();
-	static ZMQ ZMQ = new ZMQ();
 	public metricsListener(String metricId){
 
 
@@ -69,10 +67,10 @@ public class metricsListener implements Runnable{
 
 			System.out.println("ML: lets go for a ML subscription .....");
 			System.out.println("ML: setting  ML context ....");	
-			Context cntx1 = zmq.context(1);
+			Context cntx1 = ZMQ.context(1);
 		
 			System.out.println("ML: context ML set .....");
-			Socket	subscriber1 = cntx1.socket (zmq.SUB);
+			Socket	subscriber1 = cntx1.socket (ZMQ.SUB);
 		
 			System.out.println("ML: socket  ML set .....");
 			subscriber1.connect ("tcp://localhost:5545");

@@ -34,12 +34,15 @@ object Expr {
       case x: LongValueUpperware    => Const(x.getValue)
       case x: BooleanValueUpperware => Const(if (x.isValue) 1 else 0)
     }
-    case x: cp.MetricVariable => variableMap(x) match {
-      case x: IntegerValueUpperware => Const(x.getValue)
-      case x: DoubleValueUpperware  => Const(x.getValue)
-      case x: FloatValueUpperware   => Const(x.getValue)
-      case x: LongValueUpperware    => Const(x.getValue)
-      case x: BooleanValueUpperware => Const(if (x.isValue) 1 else 0)
+    case x: cp.MetricVariable => variableMap.get(x) match{
+        case Some(x) => x match {
+          case x: IntegerValueUpperware => Const(x.getValue)
+          case x: DoubleValueUpperware  => Const(x.getValue)
+          case x: FloatValueUpperware   => Const(x.getValue)
+          case x: LongValueUpperware    => Const(x.getValue)
+          case x: BooleanValueUpperware => Const(if (x.isValue) 1 else 0)
+        }
+        case None => Const(java.lang.Double.NaN)
     }
     case _ => throw new Exception("[" + expr.getClass.getName + " not supported")
   }

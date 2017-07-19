@@ -28,8 +28,16 @@ CDO server host and port should be set in `$PAASAGE_CONFIG_DIR/eu.paasage.cdo.cl
 
 Component provides command line interface:
 
+To start Daemon Mode:
+
 ```shell
-$ java -jar milp-solver-assembly-2015.04-SNAPSHOT.jar resourceName
+$ java -jar milp-solver-assembly-2015.04-SNAPSHOT.jar subscribePort publishPort
+```
+
+To start in CLI mode:
+
+```shell
+$ java -cp milp-solver-assembly-2015.04-SNAPSHOT.jar eu.paasage.upperware.milp_solver.exec.MainCDO resourceName timestamp
 ```
 
 **Input:** MILP solver reads CP problem directly from CDO resource. `resourceName` in CDO is a two element list. The first element is CAMEL model, the second is CP problem.

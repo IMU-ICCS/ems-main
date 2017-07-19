@@ -360,7 +360,7 @@ public class PaasageModelTool
 	 * @param name The string to search for
 	 * @return True if the string is in the list
 	 */
-	protected static boolean isInList(EList<String> names, String name)
+	public static boolean isInList(EList<String> names, String name)
 	{
 		for(String n:names)
 		{	logger.debug("***************Comparing name "+n+" with "+name);
@@ -713,6 +713,13 @@ public class PaasageModelTool
 		return false; 
 	}
 	
+	
+	public static boolean isCountryInContinent(CountryUpperware c, ContinentUpperware continent)
+	{
+		
+		return (c.getContinent()!=null && (continent.getName().equals(c.getContinent().getName()) || isInList(c.getContinent().getAlternativeNames(), continent.getName()))); 
+	}
+	
 	/**
 	 * Searches vm profiles related to the given cloud vm id
 	 * @param profiles The list of profiles
@@ -725,6 +732,7 @@ public class PaasageModelTool
 		
 		for(VirtualMachineProfile p: profiles)
 		{
+			logger.debug("PaasageModelTool - searchRelatedVMProfiles - Cloud VM  ID "+cloudVMId+" Considering profile "+p.getRelatedCloudVMId());
 			if(p.getRelatedCloudVMId().equals(cloudVMId))
 				relatedProfiles.add(p); 
 		}
@@ -930,15 +938,18 @@ public class PaasageModelTool
 	{
 		int i=0; 
 		
+		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Begin ");
+		
 		while(i<profiles.size())
 		{
 			int j=0; 
 			while(j< profiles.get(i).getProviderDimension().size())
 			{	
 				ProviderDimension pc= profiles.get(i).getProviderDimension().get(j); 
-				logger.debug("Provider type "+pc.getProvider().getType().getId());
+				logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider type "+pc.getProvider().getType().getId());
 				if(pc.getProvider().getId().equals(provider.getId()))
 				{
+					logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Removing "+profiles.get(i).getProviderDimension());
 					profiles.get(i).getProviderDimension().remove(j); 
 				}
 				else
@@ -968,6 +979,8 @@ public class PaasageModelTool
 					j++; 
 			}
 		}
+		
+		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - End ");
 		
 	}
 	
@@ -1434,7 +1447,14 @@ public class PaasageModelTool
 		
 		return null; 
 	}
-	
+
+	public static List<String> getFunctionNames(IDatabaseProxy proxy) {
+		List<String> result = new ArrayList<>();
+		for(FunctionType ft: proxy.getFunctionTypes().getTypes()) {
+			result.add(ft.getId().toLowerCase());
+		}
+		return result;
+	}
 	
 	public static List<Provider> getProvidersFromVirtualMachineProfiles(List<VirtualMachineProfile> profiles)
 	{

@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>rule-processor</artifactId>
+
 	<parent>
 		<groupId>org.ow2.paasage</groupId>
-		<artifactId>paasage-pom</artifactId>
-		<version>2015.9.1-SNAPSHOT</version>
+		<artifactId>upperware</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
 	</parent>
-	<packaging>jar</packaging>
-	<name>Rule Processor</name>
-	<url>http://www.paasage.eu/</url>
+
+	<artifactId>rule-processor</artifactId>
+
+	<name>Upperware - Rule Processor</name>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>generator</artifactId>
-			<version>2015.9.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- reading command line arguments -->
 		<dependency>
@@ -33,13 +33,13 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<!-- ZeroMQ -->
 		<dependency>
 			<groupId>org.zeromq</groupId>
 			<artifactId>jeromq</artifactId>
-			<version>0.3.5</version>
+			<version>${jeromq.version}</version>
 		</dependency>
         <!-- algebra requirements -->
  		<dependency>
@@ -51,7 +51,8 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -114,36 +115,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-  	<repositories>
-		<repository>
-			<id>gforge.inria.fr-release</id>
-			<name>Maven Repository for Saloon</name>
-			<url>http://saloon.gforge.inria.fr/repositories/releases/</url>
-			<releases />
-		</repository>
-		<repository>
-	      <id>ow2.releases</id>
-	      <name>OW2 repository</name>
-	      <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
-	    </repository>
-	    <repository>
-	      <id>ow2.snapshots</id>
-	      <name>OW2 repository</name>
-	      <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
-	    </repository>
-	</repositories>
-	
-	<distributionManagement>
-		<repository>
-			<id>deployment</id>
-			<name>Internal Releases</name>
-			<url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>deployment</id>
-			<name>Internal Releases</name>
-			<url>http://repository.ow2.org/nexus/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>

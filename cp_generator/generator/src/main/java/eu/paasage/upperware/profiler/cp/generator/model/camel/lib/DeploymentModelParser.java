@@ -63,6 +63,7 @@ import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
+import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.DataUnitEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.LocationUpperware;
 import eu.paasage.upperware.metamodel.types.typesPaasage.OS;
@@ -265,14 +266,16 @@ public class DeploymentModelParser
 		
 		logger.debug("DeployementModelParser - createCommunicationDependency - clientAppComponent "+clientAppComponent+" client name "+clientId);
 		
-		boolean isLocal= true; 
+		CommunicationTypeUpperware ct= CommunicationTypeUpperware.ANY; 
 		
 		if(communication.getType().getValue()==CommunicationType.REMOTE_VALUE)
 		{
-			isLocal= false; 
+			ct= CommunicationTypeUpperware.REMOTE; 
 		}
+		else if(communication.getType().getValue()==CommunicationType.LOCAL_VALUE)
+			ct= CommunicationTypeUpperware.LOCAL; 
 		
-		RequiredFeature rf= buildRequiredCommunicationPortFeature(communication.getRequiredCommunication(), providerAppComponent, isLocal); 
+		RequiredFeature rf= buildRequiredCommunicationPortFeature(communication.getRequiredCommunication(), providerAppComponent, ct); 
 		
 		clientAppComponent.getRequiredFeatures().add(rf); 
 	}
@@ -1320,7 +1323,7 @@ public class DeploymentModelParser
 	 * @param isLocal Indicates if the communication is local
 	 * @return The required feature
 	 */
-	protected RequiredFeature buildRequiredCommunicationPortFeature(RequiredCommunication port, CloudMLElementUpperware providedBy, boolean isLocal)
+	protected RequiredFeature buildRequiredCommunicationPortFeature(RequiredCommunication port, CloudMLElementUpperware providedBy, CommunicationTypeUpperware ct)
 	{
 		
 		RequiredFeature rf= applicationFactory.createRequiredFeature(); 
@@ -1330,10 +1333,9 @@ public class DeploymentModelParser
 		rf.setFeature(id);
 		
 		rf.setProvidedBy(providedBy);
-					
-		//boolean isLocal= port.isIsLocal(); 
-		//rf.setRemote(!isLocal);
-		rf.setRemote(!isLocal);//TODO VERIFY THIS VALUE
+
+		rf.setCommunicationType(ct);
+			
 			
 		rf.setOptional(!port.isIsMandatory());
 		
@@ -1354,7 +1356,7 @@ public class DeploymentModelParser
 					
 		//boolean isLocal= port.getType().isIsLocal(); 
 		//rf.setRemote(!isLocal);
-		rf.setRemote(true); //TODO TO CHECK THIS
+		rf.setCommunicationType(CommunicationTypeUpperware.LOCAL); //TODO TO CHECK THIS
 			
 		rf.setOptional(!((RequiredCommunication)port.getType()).isIsMandatory());
 		
@@ -1375,8 +1377,8 @@ public class DeploymentModelParser
 		rf.setFeature(contaimentRelationId);
 		
 		rf.setProvidedBy(providedBy);
-					
-		rf.setRemote(false);
+				
+		rf.setCommunicationType(CommunicationTypeUpperware.ANY);
 		
 		rf.setOptional(false);
 					

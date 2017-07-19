@@ -49,7 +49,7 @@ public interface Constants
 	
 	public static final String GHZ_UNIT="GHz"; 
 	
-	public static final String PROVIDER_ID_SEPARATOR="-"; 
+	public static final String PROVIDER_ID_SEPARATOR="_"; 
 	
 	public static final int MAX_CARDINALITY_UPPER_VALUE=100; 
 	

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.util;
 
@@ -31,14 +23,14 @@ import org.eclipse.emf.ecore.EObject;
  * It provides an adapter <code>createXXX</code> method for each class of the model.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage
- * 
+ * @generated
  */
 public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	/**
 	 * The cached model package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static ApplicationPackage modelPackage;
 
@@ -46,7 +38,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * Creates an instance of the adapter factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationAdapterFactory() {
 		if (modelPackage == null) {
@@ -60,7 +52,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
 	 * <!-- end-user-doc -->
 	 * @return whether this factory is applicable for the type of the object.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public boolean isFactoryForType(Object object) {
@@ -77,7 +69,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * The switch that delegates to the <code>createXXX</code> methods.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ApplicationSwitch<Adapter> modelSwitch =
 		new ApplicationSwitch<Adapter>() {
@@ -189,7 +181,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @param target the object to adapt.
 	 * @return the adapter for the <code>target</code>.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Adapter createAdapter(Notifier target) {
@@ -205,7 +197,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.PaasageConfiguration
-	 * 
+	 * @generated
 	 */
 	public Adapter createPaasageConfigurationAdapter() {
 		return null;
@@ -219,7 +211,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.VirtualMachine
-	 * 
+	 * @generated
 	 */
 	public Adapter createVirtualMachineAdapter() {
 		return null;
@@ -233,7 +225,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.VirtualMachineProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createVirtualMachineProfileAdapter() {
 		return null;
@@ -247,7 +239,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.CloudMLElementUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createCloudMLElementUpperwareAdapter() {
 		return null;
@@ -261,7 +253,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ResourceUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createResourceUpperwareAdapter() {
 		return null;
@@ -275,7 +267,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.Memory
-	 * 
+	 * @generated
 	 */
 	public Adapter createMemoryAdapter() {
 		return null;
@@ -289,7 +281,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.Storage
-	 * 
+	 * @generated
 	 */
 	public Adapter createStorageAdapter() {
 		return null;
@@ -303,7 +295,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.CPU
-	 * 
+	 * @generated
 	 */
 	public Adapter createCPUAdapter() {
 		return null;
@@ -317,7 +309,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.Provider
-	 * 
+	 * @generated
 	 */
 	public Adapter createProviderAdapter() {
 		return null;
@@ -331,7 +323,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationComponent
-	 * 
+	 * @generated
 	 */
 	public Adapter createApplicationComponentAdapter() {
 		return null;
@@ -345,7 +337,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ElasticityRule
-	 * 
+	 * @generated
 	 */
 	public Adapter createElasticityRuleAdapter() {
 		return null;
@@ -359,7 +351,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ActionUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createActionUpperwareAdapter() {
 		return null;
@@ -373,7 +365,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ConditionUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createConditionUpperwareAdapter() {
 		return null;
@@ -387,7 +379,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.PaaSageVariable
-	 * 
+	 * @generated
 	 */
 	public Adapter createPaaSageVariableAdapter() {
 		return null;
@@ -401,7 +393,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.PaaSageGoal
-	 * 
+	 * @generated
 	 */
 	public Adapter createPaaSageGoalAdapter() {
 		return null;
@@ -415,7 +407,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.RequiredFeature
-	 * 
+	 * @generated
 	 */
 	public Adapter createRequiredFeatureAdapter() {
 		return null;
@@ -429,7 +421,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.Dimension
-	 * 
+	 * @generated
 	 */
 	public Adapter createDimensionAdapter() {
 		return null;
@@ -443,7 +435,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ProviderDimension
-	 * 
+	 * @generated
 	 */
 	public Adapter createProviderDimensionAdapter() {
 		return null;
@@ -457,7 +449,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ImageUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createImageUpperwareAdapter() {
 		return null;
@@ -471,7 +463,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.application.ComponentMetricRelationship
-	 * 
+	 * @generated
 	 */
 	public Adapter createComponentMetricRelationshipAdapter() {
 		return null;
@@ -485,7 +477,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.PaaSageCPElement
-	 * 
+	 * @generated
 	 */
 	public Adapter createPaaSageCPElementAdapter() {
 		return null;
@@ -499,7 +491,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.CPElement
-	 * 
+	 * @generated
 	 */
 	public Adapter createCPElementAdapter() {
 		return null;
@@ -513,7 +505,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.Expression
-	 * 
+	 * @generated
 	 */
 	public Adapter createExpressionAdapter() {
 		return null;
@@ -527,7 +519,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.cp.BooleanExpression
-	 * 
+	 * @generated
 	 */
 	public Adapter createBooleanExpressionAdapter() {
 		return null;
@@ -539,7 +531,7 @@ public class ApplicationAdapterFactory extends AdapterFactoryImpl {
 	 * This default implementation returns null.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * 
+	 * @generated
 	 */
 	public Adapter createEObjectAdapter() {
 		return null;

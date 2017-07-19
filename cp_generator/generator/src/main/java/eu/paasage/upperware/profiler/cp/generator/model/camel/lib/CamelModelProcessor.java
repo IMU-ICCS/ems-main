@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import eu.paasage.camel.metric.Property;
 import org.apache.log4j.Logger;
 
 import eu.paasage.camel.CamelModel;
@@ -62,6 +63,8 @@ import fr.inria.paasage.saloon.camel.ontology.QuantifiableBoundedElementCamel;
  *
  */
 public class CamelModelProcessor {
+
+	public static final String ATTRIBUTE = "Attribute";
 
 	/*
 	 * ATTRIBUTES
@@ -131,9 +134,9 @@ public class CamelModelProcessor {
 		//Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
 		
 		List<VM> vms=  DeploymentModelParser.getVMList(model.getDeploymentModels().get(0));
-		//logger.info(" ** 	Processing Opt Rerqs");
-		//parseOptimisationRequirements(pc);
-		//logger.info(" ** 	Processing Opt Rerqs ended");
+		logger.info(" ** 	Processing Opt Rerqs");
+		parseOptimisationRequirements(pc);
+		logger.info(" ** 	Processing Opt Rerqs ended");
 		VMRequirementSet globalRequirements= model.getDeploymentModels().get(0).getGlobalVMRequirementSet(); 
 		
 		
@@ -181,13 +184,10 @@ public class CamelModelProcessor {
 					storageConcept.setSelected(true);
 					storageConcept.setUnit(gbUnit);
 					logger.debug("CamelModelProcessor - parseModel - Disk unit "+storageConcept.getUnit().getName());
-					storageConcept.setMinValue(0);
-					storageConcept.setMaxValue(0);
-					if(hardware.getMinStorage()!=0)
-						storageConcept.setMinValue(hardware.getMinStorage());
-					if(hardware.getMaxStorage()!=0)
-						storageConcept.setMaxValue(hardware.getMaxStorage());
-					
+
+					storageConcept.setMinValue(hardware.getMinStorage());
+					storageConcept.setMaxValue(hardware.getMaxStorage());
+
 					logger.debug("CamelModelProcessor - parseModel - storage defined in ontology! ");
 				}	
 				
@@ -203,14 +203,9 @@ public class CamelModelProcessor {
 					logger.debug("CamelModelProcessor - parseModel - Min Core Number: "+hardware.getMinCores());
 					
 					logger.debug("CamelModelProcessor - parseModel - Max Core Number: "+hardware.getMaxCores());
-					
-					coreConcept.setMinValue(0);
-					coreConcept.setMaxValue(0);
-					
-					if(hardware.getMinCores()!=0) 
-						coreConcept.setMinValue(hardware.getMinCores());
-					if(hardware.getMaxCores()!=0)
-						coreConcept.setMaxValue(hardware.getMaxCores());
+
+					coreConcept.setMinValue(hardware.getMinCores());
+					coreConcept.setMaxValue(hardware.getMaxCores());
 					
 					logger.debug("CamelModelProcessor - parseModel - number of cores defined in ontology! ");
 				}
@@ -545,42 +540,38 @@ public class CamelModelProcessor {
 			if(req instanceof OptimisationRequirement)
 			{
 				logger.debug("CamelModelProcessor - parseOptimisationRequirements 5");
-				OptimisationRequirement optReq= (OptimisationRequirement) req; 
-				
+				OptimisationRequirement optReq= (OptimisationRequirement) req;
+
 				logger.debug("CamelModelProcessor - parseOptimisationRequirements 6 "+optReq.getName());
-				FunctionType ft= null;
-				
-				String metricName=null; 
-				
-				if(optReq.getMetric()!=null)
-				{
-					metricName= optReq.getMetric().getProperty().getName(); 
-					ft= PaasageModelTool.getFunctionTypeByName(metricName, proxy); //TODO RAW VERSUS COMPOSITE METRICS
-					
-				}
-				else
-				{	
-					metricName= optReq.getProperty().getName(); 
-					ft= PaasageModelTool.getFunctionTypeByName(optReq.getProperty().getName(), proxy);
-				}	
-				
+
+				String functionName = getFunctionName(optReq);
+				logger.debug("CamelModelProcessor - parseOptimisationRequirements 6.1 "+functionName);
+
+				logger.debug("CamelModelProcessor - parseOptimisationRequirements 6.2 " + PaasageModelTool.getFunctionNames(proxy));
+
+				FunctionType ft= PaasageModelTool.getFunctionTypeByName(functionName, proxy);
 				logger.debug("CamelModelProcessor - parseOptimisationRequirements 7");
-				
-				
-			
+
 				if(ft!=null)
 				{
+					String key = getKey(ft, optReq);
 					logger.debug("CamelModelProcessor - parseOptimisationRequirements 8");
-					PaaSageGoal goal= goalMap.get(ft.getId());
+					PaaSageGoal goal= goalMap.get(key);
 					logger.debug("CamelModelProcessor - parseOptimisationRequirements 9");
+					GoalOperatorEnum goalType= getSelectedGoal(optReq.getOptimisationFunction());
 					if(goal==null)
 					{	
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 10");
 						goal= ApplicationFactory.eINSTANCE.createPaaSageGoal();
+
+						if (ATTRIBUTE.equalsIgnoreCase(ft.getId())){
+							String pathToAttribute = getPathToAttribute(optReq);
+							goal.setOptimisationAttribute(pathToAttribute);
+						}
+
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 11");
-						goalMap.put(ft.getId(), goal); 
+						goalMap.put(key, goal);
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 12");
-						GoalOperatorEnum goalType= getSelectedGoal(optReq.getOptimisationFunction()); 
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 13");
 						goal.setFunction(ft); 
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 14");
@@ -620,15 +611,12 @@ public class CamelModelProcessor {
 						}
 						
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 27");
-						goal.setApplicationMetric(metricName);
+						goal.setApplicationMetric(functionName);
 						logger.debug("CamelModelProcessor - parseOptimisationRequirements 28");
 					}
-
-					
-				}
-				else
+				} else {
 					logger.warn("CamelModelProcessor- parseOptimisationRequirements- The property "+optReq.getMetric().getProperty().getName() + "is not in the set {cost, response time, availability}!");
-				
+				}
 			}
 		}
 		
@@ -658,11 +646,28 @@ public class CamelModelProcessor {
 			}
 		}
 		logger.debug("CamelModelProcessor - parseOptimisationRequirements 35");
-		
-		
-		
 	}
-	
+
+	private String getKey(FunctionType ft, OptimisationRequirement optReq){
+		String id = ft.getId();
+		if (!ATTRIBUTE.equalsIgnoreCase(id)){
+			return id;
+		}
+		return id + "_" + getPathToAttribute(optReq);
+	}
+
+	private String getFunctionName(OptimisationRequirement optReq) {
+		return getProperty(optReq).getName();
+	}
+
+	private String getPathToAttribute(OptimisationRequirement optReq) {
+		return getProperty(optReq).getDescription();
+	}
+
+	private Property getProperty(OptimisationRequirement optReq){
+		return optReq.getMetric() != null ? optReq.getMetric().getProperty() : optReq.getProperty();
+	}
+
 	protected ComponentMetricRelationship createComponentMetricRelationship(ApplicationComponent appc, String metricId)
 	{
 		ComponentMetricRelationship cmr= ApplicationFactory.eINSTANCE.createComponentMetricRelationship(); 
@@ -680,16 +685,8 @@ public class CamelModelProcessor {
 	 * @param type The optimisation function type 
 	 * @return The selected goal
 	 */
-	protected GoalOperatorEnum getSelectedGoal(OptimisationFunctionType type)
-	{
-		
-		if(type.getValue()==OptimisationFunctionType.MAXIMISE_VALUE)
-			return GoalOperatorEnum.MAX; 
-		
-		return GoalOperatorEnum.MIN; 
-		
-
-				
+	protected GoalOperatorEnum getSelectedGoal(OptimisationFunctionType type) {
+		return type.getValue()==OptimisationFunctionType.MAXIMISE_VALUE ? GoalOperatorEnum.MAX : GoalOperatorEnum.MIN;
 	}
 	
 	/**

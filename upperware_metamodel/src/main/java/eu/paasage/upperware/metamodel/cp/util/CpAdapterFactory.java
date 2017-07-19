@@ -164,6 +164,26 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createMetricVariableValueAdapter();
 			}
 			@Override
+			public Adapter caseParameter(Parameter object) {
+				return createParameterAdapter();
+			}
+			@Override
+			public Adapter caseNormalisedUtilityDimension(NormalisedUtilityDimension object) {
+				return createNormalisedUtilityDimensionAdapter();
+			}
+			@Override
+			public Adapter caseFunction(Function object) {
+				return createFunctionAdapter();
+			}
+			@Override
+			public Adapter caseConfigurationUpperware(ConfigurationUpperware object) {
+				return createConfigurationUpperwareAdapter();
+			}
+			@Override
+			public Adapter caseDeltaUtility(DeltaUtility object) {
+				return createDeltaUtilityAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -516,6 +536,76 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createMetricVariableValueAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.Parameter <em>Parameter</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see eu.paasage.upperware.metamodel.cp.Parameter
+	 * @generated
+	 */
+	public Adapter createParameterAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension <em>Normalised Utility Dimension</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension
+	 * @generated
+	 */
+	public Adapter createNormalisedUtilityDimensionAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.Function <em>Function</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see eu.paasage.upperware.metamodel.cp.Function
+	 * @generated
+	 */
+	public Adapter createFunctionAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware <em>Configuration Upperware</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see eu.paasage.upperware.metamodel.cp.ConfigurationUpperware
+	 * @generated
+	 */
+	public Adapter createConfigurationUpperwareAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.DeltaUtility <em>Delta Utility</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see eu.paasage.upperware.metamodel.cp.DeltaUtility
+	 * @generated
+	 */
+	public Adapter createDeltaUtilityAdapter() {
 		return null;
 	}
 

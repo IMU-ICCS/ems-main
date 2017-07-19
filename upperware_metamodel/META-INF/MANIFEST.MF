@@ -1,14 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
-Bundle-SymbolicName: upperware_metamodel;singleton:=true
+Bundle-SymbolicName: upperware-metamodel;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: 
- eu.paasage.upperware.metamodel.application,
+Export-Package: eu.paasage.upperware.metamodel.application,
  eu.paasage.upperware.metamodel.application.impl,
  eu.paasage.upperware.metamodel.application.util,
  eu.paasage.upperware.metamodel.cp,

@@ -168,13 +168,22 @@ public interface CpPackage extends EPackage {
 	int CONSTRAINT_PROBLEM__SOLUTION = 6;
 
 	/**
+	 * The feature id for the '<em><b>Delta Utility</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONSTRAINT_PROBLEM__DELTA_UTILITY = 7;
+
+	/**
 	 * The number of structural features of the '<em>Constraint Problem</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONSTRAINT_PROBLEM_FEATURE_COUNT = 7;
+	int CONSTRAINT_PROBLEM_FEATURE_COUNT = 8;
 
 	/**
 	 * The number of operations of the '<em>Constraint Problem</em>' class.
@@ -1306,6 +1315,344 @@ public interface CpPackage extends EPackage {
 	int METRIC_VARIABLE_VALUE_OPERATION_COUNT = 0;
 
 	/**
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.ParameterImpl <em>Parameter</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see eu.paasage.upperware.metamodel.cp.impl.ParameterImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getParameter()
+	 * @generated
+	 */
+	int PARAMETER = 24;
+
+	/**
+	 * The feature id for the '<em><b>Solution</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PARAMETER__SOLUTION = 0;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PARAMETER__NAME = 1;
+
+	/**
+	 * The number of structural features of the '<em>Parameter</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PARAMETER_FEATURE_COUNT = 2;
+
+	/**
+	 * The number of operations of the '<em>Parameter</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PARAMETER_OPERATION_COUNT = 0;
+
+	/**
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl <em>Function</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see eu.paasage.upperware.metamodel.cp.impl.FunctionImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getFunction()
+	 * @generated
+	 */
+	int FUNCTION = 26;
+
+	/**
+	 * The feature id for the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FUNCTION__ID = COMPOSED_EXPRESSION__ID;
+
+	/**
+	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FUNCTION__EXPRESSIONS = COMPOSED_EXPRESSION__EXPRESSIONS;
+
+	/**
+	 * The feature id for the '<em><b>Operator</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FUNCTION__OPERATOR = COMPOSED_EXPRESSION__OPERATOR;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FUNCTION__VALUE = COMPOSED_EXPRESSION_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Function</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FUNCTION_FEATURE_COUNT = COMPOSED_EXPRESSION_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of operations of the '<em>Function</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FUNCTION_OPERATION_COUNT = COMPOSED_EXPRESSION_OPERATION_COUNT + 0;
+
+	/**
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.NormalisedUtilityDimensionImpl <em>Normalised Utility Dimension</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see eu.paasage.upperware.metamodel.cp.impl.NormalisedUtilityDimensionImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNormalisedUtilityDimension()
+	 * @generated
+	 */
+	int NORMALISED_UTILITY_DIMENSION = 25;
+
+	/**
+	 * The feature id for the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION__ID = FUNCTION__ID;
+
+	/**
+	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION__EXPRESSIONS = FUNCTION__EXPRESSIONS;
+
+	/**
+	 * The feature id for the '<em><b>Operator</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION__OPERATOR = FUNCTION__OPERATOR;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION__VALUE = FUNCTION__VALUE;
+
+	/**
+	 * The feature id for the '<em><b>Solutions</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION__SOLUTIONS = FUNCTION_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Goal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION__GOAL = FUNCTION_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of structural features of the '<em>Normalised Utility Dimension</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION_FEATURE_COUNT = FUNCTION_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of operations of the '<em>Normalised Utility Dimension</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int NORMALISED_UTILITY_DIMENSION_OPERATION_COUNT = FUNCTION_OPERATION_COUNT + 0;
+
+	/**
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl <em>Configuration Upperware</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConfigurationUpperware()
+	 * @generated
+	 */
+	int CONFIGURATION_UPPERWARE = 27;
+
+	/**
+	 * The feature id for the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONFIGURATION_UPPERWARE__ID = NUMERIC_EXPRESSION__ID;
+
+	/**
+	 * The feature id for the '<em><b>Solution</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONFIGURATION_UPPERWARE__SOLUTION = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONFIGURATION_UPPERWARE__VALUE = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Goal</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONFIGURATION_UPPERWARE__GOAL = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of structural features of the '<em>Configuration Upperware</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONFIGURATION_UPPERWARE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 3;
+
+	/**
+	 * The number of operations of the '<em>Configuration Upperware</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONFIGURATION_UPPERWARE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
+
+	/**
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.DeltaUtilityImpl <em>Delta Utility</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see eu.paasage.upperware.metamodel.cp.impl.DeltaUtilityImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getDeltaUtility()
+	 * @generated
+	 */
+	int DELTA_UTILITY = 28;
+
+	/**
+	 * The feature id for the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY__ID = FUNCTION__ID;
+
+	/**
+	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY__EXPRESSIONS = FUNCTION__EXPRESSIONS;
+
+	/**
+	 * The feature id for the '<em><b>Operator</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY__OPERATOR = FUNCTION__OPERATOR;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY__VALUE = FUNCTION__VALUE;
+
+	/**
+	 * The feature id for the '<em><b>Solutions</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY__SOLUTIONS = FUNCTION_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Selected Solution</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY__SELECTED_SOLUTION = FUNCTION_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of structural features of the '<em>Delta Utility</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY_FEATURE_COUNT = FUNCTION_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of operations of the '<em>Delta Utility</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DELTA_UTILITY_OPERATION_COUNT = FUNCTION_OPERATION_COUNT + 0;
+
+	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.OperatorEnum <em>Operator Enum</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1313,7 +1660,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getOperatorEnum()
 	 * @generated
 	 */
-	int OPERATOR_ENUM = 24;
+	int OPERATOR_ENUM = 29;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.GoalOperatorEnum <em>Goal Operator Enum</em>}' enum.
@@ -1323,7 +1670,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoalOperatorEnum()
 	 * @generated
 	 */
-	int GOAL_OPERATOR_ENUM = 25;
+	int GOAL_OPERATOR_ENUM = 30;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.ComparatorEnum <em>Comparator Enum</em>}' enum.
@@ -1333,7 +1680,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparatorEnum()
 	 * @generated
 	 */
-	int COMPARATOR_ENUM = 26;
+	int COMPARATOR_ENUM = 31;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum <em>Simple Unary Operator Enum</em>}' enum.
@@ -1343,7 +1690,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryOperatorEnum()
 	 * @generated
 	 */
-	int SIMPLE_UNARY_OPERATOR_ENUM = 27;
+	int SIMPLE_UNARY_OPERATOR_ENUM = 32;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum <em>Composed Unary Operator Enum</em>}' enum.
@@ -1353,7 +1700,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryOperatorEnum()
 	 * @generated
 	 */
-	int COMPOSED_UNARY_OPERATOR_ENUM = 28;
+	int COMPOSED_UNARY_OPERATOR_ENUM = 33;
 
 
 	/**
@@ -1463,6 +1810,17 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getConstraintProblem_Solution();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeltaUtility <em>Delta Utility</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Delta Utility</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeltaUtility()
+	 * @see #getConstraintProblem()
+	 * @generated
+	 */
+	EReference getConstraintProblem_DeltaUtility();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Expression <em>Expression</em>}'.
@@ -2081,6 +2439,166 @@ public interface CpPackage extends EPackage {
 	EReference getMetricVariableValue_Value();
 
 	/**
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Parameter <em>Parameter</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Parameter</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.Parameter
+	 * @generated
+	 */
+	EClass getParameter();
+
+	/**
+	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.Parameter#getSolution <em>Solution</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Solution</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.Parameter#getSolution()
+	 * @see #getParameter()
+	 * @generated
+	 */
+	EReference getParameter_Solution();
+
+	/**
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Parameter#getName <em>Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Name</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.Parameter#getName()
+	 * @see #getParameter()
+	 * @generated
+	 */
+	EAttribute getParameter_Name();
+
+	/**
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension <em>Normalised Utility Dimension</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Normalised Utility Dimension</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension
+	 * @generated
+	 */
+	EClass getNormalisedUtilityDimension();
+
+	/**
+	 * Returns the meta object for the reference list '{@link eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension#getSolutions <em>Solutions</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference list '<em>Solutions</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension#getSolutions()
+	 * @see #getNormalisedUtilityDimension()
+	 * @generated
+	 */
+	EReference getNormalisedUtilityDimension_Solutions();
+
+	/**
+	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension#getGoal <em>Goal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Goal</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension#getGoal()
+	 * @see #getNormalisedUtilityDimension()
+	 * @generated
+	 */
+	EReference getNormalisedUtilityDimension_Goal();
+
+	/**
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Function <em>Function</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Function</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.Function
+	 * @generated
+	 */
+	EClass getFunction();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.Function#getValue <em>Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Value</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.Function#getValue()
+	 * @see #getFunction()
+	 * @generated
+	 */
+	EReference getFunction_Value();
+
+	/**
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware <em>Configuration Upperware</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Configuration Upperware</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConfigurationUpperware
+	 * @generated
+	 */
+	EClass getConfigurationUpperware();
+
+	/**
+	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getSolution <em>Solution</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Solution</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getSolution()
+	 * @see #getConfigurationUpperware()
+	 * @generated
+	 */
+	EReference getConfigurationUpperware_Solution();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getValue <em>Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Value</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getValue()
+	 * @see #getConfigurationUpperware()
+	 * @generated
+	 */
+	EReference getConfigurationUpperware_Value();
+
+	/**
+	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getGoal <em>Goal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Goal</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getGoal()
+	 * @see #getConfigurationUpperware()
+	 * @generated
+	 */
+	EReference getConfigurationUpperware_Goal();
+
+	/**
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.DeltaUtility <em>Delta Utility</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Delta Utility</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.DeltaUtility
+	 * @generated
+	 */
+	EClass getDeltaUtility();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.DeltaUtility#getSolutions <em>Solutions</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Solutions</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.DeltaUtility#getSolutions()
+	 * @see #getDeltaUtility()
+	 * @generated
+	 */
+	EReference getDeltaUtility_Solutions();
+
+	/**
+	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.DeltaUtility#getSelectedSolution <em>Selected Solution</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Selected Solution</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.DeltaUtility#getSelectedSolution()
+	 * @see #getDeltaUtility()
+	 * @generated
+	 */
+	EReference getDeltaUtility_SelectedSolution();
+
+	/**
 	 * Returns the meta object for enum '{@link eu.paasage.upperware.metamodel.cp.OperatorEnum <em>Operator Enum</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2236,6 +2754,14 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__SOLUTION = eINSTANCE.getConstraintProblem_Solution();
+
+		/**
+		 * The meta object literal for the '<em><b>Delta Utility</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference CONSTRAINT_PROBLEM__DELTA_UTILITY = eINSTANCE.getConstraintProblem_DeltaUtility();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ExpressionImpl <em>Expression</em>}' class.
@@ -2744,6 +3270,136 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EReference METRIC_VARIABLE_VALUE__VALUE = eINSTANCE.getMetricVariableValue_Value();
+
+		/**
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ParameterImpl <em>Parameter</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see eu.paasage.upperware.metamodel.cp.impl.ParameterImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getParameter()
+		 * @generated
+		 */
+		EClass PARAMETER = eINSTANCE.getParameter();
+
+		/**
+		 * The meta object literal for the '<em><b>Solution</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference PARAMETER__SOLUTION = eINSTANCE.getParameter_Solution();
+
+		/**
+		 * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute PARAMETER__NAME = eINSTANCE.getParameter_Name();
+
+		/**
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.NormalisedUtilityDimensionImpl <em>Normalised Utility Dimension</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see eu.paasage.upperware.metamodel.cp.impl.NormalisedUtilityDimensionImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNormalisedUtilityDimension()
+		 * @generated
+		 */
+		EClass NORMALISED_UTILITY_DIMENSION = eINSTANCE.getNormalisedUtilityDimension();
+
+		/**
+		 * The meta object literal for the '<em><b>Solutions</b></em>' reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference NORMALISED_UTILITY_DIMENSION__SOLUTIONS = eINSTANCE.getNormalisedUtilityDimension_Solutions();
+
+		/**
+		 * The meta object literal for the '<em><b>Goal</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference NORMALISED_UTILITY_DIMENSION__GOAL = eINSTANCE.getNormalisedUtilityDimension_Goal();
+
+		/**
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl <em>Function</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see eu.paasage.upperware.metamodel.cp.impl.FunctionImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getFunction()
+		 * @generated
+		 */
+		EClass FUNCTION = eINSTANCE.getFunction();
+
+		/**
+		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference FUNCTION__VALUE = eINSTANCE.getFunction_Value();
+
+		/**
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl <em>Configuration Upperware</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConfigurationUpperware()
+		 * @generated
+		 */
+		EClass CONFIGURATION_UPPERWARE = eINSTANCE.getConfigurationUpperware();
+
+		/**
+		 * The meta object literal for the '<em><b>Solution</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference CONFIGURATION_UPPERWARE__SOLUTION = eINSTANCE.getConfigurationUpperware_Solution();
+
+		/**
+		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference CONFIGURATION_UPPERWARE__VALUE = eINSTANCE.getConfigurationUpperware_Value();
+
+		/**
+		 * The meta object literal for the '<em><b>Goal</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference CONFIGURATION_UPPERWARE__GOAL = eINSTANCE.getConfigurationUpperware_Goal();
+
+		/**
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.DeltaUtilityImpl <em>Delta Utility</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see eu.paasage.upperware.metamodel.cp.impl.DeltaUtilityImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getDeltaUtility()
+		 * @generated
+		 */
+		EClass DELTA_UTILITY = eINSTANCE.getDeltaUtility();
+
+		/**
+		 * The meta object literal for the '<em><b>Solutions</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference DELTA_UTILITY__SOLUTIONS = eINSTANCE.getDeltaUtility_Solutions();
+
+		/**
+		 * The meta object literal for the '<em><b>Selected Solution</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference DELTA_UTILITY__SELECTED_SOLUTION = eINSTANCE.getDeltaUtility_SelectedSolution();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.OperatorEnum <em>Operator Enum</em>}' enum.

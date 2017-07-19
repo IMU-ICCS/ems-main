@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -24,14 +16,14 @@ import org.eclipse.emf.ecore.plugin.EcorePlugin;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Factory</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationFactory {
 	/**
 	 * Creates the default factory implementation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static ApplicationFactory init() {
 		try {
@@ -50,7 +42,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	 * Creates an instance of the factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationFactoryImpl() {
 		super();
@@ -59,7 +51,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public EObject create(EClass eClass) {
@@ -90,7 +82,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public PaasageConfiguration createPaasageConfiguration() {
 		PaasageConfigurationImpl paasageConfiguration = new PaasageConfigurationImpl();
@@ -100,7 +92,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VirtualMachine createVirtualMachine() {
 		VirtualMachineImpl virtualMachine = new VirtualMachineImpl();
@@ -110,7 +102,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VirtualMachineProfile createVirtualMachineProfile() {
 		VirtualMachineProfileImpl virtualMachineProfile = new VirtualMachineProfileImpl();
@@ -120,7 +112,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Memory createMemory() {
 		MemoryImpl memory = new MemoryImpl();
@@ -130,7 +122,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Storage createStorage() {
 		StorageImpl storage = new StorageImpl();
@@ -140,7 +132,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CPU createCPU() {
 		CPUImpl cpu = new CPUImpl();
@@ -150,7 +142,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Provider createProvider() {
 		ProviderImpl provider = new ProviderImpl();
@@ -160,7 +152,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationComponent createApplicationComponent() {
 		ApplicationComponentImpl applicationComponent = new ApplicationComponentImpl();
@@ -170,7 +162,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ElasticityRule createElasticityRule() {
 		ElasticityRuleImpl elasticityRule = new ElasticityRuleImpl();
@@ -180,7 +172,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ActionUpperware createActionUpperware() {
 		ActionUpperwareImpl actionUpperware = new ActionUpperwareImpl();
@@ -190,7 +182,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ConditionUpperware createConditionUpperware() {
 		ConditionUpperwareImpl conditionUpperware = new ConditionUpperwareImpl();
@@ -200,7 +192,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public PaaSageVariable createPaaSageVariable() {
 		PaaSageVariableImpl paaSageVariable = new PaaSageVariableImpl();
@@ -210,7 +202,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public PaaSageGoal createPaaSageGoal() {
 		PaaSageGoalImpl paaSageGoal = new PaaSageGoalImpl();
@@ -220,7 +212,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public RequiredFeature createRequiredFeature() {
 		RequiredFeatureImpl requiredFeature = new RequiredFeatureImpl();
@@ -230,7 +222,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Dimension createDimension() {
 		DimensionImpl dimension = new DimensionImpl();
@@ -240,7 +232,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ProviderDimension createProviderDimension() {
 		ProviderDimensionImpl providerDimension = new ProviderDimensionImpl();
@@ -250,7 +242,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ImageUpperware createImageUpperware() {
 		ImageUpperwareImpl imageUpperware = new ImageUpperwareImpl();
@@ -260,7 +252,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ComponentMetricRelationship createComponentMetricRelationship() {
 		ComponentMetricRelationshipImpl componentMetricRelationship = new ComponentMetricRelationshipImpl();
@@ -270,7 +262,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationPackage getApplicationPackage() {
 		return (ApplicationPackage)getEPackage();
@@ -280,7 +272,7 @@ public class ApplicationFactoryImpl extends EFactoryImpl implements ApplicationF
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @deprecated
-	 * 
+	 * @generated
 	 */
 	@Deprecated
 	public static ApplicationPackage getPackage() {

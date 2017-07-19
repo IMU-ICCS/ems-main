@@ -66,7 +66,27 @@ public enum OperatorEnum implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MEAN(4, "mean", "mean");
+	MEAN(4, "mean", "mean"),
+
+	/**
+	 * The '<em><b>Min</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MIN_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MIN(5, "min", "min"),
+
+	/**
+	 * The '<em><b>Max</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MAX_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MAX(6, "max", "max");
 
 	/**
 	 * The '<em><b>Plus</b></em>' literal value.
@@ -144,6 +164,36 @@ public enum OperatorEnum implements Enumerator {
 	public static final int MEAN_VALUE = 4;
 
 	/**
+	 * The '<em><b>Min</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>Min</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MIN
+	 * @model name="min"
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MIN_VALUE = 5;
+
+	/**
+	 * The '<em><b>Max</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>Max</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MAX
+	 * @model name="max"
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MAX_VALUE = 6;
+
+	/**
 	 * An array of all the '<em><b>Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -156,6 +206,8 @@ public enum OperatorEnum implements Enumerator {
 			TIMES,
 			DIV,
 			MEAN,
+			MIN,
+			MAX,
 		};
 
 	/**
@@ -211,6 +263,8 @@ public enum OperatorEnum implements Enumerator {
 			case TIMES_VALUE: return TIMES;
 			case DIV_VALUE: return DIV;
 			case MEAN_VALUE: return MEAN;
+			case MIN_VALUE: return MIN;
+			case MAX_VALUE: return MAX;
 		}
 		return null;
 	}

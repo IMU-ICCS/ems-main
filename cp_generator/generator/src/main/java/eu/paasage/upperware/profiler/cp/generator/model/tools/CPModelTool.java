@@ -14,6 +14,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.tools;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.deployment.InternalComponent;
@@ -213,7 +214,20 @@ public class CPModelTool {
 		
 		return constant; 
 	}
-	
+
+	public static Constant createFloatConstant(float value, String name)
+	{
+		Constant constant= CpFactory.eINSTANCE.createConstant();
+		constant.setId(name);
+		constant.setType(BasicTypeEnum.FLOAT);
+		FloatValueUpperware val= TypesFactory.eINSTANCE.createFloatValueUpperware();
+		val.setValue(value);
+		constant.setValue(val);
+
+		return constant;
+	}
+
+
 	/**
 	 * Createsa metric variable
 	 * @param metricID Metric Id 
@@ -295,7 +309,89 @@ public class CPModelTool {
 		return name; 
 		
 	}
-	
+
+
+
+	/**
+	 * Provides string representation of constant - for logging purposes
+	 * @return string
+	 */
+	public static  String toString(Constant cons)
+	{
+		String retString = cons.getId() + ": " + CPModelTool.getValueFromNumericValue(cons.getValue()).get(0).toString();
+		return retString;
+
+	}
+
+	/**
+	 * Provides string representation of variable - for logging purposes
+	 * @return string
+	 */
+	public static  String toString(Variable var)
+	{
+		String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
+				+"  providerId: " +var.getProviderId() + System.lineSeparator()
+				+"  vmId " + var.getVmId() + System.lineSeparator()
+				+"  osImageId: " + var.getOsImageId()+ System.lineSeparator()
+				+"  hardwareId: " + var.getHardwareId() + System.lineSeparator()
+				+"  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
+				+"  domainTo: " +  CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getTo()).get(0).toString()
+				;
+		return retString;
+
+	}
+
+	/**
+	 * Provides string representation of goal - for logging purposes
+	 * @return string
+	 */
+	public static String toString(Goal goal)
+	{
+		String retString = "Goal Type: " +goal.getId()+ System.lineSeparator() + toString(goal.getExpression());
+		return retString;
+	}
+
+	/**
+	 * Provides string representation of NumericExpression - for logging purposes
+	 * @return string
+	 */
+	public static  String toString(Expression expression)
+	{
+		String retString ="";
+
+		if(expression instanceof ComposedExpression)
+		{
+			ComposedExpression composedExp =  (ComposedExpression) expression;
+			String composedString = "( ";
+
+			for(NumericExpression ne : composedExp.getExpressions() ) {
+				if(ne.equals(composedExp.getExpressions().get(0))){
+					composedString = composedString + toString(ne);
+				} else {
+					composedString = composedString + " " + composedExp.getOperator().getName() + " " + toString(ne);
+				}
+			}
+			retString = retString + composedString + " )";
+
+		}
+		else if(expression instanceof ComparisonExpression)
+		{
+			ComparisonExpression comparisonExp = (ComparisonExpression) expression;
+			retString = System.lineSeparator()+ "( " + toString(comparisonExp.getExp1()) + " " + comparisonExp.getComparator().getName() + " " + toString(comparisonExp.getExp2()) + " ) " ;
+		}
+		else if(expression instanceof  Constant) {
+			retString = ((Constant) expression).getId();
+		} else if(expression instanceof Variable)
+		{
+			retString = ((Variable) expression).getId();
+		}
+		else {
+			System.out.println("NumericExpresion: " + expression.getClass().toString() + " not yet supported");
+		}
+
+		return retString;
+	}
+
 	/**
 	 * Searches a constant in a list with a provided name
 	 * @param constants The list of constants

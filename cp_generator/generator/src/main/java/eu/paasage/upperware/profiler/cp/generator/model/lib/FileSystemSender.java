@@ -64,7 +64,7 @@ public class FileSystemSender implements ISender
 			}
 		}
 		else
-			logger.warn("ileSystemSender - sendPaasageConfigurationFiles - The file for saving the model id was not specified");
+			logger.warn("FileSystemSender - sendPaasageConfigurationFiles - The file for saving the model id was not specified");
 	}
 
 }

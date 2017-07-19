@@ -10,22 +10,27 @@ import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.ConfigurationUpperware;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.DeltaUtility;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.Expression;
+import eu.paasage.upperware.metamodel.cp.Function;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.ListDomain;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
 import eu.paasage.upperware.metamodel.cp.MultiRangeDomain;
+import eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension;
 import eu.paasage.upperware.metamodel.cp.NumericDomain;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;
 import eu.paasage.upperware.metamodel.cp.NumericListDomain;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
+import eu.paasage.upperware.metamodel.cp.Parameter;
 import eu.paasage.upperware.metamodel.cp.RangeDomain;
 import eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression;
 import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
@@ -33,21 +38,15 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.UnaryExpression;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
-
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-
 import eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl;
-
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-
 import eu.paasage.upperware.metamodel.types.typesPaasage.impl.TypesPaasagePackageImpl;
-
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
-
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
@@ -224,6 +223,41 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * @generated
 	 */
 	private EClass metricVariableValueEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass parameterEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass normalisedUtilityDimensionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass functionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass configurationUpperwareEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass deltaUtilityEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -417,6 +451,15 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 */
 	public EReference getConstraintProblem_Solution() {
 		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(6);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getConstraintProblem_DeltaUtility() {
+		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(7);
 	}
 
 	/**
@@ -946,6 +989,141 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getParameter() {
+		return parameterEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getParameter_Solution() {
+		return (EReference)parameterEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getParameter_Name() {
+		return (EAttribute)parameterEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getNormalisedUtilityDimension() {
+		return normalisedUtilityDimensionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getNormalisedUtilityDimension_Solutions() {
+		return (EReference)normalisedUtilityDimensionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getNormalisedUtilityDimension_Goal() {
+		return (EReference)normalisedUtilityDimensionEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getFunction() {
+		return functionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getFunction_Value() {
+		return (EReference)functionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getConfigurationUpperware() {
+		return configurationUpperwareEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getConfigurationUpperware_Solution() {
+		return (EReference)configurationUpperwareEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getConfigurationUpperware_Value() {
+		return (EReference)configurationUpperwareEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getConfigurationUpperware_Goal() {
+		return (EReference)configurationUpperwareEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getDeltaUtility() {
+		return deltaUtilityEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getDeltaUtility_Solutions() {
+		return (EReference)deltaUtilityEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getDeltaUtility_SelectedSolution() {
+		return (EReference)deltaUtilityEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EEnum getOperatorEnum() {
 		return operatorEnumEEnum;
 	}
@@ -1025,6 +1203,7 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__AUX_EXPRESSIONS);
 		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__METRIC_VARIABLES);
 		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__SOLUTION);
+		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__DELTA_UTILITY);
 
 		expressionEClass = createEClass(EXPRESSION);
 
@@ -1106,6 +1285,26 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEReference(metricVariableValueEClass, METRIC_VARIABLE_VALUE__VARIABLE);
 		createEReference(metricVariableValueEClass, METRIC_VARIABLE_VALUE__VALUE);
 
+		parameterEClass = createEClass(PARAMETER);
+		createEReference(parameterEClass, PARAMETER__SOLUTION);
+		createEAttribute(parameterEClass, PARAMETER__NAME);
+
+		normalisedUtilityDimensionEClass = createEClass(NORMALISED_UTILITY_DIMENSION);
+		createEReference(normalisedUtilityDimensionEClass, NORMALISED_UTILITY_DIMENSION__SOLUTIONS);
+		createEReference(normalisedUtilityDimensionEClass, NORMALISED_UTILITY_DIMENSION__GOAL);
+
+		functionEClass = createEClass(FUNCTION);
+		createEReference(functionEClass, FUNCTION__VALUE);
+
+		configurationUpperwareEClass = createEClass(CONFIGURATION_UPPERWARE);
+		createEReference(configurationUpperwareEClass, CONFIGURATION_UPPERWARE__SOLUTION);
+		createEReference(configurationUpperwareEClass, CONFIGURATION_UPPERWARE__VALUE);
+		createEReference(configurationUpperwareEClass, CONFIGURATION_UPPERWARE__GOAL);
+
+		deltaUtilityEClass = createEClass(DELTA_UTILITY);
+		createEReference(deltaUtilityEClass, DELTA_UTILITY__SOLUTIONS);
+		createEReference(deltaUtilityEClass, DELTA_UTILITY__SELECTED_SOLUTION);
+
 		// Create enums
 		operatorEnumEEnum = createEEnum(OPERATOR_ENUM);
 		goalOperatorEnumEEnum = createEEnum(GOAL_OPERATOR_ENUM);
@@ -1163,6 +1362,10 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		composedUnaryExpressionEClass.getESuperTypes().add(this.getUnaryExpression());
 		booleanDomainEClass.getESuperTypes().add(this.getDomain());
 		metricVariableEClass.getESuperTypes().add(this.getNumericExpression());
+		normalisedUtilityDimensionEClass.getESuperTypes().add(this.getFunction());
+		functionEClass.getESuperTypes().add(this.getComposedExpression());
+		configurationUpperwareEClass.getESuperTypes().add(this.getNumericExpression());
+		deltaUtilityEClass.getESuperTypes().add(this.getFunction());
 
 		// Initialize classes, features, and operations; add parameters
 		initEClass(cpElementEClass, CPElement.class, "CPElement", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -1176,6 +1379,7 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getConstraintProblem_AuxExpressions(), this.getExpression(), null, "auxExpressions", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConstraintProblem_MetricVariables(), this.getMetricVariable(), null, "metricVariables", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConstraintProblem_Solution(), this.getSolution(), null, "solution", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConstraintProblem_DeltaUtility(), this.getDeltaUtility(), null, "deltaUtility", null, 1, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(expressionEClass, Expression.class, "Expression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -1257,6 +1461,26 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getMetricVariableValue_Variable(), this.getMetricVariable(), null, "variable", null, 1, 1, MetricVariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getMetricVariableValue_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 1, 1, MetricVariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+		initEClass(parameterEClass, Parameter.class, "Parameter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getParameter_Solution(), this.getSolution(), null, "solution", null, 0, 1, Parameter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getParameter_Name(), ecorePackage.getEString(), "name", null, 1, 1, Parameter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(normalisedUtilityDimensionEClass, NormalisedUtilityDimension.class, "NormalisedUtilityDimension", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getNormalisedUtilityDimension_Solutions(), this.getParameter(), null, "solutions", null, 0, 2, NormalisedUtilityDimension.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getNormalisedUtilityDimension_Goal(), this.getGoal(), null, "goal", null, 1, 1, NormalisedUtilityDimension.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(functionEClass, Function.class, "Function", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getFunction_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 0, 1, Function.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(configurationUpperwareEClass, ConfigurationUpperware.class, "ConfigurationUpperware", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getConfigurationUpperware_Solution(), this.getParameter(), null, "solution", null, 0, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConfigurationUpperware_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 0, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConfigurationUpperware_Goal(), this.getGoal(), null, "goal", null, 1, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(deltaUtilityEClass, DeltaUtility.class, "DeltaUtility", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getDeltaUtility_Solutions(), this.getParameter(), null, "solutions", null, 0, 2, DeltaUtility.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getDeltaUtility_SelectedSolution(), this.getParameter(), null, "selectedSolution", null, 0, 1, DeltaUtility.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
 		// Initialize enums and add enum literals
 		initEEnum(operatorEnumEEnum, OperatorEnum.class, "OperatorEnum");
 		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.PLUS);
@@ -1264,6 +1488,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.TIMES);
 		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.DIV);
 		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.MEAN);
+		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.MIN);
+		addEEnumLiteral(operatorEnumEEnum, OperatorEnum.MAX);
 
 		initEEnum(goalOperatorEnumEEnum, GoalOperatorEnum.class, "GoalOperatorEnum");
 		addEEnumLiteral(goalOperatorEnumEEnum, GoalOperatorEnum.MAX);

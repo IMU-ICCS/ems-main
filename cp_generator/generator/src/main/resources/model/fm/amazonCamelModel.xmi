@@ -6,7 +6,7 @@
     xmlns:camel="http://www.paasage.eu/2015/06/camel"
     xmlns:provider="http://www.paasage.eu/2015/06/camel/provider"
     xmlns:type="http://www.paasage.eu/2015/06/camel/type"
-    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel/provider http://www.paasage.eu/2015/06/camel#//provider http://www.paasage.eu/2015/06/camel/type http://www.paasage.eu/2015/06/camel#//type"
+    xsi:schemaLocation="http://www.paasage.eu/2015/06/camel ../../metamodel/camel.ecore http://www.paasage.eu/2015/06/camel/provider ../../metamodel/camel.ecore#//provider http://www.paasage.eu/2015/06/camel/type ../../metamodel/camel.ecore#//type"
     name="AmazonModel">
   <locationModels
       name="AmazonLocation">
@@ -282,6 +282,167 @@
             value="3"/>
       </attributeConstraints>
     </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="T2.SMALL_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.small"
+            value="5"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="2048"/>
+      </attributeConstraints>
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.small"
+            value="5"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="1"/>
+      </attributeConstraints>
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.small"
+            value="5"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="10"/>
+      </attributeConstraints>
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.small"
+            value="5"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="t2.small"
+            value="5"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="T2.LARGE_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.large"
+            value="6"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="8192"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.large"
+            value="6"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="2"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.large"
+            value="6"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="10"/>
+      </attributeConstraints>
+      <attributeConstraints
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="t2.large"
+            value="6"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="t2.large"
+            value="6"/>
+      </attributeConstraints>
+    </constraints>
+    <constraints
+        xsi:type="provider:Implies"
+        name="C4.2XLARGE_Constraint_Mapping"
+        from="//@providerModels.0/@rootFeature/@subFeatures.0"
+        to="//@providerModels.0/@rootFeature/@subFeatures.0">
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.2">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="c4.2xlarge"
+            value="4"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="15360"/>
+      </attributeConstraints>
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.3">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="c4.2xlarge"
+            value="4"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="8"/>
+      </attributeConstraints>
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.5">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="c4.2xlarge"
+            value="4"/>
+        <toValue
+            xsi:type="type:IntegerValue"
+            value="10"/>
+      </attributeConstraints>
+      <attributeConstraints
+          name=""
+          from="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.0"
+          to="//@providerModels.0/@rootFeature/@subFeatures.0/@attributes.8">
+        <fromValue
+            xsi:type="type:EnumerateValue"
+            name="c4.2xlarge"
+            value="4"/>
+        <toValue
+            xsi:type="type:EnumerateValue"
+            name="c4.2xlarge"
+            value="4"/>
+      </attributeConstraints>
+    </constraints>
     <rootFeature
         name="Amazon">
       <attributes
@@ -426,18 +587,33 @@
       <values
           name="m1.large"
           value="3"/>
+      <values
+          name="c4.2xlarge"
+          value="4"/>
+      <values
+          name="t2.small"
+          value="5"/>
+      <values
+          name="t2.large"
+          value="6"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Enumeration"
         name="VMOsEnum">
       <values
           name="Ubuntu Server 14.04 LTS (HVM)"/>
+      <values
+          name="Windows Server"
+          value="1"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Enumeration"
         name="VMImageIdEnum">
       <values
           name="eu-west-1/ami-47a23a30"/>
+      <values
+          name="win-image-id"
+          value="1"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Range"
@@ -472,16 +648,25 @@
         name="MemoryList">
       <values
           xsi:type="type:IntegerValue"
-          value="3840"/>
-      <values
-          xsi:type="type:IntegerValue"
           value="7168"/>
       <values
           xsi:type="type:IntegerValue"
           value="7680"/>
       <values
           xsi:type="type:IntegerValue"
+          value="2048"/>
+      <values
+          xsi:type="type:IntegerValue"
           value="1740"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="15360"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="8192"/>
+      <values
+          xsi:type="type:IntegerValue"
+          value="3840"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:Enumeration"
@@ -489,7 +674,7 @@
       <values
           name="UNIX"/>
       <values
-          name="WINDOWS"
+          name="Windows Server"
           value="1"/>
     </dataTypes>
     <dataTypes
@@ -518,6 +703,15 @@
       <values
           name="m1.large"
           value="3"/>
+      <values
+          name="c4.2xlarge"
+          value="4"/>
+      <values
+          name="t2.small"
+          value="5"/>
+      <values
+          name="t2.large"
+          value="6"/>
     </dataTypes>
     <dataTypes
         xsi:type="type:List"

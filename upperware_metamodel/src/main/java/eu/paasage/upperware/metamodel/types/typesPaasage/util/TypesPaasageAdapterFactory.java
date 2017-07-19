@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage.util;
 
@@ -25,14 +17,14 @@ import org.eclipse.emf.ecore.EObject;
  * It provides an adapter <code>createXXX</code> method for each class of the model.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage
- * 
+ * @generated
  */
 public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	/**
 	 * The cached model package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static TypesPaasagePackage modelPackage;
 
@@ -40,7 +32,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * Creates an instance of the adapter factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesPaasageAdapterFactory() {
 		if (modelPackage == null) {
@@ -54,7 +46,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
 	 * <!-- end-user-doc -->
 	 * @return whether this factory is applicable for the type of the object.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public boolean isFactoryForType(Object object) {
@@ -71,7 +63,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * The switch that delegates to the <code>createXXX</code> methods.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected TypesPaasageSwitch<Adapter> modelSwitch =
 		new TypesPaasageSwitch<Adapter>() {
@@ -179,7 +171,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @param target the object to adapt.
 	 * @return the adapter for the <code>target</code>.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Adapter createAdapter(Notifier target) {
@@ -195,7 +187,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.PaaSageCPElement
-	 * 
+	 * @generated
 	 */
 	public Adapter createPaaSageCPElementAdapter() {
 		return null;
@@ -209,7 +201,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.OS
-	 * 
+	 * @generated
 	 */
 	public Adapter createOSAdapter() {
 		return null;
@@ -223,7 +215,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.LocationUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createLocationUpperwareAdapter() {
 		return null;
@@ -237,7 +229,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ContinentUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createContinentUpperwareAdapter() {
 		return null;
@@ -251,7 +243,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.CountryUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createCountryUpperwareAdapter() {
 		return null;
@@ -265,7 +257,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.CityUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createCityUpperwareAdapter() {
 		return null;
@@ -279,7 +271,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.Locations
-	 * 
+	 * @generated
 	 */
 	public Adapter createLocationsAdapter() {
 		return null;
@@ -293,7 +285,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createApplicationComponentProfileAdapter() {
 		return null;
@@ -307,7 +299,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentProfiles
-	 * 
+	 * @generated
 	 */
 	public Adapter createApplicationComponentProfilesAdapter() {
 		return null;
@@ -321,7 +313,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems
-	 * 
+	 * @generated
 	 */
 	public Adapter createOperatingSystemsAdapter() {
 		return null;
@@ -335,7 +327,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.DatabaseProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createDatabaseProfileAdapter() {
 		return null;
@@ -349,7 +341,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.WebServerProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createWebServerProfileAdapter() {
 		return null;
@@ -363,7 +355,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationServerProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createApplicationServerProfileAdapter() {
 		return null;
@@ -377,7 +369,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.WarProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createWarProfileAdapter() {
 		return null;
@@ -391,7 +383,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.JarProfile
-	 * 
+	 * @generated
 	 */
 	public Adapter createJarProfileAdapter() {
 		return null;
@@ -405,7 +397,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentType
-	 * 
+	 * @generated
 	 */
 	public Adapter createApplicationComponentTypeAdapter() {
 		return null;
@@ -419,7 +411,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ProviderType
-	 * 
+	 * @generated
 	 */
 	public Adapter createProviderTypeAdapter() {
 		return null;
@@ -433,7 +425,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes
-	 * 
+	 * @generated
 	 */
 	public Adapter createProviderTypesAdapter() {
 		return null;
@@ -447,7 +439,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentTypes
-	 * 
+	 * @generated
 	 */
 	public Adapter createApplicationComponentTypesAdapter() {
 		return null;
@@ -461,7 +453,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ActionType
-	 * 
+	 * @generated
 	 */
 	public Adapter createActionTypeAdapter() {
 		return null;
@@ -475,7 +467,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.ActionTypes
-	 * 
+	 * @generated
 	 */
 	public Adapter createActionTypesAdapter() {
 		return null;
@@ -489,7 +481,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.FunctionType
-	 * 
+	 * @generated
 	 */
 	public Adapter createFunctionTypeAdapter() {
 		return null;
@@ -503,7 +495,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.FunctionTypes
-	 * 
+	 * @generated
 	 */
 	public Adapter createFunctionTypesAdapter() {
 		return null;
@@ -515,7 +507,7 @@ public class TypesPaasageAdapterFactory extends AdapterFactoryImpl {
 	 * This default implementation returns null.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * 
+	 * @generated
 	 */
 	public Adapter createEObjectAdapter() {
 		return null;

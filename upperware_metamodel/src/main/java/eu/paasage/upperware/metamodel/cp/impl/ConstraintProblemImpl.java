@@ -6,6 +6,7 @@ import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.DeltaUtility;
 import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
@@ -32,6 +33,7 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getAuxExpressions <em>Aux Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getMetricVariables <em>Metric Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getSolution <em>Solution</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getDeltaUtility <em>Delta Utility</em>}</li>
  * </ul>
  * </p>
  *
@@ -135,6 +137,24 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	@SuppressWarnings("unchecked")
 	public EList<Solution> getSolution() {
 		return (EList<Solution>)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__SOLUTION, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public DeltaUtility getDeltaUtility() {
+		return (DeltaUtility)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__DELTA_UTILITY, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setDeltaUtility(DeltaUtility newDeltaUtility) {
+		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__DELTA_UTILITY, newDeltaUtility);
 	}
 
 } //ConstraintProblemImpl

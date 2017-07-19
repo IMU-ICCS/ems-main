@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -55,146 +47,146 @@ import org.eclipse.emf.ecore.impl.EPackageImpl;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Package</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class ApplicationPackageImpl extends EPackageImpl implements ApplicationPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass paasageConfigurationEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass virtualMachineEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass virtualMachineProfileEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass cloudMLElementUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass resourceUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass memoryEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass storageEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass cpuEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass providerEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass applicationComponentEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass elasticityRuleEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass actionUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass conditionUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass paaSageVariableEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass paaSageGoalEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass requiredFeatureEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass dimensionEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass providerDimensionEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass imageUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass componentMetricRelationshipEClass = null;
 
@@ -211,7 +203,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	 * @see org.eclipse.emf.ecore.EPackage.Registry
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#eNS_URI
 	 * @see #init()
-	 * 
+	 * @generated
 	 */
 	private ApplicationPackageImpl() {
 		super(eNS_URI, ApplicationFactory.eINSTANCE);
@@ -220,7 +212,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static boolean isInited = false;
 
@@ -234,7 +226,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	 * @see #eNS_URI
 	 * @see #createPackageContents()
 	 * @see #initializePackageContents()
-	 * 
+	 * @generated
 	 */
 	public static ApplicationPackage init() {
 		if (isInited) return (ApplicationPackage)EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI);
@@ -273,7 +265,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getPaasageConfiguration() {
 		return paasageConfigurationEClass;
@@ -282,7 +274,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaasageConfiguration_Id() {
 		return (EAttribute)paasageConfigurationEClass.getEStructuralFeatures().get(0);
@@ -291,7 +283,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_Goals() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(1);
@@ -300,7 +292,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_Variables() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(2);
@@ -309,7 +301,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_Rules() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(3);
@@ -318,7 +310,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_Components() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(4);
@@ -327,7 +319,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_Providers() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(5);
@@ -336,7 +328,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_VmProfiles() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(6);
@@ -345,7 +337,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_AuxExpressions() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(7);
@@ -354,7 +346,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_Vms() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(8);
@@ -363,7 +355,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaasageConfiguration_MonitoredDimensions() {
 		return (EReference)paasageConfigurationEClass.getEStructuralFeatures().get(9);
@@ -372,7 +364,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getVirtualMachine() {
 		return virtualMachineEClass;
@@ -381,7 +373,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getVirtualMachine_Id() {
 		return (EAttribute)virtualMachineEClass.getEStructuralFeatures().get(0);
@@ -390,7 +382,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachine_Profile() {
 		return (EReference)virtualMachineEClass.getEStructuralFeatures().get(1);
@@ -399,7 +391,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getVirtualMachineProfile() {
 		return virtualMachineProfileEClass;
@@ -408,7 +400,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getVirtualMachineProfile_Size() {
 		return (EAttribute)virtualMachineProfileEClass.getEStructuralFeatures().get(0);
@@ -417,7 +409,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_Memory() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(1);
@@ -426,7 +418,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_Storage() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(2);
@@ -435,7 +427,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_Cpu() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(3);
@@ -444,7 +436,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_Os() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(4);
@@ -453,7 +445,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_ProviderDimension() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(5);
@@ -462,7 +454,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_Location() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(6);
@@ -471,7 +463,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getVirtualMachineProfile_Image() {
 		return (EReference)virtualMachineProfileEClass.getEStructuralFeatures().get(7);
@@ -480,7 +472,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getVirtualMachineProfile_RelatedCloudVMId() {
 		return (EAttribute)virtualMachineProfileEClass.getEStructuralFeatures().get(8);
@@ -489,7 +481,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getCloudMLElementUpperware() {
 		return cloudMLElementUpperwareEClass;
@@ -498,7 +490,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getCloudMLElementUpperware_CloudMLId() {
 		return (EAttribute)cloudMLElementUpperwareEClass.getEStructuralFeatures().get(0);
@@ -507,7 +499,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getResourceUpperware() {
 		return resourceUpperwareEClass;
@@ -516,7 +508,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getResourceUpperware_Value() {
 		return (EReference)resourceUpperwareEClass.getEStructuralFeatures().get(0);
@@ -525,7 +517,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getMemory() {
 		return memoryEClass;
@@ -534,7 +526,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getMemory_Unit() {
 		return (EAttribute)memoryEClass.getEStructuralFeatures().get(0);
@@ -543,7 +535,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getStorage() {
 		return storageEClass;
@@ -552,7 +544,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getStorage_Unit() {
 		return (EAttribute)storageEClass.getEStructuralFeatures().get(0);
@@ -561,7 +553,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getCPU() {
 		return cpuEClass;
@@ -570,7 +562,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getCPU_Frequency() {
 		return (EAttribute)cpuEClass.getEStructuralFeatures().get(0);
@@ -579,7 +571,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getCPU_Cores() {
 		return (EAttribute)cpuEClass.getEStructuralFeatures().get(1);
@@ -588,7 +580,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getProvider() {
 		return providerEClass;
@@ -597,7 +589,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getProvider_Id() {
 		return (EAttribute)providerEClass.getEStructuralFeatures().get(0);
@@ -606,7 +598,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getProvider_Location() {
 		return (EReference)providerEClass.getEStructuralFeatures().get(1);
@@ -615,7 +607,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getProvider_Type() {
 		return (EReference)providerEClass.getEStructuralFeatures().get(2);
@@ -624,7 +616,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getApplicationComponent() {
 		return applicationComponentEClass;
@@ -633,7 +625,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponent_Vm() {
 		return (EReference)applicationComponentEClass.getEStructuralFeatures().get(0);
@@ -642,7 +634,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponent_PreferredLocations() {
 		return (EReference)applicationComponentEClass.getEStructuralFeatures().get(1);
@@ -651,7 +643,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponent_RequiredProfile() {
 		return (EReference)applicationComponentEClass.getEStructuralFeatures().get(2);
@@ -660,7 +652,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getApplicationComponent_Features() {
 		return (EAttribute)applicationComponentEClass.getEStructuralFeatures().get(3);
@@ -669,7 +661,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponent_RequiredFeatures() {
 		return (EReference)applicationComponentEClass.getEStructuralFeatures().get(4);
@@ -678,7 +670,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getApplicationComponent_PreferredProviders() {
 		return (EReference)applicationComponentEClass.getEStructuralFeatures().get(5);
@@ -687,7 +679,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getApplicationComponent_Min() {
 		return (EAttribute)applicationComponentEClass.getEStructuralFeatures().get(6);
@@ -696,7 +688,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getApplicationComponent_Max() {
 		return (EAttribute)applicationComponentEClass.getEStructuralFeatures().get(7);
@@ -705,7 +697,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getElasticityRule() {
 		return elasticityRuleEClass;
@@ -714,7 +706,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getElasticityRule_Id() {
 		return (EAttribute)elasticityRuleEClass.getEStructuralFeatures().get(0);
@@ -723,7 +715,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getElasticityRule_Action() {
 		return (EReference)elasticityRuleEClass.getEStructuralFeatures().get(1);
@@ -732,7 +724,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getElasticityRule_Condition() {
 		return (EReference)elasticityRuleEClass.getEStructuralFeatures().get(2);
@@ -741,7 +733,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getActionUpperware() {
 		return actionUpperwareEClass;
@@ -750,7 +742,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getActionUpperware_Parameters() {
 		return (EAttribute)actionUpperwareEClass.getEStructuralFeatures().get(0);
@@ -759,7 +751,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getActionUpperware_Type() {
 		return (EReference)actionUpperwareEClass.getEStructuralFeatures().get(1);
@@ -768,7 +760,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getConditionUpperware() {
 		return conditionUpperwareEClass;
@@ -777,7 +769,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getConditionUpperware_Operator() {
 		return (EAttribute)conditionUpperwareEClass.getEStructuralFeatures().get(0);
@@ -786,7 +778,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getConditionUpperware_Exp1() {
 		return (EReference)conditionUpperwareEClass.getEStructuralFeatures().get(1);
@@ -795,7 +787,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getConditionUpperware_Exp2() {
 		return (EReference)conditionUpperwareEClass.getEStructuralFeatures().get(2);
@@ -804,7 +796,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getPaaSageVariable() {
 		return paaSageVariableEClass;
@@ -813,7 +805,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaaSageVariable_PaasageType() {
 		return (EAttribute)paaSageVariableEClass.getEStructuralFeatures().get(0);
@@ -822,7 +814,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaaSageVariable_RelatedComponent() {
 		return (EReference)paaSageVariableEClass.getEStructuralFeatures().get(1);
@@ -831,7 +823,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaaSageVariable_CpVariableId() {
 		return (EAttribute)paaSageVariableEClass.getEStructuralFeatures().get(2);
@@ -840,7 +832,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaaSageVariable_RelatedProvider() {
 		return (EReference)paaSageVariableEClass.getEStructuralFeatures().get(3);
@@ -849,7 +841,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaaSageVariable_RelatedVirtualMachineProfile() {
 		return (EReference)paaSageVariableEClass.getEStructuralFeatures().get(4);
@@ -858,7 +850,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getPaaSageGoal() {
 		return paaSageGoalEClass;
@@ -867,7 +859,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaaSageGoal_Id() {
 		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(0);
@@ -876,7 +868,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaaSageGoal_Goal() {
 		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(1);
@@ -885,7 +877,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaaSageGoal_Function() {
 		return (EReference)paaSageGoalEClass.getEStructuralFeatures().get(2);
@@ -894,7 +886,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getPaaSageGoal_ApplicationComponent() {
 		return (EReference)paaSageGoalEClass.getEStructuralFeatures().get(3);
@@ -903,16 +895,20 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getPaaSageGoal_ApplicationMetric() {
 		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(4);
 	}
 
+	public EAttribute getPaaSageGoal_ExtOptimisationAttribute() {
+		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(5);
+	}
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getRequiredFeature() {
 		return requiredFeatureEClass;
@@ -921,7 +917,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getRequiredFeature_Feature() {
 		return (EAttribute)requiredFeatureEClass.getEStructuralFeatures().get(0);
@@ -930,7 +926,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getRequiredFeature_ProvidedBy() {
 		return (EReference)requiredFeatureEClass.getEStructuralFeatures().get(1);
@@ -939,16 +935,16 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
-	public EAttribute getRequiredFeature_Remote() {
+	public EAttribute getRequiredFeature_CommunicationType() {
 		return (EAttribute)requiredFeatureEClass.getEStructuralFeatures().get(2);
 	}
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getRequiredFeature_Optional() {
 		return (EAttribute)requiredFeatureEClass.getEStructuralFeatures().get(3);
@@ -957,7 +953,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getRequiredFeature_Contaiment() {
 		return (EAttribute)requiredFeatureEClass.getEStructuralFeatures().get(4);
@@ -966,7 +962,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getDimension() {
 		return dimensionEClass;
@@ -975,7 +971,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getDimension_Id() {
 		return (EAttribute)dimensionEClass.getEStructuralFeatures().get(0);
@@ -984,7 +980,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getProviderDimension() {
 		return providerDimensionEClass;
@@ -993,7 +989,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getProviderDimension_Value() {
 		return (EAttribute)providerDimensionEClass.getEStructuralFeatures().get(0);
@@ -1002,7 +998,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getProviderDimension_Provider() {
 		return (EReference)providerDimensionEClass.getEStructuralFeatures().get(1);
@@ -1011,7 +1007,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getProviderDimension_MetricID() {
 		return (EAttribute)providerDimensionEClass.getEStructuralFeatures().get(2);
@@ -1020,7 +1016,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getImageUpperware() {
 		return imageUpperwareEClass;
@@ -1029,7 +1025,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getImageUpperware_Id() {
 		return (EAttribute)imageUpperwareEClass.getEStructuralFeatures().get(0);
@@ -1038,7 +1034,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getComponentMetricRelationship() {
 		return componentMetricRelationshipEClass;
@@ -1047,7 +1043,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EReference getComponentMetricRelationship_Component() {
 		return (EReference)componentMetricRelationshipEClass.getEStructuralFeatures().get(0);
@@ -1056,7 +1052,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getComponentMetricRelationship_MetricId() {
 		return (EAttribute)componentMetricRelationshipEClass.getEStructuralFeatures().get(1);
@@ -1065,7 +1061,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationFactory getApplicationFactory() {
 		return (ApplicationFactory)getEFactoryInstance();
@@ -1074,7 +1070,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private boolean isCreated = false;
 
@@ -1083,7 +1079,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	 * guarded to have no affect on any invocation but its first.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void createPackageContents() {
 		if (isCreated) return;
@@ -1175,11 +1171,12 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		createEReference(paaSageGoalEClass, PAA_SAGE_GOAL__FUNCTION);
 		createEReference(paaSageGoalEClass, PAA_SAGE_GOAL__APPLICATION_COMPONENT);
 		createEAttribute(paaSageGoalEClass, PAA_SAGE_GOAL__APPLICATION_METRIC);
+		createEAttribute(paaSageGoalEClass, PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE);
 
 		requiredFeatureEClass = createEClass(REQUIRED_FEATURE);
 		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__FEATURE);
 		createEReference(requiredFeatureEClass, REQUIRED_FEATURE__PROVIDED_BY);
-		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__REMOTE);
+		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__COMMUNICATION_TYPE);
 		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__OPTIONAL);
 		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__CONTAIMENT);
 
@@ -1202,7 +1199,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private boolean isInitialized = false;
 
@@ -1211,7 +1208,7 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	 * method is guarded to have no affect on any invocation but its first.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void initializePackageContents() {
 		if (isInitialized) return;
@@ -1328,11 +1325,12 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		initEReference(getPaaSageGoal_Function(), theTypesPaasagePackage.getFunctionType(), null, "function", null, 1, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getPaaSageGoal_ApplicationComponent(), this.getComponentMetricRelationship(), null, "applicationComponent", null, 0, -1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getPaaSageGoal_ApplicationMetric(), ecorePackage.getEString(), "applicationMetric", null, 0, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getPaaSageGoal_ExtOptimisationAttribute(), ecorePackage.getEString(), "optimisationAttribute", null, 1, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(requiredFeatureEClass, RequiredFeature.class, "RequiredFeature", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getRequiredFeature_Feature(), ecorePackage.getEString(), "feature", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRequiredFeature_ProvidedBy(), this.getCloudMLElementUpperware(), null, "providedBy", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getRequiredFeature_Remote(), ecorePackage.getEBoolean(), "remote", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getRequiredFeature_CommunicationType(), theTypesPaasagePackage.getCommunicationTypeUpperware(), "communicationType", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getRequiredFeature_Optional(), ecorePackage.getEBoolean(), "optional", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getRequiredFeature_Contaiment(), ecorePackage.getEBoolean(), "contaiment", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 

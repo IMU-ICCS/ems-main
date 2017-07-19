@@ -33,7 +33,7 @@ import eu.paasage.mddb.cdo.client.CDOClient;
 public class CDOClientExtended extends CDOClient 
 {
 	//Log
-	public static Logger logger= Logger.getLogger("paasage-cp-clonner-log");
+	public static Logger logger= Logger.getLogger("paasage-profiler");
 	
 	public CDOClientExtended()
 	{

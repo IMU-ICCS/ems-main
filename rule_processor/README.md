@@ -1,5 +1,5 @@
 % Rule Processor
-% 02/02/2016
+% 10/10/2016
 
 
 # Table of Contents
@@ -26,8 +26,8 @@ $ mvn clean install
 
 # Configuration (RP only)
 
-Copy the Rule Processor Configuration file `wp3_profiler.properties` to the 
-PaaSage configuration directory. Creat the configuration directory, if it not 
+Copy the Rule Processor Configuration file `wp3_profiler.properties` to the
+PaaSage configuration directory. Creat the configuration directory, if it not
 yet exists as follows:
 
 ```bash
@@ -66,7 +66,7 @@ example uses the `md+hf.xmi` use case.
 ```bash
 $ java -jar server-2015.9.1-SNAPSHOT-jar-with-dependencies.jar
 $ java -jar init-2015.9.1-SNAPSHOT-jar-with-dependencies.jar md+hf.xmi mdhf
-$ java -jar generator-2015.9.1-SNAPSHOT-jar-with-dependencies.jar mdhf cp.out 
+$ java -jar generator-2015.9.1-SNAPSHOT-jar-with-dependencies.jar mdhf cp.out
 $ java -jar rule-processor-2015.9.1-SNAPSHOT-jar-with-dependencies.jar -m mdhf -c upperware-models/MDPlusHyperflow1456231299631
 ```
 
@@ -76,10 +76,10 @@ $ java -jar rule-processor-2015.9.1-SNAPSHOT-jar-with-dependencies.jar -m mdhf -
 
 ## Global Cloud Provider Requirements
 
-In addition to your default organisation model, you can declare a second organisation 
-model in Camel that includes a requirement of having either only public or private 
-cloud providers as candidates to deploy your components. This is done through a 
-provider model. Please note that it is a global requirement that will affect all of 
+In addition to your default organisation model, you can declare a second organisation
+model in Camel that includes a requirement of having either only public or private
+cloud providers as candidates to deploy your components. This is done through a
+provider model. Please note that it is a global requirement that will affect all of
 your components. I will give you an example for the text-based editor:
 
 ```bash
@@ -94,12 +94,12 @@ organisation model RP_ProviderRequirements {
 }
 ```
 
-It is REQUIRED to name the organisation model 'RP_ProviderRequirements', so that in 
-step 3 of the PaaSage platform (i.e., Rule Processor), this model is guaranteed to 
+It is REQUIRED to name the organisation model 'RP_ProviderRequirements', so that in
+step 3 of the PaaSage platform (i.e., Rule Processor), this model is guaranteed to
 be processed. The provider name, here 'GlobalProviderRequirements', is mandatory, too.
-You can require to have your components to be deployed only on public cloud providers 
-(if available) by setting the attribute 'public'. On the other hand, you can also 
-define that you only want to deploy on private cloud providers by removing the 
+You can require to have your components to be deployed only on public cloud providers
+(if available) by setting the attribute 'public'. On the other hand, you can also
+define that you only want to deploy on private cloud providers by removing the
 'public' attribute as follows:
 
 ```bash
@@ -113,8 +113,8 @@ organisation model RP_ProviderRequirements {
 }
 ```
 
-If you are using the tree-based editor, create an organisation model, and as the only 
-child add a Cloud Provider, and set the 'Public' attribute either to true or false. 
+If you are using the tree-based editor, create an organisation model, and as the only
+child add a Cloud Provider, and set the 'Public' attribute either to true or false.
 For instance,
 
 ```bash

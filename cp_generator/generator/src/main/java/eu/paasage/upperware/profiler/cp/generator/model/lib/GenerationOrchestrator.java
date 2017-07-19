@@ -191,9 +191,9 @@ public class GenerationOrchestrator
 				appId= camelProcessor.getCamelModel().getApplications().get(0).getName(); //The id is the name of the application 
 			}
 		
-			id= PaasageModelTool.generatePaasageAppConfigurationId(appId); 
+			String auxId= PaasageModelTool.generatePaasageAppConfigurationId(appId); 
 		
-			pc.setId(id); 
+			pc.setId(auxId); 
 
 		
 			File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pc); 
@@ -207,7 +207,7 @@ public class GenerationOrchestrator
 		
 			ResourceSet resSet= new ResourceSetImpl(); 
 			
-			database.saveRelatedModels(resSet, paasageConfigurationDir);
+			database.saveRelatedModels(resSet, paasageConfigurationDir); // IS THIS DOING ANYTHING?
 			
 			PaaSageConfigurationWrapper pcw= new PaaSageConfigurationWrapper(pc);//, paasageConfigurationDir, resSet); 
 			
@@ -227,12 +227,13 @@ public class GenerationOrchestrator
 				logger.debug("** Calling DatabseProxy ");
 				database.saveModels(pc, cp, resSet); 
 				logger.debug("** Calling Sender");
-				sender.sendPaasageConfigurationFiles(id); 
+				sender.sendPaasageConfigurationFiles(auxId);
 				
 				PrintStream outputFile= System.err; 
 				System.setErr(defaultErrOutput);
 				outputFile.close();
 	
+				id= auxId;
 				
 				logger.info("** CP Model Id: "+id); 
 			}
@@ -260,7 +261,6 @@ public class GenerationOrchestrator
 				logger.info("** The CP Model will be not generated! ");
 				
 			}
-			
 			else
 			{
 				logger.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 
@@ -287,13 +287,13 @@ public class GenerationOrchestrator
 		InputStream inpFile= selectExistingLog4File(); 
 		
 		PropertyConfigurator.configure(inpFile);
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.DEBUG);
 		
 		//Configures the CDO Client logger
 		Logger templogger = org.apache.log4j.Logger.getLogger(CDOClient.class);
-		templogger.setLevel(Level.OFF);
+		templogger.setLevel(Level.INFO);
 	
-		org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
+		org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
 		
 		OutputStream output;
 		try {
@@ -398,8 +398,8 @@ public class GenerationOrchestrator
 	 * Launch the CP Generator
 	 * @param args The CDO id of the model
 	 */
-	public static void main(String[] args) 
-	{	
+	public static void main(String[] args) {
+		System.out.println("Executing main method of the GeneralOrchestrator");
 		if (args.length==1 && args[0].equals("-daemon"))
 		{
 			ZeroMQServer.main(args);

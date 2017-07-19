@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2015 INRIA, Université Lille 1
-
-   - Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
-   - Date: 09/2015
-   - This Source Code Form is subject to the terms of the Mozilla Public 
-   - License, v. 2.0. If a copy of the MPL was not distributed with this 
-   - file, You can obtain one at https://mozilla.org/MPL/2.0/.-->
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="eu" nsURI="http://www.paasage.eu/eu" nsPrefix="eu">
   <eSubpackages name="paasage" nsURI="http://www.paasage.eu/eu/paasage" nsPrefix="paasage">
@@ -175,6 +168,11 @@
             <eClassifiers xsi:type="ecore:EEnum" name="OSArchitectureEnum">
               <eLiterals name="thirty_two_bits" value="32" literal="32bits"/>
               <eLiterals name="sixty_four_bits" value="64" literal="64bits"/>
+            </eClassifiers>
+            <eClassifiers xsi:type="ecore:EEnum" name="CommunicationTypeUpperware">
+              <eLiterals name="Local" literal="Local"/>
+              <eLiterals name="Remote" value="1" literal="Remote"/>
+              <eLiterals name="Any" value="2" literal="Any"/>
             </eClassifiers>
           </eSubpackages>
         </eSubpackages>

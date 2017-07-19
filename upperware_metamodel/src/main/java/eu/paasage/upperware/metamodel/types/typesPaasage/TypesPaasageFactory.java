@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -18,14 +10,14 @@ import org.eclipse.emf.ecore.EFactory;
  * It provides a create method for each non-abstract class of the model.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage
- * 
+ * @generated
  */
 public interface TypesPaasageFactory extends EFactory {
 	/**
 	 * The singleton instance of the factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	TypesPaasageFactory eINSTANCE = eu.paasage.upperware.metamodel.types.typesPaasage.impl.TypesPaasageFactoryImpl.init();
 
@@ -34,7 +26,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>OS</em>'.
-	 * 
+	 * @generated
 	 */
 	OS createOS();
 
@@ -43,7 +35,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Continent Upperware</em>'.
-	 * 
+	 * @generated
 	 */
 	ContinentUpperware createContinentUpperware();
 
@@ -52,7 +44,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Country Upperware</em>'.
-	 * 
+	 * @generated
 	 */
 	CountryUpperware createCountryUpperware();
 
@@ -61,7 +53,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>City Upperware</em>'.
-	 * 
+	 * @generated
 	 */
 	CityUpperware createCityUpperware();
 
@@ -70,7 +62,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Locations</em>'.
-	 * 
+	 * @generated
 	 */
 	Locations createLocations();
 
@@ -79,7 +71,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Application Component Profiles</em>'.
-	 * 
+	 * @generated
 	 */
 	ApplicationComponentProfiles createApplicationComponentProfiles();
 
@@ -88,7 +80,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Operating Systems</em>'.
-	 * 
+	 * @generated
 	 */
 	OperatingSystems createOperatingSystems();
 
@@ -97,7 +89,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Database Profile</em>'.
-	 * 
+	 * @generated
 	 */
 	DatabaseProfile createDatabaseProfile();
 
@@ -106,7 +98,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Web Server Profile</em>'.
-	 * 
+	 * @generated
 	 */
 	WebServerProfile createWebServerProfile();
 
@@ -115,7 +107,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Application Server Profile</em>'.
-	 * 
+	 * @generated
 	 */
 	ApplicationServerProfile createApplicationServerProfile();
 
@@ -124,7 +116,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>War Profile</em>'.
-	 * 
+	 * @generated
 	 */
 	WarProfile createWarProfile();
 
@@ -133,7 +125,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Jar Profile</em>'.
-	 * 
+	 * @generated
 	 */
 	JarProfile createJarProfile();
 
@@ -142,7 +134,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Application Component Type</em>'.
-	 * 
+	 * @generated
 	 */
 	ApplicationComponentType createApplicationComponentType();
 
@@ -151,7 +143,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Provider Type</em>'.
-	 * 
+	 * @generated
 	 */
 	ProviderType createProviderType();
 
@@ -160,7 +152,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Provider Types</em>'.
-	 * 
+	 * @generated
 	 */
 	ProviderTypes createProviderTypes();
 
@@ -169,7 +161,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Application Component Types</em>'.
-	 * 
+	 * @generated
 	 */
 	ApplicationComponentTypes createApplicationComponentTypes();
 
@@ -178,7 +170,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Action Type</em>'.
-	 * 
+	 * @generated
 	 */
 	ActionType createActionType();
 
@@ -187,7 +179,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Action Types</em>'.
-	 * 
+	 * @generated
 	 */
 	ActionTypes createActionTypes();
 
@@ -196,7 +188,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Function Type</em>'.
-	 * 
+	 * @generated
 	 */
 	FunctionType createFunctionType();
 
@@ -205,7 +197,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return a new object of class '<em>Function Types</em>'.
-	 * 
+	 * @generated
 	 */
 	FunctionTypes createFunctionTypes();
 
@@ -214,7 +206,7 @@ public interface TypesPaasageFactory extends EFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the package supported by this factory.
-	 * 
+	 * @generated
 	 */
 	TypesPaasagePackage getTypesPaasagePackage();
 

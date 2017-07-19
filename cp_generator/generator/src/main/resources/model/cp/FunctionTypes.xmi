@@ -9,4 +9,5 @@
   <types id="ResponseTime"/>
   <types id="ExecutionTime"/>
   <types id="Availability"/>
+  <types id="Attribute"/>
 </typesPaasage:FunctionTypes>

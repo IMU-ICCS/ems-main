@@ -1,15 +1,8 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
+import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
 import org.eclipse.emf.cdo.CDOObject;
 
 /**
@@ -22,16 +15,16 @@ import org.eclipse.emf.cdo.CDOObject;
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#getFeature <em>Feature</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#getProvidedBy <em>Provided By</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#isRemote <em>Remote</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#getCommunicationType <em>Communication Type</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#isOptional <em>Optional</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#isContaiment <em>Contaiment</em>}</li>
  * </ul>
  * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface RequiredFeature extends CDOObject {
 	/**
@@ -45,8 +38,8 @@ public interface RequiredFeature extends CDOObject {
 	 * @return the value of the '<em>Feature</em>' attribute.
 	 * @see #setFeature(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature_Feature()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getFeature();
 
@@ -56,7 +49,7 @@ public interface RequiredFeature extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Feature</em>' attribute.
 	 * @see #getFeature()
-	 * 
+	 * @generated
 	 */
 	void setFeature(String value);
 
@@ -71,8 +64,8 @@ public interface RequiredFeature extends CDOObject {
 	 * @return the value of the '<em>Provided By</em>' reference.
 	 * @see #setProvidedBy(CloudMLElementUpperware)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature_ProvidedBy()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	CloudMLElementUpperware getProvidedBy();
 
@@ -82,35 +75,38 @@ public interface RequiredFeature extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Provided By</em>' reference.
 	 * @see #getProvidedBy()
-	 * 
+	 * @generated
 	 */
 	void setProvidedBy(CloudMLElementUpperware value);
 
 	/**
-	 * Returns the value of the '<em><b>Remote</b></em>' attribute.
+	 * Returns the value of the '<em><b>Communication Type</b></em>' attribute.
+	 * The literals are from the enumeration {@link eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware}.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Remote</em>' attribute isn't clear,
+	 * If the meaning of the '<em>Communication Type</em>' attribute isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Remote</em>' attribute.
-	 * @see #setRemote(boolean)
-	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature_Remote()
-	 *  required="true"
-	 * 
+	 * @return the value of the '<em>Communication Type</em>' attribute.
+	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware
+	 * @see #setCommunicationType(CommunicationTypeUpperware)
+	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature_CommunicationType()
+	 * @model required="true"
+	 * @generated
 	 */
-	boolean isRemote();
+	CommunicationTypeUpperware getCommunicationType();
 
 	/**
-	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.application.RequiredFeature#isRemote <em>Remote</em>}' attribute.
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.application.RequiredFeature#getCommunicationType <em>Communication Type</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Remote</em>' attribute.
-	 * @see #isRemote()
-	 * 
+	 * @param value the new value of the '<em>Communication Type</em>' attribute.
+	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware
+	 * @see #getCommunicationType()
+	 * @generated
 	 */
-	void setRemote(boolean value);
+	void setCommunicationType(CommunicationTypeUpperware value);
 
 	/**
 	 * Returns the value of the '<em><b>Optional</b></em>' attribute.
@@ -123,8 +119,8 @@ public interface RequiredFeature extends CDOObject {
 	 * @return the value of the '<em>Optional</em>' attribute.
 	 * @see #setOptional(boolean)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature_Optional()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	boolean isOptional();
 
@@ -134,7 +130,7 @@ public interface RequiredFeature extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Optional</em>' attribute.
 	 * @see #isOptional()
-	 * 
+	 * @generated
 	 */
 	void setOptional(boolean value);
 
@@ -149,8 +145,8 @@ public interface RequiredFeature extends CDOObject {
 	 * @return the value of the '<em>Contaiment</em>' attribute.
 	 * @see #setContaiment(boolean)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature_Contaiment()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	boolean isContaiment();
 
@@ -160,7 +156,7 @@ public interface RequiredFeature extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Contaiment</em>' attribute.
 	 * @see #isContaiment()
-	 * 
+	 * @generated
 	 */
 	void setContaiment(boolean value);
 
