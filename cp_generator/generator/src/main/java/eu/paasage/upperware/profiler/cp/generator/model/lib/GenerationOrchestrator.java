@@ -19,7 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.*;
 
+import eu.paasage.camel.organisation.CloudCredentials;
+import eu.paasage.camel.organisation.OrganisationModel;
+import eu.paasage.camel.organisation.User;
+import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.profiler.cp.generator.FromRuleProcessorSlo;
+import eu.paasage.upperware.profiler.cp.generator.model.log.LogPrinter;
+import eu.paasage.upperware.profiler.cp.generator.model.log.PrintStreamLogPrinter;
+import eu.paasage.upperware.profiler.cp.generator.model.tools.*;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -36,8 +46,6 @@ import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
@@ -45,10 +53,6 @@ import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.api.ISender;
 import eu.paasage.upperware.profiler.cp.generator.model.camel.lib.CamelModelProcessor;
 import eu.paasage.upperware.profiler.cp.generator.model.derivator.lib.CPModelDerivator;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib.ZeroMQServer;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
@@ -76,10 +80,17 @@ public class GenerationOrchestrator
 	private static final String JAR_LOG4G_PROPERTIES_FILE=Constants.JAR_CONFIG_PATH+"log4j.properties";
 	
 	private static final String WAR_CREATORS_PROPERTIES_FILE=Constants.WAR_CONFIG_PATH+CREATORS_FILE_NAME;
-	
-	
 
-	
+	private static final String GLOBAL_PROVIDER_REQUIREMENTS = "GlobalProviderRequirements";
+	private static final String RP_PROVIDER_REQUIREMENTS = "RP_ProviderRequirements";
+
+	private static final String U_APP_COMPONENT = "U_app_component_";
+
+	public enum SOLUTION_STATUS {
+		ERROR, NO_CHANGE_REQUIRED, NO_SOLUTION_AVAILABLE, MODEL_CHANGED
+	}
+
+
 	/*
 	 * ATTRIBUTES
 	 */
@@ -119,7 +130,9 @@ public class GenerationOrchestrator
 	 * The property manager
 	 */
 	protected PaaSagePropertyManager propertyManager; 
-	
+
+	private LogPrinter logPrinter;
+
 	/*
 	 * CONSTRUCTOR
 	 */
@@ -130,7 +143,8 @@ public class GenerationOrchestrator
 	{	
 		getLogger(); 
 		propertyManager= PaaSagePropertyManager.getInstance(); 
-		
+		logPrinter = new PrintStreamLogPrinter(System.out);
+
 		ApplicationPackage.eINSTANCE.eClass();
 		CpPackage.eINSTANCE.eClass();
 		TypesPackage.eINSTANCE.eClass();
@@ -173,16 +187,17 @@ public class GenerationOrchestrator
 	 * @return The id or path of the generate CP Model. It is stored in CDO
 	 */
 	public String generateCPModel(String modelPath)
+	//TODO - tutaj dopisac
 	{
 		logger.info("************************************CP Generator Model To Solver************************************"); 
 		
-		CamelModelProcessor camelProcessor= createCamelModelProcessor(modelPath); 
+		CamelModelProcessor camelProcessor= createCamelModelProcessor(modelPath); //TO_TUTAJ
 		
 		String id=""; 
-		
+
 		if(camelProcessor!=null)
 		{
-			PaasageConfiguration pc= ApplicationFactory.eINSTANCE.createPaasageConfiguration(); 
+			PaasageConfiguration pc= ApplicationFactory.eINSTANCE.createPaasageConfiguration();
 			
 			String appId= camelProcessor.getCamelModel().getName(); //By default the id of the application is the name of the camel model
 			
@@ -193,10 +208,10 @@ public class GenerationOrchestrator
 		
 			String auxId= PaasageModelTool.generatePaasageAppConfigurationId(appId); 
 		
-			pc.setId(auxId); 
+			pc.setId(auxId);
 
-		
-			File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pc); 
+
+			File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pc);
 		
 			try {
 				paasageConfigurationDir= new File(paasageConfigurationDir.getCanonicalPath());
@@ -212,18 +227,24 @@ public class GenerationOrchestrator
 			PaaSageConfigurationWrapper pcw= new PaaSageConfigurationWrapper(pc);//, paasageConfigurationDir, resSet); 
 			
 			database.loadRelatedModels(resSet, paasageConfigurationDir, pcw);
-					
-									
+
+			Set<String> preferedProviders = getPreferedProviders(camelProcessor.getCamelModel());
+
+
 			logger.info("** Calling CamelModel Processor");
-			camelProcessor.parseModel(pcw);
+			camelProcessor.parseModel(pcw, preferedProviders);
 				
 		
-			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships)
-			{
+			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships) {
 				logger.info("** Calling CPModelDerivator");
 				ConstraintProblem cp= derivator.derivateConstraintProblem(camelProcessor.getCamelModel(),pc, database); 
 				//pc.getId();
-				
+
+				//TODO - tutaj trzeba zrobic update
+				CamelModel camelModel = camelProcessor.getCamelModel();
+				FromRuleProcessorSlo fromRuleProcessorSlo = new FromRuleProcessorSlo();
+				fromRuleProcessorSlo.update(camelModel, cp);
+
 				logger.debug("** Calling DatabseProxy ");
 				database.saveModels(pc, cp, resSet); 
 				logger.debug("** Calling Sender");
@@ -236,38 +257,22 @@ public class GenerationOrchestrator
 				id= auxId;
 				
 				logger.info("** CP Model Id: "+id); 
-			}
-			else if(pcw.hasUserSolution && pcw.isValidUserSolution())
-			{
+			} else if(pcw.hasUserSolution && pcw.isValidUserSolution()) {
 				logger.info("** The user already provided a solution for the deployment. The CP Model will be not generated!"); 
-			}
-			else if(pcw.getPaasageConfiguration().getProviders().size()==0)
-			{
+			} else if(pcw.getPaasageConfiguration().getProviders().size()==0) {
 				logger.info("** There is not a suitable provider. The CP Model will be not generated!"); 
-			}
-			else if(!pcw.hasCorrectHostingRelationships)
-			{
+			} else if(!pcw.hasCorrectHostingRelationships) {
 				logger.info("** There are missing hosting relationships in the deployment model. The CP Model will be not generated!"); 
-			}
-			else if(pcw.getComponentsWithoutVM()!=null && pcw.getComponentsWithoutVM().size()>0)
-			{
+			} else if(pcw.getComponentsWithoutVM()!=null && pcw.getComponentsWithoutVM().size()>0) {
 				logger.info("** There are not suitable providers for the following components: ");
-				
-				for(ApplicationComponent ac: pcw.getComponentsWithoutVM())
-				{
+				for(ApplicationComponent ac: pcw.getComponentsWithoutVM()) {
 					logger.info("** "+ac.getCloudMLId());
 				}
-				
 				logger.info("** The CP Model will be not generated! ");
-				
-			}
-			else
-			{
+			} else {
 				logger.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 
 			}
-		}
-		else
-		{
+		} else {
 			logger.error("** There is not Processor for Camel Models. The input model can not be processed");
 		}
 		
@@ -276,7 +281,28 @@ public class GenerationOrchestrator
 		return id; 
 		
 	}
-	
+
+	public static Set<String> getPreferedProviders(CamelModel camelModel) {
+		Set<String> foundProviders = new HashSet<String>();
+
+		for (OrganisationModel orgModel : camelModel.getOrganisationModels()) {
+			if (orgModel instanceof OrganisationModelImpl) {
+				for (User user : orgModel.getUsers()) {
+					for (CloudCredentials cloudCredential : user.getCloudCredentials()) {
+						String providerName = cloudCredential.getCloudProvider().getName();
+						if (GLOBAL_PROVIDER_REQUIREMENTS.equalsIgnoreCase(providerName)) {
+							String name = cloudCredential.getName();
+							foundProviders.add(name);
+						}
+					}
+					break; // we are currently supporting only one user
+				}
+			}
+		}
+
+		return foundProviders;
+	}
+
 	protected static PrintStream defaultErrOutput= null; 
 	/**
 	 * Configures the logger
@@ -477,25 +503,17 @@ public class GenerationOrchestrator
 	 * @param modelPath The model path in CDO
 	 * @return A CamelModelProcessor containing the model with path modelPath. If the model does not exist, the CamelModelProcessor is invalid.  
 	 */
-	protected CamelModelProcessor createCamelModelProcessor(String modelPath)
-	{
+	protected CamelModelProcessor createCamelModelProcessor(String modelPath) {
 		CamelModelProcessor modelProcessor= new CamelModelProcessor(null); 
-		
-		modelProcessor.setValid(false); 
+		modelProcessor.setValid(false);
 
 		try{
-			CamelModel camelModel= database.getCamelModel(modelPath); 
-			
+			CamelModel camelModel= database.getCamelModel(modelPath);
 			modelProcessor= new CamelModelProcessor(camelModel); 
 			modelProcessor.setValid(true);
-			
-		}
-		catch(Exception e)
-		{
+		} catch(Exception e) {
 			GenerationOrchestrator.logger.error("GenerationOrchestrator- createCamelModelProcessor- Problems loading the model with path: "+modelPath); 
 		}
-		
-		
 		return modelProcessor;
 	}
 }

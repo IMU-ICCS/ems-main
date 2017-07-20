@@ -11,10 +11,7 @@
 
 package eu.paasage.upperware.profiler.cp.generator.model.camel.lib;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import eu.paasage.camel.metric.Property;
 import org.apache.log4j.Logger;
@@ -108,23 +105,19 @@ public class CamelModelProcessor {
 	 * Builds a camel model processor that will deal with the given model
 	 * @param model The camel model to be processed
 	 */
-	public CamelModelProcessor(CamelModel model)
-	{
+	public CamelModelProcessor(CamelModel model) {
 		this.model= model; 
-		
 		this.deploymentModelParser= new DeploymentModelParser();
-		
-		this.providerModelParser= new ProviderModelParser(); 
-		
-		
+		this.providerModelParser= new ProviderModelParser();
 	}
 	
 	
 	/**
 	 * Gets elements from {@link #model} and fills the specified pc.
 	 * @param pc The PaaSage Configuration to be filled
+	 * @param preferedProviders
 	 */
-	public void parseModel(PaaSageConfigurationWrapper pc) 
+	public void parseModel(PaaSageConfigurationWrapper pc, Set<String> preferedProviders)
 	{
 		
 		logger.debug("CamelModelProcessor - parseModel - Calling DeploymentModelParser!");
@@ -142,120 +135,27 @@ public class CamelModelProcessor {
 		
 		List<Provider> candidates= new ArrayList<Provider>();
 		
-		for(VM vm: vms)
-		{
+		for(VM vm: vms) {
 			logger.debug("CamelModelProcessor - parseModel - Processing vm "+vm.getName());
 			//Create an ontology representing the requirements of each VM
 			OntologyCamel ontology= proxy.getCamelOntologyCopy(); 
 			
 			logger.debug("CamelModelProcessor - parseModel - Ontology Retrieved! ");
-			
-			//Provider with Image
-			ProviderModelDecorator pmWithImage= null; 
-			
+
 			//Units
-			ConceptCamel mbUnit= ProviderModelParser.getConceptByName(UnitType.MEGABYTES.getLiteral(), ontology.getReusedConcept()); 
-			
-			ConceptCamel gbUnit= ProviderModelParser.getConceptByName(UnitType.GIGABYTES.getLiteral(), ontology.getReusedConcept());
-			
+
 			//ConceptCamel mghzUnit= ProviderModelParser.getConceptByName(fr.inria.paasage.saloon.camel.tool.Constants.GHZ_UNIT, ontology.getReusedConcept());
 			
 			logger.debug("CamelModelProcessor - parseModel - Unit concepts Retrieved! ");
-			
-			QuantitativeHardwareRequirement hardware= vm.getVmRequirementSet().getQuantitativeHardwareRequirement(); 
-			
-			logger.debug("CamelModelProcessor - parseModel - Hardware reqs Retrieved! ");
-			
-			if(hardware==null && globalRequirements!=null)
-			{
-				logger.debug("CamelModelProcessor - parseModel - Considering global hardware reqs! ");
-				hardware= globalRequirements.getQuantitativeHardwareRequirement(); 
-			}
-			
+
+
+
+			QuantitativeHardwareRequirement hardware = extractHardwareRequirement(globalRequirements, vm.getVmRequirementSet());
+
 			logger.debug("CamelModelProcessor - parseModel - Hardware reqs: "+hardware);
-			
-			if(hardware!=null)
-			{	
-				//Storage
-				if(hardware.getMaxStorage()!=0 || hardware.getMinStorage()!=0)
-				{	
-					QuantifiableBoundedElementCamel storageConcept= (QuantifiableBoundedElementCamel) ProviderModelParser.getConceptByName("Disk", ontology.getConcepts()); 
-					logger.debug("CamelModelProcessor - parseModel - Disk concept retrieved!");
-					storageConcept.setSelected(true);
-					storageConcept.setUnit(gbUnit);
-					logger.debug("CamelModelProcessor - parseModel - Disk unit "+storageConcept.getUnit().getName());
-
-					storageConcept.setMinValue(hardware.getMinStorage());
-					storageConcept.setMaxValue(hardware.getMaxStorage());
-
-					logger.debug("CamelModelProcessor - parseModel - storage defined in ontology! ");
-				}	
-				
-				//Core
-				if(hardware.getMinCores()!=0 || hardware.getMaxCores()!=0)
-				{	
-					BoundedElementCamel coreConcept= (BoundedElementCamel) ProviderModelParser.getConceptByName("Core Number", ontology.getConcepts()); 
-					logger.debug("CamelModelProcessor - parseModel - Core Number concept retrieved! "+coreConcept);
-					coreConcept.setSelected(true);
-					
-					logger.debug("CamelModelProcessor - parseModel - Core Number selected! ");
-					
-					logger.debug("CamelModelProcessor - parseModel - Min Core Number: "+hardware.getMinCores());
-					
-					logger.debug("CamelModelProcessor - parseModel - Max Core Number: "+hardware.getMaxCores());
-
-					coreConcept.setMinValue(hardware.getMinCores());
-					coreConcept.setMaxValue(hardware.getMaxCores());
-					
-					logger.debug("CamelModelProcessor - parseModel - number of cores defined in ontology! ");
-				}
-				
-				//CPU
-				if(hardware.getMaxCPU()!=0 || hardware.getMinCPU()!=0)
-				{	
-					//DO NOTHING FOR THE TIME BEING. THE CODE WORKS BUT PROVIDER MODELS HAVE TO INCLUDE THE FREQUENCY INFOMRATION
-/*					QuantifiableElementCamel cpuConcept= (QuantifiableElementCamel) ProviderModelParser.getConceptByName("CPU", ontology.getConcepts()); 
-					
-					logger.debug("CamelModelProcessor - parseModel - CPU concept retrieved!");
-					cpuConcept.setSelected(true);
-					cpuConcept.setUnit(mghzUnit);
-					logger.debug("CamelModelProcessor - parseModel - CPU concept unit "+cpuConcept.getUnit().getName());
-					if(hardware.getMinCPU()!=0) //TODO TO USE BOUNDED ELEMENT
-						cpuConcept.setValue((float) hardware.getMinCPU());
-					else
-						cpuConcept.setValue((float) hardware.getMaxCPU());
-					
-					logger.debug("CamelModelProcessor - parseModel - CPU frequency defined in ontology! ");*/
-					
-					
-				}
-				
-				
-				//Ram
-				if(hardware.getMinRAM()!=0 || hardware.getMaxRAM()!=0)
-				{	
-					logger.debug("CamelModelProcessor - parseModel - Looking for memory concept!");
-					QuantifiableBoundedElementCamel ramConcept= (QuantifiableBoundedElementCamel) ProviderModelParser.getConceptByName("Memory", ontology.getConcepts()); 
-					
-					logger.debug("CamelModelProcessor - parseModel - Memory concept retrieved!");
-					ramConcept.setSelected(true);
-					
-					ramConcept.setUnit(mbUnit);
-					
-					ramConcept.setMinValue(0);
-					ramConcept.setMaxValue(0);
-					
-					logger.debug("CamelModelProcessor - parseModel - Memory unit: "+ramConcept.getUnit());
-					
-					if(hardware.getMinRAM()!=0)
-						ramConcept.setMinValue(hardware.getMinRAM());
-					if(hardware.getMaxRAM()!=0)
-						ramConcept.setMaxValue(hardware.getMaxRAM());
-				
-					logger.debug("CamelModelProcessor - parseModel - vm min ram "+hardware.getMinRAM()+", Memory concept value: "+ramConcept.getValue());
-				}	
-			
-			}	
+			if(hardware!=null) {
+				checkHardware(ontology, hardware);
+			}
 				
 			//Criteria
 			
@@ -269,101 +169,30 @@ public class CamelModelProcessor {
 			
 			
 			//OS-Image
-			OSOrImageRequirement osImageReq= vm.getVmRequirementSet().getOsOrImageRequirement(); 
-			
-			if(osImageReq==null && globalRequirements!=null)
-			{
-				logger.debug("CamelModelProcessor - parseModel - Considering OsImage global reqs! ");
-				osImageReq= globalRequirements.getOsOrImageRequirement(); 
-			}
-			
+
+			//Provider with Image
+			ProviderModelDecorator pmWithImage= null;
+
+			OSOrImageRequirement osImageReq = extractOsRequirement(globalRequirements, vm.getVmRequirementSet());
 			logger.debug("CamelModelProcessor - parseModel - OsImage reqs: "+osImageReq);
-			
-			if(osImageReq!=null)
-			{
-				if(osImageReq instanceof OSRequirement)
-				{
-					logger.debug("CamelModelProcessor - parseModel - Dealing with OS Requirement");
-					OSRequirement osReq= (OSRequirement) osImageReq; 
-					//TODO UPDATE THE ONTOLOGY WITH THE CORRECT NAMES
-					ConceptCamel osRootConcept= ProviderModelParser.getConceptByName("OS", ontology.getConcepts());
-					
-					if(osRootConcept==null)
-						osRootConcept= ProviderModelParser.getConceptByName("Os", ontology.getConcepts());
-					
-					if(osRootConcept==null)
-						osRootConcept= ProviderModelParser.getConceptByName("os", ontology.getConcepts());
-					
-					if(osRootConcept!=null)
-					{
-						ConceptCamel osConcept= ProviderModelParser.getConcepContainingName(osReq.getOs(), osRootConcept.getSubConcept());
-						
-						if(osConcept!=null)
-						{	
-							logger.debug("CamelModelProcessor - parseModel - OS concept retrieved "+osConcept+ " Name "+osReq.getOs());
-							osConcept.setSelected(true);
-						}
-					}	
-						
-					
-					
-					
-				}
-				else
-				{
-					ImageRequirement imgReq= (ImageRequirement) osImageReq; 
-					String imageId= imgReq.getImageId();
-					
-					for(String key: proxy.getPMsMap().keySet()) 
-					{
-						ProviderModelDecorator pm= proxy.getPMsMap().get(key); 
-						
-						Feature root= pm.getRootFeature();
-						
-						Attribute att= SaloonCamelSolver.getEnumAttributeWithValueInDomain(root, imageId); 
-						
-						if(att!=null)
-						{
-							pmWithImage= pm; 
-						}
-							
-						
-					}	
-				}
+			if(osImageReq!=null) {
+				pmWithImage = checkOS(ontology, pmWithImage, osImageReq);
 			}
-			
 			
 			//Provider
-			ProviderRequirement provReq= vm.getVmRequirementSet().getProviderRequirement(); 
-			
-			if(provReq==null && globalRequirements!=null)
-			{
-				provReq= globalRequirements.getProviderRequirement(); 
-			}
-			
+			ProviderRequirement provReq = extractProviderRequirement(globalRequirements, vm.getVmRequirementSet());
 			logger.debug("CamelModelProcessor - parseModel - Provider reqs: "+provReq);
 			
 			//Location
-			ConceptCamel locationConcept= ProviderModelParser.getConceptByName("Location",  ontology.getConcepts()); 
-			
-			ConceptCamel concreteLocationConcept= null;
-		
-			LocationRequirement locationReq= vm.getVmRequirementSet().getLocationRequirement(); 
-			
-			if(locationReq==null && globalRequirements!=null)
-			{
-				locationReq= globalRequirements.getLocationRequirement(); 
-			}
-			
+			ConceptCamel locationConcept= ProviderModelParser.getConceptByName("Location",  ontology.getConcepts());
+
+			LocationRequirement locationReq = extractLocationRequirement(globalRequirements, vm.getVmRequirementSet());
 			logger.debug("CamelModelProcessor - parseModel - Location reqs: "+locationReq);
 			
-			if(locationReq!=null)
-			{	
-				
-				for(Location loc:locationReq.getLocations())
-				{
+			if(locationReq!=null) {
+				for(Location loc:locationReq.getLocations()) {
 					logger.debug("CamelModelProcessor - parseModel - Looking for loc: "+loc.getId());
-					concreteLocationConcept= ProviderModelParser.searchLocation(loc.getId(), locationConcept.getSubConcept()); 
+					ConceptCamel concreteLocationConcept= ProviderModelParser.searchLocation(loc.getId(), locationConcept.getSubConcept());
 					logger.debug("CamelModelProcessor - parseModel - Loc concept: "+concreteLocationConcept);
 					concreteLocationConcept.setSelected(true);
 					
@@ -428,7 +257,9 @@ public class CamelModelProcessor {
 			}
 							
 		}
-		
+
+		providerModelParser.removeNotPreferedProviders(preferedProviders, pc.getPaasageConfiguration());
+
 		providerModelParser.removeNoCandidateProviders(pc.getPaasageConfiguration(), candidates);
 		
 		providerModelParser.checkExistSolution(pc);
@@ -443,7 +274,157 @@ public class CamelModelProcessor {
 
 		
 	}
-	
+
+	private LocationRequirement extractLocationRequirement(VMRequirementSet globalRequirements, VMRequirementSet vmRequirementSet) {
+		LocationRequirement locationReq= vmRequirementSet.getLocationRequirement();
+		if(locationReq==null && globalRequirements!=null) {
+            locationReq= globalRequirements.getLocationRequirement();
+        }
+		return locationReq;
+	}
+
+	private ProviderRequirement extractProviderRequirement(VMRequirementSet globalRequirements, VMRequirementSet vmRequirementSet) {
+		ProviderRequirement provReq= vmRequirementSet.getProviderRequirement();
+		if(provReq==null && globalRequirements!=null) {
+            provReq= globalRequirements.getProviderRequirement();
+        }
+		return provReq;
+	}
+
+	private ProviderModelDecorator checkOS(OntologyCamel ontology, ProviderModelDecorator pmWithImage, OSOrImageRequirement osImageReq) {
+		if(osImageReq instanceof OSRequirement) {
+            logger.debug("CamelModelProcessor - parseModel - Dealing with OS Requirement");
+            OSRequirement osReq= (OSRequirement) osImageReq;
+            //TODO UPDATE THE ONTOLOGY WITH THE CORRECT NAMES
+            ConceptCamel osRootConcept= ProviderModelParser.getConceptByName("OS", ontology.getConcepts());
+
+            if(osRootConcept==null)
+                osRootConcept= ProviderModelParser.getConceptByName("Os", ontology.getConcepts());
+
+            if(osRootConcept==null)
+                osRootConcept= ProviderModelParser.getConceptByName("os", ontology.getConcepts());
+
+            if(osRootConcept!=null) {
+                ConceptCamel osConcept= ProviderModelParser.getConcepContainingName(osReq.getOs(), osRootConcept.getSubConcept());
+                if(osConcept!=null) {
+                    logger.debug("CamelModelProcessor - parseModel - OS concept retrieved "+osConcept+ " Name "+osReq.getOs());
+                    osConcept.setSelected(true);
+                }
+            }
+        } else {
+            ImageRequirement imgReq= (ImageRequirement) osImageReq;
+            String imageId= imgReq.getImageId();
+
+            for(String key: proxy.getPMsMap().keySet()) {
+                ProviderModelDecorator pm= proxy.getPMsMap().get(key);
+                Feature root= pm.getRootFeature();
+
+                Attribute att= SaloonCamelSolver.getEnumAttributeWithValueInDomain(root, imageId);
+                if(att!=null) {
+                    pmWithImage= pm;
+                }
+            }
+        }
+		return pmWithImage;
+	}
+
+	private OSOrImageRequirement extractOsRequirement(VMRequirementSet globalRequirements, VMRequirementSet vmRequirementSet) {
+		OSOrImageRequirement osImageReq= vmRequirementSet.getOsOrImageRequirement();
+		if(osImageReq==null && globalRequirements!=null) {
+            logger.debug("CamelModelProcessor - parseModel - Considering OsImage global reqs! ");
+            osImageReq= globalRequirements.getOsOrImageRequirement();
+        }
+		return osImageReq;
+	}
+
+	private QuantitativeHardwareRequirement extractHardwareRequirement(VMRequirementSet globalRequirements, VMRequirementSet vmRequirementSet) {
+		QuantitativeHardwareRequirement hardware= vmRequirementSet.getQuantitativeHardwareRequirement();
+		logger.debug("CamelModelProcessor - parseModel - Hardware reqs Retrieved! ");
+		if(hardware==null && globalRequirements!=null) {
+            logger.debug("CamelModelProcessor - parseModel - Considering global hardware reqs! ");
+            hardware= globalRequirements.getQuantitativeHardwareRequirement();
+        }
+		return hardware;
+	}
+
+	private void checkHardware(OntologyCamel ontology, QuantitativeHardwareRequirement hardware) {
+		checkStorage(ontology, hardware);
+		checkCores(ontology, hardware);
+		checkCPU(ontology, hardware);
+		checkRAM(ontology, hardware);
+	}
+
+	private void checkRAM(OntologyCamel ontology, QuantitativeHardwareRequirement hardware) {
+		if(hardware.getMinRAM()!=0 || hardware.getMaxRAM()!=0) {
+            QuantifiableBoundedElementCamel ramConcept= (QuantifiableBoundedElementCamel) ProviderModelParser.getConceptByName("Memory", ontology.getConcepts());
+            logger.debug("CamelModelProcessor - parseModel - Memory concept retrieved!");
+            ramConcept.setSelected(true);
+
+            ramConcept.setUnit(ProviderModelParser.getConceptByName(UnitType.MEGABYTES.getLiteral(), ontology.getReusedConcept()));
+			logger.debug("CamelModelProcessor - parseModel - Core Number selected! ");
+			logger.debug("CamelModelProcessor - parseModel - Memory unit: "+ramConcept.getUnit());
+			logger.debug("CamelModelProcessor - parseModel - Min Memory: "+hardware.getMinRAM());
+			logger.debug("CamelModelProcessor - parseModel - Max Memory: "+hardware.getMaxRAM());
+
+			ramConcept.setMinValue(hardware.getMinRAM());
+			ramConcept.setMaxValue(hardware.getMaxRAM());
+            logger.debug("CamelModelProcessor - parseModel - vm min ram "+hardware.getMinRAM()+", Memory concept value: "+ramConcept.getValue());
+        }
+	}
+
+	private void checkCPU(OntologyCamel ontology, QuantitativeHardwareRequirement hardware) {
+		if(hardware.getMaxCPU()!=0 || hardware.getMinCPU()!=0) {
+            //DO NOTHING FOR THE TIME BEING. THE CODE WORKS BUT PROVIDER MODELS HAVE TO INCLUDE THE FREQUENCY INFOMRATION
+/*					QuantifiableElementCamel cpuConcept= (QuantifiableElementCamel) ProviderModelParser.getConceptByName("CPU", ontology.getConcepts());
+
+            logger.debug("CamelModelProcessor - parseModel - CPU concept retrieved!");
+            cpuConcept.setSelected(true);
+            cpuConcept.setUnit(mghzUnit);
+            logger.debug("CamelModelProcessor - parseModel - CPU concept unit "+cpuConcept.getUnit().getName());
+            if(hardware.getMinCPU()!=0) //TODO TO USE BOUNDED ELEMENT
+                cpuConcept.setValue((float) hardware.getMinCPU());
+            else
+                cpuConcept.setValue((float) hardware.getMaxCPU());
+
+            logger.debug("CamelModelProcessor - parseModel - CPU frequency defined in ontology! ");*/
+        }
+	}
+
+	private void checkCores(OntologyCamel ontology, QuantitativeHardwareRequirement hardware) {
+		if(hardware.getMinCores()!=0 || hardware.getMaxCores()!=0) {
+            BoundedElementCamel coreConcept= (BoundedElementCamel) ProviderModelParser.getConceptByName("Core Number", ontology.getConcepts());
+            logger.debug("CamelModelProcessor - parseModel - Core Number concept retrieved! "+coreConcept);
+            coreConcept.setSelected(true);
+
+            logger.debug("CamelModelProcessor - parseModel - Core Number selected! ");
+            logger.debug("CamelModelProcessor - parseModel - Min Core Number: "+hardware.getMinCores());
+            logger.debug("CamelModelProcessor - parseModel - Max Core Number: "+hardware.getMaxCores());
+
+            coreConcept.setMinValue(hardware.getMinCores());
+            coreConcept.setMaxValue(hardware.getMaxCores());
+
+            logger.debug("CamelModelProcessor - parseModel - number of cores defined in ontology! ");
+        }
+	}
+
+	private void checkStorage(OntologyCamel ontology, QuantitativeHardwareRequirement hardware) {
+		if(hardware.getMaxStorage()!=0 || hardware.getMinStorage()!=0) {
+            QuantifiableBoundedElementCamel storageConcept= (QuantifiableBoundedElementCamel) ProviderModelParser.getConceptByName("Disk", ontology.getConcepts());
+            logger.debug("CamelModelProcessor - parseModel - Disk concept retrieved!");
+            storageConcept.setSelected(true);
+
+            storageConcept.setUnit(ProviderModelParser.getConceptByName(UnitType.GIGABYTES.getLiteral(), ontology.getReusedConcept()));
+			logger.debug("CamelModelProcessor - parseModel - Storage selected! ");
+			logger.debug("CamelModelProcessor - parseModel - Disk unit "+storageConcept.getUnit().getName());
+			logger.debug("CamelModelProcessor - parseModel - Min Storage: "+hardware.getMinStorage());
+			logger.debug("CamelModelProcessor - parseModel - Max Storage: "+hardware.getMaxStorage());
+
+            storageConcept.setMinValue(hardware.getMinStorage());
+            storageConcept.setMaxValue(hardware.getMaxStorage());
+            logger.debug("CamelModelProcessor - parseModel - storage defined in ontology! ");
+        }
+	}
+
 	protected void processProviderRequirements(ProviderRequirement provReq, OntologyCamel ontology, PaaSageConfigurationWrapper pc, VM vm, List<Provider> candidates)
 	{
 		for(CloudProvider prov:provReq.getProviders())

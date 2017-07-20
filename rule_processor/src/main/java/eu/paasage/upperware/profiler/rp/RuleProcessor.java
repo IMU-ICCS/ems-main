@@ -95,6 +95,11 @@ import eu.paasage.upperware.profiler.rp.util.Utilities;
 import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
 
 public class RuleProcessor {
+
+	private static final String U_APP_COMPONENT = "U_app_component_";
+	private static final String GLOBAL_PROVIDER_REQUIREMENTS = "GlobalProviderRequirements";
+	private static final String RP_PROVIDER_REQUIREMENTS = "RP_ProviderRequirements";
+
 	/** Log4j logger instance. */
 	private static Logger log = Logger.getLogger(RuleProcessor.class);
 	private boolean validationResult_ = true;
@@ -467,8 +472,7 @@ public class RuleProcessor {
 
 	private boolean isProviderPublic(String cpModelId, String cloudProviderId)
 			throws UnavailableModelException {
-		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
-		CamelModel model = proxy.getCamelModel("upperware-models/fms/"
+		CamelModel model = getCamelModel("upperware-models/fms/"
 				+ cpModelId + "/" + cloudProviderId);
 		if (model == null) {
 			String error = "> ERROR: Could not retrieve the following model: "
@@ -497,8 +501,7 @@ public class RuleProcessor {
 			List<EObject> objList) {
 		EObject obj = null;
 
-		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
-		CamelModel cModel = proxy.getCamelModel(camelModel);
+		CamelModel cModel = getCamelModel(camelModel);
 		CamelModel updatedCamelModel = null;
 
 		for (int i = 0; i < objList.size(); i++) {
@@ -544,9 +547,9 @@ public class RuleProcessor {
 			
 			System.out.println();
 			System.out.println("No suitable cloud provider found for the following components:");
-			for (String cloudMLId : requiredComponents) {
-				System.out.println("    -> " + cloudMLId);
-			}
+
+			requiredComponents.forEach(cloudMLId -> System.out.println("    -> " + cloudMLId));
+
 			System.out.println();
 			System.out.println("NO SOLUTION");
 			System.out.println();
@@ -707,7 +710,7 @@ public class RuleProcessor {
 		while (pIt.hasNext()) {
 			Provider p = pIt.next();
 			String providerId = p.getId();
-			if (delTable.containsKey(providerId) == true) {
+			if (delTable.containsKey(providerId)) {
 				System.out.println("    -> REMOVE " + providerId);
 				pIt.remove();
 			}
@@ -943,7 +946,7 @@ public class RuleProcessor {
 			String id = mv.getId();
 			for (int n = 0; n < vmRemoveList.size(); n++) {
 				String vmName = vmRemoveList.get(n);
-				if (id.contains(vmName) == true) {
+				if (id.contains(vmName)) {
 					System.out.println("    -> REMOVE " + id);
 
 					EList<Solution> solutions = cpModel.getSolution();
@@ -967,27 +970,18 @@ public class RuleProcessor {
 	public static Map<String, String> getProviderFromOrganisationModel(String cModel) {
 		Map<String, String> foundProviders = new HashMap<String, String>();
 
-		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
-		CamelModel camelModel = proxy.getCamelModel(cModel);
+		CamelModel camelModel = getCamelModel(cModel);
 		if (camelModel == null) {
-			System.out.println("Error: The given CAMEL model (" + cModel
-					+ ") was not found in the CDO database!");
+			System.out.println("Error: The given CAMEL model (" + cModel + ") was not found in the CDO database!");
 			return null;
 		}
-		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
-		for (int i = 0; i < orgModels.size(); i++) {
-			EObject obj = orgModels.get(i);
-			if (obj instanceof eu.paasage.camel.organisation.impl.OrganisationModelImpl) {
-				OrganisationModelImpl omObj = (OrganisationModelImpl) obj;
-				if (!omObj.getName().equalsIgnoreCase("RP_ProviderRequirements")) {
-					continue;
-				}
-				CloudProvider provider = omObj.getProvider();
-				if (provider != null) {
-					if (provider.isPublic()) {
-						foundProviders.put(provider.getName(), "public");
-					} else {
-						foundProviders.put(provider.getName(), "private");
+
+		for (OrganisationModel orgModel : camelModel.getOrganisationModels()) {
+			if (orgModel instanceof OrganisationModelImpl) {
+				if (RP_PROVIDER_REQUIREMENTS.equalsIgnoreCase(orgModel.getName())) {
+					CloudProvider provider = orgModel.getProvider();
+					if (provider != null) {
+						foundProviders.put(provider.getName(), provider.isPublic() ? "public" : "private");
 					}
 				}
 			}
@@ -995,31 +989,29 @@ public class RuleProcessor {
 
 		return foundProviders;
 	}
-	
-	public static Map<String, String> getProviderFromUserModel(String cModel) {
-		Map<String, String> foundProviders = new HashMap<String, String>();
-		
+
+	private static CamelModel getCamelModel(String cModel) {
 		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
-		CamelModel camelModel = proxy.getCamelModel(cModel);
+		return proxy.getCamelModel(cModel);
+	}
+
+	public static Map<String, String> getProviderFromUserModel(String cModel) { //TODO - to trzeba przeniesc
+		Map<String, String> foundProviders = new HashMap<String, String>();
+
+		CamelModel camelModel = getCamelModel(cModel);
 		if (camelModel == null) {
-			System.out.println("Error: The given CAMEL model (" + cModel
-					+ ") was not found in the CDO database!");
+			System.out.println("Error: The given CAMEL model (" + cModel + ") was not found in the CDO database!");
 			return foundProviders;
 		}
-		EList<OrganisationModel> orgModels = camelModel.getOrganisationModels();
-		for (int i = 0; i < orgModels.size(); i++) {
-			EObject obj = orgModels.get(i);
-			if (obj instanceof eu.paasage.camel.organisation.impl.OrganisationModelImpl) {
-				OrganisationModelImpl omObj = (OrganisationModelImpl) obj;
-				EList<User> users = omObj.getUsers();
-				for (User user : users) {
-					EList<CloudCredentials> cloudCredentials = user.getCloudCredentials();
-					for (CloudCredentials cloudCredential : cloudCredentials) {
-						CloudProvider cloudProvider = cloudCredential.getCloudProvider();
-						String providerName = cloudProvider.getName();
-						if (providerName.equalsIgnoreCase("GlobalProviderRequirements")) {
+
+		for (OrganisationModel orgModel : camelModel.getOrganisationModels()) {
+			if (orgModel instanceof OrganisationModelImpl) {
+				for (User user : orgModel.getUsers()) {
+					for (CloudCredentials cloudCredential : user.getCloudCredentials()) {
+						String providerName = cloudCredential.getCloudProvider().getName();
+						if (GLOBAL_PROVIDER_REQUIREMENTS.equalsIgnoreCase(providerName)) {
 							String name = cloudCredential.getName();
-							foundProviders.put(name, null);							
+							foundProviders.put(name, null);
 						}
 					}
 					break; // we are currently supporting only one user
@@ -1032,32 +1024,19 @@ public class RuleProcessor {
 
 	public RPOutput processRequest(String camelModel, String cdoIdentifier,
 			String outputFile, boolean runAsDaemon) {
-		Map<String, String> providerToKeep = getProviderFromUserModel(camelModel); // new
-		if (providerToKeep.size() >= 1) {
-			System.out.println();
-			System.out.println("*************************************************");
-			System.out.println("LIST OF USER-DEFINED PROVIDERS FOR DEPLOYMENT");
-			System.out.println("*************************************************");
-			System.out.println();
-			for (String key : providerToKeep.keySet()) {
-				System.out.println("    -> " + key);
-			}
-			System.out.println();
-			System.out.println("*************************************************");
-		}
-		
+
 		// fallback, if no filename was passed to this process
 		if (outputFile == null) {
 			outputFile = "rp_output";
 		}
 		
-		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel);
+		Map<String, String> camelProviders = getProviderFromOrganisationModel(camelModel); //zle, poprawic-  brac z innego miejsca w camelu
 		if (camelProviders == null) { // no CAMEL model was found
 			return new RPOutput(0, null);
 		}
 		
 		/* (z) checking user requirements (new feature) */
-		SOLUTION_STATUS sloStatus = this.validateMetricConditions(cdoIdentifier, camelModel);
+		final SOLUTION_STATUS sloStatus = this.validateMetricConditions(cdoIdentifier, camelModel);
 		
 		// don't continue cloud provider checking if there is an error in SLOs
 		switch (sloStatus) {
@@ -1103,16 +1082,6 @@ public class RuleProcessor {
 			System.out.println();
 			
 			switch (sloStatus) {
-			case ERROR:
-				System.out.println("User requirements:");
-				System.out.println("    -> ERROR: Please read the log output for more information.");
-				System.out.println("Cloud Provider:");
-				System.out.println("    -> PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
-				System.out.println();
-				System.out.println("*************************************************");
-				
-				int success = 0;
-				return new RPOutput(success, cdoIdentifier);
 			case MODEL_CHANGED:
 				// commit or save the clone model to the CDO server
 				this.commitCloneModelToCDO();
@@ -1135,22 +1104,12 @@ public class RuleProcessor {
 				System.out.println();
 				System.out.println("*************************************************");
 
-				success = 1;
+				int success = 1;
 				return new RPOutput(success, newResId);
 			case NO_CHANGE_REQUIRED:
 				System.out.println("User requirements:");
 				System.out.println("    -> No changes to apply. OK.");
 				break;
-			case NO_SOLUTION_AVAILABLE:
-				System.out.println("User requirements:");
-				System.out.println("    -> ERROR: The equation is not solvable. Please adapt your conditions and/or SLOs.");
-				System.out.println("Cloud Provider:");
-				System.out.println("    -> PASSED: No cloud provider requirements found in the CAMEL model. No actions required.");
-				System.out.println();
-				System.out.println("*************************************************");
-				
-				success = 0;
-				return new RPOutput(success, cdoIdentifier);
 			default:
 				break;
 			}
@@ -1191,16 +1150,6 @@ public class RuleProcessor {
 				System.out.println();
 				
 				switch (sloStatus) {
-				case ERROR:
-					System.out.println("User requirements:");
-					System.out.println("    -> ERROR: Please read the log output for more information.");
-					System.out.println("Cloud Provider:");
-					System.out.println("    -> WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
-					System.out.println();
-					System.out.println("*************************************************");
-					
-					int success = 0;
-					return new RPOutput(success, cdoIdentifier);
 				case MODEL_CHANGED:
 					// commit or save the clone model to the CDO server
 					this.commitCloneModelToCDO();
@@ -1223,22 +1172,12 @@ public class RuleProcessor {
 					System.out.println();
 					System.out.println("*************************************************");
 
-					success = 1;
+					int success = 1;
 					return new RPOutput(success, newResId);
 				case NO_CHANGE_REQUIRED:
 					System.out.println("User requirements:");
 					System.out.println("    -> No changes to apply. OK.");
 					break;
-				case NO_SOLUTION_AVAILABLE:
-					System.out.println("User requirements:");
-					System.out.println("    -> ERROR: The equation is not solvable. Please adapt your conditions and/or SLOs.");
-					System.out.println("Cloud Provider:");
-					System.out.println("    -> WARNING: Both public and private cloud provider requirements found. No rules were applied.\n");
-					System.out.println();
-					System.out.println("*************************************************");
-					
-					success = 0;
-					return new RPOutput(success, cdoIdentifier);
 				default:
 					break;
 				}
@@ -1263,7 +1202,7 @@ public class RuleProcessor {
 		}
 		this.cloneModel(cdoIdentifier); // clone the model
 
-		SOLUTION_STATUS status = SOLUTION_STATUS.NO_CHANGE_REQUIRED;		
+
 		String detectedProvider = camelProviders.values().iterator().next();
 
 		System.out.println();
@@ -1271,6 +1210,22 @@ public class RuleProcessor {
 		System.out.println("EVALUATING IF CLOUD PROVIDERS CAN BE REMOVED");
 		System.out.println("*************************************************");
 		System.out.println();
+
+		Map<String, String> providerToKeep = getProviderFromUserModel(camelModel); // new - to jest dobre
+		if (providerToKeep.size() >= 1) {
+			System.out.println();
+			System.out.println("*************************************************");
+			System.out.println("LIST OF USER-DEFINED PROVIDERS FOR DEPLOYMENT");
+			System.out.println("*************************************************");
+			System.out.println();
+
+			providerToKeep.forEach((key, value) -> System.out.println("    -> " + key));
+
+			System.out.println();
+			System.out.println("*************************************************");
+		}
+
+		SOLUTION_STATUS status;
 		if (detectedProvider.equalsIgnoreCase("public")) {
 			status = this.removeProvider(cdoIdentifier, camelModel, "private", providerToKeep);
 		} else {
@@ -1298,8 +1253,6 @@ public class RuleProcessor {
 			System.out.println();
 			
 			switch (sloStatus) {
-			case ERROR:
-				break;
 			case MODEL_CHANGED:
 				// commit or save the clone model to the CDO server
 				this.commitCloneModelToCDO();
@@ -1328,8 +1281,6 @@ public class RuleProcessor {
 				System.out.println("User requirements:");
 				System.out.println("    -> PASSED.");
 				break;
-			case NO_SOLUTION_AVAILABLE:
-				break;
 			default:
 				break;
 			}
@@ -1348,8 +1299,6 @@ public class RuleProcessor {
 			log.debug("\nNO SOLUTION");
 			
 			switch (sloStatus) {
-			case ERROR:
-				break;
 			case MODEL_CHANGED:
 				System.out.println("User requirements:");
 				System.out.println("    -> WARNING: Model not updated due to error in cloud provider processing.");
@@ -1357,8 +1306,6 @@ public class RuleProcessor {
 			case NO_CHANGE_REQUIRED:
 				System.out.println("User requirements:");
 				System.out.println("    -> PASSED.");
-				break;
-			case NO_SOLUTION_AVAILABLE:
 				break;
 			default:
 				break;
@@ -1398,8 +1345,6 @@ public class RuleProcessor {
 			System.out.println();
 			
 			switch (sloStatus) {
-			case ERROR:
-				break;
 			case MODEL_CHANGED:
 				System.out.println("User requirements:");
 				System.out.println("    -> PASSED. MODEL UPDATED (" + newResId + ")");
@@ -1407,8 +1352,6 @@ public class RuleProcessor {
 			case NO_CHANGE_REQUIRED:
 				System.out.println("User requirements:");
 				System.out.println("    -> PASSED.");
-				break;
-			case NO_SOLUTION_AVAILABLE:
 				break;
 			default:
 				break;
@@ -1434,12 +1377,9 @@ public class RuleProcessor {
 	}
 
 	
-	private SOLUTION_STATUS validateMetricConditions(
-			String cdoIdentifier,
-			String camelModel) {
-		
-		IDatabaseProxy proxy = CDODatabaseProxy.getInstance();
-		CamelModel cModel = proxy.getCamelModel(camelModel);
+	private SOLUTION_STATUS validateMetricConditions(String cdoIdentifier, String camelModel) { //SLO
+
+		CamelModel cModel = getCamelModel(camelModel);
 		if (cModel == null) {
 			StringBuilder message = new StringBuilder();
 			message.append("User requirements:");
@@ -1473,22 +1413,14 @@ public class RuleProcessor {
 		
 		/* (a) nothing defined */
 		if (metricConditions.isEmpty()) {
-			System.out.println();
-			System.out.println("*************************************************");
-			System.out.println("VALIDATING USER REQUIREMENTS");
-			System.out.println("*************************************************");
-			System.out.println();
+			printValidatingUserRequirementsHeader();
 			System.out.println("No SLO found. DONE.");
 			System.out.println();
 			System.out.println("*************************************************");
 			return SOLUTION_STATUS.NO_CHANGE_REQUIRED;
 		}
 		if (varList.isEmpty()) {
-			System.out.println();
-			System.out.println("*************************************************");
-			System.out.println("VALIDATING USER REQUIREMENTS");
-			System.out.println("*************************************************");
-			System.out.println();
+			printValidatingUserRequirementsHeader();
 			System.out.println("No metric conditions defined. DONE.");
 			System.out.println();
 			System.out.println("*************************************************");
@@ -1510,12 +1442,8 @@ public class RuleProcessor {
 			return SOLUTION_STATUS.ERROR;
 		}
 		cloneResId_ = cdoIdentifier + "v2";
-		
-		System.out.println();
-		System.out.println("*************************************************");
-		System.out.println("VALIDATING USER REQUIREMENTS");
-		System.out.println("*************************************************");
-		System.out.println();
+
+		printValidatingUserRequirementsHeader();
 
 		Map<AlgebraVariable, Integer> varLeftMap = new HashMap<AlgebraVariable, Integer>();
 		Map<AlgebraVariable, Integer> varRightMap = new HashMap<AlgebraVariable, Integer>();
@@ -1641,7 +1569,7 @@ public class RuleProcessor {
 							if (exp instanceof Variable) {
 								Variable v = (Variable) exp;
 								String id = v.getId();
-								if (id.startsWith("U_app_component_")) {
+								if (id.startsWith(U_APP_COMPONENT)) {
 									String var = id.split("_")[3];
 									unique.add(var);
 								}
@@ -1700,7 +1628,7 @@ public class RuleProcessor {
 				/* update variables */
 				for (Variable variable : cpModel.getVariables()) {
 					String id = variable.getId();
-					if (id.startsWith("U_app_component_")) {
+					if (id.startsWith(U_APP_COMPONENT)) {
 						id = id.split("_")[3];
 						for (AlgebraVariable av : ranges) {
 							if (av.getVariable().equals(id)) {
@@ -1739,6 +1667,14 @@ public class RuleProcessor {
 		}
 		
 		return SOLUTION_STATUS.MODEL_CHANGED;
+	}
+
+	private void printValidatingUserRequirementsHeader() {
+		System.out.println();
+		System.out.println("*************************************************");
+		System.out.println("VALIDATING USER REQUIREMENTS");
+		System.out.println("*************************************************");
+		System.out.println();
 	}
 
 	public void printFile(String filename, String cpModelId, boolean runAsDaemon) {

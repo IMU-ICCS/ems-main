@@ -13,8 +13,10 @@ package eu.paasage.upperware.profiler.cp.generator.model.tools;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -934,52 +936,33 @@ public class PaasageModelTool
 	 * @param provider The provider 
 	 * @param pcw The paasage configuration
 	 */
-	public static void removeVirtualMahineProfilesByProvider(List<VirtualMachineProfile> profiles, Provider provider, PaaSageConfigurationWrapper pcw)
-	{
-		int i=0; 
-		
-		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Begin ");
-		
-		while(i<profiles.size())
-		{
-			int j=0; 
-			while(j< profiles.get(i).getProviderDimension().size())
-			{	
-				ProviderDimension pc= profiles.get(i).getProviderDimension().get(j); 
-				logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider type "+pc.getProvider().getType().getId());
-				if(pc.getProvider().getId().equals(provider.getId()))
-				{
-					logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Removing "+profiles.get(i).getProviderDimension());
-					profiles.get(i).getProviderDimension().remove(j); 
+	public static void removeVirtualMahineProfilesByProvider(List<VirtualMachineProfile> profiles, Provider provider, PaaSageConfigurationWrapper pcw) {
+		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider to remove " + provider.getId());
+		Iterator<VirtualMachineProfile> iterator = profiles.iterator();
+		while (iterator.hasNext()){
+			VirtualMachineProfile virtualMachineProfile = iterator.next();
+
+			Iterator<ProviderDimension> providerDimensionIterator = virtualMachineProfile.getProviderDimension().iterator();
+			while(providerDimensionIterator.hasNext()){
+				ProviderDimension providerDimension = providerDimensionIterator.next();
+
+				logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider type "+providerDimension.getProvider().getType().getId());
+				if(providerDimension.getProvider().getId().equals(provider.getId())){
+					logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Removing "+virtualMachineProfile.getProviderDimension());
+					providerDimensionIterator.remove();
 				}
-				else
-					j++; 		
 			}
-			
-			if(profiles.get(i).getProviderDimension().size()==0)
-			{
-				pcw.getPaasageConfiguration().getVmProfiles().remove(profiles.get(i)); 
-				 
-			}
-			
-			i++; 
-		}
-		
-		for(ApplicationComponent apc:pcw.getPaasageConfiguration().getComponents())
-		{
-			int j=0; 
-			
-			while(j<apc.getRequiredProfile().size())
-			{
-				if(apc.getRequiredProfile().get(j).getProviderDimension().size()==0)
-				{
-					apc.getRequiredProfile().remove(j); 
-				}
-				else
-					j++; 
+
+			//if all there is no providers
+			if (CollectionUtils.isEmpty(virtualMachineProfile.getProviderDimension())){
+				pcw.getPaasageConfiguration().getVmProfiles().remove(virtualMachineProfile);
 			}
 		}
-		
+
+		for(ApplicationComponent apc:pcw.getPaasageConfiguration().getComponents()) {
+			apc.getRequiredProfile().removeIf(virtualMachineProfile -> CollectionUtils.isEmpty(virtualMachineProfile.getProviderDimension()));
+		}
+
 		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - End ");
 		
 	}
@@ -1015,22 +998,10 @@ public class PaasageModelTool
 			}
 			i++; 
 		}
-		
-		for(ApplicationComponent apc:pc.getComponents())
-		{
-			int j=0; 
-			
-			while(j<apc.getRequiredProfile().size())
-			{
-				if(apc.getRequiredProfile().get(j).getProviderDimension().size()==0)
-				{
-					apc.getRequiredProfile().remove(j); 
-				}
-				else
-					j++; 
-			}
+
+		for(ApplicationComponent apc:pc.getComponents()) {
+			apc.getRequiredProfile().removeIf(virtualMachineProfile -> CollectionUtils.isEmpty(virtualMachineProfile.getProviderDimension()));
 		}
-		
 	}
 	
 	
@@ -1470,18 +1441,13 @@ public class PaasageModelTool
 		
 		return providers; 
 	}
-	
 
-	public static boolean isProviderInListById(List<Provider> providers, Provider provider)
-	{
-		String providerId= provider.getId();
-		
-		for(Provider p: providers)
-		{
-			if(p.getId().equals(providerId))
-					return true; 
-		}
-				
-		return false; 
+	public static boolean isProviderInListById(List<Provider> providers, Provider provider) {
+		return isProviderIdInListById(providers, provider.getId());
 	}
+
+	public static boolean isProviderIdInListById(List<Provider> providers, String providerId){
+		return providers.stream().anyMatch(provider -> provider.getId().equals(providerId));
+	}
+
 }
