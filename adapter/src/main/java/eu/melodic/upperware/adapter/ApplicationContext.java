@@ -19,12 +19,26 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
+
+import javax.servlet.Filter;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
 
   private AdapterProperties adapterProperties;
+
+  @Bean
+  public Filter loggingFilter() {
+    CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
+    filter.setIncludeClientInfo(true);
+    filter.setIncludeHeaders(true);
+    filter.setIncludePayload(true);
+    filter.setIncludeQueryString(true);
+    filter.setMaxPayloadLength(10000);
+    return filter;
+  }
 
   @Bean
   public RestTemplate getRestTemplate() {
