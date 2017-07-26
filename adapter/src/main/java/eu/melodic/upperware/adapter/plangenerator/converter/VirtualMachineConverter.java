@@ -1,0 +1,71 @@
+/*
+ * Copyright (C) 2017 7bulls.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.upperware.adapter.plangenerator.converter;
+
+import com.google.common.collect.Sets;
+import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.camel.deployment.VM;
+import eu.paasage.camel.deployment.VMInstance;
+import eu.paasage.camel.provider.Feature;
+import eu.melodic.upperware.adapter.plangenerator.model.VirtualMachine;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
+import static java.util.stream.Collectors.*;
+
+@Slf4j
+@Service
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class VirtualMachineConverter implements ModelConverter<DeploymentModel, Collection<VirtualMachine>> {
+
+  private AdapterProperties properties;
+
+  @Override
+  public Collection<VirtualMachine> toComparableModel(DeploymentModel model) {
+    log.info("Building virtual machine models");
+    EList<VM> vms = model.getVms();
+    if (CollectionUtils.isEmpty(vms)) {
+      log.info("There are no VMs defined - no virtual machines will be created");
+      return Sets.newHashSet();
+    }
+    log.debug("Timeouts will be read from properties");
+    return vms.stream().map(this::toVirtualMachine).collect(toSet());
+  }
+
+  private VirtualMachine toVirtualMachine(VM vm) {
+    log.info("Processing of {}", vm.getName());
+
+    VMInstance vmInst = ConverterUtils.findAssociatedVmInstance(vm);
+    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
+    AdapterProperties.Colosseum.Timeouts timeouts = properties.getColosseum().getTimeouts();
+
+    VirtualMachine virtualMachine = VirtualMachine.builder()
+      .name(vm.getName())
+      .cloudName(ConverterUtils.extractCloudName(rootFeature))
+      .location(ConverterUtils.extractLocation(rootFeature))
+      .locationTimeout(timeouts.getLocation())
+      .hardware(ConverterUtils.convertToString(vmInst.getVmTypeValue()))
+      .hardwareTimeout(timeouts.getHardware())
+      .image(ConverterUtils.extractImage(rootFeature))
+      .imageTimeout(timeouts.getImage())
+      .build();
+
+    log.info("Built virtual machine: {}", virtualMachine);
+
+    return virtualMachine;
+  }
+}

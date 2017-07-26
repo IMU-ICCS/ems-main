@@ -11,5 +11,5 @@
 
 <configuration>
   <include resource="org/springframework/boot/logging/logback/base.xml"/>
-  <logger name="eu.paasage.upperware.adapter" level="TRACE"/>
+  <logger name="eu.melodic.upperware.adapter" level="TRACE"/>
 </configuration>
