@@ -7,9 +7,17 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.paasage.upperware.adapter.executioncontext.colosseum;
+package eu.paasage.upperware.adapter.plangenerator.model;
 
-import eu.paasage.upperware.adapter.executioncontext.Monitor;
+import lombok.*;
 
-public class ColosseumMonitor implements Monitor {
+@Getter
+@Builder
+@ToString
+@EqualsAndHashCode
+public class VirtualMachineInstanceMonitor {
+
+  private String vmInstName;
+  private Long vmInstTimeout;
+
 }

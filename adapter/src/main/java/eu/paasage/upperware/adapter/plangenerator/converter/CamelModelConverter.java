@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CamelModelConverter implements ModelConverter<DeploymentModel, ComparableModel> {
 
+  private CloudApiConverter cloudApiConverter;
   private CloudConverter cloudConverter;
+  private CloudPropertyConverter cloudPropertyConverter;
+  private CloudCredentialConverter cloudCredentialConverter;
 
   private ApplicationConverter applicationConverter;
   private ApplicationInstanceConverter applicationInstanceConverter;
@@ -36,10 +39,16 @@ public class CamelModelConverter implements ModelConverter<DeploymentModel, Comp
   private PortProvidedConverter portProvidedConverter;
   private PortRequiredConverter portRequiredConverter;
 
+  private VirtualMachineInstanceMonitorConverter virtualMachineInstanceMonitorConverter;
+  private ApplicationComponentInstanceMonitorConverter applicationComponentInstanceMonitorConverter;
+
   @Override
   public ComparableModel toComparableModel(DeploymentModel deploymentModel) {
     return ComparableModel.builder()
+      .cloudApis(cloudApiConverter.toComparableModel(deploymentModel))
       .clouds(cloudConverter.toComparableModel(deploymentModel))
+      .cloudProperties(cloudPropertyConverter.toComparableModel(deploymentModel))
+      .cloudCredentials(cloudCredentialConverter.toComparableModel(deploymentModel))
       .application(applicationConverter.toComparableModel(deploymentModel))
       .applicationInstance(applicationInstanceConverter.toComparableModel(deploymentModel))
       .lifecycleComponents(lifecycleComponentConverter.toComparableModel(deploymentModel))
@@ -50,6 +59,8 @@ public class CamelModelConverter implements ModelConverter<DeploymentModel, Comp
       .communications(communicationConverter.toComparableModel(deploymentModel))
       .portsProvided(portProvidedConverter.toComparableModel(deploymentModel))
       .portsRequired(portRequiredConverter.toComparableModel(deploymentModel))
+      .virtualMachineInstanceMonitors(virtualMachineInstanceMonitorConverter.toComparableModel(deploymentModel))
+      .applicationComponentInstanceMonitors(applicationComponentInstanceMonitorConverter.toComparableModel(deploymentModel))
       .build();
   }
 }

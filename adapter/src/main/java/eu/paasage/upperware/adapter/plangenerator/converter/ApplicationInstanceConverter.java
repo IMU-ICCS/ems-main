@@ -16,13 +16,12 @@ import eu.paasage.upperware.adapter.plangenerator.model.ApplicationInstance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.APP_INST_NAME_SUFFIX;
 import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.extractApplication;
 
 @Slf4j
 @Service
 public class ApplicationInstanceConverter implements ModelConverter<DeploymentModel, ApplicationInstance> {
-
-  private static final String NAME_SUFFIX = "Instance";
 
   @Override
   public ApplicationInstance toComparableModel(DeploymentModel model) {
@@ -35,7 +34,7 @@ public class ApplicationInstanceConverter implements ModelConverter<DeploymentMo
   private ApplicationInstance toApplicationInstance(Application app) {
     String appName = app.getName();
     return ApplicationInstance.builder()
-      .name(appName + NAME_SUFFIX)
+      .name(appName + APP_INST_NAME_SUFFIX)
       .appName(appName)
       .build();
   }

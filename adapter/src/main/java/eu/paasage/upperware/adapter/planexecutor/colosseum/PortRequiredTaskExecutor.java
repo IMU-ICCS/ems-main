@@ -11,7 +11,6 @@ package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.PortRequired;
 import eu.paasage.upperware.adapter.plangenerator.tasks.PortRequiredTask;
@@ -26,9 +25,8 @@ import static java.lang.String.format;
 @Slf4j
 public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<PortRequired> {
 
-  PortRequiredTaskExecutor(PortRequiredTask task, Collection<Future> predecessors, ColosseumApi api,
-                           ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  PortRequiredTaskExecutor(PortRequiredTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override
@@ -65,17 +63,23 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<PortRequired
     Long cloudId = cloudEntity.getId();
     checkNotNull(cloudId);
 
-    Location locationEntity = configApi.getLocation(cloudId, location)
-      .orElseThrow(() -> new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- port required cannot be created", location, cloudName, cloudId)));
+    Location locationEntity = api.getLocation(cloudId, location);
+    if (locationEntity == null) {
+      throw new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port required cannot be created", location, cloudName, cloudId));
+    }
 
-    Hardware hardwareEntity = configApi.getHardware(cloudId, hardware)
-      .orElseThrow(() -> new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- port required cannot be created", hardware, cloudName, cloudId)));
+    Hardware hardwareEntity = api.getHardware(cloudId, hardware);
+    if (hardwareEntity == null) {
+      throw new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port required cannot be created", hardware, cloudName, cloudId));
+    }
 
-    Image imageEntity = configApi.getImage(cloudId, image)
-      .orElseThrow(() -> new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- port required cannot be created", image, cloudName, cloudId)));
+    Image imageEntity = api.getImage(cloudId, image);
+    if (imageEntity == null) {
+      throw new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port required cannot be created", image, cloudName, cloudId));
+    }
 
     Long locationId = locationEntity.getId();
     checkNotNull(locationId);
@@ -113,12 +117,23 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<PortRequired
   }
 
   @Override
-  public void update(PortRequired pr) {
-    // TODO
+  public void update(PortRequired portReq) {
+    throw new UnsupportedOperationException("Cannot update port required - this method should not be run at all");
   }
 
   @Override
-  public void delete(PortRequired pr) {
-    // TODO
+  public void delete(PortRequired portReq) {
+    String name = portReq.getName();
+    checkNotNull(name);
+
+    log.info("Executing Delete Port Required task for port {}", name);
+
+    de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired portReqEntity = context.getPortRequired(name)
+      .orElseThrow(() -> new IllegalStateException(format("Port required %s does not exist in Colosseum " +
+        "- cannot be deleted", name)));
+    api.deletePortRequired(portReqEntity);
+    context.deletePortRequired(portReqEntity);
+
+    log.info("Port Required {} was successfully deleted from {}", name, portReqEntity.getSelfLink());
   }
 }

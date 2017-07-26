@@ -18,7 +18,8 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
@@ -32,7 +33,7 @@ public class CommunicationConverter implements ModelConverter<DeploymentModel, C
       log.info("There are no communications defined - no communications will be created");
       return Sets.newHashSet();
     }
-    return comms.stream().map(this::toCommunication).collect(Collectors.toSet());
+    return comms.stream().map(this::toCommunication).collect(toSet());
   }
 
   private Communication toCommunication(eu.paasage.camel.deployment.Communication comm) {

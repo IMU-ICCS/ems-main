@@ -9,16 +9,39 @@
 
 package eu.paasage.upperware.adapter;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import eu.melodic.models.interfaces.adapter.ApplicationDeploymentRequestImpl;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class AdapterController {
+
+  private Coordinator coordinator;
+
+  @RequestMapping(value = "/applicationDeployment", method = POST)
+  public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request) {
+    String resourceName = request.getApplicationId();
+    String notificationUri = request.getNotificationURI();
+    String requestUuid = request.getWatermark().getUuid();
+    coordinator.deployNewModel(resourceName, notificationUri, requestUuid);
+  }
+
+  @RequestMapping(value = "/autoScaleEvent", method = POST)
+  public void autoScaleEvent() {
+    // TODO
+  }
+
+  @RequestMapping(value = "/refreshContext", method = GET)
+  public void refreshContext() {
+    // TODO
+  }
 
   @RequestMapping(value = "/health", method = GET)
   public void health() {
-
   }
 }

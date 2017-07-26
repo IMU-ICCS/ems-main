@@ -23,15 +23,21 @@ import static java.lang.String.format;
 
 public class ConverterUtils {
 
-  private static final String ATTRIB_NAME = "Name";
+  static final String ATTRIB_NAME = "Name";
+  static final String ATTRIB_ENDPOINT = "Endpoint";
+  static final String ATTRIB_DRIVER = "Driver";
+
+  static final String APP_INST_NAME_SUFFIX = "Instance";
+  static final String CLOUD_API_NAME_SUFFIX = "Api";
+  static final String CLOUD_PROPERTY_NAME_SUFFIX = "Property";
+  static final String CLOUD_CREDENTIAL_NAME_SUFFIX = "Credential";
 
   private static final String ATTRIB_LOCATION = "Location";
   private static final String ATTRIB_LOCATION_ID = "LocationId";
-
   private static final String ATTRIB_VM = "VM";
   private static final String ATTRIB_VM_IMAGE_ID = "VMImageId";
 
-  public static String convertToString(EObject obj) {
+  static String convertToString(EObject obj) {
     if (obj == null) {
       return null;
     }
@@ -44,7 +50,7 @@ public class ConverterUtils {
     throw new IllegalArgumentException(format("Unsupported %s type. Supported types: EnumerateValue, StringsValue", obj.getClass()));
   }
 
-  public static Integer convertToInteger(EObject obj) {
+  static Integer convertToInteger(EObject obj) {
     if (obj == null) {
       return null;
     }
@@ -54,7 +60,7 @@ public class ConverterUtils {
     throw new IllegalArgumentException(format("Unsupported %s type. Supported types: IntegerValue", obj.getClass()));
   }
 
-  public static Double convertToDouble(EObject obj) {
+  static Double convertToDouble(EObject obj) {
     if (obj == null) {
       return null;
     }
@@ -64,7 +70,7 @@ public class ConverterUtils {
     throw new IllegalArgumentException(format("Unsupported %s type. Supported types: DoublePrecisionValue", obj.getClass()));
   }
 
-  public static Float convertToFloat(EObject obj) {
+  static Float convertToFloat(EObject obj) {
     if (obj == null) {
       return null;
     }
@@ -74,7 +80,7 @@ public class ConverterUtils {
     throw new IllegalArgumentException(format("Unsupported %s type. Supported types: FloatsValue", obj.getClass()));
   }
 
-  public static Boolean convertToBoolean(EObject obj) {
+  static Boolean convertToBoolean(EObject obj) {
     if (obj == null) {
       return null;
     }
@@ -84,7 +90,7 @@ public class ConverterUtils {
     throw new IllegalArgumentException(format("Unsupported %s type. Supported types: BoolValue", obj.getClass()));
   }
 
-  public static Application extractApplication(CamelModel model) {
+  static Application extractApplication(CamelModel model) {
     EList<Application> apps = model.getApplications();
     if (CollectionUtils.size(apps) != 1) {
       throw new IllegalArgumentException("Camel Model contains more than one application or " +
@@ -93,7 +99,7 @@ public class ConverterUtils {
     return apps.get(0);
   }
 
-  public static Configuration extractConfiguration(InternalComponent ic) {
+  static Configuration extractConfiguration(InternalComponent ic) {
     EList<Configuration> configs = ic.getConfigurations();
     if (CollectionUtils.size(configs) != 1) {
       throw new IllegalArgumentException("Internal Component contains more than one configuration or " +
@@ -102,7 +108,7 @@ public class ConverterUtils {
     return configs.get(0);
   }
 
-  public static String extractCloudName(Feature rootFeature) {
+  static String extractCloudName(Feature rootFeature) {
     for (Attribute attribute : rootFeature.getAttributes()) {
       if (ATTRIB_NAME.equals(attribute.getName())) {
         return convertToString(attribute.getValue());
@@ -111,7 +117,7 @@ public class ConverterUtils {
     return null;
   }
 
-  public static String extractLocation(Feature rootFeature) {
+  static String extractLocation(Feature rootFeature) {
     for (Feature subFeature : rootFeature.getSubFeatures()) {
       if (ATTRIB_LOCATION.equals(subFeature.getName())) {
         for (Attribute attribute : subFeature.getAttributes()) {
@@ -124,7 +130,7 @@ public class ConverterUtils {
     return null;
   }
 
-  public static String extractImage(Feature rootFeature) {
+  static String extractImage(Feature rootFeature) {
     for (Feature subFeature : rootFeature.getSubFeatures()) {
       if (ATTRIB_VM.equals(subFeature.getName())) {
         for (Attribute attribute : subFeature.getAttributes()) {
@@ -137,7 +143,7 @@ public class ConverterUtils {
     return null;
   }
 
-  public static VMInstance findAssociatedVmInstance(VM vm) {
+  static VMInstance findAssociatedVmInstance(VM vm) {
     DeploymentModel model = (DeploymentModel) vm.eContainer();
     for (VMInstance vmInst : model.getVmInstances()) {
       if (vm.equals(vmInst.getType())) {
@@ -147,7 +153,7 @@ public class ConverterUtils {
     return null;
   }
 
-  public static VM findAssociatedVm(InternalComponent ic) {
+  static VM findAssociatedVm(InternalComponent ic) {
     DeploymentModel model = (DeploymentModel) ic.eContainer();
     for (Hosting hosting : model.getHostings()) {
       if (ic.equals(hosting.getRequiredHost().eContainer())) {

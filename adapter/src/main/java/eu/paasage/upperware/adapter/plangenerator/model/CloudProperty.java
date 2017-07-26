@@ -9,20 +9,22 @@
 
 package eu.paasage.upperware.adapter.plangenerator.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+import java.util.Map;
 
 @Getter
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Application {
+public class CloudProperty {
 
   private String name;
-  private String version;
-  private String description;
-  private String owner;
+  private String cloudName;
 
-  @Setter
-  private String oldName;
-
+  private Map<String, String> filters;
+  
 }

@@ -12,16 +12,21 @@ package eu.paasage.upperware.adapter.plangenerator.model;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 @Builder
-@ToString
 @EqualsAndHashCode
-public class Cloud {
+public class CloudCredential {
 
   private String name;
-  private String apiName;
-  private String endpoint;
+  private String cloudName;
 
+  private String login;
+  private String password;
+  private Long tenant;
+
+  public String toString() {
+    return "CloudCredential(name=" + this.getName() + ", cloudName=" + this.getCloudName()
+      + ", login=***, password=***, tenant=***)";
+  }
 }

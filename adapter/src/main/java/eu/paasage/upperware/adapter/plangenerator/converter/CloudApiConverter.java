@@ -14,8 +14,7 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
-import eu.paasage.upperware.adapter.plangenerator.model.Cloud;
-import eu.paasage.upperware.adapter.properties.AdapterProperties;
+import eu.paasage.upperware.adapter.plangenerator.model.CloudApi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,62 +31,48 @@ import static java.util.stream.Collectors.toSet;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CloudConverter implements ModelConverter<DeploymentModel, Collection<Cloud>> {
-
-  private AdapterProperties properties;
+public class CloudApiConverter implements ModelConverter<DeploymentModel, Collection<CloudApi>> {
 
   @Override
-  public Collection<Cloud> toComparableModel(DeploymentModel model) {
-    log.info("Building cloud models (based on VM instances)");
+  public Collection<CloudApi> toComparableModel(DeploymentModel model) {
+    log.info("Building cloud api models (based on VM instances)");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
-      log.info("There are no VM instances defined - no clouds will be created");
+      log.info("There are no VM instances defined - no cloud apis will be created");
       return Sets.newHashSet();
     }
-    log.debug("Iterating over VM instances to retrieve Root Features describing clouds associated with those instances");
-    Set<Cloud> clouds = vmInsts.stream().map(this::toCloud).collect(toSet());
-    log.info("Built unique clouds: {}", clouds);
-    return clouds;
+    log.debug("Iterating over VM instances to retrieve Root Features describing cloud apis associated with those instances");
+    Set<CloudApi> cloudApis = vmInsts.stream().map(this::toCloudApi).collect(toSet());
+    log.info("Built unique cloud apis: {}", cloudApis);
+    return cloudApis;
   }
 
-  private Cloud toCloud(VMInstance vmInst) {
+  private CloudApi toCloudApi(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
     String name = null;
-    String apiName = null;
-    String endpoint = null;
+    String driver = null;
 
     Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
 
     for (Attribute attr : rootFeature.getAttributes()) {
       switch (attr.getName()) {
         case ATTRIB_NAME:
-          name = convertToString(attr.getValue());
-          apiName = name + CLOUD_API_NAME_SUFFIX;
+          name = convertToString(attr.getValue()) + CLOUD_API_NAME_SUFFIX;
           break;
-        case ATTRIB_ENDPOINT:
-          endpoint = convertToString(attr.getValue());
+        case ATTRIB_DRIVER:
+          driver = convertToString(attr.getValue());
           break;
       }
     }
 
-    AdapterProperties.Clouds clouds = properties.getClouds();
-
-    if (endpoint == null) {
-      log.debug("Endpoint is not defined in the Camel Model - will be read from properties");
-      endpoint = clouds.getEndpoint(name);
-    } else {
-      log.debug("Endpoint is defined in the Camel Model - endpoint property will be ignored");
-    }
-
-    Cloud cloud = Cloud.builder()
+    CloudApi cloudApi = CloudApi.builder()
       .name(name)
-      .apiName(apiName)
-      .endpoint(endpoint)
+      .driver(driver)
       .build();
 
-    log.info("Built cloud: {}", cloud);
+    log.info("Built cloud api: {}", cloudApi);
 
-    return cloud;
+    return cloudApi;
   }
 }

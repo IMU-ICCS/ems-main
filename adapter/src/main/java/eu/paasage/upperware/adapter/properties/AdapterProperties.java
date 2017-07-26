@@ -38,6 +38,10 @@ public class AdapterProperties {
 
   @Valid
   @NotNull
+  private Esb esb;
+
+  @Valid
+  @NotNull
   private Colosseum colosseum;
 
   @Valid
@@ -45,6 +49,15 @@ public class AdapterProperties {
   private Clouds clouds;
 
   private TaskExecutor taskExecutor;
+
+  @Getter
+  @Setter
+  public static class Esb {
+
+    @NotBlank
+    private String url;
+
+  }
 
   @Getter
   @Setter
@@ -90,6 +103,12 @@ public class AdapterProperties {
 
       @NotNull
       private Long hardware;
+
+      @NotNull
+      private Long vmInst;
+
+      @NotNull
+      private Long acInst;
     }
   }
 

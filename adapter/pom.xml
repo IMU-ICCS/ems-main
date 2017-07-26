@@ -33,8 +33,10 @@
 
   <properties>
     <paasage.version>2015.9.1-SNAPSHOT</paasage.version>
+    <interfaces.version>1.0-SNAPSHOT</interfaces.version>
     <colloseum-client.version>0.2.0-SNAPSHOT</colloseum-client.version>
     <jgrapht.version>1.0.1</jgrapht.version>
+    <gson.version>2.8.1</gson.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
     <commons-collections.version>4.1</commons-collections.version>
@@ -73,6 +75,12 @@
     </dependency>
 
     <dependency>
+      <groupId>eu.melodic</groupId>
+      <artifactId>interfaces</artifactId>
+      <version>${interfaces.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.github.cloudiator</groupId>
       <artifactId>colosseum-client</artifactId>
       <version>${colloseum-client.version}</version>
@@ -82,6 +90,12 @@
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-core</artifactId>
       <version>${jgrapht.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>${gson.version}</version>
     </dependency>
 
     <dependency>

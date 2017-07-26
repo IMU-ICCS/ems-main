@@ -12,7 +12,6 @@ package eu.paasage.upperware.adapter.planexecutor.colosseum;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.Communication;
 import eu.paasage.upperware.adapter.plangenerator.tasks.CommunicationTask;
@@ -27,9 +26,8 @@ import static java.lang.String.format;
 @Slf4j
 public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communication> {
 
-  CommunicationTaskExecutor(CommunicationTask task, Collection<Future> predecessors,
-                            ColosseumApi api, ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  CommunicationTaskExecutor(CommunicationTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override
@@ -67,11 +65,40 @@ public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communicati
 
   @Override
   public void update(Communication comm) {
-    // TODO
+    throw new UnsupportedOperationException("Cannot update communication - this method should not be run at all");
   }
 
   @Override
   public void delete(Communication comm) {
-    // TODO
+    String name = comm.getName();
+    checkNotNull(name);
+
+    String portProvName = comm.getPortProvName();
+    checkNotNull(portProvName);
+    String portReqName = comm.getPortReqName();
+    checkNotNull(portReqName);
+
+    log.info("Executing Delete Communication task for communication {}", name);
+
+    PortProvided portProvEntity = context.getPortProvided(portProvName)
+      .orElseThrow(() -> new IllegalStateException(format("Port provided %s does not exist in Colosseum " +
+        "- communication cannot be deleted", portProvName)));
+
+    PortRequired portReqEntity = context.getPortRequired(portReqName)
+      .orElseThrow(() -> new IllegalStateException(format("Port required %s does not exist in Colosseum " +
+        "- communication cannot be deleted", portReqName)));
+
+    Long portProvId = portProvEntity.getId();
+    checkNotNull(portProvId);
+    Long portReqId = portReqEntity.getId();
+    checkNotNull(portReqId);
+
+    de.uniulm.omi.cloudiator.colosseum.client.entities.Communication commEntity = context.getCommunication(portProvId, portReqId)
+      .orElseThrow(() -> new IllegalStateException(format("Communication %s does not exist in Colosseum " +
+        "- cannot be deleted", name)));
+    api.deleteCommunication(commEntity);
+    context.deleteCommunication(commEntity);
+
+    log.info("Communication {} was successfully deleted from {}", name, commEntity.getSelfLink());
   }
 }

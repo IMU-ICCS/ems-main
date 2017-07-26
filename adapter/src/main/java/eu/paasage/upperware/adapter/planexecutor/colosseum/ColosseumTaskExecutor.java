@@ -10,7 +10,6 @@
 package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.paasage.upperware.adapter.plangenerator.tasks.Task;
@@ -22,15 +21,11 @@ public abstract class ColosseumTaskExecutor<T> extends RunnableTaskExecutor<T> {
 
   protected ColosseumApi api;
 
-  protected ColosseumConfigApi configApi;
-
   protected ColosseumContext context;
 
-  ColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api,
-                        ColosseumConfigApi configApi, ColosseumContext context) {
+  ColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
     super(task, predecessors);
     this.api = api;
-    this.configApi = configApi;
     this.context = context;
   }
 }
