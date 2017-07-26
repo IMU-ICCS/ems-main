@@ -1,0 +1,21 @@
+/*
+ * Copyright (C) 2017 7bulls.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.upperware.adapter.plangenerator.tasks;
+
+import eu.melodic.upperware.adapter.plangenerator.model.PortProvided;
+import lombok.ToString;
+
+@ToString(callSuper = true)
+public class PortProvidedTask extends ConfigurationTask<PortProvided> {
+
+  public PortProvidedTask(Type type, PortProvided data) {
+    super(type, data);
+  }
+}
