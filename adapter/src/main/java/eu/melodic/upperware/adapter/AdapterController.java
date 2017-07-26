@@ -14,12 +14,12 @@ import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
 
 import static java.lang.String.format;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -51,8 +51,7 @@ public class AdapterController {
     // TODO
   }
 
-  @RequestMapping(value = "/refreshContext", method = GET,
-    consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/refreshContext", method = GET, produces = APPLICATION_JSON_VALUE)
   public void refreshContext() {
     coordinator.refreshContext();
   }
@@ -62,7 +61,7 @@ public class AdapterController {
   }
 
   @ExceptionHandler
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseStatus(BAD_REQUEST)
   public String handleException(BadRequestException exception) {
     log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
     return exception.getMessage();
