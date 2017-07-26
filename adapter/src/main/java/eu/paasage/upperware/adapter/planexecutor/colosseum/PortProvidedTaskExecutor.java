@@ -11,7 +11,6 @@ package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.PortProvided;
 import eu.paasage.upperware.adapter.plangenerator.tasks.PortProvidedTask;
@@ -26,9 +25,8 @@ import static java.lang.String.format;
 @Slf4j
 public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided> {
 
-  PortProvidedTaskExecutor(PortProvidedTask task, Collection<Future> predecessors, ColosseumApi api,
-                           ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  PortProvidedTaskExecutor(PortProvidedTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override
@@ -65,17 +63,23 @@ public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided
     Long cloudId = cloudEntity.getId();
     checkNotNull(cloudId);
 
-    Location locationEntity = configApi.getLocation(cloudId, location)
-      .orElseThrow(() -> new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- port provided cannot be created", location, cloudName, cloudId)));
+    Location locationEntity = api.getLocation(cloudId, location);
+    if (locationEntity == null) {
+      throw new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port provided cannot be created", location, cloudName, cloudId));
+    }
 
-    Hardware hardwareEntity = configApi.getHardware(cloudId, hardware)
-      .orElseThrow(() -> new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- port provided cannot be created", hardware, cloudName, cloudId)));
+    Hardware hardwareEntity = api.getHardware(cloudId, hardware);
+    if (hardwareEntity == null) {
+      throw new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port provided cannot be created", hardware, cloudName, cloudId));
+    }
 
-    Image imageEntity = configApi.getImage(cloudId, image)
-      .orElseThrow(() -> new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- port provided cannot be created", image, cloudName, cloudId)));
+    Image imageEntity = api.getImage(cloudId, image);
+    if (imageEntity == null) {
+      throw new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- port provided cannot be created", image, cloudName, cloudId));
+    }
 
     Long locationId = locationEntity.getId();
     checkNotNull(locationId);
@@ -113,12 +117,23 @@ public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided
   }
 
   @Override
-  public void update(PortProvided port) {
-    // TODO
+  public void update(PortProvided portProv) {
+    throw new UnsupportedOperationException("Cannot update port provided - this method should not be run at all");
   }
 
   @Override
-  public void delete(PortProvided port) {
-    // TODO
+  public void delete(PortProvided portProv) {
+    String name = portProv.getName();
+    checkNotNull(name);
+
+    log.info("Executing Delete Port Provided task for port {}", name);
+
+    de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided portProvEntity = context.getPortProvided(name)
+      .orElseThrow(() -> new IllegalStateException(format("Port provided %s does not exist in Colosseum " +
+        "- cannot be deleted", name)));
+    api.deletePortProvided(portProvEntity);
+    context.deletePortProvided(portProvEntity);
+
+    log.info("Port Provided {} was successfully deleted from {}", name, portProvEntity.getSelfLink());
   }
 }

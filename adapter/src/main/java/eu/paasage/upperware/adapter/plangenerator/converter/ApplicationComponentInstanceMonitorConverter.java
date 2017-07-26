@@ -14,33 +14,40 @@ import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.provider.Feature;
-import eu.paasage.upperware.adapter.plangenerator.model.ApplicationComponentInstance;
+import eu.paasage.upperware.adapter.plangenerator.model.ApplicationComponentInstanceMonitor;
+import eu.paasage.upperware.adapter.properties.AdapterProperties;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 
 import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.*;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.extractImage;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public class ApplicationComponentInstanceConverter implements ModelConverter<DeploymentModel, Collection<ApplicationComponentInstance>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class ApplicationComponentInstanceMonitorConverter implements ModelConverter<DeploymentModel, Collection<ApplicationComponentInstanceMonitor>> {
+
+  private AdapterProperties properties;
 
   @Override
-  public Collection<ApplicationComponentInstance> toComparableModel(DeploymentModel model) {
-    log.info("Building application component instance models (based on hosting instances)");
+  public Collection<ApplicationComponentInstanceMonitor> toComparableModel(DeploymentModel model) {
+    log.info("Building application component instance monitors model (based on hosting instances)");
     EList<HostingInstance> hostingInsts = model.getHostingInstances();
     if (CollectionUtils.isEmpty(hostingInsts)) {
-      log.info("There are no hosting instances defined - no application component instances will be created");
+      log.info("There are no hosting instances defined - no monitors for application component instances will be created");
       return Sets.newHashSet();
     }
-    return hostingInsts.stream().map(this::toApplicationComponentInstance).collect(toSet());
+    return hostingInsts.stream().map(this::toMonitor).collect(toSet());
   }
 
-  private ApplicationComponentInstance toApplicationComponentInstance(HostingInstance hostingInst) {
+  private ApplicationComponentInstanceMonitor toMonitor(HostingInstance hostingInst) {
     log.info("Processing of {}", hostingInst.getName());
 
     Application app = extractApplication((CamelModel) hostingInst.eContainer().eContainer());
@@ -49,8 +56,11 @@ public class ApplicationComponentInstanceConverter implements ModelConverter<Dep
 
     Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
 
-    ApplicationComponentInstance acInst = ApplicationComponentInstance.builder()
-      .name(icInst.getName())
+    AdapterProperties.Colosseum.Timeouts timeouts = properties.getColosseum().getTimeouts();
+
+    ApplicationComponentInstanceMonitor monitor = ApplicationComponentInstanceMonitor.builder()
+      .acInstName(icInst.getName())
+      .acInstTimeout(timeouts.getAcInst())
       .acName(icInst.getType().getName())
       .vmInstName(vmInst.getName())
       .cloudName(extractCloudName(rootFeature))
@@ -62,8 +72,8 @@ public class ApplicationComponentInstanceConverter implements ModelConverter<Dep
       .image(extractImage(rootFeature))
       .build();
 
-    log.info("Built component instance: {}", acInst);
+    log.info("Built application component instance monitor: {}", monitor);
 
-    return acInst;
+    return monitor;
   }
 }

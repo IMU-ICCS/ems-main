@@ -9,20 +9,18 @@
 
 package eu.paasage.upperware.adapter.plangenerator.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Application {
+public class CloudApi {
 
   private String name;
-  private String version;
-  private String description;
-  private String owner;
-
-  @Setter
-  private String oldName;
+  private String driver;
 
 }

@@ -15,6 +15,50 @@ import java.util.List;
 
 public interface ColosseumApi {
 
+  Api createApi(Api api);
+
+  Api updateApi(Api api);
+
+  List<Api> getApis();
+
+  Cloud createCloud(Cloud cloud);
+
+  Cloud updateCloud(Cloud cloud);
+
+  List<Cloud> getClouds();
+
+  CloudProperty createCloudProperty(CloudProperty cloudProperty);
+
+  CloudProperty updateCloudProperty(CloudProperty cloudProperty);
+
+  void deleteCloudProperty(CloudProperty cloudProperty);
+
+  List<CloudProperty> getCloudProperties();
+
+  CloudCredential createCloudCredential(CloudCredential cloudCredential);
+
+  CloudCredential updateCloudCredential(CloudCredential cloudCredential);
+
+  List<CloudCredential> getCloudCredentials();
+
+  Image updateImage(Image image);
+
+  Image getImage(Long cloudId, String name);
+
+  Image getImage(Long cloudId, String name, long timeout);
+
+  OperatingSystem updateOperatingSystem(OperatingSystem operatingSystem);
+
+  OperatingSystem getOperatingSystem(Long id, long timeout);
+
+  Location getLocation(Long cloudId, String name);
+
+  Location getLocation(Long cloudId, String name, long timeout);
+
+  Hardware getHardware(Long cloudId, String name);
+
+  Hardware getHardware(Long cloudId, String name, long timeout);
+
   Application createApplication(Application application);
 
   Application updateApplication(Application application);
@@ -31,8 +75,6 @@ public interface ColosseumApi {
 
   VirtualMachineTemplate createVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
 
-  VirtualMachineTemplate updateVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
-
   void deleteVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
 
   List<VirtualMachineTemplate> getVirtualMachines();
@@ -43,17 +85,15 @@ public interface ColosseumApi {
 
   List<VirtualMachine> getVirtualMachineInstances();
 
-  LifecycleComponent createLifecycleComponent(LifecycleComponent lifecycleComponent);
+  boolean isVirtualMachineInstanceRunning(VirtualMachine vm, long timeout);
 
-  LifecycleComponent updateLifecycleComponent(LifecycleComponent lifecycleComponent);
+  LifecycleComponent createLifecycleComponent(LifecycleComponent lifecycleComponent);
 
   void deleteLifecycleComponent(LifecycleComponent lifecycleComponent);
 
   List<LifecycleComponent> getLifecycleComponents();
 
   ApplicationComponent createApplicationComponent(ApplicationComponent applicationComponent);
-
-  ApplicationComponent updateApplicationComponent(ApplicationComponent applicationComponent);
 
   void deleteApplicationComponent(ApplicationComponent applicationComponent);
 
@@ -65,9 +105,9 @@ public interface ColosseumApi {
 
   List<Instance> getApplicationComponentInstances();
 
-  PortProvided createPortProvided(PortProvided portProvided);
+  boolean isApplicationComponentInstanceRunning(Instance vm, long timeout);
 
-  PortProvided updatePortProvided(PortProvided portProvided);
+  PortProvided createPortProvided(PortProvided portProvided);
 
   void deletePortProvided(PortProvided portProvided);
 
@@ -75,15 +115,11 @@ public interface ColosseumApi {
 
   PortRequired createPortRequired(PortRequired portRequired);
 
-  PortRequired updatePortRequired(PortRequired portRequired);
-
   void deletePortRequired(PortRequired portRequired);
 
   List<PortRequired> getPortsRequired();
 
   Communication createCommunication(Communication communication);
-
-  Communication updateCommunication(Communication communication);
 
   void deleteCommunication(Communication communication);
 

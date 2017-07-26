@@ -14,7 +14,7 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
-import eu.paasage.upperware.adapter.plangenerator.model.Cloud;
+import eu.paasage.upperware.adapter.plangenerator.model.CloudCredential;
 import eu.paasage.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,68 +26,62 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.Set;
 
-import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.*;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.ATTRIB_NAME;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.CLOUD_CREDENTIAL_NAME_SUFFIX;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.convertToString;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CloudConverter implements ModelConverter<DeploymentModel, Collection<Cloud>> {
+public class CloudCredentialConverter implements ModelConverter<DeploymentModel, Collection<CloudCredential>> {
 
   private AdapterProperties properties;
 
   @Override
-  public Collection<Cloud> toComparableModel(DeploymentModel model) {
-    log.info("Building cloud models (based on VM instances)");
+  public Collection<CloudCredential> toComparableModel(DeploymentModel model) {
+    log.info("Building cloud credential models (based on VM instances)");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
-      log.info("There are no VM instances defined - no clouds will be created");
+      log.info("There are no VM instances defined - no cloud credentials will be created");
       return Sets.newHashSet();
     }
-    log.debug("Iterating over VM instances to retrieve Root Features describing clouds associated with those instances");
-    Set<Cloud> clouds = vmInsts.stream().map(this::toCloud).collect(toSet());
-    log.info("Built unique clouds: {}", clouds);
+    log.debug("Iterating over VM instances to retrieve Root Features describing cloud credentials associated with those instances");
+    log.debug("Logins and passwords will be read from properties");
+    Set<CloudCredential> clouds = vmInsts.stream().map(this::toCloudCredential).collect(toSet());
+    log.info("Built unique cloud credentials: {}", clouds);
     return clouds;
   }
 
-  private Cloud toCloud(VMInstance vmInst) {
+  private CloudCredential toCloudCredential(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
     String name = null;
-    String apiName = null;
-    String endpoint = null;
+    String cloudName = null;
 
     Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
 
     for (Attribute attr : rootFeature.getAttributes()) {
       switch (attr.getName()) {
         case ATTRIB_NAME:
-          name = convertToString(attr.getValue());
-          apiName = name + CLOUD_API_NAME_SUFFIX;
-          break;
-        case ATTRIB_ENDPOINT:
-          endpoint = convertToString(attr.getValue());
+          cloudName = convertToString(attr.getValue());
+          name = cloudName + CLOUD_CREDENTIAL_NAME_SUFFIX;
           break;
       }
     }
 
     AdapterProperties.Clouds clouds = properties.getClouds();
 
-    if (endpoint == null) {
-      log.debug("Endpoint is not defined in the Camel Model - will be read from properties");
-      endpoint = clouds.getEndpoint(name);
-    } else {
-      log.debug("Endpoint is defined in the Camel Model - endpoint property will be ignored");
-    }
-
-    Cloud cloud = Cloud.builder()
+    CloudCredential cloudCredential = CloudCredential.builder()
       .name(name)
-      .apiName(apiName)
-      .endpoint(endpoint)
+      .cloudName(cloudName)
+      .login(clouds.getLogin(cloudName))
+      .password(clouds.getPassword(cloudName))
+      .tenant(1L)
       .build();
 
-    log.info("Built cloud: {}", cloud);
+    log.info("Built cloud credential: {}", cloudCredential);
 
-    return cloud;
+    return cloudCredential;
   }
 }

@@ -14,7 +14,7 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.VMInstance;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
-import eu.paasage.upperware.adapter.plangenerator.model.Cloud;
+import eu.paasage.upperware.adapter.plangenerator.model.CloudProperty;
 import eu.paasage.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,68 +26,61 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.Set;
 
-import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.*;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.ATTRIB_NAME;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.CLOUD_PROPERTY_NAME_SUFFIX;
+import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.convertToString;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CloudConverter implements ModelConverter<DeploymentModel, Collection<Cloud>> {
+public class CloudPropertyConverter implements ModelConverter<DeploymentModel, Collection<CloudProperty>> {
 
   private AdapterProperties properties;
 
   @Override
-  public Collection<Cloud> toComparableModel(DeploymentModel model) {
-    log.info("Building cloud models (based on VM instances)");
+  public Collection<CloudProperty> toComparableModel(DeploymentModel model) {
+    log.info("Building cloud property models (based on VM instances)");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
-      log.info("There are no VM instances defined - no clouds will be created");
+      log.info("There are no VM instances defined - no cloud properties will be created");
       return Sets.newHashSet();
     }
-    log.debug("Iterating over VM instances to retrieve Root Features describing clouds associated with those instances");
-    Set<Cloud> clouds = vmInsts.stream().map(this::toCloud).collect(toSet());
-    log.info("Built unique clouds: {}", clouds);
-    return clouds;
+    log.debug("Iterating over VM instances to retrieve Root Features describing cloud properties associated with those instances");
+    log.debug("Filters will be read from properties");
+    Set<CloudProperty> cloudProperties = vmInsts.stream().map(this::toCloudProperty).collect(toSet());
+    log.info("Built unique cloud properties: {}", cloudProperties);
+    return cloudProperties;
   }
 
-  private Cloud toCloud(VMInstance vmInst) {
+  private CloudProperty toCloudProperty(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
     String name = null;
-    String apiName = null;
-    String endpoint = null;
+    String cloudName = null;
 
     Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
 
     for (Attribute attr : rootFeature.getAttributes()) {
       switch (attr.getName()) {
         case ATTRIB_NAME:
-          name = convertToString(attr.getValue());
-          apiName = name + CLOUD_API_NAME_SUFFIX;
-          break;
-        case ATTRIB_ENDPOINT:
-          endpoint = convertToString(attr.getValue());
+          cloudName = convertToString(attr.getValue());
+          name = cloudName + CLOUD_PROPERTY_NAME_SUFFIX;
           break;
       }
     }
 
     AdapterProperties.Clouds clouds = properties.getClouds();
+    AdapterProperties.Clouds.Filters filters = clouds.getFilters();
 
-    if (endpoint == null) {
-      log.debug("Endpoint is not defined in the Camel Model - will be read from properties");
-      endpoint = clouds.getEndpoint(name);
-    } else {
-      log.debug("Endpoint is defined in the Camel Model - endpoint property will be ignored");
-    }
-
-    Cloud cloud = Cloud.builder()
+    CloudProperty cloudProperty = CloudProperty.builder()
       .name(name)
-      .apiName(apiName)
-      .endpoint(endpoint)
+      .cloudName(cloudName)
+      .filters(filters != null ? filters.getPairs(cloudName) : null)
       .build();
 
-    log.info("Built cloud: {}", cloud);
+    log.info("Built cloud property: {}", cloudProperty);
 
-    return cloud;
+    return cloudProperty;
   }
 }

@@ -10,13 +10,12 @@
 package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.Application;
 import eu.paasage.upperware.adapter.plangenerator.tasks.ApplicationTask;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -25,9 +24,8 @@ import static java.lang.String.format;
 @Slf4j
 public class ApplicationTaskExecutor extends ColosseumTaskExecutor<Application> {
 
-  ApplicationTaskExecutor(ApplicationTask task, Set<Future> predecessors, ColosseumApi api,
-                          ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  ApplicationTaskExecutor(ApplicationTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override

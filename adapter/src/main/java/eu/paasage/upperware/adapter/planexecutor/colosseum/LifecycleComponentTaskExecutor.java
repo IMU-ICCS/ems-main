@@ -10,7 +10,6 @@
 package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.LifecycleComponent;
 import eu.paasage.upperware.adapter.plangenerator.tasks.LifecycleComponentTask;
@@ -20,13 +19,14 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 @Slf4j
 public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<LifecycleComponent> {
 
-  LifecycleComponentTaskExecutor(LifecycleComponentTask task, Collection<Future> predecessors, ColosseumApi api,
-                                 ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  LifecycleComponentTaskExecutor(LifecycleComponentTask task, Collection<Future> predecessors,
+          ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override
@@ -67,11 +67,22 @@ public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<Lifecy
 
   @Override
   public void update(LifecycleComponent lc) {
-    // TODO
+    throw new UnsupportedOperationException("Cannot update Lifecycle Component - this method should not be run at all");
   }
 
   @Override
   public void delete(LifecycleComponent lc) {
-    // TODO
+    String name = lc.getName();
+    checkNotNull(name);
+
+    log.info("Executing Delete Lifecycle Component task for component {}", name);
+
+    de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent lcEntity = context.getLifecycleComponent(name)
+      .orElseThrow(() -> new IllegalStateException(format("Lifecycle Component %s does not exist in Colosseum" +
+        "- cannot be deleted", name)));
+    api.deleteLifecycleComponent(lcEntity);
+    context.deleteLifecycleComponent(lcEntity);
+
+    log.info("Lifecycle Component {} was successfully deleted from {}", name, lcEntity.getSelfLink());
   }
 }

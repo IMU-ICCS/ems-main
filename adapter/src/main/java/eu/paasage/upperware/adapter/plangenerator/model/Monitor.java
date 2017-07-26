@@ -7,11 +7,19 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.paasage.upperware.adapter.executioncontext;
+package eu.paasage.upperware.adapter.plangenerator.model;
 
-public interface Monitor {
+import lombok.*;
 
-  // TODO create methods responsible for monitoring running context here
-  // Colosseum implementation of this interface should use ColosseumMonitorApi
+import java.util.Collection;
+
+@Getter
+@Builder
+@ToString
+@EqualsAndHashCode
+public class Monitor {
+
+  Collection<String> vmInstNames;
+  Collection<String> acInstNames;
 
 }

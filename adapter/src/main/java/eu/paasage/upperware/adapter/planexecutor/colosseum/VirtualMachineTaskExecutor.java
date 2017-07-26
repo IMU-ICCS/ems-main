@@ -11,13 +11,12 @@ package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.VirtualMachine;
 import eu.paasage.upperware.adapter.plangenerator.tasks.VirtualMachineTask;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -26,9 +25,8 @@ import static java.lang.String.format;
 @Slf4j
 public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMachine> {
 
-  VirtualMachineTaskExecutor(VirtualMachineTask task, Set<Future> predecessors, ColosseumApi api,
-                             ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  VirtualMachineTaskExecutor(VirtualMachineTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override
@@ -61,17 +59,23 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
     Long cloudId = cloudEntity.getId();
     checkNotNull(cloudId);
 
-    Location locationEntity = configApi.getLocationWithWait(cloudId, location, locationTimeout)
-      .orElseThrow(() -> new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- VM cannot be created", location, cloudName, cloudId)));
+    Location locationEntity = api.getLocation(cloudId, location, locationTimeout);
+    if (locationEntity == null) {
+      throw new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be created", location, cloudName, cloudId));
+    }
 
-    Hardware hardwareEntity = configApi.getHardwareWithWait(cloudId, hardware, hardwareTimeout)
-      .orElseThrow(() -> new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- VM cannot be created", hardware, cloudName, cloudId)));
+    Hardware hardwareEntity = api.getHardware(cloudId, hardware, hardwareTimeout);
+    if (hardwareEntity == null) {
+      throw new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be created", hardware, cloudName, cloudId));
+    }
 
-    Image imageEntity = configApi.getImageWithWait(cloudId, image, imageTimeout)
-      .orElseThrow(() -> new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
-        "- VM cannot be created", image, cloudName, cloudId)));
+    Image imageEntity = api.getImage(cloudId, image, imageTimeout);
+    if (imageEntity == null) {
+      throw new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be created", image, cloudName, cloudId));
+    }
 
     Long locationId = locationEntity.getId();
     checkNotNull(locationId);
@@ -94,6 +98,59 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
 
   @Override
   public void delete(VirtualMachine vm) {
-    // TODO
+    String name = vm.getName();
+    checkNotNull(name);
+    String cloudName = vm.getCloudName();
+    checkNotNull(cloudName);
+
+    String location = vm.getLocation();
+    checkNotNull(location);
+
+    String hardware = vm.getHardware();
+    checkNotNull(hardware);
+
+    String image = vm.getImage();
+    checkNotNull(image);
+
+    log.info("Executing Delete Virtual Machine task for VM {}", name);
+
+    Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
+      format("Cloud %s was not configured in Colosseum - VM cannot be deleted", cloudName)));
+
+    Long cloudId = cloudEntity.getId();
+    checkNotNull(cloudId);
+
+    Location locationEntity = api.getLocation(cloudId, location);
+    if (locationEntity == null) {
+      throw new IllegalArgumentException(format("Location %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be deleted", location, cloudName, cloudId));
+    }
+
+    Hardware hardwareEntity = api.getHardware(cloudId, hardware);
+    if (hardwareEntity == null) {
+      throw new IllegalArgumentException(format("Hardware %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be deleted", hardware, cloudName, cloudId));
+    }
+
+    Image imageEntity = api.getImage(cloudId, image);
+    if (imageEntity == null) {
+      throw new IllegalArgumentException(format("Image %s in cloud %s (id=%s) does not exist in Colosseum " +
+        "- VM cannot be deleted", image, cloudName, cloudId));
+    }
+
+    Long locationId = locationEntity.getId();
+    checkNotNull(locationId);
+    Long hardwareId = hardwareEntity.getId();
+    checkNotNull(hardwareId);
+    Long imageId = imageEntity.getId();
+    checkNotNull(imageId);
+
+    VirtualMachineTemplate vmEntity = context.getVirtualMachine(cloudId, locationId, hardwareId, imageId)
+      .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s does not exist in Colosseum" +
+        "- cannot be deleted", name)));
+    api.deleteVirtualMachine(vmEntity);
+    context.deleteVirtualMachine(vmEntity);
+
+    log.info("Virtual Machine {} was successfully deleted from {}", name, vmEntity.getSelfLink());
   }
 }

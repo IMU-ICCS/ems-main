@@ -10,88 +10,81 @@
 package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Api;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty;
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.plangenerator.model.Cloud;
 import eu.paasage.upperware.adapter.plangenerator.tasks.CloudTask;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 @Slf4j
 public class CloudTaskExecutor extends ColosseumTaskExecutor<Cloud> {
 
-  CloudTaskExecutor(CloudTask task, Set<Future> predecessors, ColosseumApi api,
-                    ColosseumConfigApi configApi, ColosseumContext context) {
-    super(task, predecessors, api, configApi, context);
+  CloudTaskExecutor(CloudTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
+    super(task, predecessors, api, context);
   }
 
   @Override
   public void create(Cloud cloud) {
     String name = cloud.getName();
     checkNotNull(name);
-
-    String login = cloud.getLogin();
-    checkNotNull(login);
-    String password = cloud.getPassword();
-    checkNotNull(password);
-    Long tenant = cloud.getTenant();
-    checkNotNull(tenant);
+    String apiName = cloud.getApiName();
+    checkNotNull(apiName);
 
     String endpoint = cloud.getEndpoint();
     checkNotNull(endpoint);
-    String provider = cloud.getProvider();
-    checkNotNull(provider);
-    String driver = cloud.getDriver();
-    checkNotNull(driver);
 
-    log.info("Executing Create Cloud task for cloud {}", name);
+    log.info("Executing Create Cloud task {}", name);
 
-    Api apiEntity = new Api(driver, provider);
-    apiEntity = configApi.createApi(apiEntity);
-    context.addApi(apiEntity);
+    Api cloudApiEntity = context.getCloudApi(apiName).orElseThrow(() -> new IllegalStateException(
+      format("Cloud Api %s does not exist in Colosseum - cloud cannot be created", apiName)));
 
-    Long apiId = apiEntity.getId();
+    Long apiId = cloudApiEntity.getId();
     checkNotNull(apiId);
 
     de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud cloudEntity =
       new de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud(name, endpoint, apiId);
-    cloudEntity = configApi.createCloud(cloudEntity);
+    cloudEntity = api.createCloud(cloudEntity);
     context.addCloud(cloudEntity);
 
-    Long cloudId = cloudEntity.getId();
-    checkNotNull(cloudId);
-
-    Map<String, String> filters = cloud.getFilters();
-    if (filters != null) {
-      filters.forEach((key, value) -> {
-        CloudProperty cloudPropertyEntity = new CloudProperty(key, value, cloudId);
-        configApi.createCloudProperty(cloudPropertyEntity);
-        context.addCloudProperty(cloudPropertyEntity);
-      });
-    }
-
-    CloudCredential cloudCredentialEntity = new CloudCredential(login, password, cloudId, tenant);
-    cloudCredentialEntity = configApi.createCloudCredential(cloudCredentialEntity);
-    context.addCloudCredential(cloudCredentialEntity);
-
-    log.info("Cloud {} was successfully configured", name);
+    log.info("Cloud {} was successfully created", name);
   }
 
   @Override
   public void update(Cloud cloud) {
-    throw new UnsupportedOperationException("Cannot update cloud configuration - this method should not be run at all");
+    String name = cloud.getName();
+    checkNotNull(name);
+    String apiName = cloud.getApiName();
+    checkNotNull(apiName);
+
+    String endpoint = cloud.getEndpoint();
+    checkNotNull(endpoint);
+
+    log.info("Executing Update Cloud task {}", name);
+
+    Api cloudApiEntity = context.getCloudApi(apiName).orElseThrow(() -> new IllegalStateException(
+      format("Cloud Api %s does not exist in Colosseum - cloud cannot be updated", apiName)));
+
+    Long apiId = cloudApiEntity.getId();
+    checkNotNull(apiId);
+
+    de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud cloudEntity
+      = context.getCloud(name).orElseThrow(() -> new IllegalStateException(
+        format("Cloud %s was not configured in Colosseum - cloud cannot be created", name)));
+    cloudEntity.setApi(apiId);
+    cloudEntity.setEndpoint(endpoint);
+    api.updateCloud(cloudEntity);
+
+    log.info("Cloud {} was successfully updated", name);
   }
 
   @Override
   public void delete(Cloud cloud) {
-    // TODO
+    throw new UnsupportedOperationException("Cannot delete Cloud - this method should not be run at all");
   }
 }

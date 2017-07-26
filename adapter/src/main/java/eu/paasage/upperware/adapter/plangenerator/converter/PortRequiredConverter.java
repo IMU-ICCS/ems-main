@@ -21,9 +21,9 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import static eu.paasage.upperware.adapter.plangenerator.converter.ConverterUtils.*;
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
@@ -37,7 +37,7 @@ public class PortRequiredConverter implements ModelConverter<DeploymentModel, Co
       log.info("There are no communications defined - no ports required will be created");
       return Sets.newHashSet();
     }
-    return comms.stream().map(this::toPortRequired).collect(Collectors.toSet());
+    return comms.stream().map(this::toPortRequired).collect(toSet());
   }
 
   private PortRequired toPortRequired(Communication comm) {

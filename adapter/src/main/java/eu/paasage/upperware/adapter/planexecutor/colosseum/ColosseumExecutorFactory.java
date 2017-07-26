@@ -10,7 +10,6 @@
 package eu.paasage.upperware.adapter.planexecutor.colosseum;
 
 import eu.paasage.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.paasage.upperware.adapter.communication.colosseum.ColosseumConfigApi;
 import eu.paasage.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.paasage.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.paasage.upperware.adapter.plangenerator.tasks.*;
@@ -29,43 +28,56 @@ public class ColosseumExecutorFactory {
 
   private ColosseumApi api;
 
-  private ColosseumConfigApi configApi;
-
   private ColosseumContext context;
 
-  public RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors) {
+  RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors) {
+    if (task instanceof CloudApiTask) {
+      return new CloudApiTaskExecutor((CloudApiTask) task, predecessors, api, context);
+    }
     if (task instanceof CloudTask) {
-      return new CloudTaskExecutor((CloudTask) task, predecessors, api, configApi, context);
+      return new CloudTaskExecutor((CloudTask) task, predecessors, api, context);
+    }
+    if (task instanceof CloudPropertyTask) {
+      return new CloudPropertyTaskExecutor((CloudPropertyTask) task, predecessors, api, context);
+    }
+    if (task instanceof CloudCredentialTask) {
+      return new CloudCredentialTaskExecutor((CloudCredentialTask) task, predecessors, api, context);
     }
     if (task instanceof ApplicationTask) {
-      return new ApplicationTaskExecutor((ApplicationTask) task, predecessors, api, configApi, context);
+      return new ApplicationTaskExecutor((ApplicationTask) task, predecessors, api, context);
     }
     if (task instanceof ApplicationInstanceTask) {
-      return new ApplicationInstanceTaskExecutor((ApplicationInstanceTask) task, predecessors, api, configApi, context);
+      return new ApplicationInstanceTaskExecutor((ApplicationInstanceTask) task, predecessors, api, context);
     }
     if (task instanceof VirtualMachineTask) {
-      return new VirtualMachineTaskExecutor((VirtualMachineTask) task, predecessors, api, configApi, context);
+      return new VirtualMachineTaskExecutor((VirtualMachineTask) task, predecessors, api, context);
     }
     if (task instanceof VirtualMachineInstanceTask) {
-      return new VirtualMachineInstanceTaskExecutor((VirtualMachineInstanceTask) task, predecessors, api, configApi, context);
+      return new VirtualMachineInstanceTaskExecutor((VirtualMachineInstanceTask) task, predecessors, api, context);
     }
     if (task instanceof LifecycleComponentTask) {
-      return new LifecycleComponentTaskExecutor((LifecycleComponentTask) task, predecessors, api, configApi, context);
+      return new LifecycleComponentTaskExecutor((LifecycleComponentTask) task, predecessors, api, context);
     }
     if (task instanceof ApplicationComponentTask) {
-      return new ApplicationComponentTaskExecutor((ApplicationComponentTask) task, predecessors, api, configApi, context);
+      return new ApplicationComponentTaskExecutor((ApplicationComponentTask) task, predecessors, api, context);
     }
     if (task instanceof ApplicationComponentInstanceTask) {
-      return new ApplicationComponentInstanceTaskExecutor((ApplicationComponentInstanceTask) task, predecessors, api, configApi, context);
+      return new ApplicationComponentInstanceTaskExecutor((ApplicationComponentInstanceTask) task, predecessors, api, context);
     }
     if (task instanceof PortProvidedTask) {
-      return new PortProvidedTaskExecutor((PortProvidedTask) task, predecessors, api, configApi, context);
+      return new PortProvidedTaskExecutor((PortProvidedTask) task, predecessors, api, context);
     }
     if (task instanceof PortRequiredTask) {
-      return new PortRequiredTaskExecutor((PortRequiredTask) task, predecessors, api, configApi, context);
+      return new PortRequiredTaskExecutor((PortRequiredTask) task, predecessors, api, context);
     }
     if (task instanceof CommunicationTask) {
-      return new CommunicationTaskExecutor((CommunicationTask) task, predecessors, api, configApi, context);
+      return new CommunicationTaskExecutor((CommunicationTask) task, predecessors, api, context);
+    }
+    if (task instanceof VirtualMachineInstanceMonitorTask) {
+      return new VmInstMonitorTaskExecutor((VirtualMachineInstanceMonitorTask) task, predecessors, api, context);
+    }
+    if (task instanceof ApplicationComponentInstanceMonitorTask) {
+      return new AcInstMonitorTaskExecutor((ApplicationComponentInstanceMonitorTask) task, predecessors, api, context);
     }
     throw new IllegalArgumentException(format("Task %s is not supported", task.getClass()));
   }

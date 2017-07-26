@@ -20,7 +20,10 @@ import java.util.Collection;
 @EqualsAndHashCode
 public class ComparableModel {
 
+  private Collection<CloudApi> cloudApis;
   private Collection<Cloud> clouds;
+  private Collection<CloudProperty> cloudProperties;
+  private Collection<CloudCredential> cloudCredentials;
 
   private Application application;
   private ApplicationInstance applicationInstance;
@@ -36,5 +39,8 @@ public class ComparableModel {
   private Collection<Communication> communications;
   private Collection<PortProvided> portsProvided;
   private Collection<PortRequired> portsRequired;
+
+  private Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors;
+  private Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors;
 
 }
