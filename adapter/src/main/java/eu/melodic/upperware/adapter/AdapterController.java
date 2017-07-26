@@ -54,7 +54,7 @@ public class AdapterController {
   @RequestMapping(value = "/refreshContext", method = GET,
     consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public void refreshContext() {
-    // TODO
+    coordinator.refreshContext();
   }
 
   @RequestMapping(value = "/health", method = GET)
