@@ -42,14 +42,22 @@ public class ColosseumExecutor implements PlanExecutor {
 
     DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);
     TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(graph);
-    Map<Task, Future> taskToFeatureMap = Maps.newHashMap();
+    Map<Task, Future> taskToFutureMap = Maps.newHashMap();
 
     while (it.hasNext()) {
       Task task = it.next();
       Set<Task> dependentTasks = neighbors.predecessorsOf(task);
-      Set<Future> dependentFeatures = getDependentFeatures(taskToFeatureMap, dependentTasks);
+      Set<Future> dependentFeatures = getDependentFeatures(taskToFutureMap, dependentTasks);
       Future future = submitTask(task, dependentFeatures);
-      taskToFeatureMap.put(task, future);
+      taskToFutureMap.put(task, future);
+    }
+
+    for (Future future : taskToFutureMap.values()) {
+      try {
+        future.get();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

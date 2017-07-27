@@ -48,10 +48,10 @@ public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnab
         task.getClass().getSimpleName(), task.getType());
     } catch (ExecutionException e) {
       log.error("An exception occurred while executing dependent task - execution of successor thread will be interrupted as well", e);
+      throw new RuntimeException(e);
     } catch (InterruptedException e) {
       log.error("Dependent task execution was interrupted - execution of successor thread will be interrupted as well", e);
-    } catch (Exception e) {
-      log.error("An exception occurred while executing configuration task", e);
+      throw new RuntimeException(e);
     }
   }
 
