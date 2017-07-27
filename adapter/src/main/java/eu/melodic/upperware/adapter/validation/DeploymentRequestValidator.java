@@ -9,7 +9,7 @@
 
 package eu.melodic.upperware.adapter.validation;
 
-import eu.melodic.upperware.adapter.plangenerator.Plan;
+import eu.melodic.models.interfaces.adapter.ApplicationDeploymentRequestImpl;
 
-public interface PlanValidator extends Validator<Plan> {
+public interface DeploymentRequestValidator extends RequestValidator<ApplicationDeploymentRequestImpl> {
 }

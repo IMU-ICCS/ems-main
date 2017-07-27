@@ -60,8 +60,14 @@ public class Coordinator {
 
   @Async
   public void deployNewModel(String resourceName, String notificationUri, String uuid) {
+    try {
+      acquireLock(resourceName);
+    } catch (Exception e) {
+      log.error("An error occurred during acquiring lock for application {}", resourceName, e);
+      notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+      return;
+    }
     log.info("Starting new model deployment process");
-    acquireLock(resourceName);
     try {
       run(resourceName, notificationUri, uuid);
     } catch (Exception e) {
@@ -71,6 +77,10 @@ public class Coordinator {
       releaseLock(resourceName);
     }
     log.info("New model deployment process has been finished");
+  }
+
+  public void refreshContext() {
+    context.refreshContext();
   }
 
   private void run(String resourceName, String notificationUri, String uuid) {
