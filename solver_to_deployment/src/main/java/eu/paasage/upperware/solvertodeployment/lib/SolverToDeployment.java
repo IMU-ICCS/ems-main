@@ -9,9 +9,6 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.zeromq.ZMQ;
-import org.zeromq.ZMQ.Context;
-import org.zeromq.ZMQ.Socket;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.CommunicationInstance;
@@ -24,9 +21,9 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
+import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
-//import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZMQ_Service;
 import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZMQ_Service;
 import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZeroMQServer;
 
@@ -150,7 +147,10 @@ public class SolverToDeployment {
 				// Create a new DM to store the instances from solution
 				int newDmId = CDODatabaseProxy2.copyDeploymentModel(camelModelID, 0, overwriteDM, dstDMId);
 				newDm = (DeploymentModel) camelModel.getDeploymentModels().get(newDmId);
-				
+
+				CloudMLHelper.setGlobalDMIdx(newDmId);
+				CloudMLHelper.resetGlobalCount();
+
 				// Generate new instances into this new DM of camel
 				DataHolder dataholder  = DataUtils.computeDatasToRegister(paasageConfiguration, newDm, constraintProblem, solutionId);
 				if (dataholder==null) return false;

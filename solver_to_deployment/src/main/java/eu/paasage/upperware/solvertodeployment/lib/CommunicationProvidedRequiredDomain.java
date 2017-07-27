@@ -21,6 +21,7 @@ import eu.paasage.camel.deployment.InternalComponent;
 import eu.paasage.camel.deployment.InternalComponentInstance;
 import eu.paasage.camel.deployment.ProvidedCommunicationInstance;
 import eu.paasage.camel.deployment.RequiredCommunicationInstance;
+import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 
 
 public class CommunicationProvidedRequiredDomain {
@@ -38,8 +39,8 @@ public class CommunicationProvidedRequiredDomain {
 //		log.info("Prod:"+com.getProvidedCommunication().getName());
 //		log.info("Req:"+com.getRequiredCommunication().getName());
 
-		InternalComponent internalComponentProv = (InternalComponent)(com.getProvidedCommunication().eContainer());
-		InternalComponent internalComponentReq = (InternalComponent)(com.getRequiredCommunication().eContainer()); 
+		InternalComponent internalComponentProv = CloudMLHelper.findProvidedComponentFromCommunication(com);
+		InternalComponent internalComponentReq = CloudMLHelper.findRequiredComponentFromCommunication(com);
 
 		log.debug("--> "+internalComponentProv.getName()+" -- "+internalComponentReq.getName());
 

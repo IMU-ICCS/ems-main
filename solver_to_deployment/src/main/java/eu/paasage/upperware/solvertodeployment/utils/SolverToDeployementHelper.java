@@ -185,6 +185,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		String vmIdentifier = paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId();
 
 		VM result = findVM(vms, vmIdentifier);
+		// Why do we need '#'+vmIdentifier (cf CDODatabaseProxy2)
 		String providerModelId =  paaSageVariable.getRelatedProvider().getId()+"#"+vmIdentifier;
 
 		ProviderModel providerModel = null;

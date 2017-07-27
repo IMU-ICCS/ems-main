@@ -7,6 +7,7 @@ package eu.paasage.upperware.solvertodeployment.derivator.lib;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
+import eu.paasage.camel.deployment.Communication;
 import eu.paasage.camel.deployment.DeploymentFactory;
 import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
@@ -28,13 +29,35 @@ import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 
 public class CloudMLHelper {
 
-	private static int globalCount = 0;
+	private static int _globalCount = 0;
+	private static int _newDMIdx = -1;
 
-	public static int getGlobalCount()
+	private static int getGlobalCount()
 	{
-		return globalCount++;
+		return _globalCount++;
 	}
 
+	public static void resetGlobalCount()
+	{
+		_globalCount=0;
+	}
+
+	public static void setGlobalDMIdx(int idx)
+	{
+		_newDMIdx = idx;
+	}
+
+	private static int getGlobalDMIdx()
+	{
+		return _newDMIdx;
+	}
+
+	public static String getGlobalSuffix()
+	{
+		return getGlobalDMIdx() + "_" + getGlobalCount();
+	}
+	
+	
 	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(CloudMLHelper.class);
 
@@ -57,22 +80,37 @@ public class CloudMLHelper {
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// Internal Component Comnunication
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	public static InternalComponent findProvidedComponentFromCommunication(Communication com)
+	{
+		InternalComponent internalComponentProv = (InternalComponent)(com.getProvidedCommunication().eContainer());
+		return internalComponentProv;
+	}
+
+	public static InternalComponent findRequiredComponentFromCommunication(Communication com)
+	{
+		InternalComponent internalComponentReq = (InternalComponent)(com.getRequiredCommunication().eContainer());
+		return internalComponentReq;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// Internal Component Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 	
 	public static InternalComponentInstance createICInstance(InternalComponent ic1)
 	{
+		// Create Instance + name + type
 		InternalComponentInstance internalComponentInstance = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
-		internalComponentInstance.setName(ic1.getName() + "Instance_" + getGlobalCount());
+		internalComponentInstance.setName(ic1.getName() + "Instance_" + getGlobalSuffix());
 		internalComponentInstance.setType(ic1);
 
-		//ProvidedCommunicationInstance
-
+		//Create ProvidedCommunicationInstance
 		for(int i=0 ;i <ic1.getProvidedCommunications().size();i++)
 		{	
 			ProvidedCommunicationInstance providedCommunicationInstance = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
 			{
-
 				ProvidedCommunication providedCommunication = ic1.getProvidedCommunications().get(i);
 				providedCommunicationInstance.setType(providedCommunication);
 				//		providedCommunicationInstance.setOwner(internalComponentInstance);
@@ -80,8 +118,8 @@ public class CloudMLHelper {
 			}
 			internalComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance);
 		}
-		//ProvidedCommunicationInstance
 
+		//Create RequiredCommunicationInstance
 		for(int i=0 ;i <ic1.getRequiredCommunications().size();i++)
 		{	
 			RequiredCommunicationInstance requiredCommunicationInstance = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance(); 
@@ -95,7 +133,8 @@ public class CloudMLHelper {
 			internalComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance);
 
 		}	
-		//RequiredHostInstance
+
+		//Create RequiredHostInstance
 		RequiredHostInstance requiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
 		{
 			requiredHostInstance.setType(ic1.getRequiredHost());
@@ -111,11 +150,14 @@ public class CloudMLHelper {
 	// VM Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static VMInstance createVMInstance(VM vm,ProviderModel providerModel)
+	public static VMInstance createVMInstance(VM vm, ProviderModel providerModel)
 	{
+		// Create VMi
 		VMInstance vmInstance = DeploymentFactory.eINSTANCE.createVMInstance();
 		vmInstance.setType(vm);
-		vmInstance.setName(vm.getName() + "VMInstance_" + getGlobalCount());
+		vmInstance.setName(vm.getName() + "VMInstance_" + getGlobalSuffix());
+
+		// Create ProviderHostInstance
 		for(int i=0 ;i < vm.getProvidedHosts().size();i++)
 		{
 			ProvidedHostInstance providedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
@@ -164,8 +206,10 @@ public class CloudMLHelper {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static HostingInstance buildNewHostingInstance(String acName,VMInstance vmInstance, InternalComponentInstance internalComponentInstance, Hosting hosting) {
+		// CreateHostingInstance
 		HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
-		hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalCount());
+		hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalSuffix());
+		
 		EList<ProvidedHostInstance> pis = vmInstance.getProvidedHostInstances();
 		hostingInstance.setProvidedHostInstance(pis.get(0));
 		hostingInstance.setRequiredHostInstance(internalComponentInstance.getRequiredHostInstance());
