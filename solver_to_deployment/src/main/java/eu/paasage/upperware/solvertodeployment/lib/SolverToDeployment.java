@@ -4,6 +4,13 @@
 
 package eu.paasage.upperware.solvertodeployment.lib;
 
+import eu.melodic.models.commons.NotificationResult;
+import eu.melodic.models.commons.NotificationResultImpl;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequest;
+import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequestImpl;
+import lombok.AllArgsConstructor;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -24,63 +31,34 @@ import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
-import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZMQ_Service;
-import eu.paasage.upperware.solvertodeployment.zeromq.S2D_ZeroMQServer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Date;
+
+import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
+import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
+
+@Service
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class SolverToDeployment {
 
 	private static Logger log = Logger.getLogger(SolverToDeployment.class);
+	private RestTemplate restTemplate;
+	private Environment env;
 		
-	public static void dumpDM(CamelModel cm, int level)
-	{
-		log.info("Camel doc contains " + cm.getDeploymentModels().size() + " Deployment Model");
-		if (level > 1)
-		for(int i=0; i<cm.getDeploymentModels().size(); i++) 
-		{
-			DeploymentModel dm = cm.getDeploymentModels().get(i);
-			log.info("  DM"+i+" :" +
-					" InternalComponentInstances: " + dm.getInternalComponentInstances().size()+
-					"  VMInstances: "+ dm.getVmInstances().size() +
-					"  HostingInstances: "+ dm.getHostingInstances().size() +
-					"  CommInstances: " + dm.getCommunicationInstances().size());
-			if (level > 2)
-			{
-				String out="";
-				// ICI
-				for(InternalComponentInstance ici : dm.getInternalComponentInstances())
-					out+=ici.getName()+" ";
-				log.info("    InternalComponentInstances: "+out);
-				// VMI
-				out="";
-				for(VMInstance vm : dm.getVmInstances())
-					out+=vm.getName()+" ";
-				log.info("    VMInstances: "+out);
-				// HI
-				out="";
-				for(HostingInstance hi : dm.getHostingInstances())
-					out+=hi.getName()+" ";
-				log.info("    HostingInstances: "+out);
-				// CI
-				out="";
-				for(CommunicationInstance comi : dm.getCommunicationInstances())
-					out+=comi.getName()+" ";
-				log.info("    CommIntances: "+out);
-
-			}
-		}
-
-	}
-	
-	public static boolean doWorkTS(String paasageConfigurationID, String camelModelID, String CPDirID,
-			long solutionTS, boolean TSavailable, int dstDMId, boolean overwriteDM, int dumpDMLevel)
+	@Async
+	public void doWorkTS(String camelModelID, String paasageConfigurationID, String notificationUri,  String requestUuid)
 					throws S2DException
 	{
-		log.info("CPID: "+paasageConfigurationID);
-		log.info("CamelID: "+camelModelID);
-		log.info("CPDirID: "+CPDirID);
-		log.info("Timestamp: "+TSavailable+" ts="+solutionTS);
-		log.info("OverwriteDM: "+overwriteDM+" ts="+dstDMId);
-		log.info("DumpDM: "+dumpDMLevel);
+		log.info("Application ID: "+camelModelID);
+		log.info("CDO models path: "+paasageConfigurationID);
+		log.info("Notification URI: "+notificationUri);
+		log.info("UID: "+requestUuid);
 
 		try {
 
@@ -90,12 +68,6 @@ public class SolverToDeployment {
 			EList<EObject> contentsCM = cdoView.getResource(camelModelID).getContents();
 			CamelModel camelModel= (CamelModel)contentsCM.get(0);
 			
-			if (dumpDMLevel>0)
-			{
-				dumpDM(camelModel, dumpDMLevel);
-				return false;
-			}
-
 			EList<EObject> contentsPC = cdoView.getResource(paasageConfigurationID).getContents();
 			PaasageConfiguration paasageConfiguration = (PaasageConfiguration) contentsPC.get(0);
 			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(1);
@@ -104,7 +76,8 @@ public class SolverToDeployment {
 			if (constraintProblem.getSolution().size()==0)
 			{
 				log.info("No solution available in Constraint Problem!");
-				return false;
+				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
+				return;
 			}
 			
 			// Computing solutionId from solutionTS
@@ -113,7 +86,7 @@ public class SolverToDeployment {
 			int maxID=-1;
 			for(int i =0; i<constraintProblem.getSolution().size(); i++) {
 				Solution sol = constraintProblem.getSolution().get(i);
-				if (sol.getTimestamp() == solutionTS) {
+				if (sol.getTimestamp() == 0) {
 					solutionId = i;
 					break;
 				} else if (sol.getTimestamp() > maxTS)
@@ -122,30 +95,21 @@ public class SolverToDeployment {
 					maxID=i;
 				}
 			}
-			if (TSavailable)
-			{
-				if (solutionId==-1)
-				{
-					log.info("Timestamp "+solutionTS+" not found");
-					return false;
-				}
-			} else 
-			{
-				log.info("Using the solution with highest TS: "+maxTS);
-				solutionId = maxID;
-			}
+
+			log.info("Using the solution with highest TS: "+maxTS);
+			solutionId = maxID;
 			log.info("Using entry: "+solutionId);
 			
 			DeploymentModel newDm=null;				
 			// Do Work
 			try {
 				// copy provider to source camel doc
-				String results[] = CPDirID.split("/");
+				String results[] = paasageConfigurationID.split("/");
 				String fmsId = results[1];
 				DataUtils.copyCloudProviders(camelModel, camelModelID, fmsId, paasageConfiguration, constraintProblem, solutionId);
 
 				// Create a new DM to store the instances from solution
-				int newDmId = CDODatabaseProxy2.copyDeploymentModel(camelModelID, 0, overwriteDM, dstDMId);
+				int newDmId = CDODatabaseProxy2.copyDeploymentModel(camelModelID, 0, false, 0);
 				newDm = (DeploymentModel) camelModel.getDeploymentModels().get(newDmId);
 
 				CloudMLHelper.setGlobalDMIdx(newDmId);
@@ -153,7 +117,10 @@ public class SolverToDeployment {
 
 				// Generate new instances into this new DM of camel
 				DataHolder dataholder  = DataUtils.computeDatasToRegister(paasageConfiguration, newDm, constraintProblem, solutionId);
-				if (dataholder==null) return false;
+				if (dataholder==null) {
+					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
+					return;
+				}
 
 				dataholder.setDM(newDm);
 				dataholder.setDmId(camelModel.getDeploymentModels().size()-1);
@@ -162,93 +129,116 @@ public class SolverToDeployment {
 			} catch (S2DException | CommitException e) {
 				e.printStackTrace();
 				log.error("Unable to complete data model instances registration");
-				return false;
+				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
+				return;
 			}
 			dumpDM(camelModel, 2);
 		} catch (RuntimeException exception) {
 			exception.printStackTrace();
-			return false;
+			notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
+			return;
 		}
-		return true;
+		notifySolutionApplied(camelModelID, notificationUri, requestUuid);
 	}
 
-
-	private static void usage()
+	public static void dumpDM(CamelModel cm, int level)
 	{
-		System.out.println("[-o dstDMid (or -1 for last one)] [-t SolutionTimeStamp] [-d level] ConfigurationCDOId CamelCDOId CloudProviderCDODirID");
-		System.out.println("[-daemon] [-daemonold]");
-	}
-	
-	enum S2D_ARGS_CMD { DEFAULT, OVERVRITE_DM, TIMESTAMP, DUMPDM };
-	public static void main(String[] args) {
+		log.info("Camel doc contains " + cm.getDeploymentModels().size() + " Deployment Model");
+		if (level > 1)
+			for(int i=0; i<cm.getDeploymentModels().size(); i++)
+			{
+				DeploymentModel dm = cm.getDeploymentModels().get(i);
+				log.info("  DM"+i+" :" +
+								" InternalComponentInstances: " + dm.getInternalComponentInstances().size()+
+								"  VMInstances: "+ dm.getVmInstances().size() +
+								"  HostingInstances: "+ dm.getHostingInstances().size() +
+								"  CommInstances: " + dm.getCommunicationInstances().size());
+				if (level > 2)
+				{
+					String out="";
+					// ICI
+					for(InternalComponentInstance ici : dm.getInternalComponentInstances())
+						out+=ici.getName()+" ";
+					log.info("    InternalComponentInstances: "+out);
+					// VMI
+					out="";
+					for(VMInstance vm : dm.getVmInstances())
+						out+=vm.getName()+" ";
+					log.info("    VMInstances: "+out);
+					// HI
+					out="";
+					for(HostingInstance hi : dm.getHostingInstances())
+						out+=hi.getName()+" ";
+					log.info("    HostingInstances: "+out);
+					// CI
+					out="";
+					for(CommunicationInstance comi : dm.getCommunicationInstances())
+						out+=comi.getName()+" ";
+					log.info("    CommIntances: "+out);
 
-		if (args.length == 0) {
-			usage();
-			System.exit(-1);
-		}
-		if ((args.length == 1)&&(args[0].equals("-daemonold")))
-		{
-			S2D_ZMQ_Service.getInstance().run();
-			System.exit(0);
-		}
-		if ((args.length == 1)&&(args[0].equals("-daemon")))
-		{
-			S2D_ZeroMQServer.getInstance().run();
-			System.exit(0);
-		}
-		
-		S2D_ARGS_CMD next_op=S2D_ARGS_CMD.DEFAULT;	
-		int dmID=-1;
-		boolean overwriteDM = false;
-		long solutionTS=-1;
-		boolean TSavailable=false;
-		String param[] = new String[3];
-		int param_idx=0;
-		int dumpDMLevel = 0;
-		for(int i=0; i<args.length; i++) 
-		{
-			String a = args[i];
-			log.info("arg: "+a);
-			switch (next_op) {
-			case OVERVRITE_DM:	dmID = Integer.valueOf(a); overwriteDM = true; next_op = S2D_ARGS_CMD.DEFAULT; continue;
-			case TIMESTAMP:   	solutionTS = Long.valueOf(a); TSavailable = true; next_op = S2D_ARGS_CMD.DEFAULT; continue;
-			case DUMPDM:   		dumpDMLevel = Integer.valueOf(a); next_op = S2D_ARGS_CMD.DEFAULT; continue;
-			default:
-				if (a.substring(0, 2).equals("-o")) {
-					next_op = S2D_ARGS_CMD.OVERVRITE_DM;
-					log.info("Next op: "+next_op);
 				}
-				else if (a.equals("-t")) next_op = S2D_ARGS_CMD.TIMESTAMP;
-				else if (a.equals("-d")) next_op = S2D_ARGS_CMD.DUMPDM;
-				else param[param_idx++] = a;
 			}
-		}
-		
-		if (param_idx!=3)
-		{
-			usage();
-			System.exit(-1);
-		}
 
-		// RETRIEVING VALUES
-		String paasageConfigurationID = param[0];
-		String camelModelID = param[1];
-		String CPDirId = param[2];
+	}
 
-		boolean res;
-		try
-		{
-			res = doWorkTS(paasageConfigurationID, camelModelID, CPDirId, solutionTS, TSavailable, dmID, overwriteDM, dumpDMLevel);
-		} catch (S2DException e)
-		{
-			e.printStackTrace();
-			log.info("Solver to deployment: Failed.");
-			res=false;
+	private void notifySolutionApplied(String camelModelID, String notificationUri, String uuid) {
+		log.info("Sending solution applied notification");
+		NotificationResult result = prepareSuccessNotificationResult();
+		ApplySolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
+		sendNotification(notification, notificationUri);
+	}
+
+	private void notifySolutionNotApplied(String camelModelID, String notificationUri, String uuid)  {
+		log.info("Sending solution NOT applied notification");
+		NotificationResult result = prepareErrorNotificationResult("Solution was not applied.");
+		ApplySolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
+		sendNotification(notification, notificationUri);
+	}
+
+	private void sendNotification(ApplySolutionNotificationRequest notification, String notificationUri) {
+		String esbUrl = env.getProperty("esb.url");
+
+		if (esbUrl.endsWith("/")) {
+			esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
 		}
-		if (res) {
-			log.info("Solver to deployment: All done.");
-			System.exit(0);
-		} else
-			System.exit(-1);
+		if (notificationUri.startsWith("/")) {
+			notificationUri = notificationUri.substring(1);
+		}
+		try {
+			log.info("Sending notification to: "+esbUrl);
+			restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
+		} catch (RestClientException restException){
+			log.error("Error sending notification: " +restException.getMessage());
+		}
+		log.info("Notification sent.");
+	}
+	private Watermark prepareWatermark(String uuid) {
+		Watermark watermark = new WatermarkImpl();
+		watermark.setUser("SolverToDeployment");
+		watermark.setSystem("SolverToDeployment");
+		watermark.setDate(new Date());
+		watermark.setUuid(uuid);
+		return watermark;
+	}
+
+	private NotificationResult prepareSuccessNotificationResult() {
+		NotificationResult result = new NotificationResultImpl();
+		result.setStatus(SUCCESS);
+		return result;
+	}
+
+	private NotificationResult prepareErrorNotificationResult(String errorMsg) {
+		NotificationResult result = new NotificationResultImpl();
+		result.setErrorDescription(errorMsg);
+		result.setStatus(ERROR);
+		return result;
+	}
+
+	private ApplySolutionNotificationRequest prepareNotification(String camelModelID, NotificationResult result, String uuid) {
+		ApplySolutionNotificationRequest notification = new ApplySolutionNotificationRequestImpl();
+		notification.setApplicationId(camelModelID);
+		notification.setResult(result);
+		notification.setWatermark(prepareWatermark(uuid));
+		return notification;
 	}
 }
