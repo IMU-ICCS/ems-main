@@ -16,6 +16,7 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
@@ -51,6 +52,7 @@ public class Coordinator {
   private PlanGenerator planGenerator;
   private PlanValidator planValidator;
   private PlanExecutor planExecutor;
+  private CdoServerUpdater cdoServerUpdater;
 
   private ContextOperations context;
 
@@ -106,7 +108,7 @@ public class Coordinator {
     }
 //    String jsonGraph = new Gson().toJson(plan.getTaskGraph());
     planExecutor.executePlan(plan);
-//    cdoServerCamelUpdater.updateCamelModels();  TODO
+    cdoServerUpdater.updateCamelModel(resourceName);
     notifyPlanApplied(resourceName, notificationUri, uuid);
   }
 

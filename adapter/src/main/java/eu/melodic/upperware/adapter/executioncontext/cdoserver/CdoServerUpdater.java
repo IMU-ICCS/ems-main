@@ -11,8 +11,6 @@ package eu.melodic.upperware.adapter.executioncontext.cdoserver;
 
 public interface CdoServerUpdater {
 
-  // TODO create methods responsible for updating CDO Server with information about running context here
-  // examples:
-  // void updateModel();
+  void updateCamelModel(String resourceName);
 
 }
