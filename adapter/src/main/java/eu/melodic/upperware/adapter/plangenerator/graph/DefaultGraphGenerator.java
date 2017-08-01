@@ -429,12 +429,27 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     while (it.hasNext()) {
       Task task = it.next();
+      if (task instanceof VirtualMachineInstanceMonitorTask
+        || task instanceof ApplicationComponentInstanceMonitorTask) {
+        continue;
+      }
+
+      Set<Task> successors = neighbors.successorsOf(task);
+      if (CollectionUtils.isEmpty(successors)) {
+        vmInstMonitorTasks.forEach(vmInstMonitorTask ->
+          setDependencies(graph, CREATE, task, vmInstMonitorTask)
+        );
+        acInstMonitorTasks.forEach(acInstMonitorTask ->
+          setDependencies(graph, CREATE, task, acInstMonitorTask)
+        );
+      }
+
       if (!DELETE.equals(task.getType())) {
         continue;
       }
 
-      Set<Task> dependentTasks = neighbors.predecessorsOf(task);
-      if (CollectionUtils.isEmpty(dependentTasks)) {
+      Set<Task> predecessors = neighbors.predecessorsOf(task);
+      if (CollectionUtils.isEmpty(predecessors)) {
         vmInstMonitorTasks.forEach(vmInstMonitorTask ->
           setDependencies(graph, CREATE, vmInstMonitorTask, task)
         );
