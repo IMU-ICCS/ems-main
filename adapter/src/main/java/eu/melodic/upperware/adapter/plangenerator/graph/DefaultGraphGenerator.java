@@ -10,19 +10,25 @@
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graph;
+import org.jgrapht.alg.DirectedNeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Set;
 
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.UPDATE;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -111,8 +117,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     Collection<CommunicationTask> commTasks = genCommReconfigTasks(
       graph, portProvTasks, portReqTasks, oldModel.getCommunications(), newModel.getCommunications());
 
-    genVmInstMonitorConfigTasks(graph, vmInstTasks, newModel.getVirtualMachineInstanceMonitors());
-    genAcInstMonitorConfigTasks(graph, acInstTasks, newModel.getApplicationComponentInstanceMonitors());
+    Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = genVmInstMonitorConfigTasks(
+      graph, vmInstTasks, newModel.getVirtualMachineInstanceMonitors());
+    Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = genAcInstMonitorConfigTasks(
+      graph, acInstTasks, newModel.getApplicationComponentInstanceMonitors());
+
+    setDeleteTasksAfterMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
 
     log.info("Built graph: {}", graph);
 
@@ -121,7 +131,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<CloudApiTask> genCloudApiConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudApi> cloudApis) {
-    return genCloudApiTasks(graph, Type.CREATE, cloudApis);
+    return genCloudApiTasks(graph, CREATE, cloudApis);
   }
 
   private Collection<CloudApiTask> genCloudApiReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -136,13 +146,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         for (CloudApi oldCloudApi : oldCloudApis) {
           if (newCloudApiName.equals(oldCloudApi.getName())) {
-            cloudApiTasks.addAll(genCloudApiTasks(graph, Type.UPDATE, Lists.newArrayList(newCloudApi)));
+            cloudApiTasks.addAll(genCloudApiTasks(graph, UPDATE, Lists.newArrayList(newCloudApi)));
             isNew = false;
             break;
           }
         }
         if (isNew) {
-          cloudApiTasks.addAll(genCloudApiTasks(graph, Type.CREATE, Lists.newArrayList(newCloudApi)));
+          cloudApiTasks.addAll(genCloudApiTasks(graph, CREATE, Lists.newArrayList(newCloudApi)));
         }
       });
 
@@ -151,7 +161,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<CloudTask> genCloudConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> clouds) {
-    return genCloudTasks(graph, Type.CREATE, cloudApiTasks, clouds);
+    return genCloudTasks(graph, CREATE, cloudApiTasks, clouds);
   }
 
   private Collection<CloudTask> genCloudReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -166,13 +176,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         for (Cloud oldCloud : oldClouds) {
           if (newCloudName.equals(oldCloud.getName())) {
-            cloudTasks.addAll(genCloudTasks(graph, Type.UPDATE, cloudApiTasks, Lists.newArrayList(newCloud)));
+            cloudTasks.addAll(genCloudTasks(graph, UPDATE, cloudApiTasks, Lists.newArrayList(newCloud)));
             isNew = false;
             break;
           }
         }
         if (isNew) {
-          cloudTasks.addAll(genCloudTasks(graph, Type.CREATE, cloudApiTasks, Lists.newArrayList(newCloud)));
+          cloudTasks.addAll(genCloudTasks(graph, CREATE, cloudApiTasks, Lists.newArrayList(newCloud)));
         }
       });
 
@@ -181,45 +191,34 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<CloudPropertyTask> genCloudPropertyConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudProperty> cloudProperties) {
-    return genCloudPropertyTasks(graph, Type.CREATE, cloudTasks, cloudProperties);
+    return genCloudPropertyTasks(graph, CREATE, cloudTasks, cloudProperties);
   }
 
   private Collection<CloudPropertyTask> genCloudPropertyReconfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudProperty> oldCloudProperties,
           Collection<CloudProperty> newCloudProperties) {
     Collection<CloudPropertyTask> cloudPropertyTasks = Lists.newArrayList();
-    Set<CloudProperty> oldCloudPropertiesToDelete = Sets.newHashSet();
 
     newCloudProperties.stream()
       .filter(newCloudProperty -> !oldCloudProperties.contains(newCloudProperty))
-      .forEach(newCloudProperty -> {
-        String newCloudPropertyName = newCloudProperty.getName();
+      .forEach(newCloudProperty ->
+        cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, CREATE, cloudTasks,
+          Lists.newArrayList(newCloudProperty)))
+      );
 
-        for (CloudProperty oldCloudProperty : oldCloudProperties) {
-          if (newCloudPropertyName.equals(oldCloudProperty.getName())) {
-            oldCloudPropertiesToDelete.add(oldCloudProperty);
-            cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, Type.DELETE, cloudTasks,
-              Lists.newArrayList(oldCloudProperty)));
-            break;
-          }
-        }
-        cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, Type.CREATE, cloudTasks,
-          Lists.newArrayList(newCloudProperty)));
-      });
-
-    oldCloudProperties.forEach(oldCloudProperty -> {
-      if (!oldCloudPropertiesToDelete.contains(oldCloudProperty)) {
-        cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, Type.DELETE, cloudTasks,
-          Lists.newArrayList(oldCloudProperty)));
-      }
-    });
+    oldCloudProperties.stream()
+      .filter(oldCloudProperty -> !newCloudProperties.contains(oldCloudProperty))
+      .forEach(oldCloudProperty ->
+        cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, DELETE, cloudTasks,
+          Lists.newArrayList(oldCloudProperty)))
+      );
 
     return cloudPropertyTasks;
   }
 
   private Collection<CloudCredentialTask> genCloudCredentialConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudCredential> cloudCredentials) {
-    return genCloudCredentialTasks(graph, Type.CREATE, cloudTasks, cloudCredentials);
+    return genCloudCredentialTasks(graph, CREATE, cloudTasks, cloudCredentials);
   }
 
   private Collection<CloudCredentialTask> genCloudCredentialReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -235,14 +234,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         for (CloudCredential oldCloudCredential : oldCloudCredentials) {
           if (newCloudCredentialName.equals(oldCloudCredential.getName())) {
-            cloudCredentialTasks.addAll(genCloudCredentialTasks(graph, Type.UPDATE, cloudTasks,
+            cloudCredentialTasks.addAll(genCloudCredentialTasks(graph, UPDATE, cloudTasks,
               Lists.newArrayList(newCloudCredential)));
             isNew = false;
             break;
           }
         }
         if (isNew) {
-          cloudCredentialTasks.addAll(genCloudCredentialTasks(graph, Type.CREATE, cloudTasks,
+          cloudCredentialTasks.addAll(genCloudCredentialTasks(graph, CREATE, cloudTasks,
             Lists.newArrayList(newCloudCredential)));
         }
       });
@@ -251,34 +250,34 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   }
 
   private ApplicationTask genAppConfigTask(Graph<Task, DefaultEdge> graph, Application app) {
-    return genAppTask(graph, Type.CREATE, app);
+    return genAppTask(graph, CREATE, app);
   }
 
   private ApplicationTask genReconfigAppTask(Graph<Task, DefaultEdge> graph, Application oldApp, Application newApp) {
     if (!newApp.equals(oldApp)) {
       newApp.setOldName(oldApp.getName());
-      return genAppTask(graph, Type.UPDATE, newApp);
+      return genAppTask(graph, UPDATE, newApp);
     }
     return null;
   }
 
   private ApplicationInstanceTask genAppInstConfigTask(Graph<Task, DefaultEdge> graph, ApplicationTask appTask,
           ApplicationInstance appInst) {
-    return genAppInstTask(graph, Type.CREATE, appTask, appInst);
+    return genAppInstTask(graph, CREATE, appTask, appInst);
   }
 
   private Collection<LifecycleComponentTask> genLcConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<LifecycleComponent> lcs) {
-    return genLcTasks(graph, Type.CREATE, lcs);
+    return genLcTasks(graph, CREATE, lcs);
   }
 
   private Collection<LifecycleComponentTask> genLcReconfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<LifecycleComponent> oldLcs, Collection<LifecycleComponent> newLcs) {
     Collection<LifecycleComponentTask> lcTasks = Lists.newArrayList();
 
-    lcTasks.addAll(genLcTasks(graph, Type.CREATE,
+    lcTasks.addAll(genLcTasks(graph, CREATE,
       newLcs.stream().filter(newLc -> !oldLcs.contains(newLc)).collect(toList())));
-    lcTasks.addAll(genLcTasks(graph, Type.DELETE,
+    lcTasks.addAll(genLcTasks(graph, DELETE,
       oldLcs.stream().filter(oldLc -> !newLcs.contains(oldLc)).collect(toList())));
 
     return lcTasks;
@@ -286,16 +285,16 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<VirtualMachineTask> genVmConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<VirtualMachine> vms) {
-    return genVmTasks(graph, Type.CREATE, cloudTasks, vms);
+    return genVmTasks(graph, CREATE, cloudTasks, vms);
   }
 
   private Collection<VirtualMachineTask> genVmReconfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<VirtualMachine> oldVms, Collection<VirtualMachine> newVms) {
     Collection<VirtualMachineTask> vmTasks = Lists.newArrayList();
 
-    vmTasks.addAll(genVmTasks(graph, Type.CREATE, cloudTasks,
+    vmTasks.addAll(genVmTasks(graph, CREATE, cloudTasks,
       newVms.stream().filter(newVm -> !oldVms.contains(newVm)).collect(toList())));
-    vmTasks.addAll(genVmTasks(graph, Type.DELETE, cloudTasks,
+    vmTasks.addAll(genVmTasks(graph, DELETE, cloudTasks,
       oldVms.stream().filter(oldVm -> !newVms.contains(oldVm)).collect(toList())));
 
     return vmTasks;
@@ -303,7 +302,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<VirtualMachineInstanceTask> genVmInstConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> vmInsts) {
-    return genVmInstTasks(graph, Type.CREATE, vmTasks, vmInsts);
+    return genVmInstTasks(graph, CREATE, vmTasks, vmInsts);
   }
 
   private Collection<VirtualMachineInstanceTask> genVmInstReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -311,9 +310,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<VirtualMachineInstance> newVmInsts) {
     Collection<VirtualMachineInstanceTask> vmInstTasks = Lists.newArrayList();
 
-    vmInstTasks.addAll(genVmInstTasks(graph, Type.CREATE, vmTasks,
+    vmInstTasks.addAll(genVmInstTasks(graph, CREATE, vmTasks,
       newVmInsts.stream().filter(newVmInst -> !oldVmInsts.contains(newVmInst)).collect(toList())));
-    vmInstTasks.addAll(genVmInstTasks(graph, Type.DELETE, vmTasks,
+    vmInstTasks.addAll(genVmInstTasks(graph, DELETE, vmTasks,
       oldVmInsts.stream().filter(oldVmInst -> !newVmInsts.contains(oldVmInst)).collect(toList())));
 
     return vmInstTasks;
@@ -322,7 +321,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   private Collection<ApplicationComponentTask> genAcConfigTasks(Graph<Task, DefaultEdge> graph, ApplicationTask appTask,
           Collection<LifecycleComponentTask> lcTasks, Collection<VirtualMachineTask> vmTasks,
           Collection<ApplicationComponent> acs) {
-    return genAcTasks(graph, Type.CREATE, appTask, lcTasks, vmTasks, acs);
+    return genAcTasks(graph, CREATE, appTask, lcTasks, vmTasks, acs);
   }
 
   private Collection<ApplicationComponentTask> genAcReconfigTasks(Graph<Task, DefaultEdge> graph, ApplicationTask appTask,
@@ -330,9 +329,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<ApplicationComponent> oldAcs, Collection<ApplicationComponent> newAcs) {
     Collection<ApplicationComponentTask> acTasks = Lists.newArrayList();
 
-    acTasks.addAll(genAcTasks(graph, Type.CREATE, appTask, lcTasks, vmTasks,
+    acTasks.addAll(genAcTasks(graph, CREATE, appTask, lcTasks, vmTasks,
       newAcs.stream().filter(newAc -> !oldAcs.contains(newAc)).collect(toList())));
-    acTasks.addAll(genAcTasks(graph, Type.DELETE, appTask, lcTasks, vmTasks,
+    acTasks.addAll(genAcTasks(graph, DELETE, appTask, lcTasks, vmTasks,
       oldAcs.stream().filter(oldAc -> !newAcs.contains(oldAc)).collect(toList())));
 
     return acTasks;
@@ -341,7 +340,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   private Collection<ApplicationComponentInstanceTask> genAcInstConfigTasks(Graph<Task, DefaultEdge> graph,
           ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
           Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<ApplicationComponentInstance> acInsts) {
-    return genAcInstTasks(graph, Type.CREATE, appInstTask, acTasks, vmInstTasks, acInsts);
+    return genAcInstTasks(graph, CREATE, appInstTask, acTasks, vmInstTasks, acInsts);
   }
 
   private Collection<ApplicationComponentInstanceTask> genAcInstReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -349,9 +348,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<ApplicationComponentInstance> oldAcInsts, Collection<ApplicationComponentInstance> newAcInsts) {
     Collection<ApplicationComponentInstanceTask> acInstTasks = Lists.newArrayList();
 
-    acInstTasks.addAll(genAcInstTasks(graph, Type.CREATE, null, acTasks, vmInstTasks,
+    acInstTasks.addAll(genAcInstTasks(graph, CREATE, null, acTasks, vmInstTasks,
       newAcInsts.stream().filter(newAcInst -> !oldAcInsts.contains(newAcInst)).collect(toList())));
-    acInstTasks.addAll(genAcInstTasks(graph, Type.DELETE, null, acTasks, vmInstTasks,
+    acInstTasks.addAll(genAcInstTasks(graph, DELETE, null, acTasks, vmInstTasks,
       oldAcInsts.stream().filter(oldAcInst -> !newAcInsts.contains(oldAcInst)).collect(toList())));
 
     return acInstTasks;
@@ -359,7 +358,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<PortProvidedTask> genPortProvConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> portsProv) {
-    return genPortProvTasks(graph, Type.CREATE, acTasks, portsProv);
+    return genPortProvTasks(graph, CREATE, acTasks, portsProv);
   }
 
   private Collection<PortProvidedTask> genPortProvReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -367,9 +366,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<PortProvided> newPortsProv) {
     Collection<PortProvidedTask> portProvTasks = Lists.newArrayList();
 
-    portProvTasks.addAll(genPortProvTasks(graph, Type.CREATE, acTasks,
+    portProvTasks.addAll(genPortProvTasks(graph, CREATE, acTasks,
       newPortsProv.stream().filter(newPortProv -> !oldPortsProv.contains(newPortProv)).collect(toList())));
-    portProvTasks.addAll(genPortProvTasks(graph, Type.DELETE, acTasks,
+    portProvTasks.addAll(genPortProvTasks(graph, DELETE, acTasks,
       oldPortsProv.stream().filter(oldPortProv -> !newPortsProv.contains(oldPortProv)).collect(toList())));
 
     return portProvTasks;
@@ -377,7 +376,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<PortRequiredTask> genPortReqConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> portsReq) {
-    return genPortReqTasks(graph, Type.CREATE, acTasks, portsReq);
+    return genPortReqTasks(graph, CREATE, acTasks, portsReq);
   }
 
   private Collection<PortRequiredTask> genPortReqReconfigTasks(Graph<Task, DefaultEdge> graph,
@@ -385,9 +384,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<PortRequired> newPortsReq) {
     Collection<PortRequiredTask> portReqTasks = Lists.newArrayList();
 
-    portReqTasks.addAll(genPortReqTasks(graph, Type.CREATE, acTasks,
+    portReqTasks.addAll(genPortReqTasks(graph, CREATE, acTasks,
       newPortsReq.stream().filter(newPortReq -> !oldPortsReq.contains(newPortReq)).collect(toList())));
-    portReqTasks.addAll(genPortReqTasks(graph, Type.DELETE, acTasks,
+    portReqTasks.addAll(genPortReqTasks(graph, DELETE, acTasks,
       oldPortsReq.stream().filter(oldPortReq -> !newPortsReq.contains(oldPortReq)).collect(toList())));
 
     return portReqTasks;
@@ -396,7 +395,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   private Collection<CommunicationTask> genCommConfigTasks(SimpleDirectedGraph<Task, DefaultEdge> graph,
           Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
           Collection<Communication> comms) {
-    return genCommTasks(graph, Type.CREATE, portProvTasks, portReqTasks, comms);
+    return genCommTasks(graph, CREATE, portProvTasks, portReqTasks, comms);
   }
 
   private Collection<CommunicationTask> genCommReconfigTasks(SimpleDirectedWeightedGraph<Task, DefaultEdge> graph,
@@ -404,9 +403,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<Communication> oldComms, Collection<Communication> newComms) {
     Collection<CommunicationTask> commTasks = Lists.newArrayList();
 
-    commTasks.addAll(genCommTasks(graph, Type.CREATE, portProvTasks, portReqTasks,
+    commTasks.addAll(genCommTasks(graph, CREATE, portProvTasks, portReqTasks,
       newComms.stream().filter(newComm -> !oldComms.contains(newComm)).collect(toList())));
-    commTasks.addAll(genCommTasks(graph, Type.DELETE, portProvTasks, portReqTasks,
+    commTasks.addAll(genCommTasks(graph, DELETE, portProvTasks, portReqTasks,
       oldComms.stream().filter(oldComm -> !newComms.contains(oldComm)).collect(toList())));
 
     return commTasks;
@@ -414,11 +413,35 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   private Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<VirtualMachineInstanceMonitor> vmInstMonitors) {
-    return genVmInstMonitorTasks(graph, Type.CREATE, vmInstTasks, vmInstMonitors);
+    return genVmInstMonitorTasks(graph, CREATE, vmInstTasks, vmInstMonitors);
   }
 
   private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorConfigTasks(Graph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> acInstMonitors) {
-    return genAcInstMonitorTasks(graph, Type.CREATE, acInstTasks, acInstMonitors);
+    return genAcInstMonitorTasks(graph, CREATE, acInstTasks, acInstMonitors);
+  }
+
+  private void setDeleteTasksAfterMonitors(DirectedGraph<Task, DefaultEdge> graph,
+          Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
+          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks) {
+    DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);
+    TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(graph);
+
+    while (it.hasNext()) {
+      Task task = it.next();
+      if (!DELETE.equals(task.getType())) {
+        continue;
+      }
+
+      Set<Task> dependentTasks = neighbors.predecessorsOf(task);
+      if (CollectionUtils.isEmpty(dependentTasks)) {
+        vmInstMonitorTasks.forEach(vmInstMonitorTask ->
+          setDependencies(graph, CREATE, vmInstMonitorTask, task)
+        );
+        acInstMonitorTasks.forEach(acInstMonitorTask ->
+          setDependencies(graph, CREATE, acInstMonitorTask, task)
+        );
+      }
+    }
   }
 }

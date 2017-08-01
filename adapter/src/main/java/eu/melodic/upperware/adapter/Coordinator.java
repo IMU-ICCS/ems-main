@@ -125,8 +125,9 @@ public class Coordinator {
   }
 
   private void notifyErrorOccurred(String resourceName, String notificationUri, String uuid, Exception e) {
-    log.error("Sending error notification");
-    NotificationResult result = prepareErrorNotificationResult(e.getMessage());
+    String errorMsg = e.getMessage();
+    log.error("Sending error notification: {}", errorMsg);
+    NotificationResult result = prepareErrorNotificationResult(errorMsg);
     DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
     sendNotification(notification, notificationUri);
   }

@@ -10,6 +10,7 @@
 package eu.melodic.upperware.adapter.planexecutor;
 
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
+import eu.melodic.upperware.adapter.plangenerator.tasks.Type;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,12 +29,13 @@ public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnab
 
   @Override
   public void run() {
+    Type type = task.getType();
+    T data = task.getData();
     try {
-      T data = task.getData();
       log.info("Starting task executor thread for {}(type={}, data={})",
-        task.getClass().getSimpleName(), task.getType(), data);
-      waitForPredecessors();
-      switch (task.getType()) {
+        task.getClass().getSimpleName(), type, data);
+      waitForPredecessors(type, data);
+      switch (type) {
         case CREATE:
           create(data);
           break;
@@ -44,30 +46,33 @@ public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnab
           delete(data);
           break;
       }
-      log.info("Task executor thread for {}(type={}) was successfully finished",
-        task.getClass().getSimpleName(), task.getType());
+      log.info("Task executor thread for {}(type={}, data={}) was successfully finished",
+        task.getClass().getSimpleName(), type, data);
     } catch (ExecutionException e) {
-      log.error("An exception occurred while executing dependent task - execution of successor thread will be interrupted as well", e);
+      log.error("An exception occurred while executing dependent task of {}(type={}, data={}) - execution of successor thread " +
+        "will be interrupted as well", task.getClass().getSimpleName(), type, data);
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
-      log.error("Dependent task execution was interrupted - execution of successor thread will be interrupted as well", e);
+      log.error("Dependent task execution of {}(type={}, data={}) was interrupted - execution of successor thread " +
+        "will be interrupted as well", task.getClass().getSimpleName(), type, data);
       throw new RuntimeException(e);
     }
   }
 
-  private void waitForPredecessors() throws ExecutionException, InterruptedException {
+  private void waitForPredecessors(Type type, T data) throws ExecutionException, InterruptedException {
     if (CollectionUtils.isEmpty(predecessors)) {
       return;
     }
     for (Future future : predecessors) {
       if (future.isDone() || future.isCancelled()) {
+        future.get();
         continue;
       }
-      log.info("{}(type={}) is waiting for finish dependent task executions",
-        task.getClass().getSimpleName(), task.getType());
+      log.info("{}(type={}, data={}) is waiting for finish dependent task executions",
+        task.getClass().getSimpleName(), type, data);
       future.get();
     }
-    log.info("Dependent task executions of {}(type={}) were finished",
-      task.getClass().getSimpleName(), task.getType());
+    log.info("Dependent task executions of {}(type={}, data={}) were finished",
+      task.getClass().getSimpleName(), type, data);
   }
 }
