@@ -40,6 +40,9 @@ public class CdoServerClientUpdater implements CdoServerUpdater {
       DeploymentModel camelModel = cdoServerApi.getModelToDeploy(resourceName, tr);
       String executionContextName = getRandomExecutionContextName();
       cdoServerApi.setExecutionContext(camelModel, executionContextName, tr);
+      tr.commit();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     } finally {
       cdoServerApi.closeTransaction(tr);
     }
