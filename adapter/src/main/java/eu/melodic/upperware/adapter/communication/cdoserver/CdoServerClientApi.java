@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -51,8 +52,25 @@ public class CdoServerClientApi implements CdoServerApi {
 
   @Override
   public DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr) {
-    // TODO
-    return null;
+    EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
+    if (CollectionUtils.isNotEmpty(contents)) {
+      CamelModel model = (CamelModel) contents.get(0);
+      if (model != null) {
+        List<ExecutionModel> execModels = model.getExecutionModels();
+        int numberOfExecModels = execModels.size();
+        if (numberOfExecModels < 1) {
+          return null;
+        }
+        EList<ExecutionContext> execContexts = execModels.get(numberOfExecModels - 1).getExecutionContexts();
+        int numberOfExecContexts = execContexts.size();
+        if (numberOfExecContexts < 1) {
+          return null;
+        }
+        return execContexts.get(numberOfExecContexts - 1).getDeploymentModel();
+      }
+    }
+    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
+      "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
 
   @Override
