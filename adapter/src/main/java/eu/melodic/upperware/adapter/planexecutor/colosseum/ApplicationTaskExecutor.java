@@ -35,6 +35,11 @@ public class ApplicationTaskExecutor extends ColosseumTaskExecutor<Application> 
 
     log.info("Executing Create Application task for application {}", name);
 
+    if (context.getApplication(name).isPresent()) {
+      log.warn("Application {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
+
     de.uniulm.omi.cloudiator.colosseum.client.entities.Application appEntity =
       new de.uniulm.omi.cloudiator.colosseum.client.entities.Application(name);
     appEntity = api.createApplication(appEntity);

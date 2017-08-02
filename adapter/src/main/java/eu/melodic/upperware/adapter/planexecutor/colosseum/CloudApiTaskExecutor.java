@@ -39,6 +39,11 @@ public class CloudApiTaskExecutor extends ColosseumTaskExecutor<CloudApi> {
 
     log.info("Executing Create Cloud Api task {}", name);
 
+    if (context.getCloudApi(name).isPresent()) {
+      log.warn("Cloud API {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
+
     Api cloudApiEntity = new Api(name, driver);
     cloudApiEntity = api.createApi(cloudApiEntity);
     context.addCloudApi(cloudApiEntity);

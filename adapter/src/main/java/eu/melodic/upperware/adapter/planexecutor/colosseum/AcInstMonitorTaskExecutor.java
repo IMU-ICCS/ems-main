@@ -26,7 +26,7 @@ import static java.lang.String.format;
 public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<ApplicationComponentInstanceMonitor> {
 
   AcInstMonitorTaskExecutor(ApplicationComponentInstanceMonitorTask task, Collection<Future> predecessors,
-                            ColosseumApi api, ColosseumContext context) {
+          ColosseumApi api, ColosseumContext context) {
     super(task, predecessors, api, context);
   }
 
@@ -136,7 +136,6 @@ public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<Application
     checkNotNull(appInstId);
     Long vmInstId = vmInstEntity.getId();
     checkNotNull(vmInstId);
-
 
     Instance acInstEntity = context.getApplicationComponentInstance(acId, appInstId, vmInstId)
       .orElseThrow(() -> new IllegalStateException(format("Application component instance %s (acId=%s, appInstId=%s, vmInstId=%s) " +

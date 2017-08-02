@@ -51,6 +51,11 @@ public class CloudCredentialTaskExecutor extends ColosseumTaskExecutor<CloudCred
     Long cloudId = cloudEntity.getId();
     checkNotNull(cloudId);
 
+    if (context.getCloudCredential(cloudId).isPresent()) {
+      log.warn("Cloud Credential of the cloud {} already exists in Colosseum - skipping execution of the task", cloudName);
+      return;
+    }
+
     de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential cloudCredentialEntity
       = new de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential(login, password, cloudId, tenant);
     cloudCredentialEntity = api.createCloudCredential(cloudCredentialEntity);

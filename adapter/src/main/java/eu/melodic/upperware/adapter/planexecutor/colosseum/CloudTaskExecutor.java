@@ -41,6 +41,11 @@ public class CloudTaskExecutor extends ColosseumTaskExecutor<Cloud> {
 
     log.info("Executing Create Cloud task {}", name);
 
+    if (context.getCloud(name).isPresent()) {
+      log.warn("Cloud {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
+
     Api cloudApiEntity = context.getCloudApi(apiName).orElseThrow(() -> new IllegalStateException(
       format("Cloud Api %s does not exist in Colosseum - cloud cannot be created", apiName)));
 

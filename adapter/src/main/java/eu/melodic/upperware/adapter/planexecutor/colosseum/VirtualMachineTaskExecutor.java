@@ -84,6 +84,12 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
     Long imageId = imageEntity.getId();
     checkNotNull(imageId);
 
+    if (context.getVirtualMachine(cloudId, locationId, hardwareId, imageId).isPresent()) {
+      log.warn("Virtual Machine with params (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) already exists " +
+        "in Colosseum - skipping execution of the task", cloudId, locationId, hardwareId, imageId);
+      return;
+    }
+
     VirtualMachineTemplate vmEntity = new VirtualMachineTemplate(cloudId, imageId, locationId, hardwareId, null);
     vmEntity = api.createVirtualMachine(vmEntity);
     context.addVirtualMachine(vmEntity);
