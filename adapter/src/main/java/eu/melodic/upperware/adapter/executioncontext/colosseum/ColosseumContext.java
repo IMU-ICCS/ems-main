@@ -15,6 +15,7 @@ import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import lombok.NonNull;
 import lombok.Synchronized;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
+@Slf4j
 @Service
 public class ColosseumContext implements ContextOperations {
 
@@ -356,6 +358,8 @@ public class ColosseumContext implements ContextOperations {
   @Override
   @Synchronized
   public void refreshContext() {
+    log.info("Refreshing Colosseum context");
+
     cloudApis.clear();
     cloudApis.addAll(api.getApis());
 

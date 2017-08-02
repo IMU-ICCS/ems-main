@@ -10,20 +10,49 @@
 package eu.melodic.upperware.adapter.executioncontext.cdoserver;
 
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.paasage.camel.deployment.DeploymentModel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CdoServerClientUpdater implements CdoServerUpdater {
 
-  // TODO
-
   private CdoServerApi cdoServerApi;
-  private ColosseumContext context;
-  
+//  private ColosseumContext context;
+
+  @Override
+  public void updateCamelModel(String resourceName) {
+    log.info("Updating CAMEL model in CDO Server");
+    setExecutionContext(resourceName);
+    log.info("CAMEL model has been updated");
+  }
+
+  private void setExecutionContext(String resourceName) {
+    CDOTransaction tr = cdoServerApi.openTransaction();
+    try {
+      DeploymentModel camelModel = cdoServerApi.getModelToDeploy(resourceName, tr);
+      String executionContextName = getRandomExecutionContextName();
+      cdoServerApi.setExecutionContext(camelModel, executionContextName, tr);
+      tr.commit();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      cdoServerApi.closeTransaction(tr);
+    }
+  }
+
+  private String getRandomExecutionContextName() {
+    return ("ExecutionContext_" + getUniqueId());
+  }
+
+  private String getUniqueId() {
+    return Long.toString((new Date()).getTime());
+  }
 }

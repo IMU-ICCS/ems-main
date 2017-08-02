@@ -16,6 +16,7 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
@@ -51,6 +52,7 @@ public class Coordinator {
   private PlanGenerator planGenerator;
   private PlanValidator planValidator;
   private PlanExecutor planExecutor;
+  private CdoServerUpdater cdoServerUpdater;
 
   private ContextOperations context;
 
@@ -63,7 +65,7 @@ public class Coordinator {
     try {
       acquireLock(resourceName);
     } catch (Exception e) {
-      log.error("An error occurred during acquiring lock for application {}", resourceName, e);
+      log.error("An exception occurred during acquiring lock for application {}", resourceName, e);
       notifyErrorOccurred(resourceName, notificationUri, uuid, e);
       return;
     }
@@ -71,7 +73,7 @@ public class Coordinator {
     try {
       run(resourceName, notificationUri, uuid);
     } catch (Exception e) {
-      log.error("An error occurred during deployment process", e);
+      log.error("An exception occurred during deployment process", e);
       notifyErrorOccurred(resourceName, notificationUri, uuid, e);
     } finally {
       releaseLock(resourceName);
@@ -84,25 +86,29 @@ public class Coordinator {
   }
 
   private void run(String resourceName, String notificationUri, String uuid) {
-    CDOTransaction tr = cdoServerApi.openTransaction();
-    DeploymentModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr);
-    DeploymentModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr);
     Plan plan;
-    if (currentModel == null) {
-      plan = planGenerator.buildConfigurationPlan(targetModel);
-    } else {
-      plan = planGenerator.buildReconfigurationPlan(targetModel, currentModel);
-      if (!planValidator.validate(plan)) {
-        notifyPlanRejected(resourceName, notificationUri, uuid);
-        return;
+    CDOTransaction tr = cdoServerApi.openTransaction();
+    try {
+      DeploymentModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr);
+      DeploymentModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr);
+      if (currentModel == null) {
+        plan = planGenerator.buildConfigurationPlan(targetModel);
+      } else {
+        plan = planGenerator.buildReconfigurationPlan(targetModel, currentModel);
+        if (!planValidator.validate(plan)) {
+          notifyPlanRejected(resourceName, notificationUri, uuid);
+          return;
+        }
       }
+    } finally {
+      cdoServerApi.closeTransaction(tr);
     }
-    cdoServerApi.closeTransaction(tr);
     if (!context.isLoaded()) {
       context.refreshContext();
     }
+//    String jsonGraph = new Gson().toJson(plan.getTaskGraph());
     planExecutor.executePlan(plan);
-//    cdoServerCamelUpdater.updateCamelModels();  TODO
+    cdoServerUpdater.updateCamelModel(resourceName);
     notifyPlanApplied(resourceName, notificationUri, uuid);
   }
 
@@ -121,8 +127,9 @@ public class Coordinator {
   }
 
   private void notifyErrorOccurred(String resourceName, String notificationUri, String uuid, Exception e) {
-    log.error("Sending error notification");
-    NotificationResult result = prepareErrorNotificationResult(e.getMessage());
+    String errorMsg = e.getMessage();
+    log.error("Sending error notification: {}", errorMsg);
+    NotificationResult result = prepareErrorNotificationResult(errorMsg);
     DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
     sendNotification(notification, notificationUri);
   }
@@ -135,7 +142,6 @@ public class Coordinator {
 
   private NotificationResult prepareErrorNotificationResult(String errorMsg) {
     NotificationResult result = new NotificationResultImpl();
-    // TODO unsupported error code
     result.setErrorDescription(errorMsg);
     result.setStatus(ERROR);
     return result;
