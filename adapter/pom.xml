@@ -164,8 +164,7 @@
         <version>0.4.10</version>
         <configuration>
           <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-          <imageTags>latest</imageTags>
-          <imageName>wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww/melodic/adapter</imageName>
+          <imageName>172.31.1.100:5000/melodic/adapter</imageName>
           <pushImage>true</pushImage>
           <resources>
             <resource>

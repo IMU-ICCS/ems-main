@@ -7,6 +7,15 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
+/*
+Remark: Need to run this springboot application with the following parameter:
+--spring.config.location=classpath:/config/eu.melodic.upperware.solverToDeployment.properties
+
+This provides application with the properties (in that way can be provided externally)
+
+*/
+
+
 package eu.paasage.upperware.solvertodeployment;
 
 import org.springframework.boot.SpringApplication;
