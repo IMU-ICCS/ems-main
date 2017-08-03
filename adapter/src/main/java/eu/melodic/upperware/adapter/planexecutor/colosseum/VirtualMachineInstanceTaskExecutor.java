@@ -48,6 +48,11 @@ public class VirtualMachineInstanceTaskExecutor extends ColosseumTaskExecutor<Vi
 
     log.info("Executing Create Virtual Machine Instance {} task for VM {}", name, vmName);
 
+    if (context.getVirtualMachineInstance(name).isPresent()) {
+      log.warn("Virtual Machine {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
+
     Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
       format("Cloud %s was not configured in Colosseum - VM instance cannot be created", cloudName)));
 

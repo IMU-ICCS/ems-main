@@ -38,6 +38,11 @@ public class ApplicationInstanceTaskExecutor extends ColosseumTaskExecutor<Appli
 
     log.info("Executing Create Application Instance {} task for application {}", name, appName);
 
+    if (context.getApplicationInstance(appName).isPresent()) {
+      log.warn("Application instance of application {} already exists in Colosseum - skipping execution of the task", appName);
+      return;
+    }
+
     de.uniulm.omi.cloudiator.colosseum.client.entities.Application appEntity = context.getApplication(appName)
       .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum " +
         "- instance cannot be created", appName)));

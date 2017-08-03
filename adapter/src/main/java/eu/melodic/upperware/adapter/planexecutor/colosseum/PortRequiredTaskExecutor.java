@@ -56,6 +56,11 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<eu.melodic.u
 
     log.info("Executing Create Port Required task for port {}", name);
 
+    if (context.getPortRequired(name).isPresent()) {
+      log.warn("Port Required {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
+
     Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
       format("Cloud %s was not configured in Colosseum - port required cannot be created", cloudName)));
 

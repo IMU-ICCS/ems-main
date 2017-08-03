@@ -48,10 +48,15 @@ public class CloudPropertyTaskExecutor extends ColosseumTaskExecutor<CloudProper
       checkNotNull(cloudId);
 
       filters.forEach((key, value) -> {
-        de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty cloudPropertyEntity
-          = new de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty(key, value, cloudId);
-        api.createCloudProperty(cloudPropertyEntity);
-        context.addCloudProperty(cloudPropertyEntity);
+        if (!context.getCloudProperty(cloudId, key).isPresent()) {
+          de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty cloudPropertyEntity
+            = new de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty(key, value, cloudId);
+          api.createCloudProperty(cloudPropertyEntity);
+          context.addCloudProperty(cloudPropertyEntity);
+        } else {
+          log.warn("Cloud Property {} of the cloud {} already exists in Colosseum - skipping adding of the property",
+            key, cloudName);
+        }
       });
     }
 

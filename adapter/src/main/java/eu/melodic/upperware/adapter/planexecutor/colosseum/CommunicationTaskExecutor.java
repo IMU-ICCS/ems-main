@@ -55,6 +55,12 @@ public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communicati
     Long portReqId = portReqEntity.getId();
     checkNotNull(portReqId);
 
+    if (context.getCommunication(portProvId, portReqId).isPresent()) {
+      log.warn("Communication between ports {}<->{} already exists in Colosseum - skipping execution of the task",
+        portProvName, portReqName);
+      return;
+    }
+
     de.uniulm.omi.cloudiator.colosseum.client.entities.Communication commEntity =
       new de.uniulm.omi.cloudiator.colosseum.client.entities.Communication(portReqId, portProvId);
     commEntity = api.createCommunication(commEntity);

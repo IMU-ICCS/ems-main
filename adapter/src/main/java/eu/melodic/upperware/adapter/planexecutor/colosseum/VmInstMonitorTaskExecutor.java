@@ -26,7 +26,7 @@ import static java.lang.String.format;
 public class VmInstMonitorTaskExecutor extends ColosseumTaskExecutor<VirtualMachineInstanceMonitor> {
 
   VmInstMonitorTaskExecutor(VirtualMachineInstanceMonitorTask task, Collection<Future> predecessors,
-                            ColosseumApi api, ColosseumContext context) {
+          ColosseumApi api, ColosseumContext context) {
     super(task, predecessors, api, context);
   }
 

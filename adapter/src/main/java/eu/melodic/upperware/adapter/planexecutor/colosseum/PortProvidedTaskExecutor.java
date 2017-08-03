@@ -57,6 +57,11 @@ public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided
 
     log.info("Executing Create Port Provided task for port {}", name);
 
+    if (context.getPortProvided(name).isPresent()) {
+      log.warn("Port Provided {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
+
     Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
       format("Cloud %s was not configured in Colosseum - port provided cannot be created", cloudName)));
 

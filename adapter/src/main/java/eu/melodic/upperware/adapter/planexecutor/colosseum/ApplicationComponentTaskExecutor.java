@@ -25,7 +25,7 @@ import static java.lang.String.format;
 public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponent> {
 
   ApplicationComponentTaskExecutor(ApplicationComponentTask task, Collection<Future> predecessors,
-                                   ColosseumApi api, ColosseumContext context) {
+          ColosseumApi api, ColosseumContext context) {
     super(task, predecessors, api, context);
   }
 
@@ -101,6 +101,12 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.m
     checkNotNull(lcId);
     Long vmId = vmEntity.getId();
     checkNotNull(vmId);
+
+    if (context.getApplicationComponent(appName, lcId, vmId).isPresent()) {
+      log.warn("Application Component with params (appName=%s, lcId=%s, vmId=%s) already exists in Colosseum - " +
+        "skipping execution of the task", appName, lcId, vmId);
+      return;
+    }
 
     de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent acEntity =
       new de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent(appId, lcId, vmId);

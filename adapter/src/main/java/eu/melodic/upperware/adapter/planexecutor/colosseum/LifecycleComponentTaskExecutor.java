@@ -25,7 +25,7 @@ import static java.lang.String.format;
 public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<LifecycleComponent> {
 
   LifecycleComponentTaskExecutor(LifecycleComponentTask task, Collection<Future> predecessors,
-                                 ColosseumApi api, ColosseumContext context) {
+          ColosseumApi api, ColosseumContext context) {
     super(task, predecessors, api, context);
   }
 
@@ -54,6 +54,11 @@ public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<Lifecy
     String shutdownCmd = lc.getShutdownCmd();
 
     log.info("Executing Create Lifecycle Component task for component {}", name);
+
+    if (context.getLifecycleComponent(name).isPresent()) {
+      log.warn("Lifecycle Component {} already exists in Colosseum - skipping execution of the task", name);
+      return;
+    }
 
     de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent lcEntity =
       new de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent(
