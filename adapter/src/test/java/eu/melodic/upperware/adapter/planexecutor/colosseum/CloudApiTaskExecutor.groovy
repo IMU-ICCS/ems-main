@@ -51,6 +51,7 @@ class CloudApiTaskExecutorTests extends Specification{
     cloudApiWithoutDriver.getDriver() >> null
 
 
+
     cloudApiTask = Mock(CloudApiTask)
     collection = Mock(Collection)
     api = Mock(ColosseumApi)
@@ -59,9 +60,10 @@ class CloudApiTaskExecutorTests extends Specification{
     executor = new CloudApiTaskExecutor(cloudApiTask, collection, api, context)
   }
 
+  def "correct creating of cloud api"(){
 
-
-  def "create" (){
+    setup:
+      context.getCloudApi(_) >> Optional.empty()
 
     when:
       executor.create(cloudApi)
@@ -69,8 +71,20 @@ class CloudApiTaskExecutorTests extends Specification{
     then:
       1* context.addCloudApi(_)
   }
+  //FIXME: or "no creating of cloud api..."
+  def "creating of cloud api when cloud api already exists"(){
 
-  def "creating with null"(){
+    setup:
+      context.getCloudApi(_) >> Optional.of(Mock(Api))
+
+    when:
+      executor.create(cloudApi)
+
+    then:
+      0*context.addCloudApi(_)
+  }
+
+  def "creating of cloud api with null argument"(){
 
     when:
       executor.create(null)
@@ -79,7 +93,7 @@ class CloudApiTaskExecutorTests extends Specification{
       thrown(NullPointerException)
   }
 
-  def "creating without cloud api fields" (){
+  def "creating of cloud api without cloud api fields" (){
 
     when:
       executor.create(cloudApiWithoutName)
@@ -92,11 +106,10 @@ class CloudApiTaskExecutorTests extends Specification{
 
     then:
       thrown(NullPointerException)
-
   }
 
 
-  def "updating"(){
+  def "correct updating of cloud api"(){
 
     setup:
       context.getCloudApi(_) >> Optional.of(Mock(Api))
@@ -108,8 +121,7 @@ class CloudApiTaskExecutorTests extends Specification{
       1* api.updateApi(_)
   }
 
-  def "updating without cloud api " (){
-
+  def "updating of cloud api when cloud api does not exist" (){
 
     setup:
       context.getCloudApi(_) >> Optional.empty()
@@ -121,17 +133,16 @@ class CloudApiTaskExecutorTests extends Specification{
       thrown(IllegalStateException)
   }
 
-  def "updating with null"(){
+  def "updating of cloud api with null argument"(){
 
     when:
       executor.update(null)
 
     then:
       thrown(NullPointerException)
-
   }
 
-  def "updating without cloud api driver"(){
+  def "updating of cloud api without cloud api fields"(){
 
     when:
       executor.update(cloudApiWithoutDriver)
@@ -140,7 +151,7 @@ class CloudApiTaskExecutorTests extends Specification{
       thrown(NullPointerException)
   }
 
-  def "deleting" (){
+  def "correct deleting of cloud api - throwing exception" (){
 
     when:
       executor.delete(cloudApi)

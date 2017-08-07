@@ -55,9 +55,10 @@ class ApplicationTaskExecutorTests extends Specification{
     executor = new ApplicationTaskExecutor(applicationTask, collection, api, context)
   }
 
-  def "creating"(){
+  def "correct creating of application"(){
 
     setup:
+      context.getApplication(_) >> Optional.empty()
       api.createApplication(_) >> applicationEntity
 
     when:
@@ -67,7 +68,20 @@ class ApplicationTaskExecutorTests extends Specification{
       1*context.addApplication(_)
   }
 
-  def "creating with null"(){
+  def "creating of application when application already exists"(){
+
+    setup:
+      context.getApplication(_) >> Optional.of(Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.Application))
+
+    when:
+      executor.create(application)
+
+    then:
+      0*context.addApplication(_)
+
+  }
+
+  def "creating of application with null argument"(){
 
     when:
       executor.create(null)
@@ -76,7 +90,7 @@ class ApplicationTaskExecutorTests extends Specification{
       thrown(NullPointerException)
   }
 
-  def "creating without application fields"(){
+  def "creating of application without application fields"(){
 
     when:
       executor.create(applicationWithoutName)
@@ -85,7 +99,7 @@ class ApplicationTaskExecutorTests extends Specification{
       thrown(NullPointerException)
   }
 
-  def "updating" (){
+  def "correct updating of application" (){
 
     setup:
       context.getApplication(_) >> Optional.of(applicationEntity)
@@ -98,16 +112,7 @@ class ApplicationTaskExecutorTests extends Specification{
 
   }
 
-  def "updating without application name"(){
-
-    when:
-      executor.update(applicationWithoutName)
-
-    then:
-      thrown(NullPointerException)
-  }
-
-  def "updating without old application"(){
+  def "updating of application when application does not exist"(){
 
     setup:
       context.getApplication(_) >> Optional.empty()
@@ -119,7 +124,7 @@ class ApplicationTaskExecutorTests extends Specification{
       thrown(IllegalStateException)
   }
 
-  def "updating with null"(){
+  def "updating of application with null argument"(){
 
     when:
       executor.update(null)
@@ -128,7 +133,16 @@ class ApplicationTaskExecutorTests extends Specification{
       thrown(NullPointerException)
   }
 
-  def "deleting"(){
+  def "updating of application without application fields"(){
+
+    when:
+      executor.update(applicationWithoutName)
+
+    then:
+      thrown(NullPointerException)
+  }
+
+  def "correct deleting of application"(){
 
     setup:
       context.getApplication(_) >> Optional.of(applicationEntity)
@@ -141,16 +155,7 @@ class ApplicationTaskExecutorTests extends Specification{
 
   }
 
-  def "deleting without application name"(){
-
-    when:
-      executor.delete(applicationWithoutName)
-
-    then:
-      thrown(NullPointerException)
-  }
-
-  def "deleting without application"(){
+  def "deleting of application when application does not exist"(){
 
     setup:
       context.getApplication(_) >> Optional.empty()
@@ -162,7 +167,7 @@ class ApplicationTaskExecutorTests extends Specification{
       thrown(IllegalStateException)
   }
 
-  def "deleting with null"(){
+  def "deleting of application with null argument"(){
 
     when:
       executor.delete(null)
@@ -171,5 +176,12 @@ class ApplicationTaskExecutorTests extends Specification{
       thrown(NullPointerException)
   }
 
+  def "deleting of application without application fields"(){
 
+    when:
+      executor.delete(applicationWithoutName)
+
+    then:
+      thrown(NullPointerException)
+  }
 }
