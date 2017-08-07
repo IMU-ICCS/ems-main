@@ -20,7 +20,7 @@
 
   <name>Adapter</name>
   <description>
-    The component of PaaSage responsible for generating, validating and applying deployment plan based on CAMEL
+    Component of PaaSage responsible for generating, validating and applying deployment plan based on CAMEL
     Model received from CDO Server. This component displaces both Adapter Manager and Plan Generator repositories.
   </description>
 
@@ -46,6 +46,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
+    <spock.version>1.1-groovy-2.4</spock.version>
+    <groovy.version>2.4.12</groovy.version>
+    <cglib.version>3.2.4</cglib.version>
+    <objenesis.version>1.3</objenesis.version>
+    <powermock.version>1.7.0</powermock.version>
   </properties>
 
   <dependencies>
@@ -135,6 +140,63 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.spockframework</groupId>
+      <artifactId>spock-core</artifactId>
+      <version>${spock.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>${groovy.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency> <!-- enables mocking of classes (in addition to interfaces) -->
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <version>${cglib.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.objenesis</groupId>
+      <artifactId>objenesis</artifactId>
+      <version>${objenesis.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4-rule</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-classloading-xstream</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <repositories>
