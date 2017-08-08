@@ -21,7 +21,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = NONE)
 
-class CloudApiTaskExecutorTests extends Specification{
+class CloudApiTaskExecutorTests extends Specification {
 
   String name
   String driver
@@ -36,7 +36,7 @@ class CloudApiTaskExecutorTests extends Specification{
   def context
   def executor
 
-  def setup(){
+  def setup() {
     name = "testName"
     driver = "testDriver"
 
@@ -60,111 +60,110 @@ class CloudApiTaskExecutorTests extends Specification{
     executor = new CloudApiTaskExecutor(cloudApiTask, collection, api, context)
   }
 
-  def "correct creating of cloud api"(){
+  def "cloud api create: correct"() {
 
     setup:
-      context.getCloudApi(_) >> Optional.empty()
+    context.getCloudApi(_) >> Optional.empty()
 
     when:
-      executor.create(cloudApi)
+    executor.create(cloudApi)
 
     then:
-      1* context.addCloudApi(_)
+    1 * context.addCloudApi(_)
   }
-  //FIXME: or "no creating of cloud api..."
-  def "creating of cloud api when cloud api already exists"(){
+
+  def "cloud api create: api already exists - exception"() {
 
     setup:
-      context.getCloudApi(_) >> Optional.of(Mock(Api))
+    context.getCloudApi(_) >> Optional.of(Mock(Api))
 
     when:
-      executor.create(cloudApi)
+    executor.create(cloudApi)
 
     then:
-      0*context.addCloudApi(_)
+    0 * context.addCloudApi(_)
   }
 
-  def "creating of cloud api with null argument"(){
+  def "cloud api create: null argument - exception"() {
 
     when:
-      executor.create(null)
+    executor.create(null)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "creating of cloud api without cloud api fields" (){
+  def "cloud api create: null api fields - exception"() {
 
     when:
-      executor.create(cloudApiWithoutName)
+    executor.create(cloudApiWithoutName)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
 
     when:
-      executor.create(cloudApiWithoutDriver)
+    executor.create(cloudApiWithoutDriver)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
 
-  def "correct updating of cloud api"(){
+  def "cloud api update: correct"() {
 
     setup:
-      context.getCloudApi(_) >> Optional.of(Mock(Api))
+    context.getCloudApi(_) >> Optional.of(Mock(Api))
 
     when:
-      executor.update(cloudApi)
+    executor.update(cloudApi)
 
     then:
-      1* api.updateApi(_)
+    1 * api.updateApi(_)
   }
 
-  def "updating of cloud api when cloud api does not exist" (){
+  def "cloud api update: api does not exist - exception"() {
 
     setup:
-      context.getCloudApi(_) >> Optional.empty()
+    context.getCloudApi(_) >> Optional.empty()
 
     when:
-      executor.update(cloudApi)
+    executor.update(cloudApi)
 
     then:
-      thrown(IllegalStateException)
+    thrown(IllegalStateException)
   }
 
-  def "updating of cloud api with null argument"(){
+  def "cloud api update: null argument - exception"() {
 
     when:
-      executor.update(null)
+    executor.update(null)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "updating of cloud api without cloud api fields"(){
+  def "cloud api update: null api fields - exception"() {
 
     when:
-      executor.update(cloudApiWithoutDriver)
+    executor.update(cloudApiWithoutDriver)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "correct deleting of cloud api - throwing exception" (){
+  def "cloud api delete: correct - exception"() {
 
     when:
-      executor.delete(cloudApi)
+    executor.delete(cloudApi)
 
     then:
-      thrown(UnsupportedOperationException)
+    thrown(UnsupportedOperationException)
 
     when:
-      executor.delete(null)
+    executor.delete(null)
 
     then:
-      thrown(UnsupportedOperationException)
-
+    thrown(UnsupportedOperationException)
   }
 
 }

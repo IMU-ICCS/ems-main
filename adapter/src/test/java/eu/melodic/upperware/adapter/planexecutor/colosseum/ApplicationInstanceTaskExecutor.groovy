@@ -17,12 +17,12 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationInstanceTask
 import org.springframework.boot.test.context.SpringBootTest
 import spock.lang.Specification
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE
 
 
 @SpringBootTest(webEnvironment = NONE)
 
-class ApplicationInstanceTaskExecutorTests extends Specification{
+class ApplicationInstanceTaskExecutorTests extends Specification {
 
   String name, appName
   Long id
@@ -39,7 +39,7 @@ class ApplicationInstanceTaskExecutorTests extends Specification{
   def context
   def executor
 
-  def setup(){
+  def setup() {
     name = "testName"
     appName = "testAppName"
     id = 12345L
@@ -53,7 +53,6 @@ class ApplicationInstanceTaskExecutorTests extends Specification{
 
     appInstEntity = Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance)
     appEntity = Mock(Application)
-    appEntity.getId() >> id
 
     applicationInstanceTask = Mock(ApplicationInstanceTask)
     collection = Mock(Collection)
@@ -63,113 +62,136 @@ class ApplicationInstanceTaskExecutorTests extends Specification{
     executor = new ApplicationInstanceTaskExecutor(applicationInstanceTask, collection, api, context)
   }
 
-  def "creating"(){
+  def "application instance create: correct"() {
 
     setup:
-      context.getApplication(_) >> Optional.of(appEntity)
-      api.createApplicationInstance(_) >> appInstEntity
+    context.getApplicationInstance(_) >> Optional.empty()
+    context.getApplication(_) >> Optional.of(appEntity)
+    appEntity.getId() >> id
+
+    api.createApplicationInstance(_) >> appInstEntity
 
     when:
-      executor.create(appInstance)
+    executor.create(appInstance)
 
     then:
-      1*context.addApplicationInstance(_)
+    1 * context.addApplicationInstance(_)
   }
 
-  def "creating with null"(){
-
-    when:
-      executor.create(null)
-
-    then:
-      thrown(NullPointerException)
-  }
-
-  def "creating without application"(){
+  def "application instance create: instance already exists - exception"() {
 
     setup:
-      context.getApplication(_) >> Optional.empty()
+    context.getApplicationInstance(_) >> Optional.of(Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance))
 
     when:
-      executor.create(appInstance)
+    executor.create(appInstance)
 
     then:
-      thrown(IllegalStateException)
+    0 * context.addApplicationInstance(_)
   }
 
-  def "creating without application fields"(){
-
-    when:
-      executor.create(appInstanceWithoutName)
-
-    then:
-      thrown(NullPointerException)
-  }
-
-  def "creating without appEntity id"(){
+  def "application instance create: application does not exist - exception"() {
 
     setup:
-      context.getApplication(_) >> Optional.of(appEntity)
-      appEntity.getId(_) >> null
+    context.getApplicationInstance(_) >> Optional.empty()
+    context.getApplication(_) >> Optional.empty()
 
     when:
-      executor.create(appInstance)
+    executor.create(appInstance)
 
     then:
-      thrown(NullPointerException)
+    thrown(IllegalStateException)
+  }
+
+  def "application instance create: null argument - exception"() {
+
+    when:
+    executor.create(null)
+
+    then:
+    thrown(NullPointerException)
+  }
+
+  def "application instance create: null application fields - exception"() {
+
+    when:
+    executor.create(appInstanceWithoutName)
+
+    then:
+    thrown(NullPointerException)
   }
 
 
-  def "updating"(){
+  def "application instance create: null appEntity id - exception"() {
 
-    when:
-      executor.update(appInstance)
-
-    then:
-      thrown(UnsupportedOperationException)
-
-    when:
-      executor.update(null)
-
-    then:
-      thrown(UnsupportedOperationException)
-
-  }
-
-  def "deleting"(){
     setup:
-      context.getApplicationInstance(_) >> Optional.of(appInstEntity)
+    context.getApplicationInstance(_) >> Optional.empty()
+    context.getApplication(_) >> Optional.of(appEntity)
+    appEntity.getId(_) >> null
 
     when:
-      executor.delete(appInstance)
+    executor.create(appInstance)
 
     then:
-      1*context.deleteApplicationInstance(_)
+    thrown(NullPointerException)
   }
 
-  def "deleting without application instance"(){
+
+  def "application instance update: correct - exception"() {
+
+    when:
+    executor.update(appInstance)
+
+    then:
+    thrown(UnsupportedOperationException)
+
+    when:
+    executor.update(null)
+
+    then:
+    thrown(UnsupportedOperationException)
+
+  }
+
+  def "application instance delete: correct"() {
+
     setup:
-      context.getApplicationInstance(_) >> Optional.empty()
+    context.getApplicationInstance(_) >> Optional.of(appInstEntity)
 
     when:
-      executor.delete(appInstance)
+    executor.delete(appInstance)
 
     then:
-      thrown(IllegalStateException)
+    1 * context.deleteApplicationInstance(_)
   }
 
-  def "deleting with null"(){
-    when:
-      executor.delete(appInstanceWithoutName)
+  def "application instance delete: instance does not exist - exception"() {
 
-    then:
-      thrown(NullPointerException)
+    setup:
+    context.getApplicationInstance(_) >> Optional.empty()
 
     when:
-      executor.delete(null)
+    executor.delete(appInstance)
 
     then:
-      thrown(NullPointerException)
+    thrown(IllegalStateException)
+  }
 
+  def "application instance delete: null argument - exception"() {
+
+    when:
+    executor.delete(null)
+
+    then:
+    thrown(NullPointerException)
+  }
+
+  def "application instance delete: null application fields - exception"() {
+
+    when:
+    executor.delete(appInstanceWithoutName)
+
+    then:
+    thrown(NullPointerException)
   }
 }

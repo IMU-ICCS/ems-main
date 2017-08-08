@@ -19,7 +19,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = NONE)
 
-class ApplicationTaskExecutorTests extends Specification{
+class ApplicationTaskExecutorTests extends Specification {
 
   String name, oldName
 
@@ -34,7 +34,7 @@ class ApplicationTaskExecutorTests extends Specification{
   def context
   def executor
 
-  def setup(){
+  def setup() {
     name = "testName"
     oldName = "testOldName"
 
@@ -55,133 +55,133 @@ class ApplicationTaskExecutorTests extends Specification{
     executor = new ApplicationTaskExecutor(applicationTask, collection, api, context)
   }
 
-  def "correct creating of application"(){
+  def "application create: correct"() {
 
     setup:
-      context.getApplication(_) >> Optional.empty()
-      api.createApplication(_) >> applicationEntity
+    context.getApplication(_) >> Optional.empty()
+    api.createApplication(_) >> applicationEntity
 
     when:
-      executor.create(application)
+    executor.create(application)
 
     then:
-      1*context.addApplication(_)
+    1 * context.addApplication(_)
   }
 
-  def "creating of application when application already exists"(){
+  def "application create: application already exists - exception"() {
 
     setup:
-      context.getApplication(_) >> Optional.of(Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.Application))
+    context.getApplication(_) >> Optional.of(Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.Application))
 
     when:
-      executor.create(application)
+    executor.create(application)
 
     then:
-      0*context.addApplication(_)
+    0 * context.addApplication(_)
 
   }
 
-  def "creating of application with null argument"(){
+  def "application create: null argument - exception"() {
 
     when:
-      executor.create(null)
+    executor.create(null)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "creating of application without application fields"(){
+  def "application create: null application fields - exception"() {
 
     when:
-      executor.create(applicationWithoutName)
+    executor.create(applicationWithoutName)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "correct updating of application" (){
+  def "application update: correct"() {
 
     setup:
-      context.getApplication(_) >> Optional.of(applicationEntity)
+    context.getApplication(_) >> Optional.of(applicationEntity)
 
     when:
-      executor.update(application)
+    executor.update(application)
 
     then:
-      1*api.updateApplication(_)
+    1 * api.updateApplication(_)
 
   }
 
-  def "updating of application when application does not exist"(){
+  def "application update: application does not exist - exception"() {
 
     setup:
-      context.getApplication(_) >> Optional.empty()
+    context.getApplication(_) >> Optional.empty()
 
     when:
-      executor.update(application)
+    executor.update(application)
 
     then:
-      thrown(IllegalStateException)
+    thrown(IllegalStateException)
   }
 
-  def "updating of application with null argument"(){
+  def "application update: null argument - exception"() {
 
     when:
-      executor.update(null)
+    executor.update(null)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "updating of application without application fields"(){
+  def "application update: null application fields - exception"() {
 
     when:
-      executor.update(applicationWithoutName)
+    executor.update(applicationWithoutName)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "correct deleting of application"(){
+  def "application delete: correct"() {
 
     setup:
-      context.getApplication(_) >> Optional.of(applicationEntity)
+    context.getApplication(_) >> Optional.of(applicationEntity)
 
     when:
-      executor.delete(application)
+    executor.delete(application)
 
     then:
-      1*context.deleteApplication(_)
+    1 * context.deleteApplication(_)
 
   }
 
-  def "deleting of application when application does not exist"(){
+  def "application delete: application does not exist - exception"() {
 
     setup:
-      context.getApplication(_) >> Optional.empty()
+    context.getApplication(_) >> Optional.empty()
 
     when:
-      executor.delete(application)
+    executor.delete(application)
 
     then:
-      thrown(IllegalStateException)
+    thrown(IllegalStateException)
   }
 
-  def "deleting of application with null argument"(){
+  def "application delete: null argument - exception"() {
 
     when:
-      executor.delete(null)
+    executor.delete(null)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 
-  def "deleting of application without application fields"(){
+  def "application delete: null application fields - exception"() {
 
     when:
-      executor.delete(applicationWithoutName)
+    executor.delete(applicationWithoutName)
 
     then:
-      thrown(NullPointerException)
+    thrown(NullPointerException)
   }
 }
