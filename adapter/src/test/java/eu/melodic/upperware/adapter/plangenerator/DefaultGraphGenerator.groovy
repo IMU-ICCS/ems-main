@@ -42,23 +42,61 @@ class DefaultGraphGeneratorTests extends Specification {
     POJOCreatorExample c = new POJOCreatorExample()
     Map<GraphValidator.TASK_TYPE, Set<Task>> tasks = new HashMap<>()
 
-    Collection<CloudApi> cloudApis = Lists.newArrayList(c.createApi(tasks))
-    Collection<Cloud> clouds = Lists.newArrayList(c.createCloud(tasks))
-    Collection<CloudProperty> cloudProperties = Lists.newArrayList(c.createCloudProperty(tasks))
-    Collection<CloudCredential> cloudCredentials = Lists.newArrayList(c.createCloudCredential(tasks))
-    Application application = c.createApplication(tasks)
-    ApplicationInstance applicationInstance = c.createApplicationInstance(tasks)
-    Collection<LifecycleComponent> lifecycleComponents = Lists.newArrayList(c.createLifecycleComponentEl(tasks), c.createLifecycleComponentApp(tasks))
-    Collection<VirtualMachine> virtualMachines = (Lists.newArrayList(c.createVirtualMachineEl(tasks), c.createVirtualMachineApp(tasks)))
+    Collection<CloudApi> cloudApis =
+            Lists.newArrayList(c.createApi(tasks))
+    Collection<Cloud> clouds =
+            Lists.newArrayList(c.createCloud(tasks))
+    Collection<CloudProperty> cloudProperties =
+            Lists.newArrayList(c.createCloudProperty(tasks))
+    Collection<CloudCredential> cloudCredentials =
+            Lists.newArrayList(c.createCloudCredential(tasks))
 
-    Collection<VirtualMachineInstance> virtualMachineInstances = Lists.newArrayList(c.createVirtualMachineInstanceEl(tasks), c.createVirtualMachineInstanceApp(tasks))
-    Collection<ApplicationComponent> applicationComponents = Lists.newArrayList(c.createApplicationComponentEl(), c.createApplicationComponentApp())
-    Collection<ApplicationComponentInstance> applicationComponentInstances = Lists.newArrayList(c.createApplicationComponentInstanceEl(), c.createApplicationComponentInstanceApp())
-    Collection<Communication> communications = Lists.newArrayList(c.createCommunication())
-    Collection<PortProvided> portsProvided = Lists.newArrayList(c.createPortProvided10000(), c.createPortProvided9200())
-    Collection<PortRequired> portsRequired = Lists.newArrayList(c.createPortRequired())
-    Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = Lists.newArrayList(c.toMonitor1(), c.toMonitor2())
-    Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = Lists.newArrayList(c.toMonitor3(), c.toMonitor4())
+    Application application =
+            c.createApplication(tasks)
+    ApplicationInstance applicationInstance =
+            c.createApplicationInstance(tasks)
+
+    Collection<LifecycleComponent> lifecycleComponents =
+            Lists.newArrayList(
+                    c.createLifecycleComponentEl(tasks),
+                    c.createLifecycleComponentApp(tasks))
+
+    Collection<VirtualMachine> virtualMachines =
+            (Lists.newArrayList(
+                    c.createVirtualMachineEl(tasks),
+                    c.createVirtualMachineApp(tasks)))
+    Collection<VirtualMachineInstance> virtualMachineInstances =
+            Lists.newArrayList(
+                    c.createVirtualMachineInstanceEl(tasks),
+                    c.createVirtualMachineInstanceApp(tasks))
+
+    Collection<ApplicationComponent> applicationComponents =
+            Lists.newArrayList(
+                    c.createApplicationComponentEl(tasks),
+                    c.createApplicationComponentApp(tasks))
+
+    Collection<ApplicationComponentInstance> applicationComponentInstances =
+            Lists.newArrayList(
+                    c.createApplicationComponentInstanceEl(tasks),
+                    c.createApplicationComponentInstanceApp(tasks))
+
+    Collection<Communication> communications =
+            Lists.newArrayList(c.createCommunication(tasks))
+    Collection<PortProvided> portsProvided =
+            Lists.newArrayList(
+                    c.createPortProvided10000(tasks),
+                    c.createPortProvided9200(tasks))
+    Collection<PortRequired> portsRequired =
+            Lists.newArrayList(c.createPortRequired(tasks))
+
+    Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors =
+            Lists.newArrayList(
+                    c.toMonitor1(tasks),
+                    c.toMonitor2(tasks))
+    Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors =
+            Lists.newArrayList(
+                    c.toMonitor3(tasks),
+                    c.toMonitor4(tasks))
 
     //Collection<CloudApi> cloudApis = new LinkedList<CloudApi>()
     //cloudApis.add(cloudApi)

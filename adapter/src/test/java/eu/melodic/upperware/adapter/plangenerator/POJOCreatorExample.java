@@ -173,7 +173,8 @@ public class POJOCreatorExample {
     return t;
   }
 
-  VirtualMachineInstance createVirtualMachineInstanceApp(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  VirtualMachineInstance createVirtualMachineInstanceApp(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     VirtualMachineInstance t = VirtualMachineInstance.builder()
             .name("WM_DAMVMInstance_1_11")
             .vmName("VM_DAM")
@@ -187,8 +188,10 @@ public class POJOCreatorExample {
     return t;
   }
 
-  ApplicationComponent createApplicationComponentEl() {
-    return ApplicationComponent.builder()
+  ApplicationComponent createApplicationComponentEl(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+
+    ApplicationComponent t = ApplicationComponent.builder()
             .name("DamAcEl")
             .appName("DamApp")
             .lcName("DamWEl")
@@ -198,10 +201,15 @@ public class POJOCreatorExample {
             .hardware("m4.large")
             .image("ami-b9b394ca")
             .build();
+    Set<Task> set = new HashSet<>();
+    set.add(new ApplicationComponentTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT, set);
+    return t;
   }
 
-  ApplicationComponent createApplicationComponentApp() {
-    return ApplicationComponent.builder()
+  ApplicationComponent createApplicationComponentApp(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    ApplicationComponent t = ApplicationComponent.builder()
             .name("DamAcApp")
             .appName("DamApp")
             .lcName("DamWApp")
@@ -211,10 +219,14 @@ public class POJOCreatorExample {
             .hardware("t2.medium")
             .image("ami-b9b394ca")
             .build();
+    tasks.get(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT)
+            .add(new ApplicationComponentTask(Type.CREATE, t));
+    return t;
   }
 
-  ApplicationComponentInstance createApplicationComponentInstanceEl() {
-    return ApplicationComponentInstance.builder()
+  ApplicationComponentInstance createApplicationComponentInstanceEl(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    ApplicationComponentInstance t = ApplicationComponentInstance.builder()
             .name("DamAcEl_Instance")
             .acName("DamAcEl")
             .vmInstName("WM_DAM_ELVMInstance_1_3")
@@ -226,10 +238,15 @@ public class POJOCreatorExample {
             .hardware("m4.large")
             .image("ami-b9b394ca")
             .build();
+    Set<Task> set = new HashSet<>();
+    set.add(new ApplicationComponentInstanceTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT_INSTANCE, set);
+    return t;
   }
 
-  ApplicationComponentInstance createApplicationComponentInstanceApp() {
-    return ApplicationComponentInstance.builder()
+  ApplicationComponentInstance createApplicationComponentInstanceApp(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    ApplicationComponentInstance t = ApplicationComponentInstance.builder()
             .name("DamAcApp_Instance")
             .acName("DamAcApp")
             .vmInstName("WM_DAMVMInstance_1_11")
@@ -241,18 +258,28 @@ public class POJOCreatorExample {
             .hardware("t2.medium")
             .image("ami-b9b394ca")
             .build();
+
+    tasks.get(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT_INSTANCE)
+            .add(new ApplicationComponentInstanceTask(Type.CREATE, t));
+    return t;
   }
 
-  Communication createCommunication() {
-    return Communication.builder()
+  Communication createCommunication(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    Communication t = Communication.builder()
             .name("CommProvReq")
             .portProvName("ELPortA")
             .portReqName("ELPortAReq")
             .build();
+    Set<Task> set = new HashSet<>();
+    set.add(new CommunicationTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.COMMUNICATION, set);
+    return t;
   }
 
-  PortProvided createPortProvided10000() {
-    return PortProvided.builder()
+  PortProvided createPortProvided10000(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    PortProvided t = PortProvided.builder()
             .name("Dam2Port")
             .acName("DamAcApp")
             .port(10000)
@@ -264,10 +291,15 @@ public class POJOCreatorExample {
             .hardware("t2.medium")
             .image("ami-b9b394ca")
             .build();
+    Set<Task> set = new HashSet<>();
+    set.add(new PortProvidedTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.PORT_PROVIDED, set);
+    return t;
   }
 
-  PortProvided createPortProvided9200() {
-    return PortProvided.builder()
+  PortProvided createPortProvided9200(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    PortProvided t = PortProvided.builder()
             .name("ELPortA")
             .acName("DamAcEl")
             .port(9200)
@@ -279,6 +311,9 @@ public class POJOCreatorExample {
             .hardware("m4.large")
             .image("ami-b9b394ca")
             .build();
+    tasks.get(GraphValidator.TASK_TYPE.PORT_PROVIDED)
+            .add(new PortProvidedTask(Type.CREATE, t));
+    return t;
   }
 
   PortProvided createPortProvided443() {
@@ -296,8 +331,9 @@ public class POJOCreatorExample {
             .build();
   }
 
-  PortRequired createPortRequired() {
-    return PortRequired.builder()
+  PortRequired createPortRequired(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    PortRequired t = PortRequired.builder()
             .name("ELPortAReq")
             .acName("DamAcApp")
             .mandatory(Boolean.TRUE)
@@ -309,33 +345,59 @@ public class POJOCreatorExample {
             .hardware("t2.medium")
             .image("ami-b9b394ca")
             .build();
+    Set<Task> set = new HashSet<>();
+    set.add(new PortRequiredTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.PORT_REQUIRED, set);
+    return t;
   }
 
-  VirtualMachineInstanceMonitor toMonitor1() {
-    return VirtualMachineInstanceMonitor.builder()
+  VirtualMachineInstanceMonitor toMonitor1(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    VirtualMachineInstanceMonitor t = VirtualMachineInstanceMonitor.builder()
             .vmInstName("WM_DAM_ELVMInstance_1_3")
             .vmInstTimeout(100000L)
             .build();
+    Set<Task> set = new HashSet<>();
+    set.add(new VirtualMachineInstanceMonitorTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.VM_INSTANCE_MONITOR, set);
+    return t;
   }
 
-  VirtualMachineInstanceMonitor toMonitor2() {
-    return VirtualMachineInstanceMonitor.builder()
+  VirtualMachineInstanceMonitor toMonitor2(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    VirtualMachineInstanceMonitor t = VirtualMachineInstanceMonitor.builder()
             .vmInstName("WM_DAMVMInstance_1_11")
             .vmInstTimeout(100000L)
             .build();
+    tasks.get(GraphValidator.TASK_TYPE.VM_INSTANCE_MONITOR)
+            .add(new VirtualMachineInstanceMonitorTask(Type.CREATE, t));
+
+    return t;
+
   }
 
-  ApplicationComponentInstanceMonitor toMonitor3() {
-    return ApplicationComponentInstanceMonitor.builder()
+  ApplicationComponentInstanceMonitor toMonitor3(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
             .acInstName("DamAcEl_Instance")
             .acInstTimeout(100000L)
             .build();
+
+    Set<Task> set = new HashSet<>();
+    set.add(new ApplicationComponentInstanceMonitorTask(Type.CREATE, t));
+    tasks.put(GraphValidator.TASK_TYPE.APP_COMP_INSTANCE_MONITOR, set);
+    return t;
   }
 
-  ApplicationComponentInstanceMonitor toMonitor4() {
-    return ApplicationComponentInstanceMonitor.builder()
+  ApplicationComponentInstanceMonitor toMonitor4(
+          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+    ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
             .acInstName("DamAcApp_Instance")
             .acInstTimeout(100000L)
             .build();
+
+    tasks.get(GraphValidator.TASK_TYPE.APP_COMP_INSTANCE_MONITOR)
+            .add(new ApplicationComponentInstanceMonitorTask(Type.CREATE, t));
+    return t;
   }
 }
