@@ -16,6 +16,8 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.CloudApiTask
 import org.springframework.boot.test.context.SpringBootTest
 import spock.lang.Specification
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE
 
@@ -40,17 +42,16 @@ class CloudApiTaskExecutorTests extends Specification {
     name = "testName"
     driver = "testDriver"
 
-    cloudApi = Stub(CloudApi)
+    cloudApi = Mock(CloudApi)
     cloudApi.getDriver() >> driver
     cloudApi.getName() >> name
 
-    cloudApiWithoutName = Stub(CloudApi)
+    cloudApiWithoutName = Mock(CloudApi)
     cloudApiWithoutName.getName() >> null
 
-    cloudApiWithoutDriver = Stub(CloudApi)
+    cloudApiWithoutDriver = Mock(CloudApi)
+    cloudApiWithoutDriver.getName() >> name
     cloudApiWithoutDriver.getDriver() >> null
-
-
 
     cloudApiTask = Mock(CloudApiTask)
     collection = Mock(Collection)
@@ -64,12 +65,13 @@ class CloudApiTaskExecutorTests extends Specification {
 
     setup:
     context.getCloudApi(_) >> Optional.empty()
+    c = new Api(name,driver)
 
     when:
     executor.create(cloudApi)
 
     then:
-    1 * context.addCloudApi(_)
+    1 * context.addCloudApi(c)
   }
 
   def "cloud api create: api already exists - exception"() {
@@ -91,6 +93,7 @@ class CloudApiTaskExecutorTests extends Specification {
 
     then:
     thrown(NullPointerException)
+    //TODO 0 * checkNotNull(_)
   }
 
   def "cloud api create: null api fields - exception"() {
@@ -99,13 +102,17 @@ class CloudApiTaskExecutorTests extends Specification {
     executor.create(cloudApiWithoutName)
 
     then:
+    1 * cloudApiWithoutName.getName()
     thrown(NullPointerException)
+    0 * cloudApiWithoutName.getDriver()
 
     when:
     executor.create(cloudApiWithoutDriver)
 
     then:
+    1 * cloudApiWithoutDriver.getDriver()
     thrown(NullPointerException)
+    0 * context.getCloudApi(_)
   }
 
 
@@ -148,7 +155,9 @@ class CloudApiTaskExecutorTests extends Specification {
     executor.update(cloudApiWithoutDriver)
 
     then:
+    1 * cloudApiWithoutDriver.getDriver()
     thrown(NullPointerException)
+    0 * context.getCloudApi(_)
   }
 
   def "cloud api delete: correct - exception"() {

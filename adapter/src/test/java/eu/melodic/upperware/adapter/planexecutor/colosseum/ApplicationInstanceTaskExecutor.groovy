@@ -44,11 +44,11 @@ class ApplicationInstanceTaskExecutorTests extends Specification {
     appName = "testAppName"
     id = 12345L
 
-    appInstance = Stub(ApplicationInstance)
+    appInstance = Mock(ApplicationInstance)
     appInstance.getName() >> name
     appInstance.getAppName() >> appName
 
-    appInstanceWithoutName = Stub(ApplicationInstance)
+    appInstanceWithoutName = Mock(ApplicationInstance)
     appInstanceWithoutName.getName() >> null
 
     appInstEntity = Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance)
@@ -118,7 +118,9 @@ class ApplicationInstanceTaskExecutorTests extends Specification {
     executor.create(appInstanceWithoutName)
 
     then:
+    1 * appInstanceWithoutName.getName()
     thrown(NullPointerException)
+    0 * appInstanceWithoutName.getAppName()
   }
 
 
@@ -133,7 +135,9 @@ class ApplicationInstanceTaskExecutorTests extends Specification {
     executor.create(appInstance)
 
     then:
+    1 * appEntity.getId()
     thrown(NullPointerException)
+    0 * api.createApplicationInstance(_)//fixme: constructor?
   }
 
 
@@ -192,6 +196,8 @@ class ApplicationInstanceTaskExecutorTests extends Specification {
     executor.delete(appInstanceWithoutName)
 
     then:
+    1 * appInstanceWithoutName.getName()
     thrown(NullPointerException)
+    0 * appInstanceWithoutName.getAppName()
   }
 }

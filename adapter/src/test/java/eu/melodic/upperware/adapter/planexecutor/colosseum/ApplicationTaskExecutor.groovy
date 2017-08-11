@@ -38,11 +38,11 @@ class ApplicationTaskExecutorTests extends Specification {
     name = "testName"
     oldName = "testOldName"
 
-    application = Stub(Application)
+    application = Mock(Application)
     application.getName() >> name
     application.getOldName() >> oldName
 
-    applicationWithoutName = Stub(Application)
+    applicationWithoutName = Mock(Application)
     applicationWithoutName.getName() >> null
 
     applicationEntity = Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.Application)
@@ -96,7 +96,9 @@ class ApplicationTaskExecutorTests extends Specification {
     executor.create(applicationWithoutName)
 
     then:
+    1 * applicationWithoutName.getName()
     thrown(NullPointerException)
+    0 * context.getApplication(_)
   }
 
   def "application update: correct"() {
@@ -139,7 +141,9 @@ class ApplicationTaskExecutorTests extends Specification {
     executor.update(applicationWithoutName)
 
     then:
+    1 * applicationWithoutName.getName()
     thrown(NullPointerException)
+    0 * applicationWithoutName.getOldName()
   }
 
   def "application delete: correct"() {
@@ -182,6 +186,8 @@ class ApplicationTaskExecutorTests extends Specification {
     executor.delete(applicationWithoutName)
 
     then:
+    1 * applicationWithoutName.getName()
     thrown(NullPointerException)
+    0 * context.getApplication(_)
   }
 }
