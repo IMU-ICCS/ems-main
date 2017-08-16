@@ -9,16 +9,14 @@
 
 package eu.melodic.upperware.adapter.plangenerator;
 
-import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -33,35 +31,36 @@ public class GraphValidator {
     PORT_PROVIDED, PORT_REQUIRED, COMMUNICATION,
     VM_INSTANCE_MONITOR, APP_COMP_INSTANCE_MONITOR
   }
-
   private static boolean checkVertex(Task v, SimpleDirectedGraph<Task, DefaultEdge> graph,
-                                     Map<TASK_TYPE, Set<Task>> tasks) {
+                                     Map<TASK_TYPE, Set<Task>> tasks,
+                                     Map<TASK_TYPE, Set<TASK_TYPE>> dependencies) {
+    Map<TASK_TYPE, Predicate<Task>> predicateMap = new HashMap<>();
+
     if (v instanceof CloudApiTask) {
       return containsOnlyOutEdges(v, graph, tasks.get(TASK_TYPE.CLOUD_API));
     }
 
     if (v instanceof CloudTask) {
-      return containsConnections(v, graph, tasks.get(TASK_TYPE.CLOUD), tasks.get(TASK_TYPE.CLOUD_API),
-              task -> ((CloudApiTask) task).getData().getName()
-                      .equals(((CloudTask) v).getData().getApiName()));
-//      return containsConnectionsWithCloudApiTasks(v, graph,
-//              tasks.get(TASK_TYPE.CLOUD),
-//              ((CloudTask)v).getData().getApiName(),
-//              tasks.get(TASK_TYPE.CLOUD_API));
+      predicateMap.put(TASK_TYPE.CLOUD_API, task -> ((CloudApiTask) task).getData().getName()
+              .equals(((CloudTask) v).getData().getApiName()));
+
+      return checkConnections(v, TASK_TYPE.CLOUD, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof CloudPropertyTask) {
-      return containsConnectionsWithCloudTasks(v, graph,
-              tasks.get(TASK_TYPE.CLOUD_PROPERTY),
-              ((CloudPropertyTask) v).getData().getCloudName(),
-              tasks.get(TASK_TYPE.CLOUD));
+      predicateMap.put(TASK_TYPE.CLOUD, task -> (
+              (CloudTask) task).getData().getName()
+              .equals(((CloudPropertyTask) v).getData().getCloudName()));
+
+      return checkConnections(v, TASK_TYPE.CLOUD_PROPERTY, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof CloudCredentialTask) {
-      return containsConnectionsWithCloudTasks(v, graph,
-              tasks.get(TASK_TYPE.CLOUD_CREDENTIAL),
-              ((CloudCredentialTask) v).getData().getCloudName(),
-              tasks.get(TASK_TYPE.CLOUD));
+      predicateMap.put(TASK_TYPE.CLOUD, task -> (
+              (CloudTask) task).getData().getName()
+              .equals(((CloudCredentialTask) v).getData().getCloudName()));
+
+      return checkConnections(v, TASK_TYPE.CLOUD_CREDENTIAL, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationTask) {
@@ -69,77 +68,91 @@ public class GraphValidator {
     }
 
     if (v instanceof ApplicationInstanceTask) {
-      return containsConnectionWithApplication(v, graph,
-              tasks.get(TASK_TYPE.APPLICATION_INSTANCE), tasks.get(TASK_TYPE.APPLICATION));
+      predicateMap.put(TASK_TYPE.APPLICATION, task -> (task!=null));
+
+      return checkConnections(v, TASK_TYPE.APPLICATION_INSTANCE, graph, tasks, dependencies, predicateMap);
     }
+
     if (v instanceof LifecycleComponentTask) {
       return containsOnlyOutEdges(v, graph, tasks.get(TASK_TYPE.LIFECYCLE));
     }
 
     if (v instanceof VirtualMachineTask) {
-      return containsConnectionsWithCloudTasks(v, graph,
-              tasks.get(TASK_TYPE.VIRTUALMACHINE),
-              ((VirtualMachineTask) v).getData().getCloudName(),
-              tasks.get(TASK_TYPE.CLOUD));
+      predicateMap.put(TASK_TYPE.CLOUD, task -> (
+              (CloudTask) task).getData().getName()
+              .equals(((VirtualMachineTask) v).getData().getCloudName()));
+
+      return checkConnections(v, TASK_TYPE.VIRTUALMACHINE, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof VirtualMachineInstanceTask) {
-      return containsConnectionsWithVmTasks(v,
-              ((VirtualMachineInstanceTask) v).getData().getVmName(), graph,
-              tasks.get(TASK_TYPE.VIRTUALMACHINE_INSTANCE),
-              tasks.get(TASK_TYPE.VIRTUALMACHINE));
+      predicateMap.put(TASK_TYPE.VIRTUALMACHINE, task -> (
+              (VirtualMachineTask) task).getData().getName()
+              .equals(((VirtualMachineInstanceTask) v).getData().getVmName()));
+
+      return checkConnections(v, TASK_TYPE.VIRTUALMACHINE_INSTANCE, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationComponentTask) {
-      return containsConnectionsApplicationComponent((ApplicationComponentTask) v,
-              graph, tasks.get(TASK_TYPE.APPLICATION_COMPONENT),
-              tasks.get(TASK_TYPE.APPLICATION), tasks.get(TASK_TYPE.LIFECYCLE),
-              tasks.get(TASK_TYPE.VIRTUALMACHINE));
+      predicateMap.put(TASK_TYPE.APPLICATION, task -> ((ApplicationTask) task).getData().getName()
+              .equals(((ApplicationComponentTask) v).getData().getAppName()));
+      predicateMap.put(TASK_TYPE.LIFECYCLE, task -> ((LifecycleComponentTask) task).getData().getName()
+              .equals(((ApplicationComponentTask) v).getData().getLcName()));
+      predicateMap.put(TASK_TYPE.VIRTUALMACHINE, task -> ((VirtualMachineTask) task).getData().getName()
+              .equals(((ApplicationComponentTask) v).getData().getVmName()));
+
+      return checkConnections(v, TASK_TYPE.APPLICATION_COMPONENT, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationComponentInstanceTask) {
-      return containsConnectionsApplicationComponentInstance(
-              (ApplicationComponentInstanceTask) v, graph,
-              tasks.get(TASK_TYPE.APPLICATION_COMPONENT_INSTANCE),
-              tasks.get(TASK_TYPE.APPLICATION_INSTANCE),
-              tasks.get(TASK_TYPE.VIRTUALMACHINE_INSTANCE),
-              tasks.get(TASK_TYPE.APPLICATION_COMPONENT));
+      predicateMap.put(TASK_TYPE.APPLICATION_INSTANCE, task -> (task==null));
+      predicateMap.put(TASK_TYPE.APPLICATION_COMPONENT, task -> ((ApplicationComponentTask) task).getData().getName()
+              .equals(((ApplicationComponentInstanceTask) v).getData().getAcName()));
+      predicateMap.put(TASK_TYPE.VIRTUALMACHINE_INSTANCE, task -> ((VirtualMachineInstanceTask) task).getData().getName()
+              .equals(((ApplicationComponentInstanceTask) v).getData().getVmInstName()));
+
+      return checkConnections(v, TASK_TYPE.APPLICATION_COMPONENT_INSTANCE, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof CommunicationTask) {
-      return containsConnectionsCommunication((CommunicationTask) v, graph,
-              tasks.get(TASK_TYPE.COMMUNICATION),
-              tasks.get(TASK_TYPE.PORT_PROVIDED),
-              tasks.get(TASK_TYPE.PORT_REQUIRED));
+      predicateMap.put(TASK_TYPE.PORT_PROVIDED, task -> ((PortProvidedTask) task).getData().getName()
+              .equals(((CommunicationTask) v).getData().getPortProvName()));
+      predicateMap.put(TASK_TYPE.PORT_REQUIRED, task -> ((PortRequiredTask) task).getData().getName()
+              .equals(((CommunicationTask) v).getData().getPortReqName()));
+
+      return checkConnections(v, TASK_TYPE.COMMUNICATION, graph, tasks, dependencies, predicateMap);
     }
+
     if (v instanceof PortProvidedTask) {
-      return containsConnectionsWithApplicationComponent(v,
-              ((PortProvidedTask) v).getData().getAcName(), graph,
-              tasks.get(TASK_TYPE.PORT_PROVIDED),
-              tasks.get(TASK_TYPE.APPLICATION_COMPONENT));
+      predicateMap.put(TASK_TYPE.APPLICATION_COMPONENT, task -> (
+              (ApplicationComponentTask) task).getData().getName()
+              .equals(((PortProvidedTask) v).getData().getAcName()));
+
+      return checkConnections(v, TASK_TYPE.PORT_PROVIDED, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof PortRequiredTask) {
-      return containsConnectionsWithApplicationComponent(v,
-              ((PortRequiredTask) v).getData().getAcName(), graph,
-              tasks.get(TASK_TYPE.PORT_REQUIRED),
-              tasks.get(TASK_TYPE.APPLICATION_COMPONENT));
+      predicateMap.put(TASK_TYPE.APPLICATION_COMPONENT, task -> (
+              (ApplicationComponentTask) task).getData().getName()
+              .equals(((PortRequiredTask) v).getData().getAcName()));
+
+      return checkConnections(v, TASK_TYPE.PORT_REQUIRED, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof VirtualMachineInstanceMonitorTask) {
-      return containsConnectionsWithVmInstanceTasks(v,
-              ((VirtualMachineInstanceMonitorTask) v).getData().getVmInstName(),
-              graph,
-              tasks.get(TASK_TYPE.VM_INSTANCE_MONITOR),
-              tasks.get(TASK_TYPE.VIRTUALMACHINE_INSTANCE));
+      predicateMap.put(TASK_TYPE.VIRTUALMACHINE_INSTANCE, task -> (
+              (VirtualMachineInstanceTask) task).getData().getName()
+              .equals(((VirtualMachineInstanceMonitorTask) v).getData().getVmInstName()));
+
+      return checkConnections(v, TASK_TYPE.VM_INSTANCE_MONITOR, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationComponentInstanceMonitorTask) {
-      return containsConnectionsWithAppComponentTasks(v,
-              ((ApplicationComponentInstanceMonitorTask) v).getData().getAcInstName(),
-              graph,
-              tasks.get(TASK_TYPE.APP_COMP_INSTANCE_MONITOR),
-              tasks.get(TASK_TYPE.APPLICATION_COMPONENT_INSTANCE));
+      predicateMap.put(TASK_TYPE.APPLICATION_COMPONENT_INSTANCE, task -> (
+              (ApplicationComponentInstanceTask) task).getData().getName()
+              .equals(((ApplicationComponentInstanceMonitorTask) v).getData().getAcInstName()));
+
+      return checkConnections(v, TASK_TYPE.APP_COMP_INSTANCE_MONITOR, graph, tasks, dependencies, predicateMap);
     }
 
 
@@ -153,307 +166,33 @@ public class GraphValidator {
   }
 
 
-  private static boolean containsConnections(Task v,
-                                             SimpleDirectedGraph<Task, DefaultEdge> graph,
-                                             Set<Task> tasks, Set<Task> srcTask,
-                                             Predicate predicate) {
-    if (!tasks.contains(v)) {
-      return false;
-    }
 
-    Holder holder = new Holder();
+  private static boolean checkConnections(Task v, TASK_TYPE t,
+                                          SimpleDirectedGraph<Task, DefaultEdge> graph,
+                                          Map<TASK_TYPE, Set<Task>> tasksMap,
+                                          Map<TASK_TYPE, Set<TASK_TYPE>> dependencies,
+                                          Map <TASK_TYPE, Predicate<Task>> preds){
 
-    Set<Task> filteredTask = filterTasks(srcTask, predicate);
-
-    boolean b = filteredTask.stream()
-            .peek(task -> holder.increment())
-            .allMatch(task -> (graph.containsEdge(task, v)));
-
-    return b && (holder.get() == getInEdges(v, graph));
-
-
-  }
-
-  private static boolean containsConnectionsWithCloudApiTasks(Task v,
-                                                              SimpleDirectedGraph<Task, DefaultEdge> graph,
-                                                              Set<Task> tasks, String cloudApiName,
-                                                              Set<Task> cloudApiTasks) {
-
-
-    int connectedVertex = 0;
-
-    for (Task t : cloudApiTasks) {
-      CloudApiTask c = (CloudApiTask) t;
-      if (c.getData().getName().equals(cloudApiName)) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-
-  }
-
-  private static boolean containsConnectionsWithCloudTasks(
-          Task v,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks,
-          String cloudName,
-          Set<Task> cloudTasks) {
-
+    Set<Task> tasks = tasksMap.get(t);
     if (!tasks.contains(v)) {
       return false;
     }
     Holder holder = new Holder();
 
-    Set<Task> filteredTask = filterTasks(
-            cloudTasks,
-            cloudTask -> ((CloudTask) cloudTask).getData().getName().equals(cloudName));
 
-    boolean b = filteredTask.stream()
-            .peek(task -> holder.increment())
-            .allMatch(task -> (graph.containsEdge(task, v)));
-
-    return b && (holder.get() == getInEdges(v, graph));
-
-
-//    for (Task t : cloudTasks) {
-//      CloudTask c = (CloudTask) t;
-//      if (c.getData().getName().equals(cloudName)){
-//        connectedVertex++;
-//        if (!(graph.containsEdge(t, v))){
-//          return false;
-//        }
+    for (TASK_TYPE connectedType : dependencies.get(t)){
+      Set<Task> filteredTask = filterTasks(tasksMap.get(connectedType), preds.get(connectedType));
+      boolean b = filteredTask.stream()
+              .peek(task -> holder.increment())
+              .allMatch(task -> (graph.containsEdge(task, v)));
+      assert(b);
+//      if (!b){
+//        return false;
 //      }
-//    }
-//    return (connectedVertex == getInEdges(v,graph));
-  }
-
-  private static boolean containsConnectionsWithVmTasks(Task v,
-                                                        String srcNameInVertex,
-                                                        SimpleDirectedGraph<Task, DefaultEdge> graph,
-                                                        Set<Task> tasks,
-                                                        Set<Task> vmTasks) {
-    if (!tasks.contains(v)) {
-      return false;
     }
-    int connectedVertex = 0;
 
-    for (Task t : vmTasks) {
-      VirtualMachineTask c = (VirtualMachineTask) t;
-      if (c.getData().getName().equals(srcNameInVertex)) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
+    return holder.get() == getInEdges(v, graph);
 
-  }
-
-  private static boolean containsConnectionWithApplication(Task v,
-                                                           SimpleDirectedGraph<Task, DefaultEdge> graph,
-                                                           Set<Task> tasks,
-                                                           Set<Task> appTask) {
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 1;
-
-    for (Task t : appTask) {
-      if (t != null) {
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-
-  }
-
-  private static boolean containsConnectionsWithApplicationComponent(
-          Task v, String acName,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks, Set<Task> appCompTasks) {
-
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 0;
-
-    for (Task t : appCompTasks) {
-      ApplicationComponentTask c = (ApplicationComponentTask) t;
-      if (c.getData().getName().equals(acName)) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-  }
-
-  private static boolean containsConnectionsWithVmInstanceTasks(
-          Task v, String vmInstName,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks, Set<Task> vmInstanceTasks) {
-
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 0;
-
-    for (Task t : vmInstanceTasks) {
-      VirtualMachineInstanceTask c = (VirtualMachineInstanceTask) t;
-      if (c.getData().getName().equals(vmInstName)) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-
-  }
-
-
-  private static boolean containsConnectionsWithAppComponentTasks(
-          Task v, String acInstName,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks, Set<Task> appComponentTasks) {
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 0;
-
-    for (Task t : appComponentTasks) {
-      ApplicationComponentInstanceTask c = (ApplicationComponentInstanceTask) t;
-      if (c.getData().getName().equals(acInstName)) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-
-  }
-
-
-  private static boolean containsConnectionsCommunication(
-          CommunicationTask v,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks,
-          Set<Task> portProvTasks, Set<Task> portReqTasks) {
-
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 0;
-
-    for (Task t : portProvTasks) {
-      PortProvidedTask c = (PortProvidedTask) t;
-      if (c.getData().getName().equals(v.getData().getPortProvName())) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    for (Task t : portReqTasks) {
-      PortRequiredTask c = (PortRequiredTask) t;
-      if (c.getData().getName().equals(v.getData().getPortReqName())) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-  }
-
-  private static boolean containsConnectionsApplicationComponent(
-          ApplicationComponentTask v,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks, Set<Task> appTasks,
-          Set<Task> lcTasks, Set<Task> vmTasks) {
-
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 0;
-
-    for (Task t : appTasks) {
-      if (t != null) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    for (Task t : lcTasks) {
-      LifecycleComponentTask c = (LifecycleComponentTask) t;
-      if (c.getData().getName().equals(v.getData().getLcName())) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    for (Task t : vmTasks) {
-      VirtualMachineTask c = (VirtualMachineTask) t;
-      if (c.getData().getName().equals(v.getData().getVmName())) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
-
-  }
-
-
-  private static boolean containsConnectionsApplicationComponentInstance(
-          ApplicationComponentInstanceTask v,
-          SimpleDirectedGraph<Task, DefaultEdge> graph,
-          Set<Task> tasks, Set<Task> appInstanceTasks,
-          Set<Task> vmInstanceTasks, Set<Task> appComponentTasks) {
-
-    if (!tasks.contains(v)) {
-      return false;
-    }
-    int connectedVertex = 0;
-
-    for (Task t : appInstanceTasks) {
-      if (t != null) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    for (Task t : vmInstanceTasks) {
-      VirtualMachineInstanceTask c = (VirtualMachineInstanceTask) t;
-      if (c.getData().getName().equals(v.getData().getVmInstName())) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    for (Task t : appComponentTasks) {
-      ApplicationComponentTask c = (ApplicationComponentTask) t;
-      if (c.getData().getName().equals(v.getData().getAcName())) {
-        connectedVertex++;
-        if (!(graph.containsEdge(t, v))) {
-          return false;
-        }
-      }
-    }
-    return (connectedVertex == getInEdges(v, graph));
   }
 
   private static int getInEdges(Task v, SimpleDirectedGraph<Task, DefaultEdge> graph) {
@@ -486,4 +225,68 @@ public class GraphValidator {
       return connectedVertex;
     }
   }
+
+
+
+
+  private static Set<GraphValidator.TASK_TYPE> addToSet(GraphValidator.TASK_TYPE t){
+    Set<GraphValidator.TASK_TYPE> set = new HashSet<>();
+    set.add(t);
+    return set;
+  }
+
+
+  private static Set<GraphValidator.TASK_TYPE> addToSet(GraphValidator.TASK_TYPE t1, GraphValidator.TASK_TYPE t2){
+    Set<GraphValidator.TASK_TYPE> set = new HashSet<>();
+    set.add(t1);
+    set.add(t2);
+    return set;
+  }
+
+  private static Set<GraphValidator.TASK_TYPE> addToSet(GraphValidator.TASK_TYPE t1, GraphValidator.TASK_TYPE t2,
+                                                        GraphValidator.TASK_TYPE t3){
+    Set<GraphValidator.TASK_TYPE> set = new HashSet<>();
+    set.add(t1);
+    set.add(t2);
+    set.add(t3);
+    return set;
+  }
+
+
+  public static Map<TASK_TYPE, Set<TASK_TYPE>> createDependencies() {
+    Map<TASK_TYPE, Set<TASK_TYPE>> dependencies = new HashMap<>();
+    Set<TASK_TYPE> emptySet = new HashSet<>();
+
+    dependencies.put(TASK_TYPE.CLOUD_API, emptySet);
+    dependencies.put(TASK_TYPE.CLOUD, addToSet(TASK_TYPE.CLOUD_API));
+    dependencies.put(TASK_TYPE.CLOUD_PROPERTY, addToSet(TASK_TYPE.CLOUD));
+    dependencies.put(TASK_TYPE.CLOUD_CREDENTIAL, addToSet(TASK_TYPE.CLOUD));
+    dependencies.put(TASK_TYPE.APPLICATION, emptySet);
+    dependencies.put(TASK_TYPE.APPLICATION_INSTANCE, addToSet(TASK_TYPE.APPLICATION));
+    dependencies.put(TASK_TYPE.LIFECYCLE, emptySet);
+    dependencies.put(TASK_TYPE.VIRTUALMACHINE, addToSet(TASK_TYPE.CLOUD));
+    dependencies.put(TASK_TYPE.VIRTUALMACHINE_INSTANCE, addToSet(TASK_TYPE.VIRTUALMACHINE));
+    dependencies.put(TASK_TYPE.APPLICATION_COMPONENT, addToSet(
+            TASK_TYPE.APPLICATION, TASK_TYPE.LIFECYCLE, GraphValidator.TASK_TYPE.VIRTUALMACHINE));
+
+    dependencies.put(TASK_TYPE.APPLICATION_COMPONENT_INSTANCE, addToSet(
+            TASK_TYPE.APPLICATION_INSTANCE, GraphValidator.TASK_TYPE.VIRTUALMACHINE_INSTANCE,
+            GraphValidator.TASK_TYPE.APPLICATION_COMPONENT));
+
+    dependencies.put(GraphValidator.TASK_TYPE.COMMUNICATION, addToSet(
+            GraphValidator.TASK_TYPE.PORT_PROVIDED, GraphValidator.TASK_TYPE.PORT_REQUIRED));
+
+    dependencies.put(GraphValidator.TASK_TYPE.PORT_PROVIDED, addToSet(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT));
+    dependencies.put(GraphValidator.TASK_TYPE.PORT_REQUIRED, addToSet(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT));
+
+    dependencies.put(GraphValidator.TASK_TYPE.VM_INSTANCE_MONITOR, addToSet(
+            GraphValidator.TASK_TYPE.VIRTUALMACHINE_INSTANCE));
+
+    dependencies.put(GraphValidator.TASK_TYPE.APP_COMP_INSTANCE_MONITOR, addToSet(
+            GraphValidator.TASK_TYPE.APPLICATION_COMPONENT_INSTANCE));
+
+    return dependencies;
+  }
+
+
 }

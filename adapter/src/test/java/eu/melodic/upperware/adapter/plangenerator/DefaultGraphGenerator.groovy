@@ -41,6 +41,7 @@ class DefaultGraphGeneratorTests extends Specification {
 
     POJOCreatorExample c = new POJOCreatorExample()
     Map<GraphValidator.TASK_TYPE, Set<Task>> tasks = new HashMap<>()
+    Map<GraphValidator.TASK_TYPE, Set<GraphValidator.TASK_TYPE>> dependencies = GraphValidator.createDependencies()
 
     Collection<CloudApi> cloudApis =
             Lists.newArrayList(c.createApi(tasks))
@@ -98,8 +99,6 @@ class DefaultGraphGeneratorTests extends Specification {
                     c.toMonitor3(tasks),
                     c.toMonitor4(tasks))
 
-    //Collection<CloudApi> cloudApis = new LinkedList<CloudApi>()
-    //cloudApis.add(cloudApi)
     ComparableModel model = ComparableModel.builder()
             .cloudApis(cloudApis)
             .clouds(clouds)
@@ -126,14 +125,30 @@ class DefaultGraphGeneratorTests extends Specification {
 
     then:
     noExceptionThrown()
-    equalsGraph(graph, tasks)
-    //graph.containsEdge()
+    //equalsGraph(graph, tasks, dependencies) == true
+    checkGraph(graph, tasks, dependencies)
 
   }
 
+  boolean checkGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
+                 Map<GraphValidator.TASK_TYPE, Set<Task>> tasks,
+                 Map<GraphValidator.TASK_TYPE, Set<GraphValidator.TASK_TYPE>> dependencies){
+
+    int tasksSize = 0
+    for (Set<Task> s in tasks.values()) {
+      tasksSize += s.size()
+    }
+    assert(graph.vertexSet().size() == tasksSize)
+
+    for (Task v in graph.vertexSet()) {
+      assert(GraphValidator.checkVertex(v, graph, tasks, dependencies))
+    }
+    return true
+  }
 
   boolean equalsGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
-                      Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+                      Map<GraphValidator.TASK_TYPE, Set<Task>> tasks,
+                      Map<GraphValidator.TASK_TYPE, Set<GraphValidator.TASK_TYPE>> dependencies) {
 
     //wrong amount of vertices
     int tasksSize = 0
@@ -141,11 +156,11 @@ class DefaultGraphGeneratorTests extends Specification {
       tasksSize += s.size()
     }
 
-    //if (graph.vertexSet().size() != tasksSize) {
-    //return false;
-    //}
+    if (graph.vertexSet().size() != tasksSize) {
+      return false
+    }
     for (Task v : graph.vertexSet()) {
-      if (!(GraphValidator.checkVertex(v, graph, tasks))) {
+      if (!(GraphValidator.checkVertex(v, graph, tasks, dependencies))) {
         return false
       }
     }
@@ -154,19 +169,3 @@ class DefaultGraphGeneratorTests extends Specification {
 
 
 }
-
-//Collection<Cloud> clouds = Mock(Collection)
-//    Collection<CloudProperty> cloudProperties = Mock(Collection)
-//    Collection<CloudCredential> cloudCredentials = Mock(Collection)
-//    Application application = Mock(Application)
-//    ApplicationInstance applicationInstance = Mock(ApplicationInstance)
-//    Collection<LifecycleComponent> lifecycleComponents= Mock(Collection)
-//    Collection<VirtualMachine> virtualMachines = Mock(Collection)
-//    Collection<VirtualMachineInstance> virtualMachineInstances = Mock(Collection)
-//    Collection<ApplicationComponent> applicationComponents = Mock(Collection)
-//    Collection<ApplicationComponentInstance> applicationComponentInstances = Mock(Collection)
-//    Collection<Communication> communications = Mock(Collection)
-//    Collection<PortProvided> portsProvided = Mock(Collection)
-//    Collection<PortRequired> portsRequired = Mock(Collection)
-//    Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = Mock(Collection)
-//    Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = Mock(Collection)
