@@ -157,4 +157,4 @@ ADD server.jar server.jar
 ##
 ## Entrypoint
 ##
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["sudo", "/docker-entrypoint.sh"]
