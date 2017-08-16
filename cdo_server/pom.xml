@@ -75,7 +75,7 @@
                 <version>0.4.10</version>
                 <configuration>
                     <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                    <imageName>88.99.85.63:5000/melodic/cdoserver</imageName>
+                    <imageName>172.31.1.100:5000/melodic/cdoserver</imageName>
                     <pushImage>true</pushImage>
                     <resources>
                         <resource>
