@@ -44,6 +44,8 @@ ENV MYSQL_LOG_SLOW="${MYSQL_DEF_LOG}/slow.log"
 ENV MYSQL_LOG_ERROR="${MYSQL_DEF_LOG}/error.log"
 ENV MYSQL_LOG_QUERY="${MYSQL_DEF_LOG}/query.log"
 
+USER root
+
 ###
 ### Install
 ###
@@ -157,4 +159,4 @@ ADD server.jar server.jar
 ##
 ## Entrypoint
 ##
-ENTRYPOINT ["sudo", "/docker-entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
