@@ -31,7 +31,7 @@ public class GraphValidator {
     PORT_PROVIDED, PORT_REQUIRED, COMMUNICATION,
     VM_INSTANCE_MONITOR, APP_COMP_INSTANCE_MONITOR
   }
-  private static boolean checkVertex(Task v, SimpleDirectedGraph<Task, DefaultEdge> graph,
+  static boolean checkVertex(Task v, SimpleDirectedGraph<Task, DefaultEdge> graph,
                                      Map<TASK_TYPE, Set<Task>> tasks,
                                      Map<TASK_TYPE, Set<TASK_TYPE>> dependencies) {
     Map<TASK_TYPE, Predicate<Task>> predicateMap = new HashMap<>();
@@ -105,7 +105,7 @@ public class GraphValidator {
     }
 
     if (v instanceof ApplicationComponentInstanceTask) {
-      predicateMap.put(TASK_TYPE.APPLICATION_INSTANCE, task -> (task==null));
+      predicateMap.put(TASK_TYPE.APPLICATION_INSTANCE, task -> (task!=null));
       predicateMap.put(TASK_TYPE.APPLICATION_COMPONENT, task -> ((ApplicationComponentTask) task).getData().getName()
               .equals(((ApplicationComponentInstanceTask) v).getData().getAcName()));
       predicateMap.put(TASK_TYPE.VIRTUALMACHINE_INSTANCE, task -> ((VirtualMachineInstanceTask) task).getData().getName()
@@ -174,9 +174,9 @@ public class GraphValidator {
                                           Map <TASK_TYPE, Predicate<Task>> preds){
 
     Set<Task> tasks = tasksMap.get(t);
-    if (!tasks.contains(v)) {
-      return false;
-    }
+
+    assert(tasks.contains(v));
+
     Holder holder = new Holder();
 
 
@@ -186,9 +186,6 @@ public class GraphValidator {
               .peek(task -> holder.increment())
               .allMatch(task -> (graph.containsEdge(task, v)));
       assert(b);
-//      if (!b){
-//        return false;
-//      }
     }
 
     return holder.get() == getInEdges(v, graph);
@@ -226,9 +223,6 @@ public class GraphValidator {
     }
   }
 
-
-
-
   private static Set<GraphValidator.TASK_TYPE> addToSet(GraphValidator.TASK_TYPE t){
     Set<GraphValidator.TASK_TYPE> set = new HashSet<>();
     set.add(t);
@@ -250,6 +244,28 @@ public class GraphValidator {
     set.add(t2);
     set.add(t3);
     return set;
+  }
+
+
+  public static Map<TASK_TYPE, Set<Task>> initMap(){
+    Map<TASK_TYPE, Set<Task>> tasks = new HashMap<>();
+    tasks.put(TASK_TYPE.CLOUD_API, new HashSet<>());
+    tasks.put(TASK_TYPE.CLOUD, new HashSet<>());
+    tasks.put(TASK_TYPE.CLOUD_PROPERTY, new HashSet<>());
+    tasks.put(TASK_TYPE.CLOUD_CREDENTIAL, new HashSet<>());
+    tasks.put(TASK_TYPE.APPLICATION, new HashSet<>());
+    tasks.put(TASK_TYPE.APPLICATION_INSTANCE, new HashSet<>());
+    tasks.put(TASK_TYPE.LIFECYCLE, new HashSet<>());
+    tasks.put(TASK_TYPE.VIRTUALMACHINE, new HashSet<>());
+    tasks.put(TASK_TYPE.VIRTUALMACHINE_INSTANCE, new HashSet<>());
+    tasks.put(TASK_TYPE.APPLICATION_COMPONENT, new HashSet<>());
+    tasks.put(TASK_TYPE.APPLICATION_COMPONENT_INSTANCE, new HashSet<>());
+    tasks.put(TASK_TYPE.COMMUNICATION, new HashSet<>());
+    tasks.put(TASK_TYPE.PORT_PROVIDED, new HashSet<>());
+    tasks.put(TASK_TYPE.PORT_REQUIRED, new HashSet<>());
+    tasks.put(TASK_TYPE.VM_INSTANCE_MONITOR, new HashSet<>());
+    tasks.put(TASK_TYPE.APP_COMP_INSTANCE_MONITOR, new HashSet<>());
+    return tasks;
   }
 
 

@@ -4,132 +4,110 @@ import com.google.common.collect.Maps;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class POJOCreatorExample {
 
-  CloudApi createApi(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  CloudApi createApi(String name, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
 
     CloudApi t = CloudApi.builder()
-            .name("EC2Api")
+            .name(name)
             .driver("aws-ec2")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.CLOUD_API);
     set.add(new CloudApiTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.CLOUD_API, set);
     return t;
   }
 
-  Cloud createCloud(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  Cloud createCloud(String name, String apiName, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     Cloud t = Cloud.builder()
-            .name("EC2")
-            .apiName("EC2Api")
+            .name(name)
+            .apiName(apiName)
             .endpoint("https://ec2.eu-west-1.amazonaws.com")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.CLOUD);
     set.add(new CloudTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.CLOUD, set);
     return t;
   }
 
-  CloudProperty createCloudProperty(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  CloudProperty createCloudProperty(String name, String cloudName,
+                                    Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     Map filters = Maps.newHashMap();
     filters.put("sword.ec2.ami.query", "image-id=ami-b9b394ca");
     filters.put("sword.ec2.ami.cc.query", "image-id=ami-b9b394ca");
 
     CloudProperty t = CloudProperty.builder()
-            .name("EC2Property")
-            .cloudName("EC2")
+            .name(name)
+            .cloudName(cloudName)
             .filters(filters)
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.CLOUD_PROPERTY);
     set.add(new CloudPropertyTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.CLOUD_PROPERTY, set);
     return t;
   }
 
-  CloudCredential createCloudCredential(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  CloudCredential createCloudCredential(String name, String cloudName,
+                                        Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     CloudCredential t = CloudCredential.builder()
-            .name("EC2Credential")
-            .cloudName("EC2")
+            .name(name)
+            .cloudName(cloudName)
             .login("AKIAIUVVELYXJVJMKR5A")
             .password("daISW/6LNS5lBTrqkFL5H5ROpzoYDSvLGuhKKuZ0")
             .tenant(1L)
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.CLOUD_CREDENTIAL);
     set.add(new CloudCredentialTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.CLOUD_CREDENTIAL, set);
     return t;
   }
 
-  Application createApplication(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  Application createApplication(String name, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     Application t = Application.builder()
-            .name("DamApp")
+            .name(name)
             .version("1.0")
             .owner("7bulls.com")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.APPLICATION);
     set.add(new ApplicationTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.APPLICATION, set);
     return t;
   }
 
-  ApplicationInstance createApplicationInstance(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  ApplicationInstance createApplicationInstance(String name, String appName, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     ApplicationInstance t = ApplicationInstance.builder()
-            .name("DamAppInst")
-            .appName("DamApp")
+            .name(name)
+            .appName(appName)
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.APPLICATION_INSTANCE);
     set.add(new ApplicationInstanceTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.APPLICATION_INSTANCE, set);
     return t;
   }
 
-  Application createApplicationV2(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    Application t = Application.builder()
-            .name("DamApp2")
-            .version("2.0")
-            .owner("7bulls.com")
-            .build();
-    Set<Task> set = new HashSet<>();
-    set.add(new ApplicationTask(Type.CREATE, t));
-    tasks.put(GraphValidator.TASK_TYPE.APPLICATION, set);
-    return t;
-  }
-
-  LifecycleComponent createLifecycleComponentEl(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  LifecycleComponent createLifecycleComponent(String name, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     LifecycleComponent t = LifecycleComponent.builder()
-            .name("DamWEl")
+            .name(name)
             .preInstallCmd("sudo apt-get -y update && sudo apt-get -y install wget unzip && wget -O download https://owncloud.7bulls.com/index.php/s/K115JCDvH8Br1xG/download && unzip download")
             .installCmd("./paasage-7bc/elastic-docker.sh install")
             .postInstallCmd("./paasage-7bc/elastic-docker.sh configure")
             .startCmd("/paasage-7bc/elastic-docker.sh start")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.LIFECYCLE);
     set.add(new LifecycleComponentTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.LIFECYCLE, set);
     return t;
   }
 
-  LifecycleComponent createLifecycleComponentApp(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    LifecycleComponent t = LifecycleComponent.builder()
-            .name("DamWApp")
-            .preInstallCmd("sudo apt-get -y update && sudo apt-get -y install wget unzip && wget -O download https://owncloud.7bulls.com/index.php/s/K115JCDvH8Br1xG/download && unzip download")
-            .installCmd("./paasage-7bc/dam-docker.sh install")
-            .postInstallCmd("./paasage-7bc/dam-docker.sh configure")
-            .startCmd("/paasage-7bc/dam-docker.sh start")
-            .build();
-    tasks.get(GraphValidator.TASK_TYPE.LIFECYCLE).add(new LifecycleComponentTask(Type.CREATE, t));
-    return t;
-  }
 
-  VirtualMachine createVirtualMachineEl(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  VirtualMachine createVirtualMachine(String name, String cloudName, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     VirtualMachine t = VirtualMachine.builder()
-            .name("VM_EL")
-            .cloudName("EC2")
+            .name(name)
+            .cloudName(cloudName)
             .location("eu-west-1")
             .locationTimeout(100000L)
             .hardware("m4.large")
@@ -137,151 +115,86 @@ public class POJOCreatorExample {
             .image("ami-b9b394ca")
             .imageTimeout(100000L)
             .build();
-    Set<Task> set = new HashSet<>();
+
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.VIRTUALMACHINE);
     set.add(new VirtualMachineTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.VIRTUALMACHINE, set);
     return t;
   }
 
-  VirtualMachine createVirtualMachineApp(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    VirtualMachine t = VirtualMachine.builder()
-            .name("VM_DAM")
-            .cloudName("EC2")
-            .location("eu-west-1")
-            .locationTimeout(100000L)
-            .hardware("t2.medium")
-            .hardwareTimeout(100000L)
-            .image("ami-b9b394ca")
-            .imageTimeout(100000L)
-            .build();
-    tasks.get(GraphValidator.TASK_TYPE.VIRTUALMACHINE).add(new VirtualMachineTask(Type.CREATE, t));
-    return t;
-  }
-
-  VirtualMachineInstance createVirtualMachineInstanceEl(Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  VirtualMachineInstance createVirtualMachineInstance(String name, String vmName, Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     VirtualMachineInstance t = VirtualMachineInstance.builder()
-            .name("WM_DAM_ELVMInstance_1_3")
-            .vmName("VM_EL")
+            .name(name)
+            .vmName(vmName)
             .cloudName("EC2")
             .location("eu-west-1")
             .hardware("m4.large")
             .image("ami-b9b394ca")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.VIRTUALMACHINE_INSTANCE);
     set.add(new VirtualMachineInstanceTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.VIRTUALMACHINE_INSTANCE, set);
     return t;
   }
 
-  VirtualMachineInstance createVirtualMachineInstanceApp(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    VirtualMachineInstance t = VirtualMachineInstance.builder()
-            .name("WM_DAMVMInstance_1_11")
-            .vmName("VM_DAM")
-            .cloudName("EC2")
-            .location("eu-west-1")
-            .hardware("t2.medium")
-            .image("ami-b9b394ca")
-            .build();
-    tasks.get(GraphValidator.TASK_TYPE.VIRTUALMACHINE_INSTANCE)
-            .add(new VirtualMachineInstanceTask(Type.CREATE, t));
-    return t;
-  }
 
-  ApplicationComponent createApplicationComponentEl(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  ApplicationComponent createApplicationComponent(String name, String appName, String lcName, String vmName,
+                                                  Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
 
     ApplicationComponent t = ApplicationComponent.builder()
-            .name("DamAcEl")
-            .appName("DamApp")
-            .lcName("DamWEl")
-            .vmName("VM_DAM")
+            .name(name)
+            .appName(appName)
+            .lcName(lcName)
+            .vmName(vmName)
             .cloudName("EC2")
             .location("eu-west-1")
             .hardware("m4.large")
             .image("ami-b9b394ca")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT);
     set.add(new ApplicationComponentTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT, set);
     return t;
   }
 
-  ApplicationComponent createApplicationComponentApp(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    ApplicationComponent t = ApplicationComponent.builder()
-            .name("DamAcApp")
-            .appName("DamApp")
-            .lcName("DamWApp")
-            .vmName("VM_EL")
-            .cloudName("EC2")
-            .location("eu-west-1")
-            .hardware("t2.medium")
-            .image("ami-b9b394ca")
-            .build();
-    tasks.get(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT)
-            .add(new ApplicationComponentTask(Type.CREATE, t));
-    return t;
-  }
-
-  ApplicationComponentInstance createApplicationComponentInstanceEl(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  ApplicationComponentInstance createApplicationComponentInstance(String name, String appName, String vmInstName, String acName,
+                                                                  Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     ApplicationComponentInstance t = ApplicationComponentInstance.builder()
-            .name("DamAcEl_Instance")
-            .acName("DamAcEl")
-            .vmInstName("WM_DAM_ELVMInstance_1_3")
+            .name(name)
+            .acName(acName)
+            .vmInstName(vmInstName)
             .cloudName("EC2")
-            .appName("DamApp")
+            .appName(appName)
             .lcName("DamWEl")
             .vmName("VM_EL")
             .location("eu-west-1")
             .hardware("m4.large")
             .image("ami-b9b394ca")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT_INSTANCE);
     set.add(new ApplicationComponentInstanceTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT_INSTANCE, set);
     return t;
   }
 
-  ApplicationComponentInstance createApplicationComponentInstanceApp(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    ApplicationComponentInstance t = ApplicationComponentInstance.builder()
-            .name("DamAcApp_Instance")
-            .acName("DamAcApp")
-            .vmInstName("WM_DAMVMInstance_1_11")
-            .cloudName("EC2")
-            .appName("DamApp")
-            .lcName("DamWApp")
-            .vmName("VM_DAM")
-            .location("eu-west-1")
-            .hardware("t2.medium")
-            .image("ami-b9b394ca")
-            .build();
-
-    tasks.get(GraphValidator.TASK_TYPE.APPLICATION_COMPONENT_INSTANCE)
-            .add(new ApplicationComponentInstanceTask(Type.CREATE, t));
-    return t;
-  }
-
-  Communication createCommunication(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  Communication createCommunication(String name, String portProvName, String portReqName,
+                                    Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     Communication t = Communication.builder()
-            .name("CommProvReq")
-            .portProvName("ELPortA")
-            .portReqName("ELPortAReq")
+            .name(name)
+            .portProvName(portProvName)
+            .portReqName(portReqName)
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.COMMUNICATION);
     set.add(new CommunicationTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.COMMUNICATION, set);
     return t;
   }
 
-  PortProvided createPortProvided10000(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  PortProvided createPortProvided(String name, String acName,
+                                  Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     PortProvided t = PortProvided.builder()
-            .name("Dam2Port")
-            .acName("DamAcApp")
+            .name(name)
+            .acName(acName)
             .port(10000)
             .cloudName("EC2")
             .appName("DamApp")
@@ -291,51 +204,17 @@ public class POJOCreatorExample {
             .hardware("t2.medium")
             .image("ami-b9b394ca")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.PORT_PROVIDED);
     set.add(new PortProvidedTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.PORT_PROVIDED, set);
     return t;
   }
 
-  PortProvided createPortProvided9200(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    PortProvided t = PortProvided.builder()
-            .name("ELPortA")
-            .acName("DamAcEl")
-            .port(9200)
-            .cloudName("EC2")
-            .appName("DamApp")
-            .lcName("DamWEl")
-            .vmName("VM_EL")
-            .location("eu-west-1")
-            .hardware("m4.large")
-            .image("ami-b9b394ca")
-            .build();
-    tasks.get(GraphValidator.TASK_TYPE.PORT_PROVIDED)
-            .add(new PortProvidedTask(Type.CREATE, t));
-    return t;
-  }
-
-  PortProvided createPortProvided443() {
-    return PortProvided.builder()
-            .name("Dam1Port")
-            .acName("DamAcApp")
-            .port(443)
-            .cloudName("EC2")
-            .appName("DamApp")
-            .lcName("DamWApp")
-            .vmName("VM_DAM")
-            .location("eu-west-1")
-            .hardware("t2.medium")
-            .image("ami-b9b394ca")
-            .build();
-  }
-
-  PortRequired createPortRequired(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  PortRequired createPortRequired(String name, String acName,
+                                  Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     PortRequired t = PortRequired.builder()
-            .name("ELPortAReq")
-            .acName("DamAcApp")
+            .name(name)
+            .acName(acName)
             .mandatory(Boolean.TRUE)
             .cloudName("EC2")
             .appName("DamApp")
@@ -345,59 +224,34 @@ public class POJOCreatorExample {
             .hardware("t2.medium")
             .image("ami-b9b394ca")
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.PORT_REQUIRED);
     set.add(new PortRequiredTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.PORT_REQUIRED, set);
     return t;
   }
 
-  VirtualMachineInstanceMonitor toMonitor1(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  VirtualMachineInstanceMonitor toMonitor1(String vmInstName,
+                                           Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     VirtualMachineInstanceMonitor t = VirtualMachineInstanceMonitor.builder()
-            .vmInstName("WM_DAM_ELVMInstance_1_3")
+            .vmInstName(vmInstName)
             .vmInstTimeout(100000L)
             .build();
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.VM_INSTANCE_MONITOR);
     set.add(new VirtualMachineInstanceMonitorTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.VM_INSTANCE_MONITOR, set);
     return t;
   }
 
-  VirtualMachineInstanceMonitor toMonitor2(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    VirtualMachineInstanceMonitor t = VirtualMachineInstanceMonitor.builder()
-            .vmInstName("WM_DAMVMInstance_1_11")
-            .vmInstTimeout(100000L)
-            .build();
-    tasks.get(GraphValidator.TASK_TYPE.VM_INSTANCE_MONITOR)
-            .add(new VirtualMachineInstanceMonitorTask(Type.CREATE, t));
-
-    return t;
-
-  }
-
-  ApplicationComponentInstanceMonitor toMonitor3(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
+  ApplicationComponentInstanceMonitor toMonitor3(String acInstName,
+                                                 Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
     ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
-            .acInstName("DamAcEl_Instance")
+            .acInstName(acInstName)
             .acInstTimeout(100000L)
             .build();
 
-    Set<Task> set = new HashSet<>();
+    Set<Task> set = tasks.get(GraphValidator.TASK_TYPE.APP_COMP_INSTANCE_MONITOR);
     set.add(new ApplicationComponentInstanceMonitorTask(Type.CREATE, t));
     tasks.put(GraphValidator.TASK_TYPE.APP_COMP_INSTANCE_MONITOR, set);
-    return t;
-  }
-
-  ApplicationComponentInstanceMonitor toMonitor4(
-          Map<GraphValidator.TASK_TYPE, Set<Task>> tasks) {
-    ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
-            .acInstName("DamAcApp_Instance")
-            .acInstTimeout(100000L)
-            .build();
-
-    tasks.get(GraphValidator.TASK_TYPE.APP_COMP_INSTANCE_MONITOR)
-            .add(new ApplicationComponentInstanceMonitorTask(Type.CREATE, t));
     return t;
   }
 }
