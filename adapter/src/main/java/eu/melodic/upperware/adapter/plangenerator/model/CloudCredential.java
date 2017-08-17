@@ -16,7 +16,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @EqualsAndHashCode
-public class CloudCredential {
+public class CloudCredential implements Data{
 
   private String name;
   private String cloudName;

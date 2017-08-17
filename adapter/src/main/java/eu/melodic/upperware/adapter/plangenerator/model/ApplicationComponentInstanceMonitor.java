@@ -18,8 +18,9 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class ApplicationComponentInstanceMonitor {
+public class ApplicationComponentInstanceMonitor implements Data{
 
+  private String name;//TODO
   private String acInstName;
   private Long acInstTimeout;
 

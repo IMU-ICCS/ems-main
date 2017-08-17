@@ -20,7 +20,7 @@ import java.util.Map;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class CloudProperty {
+public class CloudProperty implements Data{
 
   private String name;
   private String cloudName;

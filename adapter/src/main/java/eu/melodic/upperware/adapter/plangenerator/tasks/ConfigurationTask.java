@@ -9,12 +9,15 @@
 
 package eu.melodic.upperware.adapter.plangenerator.tasks;
 
+import eu.melodic.upperware.adapter.plangenerator.model.Data;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @ToString
+@EqualsAndHashCode
 @AllArgsConstructor
-public abstract class ConfigurationTask<T> implements Task<T> {
+public abstract class ConfigurationTask<T extends Data> implements Task<T> {
 
   private Type type;
   private T data;

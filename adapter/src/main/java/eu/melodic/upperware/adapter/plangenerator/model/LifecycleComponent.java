@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class LifecycleComponent {
+public class LifecycleComponent implements Data {
 
   private String name;
 

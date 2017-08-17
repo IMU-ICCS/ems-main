@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.adapter.planexecutor;
 
+import eu.melodic.upperware.adapter.plangenerator.model.Data;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Type;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ import java.util.concurrent.Future;
 
 @Slf4j
 @AllArgsConstructor
-public abstract class RunnableTaskExecutor<T> implements TaskExecutor<T>, Runnable {
+public abstract class RunnableTaskExecutor<T extends Data> implements TaskExecutor<T>, Runnable {
 
   protected Task<T> task;
 

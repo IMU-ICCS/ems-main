@@ -15,8 +15,9 @@ import lombok.*;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class VirtualMachineInstanceMonitor {
+public class VirtualMachineInstanceMonitor implements Data{
 
+  private String name;//TODO
   private String vmInstName;
   private Long vmInstTimeout;
 
