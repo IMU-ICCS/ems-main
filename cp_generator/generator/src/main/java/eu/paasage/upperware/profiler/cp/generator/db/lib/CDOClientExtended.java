@@ -187,10 +187,10 @@ public class CDOClientExtended extends CDOClient
 		CDOResource cdo = trans.getResource(resourceName);
 		EList<EObject> list = cdo.getContents();
 		
-		ResourceSet rs= new ResourceSetImpl(); 
-		
-		File pcFile= new File("/temp/appModel.xmi"); 
-		
+		ResourceSet rs= new ResourceSetImpl();
+
+		File pcFile= new File("/temp/appModel.xmi");
+
 		try {
 			Resource pcResource = rs.createResource(URI.createFileURI(pcFile.getCanonicalPath()));
 			pcResource.getContents().add(list.get(0)); 

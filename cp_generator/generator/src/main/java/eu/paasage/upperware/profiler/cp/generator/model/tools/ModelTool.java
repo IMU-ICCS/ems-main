@@ -90,7 +90,7 @@ public class ModelTool
 		
         ResourceSet rs = new ResourceSetImpl();
         Resource r = rs.createResource(URI.createFileURI((new File(path)).getAbsolutePath())); //new ResourceImpl(); //rs.getResource(URI.createFileURI((new File(path)).getAbsolutePath()), true);
-       
+
         try {
             r.load(is, null);
             EcoreUtil.resolveAll(r); 

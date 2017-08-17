@@ -13,10 +13,14 @@ package eu.paasage.upperware.profiler.cp.generator.model.tools;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -1144,16 +1148,13 @@ public class PaasageModelTool
 		return appId+"/"+providerId; 
 	}
 	
-	public static boolean existComponentInstance(Component component, List<ComponentInstance> instances)
-	{
+	public static boolean existComponentInstance(Component component, List<ComponentInstance> instances) {
 		String typeId= component.getName(); 
 		
-		for(ComponentInstance instance:instances)
-		{
+		for(ComponentInstance instance:instances) {
 			if(instance.getType().getName().equals(typeId))
 				return true; 
 		}
-		
 		return false; 
 	}
 	
@@ -1383,7 +1384,57 @@ public class PaasageModelTool
 		return id; 
 		
 	}
-	
+
+	public static String getVMProfileId2(String location, String provider, String hardwareId, String osImageId, String vmID) {
+
+		String vmProfileId = Stream.of(location, provider, hardwareId, osImageId, vmID)
+				.filter(StringUtils::isNotBlank)
+				.collect(Collectors.joining("", NAME_SEPARATOR, SUFFIX));
+//
+//		if (StringUtils.isNotBlank(vmProfileId)){
+//			vmProfileId += NAME_SEPARATOR + vmID + SUFFIX;
+//		} else {
+//			vmProfileId += vmID + SUFFIX;
+//		}
+
+		return vmProfileId;
+
+
+//		String id= "";
+//
+//		if(!location.equals(""))
+//		{
+//			id+=location+NAME_SEPARATOR;
+//		}
+//
+//		if(!provider.equals(""))
+//		{
+//			id+=provider+NAME_SEPARATOR;
+//		}
+//
+//		if(!hardwareId.equals(""))
+//		{
+//			id+=hardwareId+NAME_SEPARATOR;
+//		}
+//
+//		if(!osImageId.equals(""))
+//		{
+//			id+=osImageId+NAME_SEPARATOR;
+//		}
+//
+//
+//		if(location.equals("") && provider.equals("") && hardwareId.equals("") && osImageId.equals(""))
+//		{
+//			id+=vmID+SUFFIX;
+//		}
+//		else
+//			id+=NAME_SEPARATOR+vmID+SUFFIX;
+//
+//
+//		return id;
+
+	}
+
 	public static HorizontalScaleRequirement getScaleRequirementForComponent(EList<Requirement> reqs, Component component)
 	{
 		String name= component.getName(); 

@@ -176,7 +176,7 @@ public class CamelModelProcessor {
 			OSOrImageRequirement osImageReq = extractOsRequirement(globalRequirements, vm.getVmRequirementSet());
 			logger.debug("CamelModelProcessor - parseModel - OsImage reqs: "+osImageReq);
 			if(osImageReq!=null) {
-				pmWithImage = checkOS(ontology, pmWithImage, osImageReq);
+				pmWithImage = checkOS(ontology, osImageReq);
 			}
 			
 			//Provider
@@ -291,7 +291,8 @@ public class CamelModelProcessor {
 		return provReq;
 	}
 
-	private ProviderModelDecorator checkOS(OntologyCamel ontology, ProviderModelDecorator pmWithImage, OSOrImageRequirement osImageReq) {
+	private ProviderModelDecorator checkOS(OntologyCamel ontology, OSOrImageRequirement osImageReq) {
+		ProviderModelDecorator result = null;
 		if(osImageReq instanceof OSRequirement) {
             logger.debug("CamelModelProcessor - parseModel - Dealing with OS Requirement");
             OSRequirement osReq= (OSRequirement) osImageReq;
@@ -321,11 +322,11 @@ public class CamelModelProcessor {
 
                 Attribute att= SaloonCamelSolver.getEnumAttributeWithValueInDomain(root, imageId);
                 if(att!=null) {
-                    pmWithImage= pm;
+                    result = pm;
                 }
             }
         }
-		return pmWithImage;
+		return result;
 	}
 
 	private OSOrImageRequirement extractOsRequirement(VMRequirementSet globalRequirements, VMRequirementSet vmRequirementSet) {

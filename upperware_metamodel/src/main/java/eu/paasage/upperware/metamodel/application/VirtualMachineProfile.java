@@ -268,4 +268,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 */
 	void setRelatedCloudVMId(String value);
 
+	String getFlavourName();
+
+	void setFlavourName(String newFlavourName);
+
 } // VirtualMachineProfile

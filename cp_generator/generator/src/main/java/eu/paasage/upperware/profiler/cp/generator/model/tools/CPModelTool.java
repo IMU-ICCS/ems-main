@@ -179,8 +179,10 @@ public class CPModelTool {
 	{
 		for(Constant c: constants)
 		{
-			List<String> info =CPModelTool.getValueFromNumericValue(c.getValue()); 
-						
+			List<String> info =CPModelTool.getValueFromNumericValue(c.getValue());
+
+			Class<Double> doubleClass = Double.class;
+
 			if(info.get(1).equals(Double.class.getCanonicalName()) && Double.parseDouble(info.get(0))==value)		
 			{	
 				
@@ -332,6 +334,8 @@ public class CPModelTool {
 		String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
 				+"  providerId: " +var.getProviderId() + System.lineSeparator()
 				+"  vmId " + var.getVmId() + System.lineSeparator()
+				+"  componentName " + var.getComponentName() + System.lineSeparator()
+				+"  flavourName " + var.getFlavourName() + System.lineSeparator()
 				+"  osImageId: " + var.getOsImageId()+ System.lineSeparator()
 				+"  hardwareId: " + var.getHardwareId() + System.lineSeparator()
 				+"  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
@@ -767,7 +771,8 @@ public class CPModelTool {
 	{
 		return VM_PROFILE_CONSTANT_PREFIX+vmpId; 
 	}
-	
+
+	//TODO - metoda z dupy - to samo mozna pobrac z variable
 	public static String getProviderRelatedToVariable(Variable v)
 	{
 		int posSuffix= v.getId().indexOf(APP_COMPONENT_VAR_SUFFIX); 
@@ -776,7 +781,8 @@ public class CPModelTool {
 		
 		return providerId; 
 	}
-	
+
+	//TODO - metoda z dupy - to samo mozna pobrac z variable
 	public static String getVmProfileRelatedToVariable(Variable v)
 	{
 		int posPrefix= v.getId().indexOf(APP_COMPONENT_VAR_MID); 
@@ -1087,7 +1093,15 @@ public class CPModelTool {
 		
 		return varName; 
 	}
-	
+
+	public static String generateApplicationComponentVarName1(String appComponentName, String vmpName, String providerId, String vmTypeName)
+	{
+		String varName= CPModelTool.APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId+"_"+vmTypeName;
+
+		return varName;
+	}
+
+
 	public static ComparisonExpression createComparisonExpression(ComparatorEnum op, Expression exp1, Expression exp2, String id)
 	{
 		ComparisonExpression exp= CpFactory.eINSTANCE.createComparisonExpression();

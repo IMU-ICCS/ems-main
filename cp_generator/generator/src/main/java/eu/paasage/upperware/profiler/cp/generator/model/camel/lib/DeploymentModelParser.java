@@ -108,7 +108,7 @@ public class DeploymentModelParser
 	/*
 	 * Hash containing for each VM a list with the related profiles
 	 */
-	protected Map<String, List<VirtualMachineProfile>> vmProfiles; 
+	protected Map<String, List<VirtualMachineProfile>> vmProfiles;
 	
 	/*
 	 * Proxy of the Database
@@ -126,7 +126,8 @@ public class DeploymentModelParser
 	/*
 	 * METHODS
 	 */
-	
+
+	//TODO - not used??
 	public Map<String, List<VirtualMachineProfile>> getVmProfiles() {
 		return vmProfiles;
 	}
@@ -327,16 +328,14 @@ public class DeploymentModelParser
 			List<HostingInstance> filtredHostingInstances= PaasageModelTool.getHostingInstanceByTypeId(hostingInstances, hosting.getName()); 
 			
 			InternalComponent client= (InternalComponent) hosting.getRequiredHost().eContainer();
-			
+
 			List<ComponentInstance> cInstanceList= PaasageModelTool.getComponentInstancesList(pim);
 			
 			List<ComponentInstance> filtredComponentInstances= PaasageModelTool.getComponentInstancesByTypeId(cInstanceList, client.getName()); 
 			
-			if(filtredComponentInstances.size()>0)
-				for(ComponentInstance instance:filtredComponentInstances)
-				{
-					if(!PaasageModelTool.existHostingInstanceForComponentInstance(filtredHostingInstances, instance))
-					{
+			if(filtredComponentInstances.size()>0) {
+				for (ComponentInstance instance : filtredComponentInstances) {
+					if (!PaasageModelTool.existHostingInstanceForComponentInstance(filtredHostingInstances, instance)) {
 						defineContainmentDependency(instance.getName(), configuration, hosting);
 						/*ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), instance.getName());
 						
@@ -364,11 +363,11 @@ public class DeploymentModelParser
 							
 							logger.debug("DeployementModelParser - resolveContaimentDependencies - Dependency between "+instance.getName()+" and "+provider.getName()+" created!");
 						}*/
-						
+
 					}
 				}
-			else
-			{
+
+			} else {
 				defineContainmentDependency(client.getName(), configuration, hosting);
 				/*ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), client.getName());
 				
@@ -405,7 +404,7 @@ public class DeploymentModelParser
 	protected void defineContainmentDependency(String clientId, PaasageConfiguration configuration, Hosting hosting)
 	{
 		ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), clientId);
-		
+
 		if(hosting.getProvidedHost().eContainer() instanceof VM)
 		{
 			VM vm= (VM) hosting.getProvidedHost().eContainer(); 
@@ -448,7 +447,7 @@ public class DeploymentModelParser
 	 * @param hostingRelationships The hosting dependencies  
 	 * @param configuration The paasage configuration been created
 	 */
-	protected void resolveContaimentDependencyInstances(EList<HostingInstance> hostingRelationships, PaasageConfiguration configuration)
+	public void resolveContaimentDependencyInstances(EList<HostingInstance> hostingRelationships, PaasageConfiguration configuration)
 	{
 		for(HostingInstance hosting: hostingRelationships)
 		{
@@ -521,7 +520,7 @@ public class DeploymentModelParser
 		String idLocations=	""; 	
 		
 		
-		EList<CloudProvider> providers= null; 
+		EList<CloudProvider> providers= null;
 		String idProviders= ""; 
 		
 		
@@ -537,8 +536,8 @@ public class DeploymentModelParser
 			if(vm.getVmRequirementSet().getLocationRequirement()!=null && vm.getVmRequirementSet().getLocationRequirement().getLocations().size()>0)
 			{	
 				logger.debug("**			Considering Location requirements");
-				locations= vm.getVmRequirementSet().getLocationRequirement().getLocations(); 
-				idLocations= vm.getVmRequirementSet().getLocationRequirement().getName(); 
+				locations= vm.getVmRequirementSet().getLocationRequirement().getLocations();
+				idLocations= vm.getVmRequirementSet().getLocationRequirement().getName();
 			}
 			
 			
@@ -796,7 +795,7 @@ public class DeploymentModelParser
 	protected VirtualMachine buildVM(VirtualMachineProfile vmp, VMInstance vmInstace)
 	{
 		VirtualMachine virtualMachine= applicationFactory.createVirtualMachine(); 
-		
+
 		virtualMachine.setId(vmInstace.getName());
 		virtualMachine.setProfile(vmp);
 		
@@ -890,14 +889,15 @@ public class DeploymentModelParser
 					
 					logger.debug("DeploymentModelParser- buildVMProfile -Provider "+providerId+" created!");
 				}
-				
-				
-				
+
+
+
 				ProviderDimension pd= applicationFactory.createProviderDimension(); //TODO THE METRIC ID ???
 				
 				pd.setValue(0); //TODO THIS VALUE HAS TO BE DEFINED WITH THE PRICE CALCULATION
 				
 				pd.setProvider(providerUpperware);
+
 				
 				vmp.getProviderDimension().add(pd); 
 				

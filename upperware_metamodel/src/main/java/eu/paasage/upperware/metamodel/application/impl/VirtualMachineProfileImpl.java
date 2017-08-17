@@ -221,4 +221,14 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__RELATED_CLOUD_VM_ID, newRelatedCloudVMId);
 	}
 
+	@Override
+	public String getFlavourName() {
+		return (String)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID, true);
+	}
+
+	@Override
+	public void setFlavourName(String newFlavourName) {
+		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID, newFlavourName);
+	}
+
 } //VirtualMachineProfileImpl

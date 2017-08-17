@@ -181,4 +181,15 @@ public interface Variable extends NumericExpression {
 	 */
 	void setHardwareId(String value);
 
+
+	void setComponentName(String newComponentName) ;
+
+	String getComponentName();
+
+
+	void setFlavourName(String newFlavourName) ;
+
+	String getFlavourName();
+
+
 } // Variable

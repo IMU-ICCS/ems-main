@@ -736,7 +736,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		List<EObject> result= cloner.cloneModel(ONTOLOGY_ID);
 		return (OntologyCamel) result.get(0);
 	}
-	
+
 	/**
 	 * Loads the provider models from the database or the file systems
 	 */

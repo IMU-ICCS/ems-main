@@ -543,6 +543,16 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		return (EAttribute)variableEClass.getEStructuralFeatures().get(5);
 	}
 
+	@Override
+	public EAttribute getVariable_ComponentName() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(6);
+	}
+
+	@Override
+	public EAttribute getVariable_FlavourName() {
+		return (EAttribute)variableEClass.getEStructuralFeatures().get(7);
+	}
+
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1216,6 +1226,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEAttribute(variableEClass, VARIABLE__VM_ID);
 		createEAttribute(variableEClass, VARIABLE__OS_IMAGE_ID);
 		createEAttribute(variableEClass, VARIABLE__HARDWARE_ID);
+		createEAttribute(variableEClass, VARIABLE__COMPONENT_NAME);
+		createEAttribute(variableEClass, VARIABLE__FLAVOUR_NAME);
 
 		domainEClass = createEClass(DOMAIN);
 
@@ -1392,6 +1404,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEAttribute(getVariable_VmId(), ecorePackage.getEString(), "vmId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getVariable_OsImageId(), ecorePackage.getEString(), "OsImageId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getVariable_HardwareId(), ecorePackage.getEString(), "hardwareId", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_ComponentName(), ecorePackage.getEString(), "componentName", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getVariable_FlavourName(), ecorePackage.getEString(), "flavourName", null, 0, 1, Variable.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(domainEClass, Domain.class, "Domain", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
