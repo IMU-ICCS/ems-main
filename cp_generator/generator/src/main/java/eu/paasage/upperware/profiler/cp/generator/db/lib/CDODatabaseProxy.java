@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -56,7 +57,6 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
 import fr.inria.paasage.saloon.camel.mapping.MappingListCamel;
@@ -264,7 +264,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 			{
 				logger.debug("CDODatabaseProxy - loadFunctionTypes - Registring Function Types! "+ FUNCTION_TYPES_FILE_PATH+ " "+ is);
 				
-				Resource r= ModelTool.loadModelFromInputStream(FUNCTION_TYPES_FILE_PATH,is); 
+				Resource r= ModelTool.loadModelFromInputStream(FUNCTION_TYPES_FILE_PATH,is);
 				
 				functionTypes= (FunctionTypes) r.getContents().get(0); 
 				
@@ -741,7 +741,6 @@ public class CDODatabaseProxy extends DatabaseProxy
 	 * Loads the provider models from the database or the file systems
 	 */
 	protected void loadPMs() {
-		//TO jest ta metoda
 
 		List<EObject> providersList= null;
 		

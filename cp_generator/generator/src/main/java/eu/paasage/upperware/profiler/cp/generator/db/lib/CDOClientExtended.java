@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -45,7 +46,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 
 /**
  * @author Daniel Romero

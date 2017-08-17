@@ -23,6 +23,12 @@ public class CamelModelService {
     private static final String FEATURE_NAME_VM = "VM";
     private static final String ATTRIBUTE_NAME_VM_TYPE = "VMType";
 
+    private static final String VM_STORAGE = "VMStorage";
+    private static final String VM_CORES = "VMCores";
+    private static final String VM_MEMORY = "VMMemory";
+    private static final String VM_CPU = "VMCpu";   //TODO - PSZKUP - is it correct value?
+
+
     public Map<String, List<AttributeConstraint>> getAttributes(ProviderModel providerModel) {
         List<String> vmTypeNames = getVMProfileInstanceNames(providerModel);
 
@@ -74,21 +80,33 @@ public class CamelModelService {
         return result;
     }
 
-    public List<Flavour> convertToFlavours(Collection<ProviderModel> providerModels) {
-        return providerModels.stream()
-                .map(this::convertToFlavours)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
-
     public List<Flavour> convertToFlavours(ProviderModel providerModel) {
         Map<String, List<AttributeConstraint>> attributes = getAttributes(providerModel);
 
         attributes.forEach((key, value) -> log.info("attribute: " + key + " size: " + value.size()));
 
         return attributes.entrySet().stream()
-                .map(entry -> Flavour.createFlavour(providerModel, entry.getKey(), entry.getValue()))
+                .map(entry -> createFlavour(providerModel, entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    private Flavour createFlavour(ProviderModel provider, String vmTypeName, List<AttributeConstraint> attributes){
+        Flavour instance = new Flavour();
+        instance.setProvider(provider);
+        instance.setVmTypeName(vmTypeName);
+
+        getAttributeConstraintByName(attributes, VM_STORAGE).ifPresent(instance::setStorage);
+        getAttributeConstraintByName(attributes, VM_CORES).ifPresent(instance::setCores);
+        getAttributeConstraintByName(attributes, VM_MEMORY).ifPresent(instance::setMemory);
+        getAttributeConstraintByName(attributes, VM_CPU).ifPresent(instance::setCpu);
+
+        return instance;
+    }
+
+    private Optional<AttributeConstraint> getAttributeConstraintByName(List<AttributeConstraint> attributes, String attributeName){
+        return attributes.stream()
+                .filter(attribute -> attributeName.equals((attribute.getTo()).getName()))
+                .findFirst();
     }
 
 }

@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.junit.BeforeClass;
@@ -27,7 +28,6 @@ import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import fr.inria.paasage.saloon.price.model.lib.EstimatorsManager;
 import fr.inria.paasage.saloon.price.model.tools.Constants;
-import fr.inria.paasage.saloon.price.model.tools.ModelTool;
 
 public class AmazonEC2EstimatorTests 
 {
@@ -66,7 +66,7 @@ public class AmazonEC2EstimatorTests
 	{
 		File amazonFMFile= new File(filePath); 
 		
-		Resource r= ModelTool.loadModel(amazonFMFile); 
+		Resource r= ModelTool.loadModel(amazonFMFile);
 		
 		configuration= (ProviderModel) r.getContents().get(0); 
 	}

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import eu.passage.upperware.commons.model.tools.CPModelTool;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -29,7 +30,6 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metasolver.exception.MetricMapperException;
 import eu.paasage.upperware.metasolver.util.CdoTool;
 import eu.paasage.upperware.metasolver.util.CpModelTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 
 /**
  * The metrics Mapper prepares a CP model for submission to the solver. It

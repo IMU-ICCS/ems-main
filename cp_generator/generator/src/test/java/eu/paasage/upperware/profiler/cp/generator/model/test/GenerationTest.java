@@ -41,7 +41,7 @@ import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 //import eu.paasage.upperware.profiler.cp.generator.model.lib.ModelFileInfo;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;

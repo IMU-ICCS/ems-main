@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -76,8 +78,7 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.StringValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
+
 
 
 /**
@@ -449,7 +450,7 @@ public class ToLaBasedReasonerFormat
 		    Map<String, Object> m = reg.getExtensionToFactoryMap();
 		    m.put("*", new XMIResourceFactoryImpl());
 			
-			Resource res= ModelTool.loadModel(modelFile); 
+			Resource res= ModelTool.loadModel(modelFile);
 			
 			ConstraintProblem cp= (ConstraintProblem) res.getContents().get(0); 
 			

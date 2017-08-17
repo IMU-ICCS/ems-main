@@ -37,7 +37,7 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
+//import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
 /**
  * A utiltiy to load a CP model from an xmi file.
@@ -60,7 +60,7 @@ public final class CpModelTool {
 		TypesPaasagePackage.eINSTANCE.eClass(); 
 		TypesPackage.eINSTANCE.eClass(); 
 		CpPackage.eINSTANCE.eClass();
-		OntologyPackage.eINSTANCE.eClass();		
+//		OntologyPackage.eINSTANCE.eClass();
 		// Register the XMI resource factory for the .xmi extension
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
 				new XMIResourceFactoryImpl());

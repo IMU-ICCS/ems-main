@@ -11,12 +11,9 @@
 package eu.paasage.upperware.profiler.cp.generator.model.camel.deploymentModel.test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -46,7 +43,6 @@ import eu.paasage.upperware.profiler.cp.generator.db.lib.CDOClientExtended;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.camel.lib.DeploymentModelParser;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
@@ -175,7 +171,7 @@ public class DeploymentModelTest
 		
 		File camelFile=new File(CAMEL_FILE_SCALARM_FULL);
 		
-		Resource res= ModelTool.loadModel(camelFile); 
+		Resource res= ModelTool.loadModel(camelFile);
 		
 		CamelModel cm= (CamelModel) res.getContents().get(0); 
 		

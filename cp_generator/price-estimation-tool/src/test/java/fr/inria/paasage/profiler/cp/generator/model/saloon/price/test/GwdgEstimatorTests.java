@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.junit.BeforeClass;
@@ -25,8 +26,6 @@ import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.ProviderPackage;
 import fr.inria.paasage.saloon.price.model.lib.EstimatorsManager;
 import fr.inria.paasage.saloon.price.model.tools.Constants;
-import fr.inria.paasage.saloon.price.model.tools.ModelTool;
-
 
 public class GwdgEstimatorTests 
 {
@@ -62,7 +61,7 @@ public class GwdgEstimatorTests
 	{
 		File gwdgFMFile= new File(filePath); 
 		
-		Resource r= ModelTool.loadModel(gwdgFMFile); 
+		Resource r= ModelTool.loadModel(gwdgFMFile);
 		
 		configuration= (ProviderModel) r.getContents().get(0); 
 	}

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
@@ -81,7 +82,6 @@ import eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import eu.paasage.upperware.profiler.rp.algebra.Algebra;
 import eu.paasage.upperware.profiler.rp.algebra.AlgebraVariable;
 import eu.paasage.upperware.profiler.rp.algebra.ExpressionUtils;

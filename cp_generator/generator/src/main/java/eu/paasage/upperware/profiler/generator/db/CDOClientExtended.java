@@ -78,7 +78,7 @@ public class CDOClientExtended extends CDOClient {
                 .map(Resource::getContents)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-        
+
         storeModelsWithCrossReferences(collect, resourceName);
     }
 
