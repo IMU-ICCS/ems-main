@@ -29,8 +29,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(cloud -> new CloudApiTask(type, cloud)).collect(toList());
 
     cloudApiTasks.forEach(cloudApiTask -> {
-      log.debug("Adding vertex {}", cloudApiTask);
-      graph.addVertex(cloudApiTask);
+      addVertex(graph, cloudApiTask);
     });
 
     return cloudApiTasks;
@@ -42,15 +41,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(cloud -> new CloudTask(type, cloud)).collect(toList());
 
     cloudTasks.forEach(cloudTask -> {
-      log.debug("Adding vertex {}", cloudTask);
-      graph.addVertex(cloudTask);
+      addVertex(graph, cloudTask);
 
       String apiName = cloudTask.getData().getApiName();
-      cloudApiTasks.forEach(cloudApiTask -> {
-        if (cloudApiTask.getData().getName().equals(apiName)) {
-          setDependencies(graph, type, cloudApiTask, cloudTask);
-        }
-      });
+      findAndSetDependencies(graph, cloudTask, apiName, cloudApiTasks, type);
     });
 
     return cloudTasks;
@@ -62,15 +56,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(cloud -> new CloudPropertyTask(type, cloud)).collect(toList());
 
     cloudPropertyTasks.forEach(cloudPropertyTask -> {
-      log.debug("Adding vertex {}", cloudPropertyTask);
-      graph.addVertex(cloudPropertyTask);
+      addVertex(graph, cloudPropertyTask);
 
       String cloudName = cloudPropertyTask.getData().getCloudName();
-      cloudTasks.forEach(cloudTask -> {
-        if (cloudTask.getData().getName().equals(cloudName)) {
-          setDependencies(graph, type, cloudTask, cloudPropertyTask);
-        }
-      });
+      findAndSetDependencies(graph, cloudPropertyTask, cloudName, cloudTasks, type);
     });
 
     return cloudPropertyTasks;
@@ -82,15 +71,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(cloud -> new CloudCredentialTask(type, cloud)).collect(toList());
 
     cloudCredentialTasks.forEach(cloudCredentialTask -> {
-      log.debug("Adding vertex {}", cloudCredentialTask);
-      graph.addVertex(cloudCredentialTask);
+      addVertex(graph, cloudCredentialTask);
 
       String cloudName = cloudCredentialTask.getData().getCloudName();
-      cloudTasks.forEach(cloudTask -> {
-        if (cloudTask.getData().getName().equals(cloudName)) {
-          setDependencies(graph, type, cloudTask, cloudCredentialTask);
-        }
-      });
+      findAndSetDependencies(graph, cloudCredentialTask, cloudName, cloudTasks, type);
     });
 
     return cloudCredentialTasks;
@@ -99,8 +83,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
   protected ApplicationTask genAppTask(Graph<Task, DefaultEdge> graph, Type type, Application app) {
     ApplicationTask appTask = new ApplicationTask(type, app);
 
-    log.debug("Adding vertex {}", appTask);
-    graph.addVertex(appTask);
+    addVertex(graph, appTask);
 
     return appTask;
   }
@@ -109,8 +92,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
           ApplicationTask appTask, ApplicationInstance appInst) {
     ApplicationInstanceTask appInstTask = new ApplicationInstanceTask(type, appInst);
 
-    log.debug("Adding vertex {}", appInstTask);
-    graph.addVertex(appInstTask);
+    addVertex(graph, appInstTask);
 
     if (appTask != null) {
       setDependencies(graph, type, appTask, appInstTask);
@@ -125,8 +107,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(lc -> new LifecycleComponentTask(type, lc)).collect(toList());
 
     lcTasks.forEach(lcTask -> {
-      log.debug("Adding vertex {}", lcTask);
-      graph.addVertex(lcTask);
+      addVertex(graph, lcTask);
     });
 
     return lcTasks;
@@ -138,15 +119,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(vm -> new VirtualMachineTask(type, vm)).collect(toList());
 
     vmTasks.forEach(vmTask -> {
-      log.debug("Adding vertex {}", vmTask);
-      graph.addVertex(vmTask);
+      addVertex(graph, vmTask);
 
       String cloudName = vmTask.getData().getCloudName();
-      cloudTasks.forEach(cloudTask -> {
-        if (cloudTask.getData().getName().equals(cloudName)) {
-          setDependencies(graph, type, cloudTask, vmTask);
-        }
-      });
+      findAndSetDependencies(graph, vmTask, cloudName, cloudTasks, type);
     });
 
     return vmTasks;
@@ -158,15 +134,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(vmInst -> new VirtualMachineInstanceTask(type, vmInst)).collect(toList());
 
     vmInstTasks.forEach(vmInstTask -> {
-      log.debug("Adding vertex {}", vmInstTask);
-      graph.addVertex(vmInstTask);
+      addVertex(graph, vmInstTask);
 
       String vmName = vmInstTask.getData().getVmName();
-      vmTasks.forEach(vmTask -> {
-        if (vmTask.getData().getName().equals(vmName)) {
-          setDependencies(graph, type, vmTask, vmInstTask);
-        }
-      });
+      findAndSetDependencies(graph, vmInstTask, vmName, vmTasks, type);
     });
 
     return vmInstTasks;
@@ -179,8 +150,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(ac -> new ApplicationComponentTask(type, ac)).collect(toList());
 
     acTasks.forEach(acTask -> {
-      log.debug("Adding vertex {}", acTask);
-      graph.addVertex(acTask);
+      addVertex(graph, acTask);
 
       if (appTask != null) {
         setDependencies(graph, type, appTask, acTask);
@@ -189,18 +159,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       ApplicationComponent ac = acTask.getData();
 
       String lcName = ac.getLcName();
-      lcTasks.forEach(lcTask -> {
-        if (lcTask.getData().getName().equals(lcName)) {
-          setDependencies(graph, type, lcTask, acTask);
-        }
-      });
-
       String vmName = ac.getVmName();
-      vmTasks.forEach(vmTask -> {
-        if (vmTask.getData().getName().equals(vmName)) {
-          setDependencies(graph, type, vmTask, acTask);
-        }
-      });
+
+      findAndSetDependencies(graph, acTask, lcName, lcTasks, type);
+      findAndSetDependencies(graph, acTask, vmName, vmTasks, type);
     });
 
     return acTasks;
@@ -213,8 +175,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(acInst -> new ApplicationComponentInstanceTask(type, acInst)).collect(toList());
 
     acInstTasks.forEach(acInstTask -> {
-      log.debug("Adding vertex {}", acInstTask);
-      graph.addVertex(acInstTask);
+      addVertex(graph, acInstTask);
 
       if (appInstTask != null) {
         setDependencies(graph, type, appInstTask, acInstTask);
@@ -223,18 +184,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       ApplicationComponentInstance acInst = acInstTask.getData();
 
       String acName = acInst.getAcName();
-      acTasks.forEach(acTask -> {
-        if (acTask.getData().getName().equals(acName)) {
-          setDependencies(graph, type, acTask, acInstTask);
-        }
-      });
-
       String vmInstName = acInst.getVmInstName();
-      vmInstTasks.forEach(vmInstTask -> {
-        if (vmInstTask.getData().getName().equals(vmInstName)) {
-          setDependencies(graph, type, vmInstTask, acInstTask);
-        }
-      });
+
+      findAndSetDependencies(graph, acInstTask, acName, acTasks, type);
+      findAndSetDependencies(graph, acInstTask, vmInstName, vmInstTasks, type);
     });
 
     return acInstTasks;
@@ -246,15 +199,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(portProv -> new PortProvidedTask(type, portProv)).collect(toList());
 
     portProvTasks.forEach(portProvTask -> {
-      log.debug("Adding vertex {}", portProvTask);
-      graph.addVertex(portProvTask);
+      addVertex(graph, portProvTask);
 
       String acName = portProvTask.getData().getAcName();
-      acTasks.forEach(acTask -> {
-        if (acTask.getData().getName().equals(acName)) {
-          setDependencies(graph, type, acTask, portProvTask);
-        }
-      });
+      findAndSetDependencies(graph, portProvTask, acName, acTasks, type);
     });
 
     return portProvTasks;
@@ -266,15 +214,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(portReq -> new PortRequiredTask(type, portReq)).collect(toList());
 
     portReqTasks.forEach(portReqTask -> {
-      log.debug("Adding vertex {}", portReqTask);
-      graph.addVertex(portReqTask);
+      addVertex(graph, portReqTask);
 
       String acName = portReqTask.getData().getAcName();
-      acTasks.forEach(acTask -> {
-        if (acTask.getData().getName().equals(acName)) {
-          setDependencies(graph, type, acTask, portReqTask);
-        }
-      });
+      findAndSetDependencies(graph, portReqTask, acName, acTasks, type);
     });
 
     return portReqTasks;
@@ -287,24 +230,14 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(comm -> new CommunicationTask(type, comm)).collect(toList());
 
     commTasks.forEach(commTask -> {
-      log.debug("Adding vertex {}", commTask);
-      graph.addVertex(commTask);
+      addVertex(graph, commTask);
 
       Communication comm = commTask.getData();
-
       String portProvName = comm.getPortProvName();
-      portProvTasks.forEach(portProTask -> {
-        if (portProTask.getData().getName().equals(portProvName)) {
-          setDependencies(graph, type, portProTask, commTask);
-        }
-      });
-
       String portReqName = comm.getPortReqName();
-      portReqTasks.forEach(portReqTask -> {
-        if (portReqTask.getData().getName().equals(portReqName)) {
-          setDependencies(graph, type, portReqTask, commTask);
-        }
-      });
+
+      findAndSetDependencies(graph, commTask, portProvName, portProvTasks, type);
+      findAndSetDependencies(graph, commTask, portReqName, portReqTasks, type);
     });
 
     return commTasks;
@@ -316,17 +249,12 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(vmInstMonitor -> new VirtualMachineInstanceMonitorTask(type, vmInstMonitor)).collect(toList());
 
     vmInstMonitorTasks.forEach(vmInstMonitorTask -> {
-      log.debug("Adding vertex {}", vmInstMonitorTask);
-      graph.addVertex(vmInstMonitorTask);
+      addVertex(graph, vmInstMonitorTask);
 
       VirtualMachineInstanceMonitor vmInstMonitor = vmInstMonitorTask.getData();
-
       String vmInstName = vmInstMonitor.getVmInstName();
-      vmInstTasks.forEach(vmInstTask -> {
-        if (vmInstTask.getData().getName().equals(vmInstName)) {
-          setDependencies(graph, type, vmInstTask, vmInstMonitorTask);
-        }
-      });
+
+      findAndSetDependencies(graph, vmInstMonitorTask, vmInstName, vmInstTasks, type);
     });
 
     return vmInstMonitorTasks;
@@ -339,21 +267,17 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       .map(acInstMonitor -> new ApplicationComponentInstanceMonitorTask(type, acInstMonitor)).collect(toList());
 
     acInstMonitorTasks.forEach(acInstMonitorTask -> {
-      log.debug("Adding vertex {}", acInstMonitorTask);
-      graph.addVertex(acInstMonitorTask);
+      addVertex(graph, acInstMonitorTask);
 
       ApplicationComponentInstanceMonitor acInstMonitor = acInstMonitorTask.getData();
-
       String acInstName = acInstMonitor.getAcInstName();
-      acInstTasks.forEach(acInstTask -> {
-        if (acInstTask.getData().getName().equals(acInstName)) {
-          setDependencies(graph, type, acInstTask, acInstMonitorTask);
-        }
-      });
+
+      findAndSetDependencies(graph, acInstMonitorTask, acInstName, acInstTasks, type);
     });
 
     return acInstMonitorTasks;
   }
+
 
   protected void setDependencies(Graph<Task, DefaultEdge> graph, Type type, Task source, Task target) {
     if (DELETE.equals(type)) {
@@ -362,6 +286,20 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     } else {
       log.debug("Setting {} as a dependency to {}", source, target);
       graph.addEdge(source, target);
+    }
+  }
+
+  protected void addVertex(Graph<Task,DefaultEdge> graph, Task task){
+    log.debug("Adding vertex {}", task);
+    graph.addVertex(task);
+  }
+
+  private void findAndSetDependencies(Graph<Task,DefaultEdge> graph, Task task, String depName,
+                                         Collection<? extends Task> depTasks, Type type){
+    for (Task depTask: depTasks){
+      if (depTask.getData().getName().equals(depName)){
+        setDependencies(graph,type, depTask, task);
+      }
     }
   }
 }
