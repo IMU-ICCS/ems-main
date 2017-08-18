@@ -10,22 +10,22 @@
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
 import com.google.common.collect.Lists;
+import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.Graph;
 import org.jgrapht.alg.DirectedNeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Set;
 
+import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
+import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.UPDATE;
@@ -39,7 +39,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   public SimpleDirectedGraph<Task, DefaultEdge> generateConfigGraph(ComparableModel model) {
     log.info("Building configuration graph from prepared model");
 
-    SimpleDirectedGraph<Task, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+    MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, CONFIG);
 
     Collection<CloudApiTask> cloudApiTasks = genCloudApiConfigTasks(
       graph, model.getCloudApis());
@@ -81,10 +81,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   }
 
   @Override
-  public SimpleDirectedWeightedGraph<Task, DefaultEdge> generateReconfigGraph(ComparableModel oldModel, ComparableModel newModel) {
+  public SimpleDirectedGraph<Task, DefaultEdge> generateReconfigGraph(ComparableModel oldModel, ComparableModel newModel) {
     log.info("Building reconfiguration graph from prepared models");
 
-    SimpleDirectedWeightedGraph<Task, DefaultEdge> graph = new SimpleDirectedWeightedGraph<>(DefaultEdge.class);
+    MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, RECONFIG);
 
     Collection<CloudApiTask> cloudApiTasks = genCloudApiReconfigTasks(
       graph,oldModel.getCloudApis(), newModel.getCloudApis());
@@ -129,12 +129,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return graph;
   }
 
-  private Collection<CloudApiTask> genCloudApiConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudApiTask> genCloudApiConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudApi> cloudApis) {
     return genCloudApiTasks(graph, CREATE, cloudApis);
   }
 
-  private Collection<CloudApiTask> genCloudApiReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudApiTask> genCloudApiReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudApi> oldCloudApis, Collection<CloudApi> newCloudApis) {
     Collection<CloudApiTask> cloudApiTasks = Lists.newArrayList();
 
@@ -159,12 +159,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return cloudApiTasks;
   }
 
-  private Collection<CloudTask> genCloudConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudTask> genCloudConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> clouds) {
     return genCloudTasks(graph, CREATE, cloudApiTasks, clouds);
   }
 
-  private Collection<CloudTask> genCloudReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudTask> genCloudReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> oldClouds, Collection<Cloud> newClouds) {
     Collection<CloudTask> cloudTasks = Lists.newArrayList();
 
@@ -189,12 +189,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return cloudTasks;
   }
 
-  private Collection<CloudPropertyTask> genCloudPropertyConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudPropertyTask> genCloudPropertyConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudProperty> cloudProperties) {
     return genCloudPropertyTasks(graph, CREATE, cloudTasks, cloudProperties);
   }
 
-  private Collection<CloudPropertyTask> genCloudPropertyReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudPropertyTask> genCloudPropertyReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudProperty> oldCloudProperties,
           Collection<CloudProperty> newCloudProperties) {
     Collection<CloudPropertyTask> cloudPropertyTasks = Lists.newArrayList();
@@ -216,12 +216,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return cloudPropertyTasks;
   }
 
-  private Collection<CloudCredentialTask> genCloudCredentialConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudCredentialTask> genCloudCredentialConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudCredential> cloudCredentials) {
     return genCloudCredentialTasks(graph, CREATE, cloudTasks, cloudCredentials);
   }
 
-  private Collection<CloudCredentialTask> genCloudCredentialReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<CloudCredentialTask> genCloudCredentialReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudCredential> oldCloudCredentials,
           Collection<CloudCredential> newCloudCredentials) {
     Collection<CloudCredentialTask> cloudCredentialTasks = Lists.newArrayList();
@@ -249,11 +249,11 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return cloudCredentialTasks;
   }
 
-  private ApplicationTask genAppConfigTask(Graph<Task, DefaultEdge> graph, Application app) {
+  private ApplicationTask genAppConfigTask(MelodicGraph<Task, DefaultEdge> graph, Application app) {
     return genAppTask(graph, CREATE, app);
   }
 
-  private ApplicationTask genReconfigAppTask(Graph<Task, DefaultEdge> graph, Application oldApp, Application newApp) {
+  private ApplicationTask genReconfigAppTask(MelodicGraph<Task, DefaultEdge> graph, Application oldApp, Application newApp) {
     if (!newApp.equals(oldApp)) {
       newApp.setOldName(oldApp.getName());
       return genAppTask(graph, UPDATE, newApp);
@@ -261,17 +261,17 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return null;
   }
 
-  private ApplicationInstanceTask genAppInstConfigTask(Graph<Task, DefaultEdge> graph, ApplicationTask appTask,
+  private ApplicationInstanceTask genAppInstConfigTask(MelodicGraph<Task, DefaultEdge> graph, ApplicationTask appTask,
           ApplicationInstance appInst) {
     return genAppInstTask(graph, CREATE, appTask, appInst);
   }
 
-  private Collection<LifecycleComponentTask> genLcConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<LifecycleComponentTask> genLcConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<LifecycleComponent> lcs) {
     return genLcTasks(graph, CREATE, lcs);
   }
 
-  private Collection<LifecycleComponentTask> genLcReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<LifecycleComponentTask> genLcReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<LifecycleComponent> oldLcs, Collection<LifecycleComponent> newLcs) {
     Collection<LifecycleComponentTask> lcTasks = Lists.newArrayList();
 
@@ -283,12 +283,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return lcTasks;
   }
 
-  private Collection<VirtualMachineTask> genVmConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<VirtualMachineTask> genVmConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<VirtualMachine> vms) {
     return genVmTasks(graph, CREATE, cloudTasks, vms);
   }
 
-  private Collection<VirtualMachineTask> genVmReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<VirtualMachineTask> genVmReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<VirtualMachine> oldVms, Collection<VirtualMachine> newVms) {
     Collection<VirtualMachineTask> vmTasks = Lists.newArrayList();
 
@@ -300,12 +300,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return vmTasks;
   }
 
-  private Collection<VirtualMachineInstanceTask> genVmInstConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<VirtualMachineInstanceTask> genVmInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> vmInsts) {
     return genVmInstTasks(graph, CREATE, vmTasks, vmInsts);
   }
 
-  private Collection<VirtualMachineInstanceTask> genVmInstReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<VirtualMachineInstanceTask> genVmInstReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> oldVmInsts,
           Collection<VirtualMachineInstance> newVmInsts) {
     Collection<VirtualMachineInstanceTask> vmInstTasks = Lists.newArrayList();
@@ -318,13 +318,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return vmInstTasks;
   }
 
-  private Collection<ApplicationComponentTask> genAcConfigTasks(Graph<Task, DefaultEdge> graph, ApplicationTask appTask,
+  private Collection<ApplicationComponentTask> genAcConfigTasks(MelodicGraph<Task, DefaultEdge> graph, ApplicationTask appTask,
           Collection<LifecycleComponentTask> lcTasks, Collection<VirtualMachineTask> vmTasks,
           Collection<ApplicationComponent> acs) {
     return genAcTasks(graph, CREATE, appTask, lcTasks, vmTasks, acs);
   }
 
-  private Collection<ApplicationComponentTask> genAcReconfigTasks(Graph<Task, DefaultEdge> graph, ApplicationTask appTask,
+  private Collection<ApplicationComponentTask> genAcReconfigTasks(MelodicGraph<Task, DefaultEdge> graph, ApplicationTask appTask,
           Collection<LifecycleComponentTask> lcTasks, Collection<VirtualMachineTask> vmTasks,
           Collection<ApplicationComponent> oldAcs, Collection<ApplicationComponent> newAcs) {
     Collection<ApplicationComponentTask> acTasks = Lists.newArrayList();
@@ -337,13 +337,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return acTasks;
   }
 
-  private Collection<ApplicationComponentInstanceTask> genAcInstConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<ApplicationComponentInstanceTask> genAcInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
           Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<ApplicationComponentInstance> acInsts) {
     return genAcInstTasks(graph, CREATE, appInstTask, acTasks, vmInstTasks, acInsts);
   }
 
-  private Collection<ApplicationComponentInstanceTask> genAcInstReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<ApplicationComponentInstanceTask> genAcInstReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<VirtualMachineInstanceTask> vmInstTasks,
           Collection<ApplicationComponentInstance> oldAcInsts, Collection<ApplicationComponentInstance> newAcInsts) {
     Collection<ApplicationComponentInstanceTask> acInstTasks = Lists.newArrayList();
@@ -356,12 +356,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return acInstTasks;
   }
 
-  private Collection<PortProvidedTask> genPortProvConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<PortProvidedTask> genPortProvConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> portsProv) {
     return genPortProvTasks(graph, CREATE, acTasks, portsProv);
   }
 
-  private Collection<PortProvidedTask> genPortProvReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<PortProvidedTask> genPortProvReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> oldPortsProv,
           Collection<PortProvided> newPortsProv) {
     Collection<PortProvidedTask> portProvTasks = Lists.newArrayList();
@@ -374,12 +374,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return portProvTasks;
   }
 
-  private Collection<PortRequiredTask> genPortReqConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<PortRequiredTask> genPortReqConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> portsReq) {
     return genPortReqTasks(graph, CREATE, acTasks, portsReq);
   }
 
-  private Collection<PortRequiredTask> genPortReqReconfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<PortRequiredTask> genPortReqReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> oldPortsReq,
           Collection<PortRequired> newPortsReq) {
     Collection<PortRequiredTask> portReqTasks = Lists.newArrayList();
@@ -392,13 +392,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return portReqTasks;
   }
 
-  private Collection<CommunicationTask> genCommConfigTasks(SimpleDirectedGraph<Task, DefaultEdge> graph,
+  private Collection<CommunicationTask> genCommConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
           Collection<Communication> comms) {
     return genCommTasks(graph, CREATE, portProvTasks, portReqTasks, comms);
   }
 
-  private Collection<CommunicationTask> genCommReconfigTasks(SimpleDirectedWeightedGraph<Task, DefaultEdge> graph,
+  private Collection<CommunicationTask> genCommReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
           Collection<Communication> oldComms, Collection<Communication> newComms) {
     Collection<CommunicationTask> commTasks = Lists.newArrayList();
@@ -411,17 +411,17 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return commTasks;
   }
 
-  private Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<VirtualMachineInstanceMonitor> vmInstMonitors) {
     return genVmInstMonitorTasks(graph, CREATE, vmInstTasks, vmInstMonitors);
   }
 
-  private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorConfigTasks(Graph<Task, DefaultEdge> graph,
+  private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> acInstMonitors) {
     return genAcInstMonitorTasks(graph, CREATE, acInstTasks, acInstMonitors);
   }
 
-  private void setDeleteTasksAfterMonitors(DirectedGraph<Task, DefaultEdge> graph,
+  private void setDeleteTasksAfterMonitors(MelodicGraph<Task, DefaultEdge> graph,
           Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
           Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks) {
     DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);

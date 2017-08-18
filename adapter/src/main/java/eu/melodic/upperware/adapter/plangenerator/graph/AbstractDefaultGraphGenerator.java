@@ -9,21 +9,23 @@
 
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
+import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import lombok.extern.slf4j.Slf4j;
-import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import java.util.Collection;
 
+import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator<T> {
 
-  protected Collection<CloudApiTask> genCloudApiTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<CloudApiTask> genCloudApiTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
                                                       Collection<CloudApi> cloudApis) {
     Collection<CloudApiTask> cloudApiTasks = cloudApis.stream()
       .map(cloud -> new CloudApiTask(type, cloud)).collect(toList());
@@ -35,7 +37,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return cloudApiTasks;
   }
 
-  protected Collection<CloudTask> genCloudTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<CloudTask> genCloudTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> clouds) {
     Collection<CloudTask> cloudTasks = clouds.stream()
       .map(cloud -> new CloudTask(type, cloud)).collect(toList());
@@ -50,7 +52,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return cloudTasks;
   }
 
-  protected Collection<CloudPropertyTask> genCloudPropertyTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<CloudPropertyTask> genCloudPropertyTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<CloudTask> cloudTasks, Collection<CloudProperty> cloudProperties) {
     Collection<CloudPropertyTask> cloudPropertyTasks = cloudProperties.stream()
       .map(cloud -> new CloudPropertyTask(type, cloud)).collect(toList());
@@ -65,7 +67,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return cloudPropertyTasks;
   }
 
-  protected Collection<CloudCredentialTask> genCloudCredentialTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<CloudCredentialTask> genCloudCredentialTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<CloudTask> cloudTasks, Collection<CloudCredential> cloudCredentials) {
     Collection<CloudCredentialTask> cloudCredentialTasks = cloudCredentials.stream()
       .map(cloud -> new CloudCredentialTask(type, cloud)).collect(toList());
@@ -80,7 +82,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return cloudCredentialTasks;
   }
 
-  protected ApplicationTask genAppTask(Graph<Task, DefaultEdge> graph, Type type, Application app) {
+  protected ApplicationTask genAppTask(MelodicGraph<Task, DefaultEdge> graph, Type type, Application app) {
     ApplicationTask appTask = new ApplicationTask(type, app);
 
     addVertex(graph, appTask);
@@ -88,7 +90,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return appTask;
   }
 
-  protected ApplicationInstanceTask genAppInstTask(Graph<Task, DefaultEdge> graph, Type type,
+  protected ApplicationInstanceTask genAppInstTask(MelodicGraph<Task, DefaultEdge> graph, Type type,
           ApplicationTask appTask, ApplicationInstance appInst) {
     ApplicationInstanceTask appInstTask = new ApplicationInstanceTask(type, appInst);
 
@@ -101,7 +103,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return appInstTask;
   }
 
-  protected Collection<LifecycleComponentTask> genLcTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<LifecycleComponentTask> genLcTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<LifecycleComponent> lcs) {
     Collection<LifecycleComponentTask> lcTasks = lcs.stream()
       .map(lc -> new LifecycleComponentTask(type, lc)).collect(toList());
@@ -113,7 +115,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return lcTasks;
   }
 
-  protected Collection<VirtualMachineTask> genVmTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<VirtualMachineTask> genVmTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<CloudTask> cloudTasks, Collection<VirtualMachine> vms) {
     Collection<VirtualMachineTask> vmTasks = vms.stream()
       .map(vm -> new VirtualMachineTask(type, vm)).collect(toList());
@@ -128,7 +130,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return vmTasks;
   }
 
-  protected Collection<VirtualMachineInstanceTask> genVmInstTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<VirtualMachineInstanceTask> genVmInstTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> vmInsts) {
     Collection<VirtualMachineInstanceTask> vmInstTasks = vmInsts.stream()
       .map(vmInst -> new VirtualMachineInstanceTask(type, vmInst)).collect(toList());
@@ -143,7 +145,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return vmInstTasks;
   }
 
-  protected Collection<ApplicationComponentTask> genAcTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<ApplicationComponentTask> genAcTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           ApplicationTask appTask, Collection<LifecycleComponentTask> lcTasks, Collection<VirtualMachineTask> vmTasks,
           Collection<ApplicationComponent> acs) {
     Collection<ApplicationComponentTask> acTasks = acs.stream()
@@ -155,9 +157,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
       if (appTask != null) {
         setDependencies(graph, type, appTask, acTask);
       }
-
       ApplicationComponent ac = acTask.getData();
-
       String lcName = ac.getLcName();
       String vmName = ac.getVmName();
 
@@ -168,7 +168,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return acTasks;
   }
 
-  protected Collection<ApplicationComponentInstanceTask> genAcInstTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<ApplicationComponentInstanceTask> genAcInstTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
           Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<ApplicationComponentInstance> acInsts) {
     Collection<ApplicationComponentInstanceTask> acInstTasks = acInsts.stream()
@@ -193,7 +193,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return acInstTasks;
   }
 
-  protected Collection<PortProvidedTask> genPortProvTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<PortProvidedTask> genPortProvTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> portsProv) {
     Collection<PortProvidedTask> portProvTasks = portsProv.stream()
       .map(portProv -> new PortProvidedTask(type, portProv)).collect(toList());
@@ -208,7 +208,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return portProvTasks;
   }
 
-  protected Collection<PortRequiredTask> genPortReqTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<PortRequiredTask> genPortReqTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> portsReq) {
     Collection<PortRequiredTask> portReqTasks = portsReq.stream()
       .map(portReq -> new PortRequiredTask(type, portReq)).collect(toList());
@@ -223,7 +223,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return portReqTasks;
   }
 
-  protected Collection<CommunicationTask> genCommTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<CommunicationTask> genCommTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
           Collection<Communication> comms) {
     Collection<CommunicationTask> commTasks = comms.stream()
@@ -243,7 +243,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return commTasks;
   }
 
-  protected Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorTasks(Graph<Task, DefaultEdge> graph, Type type,
+  protected Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<VirtualMachineInstanceMonitor> vmInstMonitors) {
     Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = vmInstMonitors.stream()
       .map(vmInstMonitor -> new VirtualMachineInstanceMonitorTask(type, vmInstMonitor)).collect(toList());
@@ -260,7 +260,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     return vmInstMonitorTasks;
   }
 
-  protected Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorTasks(Graph<Task, DefaultEdge> graph,
+  protected Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorTasks(MelodicGraph<Task, DefaultEdge> graph,
           Type type, Collection<ApplicationComponentInstanceTask> acInstTasks,
           Collection<ApplicationComponentInstanceMonitor> acInstMonitors) {
     Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = acInstMonitors.stream()
@@ -279,7 +279,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
   }
 
 
-  protected void setDependencies(Graph<Task, DefaultEdge> graph, Type type, Task source, Task target) {
+  protected void setDependencies(MelodicGraph<Task, DefaultEdge> graph, Type type, Task source, Task target) {
     if (DELETE.equals(type)) {
       log.debug("Setting {} as a dependency to {}", target, source);
       graph.addEdge(target, source);
@@ -289,17 +289,24 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     }
   }
 
-  protected void addVertex(Graph<Task,DefaultEdge> graph, Task task){
+  protected void addVertex(MelodicGraph<Task,DefaultEdge> graph, Task task){
     log.debug("Adding vertex {}", task);
     graph.addVertex(task);
   }
 
-  private void findAndSetDependencies(Graph<Task,DefaultEdge> graph, Task task, String depName,
+  private void findAndSetDependencies(MelodicGraph<Task,DefaultEdge> graph, Task task, String depName,
                                          Collection<? extends Task> depTasks, Type type){
+    boolean wasSet=false;
     for (Task depTask: depTasks){
       if (depTask.getData().getName().equals(depName)){
         setDependencies(graph,type, depTask, task);
+        wasSet = true;
       }
+    }
+    if (graph.getType() == CONFIG && !wasSet){
+      throw new IllegalStateException(
+              format("Missing obligatory node of graph - dependency between %s and %s was not set",
+                      depName, task.getData().getName()));
     }
   }
 }
