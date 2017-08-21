@@ -16,8 +16,6 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.CloudApiTask
 import org.springframework.boot.test.context.SpringBootTest
 import spock.lang.Specification
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE
 
