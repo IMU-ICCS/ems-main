@@ -26,6 +26,7 @@
 
     <modules>
         <module>upperware_metamodel</module>
+        <module>melodic-commons</module>
         <module>cdo_client</module>
         <module>cdo_server</module>
         <module>adapter</module>
@@ -35,7 +36,7 @@
         <module>srl-adapter</module>
         <module>cp_solver</module>
         <module>la_converter</module>
-        <module>rule_processor</module>
+        <!--<module>rule_processor</module>-->
     </modules>
 
     <properties>

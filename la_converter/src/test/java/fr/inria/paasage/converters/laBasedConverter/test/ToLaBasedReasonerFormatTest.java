@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import junit.framework.Assert;
 
 import org.eclipse.emf.ecore.EObject;
@@ -30,10 +32,7 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.tool.UpperwareModelTool;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 
 public class ToLaBasedReasonerFormatTest 
 {
@@ -93,7 +92,7 @@ public class ToLaBasedReasonerFormatTest
 			 modelFile= new File(getClass().getClassLoader().getResource(MODEL_FILE_JAR_PATH).getPath()); 
 		}
 		
-		Resource res= ModelTool.loadModel(modelFile); 
+		Resource res= ModelTool.loadModel(modelFile);
 		
 		cp= (ConstraintProblem) res.getContents().get(0); 
 		

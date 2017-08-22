@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -56,7 +57,6 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.ModelTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
 import fr.inria.paasage.saloon.camel.mapping.MappingListCamel;
@@ -71,6 +71,7 @@ import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
  */
 public class CDODatabaseProxy extends DatabaseProxy 
 {
+	private static final String ONTOLOGY_FILE = "cloudOntoCamel.xmi";
 	
 	/*
 	 * ATTRIBUTES 
@@ -263,7 +264,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 			{
 				logger.debug("CDODatabaseProxy - loadFunctionTypes - Registring Function Types! "+ FUNCTION_TYPES_FILE_PATH+ " "+ is);
 				
-				Resource r= ModelTool.loadModelFromInputStream(FUNCTION_TYPES_FILE_PATH,is); 
+				Resource r= ModelTool.loadModelFromInputStream(FUNCTION_TYPES_FILE_PATH,is);
 				
 				functionTypes= (FunctionTypes) r.getContents().get(0); 
 				
@@ -731,99 +732,61 @@ public class CDODatabaseProxy extends DatabaseProxy
 	 * Returns the camel ontology 
 	 * @return The camel ontology 
 	 */
-	public OntologyCamel getCamelOntologyCopy() 
-	{
-		
-		List<EObject> result= cloner.cloneModel(ONTOLOGY_ID); 
-		
-		OntologyCamel ontology= (OntologyCamel) result.get(0); 
-		
-		
-		return ontology;
+	public OntologyCamel getCamelOntologyCopy() {
+		List<EObject> result= cloner.cloneModel(ONTOLOGY_ID);
+		return (OntologyCamel) result.get(0);
 	}
-	
+
 	/**
 	 * Loads the provider models from the database or the file systems
 	 */
-	protected void loadPMs()
-	{
-		
+	protected void loadPMs() {
+
 		List<EObject> providersList= null;
 		
 		List<EObject> mappings= null;
 		
 		pmsMap= new Hashtable<String,ProviderModelDecorator>(); 
-		
-		
-		
-		//Only providers defined in the properties file are considered - This restriction is due to saloon and the mapping model
-		File cloudsFile = new File(getExistingConfigPath(), cloudsPropertyFileCamel);
-			
-		logger.debug("CDODatabaseProxy - loadPMs - Property file "+cloudsFile.getAbsolutePath());
-			
-		{
-			
-			Properties properties= new Properties(); 
-			
+
 			try {
-				
-				if(cloudsFile.isFile())
-					properties.load(new FileReader(cloudsFile));
-				else
-				{
-					InputStream is= FileTool.getInputStreamFromFileName(Constants.WAR_CONFIG_PATH+cloudsPropertyFileCamel); 
-					
-					logger.debug("CDODatabaseProxy - loadPMs - Property file "+Constants.WAR_CONFIG_PATH+cloudsPropertyFileCamel);
-					
-					if(is!=null)
-						properties.load(is);
-				}
-					
-					
-					if(!properties.isEmpty())
-					{
-						Iterator<Object> it= properties.keySet().iterator(); 
+				Properties properties = prepareProperties("loadPMs");
+				if(!properties.isEmpty()) {
+
+						ResourceSet rs= new ResourceSetImpl();
 						
-						ResourceSet rs= new ResourceSetImpl(); 
+						InputStream ontologieFile= getExistingModelFile(ONTOLOGY_FILE, Constants.ONTOLOGY_DIR);
 						
-						InputStream ontologieFile= getExistingModelFile("cloudOntoCamel.xmi", Constants.ONTOLOGY_DIR); 
-						
-						logger.debug("CDODatabaseProxy - loadPMs - Ontology file "+Constants.WAR_ONTOLOGY_PATH+"cloudOntoCamel.xmi "+ontologieFile);
+						logger.debug("CDODatabaseProxy - loadPMs - Ontology file "+Constants.WAR_ONTOLOGY_PATH+ONTOLOGY_FILE);
 						
 						Resource ontologyResource = ModelTool.loadModelFromInputStream(Constants.WAR_ONTOLOGY_PATH+"cloudOntoCamel.xmi", ontologieFile);
-						
-						
+
 						cdoClient.storeModel(ontologyResource.getContents().get(0), ONTOLOGY_ID);
 						
-						ontologieFile= getExistingModelFile("cloudOntoCamel.xmi", Constants.ONTOLOGY_DIR); 
+						ontologieFile= getExistingModelFile(ONTOLOGY_FILE, Constants.ONTOLOGY_DIR);
 						
-						ModelTool.loadModelFromInputStream(rs,Constants.WAR_ONTOLOGY_PATH+"cloudOntoCamel.xmi", ontologieFile); //Required, otherwise it fails when executing with jar
+						ModelTool.loadModelFromInputStream(rs,Constants.WAR_ONTOLOGY_PATH+ONTOLOGY_FILE, ontologieFile); //Required, otherwise it fails when executing with jar
 						
 						providersList= new ArrayList<EObject>(); 
 						
-						mappings= new ArrayList<EObject>(); 
-						
-						while(it.hasNext())
-						{
-							String cloud= (String) it.next(); 
-							
-							String line= properties.getProperty(cloud); 
-							
-							String[] info= line.split(";"); //[0] FM
-															//[1] Mapping
+						mappings= new ArrayList<EObject>();
+
+					Iterator<Object> it = properties.keySet().iterator();
+					while(it.hasNext()) {
+							String cloud= (String) it.next();
+							String line= properties.getProperty(cloud);
+							//[0] FM
+							//[1] Mapping
+							String[] info= line.split(";");
 							
 							if(info.length==2)
 							{
-								CamelModel pm= null; 
+								CamelModel pm= null;
 								
 								//Try to load the Model from CDO if it exists
 								
-								if(cdoClient.existResource(FMS_APP_CDO_SERVER_PATH+cloud))
-								{
-									List<EObject> cloned= cloner.cloneModel(FMS_APP_CDO_SERVER_PATH+cloud); 
-									
-									pm= (CamelModel) cloned.get(cloned.size()-1); //We pick the last added model. It is necessary as it is not possible to delete models from CDO.  
-									
+								if(cdoClient.existResource(FMS_APP_CDO_SERVER_PATH+cloud)) {
+									List<EObject> cloned= cloner.cloneModel(FMS_APP_CDO_SERVER_PATH+cloud);
+									pm= (CamelModel) cloned.get(cloned.size()-1); //We pick the last added model. It is necessary as it is not possible to delete models from CDO.
 									logger.debug("CDODatabaseProxy- The PM "+cloud+" has been cloaned!");
 								}
 								else //Load the file according to the properties file
@@ -834,10 +797,9 @@ public class CDODatabaseProxy extends DatabaseProxy
 									if(cloudFile==null)
 										cloudFile = FileTool.getInputStreamFromLocalFile(info[0]); 
 									
-									if(cloudFile==null)
+									if(cloudFile==null) {
 										logger.warn("CDODatabaseProxy- The FM file "+info[0]+" does not exist. The FM and mapping for "+cloud +" will be not loaded!");
-									else
-									{
+									} else {
 										Resource r= ModelTool.loadModelFromInputStream(rs, info[0], cloudFile); 
 										
 										pm= (CamelModel) r.getContents().get(0); 
@@ -852,10 +814,8 @@ public class CDODatabaseProxy extends DatabaseProxy
 											
 										r= ModelTool.loadModelFromInputStream(rs, info[0], cloudFile); 
 										
-										pm= (CamelModel) r.getContents().get(0); 
-										
+										pm= (CamelModel) r.getContents().get(0);
 									}
-										
 								}
 								
 								if(pm!=null) //Only considers the mapping if the provider model exists
@@ -867,10 +827,9 @@ public class CDODatabaseProxy extends DatabaseProxy
 									if(mappingFile==null)
 										mappingFile = FileTool.getInputStreamFromLocalFile(info[1]); 
 									
-									if(mappingFile==null)
+									if(mappingFile==null) {
 										logger.warn("CDODatabaseProxy- The mapping file "+info[1]+" does not exist. The FM and mapping for "+cloud +" will be not loaded!");
-									else
-									{
+									} else {
 										providersList.add(pm); 
 										logger.debug("CDODatabaseProxy- The PM "+cloud+" has been loaded!");
 										
@@ -893,16 +852,11 @@ public class CDODatabaseProxy extends DatabaseProxy
 										
 										pmsMap.put(cloud, pmw); 
 										logger.debug("CDODatabaseProxy- PM decorator of "+cloud+" has been added!");
-										
 									}
-									
-									
-									
 								}
-								
-							}
-							else
+							} else {
 								logger.warn("CDODatabaseProxy- There is problem with the format of the file. The FMs and Mappings will be not loaded!");
+							}
 						}
 						
 						
@@ -936,54 +890,33 @@ public class CDODatabaseProxy extends DatabaseProxy
 					
 					e.printStackTrace();
 				} 
-				
-				
-				
-			}
-	
-		}
-		/*else
-		{
-			for(EObject list: mappings)
-			{
-				MappingListCamel mappingList= (MappingListCamel) list; 
-				ProviderModel pm= mappingList.getProviderModel(); 
-				
-				initMapMapping(pm.getRootFeature().getName(), pm, mappingList);
-			}
-		}*/
-		
-	
 
-	
-	
-	protected void storePMs()
-	{
-		//List<EObject> providersList= getResourceWithID(PROVIDERS_CAMEL);
-		
-		
-			File cloudsFile = new File(getExistingConfigPath(), cloudsPropertyFileCamel);
-			
-			logger.debug("CDODatabaseProxy - storePMs - Property file "+cloudsFile.getAbsolutePath());
-			
-			
-			Properties properties= new Properties(); 
-		
+		}
+
+	private Properties prepareProperties(String operationToLog) throws IOException {
+
+		//Only providers defined in the properties file are considered - This restriction is due to saloon and the mapping model
+		File cloudsFile = new File(getExistingConfigPath(), cloudsPropertyFileCamel);
+		logger.debug("CDODatabaseProxy - " + operationToLog + " - Property file "+cloudsFile.getAbsolutePath());
+
+		Properties properties = new Properties();
+		if (cloudsFile.isFile()){
+			properties.load(new FileReader(cloudsFile));
+		} else {
+			InputStream is = FileTool.getInputStreamFromFileName(Constants.WAR_CONFIG_PATH + cloudsPropertyFileCamel);
+			logger.debug("CDODatabaseProxy - " + operationToLog + " - Property file " + Constants.WAR_CONFIG_PATH + cloudsPropertyFileCamel);
+
+			if (is != null) {
+				properties.load(is);
+			}
+		}
+		return properties;
+	}
+
+	protected void storePMs() {
 			try {
-				
-				if(cloudsFile.isFile())
-					properties.load(new FileReader(cloudsFile));
-				else
-				{
-					InputStream is= FileTool.getInputStreamFromFileName(Constants.WAR_CONFIG_PATH+cloudsPropertyFileCamel); 
-					
-					logger.debug("CDODatabaseProxy - storePMs - Property file "+Constants.WAR_CONFIG_PATH+cloudsPropertyFileCamel);
-					
-					if(is!=null)
-						properties.load(is);
-				}
-				
-				
+				Properties properties = prepareProperties("storePMs");
+
 				if(!properties.isEmpty())
 				{
 					Iterator<Object> it= properties.keySet().iterator(); 
@@ -1024,7 +957,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 								}
 								
 							}
-							else if(cloudFile==null)
+							else
 								logger.warn("CDODatabaseProxy- storePMs - The FM file "+info[0]+" does not exist. The PM for "+cloud +" will be not stored!");
 							
 							

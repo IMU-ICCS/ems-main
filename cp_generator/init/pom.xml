@@ -32,6 +32,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>fr.inria.saloon</groupId>
             <artifactId>paasage-saloon</artifactId>
             <version>2.1.9</version>

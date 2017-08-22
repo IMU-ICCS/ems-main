@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 import java.util.Map;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -38,7 +39,6 @@ import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import fr.inria.paasage.saloon.price.api.IProviderPriceEstimator;
 import fr.inria.paasage.saloon.price.model.tools.Constants;
 import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
-import fr.inria.paasage.saloon.price.model.tools.ModelTool;
 
 public class EstimatorsManager 
 {
@@ -232,7 +232,7 @@ public class EstimatorsManager
 		
 		File amazonFMFile= new File("."+File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"examples"+File.separator+"scenario3"+File.separator+"amazonEC2.xmi"); 
 		
-		Resource r= ModelTool.loadModel(amazonFMFile); 
+		Resource r= ModelTool.loadModel(amazonFMFile);
 		
 		ProviderModel fm= (ProviderModel) r.getContents().get(0); 
 		

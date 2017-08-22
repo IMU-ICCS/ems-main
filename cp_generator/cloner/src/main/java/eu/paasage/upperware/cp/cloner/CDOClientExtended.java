@@ -51,26 +51,21 @@ public class CDOClientExtended extends CDOClient
 		
 		List<EObject> qr= new ArrayList<EObject>(); 
 		
-		try{
+		try {
 			logger.info("CDOClientExtended - getResourceContents - Retrieving resource with path "+path);
 			CDOResource resource = view.getResource(path);
 			EList<EObject> content = resource.getContents();
 		
 			logger.info("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
 		
-			for(EObject o:content)
-			{
+			for(EObject o:content) {
 				logger.info("CDOClientExtended - getResourceContents - Content "+o );
 				qr.add(o); 
 			}
-		}
-		catch(Throwable ex)
-		{
+		} catch(Throwable ex) {
 			logger.error("CDOClientExtended - getResourceContents - Problems retrieving the resource with path "+path+"!\n");
 			ex.printStackTrace();
 		}
-
-				
 		return qr;
 	}
 	
@@ -79,18 +74,13 @@ public class CDOClientExtended extends CDOClient
 		CDOTransaction trans = openTransaction();
 		CDOResource cdo = trans.getOrCreateResource(resourceName);
 		EList<EObject> list = cdo.getContents();
+
+		list.addAll(models);
 		
-		for(EObject m: models)
-		{	
-			list.add(m);
-		}
-		
-		try
-		{
-			  trans.commit();
-			  trans.close();
-		}
-		catch(Exception e){
+		try {
+			trans.commit();
+			trans.close();
+		} catch(Exception e){
 			e.printStackTrace();
 		}
 	}

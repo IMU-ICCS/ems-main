@@ -984,48 +984,46 @@ public class CPModelDerivator implements ICPModelDerivator
 			{
 				
 				for(ProviderDimension pd: vmp.getProviderDimension())
-				{	
-				
+				{
 					createAppComponentVariable(ac, vmp, pd.getProvider(), cp, configuration, 0, ac.getMax()); //The zero value is necessary as several providers are considered now
-				
-				
 				}
 			}
 		}
 	}
 	
-	protected void createAppComponentVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, ConstraintProblem cp, PaasageConfiguration configuration, int min, int max)
-	{
-		//Var creation
-		String vmId= vm.getCloudMLId(); 
-		
-		String providerId= provider.getId(); 
-		
-		String varName= CPModelTool.generateApplicationComponentVarName(ac.getCloudMLId(), vmId, providerId);//APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
-		
-		logger.debug("CPModelDerivator - createAppComponentVariable  - Creating var "+varName+ " VM Profile/Instance "+vmId); 
-		
-		Variable var= CPModelTool.createIntegerVariableWithRangeDomain(varName, min, max);//createBooleanVariable(varName); 
-		
-		var.setVmId(vmId);
-		
-		var.setProviderId(providerId);
-		
-		cp.getVariables().add(var); 
-		
-		PaaSageVariable pVar= ApplicationFactory.eINSTANCE.createPaaSageVariable(); 
-				
-		pVar.setCpVariableId(var.getId()); //TODO IS IT REQUIRED??
-		
-		pVar.setPaasageType(VariableElementTypeEnum.VIRTUAL_LOCATION); 
-		
-		pVar.setRelatedComponent(ac);
-		pVar.setRelatedVirtualMachineProfile(vm);
-		pVar.setRelatedProvider(provider); 
-		
+	protected void createAppComponentVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, ConstraintProblem cp, PaasageConfiguration configuration, int min, int max) {
+		Variable var = createVariable(ac, vm, provider, min, max);
+		cp.getVariables().add(var);
+
+		PaaSageVariable pVar = createPaaSageVariable(ac, vm, provider, var);
 		configuration.getVariables().add(pVar); 
 	}
-	
+
+	private Variable createVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, int min, int max){
+		//Var creation
+		String vmId= vm.getCloudMLId();
+		String providerId= provider.getId();
+		String varName= CPModelTool.generateApplicationComponentVarName(ac.getCloudMLId(), vmId, providerId);
+
+		logger.debug("CPModelDerivator - createAppComponentVariable  - Creating var "+varName+ " VM Profile/Instance "+vmId);
+
+		Variable var= CPModelTool.createIntegerVariableWithRangeDomain(varName, min, max);//createBooleanVariable(varName);
+		var.setVmId(vmId);
+		var.setProviderId(providerId);
+
+		return var;
+	}
+
+	private PaaSageVariable createPaaSageVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, Variable var){
+		PaaSageVariable pVar= ApplicationFactory.eINSTANCE.createPaaSageVariable();
+		pVar.setCpVariableId(var.getId()); //TODO IS IT REQUIRED??
+		pVar.setPaasageType(VariableElementTypeEnum.VIRTUAL_LOCATION);
+		pVar.setRelatedComponent(ac);
+		pVar.setRelatedVirtualMachineProfile(vm);
+		pVar.setRelatedProvider(provider);
+		return pVar;
+	}
+
 	/**
 	 * Creates a boolean variable with the given name
 	 * @param varName The variable name
@@ -1411,7 +1409,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	}
 	
 	
-	public static InputStream selectExistingPriceFile()
+	public static InputStream selectExistingPriceFile() //TODO
 	{
 		File cloudPricingFile= new File(Constants.CONFIG_FILES_DEFAULT_PATH,"cloudPricing.txt"); 
 		

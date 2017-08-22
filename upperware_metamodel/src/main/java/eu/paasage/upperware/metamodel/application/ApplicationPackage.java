@@ -379,6 +379,9 @@ public interface ApplicationPackage extends EPackage {
 	 */
 	int VIRTUAL_MACHINE_PROFILE_FEATURE_COUNT = CLOUD_ML_ELEMENT_UPPERWARE_FEATURE_COUNT + 9;
 
+	int VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID = CLOUD_ML_ELEMENT_UPPERWARE_FEATURE_COUNT + 10;
+
+
 	/**
 	 * The number of operations of the '<em>Virtual Machine Profile</em>' class.
 	 * <!-- begin-user-doc -->
@@ -1604,6 +1607,8 @@ public interface ApplicationPackage extends EPackage {
 	 */
 	EAttribute getVirtualMachineProfile_RelatedCloudVMId();
 
+	EAttribute getVirtualMachineProfile_FlavourName();
+
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.application.CloudMLElementUpperware <em>Cloud ML Element Upperware</em>}'.
 	 * <!-- begin-user-doc -->
@@ -2513,6 +2518,14 @@ public interface ApplicationPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute VIRTUAL_MACHINE_PROFILE__RELATED_CLOUD_VM_ID = eINSTANCE.getVirtualMachineProfile_RelatedCloudVMId();
+
+		/**
+		 * The meta object literal for the '<em><b>Related Cloud VM Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID = eINSTANCE.getVirtualMachineProfile_FlavourName();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.application.impl.CloudMLElementUpperwareImpl <em>Cloud ML Element Upperware</em>}' class.
