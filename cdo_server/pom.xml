@@ -13,6 +13,12 @@
 
     <name>Upperware - Cdo Server</name>
 
+    <properties>
+        <!--DOCKER plugin properties-->
+        <docker.imageName>${docker.repository}melodic/cdoserver</docker.imageName>
+        <docker.jarToInclude>${project.build.finalName}-jar-with-dependencies.jar</docker.jarToInclude>
+    </properties>
+
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
@@ -72,27 +78,6 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.10</version>
-                <configuration>
-                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                    <imageName>172.31.1.100:5000/melodic/cdoserver</imageName>
-                    <pushImage>true</pushImage>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}-jar-with-dependencies.jar</include>
-                        </resource>
-                    </resources>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

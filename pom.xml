@@ -42,6 +42,7 @@
     <properties>
         <!-- version for all paasage components-->
         <paasage.version.old>2015.9.1-SNAPSHOT</paasage.version.old>
+        <interfaces.version>1.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -58,10 +59,33 @@
         <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
+        <!--DOCKER plugin properties-->
+        <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
+        <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
+
 
     </properties>
 
     <profiles>
+        <profile>
+            <id>docker-remote</id>
+            <properties>
+                <docker.push>true</docker.push>
+                <docker.repository>172.31.1.100:5000/</docker.repository>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>docker-local</id>
+            <properties>
+                <docker.push>false</docker.push>
+                <docker.repository/>
+            </properties>
+        </profile>
+
         <profile>
             <id>doclint-java8-disable</id>
             <activation>
@@ -145,6 +169,31 @@
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <tagNameFormat>v@{project.version}</tagNameFormat>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.4.10</version>
+                    <configuration>
+                        <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                        <imageName>${docker.imageName}</imageName>
+                        <pushImage>${docker.push}</pushImage>
+                        <resources>
+                            <resource>
+                                <targetPath>/</targetPath>
+                                <directory>${project.build.directory}</directory>
+                                <include>${docker.jarToInclude}</include>
+                            </resource>
+                        </resources>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>build</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
