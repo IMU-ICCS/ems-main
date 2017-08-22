@@ -9,7 +9,6 @@
     </parent>
 
     <properties>
-        <lombok.version>1.16.14</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cdo-client.version>2.0.0-SNAPSHOT</cdo-client.version>
 
