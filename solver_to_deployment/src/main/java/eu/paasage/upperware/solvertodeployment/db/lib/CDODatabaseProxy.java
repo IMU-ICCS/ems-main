@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -36,7 +37,6 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.Locations;
 import eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-import eu.paasage.upperware.solvertodeployment.lib.ModelTool;
 
 public class CDODatabaseProxy extends DatabaseProxy {
 

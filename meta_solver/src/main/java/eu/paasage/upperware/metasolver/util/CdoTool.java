@@ -30,8 +30,8 @@ import eu.paasage.upperware.metamodel.cp.CpPackage;
 //import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
-import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
+//import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
+//import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
 /**
  * A utility to help interaction with the CDO server.
@@ -103,10 +103,10 @@ public final class CdoTool {
 		log.info("Init TypesPackage");
 		cdoClient.registerPackage(CpPackage.eINSTANCE);
 		log.info("Init CpPackage");
-		cdoClient.registerPackage(OntologyPackage.eINSTANCE);
-		log.info("Init OntologyPackage");
-		cdoClient.registerPackage(MappingPackage.eINSTANCE);
-		log.info("Init MappingPackage");
+//		cdoClient.registerPackage(OntologyPackage.eINSTANCE);
+//		log.info("Init OntologyPackage");
+//		cdoClient.registerPackage(MappingPackage.eINSTANCE);
+//		log.info("Init MappingPackage");
 		
 	}
 	/**

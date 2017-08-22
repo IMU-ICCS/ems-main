@@ -351,6 +351,23 @@ public interface CpPackage extends EPackage {
 	int VARIABLE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 6;
 
 	/**
+	 * The number of structural features of the '<em>Variable</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @ordered
+	 */
+	int VARIABLE__COMPONENT_NAME = NUMERIC_EXPRESSION_FEATURE_COUNT + 7;
+
+	/**
+	 * The number of structural features of the '<em>Variable</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @ordered
+	 */
+	int VARIABLE__FLAVOUR_NAME = NUMERIC_EXPRESSION_FEATURE_COUNT + 8;
+
+
+	/**
 	 * The number of operations of the '<em>Variable</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1919,6 +1936,27 @@ public interface CpPackage extends EPackage {
 	EAttribute getVariable_HardwareId();
 
 	/**
+	 * Returns the meta object for the attribute '{@link Variable#getComponentName()}  <em>Hardware Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>ComponentName</em>'.
+	 * @see Variable#getComponentName()
+	 * @see #getVariable()
+	 */
+	EAttribute getVariable_ComponentName();
+
+
+	/**
+	 * Returns the meta object for the attribute '{@link Variable#getFlavourName()}  <em>Hardware Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>FlavourName</em>'.
+	 * @see Variable#getFlavourName()
+	 * @see #getVariable()
+	 */
+	EAttribute getVariable_FlavourName();
+
+	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Domain <em>Domain</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2840,6 +2878,22 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute VARIABLE__HARDWARE_ID = eINSTANCE.getVariable_HardwareId();
+
+		/**
+		 * The meta object literal for the '<em><b>Component Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute VARIABLE__COMPONENT_NAME = eINSTANCE.getVariable_ComponentName();
+
+		/**
+		 * The meta object literal for the '<em><b>Component Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute VARIABLE__FLAVOUR_NAME = eINSTANCE.getVariable_FlavourName();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.DomainImpl <em>Domain</em>}' class.

@@ -154,4 +154,37 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 		eSet(CpPackage.Literals.VARIABLE__HARDWARE_ID, newHardwareId);
 	}
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 */
+	public String getComponentName() {
+		return (String)eGet(CpPackage.Literals.VARIABLE__COMPONENT_NAME, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 */
+	public void setComponentName(String newComponentName) {
+		eSet(CpPackage.Literals.VARIABLE__COMPONENT_NAME, newComponentName);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 */
+	public String getFlavourName() {
+		return (String)eGet(CpPackage.Literals.VARIABLE__FLAVOUR_NAME, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 */
+	public void setFlavourName(String newFlavourName) {
+		eSet(CpPackage.Literals.VARIABLE__FLAVOUR_NAME, newFlavourName);
+	}
+
+
 } //VariableImpl

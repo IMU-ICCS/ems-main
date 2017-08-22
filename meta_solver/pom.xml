@@ -72,9 +72,10 @@
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>generator</artifactId>
+            <artifactId>melodic-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
