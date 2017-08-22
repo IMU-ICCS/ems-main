@@ -1,4 +1,4 @@
-/* Copyright (C) 2015 KYRIAKOS KRITIKOS <kritikos@ics.forth.gr> */
+package eu.melodic.upperware.cpsolver.lib;/* Copyright (C) 2015 KYRIAKOS KRITIKOS <kritikos@ics.forth.gr> */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public 
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -65,7 +63,6 @@ import solver.variables.VariableFactory;
 import util.ESat;
 import util.tools.ArrayUtils;
 
-
 public class CPSolver {
 
 	private Solver solver = null;
@@ -91,8 +88,8 @@ public class CPSolver {
 	private long timestamp = 0;
 	
 	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(CPSolver.class);
- 	
-	/* Constructor which also reads the CP Model either from CDO via 
+
+	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
 	public CPSolver(String cdoPath, String pathName){
@@ -1240,68 +1237,6 @@ public class CPSolver {
 		realVarNum = 0;
 		constNum = 0;
 	}
-	
-	public static void main(String[] args){
-		//Running as daemon
-		if (args.length == 0){
-			logger.info("Running the solver as a daemon");
-			Thread t = new Thread(new CPSolverDaemon());
-			t.setDaemon(false);
-			t.start();
-			//System.exit(1);
-			return;
-		}
-		//Running test to check that solver runs as a daemon and functions properly
-		else if (args.length == 1){
-			logger.info("Testing the solver as a daemon");
-			CDOClient cl = new CDOClient();
-			cl.registerPackage(CpPackage.eINSTANCE);
-			cl.registerPackage(TypesPackage.eINSTANCE);
-			cl.registerPackage(eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage.eINSTANCE);
-			cl.importModel("input/LsyCP.xmi", "cps/model2", false);
-			cl.closeSession();
-			ExecutorService thr = Executors.newFixedThreadPool(2);
-			thr.submit(new CPSolverDaemon());
-			thr.submit(new FakeAdapterPublisher("cps/model2"));
-			try{
-				Thread.sleep(20000);
-			}
-			catch(Exception e){
-				logger.error("Thread interrupted from sleep", e);
-				//e.printStackTrace();
-			}
-			thr.shutdownNow();
-			System.exit(1);
-		}
-		CDOClient cl = new CDOClient();
-		cl.registerPackage(TypesPackage.eINSTANCE);
-		cl.registerPackage(CpPackage.eINSTANCE);
-		//Read/write from CDOServer or from file system
-		String mode = args[0];
-		//CDO or file path
-		String path = args[1];
-		String timestampStr = null;
-		if (args.length == 3)
-			timestampStr = args[2];
-		long timestamp = 0;
-		if (timestampStr != null){
-			timestamp = new Long(timestampStr);
-		}
-		CPSolver solver = null;
-		try{
-			if (mode.toLowerCase().equals("cdo")){
-				solver = new CPSolver(path,null,timestamp);
-			}
-			else{
-				solver = new CPSolver(null,path,timestamp);
-			}
-			solver.solve();
-		}
-		catch(Exception e){
-			logger.error("Something went wrong while solving the problem",e);
-			e.printStackTrace();
-		}
-		cl.closeSession();
-	}
+
 	
 }
