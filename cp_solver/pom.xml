@@ -127,7 +127,7 @@
                     <execution>
                         <phase>install</phase>
                         <goals>
-                            <!--<goal>build</goal>-->
+                            <goal>build</goal>
                         </goals>
                     </execution>
                 </executions>
