@@ -123,7 +123,7 @@ RUN \
 	echo "skip-name-resolve"                               >> /etc/my.cnf && \
 	echo "datadir = ${MYSQL_DEF_DAT}"                      >> /etc/my.cnf && \
 	echo "user = ${MY_USER}"                               >> /etc/my.cnf && \
-	echo "port = 3306"                                     >> /etc/my.cnf && \
+	echo "port = 2036"                                     >> /etc/my.cnf && \
 	echo "bind-address = 0.0.0.0"                          >> /etc/my.cnf && \
 	echo "socket = ${MYSQL_DEF_SCK}/mysqld.sock"           >> /etc/my.cnf && \
 	echo "pid-file = ${MYSQL_DEF_PID}/mysqld.pid"          >> /etc/my.cnf && \
@@ -144,7 +144,7 @@ RUN chmod +x ./docker-entrypoint.sh
 ##
 ## Ports
 ##
-EXPOSE 3306
+EXPOSE 2036
 
 
 ##
