@@ -20,7 +20,7 @@ public class GeneratorController {
 
     private GenerationOrchestrator generationOrchestrator;
 
-    @RequestMapping(value = "/generateConstraintProblem", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/constraintProblem", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public void generateConstraintProblem(@RequestBody ConstraintProblemRequestImpl request) {
 //        validator.validate(request);
 
