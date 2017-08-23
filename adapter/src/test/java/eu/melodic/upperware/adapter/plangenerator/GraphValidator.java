@@ -18,9 +18,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.*;
 import static eu.melodic.upperware.adapter.plangenerator.TaskType.*;
+
 
 public class GraphValidator {
 
@@ -30,30 +31,20 @@ public class GraphValidator {
                              Map<TaskType, Set<TaskType>> dependencies) {
     Map<TaskType, Predicate<Task>> predicateMap = new HashMap<>();
 
+    setPredicateMap(predicateMap,v,false);
     if (v instanceof CloudApiTask) {
       return containsOnlyOutEdges(v, graph, tasks.get(CLOUD_API));
     }
 
     if (v instanceof CloudTask) {
-      predicateMap.put(CLOUD_API, task -> ((CloudApiTask) task).getData().getName()
-              .equals(((CloudTask) v).getData().getApiName()));
-
       return checkConnections(v, CLOUD, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof CloudPropertyTask) {
-      predicateMap.put(CLOUD, task -> (
-              (CloudTask) task).getData().getName()
-              .equals(((CloudPropertyTask) v).getData().getCloudName()));
-
       return checkConnections(v, CLOUD_PROPERTY, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof CloudCredentialTask) {
-      predicateMap.put(CLOUD, task -> (
-              (CloudTask) task).getData().getName()
-              .equals(((CloudCredentialTask) v).getData().getCloudName()));
-
       return checkConnections(v, CLOUD_CREDENTIAL, graph, tasks, dependencies, predicateMap);
     }
 
@@ -62,8 +53,6 @@ public class GraphValidator {
     }
 
     if (v instanceof ApplicationInstanceTask) {
-      predicateMap.put(APPLICATION, task -> (task != null));
-
       return checkConnections(v, APPLICATION_INSTANCE, graph, tasks, dependencies, predicateMap);
     }
 
@@ -72,84 +61,40 @@ public class GraphValidator {
     }
 
     if (v instanceof VirtualMachineTask) {
-      predicateMap.put(CLOUD, task -> (
-              (CloudTask) task).getData().getName()
-              .equals(((VirtualMachineTask) v).getData().getCloudName()));
-
       return checkConnections(v, VIRTUALMACHINE, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof VirtualMachineInstanceTask) {
-      predicateMap.put(VIRTUALMACHINE, task -> (
-              (VirtualMachineTask) task).getData().getName()
-              .equals(((VirtualMachineInstanceTask) v).getData().getVmName()));
-
       return checkConnections(v, VIRTUALMACHINE_INSTANCE, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationComponentTask) {
-      predicateMap.put(APPLICATION, task -> ((ApplicationTask) task).getData().getName()
-              .equals(((ApplicationComponentTask) v).getData().getAppName()));
-      predicateMap.put(LIFECYCLE, task -> ((LifecycleComponentTask) task).getData().getName()
-              .equals(((ApplicationComponentTask) v).getData().getLcName()));
-      predicateMap.put(VIRTUALMACHINE, task -> ((VirtualMachineTask) task).getData().getName()
-              .equals(((ApplicationComponentTask) v).getData().getVmName()));
-
       return checkConnections(v, APPLICATION_COMPONENT, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationComponentInstanceTask) {
-      predicateMap.put(APPLICATION_INSTANCE, task -> (task != null));
-      predicateMap.put(APPLICATION_COMPONENT, task -> ((ApplicationComponentTask) task).getData().getName()
-              .equals(((ApplicationComponentInstanceTask) v).getData().getAcName()));
-      predicateMap.put(VIRTUALMACHINE_INSTANCE, task -> ((VirtualMachineInstanceTask) task).getData().getName()
-              .equals(((ApplicationComponentInstanceTask) v).getData().getVmInstName()));
-
       return checkConnections(v, APPLICATION_COMPONENT_INSTANCE, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof CommunicationTask) {
-      predicateMap.put(PORT_PROVIDED, task -> ((PortProvidedTask) task).getData().getName()
-              .equals(((CommunicationTask) v).getData().getPortProvName()));
-      predicateMap.put(PORT_REQUIRED, task -> ((PortRequiredTask) task).getData().getName()
-              .equals(((CommunicationTask) v).getData().getPortReqName()));
-
       return checkConnections(v, COMMUNICATION, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof PortProvidedTask) {
-      predicateMap.put(APPLICATION_COMPONENT, task -> (
-              (ApplicationComponentTask) task).getData().getName()
-              .equals(((PortProvidedTask) v).getData().getAcName()));
-
       return checkConnections(v, PORT_PROVIDED, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof PortRequiredTask) {
-      predicateMap.put(APPLICATION_COMPONENT, task -> (
-              (ApplicationComponentTask) task).getData().getName()
-              .equals(((PortRequiredTask) v).getData().getAcName()));
-
       return checkConnections(v, PORT_REQUIRED, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof VirtualMachineInstanceMonitorTask) {
-      predicateMap.put(VIRTUALMACHINE_INSTANCE, task -> (
-              (VirtualMachineInstanceTask) task).getData().getName()
-              .equals(((VirtualMachineInstanceMonitorTask) v).getData().getVmInstName()));
-
       return checkConnections(v, VM_INSTANCE_MONITOR, graph, tasks, dependencies, predicateMap);
     }
 
     if (v instanceof ApplicationComponentInstanceMonitorTask) {
-      predicateMap.put(APPLICATION_COMPONENT_INSTANCE, task -> (
-              (ApplicationComponentInstanceTask) task).getData().getName()
-              .equals(((ApplicationComponentInstanceMonitorTask) v).getData().getAcInstName()));
-
       return checkConnections(v, APP_COMP_INSTANCE_MONITOR, graph, tasks, dependencies, predicateMap);
     }
-
-
     return true;
   }
 
@@ -166,99 +111,9 @@ public class GraphValidator {
                                           Map<TaskType, Set<TaskType>> dependencies,
                                           Map<TaskType, Predicate<Task>> preds) {
 
-    Set<Task> tasks = tasksMap.get(t);
-
-    assert (tasks.contains(v));
-
-    Holder holder = new Holder();
-
-
-    for (TaskType connectedType : dependencies.get(t)) {
-      Set<Task> filteredTask = filterTasks(tasksMap.get(connectedType), preds.get(connectedType));
-      boolean b = filteredTask.stream()
-              .peek(task -> holder.increment())
-              .allMatch(task -> (graph.containsEdge(task, v)));
-      assert (b);
-    }
-
-    return holder.get() == getInEdges(v, graph);
+    return countAndCheckConnections(v,t,graph,tasksMap,dependencies,preds) == getInEdges(v, graph);
 
   }
-
-  private static int getInEdges(Task v, SimpleDirectedGraph<Task, DefaultEdge> graph) {
-    int inEdgesCounter = 0;
-
-    for (DefaultEdge e : graph.edgesOf(v)) {
-      if (graph.getEdgeTarget(e).equals(v)) {
-        inEdgesCounter++;
-      }
-    }
-    return inEdgesCounter;
-  }
-
-
-  private static Set<Task> filterTasks(Set<Task> tasks, Predicate<Task> predicate) {
-    return tasks.stream().filter(predicate).collect(Collectors.toSet());
-  }
-
-
-  static class Holder {
-
-    int connectedVertex = 0;
-
-    void increment() {
-      connectedVertex++;
-    }
-
-    int get() {
-      return connectedVertex;
-    }
-  }
-
-  private static Set<TaskType> addToSet(TaskType t) {
-    Set<TaskType> set = new HashSet<>();
-    set.add(t);
-    return set;
-  }
-
-
-  private static Set<TaskType> addToSet(TaskType t1, TaskType t2) {
-    Set<TaskType> set = new HashSet<>();
-    set.add(t1);
-    set.add(t2);
-    return set;
-  }
-
-  private static Set<TaskType> addToSet(TaskType t1, TaskType t2, TaskType t3) {
-    Set<TaskType> set = new HashSet<>();
-    set.add(t1);
-    set.add(t2);
-    set.add(t3);
-    return set;
-  }
-
-
-  public static Map<TaskType, Set<Task>> initMap() {
-    Map<TaskType, Set<Task>> tasks = new HashMap<>();
-    tasks.put(CLOUD_API, new HashSet<>());
-    tasks.put(CLOUD, new HashSet<>());
-    tasks.put(CLOUD_PROPERTY, new HashSet<>());
-    tasks.put(CLOUD_CREDENTIAL, new HashSet<>());
-    tasks.put(APPLICATION, new HashSet<>());
-    tasks.put(APPLICATION_INSTANCE, new HashSet<>());
-    tasks.put(LIFECYCLE, new HashSet<>());
-    tasks.put(VIRTUALMACHINE, new HashSet<>());
-    tasks.put(VIRTUALMACHINE_INSTANCE, new HashSet<>());
-    tasks.put(APPLICATION_COMPONENT, new HashSet<>());
-    tasks.put(APPLICATION_COMPONENT_INSTANCE, new HashSet<>());
-    tasks.put(COMMUNICATION, new HashSet<>());
-    tasks.put(PORT_PROVIDED, new HashSet<>());
-    tasks.put(PORT_REQUIRED, new HashSet<>());
-    tasks.put(VM_INSTANCE_MONITOR, new HashSet<>());
-    tasks.put(APP_COMP_INSTANCE_MONITOR, new HashSet<>());
-    return tasks;
-  }
-
 
   public static Map<TaskType, Set<TaskType>> createDependencies() {
     Map<TaskType, Set<TaskType>> dependencies = new HashMap<>();

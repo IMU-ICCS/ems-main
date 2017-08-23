@@ -21,7 +21,7 @@ import static eu.melodic.upperware.adapter.plangenerator.TaskType.*;
 
 public class POJOCreatorExample {
 
-  void createOrUpdate(Task createTask, Task updateTask, TaskType type,
+  private void createOrUpdate(Task createTask, Task updateTask, TaskType type,
                       Map<TaskType, Set<Task>> tasks,
                       Map<TaskType, Set<Task>> oldTasks){
     String id = createTask.getData().getName();
@@ -35,7 +35,7 @@ public class POJOCreatorExample {
     }
   }
 
-  void createIfNotExist(Task createTask, TaskType type,
+  private void createIfNotExist(Task createTask, TaskType type,
           Map<TaskType, Set<Task>> tasks,
           Map<TaskType, Set<Task>> oldTasks){
     String id = createTask.getData().getName();
@@ -44,7 +44,7 @@ public class POJOCreatorExample {
     }
   }
 
-  boolean containsTask(Set<? extends Task> tasks, String id){
+  private boolean containsTask(Set<? extends Task> tasks, String id){
     for(Task t: tasks){
       if (t.getData().getName().equals(id)){
         return true;
@@ -63,7 +63,7 @@ public class POJOCreatorExample {
             );
   }
 
-  void addToMap(Task task, TaskType taskType, Map<TaskType, Set<Task>> tasks){
+  private void addToMap(Task task, TaskType taskType, Map<TaskType, Set<Task>> tasks){
     Set<Task> set = tasks.get(taskType);
     set.add(task);
     tasks.put(taskType, set);
@@ -345,10 +345,11 @@ public class POJOCreatorExample {
     return t;
   }
 
-  ApplicationComponentInstanceMonitor toMonitor3(String acInstName,
+  ApplicationComponentInstanceMonitor toMonitor3(String acInstName, String acName,
                                                  Map<TaskType, Set<Task>> tasks) {
     ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
             .acInstName(acInstName)
+            .acName(acName)
             .build();
 
     Set<Task> set = tasks.get(APP_COMP_INSTANCE_MONITOR);
@@ -357,7 +358,7 @@ public class POJOCreatorExample {
     return t;
   }
 
-  void addDeleteTaskToMap(Task task, Map<TaskType, Set<Task>> tasks){
+  private void addDeleteTaskToMap(Task task, Map<TaskType, Set<Task>> tasks){
     if (task instanceof CloudPropertyTask){
       addToMap(new CloudPropertyTask(
               DELETE, (CloudProperty) task.getData()), CLOUD_PROPERTY, tasks);
