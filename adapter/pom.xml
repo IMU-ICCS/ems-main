@@ -37,6 +37,7 @@
     <validation-api.version>1.1.0.Final</validation-api.version>
     <hibernate-validator.version>5.4.1.Final</hibernate-validator.version>
     <commons-collections.version>4.1</commons-collections.version>
+    <commons-lang3.version>3.6</commons-lang3.version>
     <commons-io.version>2.5</commons-io.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -69,13 +70,11 @@
     <dependency>
       <groupId>org.ow2.paasage.mddb.cdo</groupId>
       <artifactId>client</artifactId>
-      <version>${parent.version}</version>
     </dependency>
 
     <dependency>
       <groupId>eu.melodic</groupId>
       <artifactId>interfaces</artifactId>
-      <version>${interfaces.version}</version>
     </dependency>
 
     <dependency>
@@ -112,6 +111,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
       <version>${commons-collections.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
     </dependency>
 
     <dependency>

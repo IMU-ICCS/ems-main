@@ -65,9 +65,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	public final static String CDO_SERVER_PATH= "upperware-models/";
 	public final static String FMS_APP_CDO_SERVER_PATH= CDO_SERVER_PATH+"fms/";
 
-
-	protected static String cloudsPropertyFileCamel= null;
-
 	private CPCloner cloner;
 	private CDOClientExtended cdoClient;
 	private ModelService modelService;
@@ -255,9 +252,8 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		if(cdoClient.existResource(id)) {
 			try{
 				result= cdoClient.getResourceContents(id);
-				System.out.println("CDODatabaseProxy - getResourceWithID - The resource "+ id+" is loaded!");
+				log.info("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
 			} catch(org.eclipse.emf.cdo.util.InvalidURIException ex) {
-				System.out.println("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
 				log.debug("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
 			}
 		}

@@ -51,12 +51,10 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -88,7 +86,6 @@
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -107,7 +104,6 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <version>${interfaces.version}</version>
         </dependency>
 
         <dependency>

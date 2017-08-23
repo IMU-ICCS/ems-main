@@ -15,17 +15,18 @@ import org.springframework.stereotype.Service;
 
 import javax.ws.rs.BadRequestException;
 
-import static joptsimple.internal.Strings.isNullOrEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Service
 public class DefaultDeploymentRequestValidator implements DeploymentRequestValidator {
 
   @Override
   public boolean validate(ApplicationDeploymentRequestImpl request) {
-    if (isNullOrEmpty(request.getApplicationId())) {
+
+    if (isEmpty(request.getApplicationId())) {
       throw new BadRequestException("applicationId cannot be empty");
     }
-    if (isNullOrEmpty(request.getNotificationURI())) {
+    if (isEmpty(request.getNotificationURI())) {
       throw new BadRequestException("notificationUri cannot be empty");
     }
 
@@ -34,7 +35,7 @@ public class DefaultDeploymentRequestValidator implements DeploymentRequestValid
     if (watermark == null) {
       throw new BadRequestException("watermark cannot be empty");
     }
-    if (isNullOrEmpty(watermark.getUuid())) {
+    if (isEmpty(watermark.getUuid())) {
       throw new BadRequestException("watermark uuid cannot be empty");
     }
 

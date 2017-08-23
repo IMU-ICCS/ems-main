@@ -68,6 +68,45 @@
 
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>eu.melodic</groupId>
+                <artifactId>interfaces</artifactId>
+                <version>${interfaces.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.raml</groupId>
+                        <artifactId>jaxrs-code-generator-7bulls</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>melodic-commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>upperware-metamodel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>camel</artifactId>
+                <version>${paasage.version.old}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage.mddb.cdo</groupId>
+                <artifactId>client</artifactId>
+                <!-- This may be strange but is necessary -
+                while adding dependency in child pom ${parent.version}
+                will be set to upperware version not parent of upperware -->
+                <version>${parent.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <profiles>
         <profile>
             <id>docker-remote</id>
