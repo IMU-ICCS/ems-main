@@ -45,7 +45,6 @@
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jfree</groupId>
@@ -55,7 +54,6 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- Zero MQ -->
         <dependency>
@@ -93,7 +91,6 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <version>${interfaces.version}</version>
         </dependency>
 
         <dependency>

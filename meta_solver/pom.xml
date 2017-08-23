@@ -62,13 +62,11 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>camel</artifactId>
-            <version>${paasage.version.old}</version>
         </dependency>
         <!-- 27Oct15 dependencies needed by metrics mapper -->
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

@@ -10,7 +10,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cdo-client.version>2.0.0-SNAPSHOT</cdo-client.version>
 
         <!--DOCKER plugin properties-->
         <docker.imageName>${docker.repository}melodic/s2d</docker.imageName>
@@ -27,17 +26,14 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>${cdo-client.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -72,8 +68,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
@@ -82,7 +78,6 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <version>${interfaces.version}</version>
         </dependency>
 
         <dependency>
