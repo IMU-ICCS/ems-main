@@ -8,34 +8,24 @@
  */
 package eu.paasage.upperware.metasolver;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-
-import eu.paasage.camel.type.TypePackage;
+import com.eclipsesource.json.JsonObject;
 import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.metasolver.exception.MetricMapperException;
-import eu.paasage.upperware.metasolver.solutionListener;
-import eu.paasage.upperware.metasolver.RPListener;
-import eu.paasage.upperware.metasolver.metricsListener;
 import eu.paasage.upperware.metasolver.metrics.Mapper;
-import eu.paasage.upperware.metasolver.util.CdoTool;
 import eu.paasage.upperware.metasolver.util.CpModelTool;
-
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
-import com.eclipsesource.json.JsonObject;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 
 //The metasolver is responsible for calling the different solvers in PaaSage.
 
@@ -51,11 +41,6 @@ public class metasolver{
 		 */
 		CDOClient cdoClient = new CDOClient();
 		CdoTool.registerPackages(cdoClient);
-//		cdoClient.registerPackage(ApplicationPackage.eINSTANCE);
-//		cdoClient.registerPackage(CpPackage.eINSTANCE);
-//		cdoClient.registerPackage(TypesPackage.eINSTANCE);
-//		cdoClient.registerPackage(TypesPaasagePackage.eINSTANCE);
-//		cdoClient.registerPackage(TypePackage.eINSTANCE);
 		CDOView cdoView = cdoClient.openView();		
 		HashMap<String, String> mets=null;
 		//

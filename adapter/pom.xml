@@ -18,7 +18,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>Adapter</name>
+  <name>Upperware - Adapter</name>
   <description>
     The component of PaaSage responsible for generating, validating and applying deployment plan based on CAMEL
     Model received from CDO Server. This component displaces both Adapter Manager and Plan Generator repositories.

@@ -67,11 +67,6 @@
         <!-- 27Oct15 dependencies needed by metrics mapper -->
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>cloner</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
