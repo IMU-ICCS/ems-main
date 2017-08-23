@@ -60,6 +60,8 @@
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
         <!--DOCKER plugin properties-->
+        <docker.push>false</docker.push>
+        <docker.repository/>
         <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
@@ -74,16 +76,10 @@
                 <docker.repository>172.31.1.100:5000/</docker.repository>
             </properties>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!useLocalDocker</name>
+                </property>
             </activation>
-        </profile>
-
-        <profile>
-            <id>docker-local</id>
-            <properties>
-                <docker.push>false</docker.push>
-                <docker.repository/>
-            </properties>
         </profile>
 
         <profile>
