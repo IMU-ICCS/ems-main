@@ -10,6 +10,7 @@ package eu.paasage.upperware.metasolver.util;
 import java.io.IOException;
 import java.util.List;
 
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -19,7 +20,6 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
-import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -277,14 +277,8 @@ public final class CpModelTool {
 	public static String getCloneId(String appId, String resId){
 		System.out.println("appId: " + appId + ", resId: " + resId + "...");
 		log.debug("appId: " + appId + ", resId: " + resId + "...");
-		String temp = "";
-		//get rid of the generic 'upperware-models/' path segment
-		if(resId.startsWith(CPCloner.CDO_SERVER_PATH)){
-			temp = resId.substring(CPCloner.CDO_SERVER_PATH.length());
-			log.debug("got rid of the server path, id is now : " + temp);
-		}else{
-			temp = resId;
-		}
+		String temp = CdoTool.removeCdoPrefix(resId);
+		log.debug("got rid of the server path, id is now : " + temp);
 		//this is for the cdo resource path, not the actual paasageConfiguration.id
 		String cloneId = "";
 		//e.g. appId = openFoam1448464846493 and resId = openFoam1448464846493V1, suffix = V1
