@@ -47,7 +47,7 @@ public class CDOClientExtended extends CDOClient {
             trans.commit();
             trans.close();
         } catch (Exception e) {
-            log.error("Problem during saving {} models under path: {}", models.size(), resourceName);
+            log.error("Problem during saving {} models under path: {}", models.size(), resourceName, e);
             e.printStackTrace();
         }
     }

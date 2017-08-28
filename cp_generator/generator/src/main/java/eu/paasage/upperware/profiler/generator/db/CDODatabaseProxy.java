@@ -216,7 +216,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		if (CollectionUtils.isEmpty(providerTypesList)) {
 			return loadFile(fileName, cdoName);
 		} else {
-			return (T) providerTypesList.get(0);
+			return (T) getLastElement(providerTypesList);
 		}
 	}
 
@@ -261,7 +261,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	}
 
 	private InputStream getExistingModelFile(String fileName) {
-
 		InputStream fis= null;
 		try {
 			fis= CDODatabaseProxy.class.getClass().getResourceAsStream(fileName);
@@ -276,7 +275,8 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		String pcId= pc.getId();
 
 		log.debug("CDODatabaseProxy - saveModels - Storing Models ");
-		cdoClient.storeModels(Arrays.asList(pc, cp), CDO_SERVER_PATH+pcId);
+		String cpPath = CDO_SERVER_PATH + pcId;
+		cdoClient.storeModels(Arrays.asList(pc, cp), cpPath);
 		log.debug("CDODatabaseProxy - saveModels - Models stored! ");
 
 		File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pcId);
@@ -285,7 +285,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 
 		CDOTransaction view= cdoClient.openTransaction();
-		CDOResource resource = view.getResource(CDO_SERVER_PATH+pcId);
+		CDOResource resource = view.getResource(cpPath);
 		EList<EObject> content = resource.getContents();
 
 		log.debug("CDODatabaseProxy - saveModels - Saving file "+paasageConfigModel.getAbsolutePath());

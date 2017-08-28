@@ -1142,6 +1142,8 @@ osImagerReq.getName();
                 Integer cpuInt = flavour.getCpuInt();
                 if (cpuInt != null) {
                     cpu.setValue(typesFactoryService.getDoubleValueUpperware(cpuInt));
+                } else {
+                    cpu.setValue(typesFactoryService.getDoubleValueUpperware(0));
                 }
                 return cpu;
             }
