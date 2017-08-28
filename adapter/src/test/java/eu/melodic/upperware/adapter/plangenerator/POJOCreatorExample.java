@@ -337,6 +337,7 @@ public class POJOCreatorExample {
   VirtualMachineInstanceMonitor toMonitor1(String vmInstName,
                                            Map<TaskType, Set<Task>> tasks) {
     VirtualMachineInstanceMonitor t = VirtualMachineInstanceMonitor.builder()
+            .name(vmInstName)
             .vmInstName(vmInstName)
             .build();
     Set<Task> set = tasks.get(VM_INSTANCE_MONITOR);
@@ -348,6 +349,7 @@ public class POJOCreatorExample {
   ApplicationComponentInstanceMonitor toMonitor3(String acInstName, String acName,
                                                  Map<TaskType, Set<Task>> tasks) {
     ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
+            .name("monitor" + acInstName + "&" + acName)
             .acInstName(acInstName)
             .acName(acName)
             .build();
