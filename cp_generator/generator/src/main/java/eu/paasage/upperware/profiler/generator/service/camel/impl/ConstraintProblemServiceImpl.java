@@ -41,6 +41,7 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
     private PaasageConfigurationServiceImpl paasageConfigurationService;
     private PaasageConfigurationUtilsService paasageConfigurationUtilsService;
     private DimensionDerivatorService dimensionDerivatorService;
+    private DeltaFunctionService deltaFunctionService;
 
     private List<GeneratorService> generatorServices;
     private List<FunctionCreator> functionCreators;
@@ -71,13 +72,13 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
         log.info("** 		Creating User objective functions ");
         dimensionDerivatorService.createDimensions(camel, cp, complexOptRequirements);
 
-//
+
 //        log.info("** 		Creating User constraints ");
 //        dimensionsDerivator.createConstraints(camel, cp);
-//
-//        log.info("** 		Creating Delta Utility Function ");
-//        deltaFunctionDerivator.createDeltaFunction(cp);
-//
+
+        log.info("** 		Creating Delta Utility Function ");
+        deltaFunctionService.createDeltaFunction(cp);
+
         log.info("** 		Creating functions");
         createFunction(cp, configuration);
 
@@ -332,6 +333,11 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
         for(Goal goal : cp.getGoals()){
             log.info(CPModelTool.toString(goal));
         }
+
+        log.info("DELTA UTILITY");
+        DeltaUtility deltaUtility = cp.getDeltaUtility();
+        log.info(CPModelTool.toString(deltaUtility));
+
     }
 
     private Optional<FunctionCreator> getFunctionCreator(String name) {

@@ -124,7 +124,9 @@ public class GenerationOrchestrator {
 
         CpGenerationResult result = null;
 
+        log.info("Loading camel model {}", resourceName);
         CamelModel camelModel = createCamelModel(resourceName);
+        log.info("Camel model {} loaded", resourceName);
         if (camelModel != null) {
 
             PaaSageConfigurationWrapper pcw = paaSageConfigurationService.createPaasageConfigurationWrapper(camelModel);
