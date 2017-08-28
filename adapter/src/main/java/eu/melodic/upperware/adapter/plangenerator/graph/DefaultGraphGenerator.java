@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
@@ -119,8 +120,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = genVmInstMonitorConfigTasks(
       graph, vmInstTasks, newModel.getVirtualMachineInstanceMonitors());
-    Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = genAcInstMonitorConfigTasks(
-      graph, acInstTasks, newModel.getApplicationComponentInstanceMonitors());
+    Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = genAcInstMonitorReconfigTasks(
+      graph, acInstTasks, oldModel.getApplicationComponentInstanceMonitors(),
+      newModel.getApplicationComponentInstanceMonitors());
 
     setDeleteTasksAfterMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
 
@@ -348,10 +350,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<ApplicationComponentInstance> oldAcInsts, Collection<ApplicationComponentInstance> newAcInsts) {
     Collection<ApplicationComponentInstanceTask> acInstTasks = Lists.newArrayList();
 
+    //mam nowe i stare instancje acinst
     acInstTasks.addAll(genAcInstTasks(graph, CREATE, null, acTasks, vmInstTasks,
       newAcInsts.stream().filter(newAcInst -> !oldAcInsts.contains(newAcInst)).collect(toList())));
+    //dodaje CREATE takie, których nie było w starych
     acInstTasks.addAll(genAcInstTasks(graph, DELETE, null, acTasks, vmInstTasks,
       oldAcInsts.stream().filter(oldAcInst -> !newAcInsts.contains(oldAcInst)).collect(toList())));
+    //dodaję DELETE takie, których nie ma w nowych
 
     return acInstTasks;
   }
@@ -421,6 +426,32 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return genAcInstMonitorTasks(graph, CREATE, acInstTasks, acInstMonitors);
   }
 
+  private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
+    Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> oldAcInstMonitors,
+    Collection<ApplicationComponentInstanceMonitor> newAcInstMonitors) {
+
+    Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = Lists.newArrayList();
+
+    acInstMonitorTasks.addAll(
+            genAcInstMonitorTasks(
+                    graph, DELETE, Lists.newArrayList(),
+                    newAcInstMonitors
+            )
+    );
+
+    oldAcInstMonitors.addAll(newAcInstMonitors);
+    acInstMonitorTasks.addAll(
+            genAcInstMonitorTasks(
+                    graph, CREATE,
+                    acInstTasks.stream().filter(acInstTask -> CREATE.equals(acInstTask.getType())).collect(toList()),
+                    oldAcInstMonitors
+            )
+    );
+
+    return acInstMonitorTasks;
+  }
+
+
   private void setDeleteTasksAfterMonitors(MelodicGraph<Task, DefaultEdge> graph,
           Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
           Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks) {
@@ -435,11 +466,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
       }
 
       Set<Task> successors = neighbors.successorsOf(task);
+      //tu trzeba odroznic podwiazywanie do delete i do create
       if (CollectionUtils.isEmpty(successors)) {
-        vmInstMonitorTasks.forEach(vmInstMonitorTask ->
+        vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> CREATE.equals(vmInstMonitorTask.getType()))
+                .forEach(vmInstMonitorTask ->
           setDependencies(graph, CREATE, task, vmInstMonitorTask)
         );
-        acInstMonitorTasks.forEach(acInstMonitorTask ->
+        acInstMonitorTasks.stream().filter(acInstMonitorTask -> CREATE.equals(acInstMonitorTask.getType()))
+                .forEach(acInstMonitorTask ->
           setDependencies(graph, CREATE, task, acInstMonitorTask)
         );
       }
@@ -449,11 +483,15 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
       }
 
       Set<Task> predecessors = neighbors.predecessorsOf(task);
+      //dowiazania do usuwania, zeby bylo pozniej
       if (CollectionUtils.isEmpty(predecessors)) {
-        vmInstMonitorTasks.forEach(vmInstMonitorTask ->
+        vmInstMonitorTasks.stream()
+                .filter(vmInstMonitorTask -> CREATE.equals(vmInstMonitorTask.getType()))
+                .forEach(vmInstMonitorTask ->
           setDependencies(graph, CREATE, vmInstMonitorTask, task)
         );
-        acInstMonitorTasks.forEach(acInstMonitorTask ->
+        acInstMonitorTasks.stream().filter(acInstMonitorTask -> CREATE.equals(acInstMonitorTask.getType()))
+                .forEach(acInstMonitorTask ->
           setDependencies(graph, CREATE, acInstMonitorTask, task)
         );
       }
