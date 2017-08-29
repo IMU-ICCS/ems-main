@@ -84,6 +84,19 @@ public class GraphValidatorUtils {
     return tasks.stream().filter(predicate).collect(Collectors.toSet());
   }
 
+  static void addDeleteTasks(POJOCreatorExample c,
+                        Map<TaskType, Set<Task>> newTasks, Map<TaskType, Set<Task>> oldTasks) {
+    c.addTasksToDelete(TaskType.CLOUD_PROPERTY, newTasks, oldTasks);
+    c.addTasksToDelete(LIFECYCLE, newTasks, oldTasks);
+    c.addTasksToDelete(VIRTUALMACHINE, newTasks, oldTasks);
+    c.addTasksToDelete(VIRTUALMACHINE_INSTANCE, newTasks, oldTasks);
+    c.addTasksToDelete(APPLICATION_COMPONENT, newTasks, oldTasks);
+    c.addTasksToDelete(APPLICATION_COMPONENT_INSTANCE, newTasks, oldTasks);
+    c.addTasksToDelete(PORT_PROVIDED, newTasks, oldTasks);
+    c.addTasksToDelete(PORT_REQUIRED, newTasks, oldTasks);
+    c.addTasksToDelete(COMMUNICATION, newTasks, oldTasks);
+  }
+
   static Set<TaskType> addToSet(TaskType t) {
     Set<TaskType> set = new HashSet<>();
     set.add(t);

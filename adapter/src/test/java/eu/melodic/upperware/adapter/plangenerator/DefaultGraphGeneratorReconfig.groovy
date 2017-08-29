@@ -10,6 +10,13 @@ package eu.melodic.upperware.adapter.plangenerator
 
 import com.google.common.collect.Sets
 import eu.melodic.upperware.adapter.plangenerator.graph.DefaultGraphGenerator
+import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentInstanceMonitorTask
+import eu.melodic.upperware.adapter.plangenerator.tasks.VirtualMachineInstanceMonitorTask
+import org.jgrapht.traverse.TopologicalOrderIterator
+
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.UPDATE;
 
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.*
 
@@ -108,6 +115,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.toMonitor1(vmInstName2, newTasks)
     )
 
+    addDeleteTasks(c, newTasks, oldTasks)
     ComparableModel model = createModel(
             cloudApis, clouds, cloudProperties, cloudCredentials,
             application, applicationInstance, lifecycleComponents,
@@ -131,7 +139,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
     noExceptionThrown()
     graph.vertexSet().size() == 10
     graph.edgeSet().size() == 12
-    //checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
   }
 
   def "reconfiguration graph generation: ac and acinst"() {
@@ -165,8 +173,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.toMonitor3(appCompInstName2, appCompName2, newTasks)
     )
 
-    c.addTasksToDelete(TaskType.APPLICATION_COMPONENT, newTasks, oldTasks)
-    c.addTasksToDelete(TaskType.APPLICATION_COMPONENT_INSTANCE, newTasks, oldTasks)
+    addDeleteTasks(c, newTasks, oldTasks)
 
 
     ComparableModel model = createModel(
@@ -193,8 +200,8 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
     noExceptionThrown()
     graph.vertexSet().size() == 7
-    graph.edgeSet().size() == 6
-    //checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    graph.edgeSet().size() == 7
+    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
   }
 
 
@@ -209,6 +216,8 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
     newLifecycleComponents = Lists.newArrayList(
             c.createLifecycleComponent(lifecycleName, reconfig, newTasks, oldTasks))
+
+    addDeleteTasks(c, newTasks, oldTasks)
 
     ComparableModel model = createModel(
             cloudApis, clouds, cloudProperties, cloudCredentials,
@@ -232,6 +241,90 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
     then:
     noExceptionThrown()
     graph.vertexSet().size() == 1 //monitory?
+    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+
+  }
+
+  def "reconfiguration graph generation: no delete tasks"() {
+
+    setup:
+    reconfig = true
+    Application oldApplication =
+            c.createApplication(appName, false, oldTasks, mockTasks)
+    Application newApplication =
+            c.createApplication(appName, reconfig, newTasks, oldTasks)
+
+    cloudApis = Lists.newArrayList(
+            c.createApi2(apiName, cloudPropName,false, oldTasks, mockTasks)
+    )
+
+    newCloudApis = Lists.newArrayList(
+            c.createApi2(apiName, cloudName, reconfig, newTasks, oldTasks)
+    )
+
+    addDeleteTasks(c, newTasks, oldTasks)
+
+    ComparableModel model = createModel(
+            cloudApis, clouds, cloudProperties, cloudCredentials,
+            oldApplication, null, lifecycleComponents,
+            virtualMachines, virtualMachineInstances, applicationComponents,
+            applicationComponentInstances, communications, portsProvided,
+            portsRequired, virtualMachineInstanceMonitors,
+            applicationComponentInstanceMonitors)
+
+    ComparableModel newModel = createModel(
+            newCloudApis, clouds, cloudProperties, cloudCredentials,
+            newApplication, null, lifecycleComponents,
+            virtualMachines, virtualMachineInstances, applicationComponents,
+            applicationComponentInstances, communications, portsProvided,
+            portsRequired, virtualMachineInstanceMonitors,
+            applicationComponentInstanceMonitors)
+
+    when:
+    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
+
+    then:
+    noExceptionThrown()
+    graph.vertexSet().size() == 1 //monitory?
+    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+
+  }
+
+  def "reconfiguration graph generation: no changes"() {
+
+    setup:
+    reconfig = true
+    Application oldApplication =
+            c.createApplication(appName, false, oldTasks, mockTasks)
+    Application application =
+            c.createApplication(appName, reconfig, newTasks, oldTasks)
+
+    addDeleteTasks(c, newTasks, oldTasks)
+
+    ComparableModel model = createModel(
+            cloudApis, clouds, cloudProperties, cloudCredentials,
+            oldApplication, null, lifecycleComponents,
+            virtualMachines, virtualMachineInstances, applicationComponents,
+            applicationComponentInstances, communications, portsProvided,
+            portsRequired, virtualMachineInstanceMonitors,
+            applicationComponentInstanceMonitors)
+
+    ComparableModel newModel = createModel(
+            cloudApis, clouds, cloudProperties, cloudCredentials,
+            application, null, lifecycleComponents,
+            virtualMachines, virtualMachineInstances, applicationComponents,
+            applicationComponentInstances, communications, portsProvided,
+            portsRequired, virtualMachineInstanceMonitors,
+            applicationComponentInstanceMonitors)
+
+    when:
+    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
+
+    then:
+    noExceptionThrown()
+    graph.vertexSet().size() == 0 //monitory?
+    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+
   }
 
   def "reconfiguration graph generation: allcomponents"() {
@@ -288,8 +381,8 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.toMonitor3(appCompInstName, appCompName, newTasks),
             c.toMonitor3(appCompInstName2, appCompName2, newTasks))
 
-    c.addTasksToDelete(TaskType.CLOUD_PROPERTY, newTasks, oldTasks) //FIXME
 
+    addDeleteTasks(c, newTasks, oldTasks)
 
 
     ComparableModel model = createModel(
@@ -316,7 +409,6 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
     graph.vertexSet().size() == 27
     checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
-    //checkGraph(graph, tasks, dependencies)
   }
 
   ComparableModel createModel(Collection<CloudApi> cloudApis, Collection<Cloud> clouds,
@@ -355,13 +447,13 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
 
   def apiName = "testApiName"
-  def apiName2 = "testApiName_2"
+  //def apiName2 = "testApiName_2"
   def cloudName = "testCloudName"
-  def cloudName2 = "testCloudName_2"
+  //def cloudName2 = "testCloudName_2"
   def cloudPropName = "testCloudPropertyName"
   def cloudPropName2 = "testCloudPropertyName_2"
   def cloudCredName = "testCloudCredentialName"
-  def cloudCredName2 = "testCloudCredentialName_2"
+  //def cloudCredName2 = "testCloudCredentialName_2"
   def appName = "testApplication"
   def appInstName = "testApplicationInstanceName"
   def lifecycleName = "testLifecycleName"
@@ -370,7 +462,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
   def vmName2 = "testVirtualMachineName_2"
   def vmInstName = "testVirtualMachineInstanceName"
   def vmInstName2 = "testVirtualMachineInstanceName_2"
-  def vmInstName3 = "testVirtualMachineInstanceName_3"
+  //def vmInstName3 = "testVirtualMachineInstanceName_3"
   def appCompName = "testApplicationComponentName"
   def appCompName2 = "testApplicationComponentName_2"
   def appCompInstName = "testApplicationComponentInstanceName"
@@ -385,7 +477,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
 
 
-  boolean checkReconfigGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
+  void checkReconfigGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
                              Map<TaskType, Set<Task>> tasks,
                              Map<TaskType, Set<TaskType>> dependencies,
                              Map<TaskType, Set<TaskType>> deletingDependencies) {
@@ -394,14 +486,68 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
     for (Set<Task> s in tasks.values()) {
       tasksSize += s.size()
     }
+    checkOrder(graph)
     //assert (graph.vertexSet().size() == tasksSize)
 
     for (Task v in graph.vertexSet()) {
       assert (ReconfigGraphValidator.checkReconfigVertex(v, graph, tasks, dependencies, deletingDependencies))
     }
-    return true
   }
 
+  enum State {CREATING_OR_UPDATING, MONITOR_CREATING, DELETING, MONITOR_DELETING }
+
+  void checkOrder(SimpleDirectedGraph<Task,DefaultEdge> graph){
+
+    State state = State.CREATING_OR_UPDATING
+
+    TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator<>(graph)
+
+    while (it.hasNext()){
+      Task task = it.next()
+
+      switch (state) {
+
+        case State.CREATING_OR_UPDATING:
+          if (task instanceof VirtualMachineInstanceMonitorTask
+                  || task instanceof ApplicationComponentInstanceMonitorTask){
+            assert(task.getType() == CREATE)
+            state = State.MONITOR_CREATING
+          }
+          else {
+            assert(task.getType() != DELETE)
+          }
+          break
+
+        case State.MONITOR_CREATING:
+          if (task.getType() == DELETE){
+            state = State.DELETING
+          }
+          else {
+            assert(task instanceof VirtualMachineInstanceMonitorTask || task instanceof
+                    ApplicationComponentInstanceMonitorTask)
+            assert(task.getType() == CREATE)
+          }
+          break
+
+        case State.DELETING:
+          if (task instanceof VirtualMachineInstanceMonitorTask
+                  || task instanceof ApplicationComponentInstanceMonitorTask){
+            state = State.MONITOR_DELETING
+          }
+          else {
+            assert(task.getType() == DELETE)
+          }
+          break
+
+        case State.MONITOR_DELETING:
+          assert(task instanceof VirtualMachineInstanceMonitorTask ||
+                  task instanceof ApplicationComponentInstanceMonitorTask)
+          assert(task.getType() == DELETE)
+          break
+
+      }
+    }
+  }
 
   Collection<CloudApi> cloudApis = new LinkedList<>()
   Collection<Cloud> clouds = new LinkedList<>()

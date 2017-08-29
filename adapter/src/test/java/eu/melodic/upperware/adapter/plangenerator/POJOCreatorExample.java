@@ -88,6 +88,26 @@ public class POJOCreatorExample {
     return t;
   }
 
+  CloudApi createApi2(String name, String driver, boolean reconfig,
+                     Map<TaskType, Set<Task>> tasks,
+                     Map<TaskType, Set<Task>> oldTasks) {
+
+    CloudApi t = CloudApi.builder()
+            .name(name)
+            .driver(driver)
+            .build();
+
+    CloudApiTask task = new CloudApiTask(CREATE, t);
+    TaskType taskType = CLOUD_API;
+    if (reconfig){
+      createOrUpdate(task, new CloudApiTask(UPDATE,t), taskType, tasks, oldTasks);
+    }
+    else {
+      addToMap(task, taskType, tasks);
+    }
+    return t;
+  }
+
 
   Cloud createCloud(String name, String apiName, boolean reconfig,
                     Map<TaskType, Set<Task>> tasks,
