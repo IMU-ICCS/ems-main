@@ -20,7 +20,7 @@ import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.function.creators.FunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintService;
-import eu.paasage.upperware.profiler.price.model.lib.EstimatorsManager;
+import fr.inria.paasage.saloon.price.model.lib.EstimatorsManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
