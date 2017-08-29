@@ -35,13 +35,14 @@ public class ResponseTimeFunctionCreator implements FunctionCreator {
 
     private static final String MINUS_ONE = "minus_one";
 
-    private IDatabaseProxy database;
+    public static final String NAME = "ResponseTime";
+
     private ConstantService constantService;
     private ConstraintService constraintService;
 
     @Override
     public String getName() {
-        return "ResponseTime";
+        return NAME;
     }
 
     public void createFunction(ConstraintProblem cp, PaaSageGoal goal) {

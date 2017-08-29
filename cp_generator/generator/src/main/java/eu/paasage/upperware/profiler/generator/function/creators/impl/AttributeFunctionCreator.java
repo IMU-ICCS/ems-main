@@ -16,31 +16,29 @@ import eu.paasage.upperware.profiler.generator.function.creators.FunctionCreator
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintService;
 import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AttributeFunctionCreator implements FunctionCreator {
 
-    private IDatabaseProxy database;
-    private ConstantService constantService;
-    private ConstraintService constraintService;
+    public static final String NAME = "Attribute";
+
+    private final IDatabaseProxy database;
+    private final ConstantService constantService;
+    private final ConstraintService constraintService;
 
     private String featureName;
     private String attributeName;
 
-    public AttributeFunctionCreator(IDatabaseProxy database, ConstantService constantService,
-                                    ConstraintService constraintService) {
-        this.database = database;
-        this.constantService = constantService;
-        this.constraintService = constraintService;
-    }
-
     @Override
     public String getName() {
-        return "Attribute";
+        return NAME;
     }
 
     @Override
@@ -89,6 +87,7 @@ public class AttributeFunctionCreator implements FunctionCreator {
         if (feature != null) {
             Attribute attribute = ProviderModelTool.getAttributeByName(feature, this.attributeName);
             if (attribute != null) {
+                //TODO - PSZKUP value below is always null!!!
                 SingleValue value = attribute.getValue();
                 if (value instanceof IntegerValue) {
                     constant = constantService.createIntegerConstant(((IntegerValue) value).getValue());

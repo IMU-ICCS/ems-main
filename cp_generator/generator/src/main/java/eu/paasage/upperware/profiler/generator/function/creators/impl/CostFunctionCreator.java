@@ -15,45 +15,33 @@ import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.PaaSageGoal;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.profiler.cp.generator.model.derivator.lib.CPModelDerivator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.function.creators.FunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintService;
-import fr.inria.paasage.saloon.price.model.lib.EstimatorsManager;
+import eu.paasage.upperware.profiler.price.model.lib.EstimatorsManager;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CostFunctionCreator implements FunctionCreator {
 
-    public static final String FUNCTION_CREATOR_NAME = "Cost";
+    public static final String NAME = "Cost";
 
     private IDatabaseProxy database;
     private ConstantService constantService;
     private ConstraintService constraintService;
-
-    /*
-     * The manager of estimators
-     */
-    protected EstimatorsManager manager;
-
-
-    public CostFunctionCreator(IDatabaseProxy database, ConstantService constantService,
-                               ConstraintService constraintService) {
-        this.database = database;
-        this.constantService = constantService;
-        this.constraintService = constraintService;
-
-        this.manager = new EstimatorsManager(CPModelDerivator.selectExistingPriceFile());
-    }
+    private EstimatorsManager estimatorsManager;
 
     @Override
     public String getName() {
-        return FUNCTION_CREATOR_NAME;
+        return NAME;
     }
 
     public void createFunction(ConstraintProblem cp, PaaSageGoal goal) {
@@ -91,11 +79,10 @@ public class CostFunctionCreator implements FunctionCreator {
     protected ComposedExpression createMultiplication(ConstraintProblem cp, Variable v, String appId) {
 
         String providerId = v.getProviderId();
-        String vmId = v.getVmId();
-
+//        String vmId = v.getVmId();
 //        ProviderModel pm = database.loadPM(appId, providerId, vmId);
         ProviderModel pm = database.loadPM(appId, providerId);
-        double rate = manager.estimatePrice(pm);
+        double rate = estimatorsManager.estimatePrice(pm);
 
         Constant price = constantService.createDoubleConstant(rate);
         cp.getConstants().add(price);
