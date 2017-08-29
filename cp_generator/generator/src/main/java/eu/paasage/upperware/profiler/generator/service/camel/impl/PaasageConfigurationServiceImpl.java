@@ -6,6 +6,7 @@ import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.location.CloudLocation;
 import eu.paasage.camel.location.GeographicalRegion;
 import eu.paasage.camel.location.Location;
+import eu.paasage.camel.metric.Property;
 import eu.paasage.camel.organisation.CloudCredentials;
 import eu.paasage.camel.organisation.CloudProvider;
 import eu.paasage.camel.organisation.OrganisationModel;
@@ -14,11 +15,13 @@ import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.requirement.*;
 import eu.paasage.upperware.metamodel.application.*;
+import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.typesPaasage.*;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
 import eu.paasage.upperware.profiler.generator.filter.QuantitativeHardwareRequirementFilter;
+import eu.paasage.upperware.profiler.generator.function.creators.impl.AttributeFunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
 import eu.paasage.upperware.profiler.generator.service.camel.model.Flavour;
@@ -138,7 +141,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         //Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
 
         log.info(" ** 	Processing Opt Rerqs");
-//        parseOptimisationRequirements(pc);    //TODO - to na pozniej
+        parseOptimisationRequirements(camelModel.getRequirementModels().get(0), pcw);    //TODO - to na pozniej
         log.info(" ** 	Processing Opt Rerqs ended");
         VMRequirementSet globalRequirements= deploymentModel.getGlobalVMRequirementSet();
 
@@ -313,6 +316,135 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         log.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ended ");*/
 
 
+    }
+
+    private void parseOptimisationRequirements(RequirementModel reqs, PaaSageConfigurationWrapper pc) {
+        log.debug("CamelModelProcessor - parseOptimisationRequirements 2");
+        PaasageConfiguration configuration = pc.getPaasageConfiguration();
+        log.debug("CamelModelProcessor - parseOptimisationRequirements 3");
+        Map<String, PaaSageGoal> goalMap = new Hashtable<>();
+
+        for (Requirement req : reqs.getRequirements()) {
+            log.debug("CamelModelProcessor - parseOptimisationRequirements 4");
+            if (req instanceof OptimisationRequirement) {
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 5");
+                OptimisationRequirement optReq = (OptimisationRequirement) req;
+
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 6 " + optReq.getName());
+
+                String functionName = getFunctionName(optReq);
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 6.1 " + functionName);
+//
+//                log.debug("CamelModelProcessor - parseOptimisationRequirements 6.2 " + PaasageModelTool.getFunctionNames(proxy));
+
+                FunctionType ft = getFunctionTypeByName(functionName);
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 7");
+
+                if (ft != null) {
+                    String key = getKey(ft, optReq);
+                    log.debug("CamelModelProcessor - parseOptimisationRequirements 8");
+                    PaaSageGoal goal = goalMap.get(key);
+                    log.debug("CamelModelProcessor - parseOptimisationRequirements 9");
+                    GoalOperatorEnum goalType = getSelectedGoal(optReq.getOptimisationFunction());
+                    if (goal == null) {
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 10");
+                        goal = applicationFactory.createPaaSageGoal();
+
+                        if (AttributeFunctionCreator.NAME.equalsIgnoreCase(ft.getId())) {
+                            String pathToAttribute = getPathToAttribute(optReq);
+                            goal.setOptimisationAttribute(pathToAttribute);
+                        }
+
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 11");
+                        goalMap.put(key, goal);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 12");
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 13");
+                        goal.setFunction(ft);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 14");
+                        goal.setGoal(goalType);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 15");
+                        goal.setId(goalType.getName() + ft.getId());
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 16");
+                        configuration.getGoals().add(goal);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 17");
+                    }
+
+                    log.debug("CamelModelProcessor - parseOptimisationRequirements 18");
+                    if (optReq.getComponent() != null) {
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 19");
+                        ApplicationComponent appc = PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), optReq.getComponent().getName());
+
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 20");
+                        ComponentMetricRelationship cmr = createComponentMetricRelationship(appc, optReq.getMetric().getName());
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 21");
+
+                        goal.getApplicationComponent().add(cmr);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 22");
+                    } else //All the components are involved!
+                    {
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 23");
+                        for (ApplicationComponent appc : pc.getPaasageConfiguration().getComponents()) {
+                            log.debug("CamelModelProcessor - parseOptimisationRequirements 24");
+                            ComponentMetricRelationship cmr = createComponentMetricRelationship(appc, null);
+                            log.debug("CamelModelProcessor - parseOptimisationRequirements 25");
+                            //cmr.setComponent(appc);
+
+                            goal.getApplicationComponent().add(cmr);
+                            log.debug("CamelModelProcessor - parseOptimisationRequirements 26");
+                        }
+
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 27");
+                        goal.setApplicationMetric(functionName);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 28");
+                    }
+                } else {
+                    log.warn("CamelModelProcessor- parseOptimisationRequirements- The property " + optReq.getMetric().getProperty().getName() + "is not in the set {cost, response time, availability}!");
+                }
+            }
+        }
+    }
+
+    private FunctionType getFunctionTypeByName(String name) {
+        for (FunctionType ft : database.loadFunctionTypes().getTypes()) {
+            if (name.toLowerCase().contains(ft.getId().toLowerCase()))
+                return ft;
+        }
+        return null;
+    }
+
+
+    private String getKey(FunctionType ft, OptimisationRequirement optReq){
+        String id = ft.getId();
+        if (!AttributeFunctionCreator.NAME.equalsIgnoreCase(id)){
+            return id;
+        }
+        return id + "_" + getPathToAttribute(optReq);
+    }
+
+    private String getFunctionName(OptimisationRequirement optReq) {
+        return getProperty(optReq).getName();
+    }
+
+    private String getPathToAttribute(OptimisationRequirement optReq) {
+        return getProperty(optReq).getDescription();
+    }
+
+    private Property getProperty(OptimisationRequirement optReq){
+        return optReq.getMetric() != null ? optReq.getMetric().getProperty() : optReq.getProperty();
+    }
+
+    private ComponentMetricRelationship createComponentMetricRelationship(ApplicationComponent appc, String metricId) {
+        ComponentMetricRelationship cmr= applicationFactory.createComponentMetricRelationship();
+        cmr.setComponent(appc);
+
+        if(metricId!=null){
+            cmr.setMetricId(metricId);
+        }
+        return cmr;
+    }
+
+    private GoalOperatorEnum getSelectedGoal(OptimisationFunctionType type) {
+        return type.getValue()==OptimisationFunctionType.MAXIMISE_VALUE ? GoalOperatorEnum.MAX : GoalOperatorEnum.MIN;
     }
 
     private void printPreferedProviders(Set<String> preferedProviders) {

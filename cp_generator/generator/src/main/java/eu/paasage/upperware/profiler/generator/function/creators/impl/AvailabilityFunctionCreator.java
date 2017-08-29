@@ -40,15 +40,15 @@ import java.util.List;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class AvailabilityFunctionCreator implements FunctionCreator {
 
+	public static String NAME= "Availability";
+
 	private IDatabaseProxy database;
 	private ConstantService constantService;
 	private ConstraintService constraintService;
-	
-	public static String AVAILABILITY_ATTRIBUTE= "Availability"; 
 
 	@Override
 	public String getName() {
-		return "Availability";
+		return NAME;
 	}
 
 	public void createFunction(ConstraintProblem cp, PaaSageGoal goal) {
@@ -86,7 +86,7 @@ public class AvailabilityFunctionCreator implements FunctionCreator {
 					ProviderModelDecorator pmd= new ProviderModelDecorator(providerId, pm); 
 
 					log.debug("AvailabilityFunctionCreator - createFunction - 8");
-					Attribute av= pmd.getAttributeByName(AVAILABILITY_ATTRIBUTE);
+					Attribute av= pmd.getAttributeByName(NAME);
 					log.debug("AvailabilityFunctionCreator - createFunction - 9");
 					Constant availability = constantService.createIntegerConstant(getAttributeValue(av.getValue()));
 					

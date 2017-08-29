@@ -117,7 +117,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
 
         GoalOperatorEnum defaultGoalType = GoalOperatorEnum.MIN;
 
-//        FunctionType defaultFunctionType = PaasageModelTool.getFunctionTypeByName(COST, databaseProxy);
         FunctionType defaultFunctionType = getFunctionTypeByName(COST, databaseProxy);
         goal.setFunction(defaultFunctionType);
         goal.setGoal(defaultGoalType);
@@ -127,7 +126,7 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
 
         //Create the Cost creator
 
-        Optional<FunctionCreator> costCreatorOpt = getFunctionCreator(CostFunctionCreator.FUNCTION_CREATOR_NAME);
+        Optional<FunctionCreator> costCreatorOpt = getFunctionCreator(CostFunctionCreator.NAME);
         costCreatorOpt.ifPresent(functionCreator -> functionCreator.createFunction(cp, goal));
         log.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
     }
