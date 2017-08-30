@@ -241,10 +241,11 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 		if(cdoClient.existResource(id)) {
 			try{
-				result = cloner.cloneModel(id);
-				log.info("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
+//				result = cloner.cloneModel(id);
+				result= cdoClient.getResourceContents(id);
+				log.info("CDODatabaseProxy - getResourceWithID - The resource "+ id+" loaded");
 			} catch(org.eclipse.emf.cdo.util.InvalidURIException ex) {
-				log.debug("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
+				log.info("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
 			}
 		}
 		return result;
@@ -266,6 +267,10 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 		log.debug("CDODatabaseProxy - saveModels - Storing Models ");
 		String cpPath = CDO_SERVER_PATH + pcId;
+//
+//		cdoClient.exportModel(pc, "/home/pszkup/temp/pc.xmi");
+//		cdoClient.exportModel(cp, "/home/pszkup/temp/cp.xmi");
+
 		cdoClient.storeModels(Arrays.asList(pc, cp), cpPath);
 		log.debug("CDODatabaseProxy - saveModels - Models stored! ");
 
