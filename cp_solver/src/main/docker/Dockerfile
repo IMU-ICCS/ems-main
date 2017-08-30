@@ -2,4 +2,4 @@ FROM java:8
 VOLUME /tmp
 ADD cp-solver.jar cp-solver.jar
 RUN bash -c 'touch /cp-solver.jar'
-ENTRYPOINT ["java", "-jar", "/cp-solver.jar", "-Djava.security.egd=file:/dev/./urandom", "--spring.config.location=/config/eu.melodic.upperware.cpSolver.properties"]
+ENTRYPOINT ["java", "-jar", "/cp-solver.jar", "-Djava.security.egd=file:/dev/./urandom"]
