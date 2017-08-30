@@ -15,8 +15,8 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import java.util.Map;
 import java.util.Set;
 
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
 import static eu.melodic.upperware.adapter.plangenerator.TaskType.*;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
 
 
 public class POJOCreatorExample {
@@ -354,19 +354,29 @@ public class POJOCreatorExample {
     return t;
   }
 
-  VirtualMachineInstanceMonitor toMonitor1(String vmInstName,
+  VirtualMachineInstanceMonitor toMonitor1(String vmInstName, boolean reconfig,
                                            Map<TaskType, Set<Task>> tasks) {
     VirtualMachineInstanceMonitor t = VirtualMachineInstanceMonitor.builder()
             .name(vmInstName)
             .vmInstName(vmInstName)
             .build();
-    Set<Task> set = tasks.get(VM_INSTANCE_MONITOR);
-    set.add(new VirtualMachineInstanceMonitorTask(CREATE, t));
-    tasks.put(VM_INSTANCE_MONITOR, set);
+
+    VirtualMachineInstanceMonitorTask createTask = new VirtualMachineInstanceMonitorTask(CREATE, t);
+    TaskType taskType = VM_INSTANCE_MONITOR;
+    addToMap(createTask, taskType , tasks);
+
+    if (reconfig){
+      if (tasks.values().stream().anyMatch(
+              taskSet -> (taskSet.stream().anyMatch(task -> DELETE.equals(task.getType()))))){
+
+        VirtualMachineInstanceMonitorTask deleteTask = new VirtualMachineInstanceMonitorTask(DELETE, t);
+        addToMap(deleteTask, taskType, tasks);
+      }
+    }
     return t;
   }
 
-  ApplicationComponentInstanceMonitor toMonitor3(String acInstName, String acName,
+  ApplicationComponentInstanceMonitor toMonitor3(String acInstName, String acName, boolean reconfig,
                                                  Map<TaskType, Set<Task>> tasks) {
     ApplicationComponentInstanceMonitor t = ApplicationComponentInstanceMonitor.builder()
             .name("monitor" + acInstName + "&" + acName)
@@ -374,9 +384,19 @@ public class POJOCreatorExample {
             .acName(acName)
             .build();
 
-    Set<Task> set = tasks.get(APP_COMP_INSTANCE_MONITOR);
-    set.add(new ApplicationComponentInstanceMonitorTask(CREATE, t));
-    tasks.put(APP_COMP_INSTANCE_MONITOR, set);
+    ApplicationComponentInstanceMonitorTask createTask = new ApplicationComponentInstanceMonitorTask(CREATE, t);
+    TaskType taskType = APP_COMP_INSTANCE_MONITOR;
+    addToMap(createTask, taskType , tasks);
+
+
+    if (reconfig){
+      if (tasks.values().stream().anyMatch(
+              taskSet -> (taskSet.stream().anyMatch(task -> DELETE.equals(task.getType()))))){
+
+        ApplicationComponentInstanceMonitorTask deleteTask = new ApplicationComponentInstanceMonitorTask(DELETE, t);
+        addToMap(deleteTask, taskType, tasks);
+      }
+    }
     return t;
   }
 

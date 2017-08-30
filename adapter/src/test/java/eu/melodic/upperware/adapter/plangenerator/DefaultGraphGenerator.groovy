@@ -9,13 +9,14 @@
 package eu.melodic.upperware.adapter.plangenerator
 
 import eu.melodic.upperware.adapter.plangenerator.graph.DefaultGraphGenerator
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.*
 import eu.melodic.upperware.adapter.plangenerator.model.*
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task
 import org.assertj.core.util.Lists
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
 import spock.lang.Specification
+
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
 
 class DefaultGraphGeneratorConfigTests extends Specification {
 
@@ -82,11 +83,11 @@ class DefaultGraphGeneratorConfigTests extends Specification {
             c.createPortRequired(portRequiredName, appCompName, reconfig, tasks, oldTasks))
 
     virtualMachineInstanceMonitors = Lists.newArrayList(
-            c.toMonitor1(vmInstName, tasks),
-            c.toMonitor1(vmInstName2, tasks))
+            c.toMonitor1(vmInstName, reconfig, tasks),
+            c.toMonitor1(vmInstName2, reconfig, tasks))
     applicationComponentInstanceMonitors = Lists.newArrayList(
-            c.toMonitor3(appCompInstName, appCompName, tasks),
-            c.toMonitor3(appCompInstName2, appCompName2, tasks))
+            c.toMonitor3(appCompInstName, appCompName, reconfig, tasks),
+            c.toMonitor3(appCompInstName2, appCompName2, reconfig, tasks))
 
     ComparableModel model = createModel(
             cloudApis, clouds, cloudProperties, cloudCredentials,
@@ -144,11 +145,11 @@ class DefaultGraphGeneratorConfigTests extends Specification {
                     appCompInstName2, appName, vmInstName2, appCompName2, reconfig, tasks, oldTasks))
 
     virtualMachineInstanceMonitors = Lists.newArrayList(
-            c.toMonitor1(vmInstName, tasks),
-            c.toMonitor1(vmInstName2, tasks))
+            c.toMonitor1(vmInstName, reconfig, tasks),
+            c.toMonitor1(vmInstName2, reconfig, tasks))
     applicationComponentInstanceMonitors = Lists.newArrayList(
-            c.toMonitor3(appCompInstName, appCompName, tasks),
-            c.toMonitor3(appCompInstName2, appCompName2, tasks))
+            c.toMonitor3(appCompInstName, appCompName, reconfig, tasks),
+            c.toMonitor3(appCompInstName2, appCompName2, reconfig, tasks))
 
     ComparableModel model = createModel(
             cloudApis, clouds, cloudProperties, cloudCredentials,

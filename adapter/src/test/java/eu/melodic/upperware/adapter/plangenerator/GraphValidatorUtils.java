@@ -10,12 +10,14 @@
 
 package eu.melodic.upperware.adapter.plangenerator;
 
-import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
