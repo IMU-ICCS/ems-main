@@ -97,16 +97,8 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	}
 
 	public CamelModel getCamelModel(String modelPath) {
-
-		CDOView view= cdoClient.openView();
-
-		EList<EObject> res;
-		try {
-			res= view.getResource(modelPath).getContents();
-		} catch (Exception e) {
-			return null;
-		}
-		return (CamelModel) getLastElement(res);
+		List<EObject> camelModels = cloner.cloneModel(modelPath);
+		return (CamelModel) getLastElement(camelModels);
 	}
 
 	private EObject getLastElement(List<EObject> collection){
@@ -132,10 +124,9 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	 * @return The provider model
 	 */
 	public ProviderModel loadPM(String appId, String providerId) {
-		CDOView view = cdoClient.openView();
-		EList<EObject> res = view.getResource(FMS_APP_CDO_SERVER_PATH + getFMResourceId(appId, providerId)).getContents();
 
-		CamelModel pm = (CamelModel) res.get(res.size() - 1);
+		List<EObject> res = cloner.cloneModel(FMS_APP_CDO_SERVER_PATH + getFMResourceId(appId, providerId));
+		CamelModel pm = (CamelModel)getLastElement(res);
 
 		log.debug("CDODatabaseProxy- loadPM- PM " + pm.getProviderModels().get(0).getRootFeature().getName());
 
@@ -152,8 +143,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	 */
 	//TODO - is this used anywhere?
 	public ProviderModel loadPM(String appId, String providerId, String vmId) {
-		CDOView view = cdoClient.openView();
-		EList<EObject> res = view.getResource(FMS_APP_CDO_SERVER_PATH + getFMResourceId(appId, providerId)).getContents();
+		List<EObject> res = cloner.cloneModel(FMS_APP_CDO_SERVER_PATH + getFMResourceId(appId, providerId));
 
 		//The Name of the camel model is the Id of the VM
 
@@ -251,7 +241,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 		if(cdoClient.existResource(id)) {
 			try{
-				result= cdoClient.getResourceContents(id);
+				result = cloner.cloneModel(id);
 				log.info("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
 			} catch(org.eclipse.emf.cdo.util.InvalidURIException ex) {
 				log.debug("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
@@ -283,10 +273,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		File paasageConfigModel= new File(paasageConfigurationDir, Constants.PAASAGE_CONFIGURATION_MODEL_FILE_NAME);
 		File cpModel= new File(paasageConfigurationDir, Constants.CP_MODEL_FILE_NAME);
 
-
-		CDOTransaction view= cdoClient.openTransaction();
-		CDOResource resource = view.getResource(cpPath);
-		EList<EObject> content = resource.getContents();
+		List<EObject> content = cloner.cloneModel(cpPath);
 
 		log.debug("CDODatabaseProxy - saveModels - Saving file "+paasageConfigModel.getAbsolutePath());
 		cdoClient.exportModel(content.get(0), cpModel.getAbsolutePath());

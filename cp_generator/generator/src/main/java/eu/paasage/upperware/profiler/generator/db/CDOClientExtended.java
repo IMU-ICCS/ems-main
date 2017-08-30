@@ -137,14 +137,19 @@ public class CDOClientExtended extends CDOClient {
     }
 
     public boolean existResource(String path) {
+        CDOView view = null;
         try {
-            CDOView view = openView();
+            view = openView();
             CDOResource resource = view.getResource(path);
             return resource != null;
         } catch (Exception ex ) {
 //        ignore exception
 //        org.eclipse.emf.cdo.eresource.impl.CDOResourceImpl
 //        in method private void registerProxy(InternalCDOView view) there is unnecessary error log
+        } finally {
+            if (view != null && !view.isClosed()){
+                view.close();
+            }
         }
         return false;
     }
