@@ -23,13 +23,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE;
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.UPDATE;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -424,15 +421,20 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<VirtualMachineInstanceMonitor> newVmInstMonitors){
     Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = Lists.newArrayList();
 
-    vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldVmInstMonitors));
+    //wez taski create !(vmInstTasks.stream().filter(vmInstTask -> CREATE.equals(vmInstTask.getType())).collect(toList()).isEmpty())
+    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))){ // jesli jest jakies create/update
 
-    vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE,
-      vmInstTasks.stream().filter(vmInstTask -> CREATE.equals(vmInstTask.getType())).collect(toList()),
-      newVmInstMonitors.stream().filter(vmInstMonitor -> vmInstTasks.stream()
-        .anyMatch(vmInstTask -> vmInstTask.getData().getName().equals(vmInstMonitor.getVmInstName()))).collect(toList()))
-    );
+      vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldVmInstMonitors));
 
-    vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newVmInstMonitors));
+      vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE, Lists.newArrayList(),
+              newVmInstMonitors.stream().filter(vmInstMonitor -> vmInstTasks.stream()
+                      .anyMatch(vmInstTask -> vmInstTask.getData().getName().equals(vmInstMonitor.getVmInstName()))).collect(toList()))
+      );
+    }
+    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))){ //jesli istnieje jakies delete
+
+      vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newVmInstMonitors));
+    }
 
     return vmInstMonitorTasks;
   }
@@ -449,18 +451,20 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
   //acInstTasks.stream().filter(acInstTask -> CREATE.equals(acInstTask.getType())).collect(toList()),
 
-    //wszystkie monitory ze starego modelu
-    acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldAcInstMonitors));
+    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))){ // jesli jest jakies create/update
 
-    //te, ktore zostaly nowo utworzone, powiazanie z monitorami do nich
-    acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE,
-      acInstTasks.stream().filter(acInstTask -> CREATE.equals(acInstTask.getType())).collect(toList()),
-      newAcInstMonitors.stream().filter(acInstMonitor -> acInstTasks.stream()
-        .anyMatch(acInstTask -> acInstTask.getData().getName().equals(acInstMonitor.getAcInstName()))).collect(toList()))
-    );
+      acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldAcInstMonitors));
+      acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(),
+              newAcInstMonitors.stream().filter(acInstMonitor -> acInstTasks.stream()
+                      .anyMatch(acInstTask -> acInstTask.getData().getName().equals(acInstMonitor.getAcInstName()))).collect(toList()))
+      );
+    }
+    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))){ //jesli istnieje jakies delete
 
-    //wszystkie monitory z nowego modelu
-    acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newAcInstMonitors));
+      //wszystkie monitory z nowego modelu
+      acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newAcInstMonitors));
+    }
+
 
     return acInstMonitorTasks;
   }
