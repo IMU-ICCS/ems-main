@@ -422,8 +422,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<VirtualMachineInstanceMonitor> newVmInstMonitors){
     Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = Lists.newArrayList();
 
-    //wez taski create !(vmInstTasks.stream().filter(vmInstTask -> CREATE.equals(vmInstTask.getType())).collect(toList()).isEmpty())
-    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))){ // jesli jest jakies create/update
+    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))){
 
       vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldVmInstMonitors));
 
@@ -432,7 +431,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                       .anyMatch(vmInstTask -> vmInstTask.getData().getName().equals(vmInstMonitor.getVmInstName()))).collect(toList()))
       );
     }
-    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))){ //jesli istnieje jakies delete
+    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))){
 
       vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newVmInstMonitors));
     }
