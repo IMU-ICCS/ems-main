@@ -17,9 +17,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.eclipse.emf.cdo.CDOObject;
+import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
@@ -37,7 +36,6 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
-import fr.inria.paasage.saloon.price.model.tools.ModelTool;
 
 /**
  * This class provides the functionality to registry a camel model in the CDO Server
@@ -152,7 +150,7 @@ public class Init {
 					
 					System.out.println("Loading file "+xmiFile);
 					
-					Resource res=ModelTool.loadModel(xmiFile);
+					Resource res= ModelTool.loadModel(xmiFile);
 					
 					System.out.println("File: "+res);
 					

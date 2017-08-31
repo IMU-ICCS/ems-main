@@ -23,7 +23,6 @@
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -33,7 +32,6 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

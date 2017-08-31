@@ -22,6 +22,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+        </dependency>
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
@@ -34,7 +38,6 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>camel</artifactId>
-            <version>${paasage.version.old}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -60,7 +63,6 @@
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

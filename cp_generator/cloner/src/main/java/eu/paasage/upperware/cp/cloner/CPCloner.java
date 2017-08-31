@@ -10,9 +10,9 @@
  */
 package eu.paasage.upperware.cp.cloner;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
@@ -33,8 +33,7 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 /**
  * This class clones a model stored in CDO.
  */
-public class CPCloner 
-{
+public class CPCloner {
 	
 	//CDO
 	public final static String CDO_SERVER_PATH= "upperware-models/"; 
@@ -44,10 +43,8 @@ public class CPCloner
 	
 	public static CDOClientExtended client= null; 
 
-	public static CDOClientExtended createCDOClient()
-	{
-		if(client==null)
-		{	
+	public static CDOClientExtended createCDOClient() {
+		if(client==null) {
 			CpPackage.eINSTANCE.eClass();
 			TypesPackage.eINSTANCE.eClass(); 
 			ApplicationPackage.eINSTANCE.eClass();
@@ -61,19 +58,13 @@ public class CPCloner
 			
 			client.registerPackage(CpPackage.eINSTANCE);
 			client.registerPackage(TypesPackage.eINSTANCE);
-			
 			client.registerPackage(ApplicationPackage.eINSTANCE);
 			client.registerPackage(TypesPaasagePackage.eINSTANCE);
-			
 			client.registerPackage(TypePackage.eINSTANCE);
-					
 			client.registerPackage(CamelPackage.eINSTANCE);
 			client.registerPackage(ProviderPackage.eINSTANCE);
-			
 			client.registerPackage(OrganisationPackage.eINSTANCE);
-			
 			client.registerPackage(DeploymentPackage.eINSTANCE);
-		
 		}
 
 		return client; 
@@ -84,25 +75,9 @@ public class CPCloner
 	 * @param id  the source identifier
 	 * @param copyId  the target identifier
 	 */
-	public void cloneModel(String id, String copyId)
-	{
-		CDOClientExtended extended= createCDOClient(); 
-		
-		List<EObject> contents= extended.getResourceContents(id);
-		
-		List<EObject> objs= new ArrayList<EObject>(); 
-		
-		
-		for(EObject obj:contents)
-		{
-			objs.add(EcoreUtil.copy(obj)); 
-		}
-		
-		
-		objs.addAll(objs); 
-		
-		extended.storeModelOverwritten(objs, copyId);
-				
+	public void cloneModel(String id, String copyId) {
+		List<EObject> objs = cloneModel(id);
+		createCDOClient().storeModelOverwritten(objs, copyId);
 	}
 	
 	/**
@@ -110,40 +85,9 @@ public class CPCloner
 	 * @param id  the source identifier
 	 * @return  the cloned model
 	 */
-	public List<EObject> cloneModel(String id)
-	{
-		CDOClientExtended extended= createCDOClient(); 
-		
-		List<EObject> contents= extended.getResourceContents(id);
-		
-		List<EObject> objs= new ArrayList<EObject>(); 
-		
-		
-		for(EObject obj:contents)
-		{
-			objs.add(EcoreUtil.copy(obj)); 
-		}
-				
-		return objs; 
-				
-	}
-	
-	public static void main(String[] args) 
-	{
-		if(args.length==2)
-		{
-			CPCloner cpCloner= new CPCloner(); 
-			
-			cpCloner.cloneModel(args[0], args[1]);
-			
-			logger.info("CPClonent - main - Model with id "+args[0]+" cloned");
-			
-			System.exit(0);
-			
-		}
-		else
-			logger.error("CPClonent - main - You have to specify the model and copy Ids");
-
+	public List<EObject> cloneModel(String id) {
+		List<EObject> contents= createCDOClient().getResourceContents(id);
+		return contents.stream().map(EcoreUtil::copy).collect(Collectors.toList());
 	}
 
 }

@@ -62,19 +62,13 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>camel</artifactId>
-            <version>${paasage.version.old}</version>
         </dependency>
         <!-- 27Oct15 dependencies needed by metrics mapper -->
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>cloner</artifactId>
-            <version>${project.version}</version>
+            <artifactId>melodic-commons</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>generator</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>

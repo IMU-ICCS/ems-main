@@ -76,10 +76,13 @@ public class AttributeFunctionCreator implements IFunctionCreator {
                 SingleValue value = attribute.getValue();
                 if (value instanceof IntegerValue){
                     constant = CPModelTool.createIntegerConstant(((IntegerValue)value).getValue(), CPModelTool.getConstantName());
+                    logger.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((IntegerValue)value).getValue());
                 } else if (value instanceof DoublePrecisionValue) {
                     constant = CPModelTool.createDoubleConstant(((DoublePrecisionValue)value).getValue(), CPModelTool.getConstantName());
+                    logger.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((DoublePrecisionValue)value).getValue());
                 } else if (value instanceof FloatsValue) {
                     constant = CPModelTool.createFloatConstant(((FloatsValue)value).getValue(), CPModelTool.getConstantName());
+                    logger.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((FloatsValue)value).getValue());
 
                 } else {
                     logger.error("Value type: " + value.getClass() + " not allowed");

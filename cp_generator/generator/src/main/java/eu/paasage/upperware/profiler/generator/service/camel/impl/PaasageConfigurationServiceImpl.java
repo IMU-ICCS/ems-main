@@ -1,0 +1,1362 @@
+package eu.paasage.upperware.profiler.generator.service.camel.impl;
+
+import eu.paasage.camel.Application;
+import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.location.CloudLocation;
+import eu.paasage.camel.location.GeographicalRegion;
+import eu.paasage.camel.location.Location;
+import eu.paasage.camel.metric.Property;
+import eu.paasage.camel.organisation.CloudCredentials;
+import eu.paasage.camel.organisation.CloudProvider;
+import eu.paasage.camel.organisation.OrganisationModel;
+import eu.paasage.camel.organisation.User;
+import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
+import eu.paasage.camel.provider.ProviderModel;
+import eu.paasage.camel.requirement.*;
+import eu.paasage.upperware.metamodel.application.*;
+import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
+import eu.paasage.upperware.metamodel.cp.Variable;
+import eu.paasage.upperware.metamodel.types.typesPaasage.*;
+import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
+import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
+import eu.paasage.upperware.profiler.generator.filter.QuantitativeHardwareRequirementFilter;
+import eu.paasage.upperware.profiler.generator.function.creators.impl.AttributeFunctionCreator;
+import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
+import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
+import eu.paasage.upperware.profiler.generator.service.camel.model.Flavour;
+import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
+import eu.paasage.upperware.profiler.generator.service.camel.CamelModelService;
+import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationUtilsService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool.existComponentInstance;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class PaasageConfigurationServiceImpl implements PaasageConfigurationService {
+
+    private static int DEFAULT_MIN_INSTANCE_NUMBER =0;
+    private static int DEFAULT_MAX_INSTANCE_NUMBER =0;
+
+    public static String NAME_SEPARATOR="_";
+    public static String SUFFIX="VM_PROFILE";
+    private static final String GLOBAL_PROVIDER_REQUIREMENTS = "GlobalProviderRequirements";
+
+    private final ApplicationFactory applicationFactory;
+    private final TypesPaasageFactory typesPaasageFactory;
+
+    private final TypesFactoryService typesFactoryService;
+    private final CamelModelService camelModelService;
+    private final IDatabaseProxy database;
+    private final PaasageConfigurationUtilsService paasageConfigurationUtilsService;
+
+    private Map<String, List<VirtualMachineProfile>> vmProfiles;
+
+    @Override
+    public PaaSageConfigurationWrapper createPaasageConfigurationWrapper(CamelModel camelModel) {
+        log.info("** Creating PaaSageConfigurationWrapper...");
+        PaasageConfiguration paasageConfiguration = createPaasageConfigurationInstance(camelModel);
+        PaaSageConfigurationWrapper pcw = createPaaSageConfigurationWrapperInstance(paasageConfiguration);
+
+        parseModel(camelModel, pcw);
+
+        return pcw;
+    }
+
+    private PaasageConfiguration createPaasageConfigurationInstance(CamelModel camelModel) {
+        String appId = getAppId(camelModel);
+        String auxId = generatePaasageAppConfigurationId(appId);
+        log.info("** Creating PaaSageConfigurationWrapper - generated id: {}", auxId);
+        PaasageConfiguration paasageConfiguration = applicationFactory.createPaasageConfiguration();
+        paasageConfiguration.setId(auxId);
+        return paasageConfiguration;
+    }
+
+    private String getAppId(CamelModel camelModel) {
+        EList<Application> applications = camelModel.getApplications();
+        return CollectionUtils.isNotEmpty(applications) ? applications.get(0).getName() : camelModel.getName();
+    }
+
+    private String generatePaasageAppConfigurationId(String appId) {
+        return appId+System.currentTimeMillis();
+    }
+
+    private PaaSageConfigurationWrapper createPaaSageConfigurationWrapperInstance(PaasageConfiguration pc) {
+        PaaSageConfigurationWrapper wrapper = new PaaSageConfigurationWrapper(pc);
+        wrapper.setFunctionTypes(database.loadFunctionTypes());
+        wrapper.setLocations(database.loadLocations());
+        wrapper.setOperatingSystems(database.loadOperatingSystems());
+        wrapper.setProviderTypes(database.loadProviderTypes());
+        return wrapper;
+    }
+
+    private Set<String> getPreferedProviders(CamelModel camelModel) {
+        Set<String> foundProviders = new HashSet<String>();
+
+        for (OrganisationModel orgModel : camelModel.getOrganisationModels()) {
+            if (orgModel instanceof OrganisationModelImpl) {
+                for (User user : orgModel.getUsers()) {
+                    for (CloudCredentials cloudCredential : user.getCloudCredentials()) {
+                        String providerName = cloudCredential.getCloudProvider().getName();
+                        if (GLOBAL_PROVIDER_REQUIREMENTS.equalsIgnoreCase(providerName)) {
+                            String name = cloudCredential.getName();
+                            foundProviders.add(name);
+                        }
+                    }
+                    break; // we are currently supporting only one user
+                }
+            }
+        }
+
+        return foundProviders;
+    }
+
+    public void parseModel(CamelModel camelModel, PaaSageConfigurationWrapper pcw) {
+        DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(0);
+
+//        //TODO to nie powinno byc w zmiennej.
+        vmProfiles= new Hashtable<>();
+
+        Set<String> preferedProviders = getPreferedProviders(camelModel);
+
+        printPreferedProviders(preferedProviders);
+
+        log.debug("CamelModelProcessor - parseModel - Calling DeploymentModelParser!");
+        log.info(" ** 	Calling DeploymentModelParser");
+
+        parseDeploymentModel(deploymentModel, pcw, preferedProviders);
+        storeRelatedProviderModels(pcw);
+
+
+        //Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
+
+        log.info(" ** 	Processing Opt Rerqs");
+        parseOptimisationRequirements(camelModel.getRequirementModels().get(0), pcw);    //TODO - to na pozniej
+        log.info(" ** 	Processing Opt Rerqs ended");
+        VMRequirementSet globalRequirements= deploymentModel.getGlobalVMRequirementSet();
+
+        ProviderTypes providerTypes = database.loadProviderTypes();
+
+
+//
+//        for (VirtualMachineProfile virtualMachineProfile : pcw.getPaasageConfiguration().getVmProfiles()) {
+//            String cloudMLId = virtualMachineProfile.getCloudMLId();
+//
+//            ProviderType pt = getByName(providerTypes.getTypes(), cloudMLId);
+//
+//            if (pt != null && !currentlySaved.contains(pt.getId())) {
+//
+//                pcw.getPaasageConfiguration().get
+//
+//                database.savePM(null, pcw.getPaasageConfiguration(), );
+//                currentlySaved.add(pt.getId());
+//            }
+//
+//            log.error("Name of VM: {}", cloudMLId);
+//
+//        }
+
+        List<Provider> candidates= new ArrayList<Provider>();
+
+/*
+        PSZKUP - TODO - zakomentowalem
+
+        for(VM vm: vms) {
+            log.debug("CamelModelProcessor - parseModel - Processing vm "+vm.getName());
+            //Create an ontology representing the requirements of each VM
+            OntologyCamel ontology= proxy.getCamelOntologyCopy();
+
+            log.debug("CamelModelProcessor - parseModel - Ontology Retrieved! ");
+
+            //Units
+
+            //ConceptCamel mghzUnit= ProviderModelParser.getConceptByName(fr.inria.paasage.saloon.camel.tool.Constants.GHZ_UNIT, ontology.getReusedConcept());
+
+            log.debug("CamelModelProcessor - parseModel - Unit concepts Retrieved! ");
+
+
+
+            QuantitativeHardwareRequirement hardware = extractHardwareRequirement(globalRequirements, vm.getVmRequirementSet());
+
+            log.debug("CamelModelProcessor - parseModel - Hardware reqs: "+hardware);
+            if(hardware!=null) {
+                checkHardware(ontology, hardware);
+            }
+
+            //Criteria
+
+*/
+/*			ConceptCamel criteriaConcept= ProviderModelParser.getConceptByName("Cost", ontology.getConcepts());
+			criteriaConcept.setSelected(true);
+
+			//Goal
+			ConceptCamel goalConcept= ProviderModelParser.getConceptByName("Min", ontology.getConcepts());
+			goalConcept.setSelected(true);
+			log.debug("CamelModelProcessor - parseModel - goal selected "+goalConcept.isSelected());*//*
+ //TODO TO CHECK THIS
+
+
+            //OS-Image
+
+            //Provider with Image
+            ProviderModelDecorator pmWithImage= null;
+
+            OSOrImageRequirement osImageReq = extractOsRequirement(globalRequirements, vm.getVmRequirementSet());
+            log.debug("CamelModelProcessor - parseModel - OsImage reqs: "+osImageReq);
+            if(osImageReq!=null) {
+                pmWithImage = checkOS(ontology, osImageReq);
+            }
+
+            //Provider
+            ProviderRequirement provReq = extractProviderRequirement(globalRequirements, vm.getVmRequirementSet());
+            log.debug("CamelModelProcessor - parseModel - Provider reqs: "+provReq);
+
+            //Location
+            ConceptCamel locationConcept= ProviderModelParser.getConceptByName("Location",  ontology.getConcepts());
+
+            LocationRequirement locationReq = extractLocationRequirement(globalRequirements, vm.getVmRequirementSet());
+            log.debug("CamelModelProcessor - parseModel - Location reqs: "+locationReq);
+
+            if(locationReq!=null) {
+                for(Location loc:locationReq.getLocations()) {
+                    log.debug("CamelModelProcessor - parseModel - Looking for loc: "+loc.getId());
+                    ConceptCamel concreteLocationConcept= ProviderModelParser.searchLocation(loc.getId(), locationConcept.getSubConcept());
+                    log.debug("CamelModelProcessor - parseModel - Loc concept: "+concreteLocationConcept);
+                    concreteLocationConcept.setSelected(true);
+
+
+                    log.debug("CamelModelProcessor - parseModel - Loc concept: "+loc.getId()+ " selected!");
+                    //If there is a Image requirement and the related provider was found, this is the only provider that will be considered
+                    if(pmWithImage!=null)
+                    {
+                        List<Provider> currentCandidates= new ArrayList<>();
+                        log.debug("CamelModelProcessor - parseModel - parseOntology with image");
+                        providerModelParser.parseOntology(ontology, pc, pmWithImage, vm, currentCandidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
+                        log.debug("CamelModelProcessor - parseModel - parseOntology with image ended");
+
+                        if(currentCandidates.isEmpty()) //Delete the provider with the given location
+                        {
+                            log.debug("CamelModelProcessor - parseModel - Removing candidate with location "+concreteLocationConcept.getName());
+                            providerModelParser.removeCandidatesWithLocationForVM(vm,pmWithImage.getProviderId(),concreteLocationConcept.getName(),pc);
+                        }
+                        else
+                            candidates.addAll(currentCandidates);
+
+                    }
+                    else if(provReq!=null) //If there are provider requirements, only the specified providers are considered
+                    {
+                        log.debug("CamelModelProcessor - parseModel - processProviderRequirements");
+                        processProviderRequirementsLocation(provReq, ontology, pc, vm, candidates, concreteLocationConcept.getName());
+                        log.debug("CamelModelProcessor - parseModel - processProviderRequirements ended");
+                    }
+                    else //All the providers have to be considered
+                    {
+                        log.debug("CamelModelProcessor - parseModel - processAllProviders with loc");
+                        processAllProvidersLocation(ontology, pc, vm, candidates,concreteLocationConcept.getName());
+                        log.debug("CamelModelProcessor - parseModel - processAllProviders with loc ended");
+                    }
+
+                    concreteLocationConcept.setSelected(false);
+
+*/
+/*					log.debug("CamelModelProcessor - parseModel - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
+					if(currentCandidates.isEmpty()) //Delete the provider with the given location
+					{
+						log.debug("CamelModelProcessor - parseModel - Removing candidate with location "+concreteLocationConcept.getName());
+						providerModelParser.removeCandidatesWithLocationForVM(vm,concreteLocationConcept.getName(),pc);
+					}
+					else
+						candidates.addAll(currentCandidates); *//*
+
+                }
+
+            }
+            else if(pmWithImage!=null) //We only consider the provider with the related image
+            {
+                providerModelParser.parseOntology(ontology, pc, pmWithImage, vm,candidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
+            }
+            else if(provReq!=null) //We only consider the specified providers
+            {
+                processProviderRequirements(provReq, ontology, pc, vm, candidates);
+            }
+            else //We have to process all the providers
+            {
+                log.debug("CamelModelProcessor - parseModel - processAllProviders");
+
+                processAllProviders(ontology, pc, vm, candidates);
+            }
+
+        }
+*/
+
+/*
+        PSZKUP - TODO - zakomentowalem
+        providerModelParser.removeNotPreferedProviders(preferedProviders, pc.getPaasageConfiguration());
+
+        providerModelParser.removeNoCandidateProviders(pc.getPaasageConfiguration(), candidates);
+
+        providerModelParser.checkExistSolution(pc);
+
+        log.debug("CamelModelProcessor - parseModel - Checking solution existency ");
+        deploymentModelParser.checkExistencyOfValidUserSolution(deploymentModel, pc);
+        log.debug("CamelModelProcessor - parseModel - Checking solution existency ended ");
+
+        log.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ");
+        deploymentModelParser.checkCorrectHostingRelationships(deploymentModel, pc);
+        log.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ended ");*/
+
+
+    }
+
+    private void parseOptimisationRequirements(RequirementModel reqs, PaaSageConfigurationWrapper pc) {
+        log.debug("CamelModelProcessor - parseOptimisationRequirements 2");
+        PaasageConfiguration configuration = pc.getPaasageConfiguration();
+        log.debug("CamelModelProcessor - parseOptimisationRequirements 3");
+        Map<String, PaaSageGoal> goalMap = new Hashtable<>();
+
+        for (Requirement req : reqs.getRequirements()) {
+            log.debug("CamelModelProcessor - parseOptimisationRequirements 4");
+            if (req instanceof OptimisationRequirement) {
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 5");
+                OptimisationRequirement optReq = (OptimisationRequirement) req;
+
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 6 " + optReq.getName());
+
+                String functionName = getFunctionName(optReq);
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 6.1 " + functionName);
+//
+//                log.debug("CamelModelProcessor - parseOptimisationRequirements 6.2 " + PaasageModelTool.getFunctionNames(proxy));
+
+                FunctionType ft = getFunctionTypeByName(functionName);
+                log.debug("CamelModelProcessor - parseOptimisationRequirements 7");
+
+                if (ft != null) {
+                    String key = getKey(ft, optReq);
+                    log.debug("CamelModelProcessor - parseOptimisationRequirements 8");
+                    PaaSageGoal goal = goalMap.get(key);
+                    log.debug("CamelModelProcessor - parseOptimisationRequirements 9");
+                    GoalOperatorEnum goalType = getSelectedGoal(optReq.getOptimisationFunction());
+                    if (goal == null) {
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 10");
+                        goal = applicationFactory.createPaaSageGoal();
+
+                        if (AttributeFunctionCreator.NAME.equalsIgnoreCase(ft.getId())) {
+                            String pathToAttribute = getPathToAttribute(optReq);
+                            goal.setOptimisationAttribute(pathToAttribute);
+                        }
+
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 11");
+                        goalMap.put(key, goal);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 12");
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 13");
+                        goal.setFunction(ft);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 14");
+                        goal.setGoal(goalType);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 15");
+                        goal.setId(goalType.getName() + ft.getId());
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 16");
+                        configuration.getGoals().add(goal);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 17");
+                    }
+
+                    log.debug("CamelModelProcessor - parseOptimisationRequirements 18");
+                    if (optReq.getComponent() != null) {
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 19");
+                        ApplicationComponent appc = PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), optReq.getComponent().getName());
+
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 20");
+                        ComponentMetricRelationship cmr = createComponentMetricRelationship(appc, optReq.getMetric().getName());
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 21");
+
+                        goal.getApplicationComponent().add(cmr);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 22");
+                    } else //All the components are involved!
+                    {
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 23");
+                        for (ApplicationComponent appc : pc.getPaasageConfiguration().getComponents()) {
+                            log.debug("CamelModelProcessor - parseOptimisationRequirements 24");
+                            ComponentMetricRelationship cmr = createComponentMetricRelationship(appc, null);
+                            log.debug("CamelModelProcessor - parseOptimisationRequirements 25");
+                            //cmr.setComponent(appc);
+
+                            goal.getApplicationComponent().add(cmr);
+                            log.debug("CamelModelProcessor - parseOptimisationRequirements 26");
+                        }
+
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 27");
+                        goal.setApplicationMetric(functionName);
+                        log.debug("CamelModelProcessor - parseOptimisationRequirements 28");
+                    }
+                } else {
+                    log.warn("CamelModelProcessor- parseOptimisationRequirements- The property " + optReq.getMetric().getProperty().getName() + "is not in the set {cost, response time, availability}!");
+                }
+            }
+        }
+    }
+
+    private FunctionType getFunctionTypeByName(String name) {
+        for (FunctionType ft : database.loadFunctionTypes().getTypes()) {
+            if (name.toLowerCase().contains(ft.getId().toLowerCase()))
+                return ft;
+        }
+        return null;
+    }
+
+
+    private String getKey(FunctionType ft, OptimisationRequirement optReq){
+        String id = ft.getId();
+        if (!AttributeFunctionCreator.NAME.equalsIgnoreCase(id)){
+            return id;
+        }
+        return id + "_" + getPathToAttribute(optReq);
+    }
+
+    private String getFunctionName(OptimisationRequirement optReq) {
+        return getProperty(optReq).getName();
+    }
+
+    private String getPathToAttribute(OptimisationRequirement optReq) {
+        return getProperty(optReq).getDescription();
+    }
+
+    private Property getProperty(OptimisationRequirement optReq){
+        return optReq.getMetric() != null ? optReq.getMetric().getProperty() : optReq.getProperty();
+    }
+
+    private ComponentMetricRelationship createComponentMetricRelationship(ApplicationComponent appc, String metricId) {
+        ComponentMetricRelationship cmr= applicationFactory.createComponentMetricRelationship();
+        cmr.setComponent(appc);
+
+        if(metricId!=null){
+            cmr.setMetricId(metricId);
+        }
+        return cmr;
+    }
+
+    private GoalOperatorEnum getSelectedGoal(OptimisationFunctionType type) {
+        return type.getValue()==OptimisationFunctionType.MAXIMISE_VALUE ? GoalOperatorEnum.MAX : GoalOperatorEnum.MIN;
+    }
+
+    private void printPreferedProviders(Set<String> preferedProviders) {
+        if (CollectionUtils.isNotEmpty(preferedProviders)){
+            log.info("Found {} prefered providers:", preferedProviders.size());
+            for (String preferedProvider : preferedProviders) {
+                log.info("{}", preferedProvider);
+            }
+        } else {
+            log.info("Prefered providers not found");
+        }
+    }
+
+    private void storeRelatedProviderModels(PaaSageConfigurationWrapper pcw) {
+        EList<Provider> providers = pcw.getPaasageConfiguration().getProviders();
+        if (CollectionUtils.isNotEmpty(providers)) {
+            for (Provider provider : providers) {
+                ProviderModel providerModel = database.loadPM(provider.getType().getId());
+                if (providerModel != null) {
+                    database.savePM(providerModel, pcw.getPaasageConfiguration(), provider);
+                }
+            }
+        }
+    }
+
+    private void parseDeploymentModel(DeploymentModel deploymentModel, PaaSageConfigurationWrapper configurationWrapper, Set<String> preferedProviders) {
+
+        createVirtualMachines(deploymentModel, configurationWrapper, preferedProviders);
+        createApplicationComponents(deploymentModel, configurationWrapper);
+
+
+        //parseExternalComponents(pim.getExternalComponents(), configuration); //TODO HOW TO PROCESS EXTERNAL COMPONENTS
+
+        resolveContaimentDependencyInstances(deploymentModel.getHostingInstances(), configurationWrapper.getPaasageConfiguration());
+
+        resolveContaimentDependencies(deploymentModel, configurationWrapper.getPaasageConfiguration());
+
+
+/*
+
+        PSZKUP - TODO - do odkomentowania
+
+        resolveContaimentDependencyInstances(pim.getHostingInstances(), configuration);
+
+        resolveContaimentDependencies(pim, configuration); //TODO A DEMAND attribute is expected ending in "Host" for considering this relationship
+
+        resolveCommunicationDependencyInstances(pim.getCommunicationInstances(), configuration);
+
+        resolveCommunicationDependencies(pim, configuration);
+
+        checkGivenSolutionByUser(pim, configurationWrapper);
+*/
+
+    }
+
+    private void createVirtualMachines(DeploymentModel deploymentModel, PaaSageConfigurationWrapper configurationWrapper, Set<String> preferedProviders) {
+        List<VM> vms= getVMList(deploymentModel);
+        List<VMInstance> vmInstances= getVMInstancesList(deploymentModel);
+
+        //TODO - moze to znaczyc, ze obslugujemy tylko tych providerow ??
+        PaasageConfiguration configuration = configurationWrapper.getPaasageConfiguration();
+        boolean addNewCandidates = configuration.getProviders().size()==0;
+
+        VMRequirementSet globalVMRequirementSet = deploymentModel.getGlobalVMRequirementSet();
+
+        log.info(" **		Parsing VMInstances");
+        parseVMInstances(vmInstances, configurationWrapper, addNewCandidates, globalVMRequirementSet, preferedProviders);
+
+        log.info(" **		Parsing VMs");
+        parseVMs(vms, configurationWrapper, addNewCandidates, globalVMRequirementSet, preferedProviders);
+    }
+
+
+    private void createApplicationComponents(DeploymentModel deploymentModel, PaaSageConfigurationWrapper configurationWrapper) {
+        List<eu.paasage.camel.deployment.Component> components= getComponentsList(deploymentModel);
+        List<ComponentInstance> componentInstances= getComponentInstancesList(deploymentModel);
+
+        PaasageConfiguration configuration = configurationWrapper.getPaasageConfiguration();
+        RequirementModel requirements = ((CamelModel) deploymentModel.eContainer()).getRequirementModels().get(0);
+
+        log.info("**		Parsing Component Instances");
+        configuration.getComponents().addAll(parseComponentInstances(componentInstances));
+
+        log.info("**		Parsing Components");
+        configuration.getComponents().addAll(parseComponents(components, componentInstances, requirements));
+    }
+
+    private void resolveContaimentDependencyInstances(EList<HostingInstance> hostingRelationships, PaasageConfiguration configuration) {
+        for (HostingInstance hosting : hostingRelationships) {
+            InternalComponentInstance client = (InternalComponentInstance) hosting.getRequiredHostInstance().eContainer();
+
+            Optional<ApplicationComponent> clientAppComponentOpt = paasageConfigurationUtilsService.searchApplicationComponentById(configuration.getComponents(), client.getName());
+
+            if (clientAppComponentOpt.isPresent()) {
+                ApplicationComponent clientAppComponent = clientAppComponentOpt.get();
+
+                if (hosting.getProvidedHostInstance().eContainer() instanceof VMInstance) {
+                    VMInstance vmInstance = (VMInstance) hosting.getProvidedHostInstance().eContainer();
+
+                    log.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance name " + vmInstance.getName() + "!");
+
+                    Optional<VirtualMachine> virtualMachineOpt = paasageConfigurationUtilsService.searchVMById(configuration.getVms(), vmInstance.getName());
+                    if (virtualMachineOpt.isPresent()) {
+                        VirtualMachine vm = virtualMachineOpt.get();
+
+                        log.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance created " + vm);
+                        log.debug("DeployementModelParser - resolveContaimentDependencyInstances - Client component " + clientAppComponent + " Name " + client.getName());
+                        clientAppComponent.getRequiredProfile().add(vm.getProfile());
+                        clientAppComponent.setVm(vm);
+
+                        log.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance dependency add between " + client.getName() + " and " + vmInstance.getName() + "!");
+                    }
+                } else {
+                    //I assume that it is a component
+                    ComponentInstance provider = (ComponentInstance) hosting.getProvidedHostInstance().eContainer();
+                    Optional<ApplicationComponent> applicationComponentOpt = paasageConfigurationUtilsService.searchApplicationComponentById(configuration.getComponents(), provider.getName());
+//                    if (providerAppComponent != null) {
+/*
+                        TODO - pszkup - begin
+                        RequiredFeature rf = builProvidedContaimentPortFeature(hosting.getName(), providerAppComponent);
+                        rf.setContaiment(true);
+
+                        clientAppComponent.getRequiredFeatures().add(rf);
+                        TODO - pszkup - end
+*/
+                        log.debug("DeployementModelParser - resolveContaimentDependencyInstances - Dependency between " + client.getName() + " and " + provider.getName() + " created!");
+//                    }
+                }
+            }
+        }
+    }
+
+    private void resolveContaimentDependencies(DeploymentModel pim, PaasageConfiguration configuration) {
+
+        for(Hosting hosting: pim.getHostings()) {
+
+            InternalComponent client= (InternalComponent) hosting.getRequiredHost().eContainer();
+
+            List<ComponentInstance> filtredComponentInstances= PaasageModelTool.getComponentInstancesByTypeId(PaasageModelTool.getComponentInstancesList(pim), client.getName());
+
+            if(filtredComponentInstances.size()>0) {
+
+                List<HostingInstance> filtredHostingInstances= PaasageModelTool.getHostingInstanceByTypeId(pim.getHostingInstances(), hosting.getName());
+                for (ComponentInstance instance : filtredComponentInstances) {
+                    if (!PaasageModelTool.existHostingInstanceForComponentInstance(filtredHostingInstances, instance)) {
+                        defineContainmentDependency(instance.getName(), configuration, hosting);
+                    }
+                }
+            } else {
+                defineContainmentDependency(client.getName(), configuration, hosting);
+            }
+        }
+    }
+
+    protected void defineContainmentDependency(String clientId, PaasageConfiguration configuration, Hosting hosting) {
+        Optional<ApplicationComponent> clientAppComponentOpt = paasageConfigurationUtilsService.searchApplicationComponentById(configuration.getComponents(), clientId);
+
+        if (clientAppComponentOpt.isPresent()){
+            ApplicationComponent clientAppComponent = clientAppComponentOpt.get();
+
+            if (hosting.getProvidedHost().eContainer() instanceof VM) {
+                VM vm = (VM) hosting.getProvidedHost().eContainer();
+
+                log.debug("DeployementModelParser - defineContainmentDependency - VM type name " + vm.getName() + "!");
+
+                List<VirtualMachineProfile> profiles = vmProfiles.get(vm.getName());
+                for (VirtualMachineProfile vmp : profiles) {
+
+                    //TODO CREATE A MAPPING FOR THE VM AND THEIR RELATED VM PROFILES
+                    //VirtualMachineProfile vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vm.getName()); //TODO CHANGED BY VM NAME
+                    log.debug("DeployementModelParser - defineContainmentDependency - Client component " + clientAppComponent + " Name " + clientId);
+                    clientAppComponent.getRequiredProfile().add(vmp);
+
+                    log.debug("DeployementModelParser - defineContainmentDependency - VM dependency add between " + clientId + " and " + vmp.getCloudMLId() + "!");
+                }
+            } else {
+                //I assume that it is a component
+                eu.paasage.camel.deployment.Component provider = (eu.paasage.camel.deployment.Component) hosting.getProvidedHost().eContainer();
+
+                Optional<ApplicationComponent> providerAppComponentOpt = paasageConfigurationUtilsService.searchApplicationComponentById(configuration.getComponents(), provider.getName());
+/*
+                TODO - pszkup - zakomentowalem
+                RequiredFeature rf = builProvidedContaimentPortFeature(hosting.getName(), providerAppComponent);
+                rf.setContaiment(true);
+
+                log.debug("DeployementModelParser - resolveContaimentDependencies - Client component " + clientAppComponent + " Name " + clientId);
+
+                clientAppComponent.getRequiredFeatures().add(rf);
+
+                log.debug("DeployementModelParser - defineContainmentDependency - Dependency between " + clientId + " and " + provider.getName() + " created!");
+                */
+            }
+        }
+    }    
+    
+
+    private List<VM> getVMList(DeploymentModel dm) {
+        List<VM> vms= new ArrayList<>();
+        vms.addAll(dm.getVms());
+        return vms;
+    }
+
+    private List<VMInstance> getVMInstancesList(DeploymentModel dm) {
+        List<VMInstance> vms= new ArrayList<>();
+        vms.addAll(dm.getVmInstances());
+
+        for(ComponentInstance c: dm.getInternalComponentInstances()) {
+            if(c instanceof VMInstance)
+                vms.add((VMInstance) c);
+        }
+        return vms;
+    }
+
+    private List<eu.paasage.camel.deployment.Component> getComponentsList(DeploymentModel pim) {
+        List<eu.paasage.camel.deployment.Component> components= new ArrayList<>();
+        components.addAll(pim.getInternalComponents());
+        return components;
+    }
+
+    private List<ComponentInstance> getComponentInstancesList(DeploymentModel pim) {
+        List<ComponentInstance> components= new ArrayList<>();
+        components.addAll(pim.getInternalComponentInstances());
+
+        for(ComponentInstance c:pim.getInternalComponentInstances()) {
+            if(!(c instanceof VMInstance )) {
+                components.add(c);
+            }
+        }
+        return components;
+    }
+
+    private void parseVMInstances(List<VMInstance> vms, PaaSageConfigurationWrapper configurationWrapper, boolean addNewCandidates, VMRequirementSet globalVMRequirements, Set<String> preferedProviders) {
+        PaasageConfiguration configuration = configurationWrapper.getPaasageConfiguration();
+
+        for (VMInstance vmInstance : vms) {
+            log.info("**			Parsing VM Instance: " + vmInstance.getName());
+
+            Optional<VirtualMachineProfile> virtualMachineProfileOpt = paasageConfigurationUtilsService.searchVMProfileById(configuration.getVmProfiles(), vmInstance.getName());
+
+            VirtualMachineProfile vmp = virtualMachineProfileOpt.orElseGet(() -> parseVM((VM) vmInstance.getType(), configurationWrapper, addNewCandidates, globalVMRequirements, preferedProviders));
+//
+//
+//            VirtualMachineProfile vmp =  searchVMProfileById(configuration.getVmProfiles(), vmInstance.getName());
+//            if (vmp == null) {
+//                vmp = parseVM((VM) vmInstance.getType(), configurationWrapper, addNewCandidates, globalVMRequirements);
+//            }
+
+            if (vmp != null) {
+                VirtualMachine instance = buildVM(vmp, vmInstance);
+                configuration.getVms().add(instance);
+                log.debug("DeployementModelParser - parseVMInstances - Vm Instance " + instance.getId() + " added!");
+            }
+        }
+    }
+
+    protected VirtualMachine buildVM(VirtualMachineProfile vmp, VMInstance vmInstace) {
+        VirtualMachine virtualMachine= applicationFactory.createVirtualMachine();
+        virtualMachine.setId(vmInstace.getName());
+        virtualMachine.setProfile(vmp);
+        return virtualMachine;
+    }
+
+    private void parseVMs(List<VM> vms, PaaSageConfigurationWrapper configurationWrapper, boolean addNewCandidates, VMRequirementSet globalVMRequirements, Set<String> preferedProviders) {
+        for (VM vm : vms) {
+            log.info("parseVMs -	Parsing VM Type: " + vm.getName());
+            parseVM(vm, configurationWrapper, addNewCandidates, globalVMRequirements, preferedProviders);
+        }
+    }
+
+    protected VirtualMachineProfile parseVM(VM vm, PaaSageConfigurationWrapper configurationWrapper, boolean addNewCandidates, VMRequirementSet globalVMRequirements, Set<String> preferedProviders) {
+
+        PaasageConfiguration configuration = configurationWrapper.getPaasageConfiguration();
+
+        List<VirtualMachineProfile> result = new ArrayList<>();
+
+        log.info("**			Parsing VM Type: " + vm.getName());
+
+        LocationRequirement locationRequirement = retrieveLocationRequirement(vm.getVmRequirementSet(), globalVMRequirements);
+        EList<Location> locations = locationRequirement != null ? locationRequirement.getLocations() : null;
+
+        ProviderRequirement providerRequirement = retrieveProviderRequirement(vm.getVmRequirementSet(), globalVMRequirements);
+        EList<CloudProvider> providers = providerRequirement != null ? providerRequirement.getProviders() : null;
+
+        QuantitativeHardwareRequirement hardware = retrieveQuantitativeHardwareRequirement(vm.getVmRequirementSet(), globalVMRequirements);
+
+        OSOrImageRequirement osImage = retrieveOSOrImageRequirement(vm.getVmRequirementSet(), globalVMRequirements);
+
+        VirtualMachineProfile vmp = null;
+
+        if (locations != null) {
+            log.debug("**			Analysing locations: " + locations.size());
+            for (Location location : locations) {
+                if (providers != null) {
+                    for (CloudProvider provider : providers) {
+
+                        ProviderModel providerModel = provider.getProviderModel();
+                        ProviderType pt = getProviderType(configurationWrapper, provider);
+
+                        vmp = getVirtualMachineProfile(vm, configurationWrapper, preferedProviders, hardware, osImage, location, pt, providerModel);
+                    }
+                } else {
+                    for (ProviderType pt : database.loadProviderTypes().getTypes()) {
+                        ProviderModel providerModel = database.loadPM(pt.getId());
+                        vmp = getVirtualMachineProfile(vm, configurationWrapper, preferedProviders, hardware, osImage, location, pt, providerModel);
+                    }
+                }
+            }
+        } else if (providers != null) {
+            for (CloudProvider provider : providers) {
+
+                ProviderModel providerModel = provider.getProviderModel();
+                ProviderType pt = getProviderType(configurationWrapper, provider);
+
+                vmp = getVirtualMachineProfile(vm, configurationWrapper, preferedProviders, hardware, osImage, null, pt, providerModel);
+            }
+        } else {
+            log.debug("**			Creating VM ID ");
+            for (ProviderType pt : database.loadProviderTypes().getTypes()) {
+                ProviderModel providerModel = database.loadPM(pt.getId());
+
+                vmp = getVirtualMachineProfile(vm, configurationWrapper, preferedProviders, hardware, osImage, null, pt, providerModel);
+            }
+        }
+
+        return vmp;
+    }
+
+    private ProviderType getProviderType(PaaSageConfigurationWrapper configurationWrapper, CloudProvider provider) {
+        String providerTypeId = provider.getName();
+        return searchProviderTypeById(providerTypeId, configurationWrapper);
+    }
+
+    private VirtualMachineProfile getVirtualMachineProfile(VM vm, PaaSageConfigurationWrapper configurationWrapper, Set<String> preferedProviders, QuantitativeHardwareRequirement hardware, OSOrImageRequirement osImage, Location location, ProviderType pt, ProviderModel providerModel) {
+        VirtualMachineProfile vmp = null;
+
+        if (providerModel == null) {
+            log.info("Provider model is null");
+            return null;
+        }
+
+        if (!checkPreferedProviders(providerModel, preferedProviders)){
+            log.info("Provider model for {} not in prefered providers set", providerModel.getName());
+            return null;
+        }
+
+        List<Flavour> flavours = camelModelService.convertToFlavours(providerModel);
+        for (Flavour flavour : flavours) {
+            if (checkRequirements(hardware, flavour)) {
+                vmp = getVirtualMachineProfile(vm, configurationWrapper, hardware, osImage, location, pt, flavour);
+            } else {
+                log.info("Requirements failed for flavour: " + flavour.getVmTypeName());
+            }
+        }
+        return vmp;
+    }
+
+    private VirtualMachineProfile getVirtualMachineProfile(VM vm, PaaSageConfigurationWrapper configurationWrapper, QuantitativeHardwareRequirement hardware, OSOrImageRequirement osImage, Location location, ProviderType pt, Flavour flavour) {
+        String locationId = location != null ? location.getId() : "";
+        String hardwareId = hardware != null ? hardware.getName() : "";
+        String osImageId = osImage != null ? osImage.getName() : "";
+
+        String vmTypeId = getVMProfileId(locationId, pt.getId(), hardwareId, osImageId, vm.getName(), flavour.getVmTypeName());
+        log.debug("DeployementModelParser - parseVMs - Vm Type Id " + vmTypeId + "!");
+
+
+        Optional<VirtualMachineProfile> virtualMachineProfileOpt = paasageConfigurationUtilsService.searchVMProfileById(configurationWrapper.getPaasageConfiguration().getVmProfiles(), vmTypeId);
+
+        VirtualMachineProfile vmp = virtualMachineProfileOpt.orElse(null);
+
+        if (vmp == null) {
+            log.debug("DeployementModelParser - parseVMs - Adding Vm Type " + vmTypeId + " with provider: " + pt.getId());
+
+            vmp = buildVMProfile(vm, location, pt, hardware, osImage, vmTypeId, configurationWrapper, flavour);
+            if (vmp != null) {
+                configurationWrapper.getPaasageConfiguration().getVmProfiles().add(vmp);
+
+                List<VirtualMachineProfile> virtualMachineProfiles = vmProfiles.computeIfAbsent(vm.getName(), k -> new ArrayList<>());
+                virtualMachineProfiles.add(vmp);
+            }
+        }
+
+        return vmp;
+    }
+
+    private LocationRequirement retrieveLocationRequirement(VMRequirementSet vmRequirementSet, VMRequirementSet globalVMRequirements) {
+        LocationRequirement result = null;
+
+        if (vmRequirementSet != null && vmRequirementSet.getLocationRequirement() != null && vmRequirementSet.getLocationRequirement().getLocations().size() > 0) {
+            log.debug("**			Considering Location requirements");
+            result = vmRequirementSet.getLocationRequirement();
+        }
+        if (result == null && globalVMRequirements != null && globalVMRequirements.getLocationRequirement() != null && globalVMRequirements.getLocationRequirement().getLocations().size() > 0) {
+                log.debug("**			Considering Global Location requirements");
+                result = globalVMRequirements.getLocationRequirement();
+        }
+        return result;
+    }
+
+    private ProviderRequirement retrieveProviderRequirement(VMRequirementSet vmRequirementSet, VMRequirementSet globalVMRequirements) {
+        ProviderRequirement result = null;
+
+        if (vmRequirementSet != null && vmRequirementSet.getProviderRequirement() != null && vmRequirementSet.getProviderRequirement().getProviders().size() > 0) {
+            log.debug("**			Considering Provider requirements");
+            result = vmRequirementSet.getProviderRequirement();
+        }
+        if (result == null && globalVMRequirements != null && globalVMRequirements.getProviderRequirement() != null && globalVMRequirements.getProviderRequirement().getProviders().size() > 0) {
+            log.debug("**			Considering Global Provider requirements");
+            result = globalVMRequirements.getProviderRequirement();
+        }
+        return result;
+    }
+
+    private QuantitativeHardwareRequirement retrieveQuantitativeHardwareRequirement(VMRequirementSet vmRequirementSet, VMRequirementSet globalVMRequirements) {
+        QuantitativeHardwareRequirement result = null;
+
+        if (vmRequirementSet != null && vmRequirementSet.getQuantitativeHardwareRequirement() != null) {
+            log.debug("**			Considering Hardware requirements");
+            result = vmRequirementSet.getQuantitativeHardwareRequirement();
+        }
+        if (result == null && globalVMRequirements != null && globalVMRequirements.getQuantitativeHardwareRequirement() != null) {
+            log.debug("**			Considering Global Hardware requirements");
+            result = globalVMRequirements.getQuantitativeHardwareRequirement();
+        }
+        return result;
+    }
+
+    private OSOrImageRequirement retrieveOSOrImageRequirement(VMRequirementSet vmRequirementSet, VMRequirementSet globalVMRequirements) {
+        OSOrImageRequirement result = null;
+
+        if (vmRequirementSet != null && vmRequirementSet.getOsOrImageRequirement() != null) {
+            log.debug("**			Considering OS-Image requirements");
+            result = vmRequirementSet.getOsOrImageRequirement();
+        }
+        if (result == null && globalVMRequirements != null && globalVMRequirements.getOsOrImageRequirement() != null) {
+            log.debug("**			Considering Global OS-Image requirements");
+            result = globalVMRequirements.getOsOrImageRequirement();
+        }
+        return result;
+    }
+
+    private boolean checkRequirements(QuantitativeHardwareRequirement hardware, Flavour flavour) {
+        return new QuantitativeHardwareRequirementFilter(hardware).test(flavour);
+    }
+
+    private boolean checkPreferedProviders(ProviderModel providerModel, Set<String> preferedProviders) {
+        //TODO - czy w preferedProviders beda nazwy providerow?? Czy moze trzeba tu pobrac cos innego??? MyAmazonPM vs AmazonEC2Provider
+        return (CollectionUtils.isEmpty(preferedProviders) || preferedProviders.contains(providerModel.getName()));
+    }
+
+    private List<ApplicationComponent> parseComponentInstances(List<ComponentInstance> components) {
+        log.debug("DeploymentModelProcessor - parseComponentInstances - component instace size " + components.size());
+
+        List<ApplicationComponent> result = new ArrayList<>(components.size());
+        for (ComponentInstance component : components) {
+            log.info("**			Parsing component instance: " + component.getName());
+            result.add(buildApplicationComponent(component));
+        }
+
+        return result;
+    }
+
+    private List<ApplicationComponent> parseComponents(List<eu.paasage.camel.deployment.Component> components, List<ComponentInstance> instances, RequirementModel requirements) {
+        log.debug("DeploymentModelProcessor - parseComponents - components size " + components.size());
+
+        List<ApplicationComponent> result = new ArrayList<>(components.size());
+        for (eu.paasage.camel.deployment.Component component : components) {
+            //Only processes the Component if there are not instances
+            if (!existComponentInstance(component, instances)) {
+                if (!(component instanceof VM)) {
+                    log.info("**			Parsing component: " + component.getName());
+                    result.add(buildApplicationComponent(component, requirements));
+                }
+            }
+        }
+        return result;
+    }
+
+    private ApplicationComponent buildApplicationComponent(eu.paasage.camel.deployment.Component component, RequirementModel requirements) {
+        ApplicationComponent apc = applicationFactory.createApplicationComponent();
+        log.debug("DeploymentModelParser- buildApplicationComponent- The component " + component.getName());
+
+        String id = component.getName();
+        apc.setCloudMLId(id);
+
+        apc.setMin(DEFAULT_MIN_INSTANCE_NUMBER);
+        apc.setMax(DEFAULT_MAX_INSTANCE_NUMBER);
+
+        HorizontalScaleRequirement horScaleReq = getScaleRequirementForComponent(requirements.getRequirements(), component);
+
+        if (horScaleReq != null) {
+            apc.setMin(horScaleReq.getMinInstances());
+            int maxInstances = horScaleReq.getMaxInstances();
+            if (maxInstances > 0) {
+                // we assume that 0 means not defined
+                apc.setMax(maxInstances);
+            }
+        }
+
+        for (ProvidedCommunication pc : component.getProvidedCommunications()) {
+            apc.getFeatures().add(pc.getName());
+        }
+
+        for (ProvidedHost ph : component.getProvidedHosts()) {
+            apc.getFeatures().add(ph.getName());
+        }
+
+        return apc;
+    }
+
+    private ApplicationComponent buildApplicationComponent(ComponentInstance component) {
+        ApplicationComponent apc = applicationFactory.createApplicationComponent();
+        log.debug("DeploymentModelParser- buildApplicationComponent- The component instance " + component.getName());
+
+        String id = component.getName();
+        apc.setCloudMLId(id);
+
+        for (ProvidedCommunicationInstance pc : component.getProvidedCommunicationInstances()) {
+            apc.getFeatures().add(pc.getName());
+        }
+
+        for (ProvidedHostInstance ph : component.getProvidedHostInstances()) {
+            apc.getFeatures().add(ph.getName());
+        }
+
+        return apc;
+    }
+
+    private HorizontalScaleRequirement getScaleRequirementForComponent(EList<Requirement> reqs, eu.paasage.camel.deployment.Component component) {
+        String name = component.getName();
+
+        for (Requirement req : reqs) {
+            if (req instanceof HorizontalScaleRequirement) {
+                HorizontalScaleRequirement hsr = (HorizontalScaleRequirement) req;
+                if (hsr.getComponent().getName().equals(name))
+                    return hsr;
+            }
+        }
+
+        return null;
+    }
+
+    public ProviderType searchProviderTypeById(String providerName, PaaSageConfigurationWrapper pcw) {
+        for (ProviderType pt : pcw.getProviderTypes().getTypes()) {
+            if (pt.getId().equals(providerName))
+                return pt;
+        }
+        return null;
+    }
+
+    protected VirtualMachineProfile buildVMProfile(VM vm, Location location, ProviderType pt, HardwareRequirement hardwareRequirement, OSOrImageRequirement osImagerReq, String vmTypeId, PaaSageConfigurationWrapper configurationWrapper, Flavour flavour) {
+
+        LocationUpperware locationUpperware = null;
+
+        log.debug("DeploymentModelParser- buildVMProfile- The VM type: " + vmTypeId);
+
+        if (location != null) {
+            log.debug("DeploymentModelParser- buildVMProfile- The Location name: " + location.getId());
+            locationUpperware = getLocation(location, configurationWrapper);
+        }
+
+        if (location != null && locationUpperware == null) {
+            log.warn("DeploymentModelParser- - buildVMProfile - The Location " + location.getId() + " does not exist in the DB. TheVM profile can not be created!");
+            return null;
+        } else {
+            log.debug("DeploymentModelParser- buildVMProfile- Location found!");
+        }
+
+
+        VirtualMachineProfile vmp = applicationFactory.createVirtualMachineProfile();
+        vmp.setCloudMLId(vmTypeId);
+        vmp.setRelatedCloudVMId(vm.getName());
+
+        log.debug("DeploymentModelParser- VM id " + vmTypeId);
+
+        if (locationUpperware != null)
+            vmp.setLocation(locationUpperware);
+
+        if (pt != null) {
+            String providerTypeId = pt.getId();
+            PaasageConfiguration configuration = configurationWrapper.getPaasageConfiguration();
+
+            //Look for the provider
+            Provider providerPattern = applicationFactory.createProvider();
+            providerPattern.setType(pt);
+
+            Provider providerUpperware = null;
+
+            if (locationUpperware != null) {
+                providerPattern.setLocation(locationUpperware);
+                providerUpperware = PaasageModelTool.searchProviderWithLocationInList(configuration.getProviders(), providerPattern);
+            }
+
+            if (providerUpperware == null) {
+                providerUpperware = providerPattern;
+
+                String locationId = (location != null && location.getId() != null) ? location.getId() : "";
+
+                String providerId = PaasageModelTool.buildProviderId(providerTypeId, locationId);
+                providerUpperware.setId(providerId);
+                configuration.getProviders().add(providerUpperware);
+                log.debug("DeploymentModelParser- buildVMProfile -Provider " + providerId + " created!");
+            }
+
+            ProviderDimension pd = createProviderDimension(providerUpperware);
+            vmp.getProviderDimension().add(pd);
+
+        } else {
+            log.error("DeploymentModelProcessor- buildVMProfile- The Provider does not exist in the DB. The VM profile can not be created!");
+        }
+
+        //OS
+        if (osImagerReq != null){
+            if (osImagerReq instanceof OSRequirement) {
+                OSRequirement osReq = (OSRequirement) osImagerReq;
+                String os = osReq.getOs();
+osImagerReq.getName();
+                OS theOs = getOSFromNameAndArchitecture(os, osReq.isIs64os(), configurationWrapper);
+                if (theOs != null) {
+                    vmp.setOs(cloneOS(theOs));
+                } else {
+                    log.warn("DeploymentModelParser- The OS " + os + " does not exist in the DB. The os of the VM with id " + vmTypeId + " will be not set");
+                }
+            } else if (osImagerReq instanceof ImageRequirement) {
+                ImageRequirement imageReq = (ImageRequirement) osImagerReq;
+                vmp.setImage(createImageUpperware(imageReq));
+            }
+        }
+
+        if (flavour != null) {
+            vmp.setFlavourName(flavour.getVmTypeName());
+            vmp.setCpu(createCpu(flavour));
+            vmp.setStorage(createStorage(flavour));
+            vmp.setMemory(createMemory(flavour));
+        }
+
+        return vmp;
+    }
+
+
+    /**
+     * Searches for an operating system with a given name and architecture type
+     * @param osName The operating system name
+     * @param is64Bits Indicates if the OS is 64 bits
+     * @param pcw The paasage configuration wrapper containing the operating systems
+     * @return The operating system or null if it does not exist
+     */
+    private OS getOSFromNameAndArchitecture(String osName, boolean is64Bits, PaaSageConfigurationWrapper pcw) {
+        log.debug("*************** new req");
+
+        for (OS os : pcw.getOperatingSystems().getOss()) {
+
+            boolean is64 = os.getArchitecture().getValue() == OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE;
+
+            log.debug("*************** ==> " + os.getName() + " ==? " + osName + " = " + os.getName().equals(osName));
+            log.debug("*************** ==> " + os.getArchitecture().getValue() + " ==? " + OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE);
+            log.debug("***************==> " + is64 + " ==? " + is64Bits);
+
+            if (os.getName().equals(osName) && is64 == is64Bits) {
+                log.debug("*************** SUCCESS");
+                return os;
+            }
+        }
+        return null;
+    }
+
+    private OS cloneOS(OS os) {
+        OS copy = typesPaasageFactory.createOS();
+
+        copy.setArchitecture(os.getArchitecture());
+        copy.setName(os.getName());
+        copy.setTypeId(os.getTypeId());
+        copy.setVers(os.getVers());
+
+        return copy;
+    }    
+    
+//TODO - cale location moze wyniesc do osobnego serwisu??
+    private LocationUpperware getLocation(Location loc, PaaSageConfigurationWrapper pcw) {
+        String locationName= loc.getId();
+        log.debug("***************looking for location "+locationName);
+
+        if(loc instanceof CloudLocation) {
+            //TODO Check CloudLocation ??
+            CloudLocation cloudLocation = (CloudLocation) loc;
+            List<CityUpperware> cities = searchCityByName(locationName, pcw.getLocations().getLocations());
+
+            GeographicalRegion geographicalRegion = cloudLocation.getGeographicalRegion();
+            if (cities.size() == 1) {
+                return cities.get(0);
+            } else if (cities.size() > 1) {
+                if (geographicalRegion != null) {
+                    if (geographicalRegion instanceof eu.paasage.camel.location.Country) {
+                        LocationUpperware city = getCityByCountry(cities, geographicalRegion.getName());
+                        if (city != null) return city;
+                    } else {
+                        //It is a continent //TODO TO CHECK THIS
+                        LocationUpperware city = getCityByContinent(cities, geographicalRegion.getName());
+                        if (city != null) return city;
+                    }
+                }
+            } else if(geographicalRegion !=null) {
+                //Try with regions
+                String regionName= geographicalRegion.getName();
+
+                if(geographicalRegion instanceof eu.paasage.camel.location.Country) {
+                    //TODO TO USE ALTERNATIVE NAMES OF theCountry
+                    return searchCountryByName(regionName, pcw.getLocations().getLocations());
+                } else {
+                    //It is a continent
+                    return searchContinentByName(regionName, pcw.getLocations().getLocations());
+                }
+            }
+        } else if(loc instanceof eu.paasage.camel.location.Country) {
+            return searchCountryByName(locationName, pcw.getLocations().getLocations());
+        } else {
+            //It is a continent
+            return searchContinentByName(locationName, pcw.getLocations().getLocations());
+        }
+        return null;
+    }
+
+    private LocationUpperware getCityByContinent(List<CityUpperware> cities, String continentName) {
+        for (CityUpperware city : cities) {
+            ContinentUpperware continent = city.getCountry().getContinent();
+            if (continent.getName().equals(continentName) || isInList(continent.getAlternativeNames(), continentName)) {
+                return city;
+            }
+        }
+        return null;
+    }
+
+    private LocationUpperware getCityByCountry(List<CityUpperware> cities, String countryName) {
+        //TODO TO USE ALTERNATIVE NAMES OF theCountry
+        for (CityUpperware city : cities) {
+            CountryUpperware country = city.getCountry();
+            if (country.getName().equals(countryName) || isInList(country.getAlternativeNames(), countryName)) {
+                return city;
+            }
+        }
+        return null;
+    }
+
+    private List<CityUpperware> searchCityByName(String cityName, EList<LocationUpperware> locations) {
+        List<CityUpperware> cities = locations.stream()
+                .peek(loc -> log.debug("***************Comparing location name " + loc.getName() + " with city " + cityName))
+                .peek(loc -> log.debug("***************Alternative names size " + loc.getAlternativeNames().size()))
+                .filter(loc -> loc instanceof CityUpperware)
+                .filter(loc -> cityName.equals(loc.getName()) || isInList(loc.getAlternativeNames(), cityName))
+                .map(locationUpperware -> (CityUpperware) locationUpperware)
+                .collect(Collectors.toList());
+
+        return cities;
+    }
+
+    private CountryUpperware searchCountryByName(String countryName, EList<LocationUpperware> locations) {
+        Optional<CountryUpperware> first = locations.stream()
+                .peek(loc -> log.debug("***************Comparing country name " + loc.getName() + " with " + countryName))
+                .filter(loc -> loc instanceof CountryUpperware)
+                .filter(loc -> countryName.equals(loc.getName()) || isInList(loc.getAlternativeNames(), countryName))
+                .map(loc -> (CountryUpperware) loc)
+                .findFirst();
+
+        return first.orElse(null);
+    }
+
+    private ContinentUpperware searchContinentByName(String continentName, EList<LocationUpperware> locations) {
+        Optional<ContinentUpperware> first = locations.stream()
+                .peek(loc -> log.debug("***************Comparing continent name "+loc.getName()+" with "+continentName))
+                .filter(loc -> loc instanceof ContinentUpperware)
+                .filter(loc -> continentName.equals(loc.getName()) || isInList(loc.getAlternativeNames(), continentName))
+                .map(loc -> (ContinentUpperware) loc)
+                .findFirst();
+
+        return first.orElse(null);
+    }
+
+
+    private boolean isInList(List<String> list, String value){
+        return list.stream().anyMatch(s -> s.equals(value));
+    }
+
+
+    private ProviderDimension createProviderDimension(Provider providerUpperware) {
+        ProviderDimension pd = applicationFactory.createProviderDimension(); //TODO THE METRIC ID ???
+        pd.setValue(0); //TODO THIS VALUE HAS TO BE DEFINED WITH THE PRICE CALCULATION
+        pd.setProvider(providerUpperware);
+        return pd;
+    }
+
+    private ImageUpperware createImageUpperware(ImageRequirement imageReq) {
+        String imageId = imageReq.getImageId();
+        ImageUpperware image = applicationFactory.createImageUpperware();
+        image.setId(imageId);
+        return image;
+    }
+
+    private CPU createCpu(QuantitativeHardwareRequirement hardware) {
+        CPU cpu = applicationFactory.createCPU();
+        int cores = hardware.getMinCores(); //TODO MAX CORES???
+        cpu.setCores(cores); //TODO  MAX_CPU?, ID?
+        cpu.setValue(typesFactoryService.getDoubleValueUpperware(hardware.getMinCPU()));
+        return cpu;
+    }
+
+    private Storage createStorage(QuantitativeHardwareRequirement hardware) {
+        Storage storage = applicationFactory.createStorage();
+        storage.setValue(typesFactoryService.getIntegerValueUpperware(hardware.getMinStorage())); //TODO - MAX STORAGE ??
+        storage.setUnit(DataUnitEnum.GB); //TODO CHECK THE UNIT, TYPEID? MAX_STORAGE?
+        return storage;
+    }
+
+    private Memory createMemory(QuantitativeHardwareRequirement hardware) {
+        Memory memory = applicationFactory.createMemory();
+        memory.setValue(typesFactoryService.getIntegerValueUpperware(hardware.getMinRAM()));
+        memory.setUnit(DataUnitEnum.MB); //TODO CHECK THE UNIT, TYPEID? MAX_MEMORY?
+        return memory;
+    }
+
+
+    private CPU createCpu(Flavour flavour) {
+        if (flavour != null) {
+            Integer coresInt = flavour.getCoresInt();
+            if (coresInt != null) {
+                CPU cpu = applicationFactory.createCPU();
+                cpu.setCores(coresInt);
+                //TODO - frequency is probably not used
+                Integer cpuInt = flavour.getCpuInt();
+                if (cpuInt != null) {
+                    cpu.setValue(typesFactoryService.getDoubleValueUpperware(cpuInt));
+                } else {
+                    cpu.setValue(typesFactoryService.getDoubleValueUpperware(0));
+                }
+                return cpu;
+            }
+        }
+        return null;
+    }
+
+    private Storage createStorage(Flavour flavour) {
+        if (flavour !=  null) {
+            Integer storageInt = flavour.getStorageInt();
+            if (storageInt != null) {
+                Storage storage = applicationFactory.createStorage();
+                storage.setValue(typesFactoryService.getIntegerValueUpperware(storageInt));
+                storage.setUnit(DataUnitEnum.GB);
+                return storage;
+            }
+        }
+        return null;
+    }
+
+    private Memory createMemory(Flavour flavour) {
+        if (flavour !=  null) {
+            Integer memoryInt = flavour.getMemoryInt();
+            if (memoryInt != null) {
+                Memory memory = applicationFactory.createMemory();
+                memory.setValue(typesFactoryService.getIntegerValueUpperware(memoryInt));
+                memory.setUnit(DataUnitEnum.MB);
+                return memory;
+            }
+        }
+        return null;
+    }
+
+    private String getVMProfileId(String location, String provider, String hardwareId, String osImageId, String vmID, String mappingName) {
+        String id = "";
+
+        if (!location.equals("")) {
+            id += location + NAME_SEPARATOR;
+        }
+
+        if (!provider.equals("")) {
+            id += provider + NAME_SEPARATOR;
+        }
+
+        if (!hardwareId.equals("")) {
+            id += hardwareId + NAME_SEPARATOR;
+        }
+
+        if (!osImageId.equals("")) {
+            id += osImageId + NAME_SEPARATOR;
+        }
+
+        if (!mappingName.equals("")){
+            id += mappingName + NAME_SEPARATOR;
+        }
+
+        if("".equals(location) && "".equals(provider) && "".equals(hardwareId) && "".equals(osImageId) && "".equals(mappingName)) {
+            id+=vmID+SUFFIX;
+        } else {
+            id+=NAME_SEPARATOR+vmID+SUFFIX;
+        }
+        return id;
+    }
+
+    public static VirtualMachineProfile searchVMProfileById(EList<VirtualMachineProfile> vmachines, String id) {
+        for (VirtualMachineProfile vmp : vmachines) {
+            if (vmp.getCloudMLId().equals(id))
+                return vmp;
+        }
+        return null;
+    }
+
+    @Override
+    public PaaSageVariable createPaaSageVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, Variable var){
+        PaaSageVariable pVar= applicationFactory.createPaaSageVariable();
+        pVar.setCpVariableId(var.getId());
+        pVar.setPaasageType(VariableElementTypeEnum.VIRTUAL_LOCATION);
+        pVar.setRelatedComponent(ac);
+        pVar.setRelatedVirtualMachineProfile(vm);
+        pVar.setRelatedProvider(provider);
+        return pVar;
+    }
+
+}

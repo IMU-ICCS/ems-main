@@ -10,6 +10,7 @@ package eu.paasage.upperware.profiler.rp.zeromq;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import eu.paasage.upperware.metamodel.cp.Constant;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.zeromq.ZMQ;
@@ -141,7 +142,7 @@ public class RuleProcessorService {
 		logger.info("  > request type: " + requestType);
 		logger.info("  > camel model: " + camelModel);
 		logger.info("  > cdo identifier: " + cdoIdentifier);
-
+//
 		RuleProcessor rProcessor = new RuleProcessor();
 		RPOutput output = rProcessor.processRequest(camelModel, cdoIdentifier, null, true);
 
@@ -181,17 +182,11 @@ public class RuleProcessorService {
 			return null;
 		}
 
-		String subscriberProtocol = properties.getProperty("SUBSCRIBER_PROTOCOL", Constants.DEFAULT_SUBSCRIBER_PROTOCOL);
-		String subscriberHost = properties.getProperty("SUBSCRIBER_HOST",Constants.DEFAULT_SUBSCRIBER_HOST);
-		String subscriberPort = properties.getProperty("SUBSCRIBER_PORT",Constants.DEFAULT_SUBSCRIBER_PORT);
+		String subscriberProtocol = properties.getProperty(Constants.SUBSCRIBER_PROTOCOL_PROPERTY, Constants.DEFAULT_SUBSCRIBER_PROTOCOL);
+		String subscriberHost = properties.getProperty(Constants.SUBSCRIBER_HOST_PROPERTY, Constants.DEFAULT_SUBSCRIBER_HOST);
+		String subscriberPort = properties.getProperty(Constants.SUBSCRIBER_PORT_PROPERTY, Constants.DEFAULT_SUBSCRIBER_PORT);
 
-		StringBuilder subscriberURL = new StringBuilder();
-		subscriberURL.append(subscriberProtocol);
-		subscriberURL.append(subscriberHost);
-		subscriberURL.append(":");
-		subscriberURL.append(subscriberPort);
-
-		return subscriberURL.toString();
+		return createUrl(subscriberProtocol, subscriberHost, subscriberPort);
 	}
 
 	private final String getPublisherURL(Properties properties) {
@@ -199,16 +194,19 @@ public class RuleProcessorService {
 			return null;
 		}
 
-		String publisherProtocol = properties.getProperty("PUBLISHER_PROTOCOL", Constants.DEFAULT_PUBLISHER_PROTOCOL);
-		String publisherHost = properties.getProperty("PUBLISHER_HOST",Constants.DEFAULT_PUBLISHER_HOST);
-		String publisherPort = properties.getProperty("PUBLISHER_PORT",Constants.DEFAULT_PUBLISHER_PORT);
+		String publisherProtocol = properties.getProperty(Constants.PUBLISHER_PROTOCOL_PROPERTY, Constants.DEFAULT_PUBLISHER_PROTOCOL);
+		String publisherHost = properties.getProperty(Constants.PUBLISHER_HOST_PROPERTY, Constants.DEFAULT_PUBLISHER_HOST);
+		String publisherPort = properties.getProperty(Constants.PUBLISHER_PORT_PROPERTY, Constants.DEFAULT_PUBLISHER_PORT);
 
+		return createUrl(publisherProtocol, publisherHost, publisherPort);
+	}
+
+	private String createUrl(String protocol, String host, String port) {
 		StringBuilder publisherUrl = new StringBuilder();
-		publisherUrl.append(publisherProtocol);
-		publisherUrl.append(publisherHost);
+		publisherUrl.append(protocol);
+		publisherUrl.append(host);
 		publisherUrl.append(":");
-		publisherUrl.append(publisherPort);
-
+		publisherUrl.append(port);
 		return publisherUrl.toString();
 	}
 
@@ -222,7 +220,7 @@ public class RuleProcessorService {
 	
 		// [1] Create socket and subscribe to SUB_GROUP to receive new requests
 		final String subscriberURL = getSubscriberURL(paasageProperties);
-		final String subscriberTopic = paasageProperties.getProperty("SUBSCRIBER_TOPIC", Constants.DEFAULT_SUBSCRIBER_TOPIC);
+		final String subscriberTopic = paasageProperties.getProperty(Constants.SUBSCRIBER_TOPIC_PROPERTY, Constants.DEFAULT_SUBSCRIBER_TOPIC);
 
 		ZMQ.Context context = ZMQ.context(1);
 		ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
@@ -237,7 +235,7 @@ public class RuleProcessorService {
 
 		// [2] Bind publisher to the PUB_TCP_CONNECT
         final String publisherURL = getPublisherURL(paasageProperties);
-		final String publisherTopic = paasageProperties.getProperty("PUBLISHER_TOPIC", Constants.DEFAULT_PUBLISHER_TOPIC);        
+		final String publisherTopic = paasageProperties.getProperty(Constants.PUBLISHER_TOPIC_PROPERTY, Constants.DEFAULT_PUBLISHER_TOPIC);
 
         ZMQ.Socket publisher = context.socket(ZMQ.PUB);
         try {

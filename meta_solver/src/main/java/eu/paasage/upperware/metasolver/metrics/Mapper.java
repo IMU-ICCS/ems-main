@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -27,9 +29,7 @@ import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metasolver.exception.MetricMapperException;
-import eu.paasage.upperware.metasolver.util.CdoTool;
 import eu.paasage.upperware.metasolver.util.CpModelTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 
 /**
  * The metrics Mapper prepares a CP model for submission to the solver. It
@@ -48,13 +48,6 @@ public class Mapper {
 	protected static Logger log = Logger.getLogger(Mapper.class);
 	/** the CP Model resource id */
 	private String cpModelId;
-	/** CPCloner for cloning existing CDO resources 
-	private CPCloner cpCloner;
-	/** the extended CDO client provided by CPCloner
-	private CDOClientExtended xCdoClient; // currently no credentials. If require credentials, need to extend it 
-	*/
-	/** CDO utilties */
-	private CdoTool utils;
 
 	/**
 	 * Construct an instance with the target CP Model resource id 
@@ -66,8 +59,6 @@ public class Mapper {
 	/**
 	 * A wrapper for calling the {{@link #mapMetricVariables(HashMap)} method for a first deployment. 
 	 * <p>
-	 * @param resId
-	 *            id of the target {@link eu.paasage.upperware.metamodel.cp.ConstraintProblem <em>ConstraintProblem</em>}
 	 * @return 	a {@link com.eclipsesource.json.JsonObject <em>JsonObject</em>} containing the 
 	 * 			new resource ID and the solution timestamp.  
 	 * @throws {@link eu.paasage.upperware.metasolver.exception.MetricMapperException <em>MetricMapperException</em>}
@@ -175,7 +166,7 @@ public class Mapper {
 		try{	
 			
 			log.info("Reading CDO resId: "+ this.cpModelId);
-			CDOResource res = trans.getResource(CdoTool.mapCdoId(this.cpModelId)); 
+			CDOResource res = trans.getResource(CdoTool.addCdoPrefix(this.cpModelId));
 			log.info("Res: " + res);
 			EList<EObject> model_contents = res.getContents(); // may get an empty list		
 			ConstraintProblem cp = CpModelTool.getCPModel(model_contents);
@@ -192,8 +183,8 @@ public class Mapper {
 			Long timestamp;
 			// 11Dec15 either no last solution or has metrics
 			// there is always a last solution, so we rely on the 2nd condition
-			log.debug("last solution is null? " + (lastSolution == null ? true : false));
-			log.debug("metrics hm is null? " + (metrics == null ? true : false));
+			log.debug("last solution is null? " + (lastSolution == null));
+			log.debug("metrics hm is null? " + (metrics == null));
 			//			
 			if ((lastSolution == null) || (metrics !=null)){
 				log.debug("metrics hm != null ...");

@@ -14,6 +14,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.tools;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl;
 import org.eclipse.emf.common.util.EList;
 
@@ -28,25 +29,6 @@ import eu.paasage.camel.type.FloatsValue;
 import eu.paasage.camel.type.IntegerValue;
 import eu.paasage.camel.type.NumericValue;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
-import eu.paasage.upperware.metamodel.cp.BooleanDomain;
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedExpression;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.Expression;
-import eu.paasage.upperware.metamodel.cp.Goal;
-import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
-import eu.paasage.upperware.metamodel.cp.NumericDomain;
-import eu.paasage.upperware.metamodel.cp.NumericExpression;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.RangeDomain;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
@@ -179,8 +161,10 @@ public class CPModelTool {
 	{
 		for(Constant c: constants)
 		{
-			List<String> info =CPModelTool.getValueFromNumericValue(c.getValue()); 
-						
+			List<String> info =CPModelTool.getValueFromNumericValue(c.getValue());
+
+			Class<Double> doubleClass = Double.class;
+
 			if(info.get(1).equals(Double.class.getCanonicalName()) && Double.parseDouble(info.get(0))==value)		
 			{	
 				
@@ -332,6 +316,8 @@ public class CPModelTool {
 		String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
 				+"  providerId: " +var.getProviderId() + System.lineSeparator()
 				+"  vmId " + var.getVmId() + System.lineSeparator()
+				+"  componentName " + var.getComponentName() + System.lineSeparator()
+				+"  flavourName " + var.getFlavourName() + System.lineSeparator()
 				+"  osImageId: " + var.getOsImageId()+ System.lineSeparator()
 				+"  hardwareId: " + var.getHardwareId() + System.lineSeparator()
 				+"  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
@@ -391,6 +377,55 @@ public class CPModelTool {
 
 		return retString;
 	}
+
+	public static String toString(DeltaUtility deltaUtility){
+		String retString = "";
+
+		if (deltaUtility != null) {
+			retString = retString + "Delta utility id: " + deltaUtility.getId() + "\n";
+			retString = retString + "Delta utility operator: " + deltaUtility.getOperator() + "\n";
+
+
+			Parameter selectedSolution = deltaUtility.getSelectedSolution();
+			if (selectedSolution != null){
+				retString = retString + "Selected solution parameter id: " + selectedSolution.getName() + "\n";
+				Solution solution = selectedSolution.getSolution();
+				if (solution != null){
+					retString = retString + "solution timestamp: " + solution.getTimestamp() + "\n";
+				} else {
+					retString = retString + "solution is null\n";
+				}
+			} else {
+				retString = retString + "parameter is null\n";
+			}
+
+			EList<Parameter> solutions = deltaUtility.getSolutions();
+			for (Parameter parameter : solutions){
+				if (parameter != null){
+					retString = retString + "solution parameter id: " + parameter.getName() + "\n";
+					Solution solution = parameter.getSolution();
+					if (solution != null){
+						retString = retString + "solution timestamp: " + solution.getTimestamp() + "\n";
+					} else {
+						retString = retString + "solution is null\n";
+					}
+				} else {
+					retString = retString + "parameter is null\n";
+				}
+			}
+
+			EList<NumericExpression> expressions = deltaUtility.getExpressions();
+			for (Expression expression: expressions){
+				retString = retString + toString(expression);
+			}
+
+		} else {
+			retString = retString + "Delta utility = null\n";
+		}
+
+		return retString;
+	}
+
 
 	/**
 	 * Searches a constant in a list with a provided name
@@ -767,7 +802,7 @@ public class CPModelTool {
 	{
 		return VM_PROFILE_CONSTANT_PREFIX+vmpId; 
 	}
-	
+
 	public static String getProviderRelatedToVariable(Variable v)
 	{
 		int posSuffix= v.getId().indexOf(APP_COMPONENT_VAR_SUFFIX); 
@@ -776,7 +811,7 @@ public class CPModelTool {
 		
 		return providerId; 
 	}
-	
+
 	public static String getVmProfileRelatedToVariable(Variable v)
 	{
 		int posPrefix= v.getId().indexOf(APP_COMPONENT_VAR_MID); 
@@ -1086,6 +1121,13 @@ public class CPModelTool {
 		String varName= CPModelTool.APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
 		
 		return varName; 
+	}
+
+	public static String generateApplicationComponentVarName1(String appComponentName, String vmpName, String providerId, String vmTypeName)
+	{
+		String varName= CPModelTool.APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId+"_"+vmTypeName;
+
+		return varName;
 	}
 	
 	public static ComparisonExpression createComparisonExpression(ComparatorEnum op, Expression exp1, Expression exp2, String id)

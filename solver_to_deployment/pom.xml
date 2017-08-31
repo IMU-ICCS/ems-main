@@ -9,9 +9,11 @@
     </parent>
 
     <properties>
-        <lombok.version>1.16.14</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cdo-client.version>2.0.0-SNAPSHOT</cdo-client.version>
+
+        <!--DOCKER plugin properties-->
+        <docker.imageName>${docker.repository}melodic/s2d</docker.imageName>
+
     </properties>
 
     <groupId>eu.melodic</groupId>
@@ -24,12 +26,14 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>${cdo-client.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -64,8 +68,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
@@ -74,7 +78,6 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -95,27 +98,6 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.10</version>
-                <configuration>
-                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                    <imageName>172.31.1.100:5000/melodic/adapter</imageName>
-                    <pushImage>true</pushImage>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

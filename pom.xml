@@ -26,6 +26,7 @@
 
     <modules>
         <module>upperware_metamodel</module>
+        <module>melodic-commons</module>
         <module>cdo_client</module>
         <module>cdo_server</module>
         <module>adapter</module>
@@ -35,12 +36,13 @@
         <module>srl-adapter</module>
         <module>cp_solver</module>
         <module>la_converter</module>
-        <module>rule_processor</module>
+        <!--<module>rule_processor</module>-->
     </modules>
 
     <properties>
         <!-- version for all paasage components-->
         <paasage.version.old>2015.9.1-SNAPSHOT</paasage.version.old>
+        <interfaces.version>1.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -57,10 +59,68 @@
         <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
+        <!--DOCKER plugin properties-->
+        <docker.push>false</docker.push>
+        <docker.repository/>
+        <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
+        <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
+
 
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>eu.melodic</groupId>
+                <artifactId>interfaces</artifactId>
+                <version>${interfaces.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.raml</groupId>
+                        <artifactId>jaxrs-code-generator-7bulls</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>melodic-commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>upperware-metamodel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>camel</artifactId>
+                <version>${paasage.version.old}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage.mddb.cdo</groupId>
+                <artifactId>client</artifactId>
+                <!-- This may be strange but is necessary -
+                while adding dependency in child pom ${parent.version}
+                will be set to upperware version not parent of upperware -->
+                <version>${parent.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <profiles>
+        <profile>
+            <id>docker-remote</id>
+            <properties>
+                <docker.push>true</docker.push>
+                <docker.repository>172.31.1.100:5000/</docker.repository>
+            </properties>
+            <activation>
+                <property>
+                    <name>!useLocalDocker</name>
+                </property>
+            </activation>
+        </profile>
+
         <profile>
             <id>doclint-java8-disable</id>
             <activation>
@@ -144,6 +204,31 @@
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <tagNameFormat>v@{project.version}</tagNameFormat>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.4.10</version>
+                    <configuration>
+                        <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                        <imageName>${docker.imageName}</imageName>
+                        <pushImage>${docker.push}</pushImage>
+                        <resources>
+                            <resource>
+                                <targetPath>/</targetPath>
+                                <directory>${project.build.directory}</directory>
+                                <include>${docker.jarToInclude}</include>
+                            </resource>
+                        </resources>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>build</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
