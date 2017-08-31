@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
@@ -122,7 +123,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
       graph, acInstTasks, oldModel.getApplicationComponentInstanceMonitors(),
       newModel.getApplicationComponentInstanceMonitors());
 
-    setDeleteTasksAfterMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
+    setMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
 
     log.info("Built graph: {}", graph);
 
@@ -445,34 +446,32 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   }
 
   private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-    Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> oldAcInstMonitors,
-    Collection<ApplicationComponentInstanceMonitor> newAcInstMonitors) {
-    Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = Lists.newArrayList();
+          Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> oldAcInstMonitors,
+          Collection<ApplicationComponentInstanceMonitor> newAcInstMonitors) {
+          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = Lists.newArrayList();
 
-  //acInstTasks.stream().filter(acInstTask -> CREATE.equals(acInstTask.getType())).collect(toList()),
+    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))) {
 
-    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))){ // jesli jest jakies create/update
+      Predicate<ApplicationComponentInstanceMonitor> monitorIsConnectedWithCreateNewInstanceTask =
+        acInstMonitor -> acInstTasks.stream()
+          .anyMatch(acInstTask -> acInstTask.getData().getName().equals(acInstMonitor.getAcInstName()));
 
       acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldAcInstMonitors));
       acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(),
-              newAcInstMonitors.stream().filter(acInstMonitor -> acInstTasks.stream()
-                      .anyMatch(acInstTask -> acInstTask.getData().getName().equals(acInstMonitor.getAcInstName()))).collect(toList()))
-      );
+        newAcInstMonitors.stream().filter(monitorIsConnectedWithCreateNewInstanceTask).collect(toList())));
     }
-    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))){ //jesli istnieje jakies delete
 
-      //wszystkie monitory z nowego modelu
+    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))) {
       acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newAcInstMonitors));
     }
-
 
     return acInstMonitorTasks;
   }
 
-//myląca nazwa
-  private void setDeleteTasksAfterMonitors(MelodicGraph<Task, DefaultEdge> graph,
+  private void setMonitors(MelodicGraph<Task, DefaultEdge> graph,
           Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
           Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks) {
+
     DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);
     TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(graph);
 
@@ -483,31 +482,34 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         continue;
       }
 
-      Set<Task> successors = neighbors.successorsOf(task);
+      setMonitorsAfterTask(graph, vmInstMonitorTasks, acInstMonitorTasks, task, neighbors.successorsOf(task));
+      setDeleteTaskAfterMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks, task, neighbors.predecessorsOf(task));
 
-      if (CollectionUtils.isEmpty(successors)) {
-        Type monitorType = DELETE.equals(task.getType()) ? DELETE : CREATE;
-        vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> monitorType.equals(vmInstMonitorTask.getType()))
-                .forEach(vmInstMonitorTask -> setDependencies(graph, CREATE, task, vmInstMonitorTask));
-        acInstMonitorTasks.stream().filter(acInstMonitorTask -> monitorType.equals(acInstMonitorTask.getType()))
-                .forEach(acInstMonitorTask -> setDependencies(graph, CREATE, task, acInstMonitorTask));
+    }
+  }
 
-      }
+  private void setMonitorsAfterTask(MelodicGraph<Task, DefaultEdge> graph, Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
+          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks, Task task, Set<Task> successors){
 
-//      if (!DELETE.equals(task.getType())) {
-//        continue;
-//      }
+    if (CollectionUtils.isEmpty(successors)) {
+      Type monitorType = DELETE.equals(task.getType()) ? DELETE : CREATE;
 
-      Set<Task> predecessors = neighbors.predecessorsOf(task);
-      //monitory create do tasków delete
-      if (DELETE.equals(task.getType()) && CollectionUtils.isEmpty(predecessors)) {
-        vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> CREATE.equals(vmInstMonitorTask.getType()))
-          .forEach(vmInstMonitorTask -> setDependencies(graph, CREATE, vmInstMonitorTask, task)
-        );
-        acInstMonitorTasks.stream().filter(acInstMonitorTask -> CREATE.equals(acInstMonitorTask.getType()))
-          .forEach(acInstMonitorTask -> setDependencies(graph, CREATE, acInstMonitorTask, task)
-        );
-      }
+      vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> monitorType.equals(vmInstMonitorTask.getType()))
+        .forEach(vmInstMonitorTask -> setDependencies(graph, CREATE, task, vmInstMonitorTask));
+      acInstMonitorTasks.stream().filter(acInstMonitorTask -> monitorType.equals(acInstMonitorTask.getType()))
+        .forEach(acInstMonitorTask -> setDependencies(graph, CREATE, task, acInstMonitorTask));
+    }
+
+  }
+
+  private void setDeleteTaskAfterMonitors(MelodicGraph<Task, DefaultEdge> graph, Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
+          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks, Task task, Set<Task> predecessors) {
+
+    if (DELETE.equals(task.getType()) && CollectionUtils.isEmpty(predecessors)) {
+      vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> CREATE.equals(vmInstMonitorTask.getType()))
+        .forEach(vmInstMonitorTask -> setDependencies(graph, CREATE, vmInstMonitorTask, task));
+      acInstMonitorTasks.stream().filter(acInstMonitorTask -> CREATE.equals(acInstMonitorTask.getType()))
+        .forEach(acInstMonitorTask -> setDependencies(graph, CREATE, acInstMonitorTask, task));
     }
   }
 }

@@ -30,9 +30,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     Collection<CloudApiTask> cloudApiTasks = cloudApis.stream()
       .map(cloud -> new CloudApiTask(type, cloud)).collect(toList());
 
-    cloudApiTasks.forEach(cloudApiTask -> {
-      addVertex(graph, cloudApiTask);
-    });
+    cloudApiTasks.forEach(cloudApiTask -> addVertex(graph, cloudApiTask));
 
     return cloudApiTasks;
   }
@@ -305,8 +303,8 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     }
     if (CONFIG.equals(graph.getType()) && !wasSet) {
       throw new IllegalStateException(
-              format("Missing obligatory node of graph - dependency between %s and %s was not set",
-                      depName, task.getData().getName()));
+        format("Missing obligatory node of graph - dependency between %s and %s was not set",
+          depName, task.getData().getName()));
     }
   }
 }
