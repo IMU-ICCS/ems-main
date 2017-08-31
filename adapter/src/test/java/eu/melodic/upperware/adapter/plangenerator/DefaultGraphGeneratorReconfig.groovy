@@ -89,7 +89,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
     then:
     noExceptionThrown()
-    graph.vertexSet().size() == 0 //monitory?
+    graph.vertexSet().size() == 0
     checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
 
   }
@@ -122,8 +122,10 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.createVirtualMachineInstance(vmInstName, vmName, reconfig, oldTasks, mockTasks),
             c.createVirtualMachineInstance(vmInstName2, vmName2, reconfig, oldTasks, mockTasks))
     applicationComponents = Lists.newArrayList(
-            c.createAppComponent(appCompName, appName, lifecycleName, vmName, reconfig, oldTasks, mockTasks),
-            c.createAppComponent(appCompName2, appName, lifecycleName2, vmName2, reconfig, oldTasks, mockTasks))
+            c.createAppComponent(
+                    appCompName, appName, lifecycleName, vmName, reconfig, oldTasks, mockTasks),
+            c.createAppComponent(
+                    appCompName2, appName, lifecycleName2, vmName2, reconfig, oldTasks, mockTasks))
     applicationComponentInstances = Lists.newArrayList(
             c.createAppComponentInstance(
                     appCompInstName, appName, vmInstName, appCompName, reconfig, oldTasks, mockTasks),
@@ -238,7 +240,8 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.createApplication(appName, false, oldTasks, mockTasks)
 
     applicationComponents = Lists.newArrayList(
-            c.createAppComponent(appCompName, appName, lifecycleName, vmName, false, oldTasks, mockTasks)
+            c.createAppComponent(
+                    appCompName, appName, lifecycleName, vmName, false, oldTasks, mockTasks)
     )
 
     applicationComponentInstances = Lists.newArrayList(
@@ -247,7 +250,8 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
 
 
     newApplicationComponents = Lists.newArrayList(
-            c.createAppComponent(appCompName2, appName, lifecycleName, vmName, reconfig, newTasks, oldTasks)
+            c.createAppComponent(
+                    appCompName2, appName, lifecycleName, vmName, reconfig, newTasks, oldTasks)
     )
     newApplicationComponentInstances = Lists.newArrayList(
             c.createAppComponentInstance(
@@ -342,8 +346,10 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     portsRequired = Lists.newArrayList(
-            c.createPortRequired(portRequiredName, appCompName, false, oldTasks, mockTasks),
-            c.createPortRequired(portRequiredName2, appCompName2, false, oldTasks, mockTasks)
+            c.createPortRequired(
+                    portRequiredName, appCompName, false, oldTasks, mockTasks),
+            c.createPortRequired(
+                    portRequiredName2, appCompName2, false, oldTasks, mockTasks)
     )
 
     newPortsRequired = Lists.newArrayList(
@@ -469,8 +475,10 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.createVirtualMachineInstance(vmInstName2, vmName2, reconfig, newTasks, oldTasks))
 
     newApplicationComponents = Lists.newArrayList(
-            c.createAppComponent(appCompName, appName, lifecycleName, vmName, reconfig, newTasks, oldTasks),
-            c.createAppComponent(appCompName2, appName, lifecycleName2, vmName2, reconfig, newTasks, oldTasks))
+            c.createAppComponent(
+                    appCompName, appName, lifecycleName, vmName, reconfig, newTasks, oldTasks),
+            c.createAppComponent(
+                    appCompName2, appName, lifecycleName2, vmName2, reconfig, newTasks, oldTasks))
 
     newApplicationComponentInstances = Lists.newArrayList(
             c.createAppComponentInstance(
@@ -479,7 +487,8 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
                     appCompInstName2, appName, vmInstName2, appCompName2, reconfig, newTasks, oldTasks))
 
     newCommunications = Lists.newArrayList(
-            c.createCommunication(communicationName, portProvidedName, portRequiredName, reconfig, newTasks, oldTasks))
+            c.createCommunication(
+                    communicationName, portProvidedName, portRequiredName, reconfig, newTasks, oldTasks))
     newPortsProvided = Lists.newArrayList(
             c.createPortProvided(portProvidedName, appCompName, reconfig, newTasks, oldTasks),
             c.createPortProvided(portProvidedName2, appCompName2, reconfig, newTasks, oldTasks))
