@@ -8,12 +8,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+package eu.paasage.upperware.profiler.price.api;
 
-package fr.inria.paasage.saloon.price.api;
+import eu.paasage.camel.provider.ProviderModel;
+import eu.paasage.upperware.metamodel.cp.Variable;
 
-import java.io.BufferedReader;
+public interface IProviderPriceEstimator extends IProviderPriceEstimatorFactory {
 
-public interface IProviderPriceEstimatorFactory {
-    void loadLocationRates(BufferedReader br);
+    double DEFAULT_PRICE_VM = 1;
+
+    double estimatePrice(ProviderModel fm, Variable variable);
+
+    void reset();
 
 }

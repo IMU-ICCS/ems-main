@@ -9,11 +9,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package fr.inria.paasage.saloon.price.api;
+package eu.paasage.upperware.profiler.price.model.lib;
 
-import java.io.BufferedReader;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public interface IProviderPriceEstimatorFactory {
-    void loadLocationRates(BufferedReader br);
+@Getter
+@AllArgsConstructor
+public class ResourcePrice {
 
+    private int quantity;
+    private double price;
+
+    public double getResourcePriceForQuantity(int theQuantity) {
+        return (theQuantity * price) / quantity;
+    }
 }
