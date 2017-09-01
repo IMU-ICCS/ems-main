@@ -5,12 +5,17 @@ import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import eu.paasage.upperware.metamodel.types.typesPaasage.LocationUpperware;
 import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
 import eu.paasage.upperware.profiler.generator.service.camel.VariableService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,8 +49,26 @@ public class VariableServiceImpl implements VariableService {
         var.setProviderId(providerId);
         var.setComponentName(ac.getCloudMLId());
         var.setFlavourName(vm.getFlavourName());
+        var.setOsImageId(vm.getOs().getName());
+        var.getLocationIds().addAll(createLocationList(vm.getLocation()));
 
         return var;
+    }
+
+    private List<String> createLocationList(LocationUpperware location) {
+        List<String> result = new ArrayList<>();
+        if (location != null) {
+            String name = location.getName();
+            if (name != null) {
+                result.add(name);
+            }
+            EList<String> alternativeNames = location.getAlternativeNames();
+            if (CollectionUtils.isNotEmpty(alternativeNames)){
+                result.addAll(alternativeNames);
+            }
+        }
+
+        return result;
     }
 
     /**

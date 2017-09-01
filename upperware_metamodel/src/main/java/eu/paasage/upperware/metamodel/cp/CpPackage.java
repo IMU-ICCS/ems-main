@@ -1881,11 +1881,11 @@ public interface CpPackage extends EPackage {
 	EReference getVariable_Domain();
 
 	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationId <em>Location Id</em>}'.
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationIds <em>Location Id</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the attribute '<em>Location Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getLocationId()
+	 * @see eu.paasage.upperware.metamodel.cp.Variable#getLocationIds()
 	 * @see #getVariable()
 	 * @generated
 	 */

@@ -6,6 +6,7 @@ import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.Variable;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 
 /**
@@ -16,7 +17,7 @@ import org.eclipse.emf.ecore.EClass;
  * The following features are implemented:
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl#getDomain <em>Domain</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl#getLocationId <em>Location Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl#getLocationIds <em>Location Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl#getProviderId <em>Provider Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl#getVmId <em>Vm Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl#getOsImageId <em>Os Image Id</em>}</li>
@@ -69,17 +70,8 @@ public class VariableImpl extends NumericExpressionImpl implements Variable {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public String getLocationId() {
-		return (String)eGet(CpPackage.Literals.VARIABLE__LOCATION_ID, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void setLocationId(String newLocationId) {
-		eSet(CpPackage.Literals.VARIABLE__LOCATION_ID, newLocationId);
+	public EList<String> getLocationIds() {
+		return (EList<String>)eGet(CpPackage.Literals.VARIABLE__LOCATION_ID, true);
 	}
 
 	/**

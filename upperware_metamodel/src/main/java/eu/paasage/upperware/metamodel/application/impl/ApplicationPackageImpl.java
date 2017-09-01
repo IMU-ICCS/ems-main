@@ -1272,7 +1272,9 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		initEReference(getVirtualMachineProfile_Storage(), this.getStorage(), null, "storage", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getVirtualMachineProfile_Cpu(), this.getCPU(), null, "cpu", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getVirtualMachineProfile_Os(), theTypesPaasagePackage.getOS(), null, "os", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
 		initEReference(getVirtualMachineProfile_ProviderDimension(), this.getProviderDimension(), null, "providerDimension", null, 0, -1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
 		initEReference(getVirtualMachineProfile_Location(), theTypesPaasagePackage.getLocationUpperware(), null, "location", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getVirtualMachineProfile_Image(), this.getImageUpperware(), null, "image", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getVirtualMachineProfile_RelatedCloudVMId(), ecorePackage.getEString(), "relatedCloudVMId", null, 1, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

@@ -9,11 +9,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package fr.inria.paasage.saloon.price.api;
+package eu.paasage.upperware.profiler.price.api;
 
 import java.io.BufferedReader;
 
 public interface IProviderPriceEstimatorFactory {
-    void loadLocationRates(BufferedReader br);
 
+    void loadLocationRates(BufferedReader br);
 }

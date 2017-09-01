@@ -5,11 +5,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage"
     xsi:schemaLocation="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage ../metamodels/paasageTypes.ecore#//paasage/upperware/metamodel/types/typesPaasage">
+  <types id="AmazonEC2"/>
   <types id="Flexiant"/>
   <types id="GWDG"/>
   <types id="Omistack"/>
-  <types id="AmazonEC2"/>
-  <types id="WindowsAzure"/>
   <types id="TryStack"/>
   <types id="Ucystack"/>
+  <!--<types id="WindowsAzure"/>-->
 </typesPaasage:ProviderTypes>

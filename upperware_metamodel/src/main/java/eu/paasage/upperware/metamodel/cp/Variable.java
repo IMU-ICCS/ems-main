@@ -3,6 +3,8 @@
 package eu.paasage.upperware.metamodel.cp;
 
 
+import org.eclipse.emf.common.util.EList;
+
 /**
  * <!-- begin-user-doc -->
  * A representation of the model object '<em><b>Variable</b></em>'.
@@ -12,7 +14,7 @@ package eu.paasage.upperware.metamodel.cp;
  * The following features are supported:
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getDomain <em>Domain</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationId <em>Location Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationIds <em>Location Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getProviderId <em>Provider Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getVmId <em>Vm Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getOsImageId <em>Os Image Id</em>}</li>
@@ -60,22 +62,11 @@ public interface Variable extends NumericExpression {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Location Id</em>' attribute.
-	 * @see #setLocationId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_LocationId()
 	 * @model
 	 * @generated
 	 */
-	String getLocationId();
-
-	/**
-	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationId <em>Location Id</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Location Id</em>' attribute.
-	 * @see #getLocationId()
-	 * @generated
-	 */
-	void setLocationId(String value);
+	EList<String> getLocationIds();
 
 	/**
 	 * Returns the value of the '<em><b>Provider Id</b></em>' attribute.

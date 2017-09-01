@@ -13,6 +13,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.tools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl;
@@ -320,6 +321,7 @@ public class CPModelTool {
 				+"  flavourName " + var.getFlavourName() + System.lineSeparator()
 				+"  osImageId: " + var.getOsImageId()+ System.lineSeparator()
 				+"  hardwareId: " + var.getHardwareId() + System.lineSeparator()
+				+"  locationId: " + var.getLocationIds().stream().collect(Collectors.joining(",")) + System.lineSeparator()
 				+"  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
 				+"  domainTo: " +  CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getTo()).get(0).toString()
 				;
