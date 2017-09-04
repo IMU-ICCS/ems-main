@@ -141,7 +141,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         //Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
 
         log.info(" ** 	Processing Opt Rerqs");
-        parseOptimisationRequirements(camelModel.getRequirementModels().get(0), pcw);    //TODO - to na pozniej
+//        parseOptimisationRequirements(camelModel.getRequirementModels().get(0), pcw);
         log.info(" ** 	Processing Opt Rerqs ended");
         VMRequirementSet globalRequirements= deploymentModel.getGlobalVMRequirementSet();
 
