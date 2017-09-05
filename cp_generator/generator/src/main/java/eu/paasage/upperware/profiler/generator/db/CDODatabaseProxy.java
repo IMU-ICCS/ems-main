@@ -21,7 +21,6 @@ import eu.paasage.camel.type.TypePackage;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
@@ -33,10 +32,6 @@ import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.emf.cdo.eresource.CDOResource;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -284,18 +279,15 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		cdoClient.exportModel(content.get(0), cpModel.getAbsolutePath());
 	}
 
-	public void savePM(ProviderModel pm, PaasageConfiguration pc, Provider provider) {
-		String providerResourceId = getFMResourceId(pc, provider);
-		log.debug("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {}", pc.getId(), provider.getId(), providerResourceId);
+	public void savePM(ProviderModel pm, String paasageConfigurationId, String providerId) {
+		String providerResourceId = getFMResourceId(paasageConfigurationId, providerId);
+		log.info("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {}", paasageConfigurationId, providerId, providerResourceId);
 		cdoClient.storeModel(pm.eContainer(), FMS_APP_CDO_SERVER_PATH+ providerResourceId);
+		log.info("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {} - saved", paasageConfigurationId, providerId, providerResourceId);
 	}
 
-	private String getFMResourceId(PaasageConfiguration pc, Provider provider) {
-		return getFMResourceId(pc.getId(), provider.getId());
-	}
-
-	private String getFMResourceId(String pcId, String providerId) {
-		return pcId+"/"+providerId;
+	private String getFMResourceId(String paasageConfigurationId, String providerId) {
+		return paasageConfigurationId+"/"+providerId;
 	}
 
 }
