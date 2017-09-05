@@ -338,7 +338,6 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
                 for (CloudProvider cloudProvider : asList){
                     ProviderModel providerModel = cloudProvider.getProviderModel();
                     if (provider.getId().contains(providerModel.getRootFeature().getName())) {
-
                         database.savePM(addNewCamelModelAsParent(deploymentModel, providerModel), pcw.getPaasageConfiguration().getId(), provider.getId());
                         added = true;
                         break;
@@ -348,8 +347,6 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
                 if (!added){
                     ProviderModel providerModel = database.loadPM(provider.getType().getId());
                     if (providerModel != null) {
-
-                        cdoClient.exportModel(providerModel.eContainer(), "/home/pszkup/temp/pm_copy_db_all.xmi");
                         database.savePM(providerModel, pcw.getPaasageConfiguration().getId(), provider.getId());
                     }
                 }
@@ -363,6 +360,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         CamelModel camelModel = camelFactory.createCamelModel();
         camelModel.getProviderModels().add(providerCopy);
         camelModel.getTypeModels().addAll(((CamelModel)deploymentModel.eContainer()).getTypeModels());
+        camelModel.setName("CamelModel" + providerModel.getRootFeature().getName());
         return providerCopy;
     }
 
