@@ -3,15 +3,11 @@ package eu.paasage.upperware.profiler.generator.db;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.Locations;
 import eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes;
-
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * This interface defines the services offered by a database. 
@@ -44,6 +40,6 @@ public interface IDatabaseProxy {
 
 	void saveModels(PaasageConfiguration pc, ConstraintProblem cp);
 
-	void savePM(ProviderModel pm, PaasageConfiguration pc, Provider provider);
+	void savePM(ProviderModel pm, String paasageConfigurationId, String providerId);
 
 }

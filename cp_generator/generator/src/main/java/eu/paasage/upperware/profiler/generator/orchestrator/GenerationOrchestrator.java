@@ -21,13 +21,13 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-import eu.paasage.upperware.profiler.cp.generator.FromRuleProcessorSlo;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
+import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.AllArgsConstructor;
@@ -55,6 +55,7 @@ public class GenerationOrchestrator {
     private PaasageConfigurationService paaSageConfigurationService;
     private ConstraintProblemService constraintProblemService;
     private NotificationService notificationService;
+    private SloService sloService;
 
 
     /**
@@ -136,9 +137,7 @@ public class GenerationOrchestrator {
                 log.info("** Calling CPModelDerivator");
 
                 ConstraintProblem cp = constraintProblemService.derivateConstraintProblem(camelModel, pc);
-
-                FromRuleProcessorSlo fromRuleProcessorSlo = new FromRuleProcessorSlo();
-                fromRuleProcessorSlo.update(camelModel, cp);
+                sloService.update(camelModel, cp);
 
                 String cpId = pc.getId();
                 log.debug("** Calling DatabseProxy ");

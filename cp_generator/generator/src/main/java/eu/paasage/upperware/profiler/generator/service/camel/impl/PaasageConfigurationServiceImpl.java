@@ -1,6 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.camel.Application;
+import eu.paasage.camel.CamelFactory;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.location.CloudLocation;
@@ -20,6 +21,7 @@ import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.typesPaasage.*;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
+import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
 import eu.paasage.upperware.profiler.generator.filter.QuantitativeHardwareRequirementFilter;
 import eu.paasage.upperware.profiler.generator.function.creators.impl.AttributeFunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
@@ -32,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -54,11 +57,14 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
 
     private final ApplicationFactory applicationFactory;
     private final TypesPaasageFactory typesPaasageFactory;
+    private final CamelFactory camelFactory;
 
     private final TypesFactoryService typesFactoryService;
     private final CamelModelService camelModelService;
     private final IDatabaseProxy database;
     private final PaasageConfigurationUtilsService paasageConfigurationUtilsService;
+
+    private final CDOClientExtended cdoClient;
 
     private Map<String, List<VirtualMachineProfile>> vmProfiles;
 
@@ -135,18 +141,12 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         log.info(" ** 	Calling DeploymentModelParser");
 
         parseDeploymentModel(deploymentModel, pcw, preferedProviders);
-        storeRelatedProviderModels(pcw);
 
-
-        //Map<String,List<VirtualMachineProfile>> vmProfiles= deploymentModelParser.getVmProfiles(); 
+        storeRelatedProviderModels(deploymentModel, pcw);
 
         log.info(" ** 	Processing Opt Rerqs");
 //        parseOptimisationRequirements(camelModel.getRequirementModels().get(0), pcw);
         log.info(" ** 	Processing Opt Rerqs ended");
-        VMRequirementSet globalRequirements= deploymentModel.getGlobalVMRequirementSet();
-
-        ProviderTypes providerTypes = database.loadProviderTypes();
-
 
 //
 //        for (VirtualMachineProfile virtualMachineProfile : pcw.getPaasageConfiguration().getVmProfiles()) {
@@ -167,138 +167,6 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
 //        }
 
         List<Provider> candidates= new ArrayList<Provider>();
-
-/*
-        PSZKUP - TODO - zakomentowalem
-
-        for(VM vm: vms) {
-            log.debug("CamelModelProcessor - parseModel - Processing vm "+vm.getName());
-            //Create an ontology representing the requirements of each VM
-            OntologyCamel ontology= proxy.getCamelOntologyCopy();
-
-            log.debug("CamelModelProcessor - parseModel - Ontology Retrieved! ");
-
-            //Units
-
-            //ConceptCamel mghzUnit= ProviderModelParser.getConceptByName(fr.inria.paasage.saloon.camel.tool.Constants.GHZ_UNIT, ontology.getReusedConcept());
-
-            log.debug("CamelModelProcessor - parseModel - Unit concepts Retrieved! ");
-
-
-
-            QuantitativeHardwareRequirement hardware = extractHardwareRequirement(globalRequirements, vm.getVmRequirementSet());
-
-            log.debug("CamelModelProcessor - parseModel - Hardware reqs: "+hardware);
-            if(hardware!=null) {
-                checkHardware(ontology, hardware);
-            }
-
-            //Criteria
-
-*/
-/*			ConceptCamel criteriaConcept= ProviderModelParser.getConceptByName("Cost", ontology.getConcepts());
-			criteriaConcept.setSelected(true);
-
-			//Goal
-			ConceptCamel goalConcept= ProviderModelParser.getConceptByName("Min", ontology.getConcepts());
-			goalConcept.setSelected(true);
-			log.debug("CamelModelProcessor - parseModel - goal selected "+goalConcept.isSelected());*//*
- //TODO TO CHECK THIS
-
-
-            //OS-Image
-
-            //Provider with Image
-            ProviderModelDecorator pmWithImage= null;
-
-            OSOrImageRequirement osImageReq = extractOsRequirement(globalRequirements, vm.getVmRequirementSet());
-            log.debug("CamelModelProcessor - parseModel - OsImage reqs: "+osImageReq);
-            if(osImageReq!=null) {
-                pmWithImage = checkOS(ontology, osImageReq);
-            }
-
-            //Provider
-            ProviderRequirement provReq = extractProviderRequirement(globalRequirements, vm.getVmRequirementSet());
-            log.debug("CamelModelProcessor - parseModel - Provider reqs: "+provReq);
-
-            //Location
-            ConceptCamel locationConcept= ProviderModelParser.getConceptByName("Location",  ontology.getConcepts());
-
-            LocationRequirement locationReq = extractLocationRequirement(globalRequirements, vm.getVmRequirementSet());
-            log.debug("CamelModelProcessor - parseModel - Location reqs: "+locationReq);
-
-            if(locationReq!=null) {
-                for(Location loc:locationReq.getLocations()) {
-                    log.debug("CamelModelProcessor - parseModel - Looking for loc: "+loc.getId());
-                    ConceptCamel concreteLocationConcept= ProviderModelParser.searchLocation(loc.getId(), locationConcept.getSubConcept());
-                    log.debug("CamelModelProcessor - parseModel - Loc concept: "+concreteLocationConcept);
-                    concreteLocationConcept.setSelected(true);
-
-
-                    log.debug("CamelModelProcessor - parseModel - Loc concept: "+loc.getId()+ " selected!");
-                    //If there is a Image requirement and the related provider was found, this is the only provider that will be considered
-                    if(pmWithImage!=null)
-                    {
-                        List<Provider> currentCandidates= new ArrayList<>();
-                        log.debug("CamelModelProcessor - parseModel - parseOntology with image");
-                        providerModelParser.parseOntology(ontology, pc, pmWithImage, vm, currentCandidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
-                        log.debug("CamelModelProcessor - parseModel - parseOntology with image ended");
-
-                        if(currentCandidates.isEmpty()) //Delete the provider with the given location
-                        {
-                            log.debug("CamelModelProcessor - parseModel - Removing candidate with location "+concreteLocationConcept.getName());
-                            providerModelParser.removeCandidatesWithLocationForVM(vm,pmWithImage.getProviderId(),concreteLocationConcept.getName(),pc);
-                        }
-                        else
-                            candidates.addAll(currentCandidates);
-
-                    }
-                    else if(provReq!=null) //If there are provider requirements, only the specified providers are considered
-                    {
-                        log.debug("CamelModelProcessor - parseModel - processProviderRequirements");
-                        processProviderRequirementsLocation(provReq, ontology, pc, vm, candidates, concreteLocationConcept.getName());
-                        log.debug("CamelModelProcessor - parseModel - processProviderRequirements ended");
-                    }
-                    else //All the providers have to be considered
-                    {
-                        log.debug("CamelModelProcessor - parseModel - processAllProviders with loc");
-                        processAllProvidersLocation(ontology, pc, vm, candidates,concreteLocationConcept.getName());
-                        log.debug("CamelModelProcessor - parseModel - processAllProviders with loc ended");
-                    }
-
-                    concreteLocationConcept.setSelected(false);
-
-*/
-/*					log.debug("CamelModelProcessor - parseModel - Current candidates size for VM "+vm.getName()+" is "+currentCandidates.size());
-					if(currentCandidates.isEmpty()) //Delete the provider with the given location
-					{
-						log.debug("CamelModelProcessor - parseModel - Removing candidate with location "+concreteLocationConcept.getName());
-						providerModelParser.removeCandidatesWithLocationForVM(vm,concreteLocationConcept.getName(),pc);
-					}
-					else
-						candidates.addAll(currentCandidates); *//*
-
-                }
-
-            }
-            else if(pmWithImage!=null) //We only consider the provider with the related image
-            {
-                providerModelParser.parseOntology(ontology, pc, pmWithImage, vm,candidates); //TODO CLEAN OR RELOAD THE PROVIDER MODELS ?????
-            }
-            else if(provReq!=null) //We only consider the specified providers
-            {
-                processProviderRequirements(provReq, ontology, pc, vm, candidates);
-            }
-            else //We have to process all the providers
-            {
-                log.debug("CamelModelProcessor - parseModel - processAllProviders");
-
-                processAllProviders(ontology, pc, vm, candidates);
-            }
-
-        }
-*/
-
 /*
         PSZKUP - TODO - zakomentowalem
         providerModelParser.removeNotPreferedProviders(preferedProviders, pc.getPaasageConfiguration());
@@ -458,16 +326,67 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         }
     }
 
-    private void storeRelatedProviderModels(PaaSageConfigurationWrapper pcw) {
+    private void storeRelatedProviderModels(DeploymentModel deploymentModel,  PaaSageConfigurationWrapper pcw) {
+
+        Map<String, List<CloudProvider>> cloudProviders = getCloudProviders(deploymentModel);
+        List<CloudProvider> asList = getAsList(cloudProviders);
+
         EList<Provider> providers = pcw.getPaasageConfiguration().getProviders();
         if (CollectionUtils.isNotEmpty(providers)) {
-            for (Provider provider : providers) {
-                ProviderModel providerModel = database.loadPM(provider.getType().getId());
-                if (providerModel != null) {
-                    database.savePM(providerModel, pcw.getPaasageConfiguration(), provider);
+            for (Provider provider: providers){
+                boolean added = false;
+                for (CloudProvider cloudProvider : asList){
+                    ProviderModel providerModel = cloudProvider.getProviderModel();
+                    if (provider.getId().contains(providerModel.getRootFeature().getName())) {
+
+                        database.savePM(addNewCamelModelAsParent(deploymentModel, providerModel), pcw.getPaasageConfiguration().getId(), provider.getId());
+                        added = true;
+                        break;
+                    }
+                }
+
+                if (!added){
+                    ProviderModel providerModel = database.loadPM(provider.getType().getId());
+                    if (providerModel != null) {
+
+                        cdoClient.exportModel(providerModel.eContainer(), "/home/pszkup/temp/pm_copy_db_all.xmi");
+                        database.savePM(providerModel, pcw.getPaasageConfiguration().getId(), provider.getId());
+                    }
                 }
             }
         }
+    }
+
+
+    private ProviderModel addNewCamelModelAsParent(DeploymentModel deploymentModel, ProviderModel providerModel) {
+        ProviderModel providerCopy = EcoreUtil.copy(providerModel);
+        CamelModel camelModel = camelFactory.createCamelModel();
+        camelModel.getProviderModels().add(providerCopy);
+        camelModel.getTypeModels().addAll(((CamelModel)deploymentModel.eContainer()).getTypeModels());
+        return providerCopy;
+    }
+
+    private Map<String, List<CloudProvider>> getCloudProviders(DeploymentModel deploymentModel) {
+        Map<String, List<CloudProvider>> result = new HashMap<>();
+
+        VMRequirementSet globalRequirements= deploymentModel.getGlobalVMRequirementSet();
+        for (VM vm : getVMList(deploymentModel)) {
+            result.put(vm.getName(), new ArrayList<>());
+            ProviderRequirement providerRequirement = retrieveProviderRequirement(vm.getVmRequirementSet(), globalRequirements);
+            EList<CloudProvider> providers = providerRequirement != null ? providerRequirement.getProviders() : null;
+            if (CollectionUtils.isNotEmpty(providers)) {
+                result.get(vm.getName()).addAll(providers);
+            }
+        }
+        return result;
+    }
+
+    private List<CloudProvider> getAsList(Map<String, List<CloudProvider>> cloudProviders){
+        List<CloudProvider> result = new ArrayList<>();
+        for (String s : cloudProviders.keySet()) {
+            result.addAll(cloudProviders.get(s));
+        }
+        return result;
     }
 
     private void parseDeploymentModel(DeploymentModel deploymentModel, PaaSageConfigurationWrapper configurationWrapper, Set<String> preferedProviders) {
@@ -716,7 +635,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
 
     protected VirtualMachineProfile parseVM(VM vm, PaaSageConfigurationWrapper configurationWrapper, boolean addNewCandidates, VMRequirementSet globalVMRequirements, Set<String> preferedProviders) {
 
-        PaasageConfiguration configuration = configurationWrapper.getPaasageConfiguration();
+        String pcId = configurationWrapper.getPaasageConfiguration().getId();
 
         List<VirtualMachineProfile> result = new ArrayList<>();
 
@@ -744,6 +663,8 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
                         ProviderType pt = getProviderType(configurationWrapper, provider);
 
                         vmp = getVirtualMachineProfile(vm, configurationWrapper, preferedProviders, hardware, osImage, location, pt, providerModel);
+
+//                        storeRelatedProviderModel(providerModel, pcId, provider);
                     }
                 } else {
                     for (ProviderType pt : database.loadProviderTypes().getTypes()) {
@@ -793,7 +714,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         List<Flavour> flavours = camelModelService.convertToFlavours(providerModel);
         for (Flavour flavour : flavours) {
             if (checkRequirements(hardware, flavour)) {
-                vmp = getVirtualMachineProfile(vm, configurationWrapper, hardware, osImage, location, pt, flavour);
+                vmp = getVirtualMachineProfile(vm, configurationWrapper, hardware, osImage, location, pt, providerModel, flavour);
             } else {
                 log.info("Requirements failed for flavour: " + flavour.getVmTypeName());
             }
@@ -801,7 +722,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         return vmp;
     }
 
-    private VirtualMachineProfile getVirtualMachineProfile(VM vm, PaaSageConfigurationWrapper configurationWrapper, QuantitativeHardwareRequirement hardware, OSOrImageRequirement osImage, Location location, ProviderType pt, Flavour flavour) {
+    private VirtualMachineProfile getVirtualMachineProfile(VM vm, PaaSageConfigurationWrapper configurationWrapper, QuantitativeHardwareRequirement hardware, OSOrImageRequirement osImage, Location location, ProviderType pt, ProviderModel providerModel, Flavour flavour) {
         String locationId = location != null ? location.getId() : "";
         String hardwareId = hardware != null ? hardware.getName() : "";
         String osImageId = osImage != null ? osImage.getName() : "";
@@ -817,7 +738,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         if (vmp == null) {
             log.debug("DeployementModelParser - parseVMs - Adding Vm Type " + vmTypeId + " with provider: " + pt.getId());
 
-            vmp = buildVMProfile(vm, location, pt, hardware, osImage, vmTypeId, configurationWrapper, flavour);
+            vmp = buildVMProfile(vm, location, pt, hardware, osImage, vmTypeId, configurationWrapper, flavour, providerModel);
             if (vmp != null) {
                 configurationWrapper.getPaasageConfiguration().getVmProfiles().add(vmp);
 
@@ -994,7 +915,9 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         return null;
     }
 
-    protected VirtualMachineProfile buildVMProfile(VM vm, Location location, ProviderType pt, HardwareRequirement hardwareRequirement, OSOrImageRequirement osImagerReq, String vmTypeId, PaaSageConfigurationWrapper configurationWrapper, Flavour flavour) {
+    protected VirtualMachineProfile buildVMProfile(VM vm, Location location, ProviderType pt, HardwareRequirement hardwareRequirement,
+                                                   OSOrImageRequirement osImagerReq, String vmTypeId, PaaSageConfigurationWrapper configurationWrapper,
+                                                   Flavour flavour, ProviderModel providerModel) {
 
         LocationUpperware locationUpperware = null;
 
@@ -1045,6 +968,13 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
                 String providerId = PaasageModelTool.buildProviderId(providerTypeId, locationId);
                 providerUpperware.setId(providerId);
                 configuration.getProviders().add(providerUpperware);
+
+                //PSZKUP TODO to  nie moze tutaj byc bo leci org.eclipse.net4j.util.lifecycle.LifecycleException: Not active: CDOTransactionImpl
+                // na kolejnej probie pobrania z camela w tym przypadku na:
+                // String os = osReq.getOs();
+//                storeRelatedProviderModel(providerModel, configuration.getId(), providerId);
+
+
                 log.debug("DeploymentModelParser- buildVMProfile -Provider " + providerId + " created!");
             }
 
@@ -1060,7 +990,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
             if (osImagerReq instanceof OSRequirement) {
                 OSRequirement osReq = (OSRequirement) osImagerReq;
                 String os = osReq.getOs();
-osImagerReq.getName();
+                    osImagerReq.getName();
                 OS theOs = getOSFromNameAndArchitecture(os, osReq.isIs64os(), configurationWrapper);
                 if (theOs != null) {
                     vmp.setOs(cloneOS(theOs));

@@ -1,5 +1,6 @@
 package eu.paasage.upperware.profiler.generator;
 
+import eu.paasage.camel.CamelFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
@@ -50,6 +51,11 @@ public class GeneratorContext {
     @Bean
     public TypesPaasageFactory typesPaasageFactory() {
         return TypesPaasageFactory.eINSTANCE;
+    }
+
+    @Bean
+    public CamelFactory camelFactory() {
+        return CamelFactory.eINSTANCE;
     }
 
     @Bean
