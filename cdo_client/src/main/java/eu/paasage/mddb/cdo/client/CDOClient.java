@@ -7,6 +7,7 @@
 
 package eu.paasage.mddb.cdo.client;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -120,6 +121,7 @@ import java.util.zip.ZipFile;
 /**
  * @author Eike Stepper
  */
+@Slf4j
 public class CDOClient
 {	
 	//A TCP Connector to the CDOServer
@@ -132,7 +134,7 @@ public class CDOClient
 	private String host, port, repositoryName;
 	private boolean logging = false;
 	private String userName, password;
-	private static org.apache.log4j.Logger logger;
+//	private static org.apache.log4j.Logger logger;
 			
 	//A static parameter that maps to the configuration directory that contains the properties file of the CDOClient
 	private static final String ENV_CONFIG="PAASAGE_CONFIG_DIR";
@@ -146,7 +148,7 @@ public class CDOClient
     private static HashMap<String, Object> opts = new HashMap<String, Object>();
     
     static {
-    	logger = org.apache.log4j.Logger.getLogger(CDOClient.class);
+//    	logger = org.apache.log4j.log.getLogger(CDOClient.class);
     	XMIResToResFact();
     	opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
     }
@@ -194,12 +196,12 @@ public class CDOClient
 	private String retrieveConfigurationDirectoryFullPath()
     {
         String propertyFilePath = System.getenv(ENV_CONFIG);
-        logger.info("Got path: " + propertyFilePath);
+		log.info("Got path: " + propertyFilePath);
         
      // enable passing the configuration directory through -Deu.paasage.configdir=PATH JVM option
         if (propertyFilePath == null) {
           propertyFilePath = System.getProperty("eu.paasage.configdir");
-          logger.info("Got path: " + propertyFilePath);
+          log.info("Got path: " + propertyFilePath);
         }
         
         if (propertyFilePath == null)
@@ -231,11 +233,11 @@ public class CDOClient
             props.load(new FileInputStream(propertyPath));
         } catch (java.io.IOException e) {
             //TODO: fill props with default values for componenet
-            props.put("log4j.rootLogger","info, stdout");
-            props.put("log4j.appender.stdout"                         ,"org.apache.log4j.ConsoleAppender");
-            props.put("log4j.appender.stdout.Target"                  ,"System.out");
-            props.put("log4j.appender.stdout.layout"                  ,"org.apache.log4j.PatternLayout");
-            props.put("log4j.appender.stdout.layout.ConversionPattern","%d{ABSOLUTE} %5p %c{1}:%L - %m%n");
+//            props.put("log4j.rootLogger","info, stdout");
+//            props.put("log4j.appender.stdout"                         ,"org.apache.log4j.ConsoleAppender");
+//            props.put("log4j.appender.stdout.Target"                  ,"System.out");
+//            props.put("log4j.appender.stdout.layout"                  ,"org.apache.log4j.PatternLayout");
+//            props.put("log4j.appender.stdout.layout.ConversionPattern","%d{ABSOLUTE} %5p %c{1}:%L - %m%n");
         }
         return props;
     }
@@ -246,14 +248,17 @@ public class CDOClient
 	 */
 	private void getConnectionInformation(){
 		Properties props = loadPropertyFile();
-		host = props.getProperty("host");
-		port = props.getProperty("port");
-		repositoryName = props.getProperty("repository");
-		if (repositoryName == null) repositoryName = "repo1";
-		String log = props.getProperty("logging");
-		if (log == null || log.equals("off")) logging = false;
-		else if (log.equals("on")) logging = true;
-		if (logging) logger.info("Got host: " + host + " port: " + port + " repository:" + repositoryName);
+		this.host = props.getProperty("host");
+		this.port = props.getProperty("port");
+		this.repositoryName = props.getProperty("repository", "repo1");
+
+		String logging = props.getProperty("logging", "off");
+		if (logging.equals("off"))
+			this.logging = false;
+		else if (logging.equals("on"))
+			this.logging = true;
+
+		if (this.logging) log.info("Got host: " + host + " port: " + port + " repository:" + repositoryName);
 	}
 	
 	/*This method is used for initiating a CDO Session starting by obtaining
@@ -362,7 +367,7 @@ public class CDOClient
 	 */
 	public CDOTransaction openTransaction(){
 	    	CDOTransaction trans = session.openTransaction();
-	    	if (logging) logger.info("Opened transaction!");
+	    	if (logging) log.info("Opened transaction!");
 	    	return trans;
 	}
 	
@@ -374,7 +379,7 @@ public class CDOClient
 	 */
 	public CDOTransaction openTransaction(boolean validate){
 	    	CDOTransaction trans = session.openTransaction();
-	    	if (logging) logger.info("Opened transaction!");
+	    	if (logging) log.info("Opened transaction!");
 	    	if (validate) trans.addTransactionHandler(new MyCDOTransactionHandler());
 	    	return trans;
 	}
@@ -385,7 +390,7 @@ public class CDOClient
 	 */
 	public CDOView openView(){
 	    	CDOView view = session.openView();
-	    	if (logging) logger.info("Opened view!");
+	    	if (logging) log.info("Opened view!");
 	    	return view;
 	}
 	
@@ -397,12 +402,12 @@ public class CDOClient
 		try{
 			CDOTransaction trans = session.openTransaction();
 			//CDOID id = CDOIDUtil.createExternal(uri);
-			//logger.info("ID given: " + uri + " ID produced: " + id);
+			//log.info("ID given: " + uri + " ID produced: " + id);
 			CDOObject object = trans.getObject(uri);
 			return deleteObject(object,trans,true);
 		}
 		catch(Exception e){
-			logger.error("Something went wrong while deleting object with CDOID: " + uri, e);
+			log.error("Something went wrong while deleting object with CDOID: " + uri, e);
 			//e.printStackTrace();
 		}
 		return false;
@@ -440,9 +445,9 @@ public class CDOClient
 				List<?> list = null;
 				if(eGet instanceof List<?>){
 					list = (List<?>)eGet;
-					if (logging) logger.info("Prev size: is: " + list.size());
+					if (logging) log.info("Prev size: is: " + list.size());
 					list.remove(target);
-					if (logging) logger.info("New size: is: " + list.size());
+					if (logging) log.info("New size: is: " + list.size());
 				}
 				else{
 					source.eSet(feat, null);
@@ -451,14 +456,14 @@ public class CDOClient
 			//Get containment association and delete it
 			CDOObject parent = (CDOObject)object.eContainer();
 			EStructuralFeature feat = object.eContainmentFeature();
-			if (logging) logger.info("The feature is: " + feat);
+			if (logging) log.info("The feature is: " + feat);
 			Object eGet = parent.eGet(feat);
 			List<?> list = null;
 			if (eGet instanceof List<?>){
 				list = (List<?>)eGet;
-				if (logging) logger.info("Prev size: is: " + list.size());
+				if (logging) log.info("Prev size: is: " + list.size());
 				list.remove(object);
-				if (logging) logger.info("New size: is: " + list.size());
+				if (logging) log.info("New size: is: " + list.size());
 			}
 			else{
 				parent.eSet(feat, null);
@@ -470,7 +475,7 @@ public class CDOClient
 			return true;
 		}
 		catch(Exception e){
-			logger.error("Something went wrong while deleting object: " + object,e);
+			log.error("Something went wrong while deleting object: " + object,e);
 			//e.printStackTrace();
 		}
 		return false;
@@ -530,7 +535,7 @@ public class CDOClient
 			  return true;
 		}
 		catch(Exception e){
-			logger.error("Something went wrong while storing model: " + model + " with resourceName:" + resourceName, e);
+			log.error("Something went wrong while storing model: " + model + " with resourceName:" + resourceName, e);
 			//e.printStackTrace();
 		}
 		return false;
@@ -584,14 +589,14 @@ public class CDOClient
 			res = rs.createResource(URI.createFileURI(pathName));
 			contents = res.getContents();
 		}
-		if (logging) logger.info("Got resource: " + res);
+		if (logging) log.info("Got resource: " + res);
 		contents.add(model);
 		try{
 			res.save(null);
 			return true;
 		}
 		catch(Exception e){
-			logger.error("Something went wrong while storing model: " + model + " at path: " + pathName, e);
+			log.error("Something went wrong while storing model: " + model + " at path: " + pathName, e);
 			//e.printStackTrace();
 		}
 		return false;
@@ -684,7 +689,7 @@ public class CDOClient
 			ra1.setAssignmentTime(ft.parse("1976-12-16"));
 			ra1.setStartTime(ft.parse("1977-12-16"));
 			ra1.setEndTime(ft.parse("1978-12-16"));
-			logger.info("End date: " + ra1.getEndTime());
+			log.info("End date: " + ra1.getEndTime());
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -724,9 +729,9 @@ public class CDOClient
 		  final ResourceSet rs = new ResourceSetImpl();
 		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
-		  logger.info("Got resource: " + res);
+		  log.info("Got resource: " + res);
 		  EList<EObject> contents = res.getContents();
-		  logger.info("Contents are: " + contents);
+		  log.info("Contents are: " + contents);
 		  
 		  return contents.get(0);
 	}
@@ -740,7 +745,7 @@ public class CDOClient
 		  rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
 		  EList<EObject> contents = res.getContents();
-		  logger.info("Contents are: " + contents);
+		  log.info("Contents are: " + contents);
 		  
 		  return contents.get(0);
 	}
@@ -751,15 +756,15 @@ public class CDOClient
 	 * web point or to an internal file or resource inside a jar file.   
 	 */
 	public static EObject loadModel(URL url){
-		  logger.info("Got url: " + url);
+		  log.info("Got url: " + url);
 		  final ResourceSet rs = new ResourceSetImpl();
 		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  EList<EObject> contents = null;
 		  try{
 			  Resource res = rs.getResource(URI.createURI(url.toURI().toString()), true);
-			  logger.info("Got resource: " + res);
+			  log.info("Got resource: " + res);
 			  contents = res.getContents();
-			  logger.info("Contents are: " + contents);
+			  log.info("Contents are: " + contents);
 		  }
 		  catch(Exception e){
 			  e.printStackTrace();
@@ -774,16 +779,16 @@ public class CDOClient
 	 * web point or to an internal file or resource inside a jar file.   
 	 */
 	public static EObject loadTextualModel(URL url){
-		  logger.info("Got url: " + url);
+		  log.info("Got url: " + url);
 		  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
 		  XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
 		  rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		  EList<EObject> contents = null;
 		  try{
 			  Resource res = rs.getResource(URI.createURI(url.toURI().toString()), true);
-			  logger.info("Got resource: " + res);
+			  log.info("Got resource: " + res);
 			  contents = res.getContents();
-			  logger.info("Contents are: " + contents);
+			  log.info("Contents are: " + contents);
 		  }
 		  catch(Exception e){
 			  e.printStackTrace();
@@ -801,14 +806,14 @@ public class CDOClient
 		  //res.getResourceSet().getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  try{
 			  res.doLoad(is, null);
-			  logger.info("Got resource: " + res);
+			  log.info("Got resource: " + res);
 			  EList<EObject> contents = res.getContents();
-			  logger.info("Contents are: " + contents);
+			  log.info("Contents are: " + contents);
 		  
 			  return contents.get(0);
 		  }
 		  catch(Exception e){
-			  logger.error("Something went wrong while loading a model from the InputStream provided as input", e);
+			  log.error("Something went wrong while loading a model from the InputStream provided as input", e);
 		  }
 		  return null;
 	}
@@ -945,7 +950,7 @@ public class CDOClient
 			  return true;
 		  }
 		  catch(Exception e){
-			  logger.error("Something went wrong while exporting resource: " + resourceName, e);
+			  log.error("Something went wrong while exporting resource: " + resourceName, e);
 			  //e.printStackTrace();
 			  if (trans != null) trans.close();
 		  }
@@ -971,7 +976,7 @@ public class CDOClient
 			  return true;
 		  }
 		  catch(Exception e){
-			  logger.error("Something went wrong while exporting model: " + model + " at path: " + filePath,e);
+			  log.error("Something went wrong while exporting model: " + model + " at path: " + filePath,e);
 			  //e.printStackTrace();
 		  }
 		  return false;
@@ -999,7 +1004,7 @@ public class CDOClient
 			return true;
 		} 
 		catch (IOException e) {
-		  logger.error("Something went wrong while exporting the CDO model: " + model + " into a CAMEL textual model", e);
+		  log.error("Something went wrong while exporting the CDO model: " + model + " into a CAMEL textual model", e);
 		}
 		return false;
 	}
@@ -1113,7 +1118,7 @@ public class CDOClient
    * exportModelWithRefRec must be called.
    */
   public boolean exportModelWithRef(String resourcePath, String dirPath, String fileName){
-	  if (logging) logger.info("Exporting model identified by resource path: " + resourcePath + " along its cross-referenced models ...");
+	  if (logging) log.info("Exporting model identified by resource path: " + resourcePath + " along its cross-referenced models ...");
 	  boolean ok = true;
 	  
 	  dirPath = checkDirPath(dirPath);
@@ -1139,7 +1144,7 @@ public class CDOClient
 			  //System.out.println("fileName for cross-referenced model is: " + fileName);
 			  ok = exportModel(newModel, name);
 			  if (!ok){
-				  logger.error("exportModelWithRef: Something went wrong while attempting to export model: " + newModel + " in file path: " + name);
+				  log.error("exportModelWithRef: Something went wrong while attempting to export model: " + newModel + " in file path: " + name);
 				  return ok;
 			  }
 			  File f = new File(name);
@@ -1151,7 +1156,7 @@ public class CDOClient
 		  Collection<Setting> st = map.get(obj);
 		  ContainmentChain cc = new ContainmentChain(obj);
 		  EObject newObj = cc.getObjectSubstitute(newModel);
-		  if (logging) logger.info("Previous object: " + obj + " substituted by: " + newObj + " " + newObj.eResource());
+		  if (logging) log.info("Previous object: " + obj + " substituted by: " + newObj + " " + newObj.eResource());
 		  
 		  for (Setting set: st){
 			  //System.out.println("Got :" + set.getEObject() + " " + set.getEStructuralFeature() + " " + set.get(true));
@@ -1174,7 +1179,7 @@ public class CDOClient
 	  ok = exportModel(obj2, filePath);
 	  view.close();
 	  if (!ok){
-		  logger.error("exportModelWithRef: Something went wrong while attempting to export model: " + obj2+ " in file path: " + filePath);
+		  log.error("exportModelWithRef: Something went wrong while attempting to export model: " + obj2+ " in file path: " + filePath);
 	  }
 	  return ok;
   }
@@ -1187,7 +1192,7 @@ public class CDOClient
    * and enable the stack of recursive calls to finally end.
    */
   private Set<EObject> findCrossRefModels(EObject object, Set<EObject> examined){
-	  if (logging) logger.info("Finding cross referenced models for model: " + object + " ...");
+	  if (logging) log.info("Finding cross referenced models for model: " + object + " ...");
 	  Set<EObject> models = new HashSet<EObject>();
 	  Map<EObject,Collection<Setting>> map = EcoreUtil.ExternalCrossReferencer.find(object);
 	  examined.add(object);
@@ -1199,7 +1204,7 @@ public class CDOClient
 		  }
 	  }
 	  models.add(object);
-	  if (logging) logger.info("Cross references for model: " + object + " have been discovered");
+	  if (logging) log.info("Cross references for model: " + object + " have been discovered");
 	  return models;
   }
   
@@ -1210,18 +1215,18 @@ public class CDOClient
    * to external references with respect to in-memory-based models.    
    */
   private void handleModelExportWithRef(EObject object, Hashtable<EObject,EObject>refModels){
-	  if (logging) logger.info("Model : " + object + " will be exported after its cross-references are updated to map to models also exported in the file system ...");
+	  if (logging) log.info("Model : " + object + " will be exported after its cross-references are updated to map to models also exported in the file system ...");
 	  EObject nModel = refModels.get(object);
 	  Map<EObject,Collection<Setting>> map = EcoreUtil.ExternalCrossReferencer.find(nModel);
 	  for(EObject obj: map.keySet()){
 		  EObject model = obj.eResource().getContents().get(0);
 		  EObject newModel = refModels.get(model);
 		  
-		  if (logging) logger.info("Previous object: " + obj + " and new model is: " + newModel + " " + newModel.eResource());
+		  if (logging) log.info("Previous object: " + obj + " and new model is: " + newModel + " " + newModel.eResource());
 		  Collection<Setting> st = map.get(obj);
 		  ContainmentChain cc = new ContainmentChain(obj);
 		  EObject newObj = cc.getObjectSubstitute(newModel);
-		  if (logging) logger.info("Previous object: " + obj + " substituted by: " + newObj + " " + newObj.eResource());
+		  if (logging) log.info("Previous object: " + obj + " substituted by: " + newObj + " " + newObj.eResource());
 		  
 		  for (Setting set: st){
 			  //System.out.println("Got :" + set.getEObject() + " " + set.getEStructuralFeature() + " " + set.get(true));
@@ -1267,7 +1272,7 @@ public class CDOClient
 		  if (!dir.exists()){
 			  boolean ok = dir.mkdir();
 			  if (!ok){
-				  logger.error("exportModelWithRefRec: Directory with path " + dirPath + " could not be created");
+				  log.error("exportModelWithRefRec: Directory with path " + dirPath + " could not be created");
 				  return null;
 			  }
 		  }
@@ -1286,7 +1291,7 @@ public class CDOClient
    * file name and are stored in the current directory. 
    */
   public boolean exportModelWithRefRec(String resourcePath, String dirPath, boolean xtext){
-	  if (logging) logger.info("Model in CDO resource path: " + resourcePath + " is being exported along with its (external) cross-referenced models");
+	  if (logging) log.info("Model in CDO resource path: " + resourcePath + " is being exported along with its (external) cross-referenced models");
 	  boolean ok = true;
 	  try{
 		  dirPath = checkDirPath(dirPath);
@@ -1309,14 +1314,14 @@ public class CDOClient
 		  if (xtext) ok = exportTextualModelMassive(refModels,dirPath);
 		  else ok = exportModelMassive(refModels,dirPath);
 		  if (ok){
-			  if (logging) logger.info("Model in resource path: " + resourcePath + " successfully exported");
+			  if (logging) log.info("Model in resource path: " + resourcePath + " successfully exported");
 		  }
 		  
 		  view.close();
 		  
 	  }
 	  catch(Exception e){
-		  logger.error("Something went wrong while exporting along with cross-referenced models the model identified by the CDO resource path: " + resourcePath, e);
+		  log.error("Something went wrong while exporting along with cross-referenced models the model identified by the CDO resource path: " + resourcePath, e);
 	  }
 	  return ok;
   }
@@ -1339,12 +1344,12 @@ public class CDOClient
 			resource.getContents().add(toSave);
 		}
 		for (Resource resource: resourceSet.getResources()){
-			if (logging) logger.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
+			if (logging) log.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
 			try {
 				resource.save(opts);
 			} 
 			catch (IOException e) {
-			  logger.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
+			  log.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
 			  return false;
 			}
 		}	
@@ -1369,14 +1374,14 @@ public class CDOClient
 			resource.getContents().add(toSave);
 		}
 		for (Resource resource: resourceSet.getResources()){
-			if (logging) logger.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
+			if (logging) log.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
 			try {
 				Builder options=SaveOptions.newBuilder();
 				options.format();
 				resource.save(options.getOptions().toOptionsMap());
 			} 
 			catch (IOException e) {
-			  logger.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
+			  log.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
 			  return false;
 			}
   		}
@@ -1405,7 +1410,7 @@ public class CDOClient
    * and returns all the root models contained in it. 
    */
   private Set<EObject> getAllModels(CDOResourceNode[] nodes){
-	  if (logging) logger.info("Getting all models from CDO Repository ...");
+	  if (logging) log.info("Getting all models from CDO Repository ...");
 	  Set<EObject> models = new HashSet<EObject>();
 	  for (CDOResourceNode node: nodes){
 		  if (node instanceof CDOResource){
@@ -1425,7 +1430,7 @@ public class CDOClient
 			  }
 		  }
 	  }
-	  if (logging) logger.info("All CDO models retrieved");
+	  if (logging) log.info("All CDO models retrieved");
 	  
 	  return models;
   }
@@ -1437,7 +1442,7 @@ public class CDOClient
    * depending on the outcome of the exporting.
    */
   public boolean exportCDOContent(String dirPath, boolean xtext){
-	  if (logging) logger.info("Exporting CDOContent as a zip file in file directory path: " + dirPath + " ...");
+	  if (logging) log.info("Exporting CDOContent as a zip file in file directory path: " + dirPath + " ...");
 	  boolean ok = true;
 	  
 	  dirPath = checkDirPath(dirPath);
@@ -1471,11 +1476,11 @@ public class CDOClient
 				  MyIOUtils.createZipArchive(".", ".xmi", false, new FileOutputStream(dirPath + File.separator + "cdo.zip"));
 				  MyIOUtils.deleteFiles(".", ".xmi");
 			  }
-			  if (logging) logger.info("CDOContent successfully exported in file directory path: " + dirPath);
+			  if (logging) log.info("CDOContent successfully exported in file directory path: " + dirPath);
 			  return true;
 			}
 			catch(Exception e){
-			  logger.error("Something went wrong while exporting whole CDO content",e);
+			  log.error("Something went wrong while exporting whole CDO content",e);
 			  ok = false;
 			}
 		  }
@@ -1488,7 +1493,7 @@ public class CDOClient
    * perform this storage. 
    */
   private void importModelNoRef(EObject model,String name, CDOTransaction trans){
-	  if (logging) logger.info("Importing model with name: " + name + " in CDO by also nulling external references ...");
+	  if (logging) log.info("Importing model with name: " + name + " in CDO by also nulling external references ...");
 	  Map<EObject,Collection<Setting>> map = EcoreUtil.ExternalCrossReferencer.find(model);
 	  CDOResource res = trans.getOrCreateResource(name);
 	  EList<EObject> contents = res.getContents();
@@ -1517,7 +1522,7 @@ public class CDOClient
 		  }
 	  }
 	  contents.add(model);
-	  if (logging) logger.info("Importing of model with name: " + name + " in CDO finished");
+	  if (logging) log.info("Importing of model with name: " + name + " in CDO finished");
   }
   
   /* This method seeks to find a resource in a particular table mapping each resource to
@@ -1542,7 +1547,7 @@ public class CDOClient
    */
   private void fixModelRefs(String modelName, Hashtable<String,EObject> refModels, Hashtable<Resource,String> modelToName, CDOTransaction trans){
 	  try{
-		  if (logging) logger.info("Fixing model cross references in CDO for model: " + modelName + " ...");
+		  if (logging) log.info("Fixing model cross references in CDO for model: " + modelName + " ...");
 		  CDOResource res = trans.getOrCreateResource(modelName);
 		  EObject prevModel = refModels.get(modelName);
 		  Map<EObject,Collection<Setting>> map = EcoreUtil.ExternalCrossReferencer.find(prevModel);
@@ -1580,10 +1585,10 @@ public class CDOClient
 				  }
 			  }
 		  }
-		  if (logging) logger.info("Cross references in CDO fixed for model: " + modelName);
+		  if (logging) log.info("Cross references in CDO fixed for model: " + modelName);
 	  }
 	  catch(Exception e){
-		  logger.error("Something went wrong while fixing cross references for model: " + modelName, e);
+		  log.error("Something went wrong while fixing cross references for model: " + modelName, e);
 	  }
   }
   
@@ -1597,7 +1602,7 @@ public class CDOClient
    */
   public boolean loadCDOContent(String filePath, boolean xtext){
 	  try{
-		if (logging) logger.info("Loading content into CDO Repository from file path: " + filePath + " ...");
+		if (logging) log.info("Loading content into CDO Repository from file path: " + filePath + " ...");
 	    ZipFile zipFile = new ZipFile(filePath);
 
 	    Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -1627,7 +1632,7 @@ public class CDOClient
 		    	names.add(name);
 		    	try{
 					  Resource res = rs.getResource(URI.createURI(f.toURI().toString()), true);
-					  if (logging) logger.info("Got resource: " + res);
+					  if (logging) log.info("Got resource: " + res);
 				  }
 				  catch(Exception e){
 					  e.printStackTrace();
@@ -1670,11 +1675,11 @@ public class CDOClient
 	    for (File f: dir.listFiles()) f.delete();
 	    dir.delete();
 	    
-	    if (logging) logger.info("Content into CDO Repository loaded ...");
+	    if (logging) log.info("Content into CDO Repository loaded ...");
 	    return true;
 	  }
 	  catch(Exception e){
-		  logger.error("Something went wrong while loading content into CDO Repository", e);
+		  log.error("Something went wrong while loading content into CDO Repository", e);
 	  }
 	  return false;
   }
@@ -1698,7 +1703,7 @@ public class CDOClient
 		return true;
 	  } 
 	  catch (IOException e) {
-		  logger.error("Something went wrong while transforming XMI model to CAMEL one", e);
+		  log.error("Something went wrong while transforming XMI model to CAMEL one", e);
 	  }
 	  return false;
   }
@@ -1744,9 +1749,9 @@ public class CDOClient
 		  //Check that the objects have been deleted
 		  view = cl.openView();
 		  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.identifier='ID2' or id.identifier='ID3')").getResult(ExternalIdentifier.class);
-		  logger.info("Did we get the ids requested?: " + !(types.isEmpty()));
+		  log.info("Did we get the ids requested?: " + !(types.isEmpty()));
 		  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
-		  logger.info("Did we get the users requested?: " + !(users.isEmpty()));
+		  log.info("Did we get the users requested?: " + !(users.isEmpty()));
 		  view.close();
 		  
 		  /*Run a query - three ways are shown here: (i) ocl query, 
@@ -1760,14 +1765,14 @@ public class CDOClient
 		   */
 		  //OCL query plus exporting of first result
 		  List<EObject> results = cl.runQuery("ocl","camel::organisation::User.allInstances()","queryResult.xmi");
-		  logger.info("The results of the query are:" + results);
+		  log.info("The results of the query are:" + results);
 		  //HQL query with no exporting
 		  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
-		  logger.info("The results of the query are:" + results);
+		  log.info("The results of the query are:" + results);
 		  //Obtaining all contents of a CDOResource
 		  view = cl.openView();
 		  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
-		  logger.info("The objs stored are: " + objs);
+		  log.info("The objs stored are: " + objs);
 		  cl.closeView(view);
 		  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
 		  cl.exportModel("sensAppResource1", DeploymentModel.class, "output/SensApp_DepModel.xmi");
@@ -1785,14 +1790,14 @@ public class CDOClient
 				  if (args.length == 4){
 					  validate = Boolean.parseBoolean(args[3]);
 				  }
-				  else logger.warn("3 or 4 arguments were expected. At most the 4 first arguments are taken into account");
+				  else log.warn("3 or 4 arguments were expected. At most the 4 first arguments are taken into account");
 				  if (method.equals("importModel"))
 					  ok = cl.importModel(filePath, resourcePath, validate);
 				  else if (method.equals("importTextualModel"))
 					  ok = cl.importTextualModel(filePath, resourcePath, validate);
 			  }
 			  else{
-				  logger.error(method + " was called with a wrong number of arguments");
+				  log.error(method + " was called with a wrong number of arguments");
 			  }
 		  }
 		  else if (method.equals("xmiToCAMEL")){
@@ -1800,11 +1805,11 @@ public class CDOClient
 				  String xmiPath = args[1];
 				  String camelPath = args[2];
 				  if (args.length > 3)
-					  logger.warn("3 arguments were expected. At most the 4 first arguments are taken into account");
+					  log.warn("3 arguments were expected. At most the 4 first arguments are taken into account");
 					  ok = xmiToCAMEL(xmiPath, camelPath);
 			  }
 			  else{
-				  logger.error(method + " was called with a wrong number of arguments");
+				  log.error(method + " was called with a wrong number of arguments");
 			  }
 		  }
 		  else if (method.equals("exportModel") || method.equals("exportTextualModel")){
@@ -1816,7 +1821,7 @@ public class CDOClient
 				  else if (method.equals("exportTextualModel"))
 					  ok = cl.exportTextualModel(resourcePath, filePath);
 			  }
-			  else logger.error(method + " was called with a wrong number of arguments");
+			  else log.error(method + " was called with a wrong number of arguments");
 		  }
 		  else if (method.equals("exportModelWithRefRec") || method.equals("exportModelWithRef")){
 			  if (args.length == 4){
@@ -1830,7 +1835,7 @@ public class CDOClient
 					  ok = cl.exportModelWithRefRec(resourcePath, dirPath, xtext);
 				  }
 			  }
-			  else logger.error(method + " was called with a wrong number of arguments");
+			  else log.error(method + " was called with a wrong number of arguments");
 		  }
 		  else if (method.equals("exportCDOContent") || method.equals("loadCDOContent")){
 			  if (args.length == 3){
@@ -1841,10 +1846,10 @@ public class CDOClient
 				  else if (method.equals("loadCDOContent"))
 					  ok = cl.loadCDOContent(arg1,xtext);
 			  }
-			  else logger.error(method + " was called with a wrong number of arguments");
+			  else log.error(method + " was called with a wrong number of arguments");
 		  }
-		  else logger.error(method + " does not exist or cannot be executed in a command line manner");
-		  if (ok) logger.info(method + " was successfully performed");
+		  else log.error(method + " does not exist or cannot be executed in a command line manner");
+		  if (ok) log.info(method + " was successfully performed");
 	  }
 	  //Close the CDOSession once you are done
 	  cl.closeSession();

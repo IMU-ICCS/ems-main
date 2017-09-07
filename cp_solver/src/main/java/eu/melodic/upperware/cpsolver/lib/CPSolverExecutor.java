@@ -11,9 +11,9 @@ package eu.melodic.upperware.cpsolver.lib;
 
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.apache.log4j.Logger;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import eu.melodic.models.commons.NotificationResult;
@@ -27,11 +27,11 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Date;
 import org.springframework.core.env.Environment;
 
+@Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CPSolverExecutor {
-
-  final static Logger logger = Logger.getLogger(CPSolverExecutor.class);
+  
   private Environment env;
   private RestTemplate restTemplate;
 
@@ -42,14 +42,14 @@ public class CPSolverExecutor {
       cpSolver.solve();
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
-        logger.info("Solution has been produced");
+        log.info("Solution has been produced");
         notifySolutionProduced(applicationId, notificationUri, requestUuid);
       } else {
-        logger.info("Problem is infeasible");
+        log.info("Problem is infeasible");
         notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
       }
     } catch (Exception e) {
-      logger.info("CPSolver returned exception.");
+      log.info("CPSolver returned exception.");
       e.printStackTrace();
       notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
     }
@@ -57,14 +57,14 @@ public class CPSolverExecutor {
 
 
   private void notifySolutionProduced(String camelModelID, String notificationUri, String uuid) {
-    logger.info("Sending solution available notification");
+    log.info("Sending solution available notification");
     NotificationResult result = prepareSuccessNotificationResult();
     ConstraintProblemSolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
     sendNotification(notification, notificationUri);
   }
 
   private void notifySolutionNotApplied(String camelModelID, String notificationUri, String uuid)  {
-    logger.info("Sending solution NOT available notification");
+    log.info("Sending solution NOT available notification");
     NotificationResult result = prepareErrorNotificationResult("Solution was not generated.");
     ConstraintProblemSolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
     sendNotification(notification, notificationUri);
@@ -80,12 +80,12 @@ public class CPSolverExecutor {
       notificationUri = notificationUri.substring(1);
     }
     try {
-      logger.info("Sending notification to: "+esbUrl);
+      log.info("Sending notification to: "+esbUrl);
       restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
     } catch (RestClientException restException){
-      logger.error("Error sending notification: " +restException.getMessage());
+      log.error("Error sending notification: " +restException.getMessage());
     }
-    logger.info("Notification sent.");
+    log.info("Notification sent.");
   }
   private Watermark prepareWatermark(String uuid) {
     Watermark watermark = new WatermarkImpl();
