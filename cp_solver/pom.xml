@@ -55,18 +55,6 @@
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
         </dependency>
-        <!-- Zero MQ -->
-        <dependency>
-            <groupId>org.zeromq</groupId>
-            <artifactId>jeromq</artifactId>
-            <version>${jeromq.version}</version>
-        </dependency>
-        <!-- Logging -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

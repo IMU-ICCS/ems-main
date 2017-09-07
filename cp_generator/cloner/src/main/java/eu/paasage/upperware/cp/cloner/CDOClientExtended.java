@@ -13,6 +13,7 @@ package eu.paasage.upperware.cp.cloner;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.CDOObject;
@@ -30,17 +31,9 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import eu.paasage.mddb.cdo.client.CDOClient;
 
-public class CDOClientExtended extends CDOClient 
-{
-	//Log
-	public static Logger logger= Logger.getLogger("paasage-profiler");
-	
-	public CDOClientExtended()
-	{
-		super(); 
-		//logger.setLevel(Level.OFF);
-	}
-	
+//TODO - used only in rule-processor which is currently removed from building
+@Slf4j
+public class CDOClientExtended extends CDOClient {
 
 	/* This method is used to obtain the content of a CDOResource with a 
 	 * particular path/name. You should open a view before using this method
@@ -52,18 +45,18 @@ public class CDOClientExtended extends CDOClient
 		List<EObject> qr= new ArrayList<EObject>(); 
 		
 		try {
-			logger.info("CDOClientExtended - getResourceContents - Retrieving resource with path "+path);
+			log.info("CDOClientExtended - getResourceContents - Retrieving resource with path "+path);
 			CDOResource resource = view.getResource(path);
 			EList<EObject> content = resource.getContents();
 		
-			logger.info("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
+			log.info("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
 		
 			for(EObject o:content) {
-				logger.info("CDOClientExtended - getResourceContents - Content "+o );
+				log.info("CDOClientExtended - getResourceContents - Content "+o );
 				qr.add(o); 
 			}
 		} catch(Throwable ex) {
-			logger.error("CDOClientExtended - getResourceContents - Problems retrieving the resource with path "+path+"!\n");
+			log.error("CDOClientExtended - getResourceContents - Problems retrieving the resource with path "+path+"!\n");
 			ex.printStackTrace();
 		}
 		return qr;

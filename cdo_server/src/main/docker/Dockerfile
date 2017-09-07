@@ -157,7 +157,7 @@ VOLUME /etc/mysql/conf.d
 VOLUME etc/mysql/docker-default.d
 
 
-ADD server-jar-with-dependencies.jar server.jar
+ADD server.jar server.jar
 
 # Set correct environment variables.
 ENV	HOME /root

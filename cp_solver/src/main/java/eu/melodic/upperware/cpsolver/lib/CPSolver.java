@@ -1,4 +1,6 @@
-package eu.melodic.upperware.cpsolver.lib;/* Copyright (C) 2015 KYRIAKOS KRITIKOS <kritikos@ics.forth.gr> */
+package eu.melodic.upperware.cpsolver.lib;
+
+/* Copyright (C) 2015 KYRIAKOS KRITIKOS <kritikos@ics.forth.gr> */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public 
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +12,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -63,6 +66,7 @@ import solver.variables.VariableFactory;
 import util.ESat;
 import util.tools.ArrayUtils;
 
+@Slf4j
 public class CPSolver {
 
 	private Solver solver = null;
@@ -87,8 +91,6 @@ public class CPSolver {
 	private boolean cdoMode = false;
 	private long timestamp = 0;
 	
-	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(CPSolver.class);
-
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
@@ -156,13 +158,13 @@ public class CPSolver {
 				}
 			}
 			if (sol != null){
-				logger.info("Found solution with the timestamp given");
+				log.info("Found solution with the timestamp given");
 				for (MetricVariableValue mvv: sol.getMetricVariableValue()){
 					MetricVariable mv = mvv.getVariable();
 					NumericValueUpperware val = mvv.getValue();
 					String mvName = mv.getId();
 					IntVar intVar = idToIntVar.get(mvName);
-					logger.info("CHECKING METRIC VARIABLE TO ASSIGN IT A CONSTANT VALUE");
+					log.info("CHECKING METRIC VARIABLE TO ASSIGN IT A CONSTANT VALUE");
 					if (intVar != null){
 						int actualVal = 1;
 						if (val instanceof IntegerValueUpperware){
@@ -181,7 +183,7 @@ public class CPSolver {
 						try{
 							intVar.updateLowerBound(actualVal,null);
 							intVar.updateUpperBound(actualVal,null);
-							logger.info("UPDATING INTEGER VARIABLE!!!: " + intVar);
+							log.info("UPDATING INTEGER VARIABLE!!!: " + intVar);
 						}
 						catch(Exception e){
 							e.printStackTrace();
@@ -206,7 +208,7 @@ public class CPSolver {
 							try{
 								realVar.updateLowerBound(actualVal,null);
 								realVar.updateUpperBound(actualVal,null);
-								logger.info("UPDATING REAL VARIABLE!!!: " + realVar);
+								log.info("UPDATING REAL VARIABLE!!!: " + realVar);
 							}
 							catch(Exception e){
 								e.printStackTrace();
@@ -245,7 +247,7 @@ public class CPSolver {
 			cp = (ConstraintProblem)cl.loadModel(pathName);
 			readModel(cp);
 		}
-		logger.info("CDO Mode: " + cdoMode);
+		log.info("CDO Mode: " + cdoMode);
 		cl.closeSession();
 	}
 	
@@ -266,35 +268,35 @@ public class CPSolver {
 		if (policy != null){
 			if (realGoal != null){
 				solver.findOptimalSolution(policy, realGoal);
-				logger.info("1. Optimal value is: " + realGoal.getUB());
+				log.info("1. Optimal value is: " + realGoal.getUB());
 			}
 			else{
 				solver.findOptimalSolution(policy, intGoal);
-				logger.info("2. Optimal value is: " + intGoal.getValue());
+				log.info("2. Optimal value is: " + intGoal.getValue());
 			}
-			logger.info("1. Checking if solver has solutions");
+			log.info("1. Checking if solver has solutions");
 			hasSolutions = (solver.isFeasible() == ESat.TRUE);
-			logger.info("1. Does solver has solutions? " + hasSolutions);
+			log.info("1. Does solver has solutions? " + hasSolutions);
 			if (hasSolutions) saveSolution();
 			try{
 				dispose();
 				solver.getIbex().release();
 			}
 			catch(Exception e){
-				logger.error("1. Something went wrong while disposing the solver", e);
+				log.error("1. Something went wrong while disposing the solver", e);
 			}
 		}
 		else{
-			logger.info("2. Checking if solver has solutions");
+			log.info("2. Checking if solver has solutions");
 			hasSolutions = solver.findSolution();
-			logger.info("2. Does solver has solutions? " + hasSolutions);
+			log.info("2. Does solver has solutions? " + hasSolutions);
 			if (hasSolutions) saveSolution();
 			try{
 				dispose();
 				solver.getIbex().release();
 			}
 			catch(Exception e){
-				logger.error("2. Something went wrong while disposing the solver", e);
+				log.error("2. Something went wrong while disposing the solver", e);
 			}
 		}
 		return hasSolutions;
@@ -304,7 +306,7 @@ public class CPSolver {
 	 * initial position, either in CDO repository or the file system
 	 */
 	private void saveSolution(){
-		logger.info("Saving solution .....");
+		log.info("Saving solution .....");
 		CDOTransaction trans = null;
 		ConstraintProblem cp = null;
 		CDOClient cl = new CDOClient();
@@ -350,7 +352,7 @@ public class CPSolver {
 				IntVar iv = idToIntVar.get(var.getId());
 				if (iv != null){
 					int val = iv.getValue();
-					logger.info("Discovered value for variable :" + var.getId() + " is: " + val);
+					log.info("Discovered value for variable :" + var.getId() + " is: " + val);
 					if (dom instanceof NumericDomain){
 						NumericDomain nd = (NumericDomain)dom;
 						BasicTypeEnum type = nd.getType();
@@ -384,7 +386,7 @@ public class CPSolver {
 					RealVar rv = idToRealVar.get(var.getId());
 					if (rv != null){
 						double val = rv.getUB();
-						logger.info("Discovered value for variable :" + var.getId() + " is: " + val);
+						log.info("Discovered value for variable :" + var.getId() + " is: " + val);
 						if (dom instanceof NumericDomain){
 							NumericDomain nd = (NumericDomain)dom;
 							BasicTypeEnum type = nd.getType();
@@ -424,10 +426,10 @@ public class CPSolver {
 			else{
 				cl.saveModel(cp, pathName);
 			}
-			logger.info("..... Solution saved");
+			log.info("..... Solution saved");
 		}
 		catch(Exception e){
-			logger.error("Something went wrong while storing the solution",e);
+			log.error("Something went wrong while storing the solution",e);
 			//e.printStackTrace();
 		}
 		cl.closeSession();
@@ -456,7 +458,7 @@ public class CPSolver {
 	
 	/* Creating the optimisation objective from the list of goals contained in the cp model */
 	private void createGoals(EList<Goal> goals){
-		logger.info("--------------- Goals ---------------");
+		log.info("--------------- Goals ---------------");
 		int size = goals.size();
 		if (size == 1){
 			Goal goal = goals.get(0);
@@ -464,12 +466,12 @@ public class CPSolver {
 			boolean isInt = involvesOnlyInt(expr);
 			if (isInt){
 				intGoal = parseExpression(expr);
-				logger.info("Optimization Variable: " + intGoal.getName());
+				log.info("Optimization Variable: " + intGoal.getName());
 			}
 			else{
 				RealConstraint rc = new RealConstraint(solver);
 				realGoal = parseRealExpression(expr,rc);
-				logger.info("Optimization Variable: " + realGoal.getName());
+				log.info("Optimization Variable: " + realGoal.getName());
 				solver.post(rc);
 			}
 			GoalOperatorEnum type = goal.getGoalType();
@@ -493,7 +495,7 @@ public class CPSolver {
 					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
 				}
 				intGoal = VariableFactory.bounded("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-				logger.info("Optimization Variable: " + intGoal.getName());
+				log.info("Optimization Variable: " + intGoal.getName());
 				solver.post(IntConstraintFactory.scalar(vars, dirs, intGoal));
 				policy = ResolutionPolicy.MAXIMIZE;
 			}
@@ -504,13 +506,13 @@ public class CPSolver {
 				for (int i = 0; i < size; i++){
 					RealConstraint rc = new RealConstraint(solver);
 					Goal goal = goals.get(i);
-					logger.info("Processing goal: " + goal.getId());
+					log.info("Processing goal: " + goal.getId());
 					vars[i] = parseRealExpression(goal.getExpression(),rc);
-					logger.info("var created was: " + vars[i]);
+					log.info("var created was: " + vars[i]);
 					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
 					solver.post(rc);
 				}
-				logger.info("Optimisation goals created successfully");
+				log.info("Optimisation goals created successfully");
 				RealConstraint rc = new RealConstraint(solver);
 				realGoal = VariableFactory.real("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, epsilon, solver);
 				StringBuilder function = new StringBuilder("(");
@@ -519,15 +521,15 @@ public class CPSolver {
 					function.append(" + " + dirs[i] + " * {" + i + "} ");
 				}
 				function.append(") = { " + size + "}");
-				logger.info("Optimisation formula is: " + function.toString());
+				log.info("Optimisation formula is: " + function.toString());
 				RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{realGoal});
 				rc.addFunction(function.toString(), finalVars);
 				solver.post(rc);
 				policy = ResolutionPolicy.MAXIMIZE;
-				logger.info("Optimization Variable: " + realGoal.getName());
+				log.info("Optimization Variable: " + realGoal.getName());
 			}
 		}
-		logger.info("------------------------------------------");
+		log.info("------------------------------------------");
 	}
 	
 	/* Checking whether an expression contains only integer variables */
@@ -608,13 +610,13 @@ public class CPSolver {
 				if (type.equals(BasicTypeEnum.INTEGER)){
 					IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
 					IntVar v = VariableFactory.bounded("Constant" + (constNum++), intVal.getValue(), intVal.getValue(), solver);
-					logger.info("Constant: " + v.getName() + ": " + v);
+					log.info("Constant: " + v.getName() + ": " + v);
 					return v;
 				}
 				else if (type.equals(BasicTypeEnum.LONG)){
 					LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
 					IntVar v = VariableFactory.bounded("Constant" + (constNum++), (int)longVal.getValue(), (int)longVal.getValue(), solver);
-					logger.info("Constant: " + v.getName() + ": " + v);
+					log.info("Constant: " + v.getName() + ": " + v);
 					return v;
 				}
 			}
@@ -631,19 +633,19 @@ public class CPSolver {
 				OperatorEnum op = cep.getOperator();
 				if (op.equals(OperatorEnum.PLUS)){
 					IntVar var = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-					logger.info("IntVar: " + var);
+					log.info("IntVar: " + var);
 					solver.post(IntConstraintFactory.sum(vars,var));
-					logger.info("IntConstraint: SUM with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
+					log.info("IntConstraint: SUM with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
 					return var;
 				}
 				else if (op.equals(OperatorEnum.MINUS)){
 					IntVar var = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-					logger.info("IntVar: " + var);
+					log.info("IntVar: " + var);
 					int[] coeff = new int[exprs.size()];
 					Arrays.fill(coeff, -1);
 					coeff[0] = 1;
 					solver.post(IntConstraintFactory.scalar(vars, coeff, var));
-					logger.info("IntConstraint: NARY_MINUS with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
+					log.info("IntConstraint: NARY_MINUS with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
 					return var;
 				}
 				else if (op.equals(OperatorEnum.TIMES)){
@@ -654,8 +656,8 @@ public class CPSolver {
 						solver.post(IntConstraintFactory.times(vars[j], prev, v));
 						prev = v;
 					}
-					logger.info("IntVar: " + prev);
-					logger.info("IntConstraint: TIMES with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
+					log.info("IntVar: " + prev);
+					log.info("IntConstraint: TIMES with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
 					return prev;
 				}
 				else if (op.equals(OperatorEnum.DIV)){
@@ -666,8 +668,8 @@ public class CPSolver {
 						solver.post(IntConstraintFactory.eucl_div(vars[j], prev, v));
 						prev = v;
 					}
-					logger.info("IntVar: " + prev);
-					logger.info("IntConstraint: DIV with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
+					log.info("IntVar: " + prev);
+					log.info("IntConstraint: DIV with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
 					return prev;
 				}
 			}
@@ -679,9 +681,9 @@ public class CPSolver {
 					SimpleUnaryOperatorEnum op = sue.getOperator();
 					if (op.equals(SimpleUnaryOperatorEnum.ABSTRACT_VALUE)){
 						IntVar newVar = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-						logger.info("IntVar: " + newVar);
+						log.info("IntVar: " + newVar);
 						solver.post(IntConstraintFactory.absolute(newVar, var2));
-						logger.info("IntConstraint: ABS with var: " + newVar);
+						log.info("IntConstraint: ABS with var: " + newVar);
 						return newVar;
 					}
 				}
@@ -692,13 +694,13 @@ public class CPSolver {
 					if (op.equals(ComposedUnaryOperatorEnum.EXPONENTIAL_VALUE)){
 						IntVar prevVar = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
 						if (val == 1){
-							logger.info("IntConstraint: EXP with x: " + var2 + " and y: " + val);
+							log.info("IntConstraint: EXP with x: " + var2 + " and y: " + val);
 							return var2;
 						}
 						else if (val == 2){
 							solver.post(IntConstraintFactory.times(var2,var2,prevVar));
-							logger.info("IntVar: " + prevVar);
-							logger.info("IntConstraint: EXP with x: " + prevVar + " and y: " + val);
+							log.info("IntVar: " + prevVar);
+							log.info("IntConstraint: EXP with x: " + prevVar + " and y: " + val);
 							return prevVar;
 						}
 						else{
@@ -708,8 +710,8 @@ public class CPSolver {
 								solver.post(IntConstraintFactory.times(prevVar,var2,varN));
 								prevVar = varN;
 								if (i == val){
-									logger.info("IntVar: " + varN);
-									logger.info("IntConstraint: EXP with x: " + varN + " and y: " + val);
+									log.info("IntVar: " + varN);
+									log.info("IntConstraint: EXP with x: " + varN + " and y: " + val);
 									return varN;
 								}
 							}
@@ -743,7 +745,7 @@ public class CPSolver {
 					IntVar iv = idToIntVar.get(((Variable)expr).getId());
 					if (iv != null){
 						v = VariableFactory.real(iv,epsilon);
-						logger.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
+						log.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
 					}
 				}
 				return v;
@@ -755,13 +757,13 @@ public class CPSolver {
 					IntVar iv = idToIntVar.get(((MetricVariable)expr).getId());
 					if (iv != null){
 						v = VariableFactory.real(iv,epsilon);
-						logger.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
+						log.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
 					}
 					else{
 						MetricVariable mv = (MetricVariable)expr;
 						BasicTypeEnum type = mv.getType();
 						RealVar var = VariableFactory.real("RealVar" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
-						logger.info("RealVar: " + var);
+						log.info("RealVar: " + var);
 						idToRealVar.put(var.getName(), var);
 						rc.addFunction("{0} >= 0",var);
 						return var;
@@ -776,35 +778,35 @@ public class CPSolver {
 					IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
 					int val = intVal.getValue();
 					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
-					logger.info("Constant: " + v);
+					log.info("Constant: " + v);
 					return v;
 				}
 				else if (type.equals(BasicTypeEnum.LONG)){
 					LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
 					long val = longVal.getValue();
 					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
-					logger.info("Constant: " + v);
+					log.info("Constant: " + v);
 					return v;
 				}
 				else if (type.equals(BasicTypeEnum.FLOAT)){
 					FloatValueUpperware floatVal = (FloatValueUpperware)constant.getValue();
 					float val = floatVal.getValue();
 					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
-					logger.info("Constant: " + v);
+					log.info("Constant: " + v);
 					return v;
 				}
 				else if (type.equals(BasicTypeEnum.DOUBLE)){
 					DoubleValueUpperware doubleVal = (DoubleValueUpperware)constant.getValue();
 					double val = doubleVal.getValue();
 					RealVar v = VariableFactory.real("Constant" + (constNum++), val, val, epsilon, solver);
-					logger.info("Constant: " + v);
+					log.info("Constant: " + v);
 					return v;
 				}
 			}
 		}
 		else{
 			RealVar var = VariableFactory.real("RealVar" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
-			logger.info("RealVar: " + var);
+			log.info("RealVar: " + var);
 			if (expr instanceof ComposedExpression){
 				ComposedExpression cep = (ComposedExpression)expr;
 				EList<NumericExpression> exprs = cep.getExpressions();
@@ -824,7 +826,7 @@ public class CPSolver {
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
 					String func = function.toString();
 					rc.addFunction(func, finalVars);
-					logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				else if (op.equals(OperatorEnum.MINUS)){
 					function.append(" {0} ");
@@ -834,7 +836,7 @@ public class CPSolver {
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
 					String func = function.toString();
 					rc.addFunction(func, finalVars);
-					logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				else if (op.equals(OperatorEnum.TIMES)){
 					function.append(" {0} ");
@@ -844,7 +846,7 @@ public class CPSolver {
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
 					String func = function.toString();
 					rc.addFunction(func, finalVars);
-					logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				else if (op.equals(OperatorEnum.DIV)){
 					function.append(" {0} ");
@@ -854,7 +856,7 @@ public class CPSolver {
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
 					String func = function.toString();
 					rc.addFunction(func, finalVars);
-					logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
+					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				return var;
 			}
@@ -870,14 +872,14 @@ public class CPSolver {
 						RealVar[] vars = new RealVar[]{var2,var};
 						String func = function.toString();
 						rc.addFunction(func, vars);
-						logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+						log.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
 					}
 					else if (op.equals(SimpleUnaryOperatorEnum.LN_VALUE)){
 						function.append(" ln({0}) = {1} )");
 						RealVar[] vars = new RealVar[]{var2,var};
 						String func = function.toString();
 						rc.addFunction(func, vars);
-						logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+						log.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
 					}
 					return var;
 				}
@@ -906,7 +908,7 @@ public class CPSolver {
 						RealVar[] vars = new RealVar[]{var2,var};
 						String func = function.toString();
 						rc.addFunction(func, vars);
-						logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+						log.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
 					}
 					else{
 						//! Is this correct?
@@ -914,7 +916,7 @@ public class CPSolver {
 						RealVar[] vars = new RealVar[]{var2,var};
 						String func = function.toString();
 						rc.addFunction(func, vars);
-						logger.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
+						log.info("RealConstraint: " + func + " with real vars:" + printVarArray(vars));
 					}
 					return var;
 				}
@@ -926,7 +928,7 @@ public class CPSolver {
 	/* Creating the constraints of the problem to solve */
 	private void createConstraints(EList<ComparisonExpression> constraints){
 		RealConstraint rc = null;
-		logger.info("--------------- Constraints ---------------");
+		log.info("--------------- Constraints ---------------");
 		for (ComparisonExpression constr: constraints){
 			Expression expr1 = constr.getExp1();
 			Expression expr2 = constr.getExp2();
@@ -934,10 +936,10 @@ public class CPSolver {
 			boolean isInt = involvesOnlyInt(expr1);
 			if (isInt){
 				isInt = involvesOnlyInt(expr2);
-				logger.info("Constraint only involves integer variables");
+				log.info("Constraint only involves integer variables");
 			}
 			else{
-				logger.info("Constraint involves real variables");
+				log.info("Constraint involves real variables");
 			}
 			
 			Constraint constraint = null;
@@ -949,7 +951,7 @@ public class CPSolver {
 					IntVar var2 = parseExpression(expr2);
 					String opStr = getComparator(operator,false);
 					constraint = IntConstraintFactory.arithm(v, opStr, var2);
-					logger.info("IntConstraint: " + v.getId() + " " + opStr + " " + var2.getId());
+					log.info("IntConstraint: " + v.getId() + " " + opStr + " " + var2.getId());
 				}
 				else if (expr1 instanceof MetricVariable){
 					MetricVariable var = (MetricVariable)expr1;
@@ -958,7 +960,7 @@ public class CPSolver {
 					IntVar var2 = parseExpression(expr2);
 					String opStr = getComparator(operator,false);
 					constraint = IntConstraintFactory.arithm(v, opStr, var2);
-					logger.info("IntConstraint: " + v.getName() + " " + opStr + " " + var2.getName());
+					log.info("IntConstraint: " + v.getName() + " " + opStr + " " + var2.getName());
 				}
 				else if (expr1 instanceof Constant){
 					Constant constant = (Constant)expr1;
@@ -970,7 +972,7 @@ public class CPSolver {
 						//System.out.println("Parsed expression is: " + parseExpression(expr2));
 						String opStr = getComparator(operator,true);
 						constraint = IntConstraintFactory.arithm(parseExpression(expr2), opStr, value);
-						logger.info("IntConstraint: " + v.getName() + " " + opStr + " " + value);
+						log.info("IntConstraint: " + v.getName() + " " + opStr + " " + value);
 					}
 					else if (type.equals(BasicTypeEnum.LONG)){
 						LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
@@ -979,7 +981,7 @@ public class CPSolver {
 						//System.out.println("Parsed expression is: " + parseExpression(expr2));
 						String opStr = getComparator(operator,true);
 						constraint = IntConstraintFactory.arithm(v, opStr, (int)value);
-						logger.info("IntConstraint: " + v.getName() + " " + opStr + " " + value);
+						log.info("IntConstraint: " + v.getName() + " " + opStr + " " + value);
 					}
 				}
 				if (expr1 instanceof ComposedExpression || expr1 instanceof UnaryExpression){
@@ -989,7 +991,7 @@ public class CPSolver {
 						IntVar v2 = parseExpression(expr2);
 						String opStr = getComparator(operator,false);
 						constraint = IntConstraintFactory.arithm(v1, opStr, v2);
-						logger.info("IntConstraint: " + v1.getName() + " " + opStr + " " + v2.getName());
+						log.info("IntConstraint: " + v1.getName() + " " + opStr + " " + v2.getName());
 					}
 				}
 			}
@@ -999,26 +1001,26 @@ public class CPSolver {
 				if (expr1 instanceof Variable){
 					Variable var = (Variable)expr1;
 					String id = var.getId();
-					logger.info("Checking variable with name: " + id);
+					log.info("Checking variable with name: " + id);
 					RealVar v = idToRealVar.get(id);
-					logger.info("RealVar is: " + v);
+					log.info("RealVar is: " + v);
 					if (v == null){
 						IntVar iv = idToIntVar.get(id);
 						//Checking if int var is involved
 						if (iv != null){
 							v = VariableFactory.real(iv,epsilon);
-							logger.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
+							log.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
 						}
 						//If not, then we have a problem
 						else{
-							logger.error("Got a new variable not previously parsed");
+							log.error("Got a new variable not previously parsed");
 						}
 					}
 					function.append(" {0} " + getComparator(operator,false) + " {1} )");
-					logger.info("Operator is: " + operator + " second expression is: " + expr2);
+					log.info("Operator is: " + operator + " second expression is: " + expr2);
 					RealVar[] all_vars = new RealVar[]{v, parseRealExpression(expr2,rc)};
 					String func = function.toString();
-					logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+					log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 			        rc.addFunction(func, all_vars);
 				}
 				else if (expr1 instanceof MetricVariable){
@@ -1029,7 +1031,7 @@ public class CPSolver {
 					function.append(" {0} " + getComparator(operator,false) + " {1} )");
 					RealVar[] all_vars = new RealVar[]{v, parseRealExpression(expr2,rc)};
 					String func = function.toString();
-					logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+					log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 			        rc.addFunction(func, all_vars);
 				}
 				else if (expr1 instanceof Constant){
@@ -1041,7 +1043,7 @@ public class CPSolver {
 						function.append(" " + intVal.getValue() + getComparator(operator,false) + " {0} )");
 						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
 						String func = function.toString();
-						logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+						log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 				        rc.addFunction(func, all_vars);
 					}
 					else if (type.equals(BasicTypeEnum.LONG)){
@@ -1049,7 +1051,7 @@ public class CPSolver {
 						function.append(" " + longVal.getValue() + getComparator(operator,false) + " {0} )");
 						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
 						String func = function.toString();
-						logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+						log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 				        rc.addFunction(func, all_vars);
 					}
 					else if (type.equals(BasicTypeEnum.FLOAT)){
@@ -1057,7 +1059,7 @@ public class CPSolver {
 						function.append(" " + floatVal.getValue() + getComparator(operator,false) + " {0} )");
 						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
 						String func = function.toString();
-						logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+						log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 				        rc.addFunction(func, all_vars);
 					}
 					else if (type.equals(BasicTypeEnum.DOUBLE)){
@@ -1065,7 +1067,7 @@ public class CPSolver {
 						function.append(" " + doubleVal.getValue() + getComparator(operator,false) + " {0} )");
 						RealVar[] all_vars = new RealVar[]{parseRealExpression(expr2,rc)};
 						String func = function.toString();
-						logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+						log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 				        rc.addFunction(func, all_vars);
 					}
 				}
@@ -1076,7 +1078,7 @@ public class CPSolver {
 					function.append(" {0} " + getComparator(operator,false) + " {1} )");
 					RealVar[] all_vars = new RealVar[]{var1,var2};
 					String func = function.toString();
-					logger.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
+					log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 			        rc.addFunction(func, all_vars);
 				}
 			}
@@ -1087,35 +1089,35 @@ public class CPSolver {
 		if (rc != null){
 			solver.post(rc);
 		}
-		logger.info("------------------------------------------");
+		log.info("------------------------------------------");
 	}
 	
 	/* Creating the metric variables */
 	private void createMetricVariables(EList<MetricVariable> vars){
-		logger.info("--------------- MetricVariables ---------------");
+		log.info("--------------- MetricVariables ---------------");
 		for (MetricVariable var: vars){
 			BasicTypeEnum type = var.getType();
 			if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
 				String id = var.getId();
 				IntVar v = VariableFactory.bounded(id, LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-				logger.info("IntVar: " + v);
+				log.info("IntVar: " + v);
 				if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 				idToIntVar.put(id,v);
 			}
 			else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
 				String id = var.getId();
 				RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
-				logger.info("RealVar: " + v);
+				log.info("RealVar: " + v);
 				if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 				idToRealVar.put(id,v);
 			}
 		}
-		logger.info("------------------------------------------");
+		log.info("------------------------------------------");
 	}
 	
 	/* Creating the normal variables */
 	private void createVariables(EList<Variable> vars){
-		logger.info("--------------- Variables ---------------");
+		log.info("--------------- Variables ---------------");
 		for (Variable var: vars){
 			Domain dom = var.getDomain();
 			if (dom instanceof NumericDomain && ! (dom instanceof RangeDomain)){
@@ -1125,7 +1127,7 @@ public class CPSolver {
 				if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
 					String id = var.getId();
 					IntVar v = VariableFactory.bounded(id, LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-					logger.info("IntVar: " + v);
+					log.info("IntVar: " + v);
 					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(id,v);
 				}
@@ -1149,7 +1151,7 @@ public class CPSolver {
 					String id = var.getId();
 					//System.out.println("Integer variable has the values: " + int1.getValue() + " " + int2.getValue());
 					IntVar v = VariableFactory.bounded(id, int1.getValue(), int2.getValue(), solver);
-					logger.info("IntVar: " + v);
+					log.info("IntVar: " + v);
 					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(id,v);
 				}
@@ -1158,7 +1160,7 @@ public class CPSolver {
 					LongValueUpperware long2 = (LongValueUpperware)val2;
 					String id = var.getId();
 					IntVar v = VariableFactory.bounded(id, (int)long1.getValue(), (int)long2.getValue(), solver);
-					logger.info("IntVar: " + v);
+					log.info("IntVar: " + v);
 					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(id,v);
 				}
@@ -1167,7 +1169,7 @@ public class CPSolver {
 					DoubleValueUpperware real2 = (DoubleValueUpperware)val2;
 					String id = var.getId();
 					RealVar v = VariableFactory.real(id, real1.getValue(), real2.getValue(), epsilon, solver);
-					logger.info("RealVar: " + v);
+					log.info("RealVar: " + v);
 					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(id,v);
 				}
@@ -1176,18 +1178,18 @@ public class CPSolver {
 					FloatValueUpperware float2 = (FloatValueUpperware)val2;
 					String id = var.getId();
 					RealVar v = VariableFactory.real(id, float1.getValue(), float2.getValue(), epsilon, solver);
-					logger.info("RealVar: " + v);
+					log.info("RealVar: " + v);
 					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(id,v);
 				}
 			}
 		}
-		logger.info("------------------------------------------");
+		log.info("------------------------------------------");
 	}
 	
 	/* Creating the constants of the cp problem */
 	private void createConstants(EList<Constant> constants){
-		logger.info("--------------- Constants ---------------");
+		log.info("--------------- Constants ---------------");
 		for (Constant constant: constants){
 			NumericValueUpperware value = constant.getValue();
 			//System.out.println("Type of constant is: " + constant.getType());
@@ -1195,7 +1197,7 @@ public class CPSolver {
 				if (value instanceof DoubleValueUpperware){
 					double val = ((DoubleValueUpperware)value).getValue();
 					RealVar var = VariableFactory.real(constant.getId(), val, val, epsilon, solver);
-					logger.info("Constant " + constant.getId() + ": " + var);
+					log.info("Constant " + constant.getId() + ": " + var);
 					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(constant.getId(),var);
 				} 
@@ -1204,7 +1206,7 @@ public class CPSolver {
 				if (value instanceof IntegerValueUpperware){
 					int val = ((IntegerValueUpperware)value).getValue();
 					IntVar var = VariableFactory.fixed(val, solver);
-					logger.info("Constant: " + constant.getId() + ": " + var);
+					log.info("Constant: " + constant.getId() + ": " + var);
 					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(constant.getId(),var);
 				}
@@ -1213,7 +1215,7 @@ public class CPSolver {
 				if (value instanceof LongValueUpperware){
 					long val = ((IntegerValueUpperware)value).getValue();
 					IntVar var = VariableFactory.fixed((int)val, solver);
-					logger.info("Constant " + constant.getId() + ": " + var);
+					log.info("Constant " + constant.getId() + ": " + var);
 					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(constant.getId(),var);
 				}
@@ -1222,13 +1224,13 @@ public class CPSolver {
 				if (value instanceof FloatValueUpperware){
 					double val = ((FloatValueUpperware)value).getValue();
 					RealVar var = VariableFactory.real(constant.getId(), val, val, epsilon, solver);
-					logger.info("Constant " + constant.getId() + ": " + var);
+					log.info("Constant " + constant.getId() + ": " + var);
 					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(constant.getId(),var);
 				}
 			}
 		}
-		logger.info("------------------------------------------");
+		log.info("------------------------------------------");
 	}
 	
 	/* Re-initializing the main configuration variables of the solver*/
