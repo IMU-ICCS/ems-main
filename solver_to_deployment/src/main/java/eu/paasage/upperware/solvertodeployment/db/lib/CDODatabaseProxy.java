@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.passage.upperware.commons.model.tools.ModelTool;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -38,9 +38,8 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 
+@Slf4j
 public class CDODatabaseProxy extends DatabaseProxy {
-
-	public static Logger logger = Logger.getLogger("paasage-std-log");
 
 	/*
 	 * ATTRIBUTES
@@ -191,9 +190,9 @@ public class CDODatabaseProxy extends DatabaseProxy {
 				cdoClient.storeModel(operatingSystems, OPERATING_SYSTEMS_ID,
 						true);
 
-				logger.info("CDODatabaseProxy - loadOperatingSystems - Operating systems loaded!");
+				log.info("CDODatabaseProxy - loadOperatingSystems - Operating systems loaded!");
 			} else
-				logger.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
+				log.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
 		} else
 			operatingSystems = (OperatingSystems) operatingSystemsList.get(0);
 	}
@@ -216,9 +215,9 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 				cdoClient.storeModel(locations, LOCATIONS_ID, true);
 
-				logger.info("CDODatabaseProxy- loadLocations - Locations loaded!");
+				log.info("CDODatabaseProxy- loadLocations - Locations loaded!");
 			} else
-				logger.error("CDODatabaseProxy - loadLocations - The file locations.xmi does not exist. The locations will not be loaded!");
+				log.error("CDODatabaseProxy - loadLocations - The file locations.xmi does not exist. The locations will not be loaded!");
 		} else {
 			locations = (Locations) locationsList.get(0);
 		}
@@ -230,18 +229,18 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		EList<EObject> content = resource.getContents();
 
 		List<EObject> qr = new ArrayList<EObject>();
-		logger.info("CDOClient - getResourceContents - Retrieved Resource " + resource + " path " + path);
+		log.info("CDOClient - getResourceContents - Retrieved Resource " + resource + " path " + path);
 
 		if (!content.isEmpty()) {
-			logger.info("CDOClient - getResourceContents - Resource path " + path + " size " + content.size());
+			log.info("CDOClient - getResourceContents - Resource path " + path + " size " + content.size());
 
 			for (EObject o : content) {
-				logger.info("CDOClient - getResourceContents - Content " + o);
+				log.info("CDOClient - getResourceContents - Content " + o);
 				qr.add(o);
 			}
 
 		} else
-			logger.warn("CDOClient - getResourceContents - Resource path " + path + " is empty ");
+			log.warn("CDOClient - getResourceContents - Resource path " + path + " is empty ");
 
 		cdoClient.closeView(view);
 
@@ -260,7 +259,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		try {
 			result = getResourceContents(id);
 		} catch (Exception ex) {
-			logger.warn("CDODatabaseProxy - getResourceWithID - The resource "
+			log.warn("CDODatabaseProxy - getResourceWithID - The resource "
 					+ id + " does not exist");
 		}
 
@@ -284,11 +283,11 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 				providerTypes = (ProviderTypes) r.getContents().get(0);
 
-				logger.info("CDODatabaseProxy- Provider Types loaded!");
+				log.info("CDODatabaseProxy- Provider Types loaded!");
 
 				cdoClient.storeModel(providerTypes, PROVIDER_TYPES_ID, true);
 			} else
-				logger.error("CDODatabaseProxy- The file ProviderTypes.xmi does not exist. The provider types will not be loaded!");
+				log.error("CDODatabaseProxy- The file ProviderTypes.xmi does not exist. The provider types will not be loaded!");
 		} else {
 			providerTypes = (ProviderTypes) providerTypesList.get(0);
 		}
@@ -343,7 +342,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		CDOResource resource = view.getResource(CDO_SERVER_PATH + pc.getId());
 		EList<EObject> content = resource.getContents();
 
-		logger.info("CDODatabaseProxy - saveModels - Saving file "
+		log.info("CDODatabaseProxy - saveModels - Saving file "
 				+ paasageConfigModel.getAbsolutePath());
 
 		cdoClient.exportModel(content.get(0),
@@ -407,7 +406,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 		File modelDir = new File(WAR_MODEL_PATH);
 
-		logger.info("CDODatabaseProxy - getExistingModelFile - modelDir "
+		log.info("CDODatabaseProxy - getExistingModelFile - modelDir "
 				+ modelDir);
 
 		if (modelDir != null && modelDir.isDirectory()) {
@@ -483,11 +482,11 @@ public class CDODatabaseProxy extends DatabaseProxy {
 					.getDeploymentModels();
 
 			if (deployementModels.size() == 0) {
-				logger.error("CDODatabaseProxy -loadDeploymentModel No model with ID: "
+				log.error("CDODatabaseProxy -loadDeploymentModel No model with ID: "
 						+ camelId);
 				return null;
 			}
-			logger.info("CDODatabaseProxy -loadDeploymentModel - loaded model with ID "
+			log.info("CDODatabaseProxy -loadDeploymentModel - loaded model with ID "
 					+ camelId);
 			return deployementModels.get(0);
 		} catch (Exception e) {

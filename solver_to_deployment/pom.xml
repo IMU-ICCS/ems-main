@@ -35,24 +35,12 @@
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
             <version>1.2</version>
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.zeromq</groupId>
-            <artifactId>jeromq</artifactId>
-            <version>${jeromq.version}</version>
         </dependency>
 
         <dependency>

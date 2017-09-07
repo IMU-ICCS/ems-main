@@ -4,7 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -24,9 +24,8 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.solvertodeployment.lib.SolverToDeployment;
 
+@Slf4j
 public class GenMetricFile {
-
-	private static Logger log = Logger.getLogger(SolverToDeployment.class);
 
 	CDOClient cdoClient;
 	PaasageConfiguration paasageConfiguration;
@@ -99,7 +98,7 @@ public class GenMetricFile {
             writer.close();
         }
         catch(IOException ex) {
-            log.fatal("Error writing to file '"+ outputFile + "'");
+            log.error("Error writing to file '"+ outputFile + "'");
             return ;
         }
 		// Closing everything

@@ -12,7 +12,7 @@ package eu.paasage.upperware.solvertodeployment;
 import eu.melodic.models.interfaces.solverToDeployment.ApplySolutionRequestImpl;
 import eu.paasage.upperware.solvertodeployment.lib.SolverToDeployment;
 import lombok.AllArgsConstructor;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,11 +21,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
+@Slf4j
 public class SolverToDeploymentController {
 
   private  SolverToDeployment solverToDeployment;
-
-  final static Logger logger = Logger.getLogger(SolverToDeploymentController.class);
 
   @RequestMapping(value = "/applySolution", method = POST)
   public void applySolution(@RequestBody ApplySolutionRequestImpl request) {
@@ -33,13 +32,12 @@ public class SolverToDeploymentController {
     String cdoResourcePath = request.getCdoModelsPath();
     String notificationUri = request.getNotificationURI();
     String requestUuid = request.getWatermark().getUuid();
-    logger.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
+    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
 
     try {
       solverToDeployment.doWorkTS(applicationId,cdoResourcePath , notificationUri, requestUuid);
     } catch (Exception e) {
-      // TODO Auto-generated catch block
-      logger.info("doWorkTS returned exception.");
+      log.info("doWorkTS returned exception.");
       e.printStackTrace();
     }
   }
