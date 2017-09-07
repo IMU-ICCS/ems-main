@@ -12,12 +12,13 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
+import eu.melodic.upperware.adapter.plangenerator.model.Data;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
 
-public abstract class ColosseumTaskExecutor<T> extends RunnableTaskExecutor<T> {
+public abstract class ColosseumTaskExecutor<T extends Data> extends RunnableTaskExecutor<T> {
 
   protected ColosseumApi api;
 

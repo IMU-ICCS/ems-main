@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class ApplicationComponent {
+public class ApplicationComponent implements Data{
 
   private String name;
   private String appName;

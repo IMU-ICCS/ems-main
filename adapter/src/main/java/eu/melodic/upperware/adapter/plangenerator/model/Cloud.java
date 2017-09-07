@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Cloud {
+public class Cloud implements Data{
 
   private String name;
   private String apiName;

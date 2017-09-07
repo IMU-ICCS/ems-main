@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class PortProvided {
+public class PortProvided implements Data{
 
   private String name;
   private String acName;

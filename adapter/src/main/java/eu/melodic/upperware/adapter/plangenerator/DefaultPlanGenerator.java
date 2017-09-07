@@ -19,7 +19,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,8 +47,8 @@ public class DefaultPlanGenerator implements PlanGenerator {
     log.info("Building reconfiguration plan");
     ComparableModel oldCompModel = converter.toComparableModel(oldModel);
     ComparableModel newCompModel = converter.toComparableModel(newModel);
-    SimpleDirectedWeightedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(oldCompModel, newCompModel);
-    Plan plan = new WeightedPlan(format("%s->%s reconfiguration plan", oldModel.getName(), newModel.getName()), graph);
+    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(oldCompModel, newCompModel);
+    Plan plan = new SimplePlan(format("%s->%s reconfiguration plan", oldModel.getName(), newModel.getName()), graph);
     log.info("Built plan: {}", plan);
     return plan;
   }

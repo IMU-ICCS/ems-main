@@ -15,7 +15,7 @@ import lombok.*;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Application {
+public class Application implements Data{
 
   private String name;
   private String version;
@@ -24,5 +24,4 @@ public class Application {
 
   @Setter
   private String oldName;
-
 }

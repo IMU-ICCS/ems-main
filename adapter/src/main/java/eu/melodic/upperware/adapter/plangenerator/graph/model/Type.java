@@ -7,14 +7,11 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.adapter.plangenerator.tasks;
+package eu.melodic.upperware.adapter.plangenerator.graph.model;
 
-import eu.melodic.upperware.adapter.plangenerator.model.Data;
+public enum Type {
 
-public interface Task<T extends Data> {
-
-  Type getType();
-
-  T getData();
+  CONFIG,
+  RECONFIG
 
 }

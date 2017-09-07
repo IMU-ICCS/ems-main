@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class CloudApi {
+public class CloudApi implements Data{
 
   private String name;
   private String driver;

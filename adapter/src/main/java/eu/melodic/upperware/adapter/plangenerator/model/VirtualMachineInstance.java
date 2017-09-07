@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class VirtualMachineInstance {
+public class VirtualMachineInstance implements Data{
 
   private String name;
   private String vmName;

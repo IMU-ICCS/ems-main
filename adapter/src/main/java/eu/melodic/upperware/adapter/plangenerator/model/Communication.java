@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class Communication {
+public class Communication implements Data {
 
   private String name;
 

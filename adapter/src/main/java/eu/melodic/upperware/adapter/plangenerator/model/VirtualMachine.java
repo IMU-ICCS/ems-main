@@ -18,7 +18,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode
-public class VirtualMachine {
+public class VirtualMachine implements Data{
 
   private String name;
   private String cloudName;
