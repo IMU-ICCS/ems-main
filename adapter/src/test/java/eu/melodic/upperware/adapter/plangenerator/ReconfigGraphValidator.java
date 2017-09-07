@@ -134,21 +134,19 @@ public class ReconfigGraphValidator {
       }
     }
     else {
-      //FIXME sprawdzanie, czy ze wszystkimi monitorami podłączone - licznik monitorów
+      //TODO check if vertex is connected with all monitors: count create/delete monitors and check connections
 
       if (!DELETE.equals(v.getType())){
-        assert (inEdgesCnt != edgesOfVertex.size()); //muszą być jakieś poza tymi, które już zostały sprawdzone
+        assert (inEdgesCnt != edgesOfVertex.size());
         assert (edgesOfVertex.stream().filter(outEdges).allMatch(edgeTrgtIsMonitor)
                 || edgesOfVertex.stream().filter(outEdges).noneMatch(edgeTrgtIsMonitor));
-        //wychodzące krawędzie: albo wszystkie są monitorami albo żadna
-
       }
-      else {//delete
-        //to znaczy, ze powinno miec polaczenie wchodzące z monitorami create
+      else {
         if (inEdgesCnt == 0) {
           assert(edgesOfVertex.stream().filter(inEdges).allMatch(edgeSrcIsMonitor));
         }
-        assert (inEdgesCnt != edgesOfVertex.size()); //muszą być jakieś poza tymi, które już zostały sprawdzone
+        /* in all (not monitor) task should be out edges */
+        assert (inEdgesCnt != edgesOfVertex.size());
         assert (edgesOfVertex.stream().filter(outEdges).allMatch(edgeTrgtIsMonitor)
                 || edgesOfVertex.stream().filter(outEdges).noneMatch(edgeTrgtIsMonitor));
       }

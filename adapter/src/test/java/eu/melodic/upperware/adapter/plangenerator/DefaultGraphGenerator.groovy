@@ -28,6 +28,47 @@ class DefaultGraphGeneratorConfigTests extends Specification {
   boolean reconfig = false
 
 
+  def apiName = "testApiName"
+  def apiName2 = "testApiName_2"
+  def cloudName = "testCloudName"
+  def cloudName2 = "testCloudName_2"
+  def cloudPropName = "testCloudPropertyName"
+  def cloudPropName2 = "testCloudPropertyName_2"
+  def cloudCredName = "testCloudCredentialName"
+  def cloudCredName2 = "testCloudCredentialName_2"
+  def appName = "testApplication"
+  def appInstName = "testApplicationInstanceName"
+  def lifecycleName = "testLifecycleName"
+  def lifecycleName2 = "testLifecycleName_2"
+  def vmName = "testVirtualMachineName"
+  def vmName2 = "testVirtualMachineName_2"
+  def vmInstName = "testVirtualMachineInstanceName"
+  def vmInstName2 = "testVirtualMachineInstanceName_2"
+  def vmInstName3 = "testVirtualMachineInstanceName_3"
+  def appCompName = "testApplicationComponentName"
+  def appCompName2 = "testApplicationComponentName_2"
+  def appCompInstName = "testApplicationComponentInstanceName"
+  def appCompInstName2 = "testApplicationComponentInstanceName_2"
+  def communicationName = "testCommunicationName"
+  def portProvidedName = "testPortProvidedName"
+  def portProvidedName2 = "testPortProvidedName_2"
+  def portRequiredName = "testPortRequiredName"
+
+  Collection<CloudApi> cloudApis = new LinkedList<>()
+  Collection<Cloud> clouds = new LinkedList<>()
+  Collection<CloudProperty> cloudProperties = new LinkedList<>()
+  Collection<CloudCredential> cloudCredentials = new LinkedList<>()
+  Collection<LifecycleComponent> lifecycleComponents = new LinkedList<>()
+  Collection<VirtualMachine> virtualMachines = new LinkedList<>()
+  Collection<VirtualMachineInstance> virtualMachineInstances = new LinkedList<>()
+  Collection<ApplicationComponent> applicationComponents = new LinkedList<>()
+  Collection<ApplicationComponentInstance> applicationComponentInstances = new LinkedList<>()
+  Collection<Communication> communications = new LinkedList<>()
+  Collection<PortProvided> portsProvided = new LinkedList<>()
+  Collection<PortRequired> portsRequired = new LinkedList<>()
+  Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = new LinkedList<>()
+  Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = new LinkedList<>()
+
   def setup() {
     c = new POJOCreatorExample()
     tasks = initMap()
@@ -40,7 +81,7 @@ class DefaultGraphGeneratorConfigTests extends Specification {
 
     setup:
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, tasks, oldTasks))
+            c.createApi(apiName, null, reconfig, tasks, oldTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
     cloudProperties = Lists.newArrayList(
@@ -110,7 +151,7 @@ class DefaultGraphGeneratorConfigTests extends Specification {
 
     setup:
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, tasks, oldTasks))
+            c.createApi(apiName, null, reconfig, tasks, oldTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
     cloudProperties = Lists.newArrayList(
@@ -232,7 +273,7 @@ class DefaultGraphGeneratorConfigTests extends Specification {
     ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
 
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, tasks, oldTasks))
+            c.createApi(apiName, null, reconfig, tasks, oldTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
 
@@ -267,7 +308,7 @@ class DefaultGraphGeneratorConfigTests extends Specification {
     ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
 
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, tasks, oldTasks))
+            c.createApi(apiName, null, reconfig, tasks, oldTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
     virtualMachines = Lists.newArrayList(
@@ -298,8 +339,8 @@ class DefaultGraphGeneratorConfigTests extends Specification {
 
 
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, tasks, oldTasks),
-            c.createApi(apiName2, reconfig, tasks, oldTasks))
+            c.createApi(apiName, null, reconfig, tasks, oldTasks),
+            c.createApi(apiName2, null, reconfig, tasks, oldTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks),
             c.createCloud(cloudName2, apiName2, reconfig, tasks, oldTasks))
@@ -328,51 +369,6 @@ class DefaultGraphGeneratorConfigTests extends Specification {
     checkGraph(graph, tasks, dependencies)
 
   }
-
-  def apiName = "testApiName"
-  def apiName2 = "testApiName_2"
-  def cloudName = "testCloudName"
-  def cloudName2 = "testCloudName_2"
-  def cloudPropName = "testCloudPropertyName"
-  def cloudPropName2 = "testCloudPropertyName_2"
-  def cloudCredName = "testCloudCredentialName"
-  def cloudCredName2 = "testCloudCredentialName_2"
-  def appName = "testApplication"
-  def appInstName = "testApplicationInstanceName"
-  def lifecycleName = "testLifecycleName"
-  def lifecycleName2 = "testLifecycleName_2"
-  def vmName = "testVirtualMachineName"
-  def vmName2 = "testVirtualMachineName_2"
-  def vmInstName = "testVirtualMachineInstanceName"
-  def vmInstName2 = "testVirtualMachineInstanceName_2"
-  def vmInstName3 = "testVirtualMachineInstanceName_3"
-  def appCompName = "testApplicationComponentName"
-  def appCompName2 = "testApplicationComponentName_2"
-  def appCompInstName = "testApplicationComponentInstanceName"
-  def appCompInstName2 = "testApplicationComponentInstanceName_2"
-
-  def communicationName = "testCommunicationName"
-  //def communicationName2 = "testCommunicationName_2"
-  def portProvidedName = "testPortProvidedName"
-  def portProvidedName2 = "testPortProvidedName_2"
-  def portRequiredName = "testPortRequiredName"
-  //def portRequiredName2 = "testPortRequiredName_2"
-
-  Collection<CloudApi> cloudApis = new LinkedList<>()
-  Collection<Cloud> clouds = new LinkedList<>()
-  Collection<CloudProperty> cloudProperties = new LinkedList<>()
-  Collection<CloudCredential> cloudCredentials = new LinkedList<>()
-  Collection<LifecycleComponent> lifecycleComponents = new LinkedList<>()
-  Collection<VirtualMachine> virtualMachines = new LinkedList<>()
-  Collection<VirtualMachineInstance> virtualMachineInstances = new LinkedList<>()
-  Collection<ApplicationComponent> applicationComponents = new LinkedList<>()
-  Collection<ApplicationComponentInstance> applicationComponentInstances = new LinkedList<>()
-  Collection<Communication> communications = new LinkedList<>()
-  Collection<PortProvided> portsProvided = new LinkedList<>()
-  Collection<PortRequired> portsRequired = new LinkedList<>()
-  Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = new LinkedList<>()
-  Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = new LinkedList<>()
-
 
   boolean checkGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
                      Map<TaskType, Set<Task>> tasks,

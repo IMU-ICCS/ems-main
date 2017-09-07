@@ -20,7 +20,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class ApplicationComponentInstanceMonitor implements Data{
 
-  private String name;//TODO
+  private String name; //it will be always null
   private String acInstName;
   private Long acInstTimeout;
 

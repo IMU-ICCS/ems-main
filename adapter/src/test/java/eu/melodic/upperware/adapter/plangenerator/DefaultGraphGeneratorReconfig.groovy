@@ -35,6 +35,60 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
   Map<TaskType, Set<TaskType>> deletingDependencies
   DefaultGraphGenerator generator
 
+  def apiName = "testApiName"
+  def cloudName = "testCloudName"
+  def cloudPropName = "testCloudPropertyName"
+  def cloudPropName2 = "testCloudPropertyName_2"
+  def cloudCredName = "testCloudCredentialName"
+  def appName = "testApplication"
+  def appInstName = "testApplicationInstanceName"
+  def lifecycleName = "testLifecycleName"
+  def lifecycleName2 = "testLifecycleName_2"
+  def vmName = "testVirtualMachineName"
+  def vmName2 = "testVirtualMachineName_2"
+  def vmInstName = "testVirtualMachineInstanceName"
+  def vmInstName2 = "testVirtualMachineInstanceName_2"
+  def appCompName = "testApplicationComponentName"
+  def appCompName2 = "testApplicationComponentName_2"
+  def appCompInstName = "testApplicationComponentInstanceName"
+  def appCompInstName2 = "testApplicationComponentInstanceName_2"
+
+  def communicationName = "testCommunicationName"
+  def portProvidedName = "testPortProvidedName"
+  def portProvidedName2 = "testPortProvidedName_2"
+  def portRequiredName = "testPortRequiredName"
+  def portRequiredName2 = "testPortRequiredName_2"
+
+  Collection<CloudApi> cloudApis = new LinkedList<>()
+  Collection<Cloud> clouds = new LinkedList<>()
+  Collection<CloudProperty> cloudProperties = new LinkedList<>()
+  Collection<CloudCredential> cloudCredentials = new LinkedList<>()
+  Collection<LifecycleComponent> lifecycleComponents = new LinkedList<>()
+  Collection<VirtualMachine> virtualMachines = new LinkedList<>()
+  Collection<VirtualMachineInstance> virtualMachineInstances = new LinkedList<>()
+  Collection<ApplicationComponent> applicationComponents = new LinkedList<>()
+  Collection<ApplicationComponentInstance> applicationComponentInstances = new LinkedList<>()
+  Collection<Communication> communications = new LinkedList<>()
+  Collection<PortProvided> portsProvided = new LinkedList<>()
+  Collection<PortRequired> portsRequired = new LinkedList<>()
+  Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = new LinkedList<>()
+  Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = new LinkedList<>()
+
+  Collection<CloudApi> newCloudApis = new LinkedList<>()
+  Collection<Cloud> newClouds = new LinkedList<>()
+  Collection<CloudProperty> newCloudProperties = new LinkedList<>()
+  Collection<CloudCredential> newCloudCredentials = new LinkedList<>()
+  Collection<LifecycleComponent> newLifecycleComponents = new LinkedList<>()
+  Collection<VirtualMachine> newVirtualMachines = new LinkedList<>()
+  Collection<VirtualMachineInstance> newVirtualMachineInstances = new LinkedList<>()
+  Collection<ApplicationComponent> newApplicationComponents = new LinkedList<>()
+  Collection<ApplicationComponentInstance> newApplicationComponentInstances = new LinkedList<>()
+  Collection<Communication> newCommunications = new LinkedList<>()
+  Collection<PortProvided> newPortsProvided = new LinkedList<>()
+  Collection<PortRequired> newPortsRequired = new LinkedList<>()
+  Collection<VirtualMachineInstanceMonitor> newVirtualMachineInstanceMonitors = new LinkedList<>()
+  Collection<ApplicationComponentInstanceMonitor> newApplicationComponentInstanceMonitors = new LinkedList<>()
+
   def reconfig
 
   def setup() {
@@ -101,7 +155,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
     reconfig = false
     /*old Application - all components exist */
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, oldTasks, mockTasks))
+            c.createApi(apiName, null, reconfig, oldTasks, mockTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, oldTasks, mockTasks))
     cloudProperties = Lists.newArrayList(
@@ -301,11 +355,11 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     cloudApis = Lists.newArrayList(
-            c.createApi2(apiName, cloudPropName, false, oldTasks, mockTasks)
+            c.createApi(apiName, cloudPropName, false, oldTasks, mockTasks)
     )
 
     newCloudApis = Lists.newArrayList(
-            c.createApi2(apiName, cloudName, reconfig, newTasks, oldTasks)
+            c.createApi(apiName, cloudName, reconfig, newTasks, oldTasks)
     )
 
     addDeleteTasks(c, newTasks, oldTasks)
@@ -450,7 +504,7 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
     setup:
     reconfig = true
     newCloudApis = Lists.newArrayList(
-            c.createApi(apiName, reconfig, newTasks, oldTasks))
+            c.createApi(apiName, null, reconfig, newTasks, oldTasks))
     newClouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, newTasks, oldTasks))
     newCloudProperties = Lists.newArrayList(
@@ -566,37 +620,6 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
             .build()
   }
 
-
-  def apiName = "testApiName"
-  //def apiName2 = "testApiName_2"
-  def cloudName = "testCloudName"
-  //def cloudName2 = "testCloudName_2"
-  def cloudPropName = "testCloudPropertyName"
-  def cloudPropName2 = "testCloudPropertyName_2"
-  def cloudCredName = "testCloudCredentialName"
-  //def cloudCredName2 = "testCloudCredentialName_2"
-  def appName = "testApplication"
-  def appInstName = "testApplicationInstanceName"
-  def lifecycleName = "testLifecycleName"
-  def lifecycleName2 = "testLifecycleName_2"
-  def vmName = "testVirtualMachineName"
-  def vmName2 = "testVirtualMachineName_2"
-  def vmInstName = "testVirtualMachineInstanceName"
-  def vmInstName2 = "testVirtualMachineInstanceName_2"
-  //def vmInstName3 = "testVirtualMachineInstanceName_3"
-  def appCompName = "testApplicationComponentName"
-  def appCompName2 = "testApplicationComponentName_2"
-  def appCompInstName = "testApplicationComponentInstanceName"
-  def appCompInstName2 = "testApplicationComponentInstanceName_2"
-
-  def communicationName = "testCommunicationName"
-  //def communicationName2 = "testCommunicationName_2"
-  def portProvidedName = "testPortProvidedName"
-  def portProvidedName2 = "testPortProvidedName_2"
-  def portRequiredName = "testPortRequiredName"
-  def portRequiredName2 = "testPortRequiredName_2"
-
-
   void checkReconfigGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
                           Map<TaskType, Set<Task>> tasks,
                           Map<TaskType, Set<TaskType>> dependencies,
@@ -606,97 +629,10 @@ class DefaultGraphGeneratorReconfigTests extends Specification {
     for (Set<Task> s in tasks.values()) {
       tasksSize += s.size()
     }
-    //checkOrder(graph)
-    //assert (graph.vertexSet().size() == tasksSize)
 
     for (Task v in graph.vertexSet()) {
       assert (ReconfigGraphValidator.checkReconfigVertex(v, graph, tasks, dependencies, deletingDependencies))
     }
   }
-
-  enum State {
-    CREATING_OR_UPDATING, MONITOR_CREATING, DELETING, MONITOR_DELETING
-  }
-
-  void checkOrder(SimpleDirectedGraph<Task, DefaultEdge> graph) {
-
-    State state = State.CREATING_OR_UPDATING
-
-    TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator<>(graph)
-
-    while (it.hasNext()) {
-      Task task = it.next()
-
-      switch (state) {
-
-        case State.CREATING_OR_UPDATING:
-          if (task instanceof VirtualMachineInstanceMonitorTask
-                  || task instanceof ApplicationComponentInstanceMonitorTask) {
-            assert (task.getType() == CREATE)
-            state = State.MONITOR_CREATING
-          } else {
-            assert (task.getType() != DELETE)
-          }
-          break
-
-        case State.MONITOR_CREATING:
-          if (task.getType() == DELETE) {
-            state = State.DELETING
-          } else {
-            assert (task instanceof VirtualMachineInstanceMonitorTask || task instanceof
-                    ApplicationComponentInstanceMonitorTask)
-            assert (task.getType() == CREATE)
-          }
-          break
-
-        case State.DELETING:
-          if (task instanceof VirtualMachineInstanceMonitorTask
-                  || task instanceof ApplicationComponentInstanceMonitorTask) {
-            state = State.MONITOR_DELETING
-          } else {
-            assert (task.getType() == DELETE)
-          }
-          break
-
-        case State.MONITOR_DELETING:
-          assert (task instanceof VirtualMachineInstanceMonitorTask ||
-                  task instanceof ApplicationComponentInstanceMonitorTask)
-          assert (task.getType() == DELETE)
-          break
-
-      }
-    }
-  }
-
-  Collection<CloudApi> cloudApis = new LinkedList<>()
-  Collection<Cloud> clouds = new LinkedList<>()
-  Collection<CloudProperty> cloudProperties = new LinkedList<>()
-  Collection<CloudCredential> cloudCredentials = new LinkedList<>()
-  Collection<LifecycleComponent> lifecycleComponents = new LinkedList<>()
-  Collection<VirtualMachine> virtualMachines = new LinkedList<>()
-  Collection<VirtualMachineInstance> virtualMachineInstances = new LinkedList<>()
-  Collection<ApplicationComponent> applicationComponents = new LinkedList<>()
-  Collection<ApplicationComponentInstance> applicationComponentInstances = new LinkedList<>()
-  Collection<Communication> communications = new LinkedList<>()
-  Collection<PortProvided> portsProvided = new LinkedList<>()
-  Collection<PortRequired> portsRequired = new LinkedList<>()
-  Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = new LinkedList<>()
-  Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = new LinkedList<>()
-
-  Collection<CloudApi> newCloudApis = new LinkedList<>()
-  Collection<Cloud> newClouds = new LinkedList<>()
-  Collection<CloudProperty> newCloudProperties = new LinkedList<>()
-  Collection<CloudCredential> newCloudCredentials = new LinkedList<>()
-  Collection<LifecycleComponent> newLifecycleComponents = new LinkedList<>()
-  Collection<VirtualMachine> newVirtualMachines = new LinkedList<>()
-  Collection<VirtualMachineInstance> newVirtualMachineInstances = new LinkedList<>()
-  Collection<ApplicationComponent> newApplicationComponents = new LinkedList<>()
-  Collection<ApplicationComponentInstance> newApplicationComponentInstances = new LinkedList<>()
-  Collection<Communication> newCommunications = new LinkedList<>()
-  Collection<PortProvided> newPortsProvided = new LinkedList<>()
-  Collection<PortRequired> newPortsRequired = new LinkedList<>()
-  Collection<VirtualMachineInstanceMonitor> newVirtualMachineInstanceMonitors = new LinkedList<>()
-  Collection<ApplicationComponentInstanceMonitor> newApplicationComponentInstanceMonitors = new LinkedList<>()
-
 
 }

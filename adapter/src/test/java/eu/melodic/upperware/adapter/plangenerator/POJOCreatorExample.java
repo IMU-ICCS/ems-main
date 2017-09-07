@@ -21,38 +21,6 @@ import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
 
 public class POJOCreatorExample {
 
-  private void createOrUpdate(Task createTask, Task updateTask, TaskType type,
-                      Map<TaskType, Set<Task>> tasks,
-                      Map<TaskType, Set<Task>> oldTasks){
-    String id = createTask.getData().getName();
-    if (containsTask(oldTasks.get(type), id)){
-      if (!oldTasks.get(type).contains(createTask)) {
-        addToMap(updateTask, type, tasks);
-      }
-    }
-    else {
-      addToMap(createTask, type, tasks);
-    }
-  }
-
-  private void createIfNotExist(Task createTask, TaskType type,
-          Map<TaskType, Set<Task>> tasks,
-          Map<TaskType, Set<Task>> oldTasks){
-    String id = createTask.getData().getName();
-    if (!containsTask(oldTasks.get(type), id)){
-      addToMap(createTask, type, tasks);
-    }
-  }
-
-  private boolean containsTask(Set<? extends Task> tasks, String id){
-    for(Task t: tasks){
-      if (t.getData().getName().equals(id)){
-        return true;
-      }
-    }
-    return false;
-  }
-
   void addTasksToDelete(TaskType taskType, Map<TaskType, Set<Task>> tasks,
                         Map<TaskType, Set<Task>> oldTasks){
     Set<Task> setNewTasks = tasks.get(taskType);
@@ -69,26 +37,7 @@ public class POJOCreatorExample {
     tasks.put(taskType, set);
   }
 
-  CloudApi createApi(String name, boolean reconfig,
-                     Map<TaskType, Set<Task>> tasks,
-                     Map<TaskType, Set<Task>> oldTasks) {
-
-    CloudApi t = CloudApi.builder()
-            .name(name)
-            .build();
-
-    CloudApiTask task = new CloudApiTask(CREATE, t);
-    TaskType taskType = CLOUD_API;
-    if (reconfig){
-      createOrUpdate(task, new CloudApiTask(UPDATE,t), taskType, tasks, oldTasks);
-    }
-    else {
-      addToMap(task, taskType, tasks);
-    }
-    return t;
-  }
-
-  CloudApi createApi2(String name, String driver, boolean reconfig,
+  CloudApi createApi(String name, String driver, boolean reconfig,
                      Map<TaskType, Set<Task>> tasks,
                      Map<TaskType, Set<Task>> oldTasks) {
 
@@ -438,5 +387,37 @@ public class POJOCreatorExample {
       addToMap(new CommunicationTask(
               DELETE, (Communication) task.getData()), COMMUNICATION, tasks);
     }
+  }
+
+  private void createOrUpdate(Task createTask, Task updateTask, TaskType type,
+    Map<TaskType, Set<Task>> tasks,
+    Map<TaskType, Set<Task>> oldTasks){
+    String id = createTask.getData().getName();
+    if (containsTask(oldTasks.get(type), id)){
+      if (!oldTasks.get(type).contains(createTask)) {
+        addToMap(updateTask, type, tasks);
+      }
+    }
+    else {
+      addToMap(createTask, type, tasks);
+    }
+  }
+
+  private void createIfNotExist(Task createTask, TaskType type,
+    Map<TaskType, Set<Task>> tasks,
+    Map<TaskType, Set<Task>> oldTasks){
+    String id = createTask.getData().getName();
+    if (!containsTask(oldTasks.get(type), id)){
+      addToMap(createTask, type, tasks);
+    }
+  }
+
+  private boolean containsTask(Set<? extends Task> tasks, String id){
+    for(Task t: tasks){
+      if (t.getData().getName().equals(id)){
+        return true;
+      }
+    }
+    return false;
   }
 }

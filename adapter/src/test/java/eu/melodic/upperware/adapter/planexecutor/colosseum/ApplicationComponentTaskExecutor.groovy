@@ -273,7 +273,6 @@ class ApplicationComponentTaskExecutorTests extends Specification {
     thrown(NullPointerException)
   }
 
-  //FIXME moze null id fields?
   def "application component create: null imageEntity id - exception"(){
 
     setMockCloudEntity(entity: cloudEntity, id:id)
@@ -286,10 +285,6 @@ class ApplicationComponentTaskExecutorTests extends Specification {
 
     context.getApplicationComponent(_,_,_) >> Optional.empty()
     api.createApplicationComponent(_) >> Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent)
-
-  }
-
-  def "application component create: null lcComponent id - exception"(){
 
   }
 
