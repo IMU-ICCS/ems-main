@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import eu.paasage.upperware.metamodel.cp.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -65,6 +66,7 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
  * @author danielromero
  *
  */
+@Slf4j
 public class CPModelDerivator implements ICPModelDerivator 
 
 {
@@ -97,10 +99,6 @@ public class CPModelDerivator implements ICPModelDerivator
 	/*
 	 * ATTRIBUTES
 	 */
-	/*
-	 * The logger
-	 */
-	protected static Logger logger= GenerationOrchestrator.getLogger(); 
 	
 	/*
 	 * Map with the created factories
@@ -146,8 +144,8 @@ public class CPModelDerivator implements ICPModelDerivator
 	 * @see eu.paasage.upperware.profiler.cp.generator.model.derivator.api.ICPModelDerivator#derivateConstraintProblem(eu.paasage.upperware.metamodel.application.PaasageConfiguration, eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy)
 	 */
 	public ConstraintProblem derivateConstraintProblem(CamelModel camel, PaasageConfiguration configuration, IDatabaseProxy database) {
-		logger.debug("CPModelDerivator - derivateConstraintProblem - Deriving CP " + configuration.getGoals().size());
-		logger.info("** 	Derivating Constraint Problem Model");
+		log.debug("CPModelDerivator - derivateConstraintProblem - Deriving CP " + configuration.getGoals().size());
+		log.info("** 	Derivating Constraint Problem Model");
 		CPModelTool.auxExpressionCount = 0;
 		CPModelTool.constantCount = 0;
 
@@ -156,47 +154,47 @@ public class CPModelDerivator implements ICPModelDerivator
 		//CP creation
 		ConstraintProblem cp = cpFactory.createConstraintProblem();
 
-		logger.info("**         Creating constants");
+		log.info("**         Creating constants");
 		createConstants(cp, configuration);
 
-		logger.info("** 		Creating default variables");
+		log.info("** 		Creating default variables");
 		createVariables(cp, configuration);
 
-		logger.info("** 		Creating default constraints");
+		log.info("** 		Creating default constraints");
 		createConstraints(cp, configuration);
 
-		logger.info("** 		Creating User objective functions ");
+		log.info("** 		Creating User objective functions ");
 		dimensionsDerivator.createDimensions(camel, cp, complexOptRequirements);
 
-		logger.info("** 		Creating User constraints ");
+		log.info("** 		Creating User constraints ");
 		dimensionsDerivator.createConstraints(camel, cp);
 
-		logger.info("** 		Creating Delta Utility Function ");
+		log.info("** 		Creating Delta Utility Function ");
 		deltaFunctionDerivator.createDeltaFunction(cp);
 
 		if(configuration.getGoals().size()>0) {
-			logger.debug("CPModelDerivator - derivateConstraintProblem - Goals! ");
+			log.debug("CPModelDerivator - derivateConstraintProblem - Goals! ");
 			for(PaaSageGoal goal:configuration.getGoals()) {
 				IFunctionCreator creator= creatorsMap.get(goal.getFunction().getId());
-				logger.debug("CPModelDerivator - derivateConstraintProblem - Creator "+creator+ " id "+goal.getFunction().getId());
+				log.debug("CPModelDerivator - derivateConstraintProblem - Creator "+creator+ " id "+goal.getFunction().getId());
 				creator.createFunction(cp, goal);
-				logger.debug("CPModelDerivator - derivateConstraintProblem - Function created! ");
+				log.debug("CPModelDerivator - derivateConstraintProblem - Function created! ");
 			}
 		} else {
 			createDefaultFunction(configuration, cp, database);
 		}
 
-		logger.debug("** 		CP Creation ended");
-		logger.debug(cp.toString());
+		log.debug("** 		CP Creation ended");
+		log.debug(cp.toString());
 		printCpModel(cp);
-		logger.debug("** 		CP Creation ended2");
+		log.debug("** 		CP Creation ended2");
 		return cp;
 	}
 
 	private void createDefaultFunction(PaasageConfiguration configuration, ConstraintProblem cp, IDatabaseProxy database){
 		//By default a function the price is created
 
-		logger.debug("CPModelDerivator - derivateConstraintProblem - Cost! ");
+		log.debug("CPModelDerivator - derivateConstraintProblem - Cost! ");
 
 		PaaSageGoal goal = ApplicationFactory.eINSTANCE.createPaaSageGoal();
 
@@ -213,7 +211,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		CostFunctionCreator costCreator = new CostFunctionCreator(selectExistingPriceFile());
 		costCreator.setDatabaseProxy(database);
 		costCreator.createFunction(cp, goal);
-		logger.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
+		log.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
 	}
 
 
@@ -225,40 +223,40 @@ public class CPModelDerivator implements ICPModelDerivator
 	{
 
 		//print constants
-		logger.debug("********* CP MODEL **************");
-		logger.debug("CONSTANTS");
+		log.debug("********* CP MODEL **************");
+		log.debug("CONSTANTS");
 		for(Constant cons : cp.getConstants()) {
-			logger.debug("   " + CPModelTool.toString(cons));
+			log.debug("   " + CPModelTool.toString(cons));
 		}
 
-		logger.debug("VARIABLES");
+		log.debug("VARIABLES");
 		for(Variable var : cp.getVariables()){
-			logger.debug(CPModelTool.toString(var));
+			log.debug(CPModelTool.toString(var));
 		}
 
-		logger.debug("CONSTRAINTS");
+		log.debug("CONSTRAINTS");
 		for(ComparisonExpression ce : cp.getConstraints()){
-			logger.debug(ce.getId() + ": " +CPModelTool.toString(ce));
+			log.debug(ce.getId() + ": " +CPModelTool.toString(ce));
 		}
 
-		logger.debug("AUX Expressions");
+		log.debug("AUX Expressions");
 		for(Expression aux : cp.getAuxExpressions()){
-			logger.debug(aux.getId() + ": " +CPModelTool.toString(aux));
+			log.debug(aux.getId() + ": " +CPModelTool.toString(aux));
 		}
 
-		logger.debug("METRICS");
+		log.debug("METRICS");
 		for(MetricVariable met : cp.getMetricVariables()){
-			logger.debug(met.getId() + ": " +CPModelTool.toString(met));
+			log.debug(met.getId() + ": " +CPModelTool.toString(met));
 		}
 
-		logger.debug("SOLUTION");
+		log.debug("SOLUTION");
 		for(Solution sol : cp.getSolution()){
-			logger.debug("Solution: " + sol.getClass());
+			log.debug("Solution: " + sol.getClass());
 		}
 
-		logger.debug("GOAL");
+		log.debug("GOAL");
 		for(Goal goal : cp.getGoals()){
-			logger.debug(CPModelTool.toString(goal));
+			log.debug(CPModelTool.toString(goal));
 		}
 
 	}
@@ -272,32 +270,32 @@ public class CPModelDerivator implements ICPModelDerivator
 	{
 		ConstantIdGenerator constantIdGenerator = new ConstantIdGenerator();
 		int constraintsCount=0; 
-		logger.debug("CPModelDerivator - createConstraints - 1"); 
+		log.debug("CPModelDerivator - createConstraints - 1"); 
 		Constant ceroConstant= CPModelTool.searchConstantByName(cp.getConstants(), CPModelTool.CERO_CONSTANT); 
-		logger.debug("CPModelDerivator - createConstraints - 2"); 
-		logger.debug("CPModelDerivator - createConstraints - 3"); 
+		log.debug("CPModelDerivator - createConstraints - 2"); 
+		log.debug("CPModelDerivator - createConstraints - 3"); 
 		Constant oneConstant= CPModelTool.searchConstantByName(cp.getConstants(), CPModelTool.ONE_CONSTANT); 
-		logger.debug("CPModelDerivator - createConstraints - 4"); 
+		log.debug("CPModelDerivator - createConstraints - 4"); 
 		
 		Map<String,List<Variable>> differentLocations= new Hashtable<>(); 
 		
-		logger.debug("CPModelDerivator - createConstraints - 5"); 
+		log.debug("CPModelDerivator - createConstraints - 5"); 
 		for(ApplicationComponent ac: configuration.getComponents())
 		{
-			logger.debug("CPModelDerivator - createConstraints - 6 component name "+ac.getCloudMLId()); 
+			log.debug("CPModelDerivator - createConstraints - 6 component name "+ac.getCloudMLId()); 
 			List<Variable> vars= CPModelTool.getVariablesRelatedToAppComponent(ac, cp); 
-			logger.debug("CPModelDerivator - createConstraints - 7 Max instances "+ac.getMax()); 
+			log.debug("CPModelDerivator - createConstraints - 7 Max instances "+ac.getMax()); 
 			int numOfVMForComponent= ac.getMax(); //ac.getRequiredProfile().size(); 
-			logger.debug("CPModelDerivator - createConstraints - 8 Min instances "+ac.getMin()); 
+			log.debug("CPModelDerivator - createConstraints - 8 Min instances "+ac.getMin()); 
 			int minVMNumber= ac.getMin();
-			logger.debug("CPModelDerivator - createConstraints - 9"); 
+			log.debug("CPModelDerivator - createConstraints - 9"); 
 			Constant numOfVMForComponentConstant= oneConstant; //BY DEFAULT, JUST ONE VM BY COMPONENT - IF THERE HOSTING RELATIONSHIP WITH A VM IN CAMEL //TODO HOW TO DETERMINE THE NUMBER OF INSTANCE OF A COMPONENT THAT DOES NOT HAVE HOSTING RELATIOSHIP WITH A VM?? 
-			logger.debug("CPModelDerivator - createConstraints - 10"); 
+			log.debug("CPModelDerivator - createConstraints - 10"); 
 			Constant minVMNumberConstant= oneConstant;
-			logger.debug("CPModelDerivator - createConstraints - 11"); 
+			log.debug("CPModelDerivator - createConstraints - 11"); 
 			if(numOfVMForComponent>1)
 				numOfVMForComponentConstant= CPModelTool.searchConstantByValue(cp.getConstants(), numOfVMForComponent);
-			logger.debug("CPModelDerivator - createConstraints - 12"); 
+			log.debug("CPModelDerivator - createConstraints - 12"); 
 			
 			if(numOfVMForComponentConstant==null)
 			{
@@ -306,67 +304,67 @@ public class CPModelDerivator implements ICPModelDerivator
 				cp.getConstants().add(numOfVMForComponentConstant); 
 			}
 			
-			logger.debug("CPModelDerivator - createConstraints - 13"); 
+			log.debug("CPModelDerivator - createConstraints - 13"); 
 			if(minVMNumber>1)
 				minVMNumberConstant= CPModelTool.searchConstantByValue(cp.getConstants(), minVMNumber); 
 /*			else if(minVMNumber==1)
 				minVMNumberConstant= oneConstant; */
-			logger.debug("CPModelDerivator - createConstraints - 14"); 
+			log.debug("CPModelDerivator - createConstraints - 14"); 
 			if(minVMNumberConstant==null)
 			{
 				minVMNumberConstant= CPModelTool.createIntegerConstant(minVMNumber, CPModelTool.getConstantName());//createIntConstant(minVMNumber, cp); 
 				cp.getConstants().add(minVMNumberConstant); 
 			}
-			logger.debug("CPModelDerivator - createConstraints - 15"); 
+			log.debug("CPModelDerivator - createConstraints - 15"); 
 			
 			//c1: The number of vms for the component is less or equals to MAX
 			ComparisonExpression ce= cpFactory.createComparisonExpression(); 
 			ce.setId(constantIdGenerator.generate());
-			logger.debug("CPModelDerivator - createConstraints - 16"); 
+			log.debug("CPModelDerivator - createConstraints - 16"); 
 			ComparisonExpression ce2= cpFactory.createComparisonExpression(); 
 			ce2.setId(constantIdGenerator.generate());
-			logger.debug("CPModelDerivator - createConstraints - 17 "+vars); 
+			log.debug("CPModelDerivator - createConstraints - 17 "+vars); 
 			if(vars.size()>1) //Create a sum with the concerned variables
-			{	logger.debug("CPModelDerivator - createConstraints - 18"); 
+			{	log.debug("CPModelDerivator - createConstraints - 18"); 
 				ComposedExpression sum= CPModelTool.createComposedExpression(OperatorEnum.PLUS, CPModelTool.getAuxExpressionId());//cpFactory.createComposedExpression(); 
-				logger.debug("CPModelDerivator - createConstraints - 19"); 
+				log.debug("CPModelDerivator - createConstraints - 19"); 
 				
 				for(Variable var: vars)
 					sum.getExpressions().add(var); 
-				logger.debug("CPModelDerivator - createConstraints - 20"); 
+				log.debug("CPModelDerivator - createConstraints - 20"); 
 				cp.getAuxExpressions().add(sum); 
-				logger.debug("CPModelDerivator - createConstraints - 21"); 
+				log.debug("CPModelDerivator - createConstraints - 21"); 
 				ce.setExp1(sum); 
-				logger.debug("CPModelDerivator - createConstraints - 22"); 
+				log.debug("CPModelDerivator - createConstraints - 22"); 
 				ce2.setExp1(sum);
-				logger.debug("CPModelDerivator - createConstraints - 23"); 
+				log.debug("CPModelDerivator - createConstraints - 23"); 
 				
 			}
 			else
 			{
-				logger.debug("CPModelDerivator - createConstraints - 24 "+ce+ " "+vars.get(0)); 
+				log.debug("CPModelDerivator - createConstraints - 24 "+ce+ " "+vars.get(0)); 
 				ce.setExp1(vars.get(0)); 
-				logger.debug("CPModelDerivator - createConstraints - 25"); 
+				log.debug("CPModelDerivator - createConstraints - 25"); 
 				ce2.setExp1(vars.get(0));
-				logger.debug("CPModelDerivator - createConstraints - 26"); 
+				log.debug("CPModelDerivator - createConstraints - 26"); 
 			}
 			
-			logger.debug("CPModelDerivator - createConstraints - 27"); 
+			log.debug("CPModelDerivator - createConstraints - 27"); 
 			ce.setExp2(numOfVMForComponentConstant); 
-			logger.debug("CPModelDerivator - createConstraints - 28"); 
+			log.debug("CPModelDerivator - createConstraints - 28"); 
 			ce.setComparator(ComparatorEnum.LESS_OR_EQUAL_TO);
-			logger.debug("CPModelDerivator - createConstraints - 29"); 
+			log.debug("CPModelDerivator - createConstraints - 29"); 
 			cp.getConstraints().add(ce); 
-			logger.debug("CPModelDerivator - createConstraints - 30"); 
+			log.debug("CPModelDerivator - createConstraints - 30"); 
 			
 			
 			//c2: The number of vms for the component is greater or equals to Min
 			ce2.setExp2(minVMNumberConstant);
-			logger.debug("CPModelDerivator - createConstraints - 31"); 
+			log.debug("CPModelDerivator - createConstraints - 31"); 
 			ce2.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
-			logger.debug("CPModelDerivator - createConstraints - 32"); 
+			log.debug("CPModelDerivator - createConstraints - 32"); 
 			cp.getConstraints().add(ce2); 
-			logger.debug("CPModelDerivator - createConstraints - 33"); 
+			log.debug("CPModelDerivator - createConstraints - 33"); 
 			
 			/*//c1: Each component is deployed in X VM
 			ComparisonExpression ce= cpFactory.createComparisonExpression(); 
@@ -414,33 +412,33 @@ public class CPModelDerivator implements ICPModelDerivator
 			
 			for(RequiredFeature rf:ac.getRequiredFeatures()) 
 			{
-				logger.debug("CPModelDerivator - createConstraints - 34");
+				log.debug("CPModelDerivator - createConstraints - 34");
 				if(rf.getProvidedBy() instanceof ApplicationComponent)
 				{
-					logger.debug("CPModelDerivator - createConstraints - 35");
+					log.debug("CPModelDerivator - createConstraints - 35");
 					ApplicationComponent required= (ApplicationComponent) rf.getProvidedBy(); 
-					logger.debug("CPModelDerivator - createConstraints - 36");
+					log.debug("CPModelDerivator - createConstraints - 36");
 					List<Variable> requiredVariables= CPModelTool.getVariablesRelatedToAppComponent(required, cp); 
-					logger.debug("CPModelDerivator - createConstraints - 37");
+					log.debug("CPModelDerivator - createConstraints - 37");
 					if(rf.getCommunicationType().getValue()==CommunicationTypeUpperware.LOCAL_VALUE) 
 					{
-						logger.debug("CPModelDerivator - createConstraints - 38");
+						log.debug("CPModelDerivator - createConstraints - 38");
 						List<ComposedExpression> numericExpressions= new ArrayList<>(); 
-						logger.debug("CPModelDerivator - createConstraints - 39");
+						log.debug("CPModelDerivator - createConstraints - 39");
 						//SAME LOCATION
 						//for(VirtualMachineProfile vmp:configuration.getVmProfiles())
 						for(VirtualMachineProfile vmp:ac.getRequiredProfile())
 						{
-							logger.debug("CPModelDerivator - createConstraints - 40");
+							log.debug("CPModelDerivator - createConstraints - 40");
 							List<VirtualMachine> vmInstances= getVirtualMachineInstancesByProfile(configuration.getVms(), vmp);
-							logger.debug("CPModelDerivator - createConstraints - 41");
+							log.debug("CPModelDerivator - createConstraints - 41");
 							for(VirtualMachine instance: vmInstances)
 							{
-								logger.debug("CPModelDerivator - createConstraints - 42");
+								log.debug("CPModelDerivator - createConstraints - 42");
 								Variable v1= CPModelTool.searchVariableByVMName(vars, instance.getId()); 
-								logger.debug("CPModelDerivator - createConstraints - 43");
+								log.debug("CPModelDerivator - createConstraints - 43");
 								Variable v2= CPModelTool.searchVariableByVMName(requiredVariables, instance.getId()); 
-								logger.debug("CPModelDerivator - createConstraints - 44");
+								log.debug("CPModelDerivator - createConstraints - 44");
 								if(v1!=null && v2!=null && !v1.getId().equals(v2.getId())) //The last condition is required when the component has self-references 
 								{
 									
@@ -451,16 +449,16 @@ public class CPModelDerivator implements ICPModelDerivator
 								}
 							}
 							
-							logger.debug("CPModelDerivator - createConstraints - 45");
+							log.debug("CPModelDerivator - createConstraints - 45");
 							if(vmInstances.size()==0)
 							{	
 								
 								//We use the type of vm to find the related variables
-								logger.debug("CPModelDerivator - createConstraints - 46 "+vmp.getCloudMLId());
+								log.debug("CPModelDerivator - createConstraints - 46 "+vmp.getCloudMLId());
 								Variable v1= CPModelTool.searchVariableByVMName(vars, vmp.getCloudMLId()); 
-								logger.debug("CPModelDerivator - createConstraints - 47");
+								log.debug("CPModelDerivator - createConstraints - 47");
 								Variable v2= CPModelTool.searchVariableByVMName(requiredVariables, vmp.getCloudMLId()); 
-								logger.debug("CPModelDerivator - createConstraints - 48");
+								log.debug("CPModelDerivator - createConstraints - 48");
 								
 								if(v1!=null || v2!=null) //We use the provider to find the related variables
 								{ 
@@ -478,15 +476,15 @@ public class CPModelDerivator implements ICPModelDerivator
 								if(v1!=null && v2!=null && !v1.getId().equals(v2.getId())) //The last condition is required when the component has self-references 
 								{
 
-									logger.debug("CPModelDerivator - createConstraints - 49");
+									log.debug("CPModelDerivator - createConstraints - 49");
 									ComposedExpression ne1= createSubstraction(v2, v1); //(i-j)
-									logger.debug("CPModelDerivator - createConstraints - 50");
+									log.debug("CPModelDerivator - createConstraints - 50");
 
 									
 									cp.getAuxExpressions().add(ne1); 
-									logger.debug("CPModelDerivator - createConstraints - 51");
+									log.debug("CPModelDerivator - createConstraints - 51");
 									numericExpressions.add(ne1); 
-									logger.debug("CPModelDerivator - createConstraints - 52");
+									log.debug("CPModelDerivator - createConstraints - 52");
 									
 								}
 								
@@ -499,12 +497,12 @@ public class CPModelDerivator implements ICPModelDerivator
 						
 						if(numericExpressions.size()>0)
 						{	
-							logger.debug("CPModelDerivator - createConstraints - 53");
+							log.debug("CPModelDerivator - createConstraints - 53");
 							ComparisonExpression ce1= cpFactory.createComparisonExpression(); 
-							logger.debug("CPModelDerivator - createConstraints - 54");
+							log.debug("CPModelDerivator - createConstraints - 54");
 							if(numericExpressions.size()>1)
 							{	
-								logger.debug("CPModelDerivator - createConstraints - 55");
+								log.debug("CPModelDerivator - createConstraints - 55");
 								ComposedExpression ne2= cpFactory.createComposedExpression(); //(i-j)+(i2-j2...)
 								
 								for(ComposedExpression cExp: numericExpressions)
@@ -519,7 +517,7 @@ public class CPModelDerivator implements ICPModelDerivator
 							}
 							else if(numericExpressions.size()>0)
 								ce1.setExp1(numericExpressions.get(0));
-							logger.debug("CPModelDerivator - createConstraints - 56");
+							log.debug("CPModelDerivator - createConstraints - 56");
 
 							ce1.setExp2(ceroConstant); //TODO IS IT REALLY CORRECT ?
 							ce1.setComparator(ComparatorEnum.EQUAL_TO); //SAME LOCATION
@@ -533,7 +531,7 @@ public class CPModelDerivator implements ICPModelDerivator
 					else if(rf.getCommunicationType().getValue()==CommunicationTypeUpperware.REMOTE_VALUE)  //DIFFERENT LOCATION - At least one of the VM in variables have a different value
 					{
 						
-						logger.debug("CPModelDerivator - createConstraints - Different location");
+						log.debug("CPModelDerivator - createConstraints - Different location");
 						for(VirtualMachineProfile vmp:configuration.getVmProfiles())
 						{
 							//Variable numberOfVMVar= searchVariableNumberOfByVMName(cp.getVariables(), vmp.getCloudMLId()); 
@@ -554,7 +552,7 @@ public class CPModelDerivator implements ICPModelDerivator
 							
 							if(instances.size()==0)
 							{
-								logger.debug("CPModelDerivator - createConstraints - Adding different location to list");
+								log.debug("CPModelDerivator - createConstraints - Adding different location to list");
 								Variable v1= CPModelTool.searchVariableByVMName(vars, vmp.getCloudMLId()); 
 								Variable v2= CPModelTool.searchVariableByVMName(requiredVariables, vmp.getCloudMLId()); 
 								
@@ -585,11 +583,11 @@ public class CPModelDerivator implements ICPModelDerivator
 		//Different Location consolidated
 		Set<String> keys= differentLocations.keySet();
 		
-		logger.debug("CPModelDerivator - createConstraints - Different locations size "+keys.size());
+		log.debug("CPModelDerivator - createConstraints - Different locations size "+keys.size());
 		
 		for(String vmId: keys)
 		{
-			logger.debug("CPModelDerivator - createConstraints - Creating different Location constraint");
+			log.debug("CPModelDerivator - createConstraints - Creating different Location constraint");
 			
 			
 			Constant numberOfVMConstanst= CPModelTool.searchConstantByName(cp.getConstants(), CPModelTool.getVMProfileConstantName(vmId)); 
@@ -930,7 +928,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	{
 		for(VirtualMachineProfile vmp:configuration.getVmProfiles())
 		{
-			logger.debug("CPModelDerivator - createVMProfileVariables  - Creating var "+VM_PROFILE_VAR_PREFIX+vmp.getCloudMLId()); 
+			log.debug("CPModelDerivator - createVMProfileVariables  - Creating var "+VM_PROFILE_VAR_PREFIX+vmp.getCloudMLId()); 
 			Variable var= CPModelTool.createIntegerVariableWithRangeDomain(getNumberOfVMName(vmp.getCloudMLId()), 0, MAX_NUMBER_OF_VMS); //TODO TO USE AS MAX THE NUMBER OF DEFINED INSTANCES FOR THE GIVEN PROFILE ??
 			
 			cp.getVariables().add(var); 
@@ -971,11 +969,11 @@ public class CPModelDerivator implements ICPModelDerivator
 	{
 		//App components
 		
-		logger.debug("CPModelDerivator - createAppComponentVariables  - Number of components "+configuration.getComponents().size()); 
+		log.debug("CPModelDerivator - createAppComponentVariables  - Number of components "+configuration.getComponents().size()); 
 		
 		for(ApplicationComponent ac:configuration.getComponents())
 		{
-			logger.debug("CPModelDerivator - createAppComponentVariables  - Component "+ac.getCloudMLId()+ " Required Profiles "+ac.getRequiredProfile().size()); 
+			log.debug("CPModelDerivator - createAppComponentVariables  - Component "+ac.getCloudMLId()+ " Required Profiles "+ac.getRequiredProfile().size()); 
 			
 		
 			
@@ -1005,7 +1003,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		String providerId= provider.getId();
 		String varName= CPModelTool.generateApplicationComponentVarName(ac.getCloudMLId(), vmId, providerId);
 
-		logger.debug("CPModelDerivator - createAppComponentVariable  - Creating var "+varName+ " VM Profile/Instance "+vmId);
+		log.debug("CPModelDerivator - createAppComponentVariable  - Creating var "+varName+ " VM Profile/Instance "+vmId);
 
 		Variable var= CPModelTool.createIntegerVariableWithRangeDomain(varName, min, max);//createBooleanVariable(varName);
 		var.setVmId(vmId);
@@ -1230,40 +1228,40 @@ public class CPModelDerivator implements ICPModelDerivator
 					
 					Constructor defaultConstructor= clazz.getConstructor(new Class[0]);
 					
-					logger.debug("CPModelDerivator - createFactories - Creating factory "+className+" "+defaultConstructor.getParameterTypes().length ); 
+					log.debug("CPModelDerivator - createFactories - Creating factory "+className+" "+defaultConstructor.getParameterTypes().length ); 
 					
 					IEstimatorFactory factory= (IEstimatorFactory) defaultConstructor.newInstance(new Object[0]); 
 					
 					factoriesMap.put(key, factory); 
 					
 				}
-				logger.debug("CPModelDerivator - createFactories - Factories initialized!"); 
+				log.debug("CPModelDerivator - createFactories - Factories initialized!"); 
 			} catch (FileNotFoundException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the file. The loaders are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the file. The loaders are not initialized!"); 
 				e.printStackTrace();
 			} catch (IOException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the file. The loaders are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the file. The loaders are not initialized!"); 
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the class of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the class of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} catch (SecurityException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} catch (NoSuchMethodException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} catch (InstantiationException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
-				logger.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
+				log.warn("CPModelDerivator - createFactories - Problems loading the constructors of one of factories. All the factories are not initialized!"); 
 				e.printStackTrace();
 			} 
 			
@@ -1271,7 +1269,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		}
 		else
 		{
-			logger.warn("CPModelDerivator - createFactories - The properties file does not exist. The loaders are not initialized!"); 
+			log.warn("CPModelDerivator - createFactories - The properties file does not exist. The loaders are not initialized!"); 
 		}
 	}
 	
@@ -1360,7 +1358,7 @@ public class CPModelDerivator implements ICPModelDerivator
 					
 					Constructor defaultConstructor= clazz.getConstructor(new Class[0]);
 					
-					logger.debug("CPModelDerivator - createFunctionCreators - Creating function creator "+className+" "+defaultConstructor.getParameterTypes().length ); 
+					log.debug("CPModelDerivator - createFunctionCreators - Creating function creator "+className+" "+defaultConstructor.getParameterTypes().length ); 
 					
 					IFunctionCreator creator= (IFunctionCreator) defaultConstructor.newInstance(new Object[0]); 
 					
@@ -1370,33 +1368,33 @@ public class CPModelDerivator implements ICPModelDerivator
 					
 				}
 				
-				logger.debug("CPModelDerivator - createFunctionCreators - Creators initialized!"); 
+				log.debug("CPModelDerivator - createFunctionCreators - Creators initialized!"); 
 			} catch (FileNotFoundException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the file. The loaders are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the file. The loaders are not initialized!"); 
 				e.printStackTrace();
 			} catch (IOException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the file. The loaders are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the file. The loaders are not initialized!"); 
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the class of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the class of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} catch (SecurityException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} catch (NoSuchMethodException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} catch (InstantiationException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
-				logger.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
+				log.warn("CPModelDerivator - createFunctionCreators - Problems loading the constructors of one of creators. All the creators are not initialized!"); 
 				e.printStackTrace();
 			} 
 			
@@ -1404,7 +1402,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		}
 		else
 		{
-			logger.warn("CPModelDerivator - createFactories - The properties file does not exist. The loaders are not initialized!"); 
+			log.warn("CPModelDerivator - createFactories - The properties file does not exist. The loaders are not initialized!"); 
 		}
 	}
 	

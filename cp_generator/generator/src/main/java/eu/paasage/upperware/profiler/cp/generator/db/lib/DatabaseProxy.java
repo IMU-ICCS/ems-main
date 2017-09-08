@@ -13,6 +13,7 @@ package eu.paasage.upperware.profiler.cp.generator.db.lib;
 
 import java.io.File;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 
 import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionTypes;
@@ -28,17 +29,14 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
  * @author danielromero
  *
  */
+@Slf4j
 public abstract class DatabaseProxy implements IDatabaseProxy 
 {
 	
 	/*
 	 * ATTRIBUTES 
 	 */
-	
-	/*
-	 * Logger  
-	 */
-	protected Logger logger= GenerationOrchestrator.getLogger(); 
+
 
 	/*
 	 * List of Operating systems

@@ -1,19 +1,18 @@
 package eu.paasage.upperware.profiler.cp.generator;
 
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class OrchestratorUtils {
 
-    private static Logger logger= GenerationOrchestrator.getLogger();
-
     public static String  generateCPModel(String modelId){
-        logger.debug("model id "+modelId);
-        logger.debug("Creating GenerationOrchestrator");
+        log.debug("model id "+modelId);
+        log.debug("Creating GenerationOrchestrator");
         GenerationOrchestrator go= new GenerationOrchestrator();
-        logger.debug("Generating CP Model");
+        log.debug("Generating CP Model");
         String paasageConfigID= go.generateCPModel(modelId);
-        logger.debug("CP Model Generated");
+        log.debug("CP Model Generated");
         return paasageConfigID;
     }
 }

@@ -3,6 +3,7 @@ package eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib;
 import java.nio.charset.StandardCharsets;
 
 import eu.paasage.upperware.profiler.cp.generator.OrchestratorUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
@@ -11,6 +12,7 @@ import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
 
+@Slf4j
 public class ZeroMQServer 
 {
 	
@@ -32,10 +34,6 @@ public class ZeroMQServer
 	private static String DEFAULT_CP_MODEL_ID_TOPIC="startSolving";
 	private static String DEFAULT_CAMEL_MODEL_ID_TOPIC="camelModelId";
 
-	private static Logger logger= GenerationOrchestrator.getLogger();
-
-
-	
 	//Property Manager
 	private static PaaSagePropertyManager propertyManager= PaaSagePropertyManager.getInstance();
 	
@@ -70,19 +68,19 @@ public class ZeroMQServer
 
         	try{
 	            // Wait for next message from the publisher
-	        	logger.debug("Waiting for Model Id");
+	        	log.debug("Waiting for Model Id");
 	        	modelId = getModelId(subscriber);
-	            logger.debug("model id "+modelId);
+	            log.debug("model id "+modelId);
 
 	            String paasageConfigID = OrchestratorUtils.generateCPModel(modelId);
 
 				if(!"".equals(paasageConfigID)) {
-					logger.debug("CP Model Generated");
+					log.debug("CP Model Generated");
 
 					publisher.sendMore(cpModelIdTopic);
 					publisher.sendMore(modelId);
 		            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
-		            logger.debug("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+		            log.debug("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
 
 		            //EC
 		            publisher.sendMore(camelModelIdTopic);
@@ -90,13 +88,13 @@ public class ZeroMQServer
 		            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
 				} else {
 					String errorMessage = "Le CP Model was not generated";
-					logger.debug(errorMessage);
+					log.debug(errorMessage);
 					sendError(publisher, camelModelIdTopic, modelId, errorMessage);
 				}
         	}
         	catch(Exception e) {
 				String errorMessage = "Problems dealing with the camel model" + modelId + ". Le CP Model was not generated. Error Message " + e.getMessage();
-				logger.debug(errorMessage);
+				log.debug(errorMessage);
 				sendError(publisher, camelModelIdTopic, modelId, errorMessage);
         	}
         }
@@ -126,14 +124,14 @@ public class ZeroMQServer
 		ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
 		subscriber.connect(urlSubs);
 		subscriber.subscribe(subsTopic.getBytes());
-		logger.debug("Subscribed to "+urlSubs+" and topic "+subsTopic);
+		log.debug("Subscribed to "+urlSubs+" and topic "+subsTopic);
 		return subscriber;
 	}
 
 	private static ZMQ.Socket createPublisher(ZMQ.Context context, String urlPubs, String camelModelIdTopic, String cpModelIdTopic){
 		ZMQ.Socket publisher = context.socket(ZMQ.PUB);
 		publisher.bind(urlPubs);
-		logger.debug("Publishing to "+urlPubs+" and camel model id topic "+camelModelIdTopic+" and cp model id "+cpModelIdTopic);
+		log.debug("Publishing to "+urlPubs+" and camel model id topic "+camelModelIdTopic+" and cp model id "+cpModelIdTopic);
 		return publisher;
 	}
 

@@ -15,12 +15,13 @@ import eu.paasage.upperware.profiler.cp.generator.model.derivator.api.IFunctionC
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
+@Slf4j
 public class AttributeFunctionCreator implements IFunctionCreator {
 
-    private static Logger logger =GenerationOrchestrator.getLogger();
 
     private IDatabaseProxy database;
     private String featureName;
@@ -76,22 +77,22 @@ public class AttributeFunctionCreator implements IFunctionCreator {
                 SingleValue value = attribute.getValue();
                 if (value instanceof IntegerValue){
                     constant = CPModelTool.createIntegerConstant(((IntegerValue)value).getValue(), CPModelTool.getConstantName());
-                    logger.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((IntegerValue)value).getValue());
+                    log.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((IntegerValue)value).getValue());
                 } else if (value instanceof DoublePrecisionValue) {
                     constant = CPModelTool.createDoubleConstant(((DoublePrecisionValue)value).getValue(), CPModelTool.getConstantName());
-                    logger.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((DoublePrecisionValue)value).getValue());
+                    log.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((DoublePrecisionValue)value).getValue());
                 } else if (value instanceof FloatsValue) {
                     constant = CPModelTool.createFloatConstant(((FloatsValue)value).getValue(), CPModelTool.getConstantName());
-                    logger.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((FloatsValue)value).getValue());
+                    log.info("providerId: " + providerId + ", vmId: " + vmId + ", constant: " + ((FloatsValue)value).getValue());
 
                 } else {
-                    logger.error("Value type: " + value.getClass() + " not allowed");
+                    log.error("Value type: " + value.getClass() + " not allowed");
                 }
             } else {
-                logger.error("Attribute " + this.attributeName + " not found!");
+                log.error("Attribute " + this.attributeName + " not found!");
             }
         } else {
-            logger.error("Feature " + this.featureName + " not found!");
+            log.error("Feature " + this.featureName + " not found!");
         }
 
         if (constant == null){

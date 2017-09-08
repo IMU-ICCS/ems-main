@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import eu.passage.upperware.commons.model.tools.ModelTool;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -69,6 +70,7 @@ import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
  * @author danielromero
  *
  */
+@Slf4j
 public class CDODatabaseProxy extends DatabaseProxy 
 {
 	private static final String ONTOLOGY_FILE = "cloudOntoCamel.xmi";
@@ -262,7 +264,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 			
 			if(is!=null)
 			{
-				logger.debug("CDODatabaseProxy - loadFunctionTypes - Registring Function Types! "+ FUNCTION_TYPES_FILE_PATH+ " "+ is);
+				log.debug("CDODatabaseProxy - loadFunctionTypes - Registring Function Types! "+ FUNCTION_TYPES_FILE_PATH+ " "+ is);
 				
 				Resource r= ModelTool.loadModelFromInputStream(FUNCTION_TYPES_FILE_PATH,is);
 				
@@ -270,10 +272,10 @@ public class CDODatabaseProxy extends DatabaseProxy
 				
 				cdoClient.storeModel(functionTypes, FUNCTION_TYPES_ID);
 				
-				logger.debug("CDODatabaseProxy - loadFunctionTypes - FunctionTypes loaded!");
+				log.debug("CDODatabaseProxy - loadFunctionTypes - FunctionTypes loaded!");
 			}
 			else
-				logger.error("CDODatabaseProxy - loadFunctionTypes - The file FunctionTypes.xmi does not exist. The function types will not be loaded!");
+				log.error("CDODatabaseProxy - loadFunctionTypes - The file FunctionTypes.xmi does not exist. The function types will not be loaded!");
 		}
 		else
 			functionTypes= (FunctionTypes) functionTypesList.get(0); 
@@ -295,17 +297,17 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 			if(is!=null)
 			{
-				logger.debug("CDODatabaseProxy - loadOperatingSystems - Registring Operating Systems!");
+				log.debug("CDODatabaseProxy - loadOperatingSystems - Registring Operating Systems!");
 				Resource r= ModelTool.loadModelFromInputStream(OPERATING_SYSTEMS_FILE_PATH, is); 
 				
 				operatingSystems= (OperatingSystems) r.getContents().get(0); 
 				
 				cdoClient.storeModel(operatingSystems, OPERATING_SYSTEMS_ID);
 				
-				logger.debug("CDODatabaseProxy - loadOperatingSystems - Operating systems loaded!");
+				log.debug("CDODatabaseProxy - loadOperatingSystems - Operating systems loaded!");
 			}
 			else
-				logger.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
+				log.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
 		}
 		else
 			operatingSystems= (OperatingSystems) operatingSystemsList.get(0); 
@@ -334,10 +336,10 @@ public class CDODatabaseProxy extends DatabaseProxy
 				System.out.println("Locations stored! ");
 				 locationsList= getResourceWithID(LOCATIONS_ID); 
 				 System.out.println("Locations Loaded! ");
-				logger.debug("CDODatabaseProxy- loadLocations - Locations loaded!");
+				log.debug("CDODatabaseProxy- loadLocations - Locations loaded!");
 			}
 			else
-				logger.error("CDODatabaseProxy - loadLocations - The file locations.xmi does not exist. The locations will not be loaded!");
+				log.error("CDODatabaseProxy - loadLocations - The file locations.xmi does not exist. The locations will not be loaded!");
 		}
 		//System.out.println("Location list "+locationsList);
 		else
@@ -366,7 +368,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 			catch(org.eclipse.emf.cdo.util.InvalidURIException ex)
 			{
 				System.out.println("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
-				logger.debug("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
+				log.debug("CDODatabaseProxy - getResourceWithID - The resource "+ id+" does not exist");
 			}
 		}	
 		
@@ -391,12 +393,12 @@ public class CDODatabaseProxy extends DatabaseProxy
 				
 				providerTypes= (ProviderTypes) r.getContents().get(0); 
 				
-				logger.debug("CDODatabaseProxy- Provider Types loaded!");
+				log.debug("CDODatabaseProxy- Provider Types loaded!");
 				
 				cdoClient.storeModel(providerTypes, PROVIDER_TYPES_ID);
 			}
 			else
-				logger.error("CDODatabaseProxy- The file ProviderTypes.xmi does not exist. The provider types will not be loaded!");
+				log.error("CDODatabaseProxy- The file ProviderTypes.xmi does not exist. The provider types will not be loaded!");
 		}
 		else
 		{
@@ -442,14 +444,14 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		String pcId= pc.getId(); 
 		
-		logger.debug("CDODatabaseProxy - saveModels - Storing Models ");
+		log.debug("CDODatabaseProxy - saveModels - Storing Models ");
 		
 		cdoClient.storeModels(objects, CDO_SERVER_PATH+pcId);
 		
 		
 		
 		
-		logger.debug("CDODatabaseProxy - saveModels - Models stored! ");
+		log.debug("CDODatabaseProxy - saveModels - Models stored! ");
 		
 		File paasageConfigurationDir= PaasageModelTool.getGenerationDirForPaasageAppConfiguration(pcId); 
 		
@@ -462,7 +464,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		CDOResource resource = view.getResource(CDO_SERVER_PATH+pcId);
 		EList<EObject> content = resource.getContents();
 		
-		logger.debug("CDODatabaseProxy - saveModels - Saving file "+paasageConfigModel.getAbsolutePath());
+		log.debug("CDODatabaseProxy - saveModels - Saving file "+paasageConfigModel.getAbsolutePath());
 		
 		cdoClient.exportModel(content.get(0), cpModel.getAbsolutePath());
 		//pc=(PaasageConfiguration) content.get(1); 
@@ -491,11 +493,11 @@ public class CDODatabaseProxy extends DatabaseProxy
 			
 			paasageConfigurationResource.getContents().add(pc); 
 			
-			logger.debug("CDODatabaseProxy - savedModelsInLocalSystemFile - Saving files in dir "+paasageConfigurationDir.getCanonicalPath()); 
+			log.debug("CDODatabaseProxy - savedModelsInLocalSystemFile - Saving files in dir "+paasageConfigurationDir.getCanonicalPath()); 
 			
 			ModelTool.saveModel(paasageConfigurationResource);
 			
-			logger.debug("CDODatabaseProxy - savedModelsInLocalSystemFile - File saved: "+paasageConfigModel.getCanonicalPath()); 
+			log.debug("CDODatabaseProxy - savedModelsInLocalSystemFile - File saved: "+paasageConfigModel.getCanonicalPath()); 
 			
 			
 			Resource cpResource;
@@ -507,7 +509,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 			
 			ModelTool.saveModel(cpResource);
 			
-			logger.debug("CDODatabaseProxy - savedModelsInLocalSystemFile - File saved: "+cpModel.getAbsolutePath()); 
+			log.debug("CDODatabaseProxy - savedModelsInLocalSystemFile - File saved: "+cpModel.getAbsolutePath()); 
 			
 		} catch (IOException e) {
 			
@@ -648,7 +650,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		File modelDir= getExistingModelDirectory(type); 
 		
-		logger.debug("CDODatabaseProxy - getExistingModelFile - modelDir "+modelDir);
+		log.debug("CDODatabaseProxy - getExistingModelFile - modelDir "+modelDir);
 		
 		if(modelDir!=null && modelDir.isDirectory())
 		{
@@ -661,9 +663,9 @@ public class CDODatabaseProxy extends DatabaseProxy
 		}
 		else
 		{
-			logger.debug("CDODatabaseProxy - getExistingModelFile - loading file "+Constants.WAR_MODEL_PATH+type+File.separator+fileName);
+			log.debug("CDODatabaseProxy - getExistingModelFile - loading file "+Constants.WAR_MODEL_PATH+type+File.separator+fileName);
 			fis= FileTool.getInputStreamFromFileName(Constants.WAR_MODEL_PATH+type+File.separator+fileName); 
-			logger.debug("CDODatabaseProxy - getExistingModelFile - loaded file "+fis);
+			log.debug("CDODatabaseProxy - getExistingModelFile - loaded file "+fis);
 		}
 		
 		return fis; 
@@ -677,8 +679,8 @@ public class CDODatabaseProxy extends DatabaseProxy
 	 */
 	public void savePM(ProviderModel pm, PaasageConfiguration pc, Provider provider)
 	{
-		logger.debug("CDODatabaseProxy - savePM - Saving PM Configuration Id "+pc.getId()+" Provider id"+provider.getId());
-		logger.debug("CDODatabaseProxy - savePM - Saving PM "+ PaasageModelTool.getFMResourceId(pc, provider));
+		log.debug("CDODatabaseProxy - savePM - Saving PM Configuration Id "+pc.getId()+" Provider id"+provider.getId());
+		log.debug("CDODatabaseProxy - savePM - Saving PM "+ PaasageModelTool.getFMResourceId(pc, provider));
 		cdoClient.storeModel(pm.eContainer(), FMS_APP_CDO_SERVER_PATH+PaasageModelTool.getFMResourceId(pc, provider));
 	}
 	
@@ -756,7 +758,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 						
 						InputStream ontologieFile= getExistingModelFile(ONTOLOGY_FILE, Constants.ONTOLOGY_DIR);
 						
-						logger.debug("CDODatabaseProxy - loadPMs - Ontology file "+Constants.WAR_ONTOLOGY_PATH+ONTOLOGY_FILE);
+						log.debug("CDODatabaseProxy - loadPMs - Ontology file "+Constants.WAR_ONTOLOGY_PATH+ONTOLOGY_FILE);
 						
 						Resource ontologyResource = ModelTool.loadModelFromInputStream(Constants.WAR_ONTOLOGY_PATH+"cloudOntoCamel.xmi", ontologieFile);
 
@@ -787,7 +789,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 								if(cdoClient.existResource(FMS_APP_CDO_SERVER_PATH+cloud)) {
 									List<EObject> cloned= cloner.cloneModel(FMS_APP_CDO_SERVER_PATH+cloud);
 									pm= (CamelModel) cloned.get(cloned.size()-1); //We pick the last added model. It is necessary as it is not possible to delete models from CDO.
-									logger.debug("CDODatabaseProxy- The PM "+cloud+" has been cloaned!");
+									log.debug("CDODatabaseProxy- The PM "+cloud+" has been cloaned!");
 								}
 								else //Load the file according to the properties file
 								{
@@ -798,7 +800,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 										cloudFile = FileTool.getInputStreamFromLocalFile(info[0]); 
 									
 									if(cloudFile==null) {
-										logger.warn("CDODatabaseProxy- The FM file "+info[0]+" does not exist. The FM and mapping for "+cloud +" will be not loaded!");
+										log.warn("CDODatabaseProxy- The FM file "+info[0]+" does not exist. The FM and mapping for "+cloud +" will be not loaded!");
 									} else {
 										Resource r= ModelTool.loadModelFromInputStream(rs, info[0], cloudFile); 
 										
@@ -806,7 +808,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 										
 										cdoClient.storeModel(pm, FMS_APP_CDO_SERVER_PATH+cloud); 
 										
-										logger.debug("CDODatabaseProxy- The PM "+cloud+" has been saved!");
+										log.debug("CDODatabaseProxy- The PM "+cloud+" has been saved!");
 										
 										cloudFile=FileTool.getInputStreamFromFileName(info[0]);
 										if(cloudFile==null)
@@ -828,10 +830,10 @@ public class CDODatabaseProxy extends DatabaseProxy
 										mappingFile = FileTool.getInputStreamFromLocalFile(info[1]); 
 									
 									if(mappingFile==null) {
-										logger.warn("CDODatabaseProxy- The mapping file "+info[1]+" does not exist. The FM and mapping for "+cloud +" will be not loaded!");
+										log.warn("CDODatabaseProxy- The mapping file "+info[1]+" does not exist. The FM and mapping for "+cloud +" will be not loaded!");
 									} else {
 										providersList.add(pm); 
-										logger.debug("CDODatabaseProxy- The PM "+cloud+" has been loaded!");
+										log.debug("CDODatabaseProxy- The PM "+cloud+" has been loaded!");
 										
 										InputStream cloudFile=FileTool.getInputStreamFromFileName(info[0]);
 										if(cloudFile==null)
@@ -845,17 +847,17 @@ public class CDODatabaseProxy extends DatabaseProxy
 										MappingListCamel mappingList= (MappingListCamel) r2.getContents().get(0);  
 																				
 										mappings.add(mappingList); 
-										logger.debug("CDODatabaseProxy- The mapping of "+cloud+" has been loaded! File: "+info[1]);
+										log.debug("CDODatabaseProxy- The mapping of "+cloud+" has been loaded! File: "+info[1]);
 		
 										
 										ProviderModelDecorator pmw= new ProviderModelDecorator(cloud,pm.getProviderModels().get(0), mappingList); 
 										
 										pmsMap.put(cloud, pmw); 
-										logger.debug("CDODatabaseProxy- PM decorator of "+cloud+" has been added!");
+										log.debug("CDODatabaseProxy- PM decorator of "+cloud+" has been added!");
 									}
 								}
 							} else {
-								logger.warn("CDODatabaseProxy- There is problem with the format of the file. The FMs and Mappings will be not loaded!");
+								log.warn("CDODatabaseProxy- There is problem with the format of the file. The FMs and Mappings will be not loaded!");
 							}
 						}
 						
@@ -881,7 +883,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 												
 					}
 					else
-						logger.warn("CDODatabaseProxy- The configuration file and "+Constants.WAR_CONFIG_PATH+cloudsPropertyFile +" do not exist!");
+						log.warn("CDODatabaseProxy- The configuration file and "+Constants.WAR_CONFIG_PATH+cloudsPropertyFile +" do not exist!");
 					
 				} catch (FileNotFoundException e) {
 					
@@ -897,14 +899,14 @@ public class CDODatabaseProxy extends DatabaseProxy
 
 		//Only providers defined in the properties file are considered - This restriction is due to saloon and the mapping model
 		File cloudsFile = new File(getExistingConfigPath(), cloudsPropertyFileCamel);
-		logger.debug("CDODatabaseProxy - " + operationToLog + " - Property file "+cloudsFile.getAbsolutePath());
+		log.debug("CDODatabaseProxy - " + operationToLog + " - Property file "+cloudsFile.getAbsolutePath());
 
 		Properties properties = new Properties();
 		if (cloudsFile.isFile()){
 			properties.load(new FileReader(cloudsFile));
 		} else {
 			InputStream is = FileTool.getInputStreamFromFileName(Constants.WAR_CONFIG_PATH + cloudsPropertyFileCamel);
-			logger.debug("CDODatabaseProxy - " + operationToLog + " - Property file " + Constants.WAR_CONFIG_PATH + cloudsPropertyFileCamel);
+			log.debug("CDODatabaseProxy - " + operationToLog + " - Property file " + Constants.WAR_CONFIG_PATH + cloudsPropertyFileCamel);
 
 			if (is != null) {
 				properties.load(is);
@@ -958,16 +960,16 @@ public class CDODatabaseProxy extends DatabaseProxy
 								
 							}
 							else
-								logger.warn("CDODatabaseProxy- storePMs - The FM file "+info[0]+" does not exist. The PM for "+cloud +" will be not stored!");
+								log.warn("CDODatabaseProxy- storePMs - The FM file "+info[0]+" does not exist. The PM for "+cloud +" will be not stored!");
 							
 							
 						}
 						else
-							logger.warn("CDODatabaseProxy- storePMs -There is problem with the format of the file. The PMs will be not stored!");
+							log.warn("CDODatabaseProxy- storePMs -There is problem with the format of the file. The PMs will be not stored!");
 					}											
 				}
 				else
-					logger.warn("CDODatabaseProxy- storePMs - The configuration file and "+Constants.WAR_CONFIG_PATH+cloudsPropertyFile +" do not exist!");
+					log.warn("CDODatabaseProxy- storePMs - The configuration file and "+Constants.WAR_CONFIG_PATH+cloudsPropertyFile +" do not exist!");
 				
 			} catch (FileNotFoundException e) {
 				
@@ -986,7 +988,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		ProviderModelDecorator pmw= new ProviderModelDecorator(cloud,pm, mappingList); 
 		
 		pmsMap.put(cloud, pmw); 
-		logger.debug("CDODatabaseProxy- initMapMapping "+cloud+" has been added!");
+		log.debug("CDODatabaseProxy- initMapMapping "+cloud+" has been added!");
 	}
 
 	/**
@@ -1002,7 +1004,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		CamelModel pm= (CamelModel) res.get(res.size()-1); 
 		
-		logger.debug("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
+		log.debug("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
 		
 		//cdoClient.closeView(view);//TODO THE VIEW REMAINS OPEN
 		
@@ -1046,7 +1048,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		CamelModel pm= (CamelModel) res.get(res.size()-1); 
 		
-		logger.debug("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
+		log.debug("CDODatabaseProxy- loadPM- PM "+pm.getProviderModels().get(0).getRootFeature().getName());
 		
 		return pm.getProviderModels().get(0); 
 	}
@@ -1067,13 +1069,13 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		CamelModel pm= null; 
 		
-		logger.debug("CDODatabaseProxy- loadPM- VMId "+vmId);
+		log.debug("CDODatabaseProxy- loadPM- VMId "+vmId);
 		
 		for(EObject r:res)
 		{
 			CamelModel provider= (CamelModel) r; 
 			
-			logger.debug("CDODatabaseProxy- loadPM- Camel Name "+provider.getName());
+			log.debug("CDODatabaseProxy- loadPM- Camel Name "+provider.getName());
 			
 			if(vmId.contains(provider.getName()))
 			{	
@@ -1084,7 +1086,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 		
 		
 		
-		logger.debug("CDODatabaseProxy- loadPM- PM "+pm);
+		log.debug("CDODatabaseProxy- loadPM- PM "+pm);
 		
 		return pm.getProviderModels().get(0); 
 	}

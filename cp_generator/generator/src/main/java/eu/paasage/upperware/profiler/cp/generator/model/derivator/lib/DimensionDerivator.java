@@ -3,6 +3,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.derivator.lib;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -52,18 +53,13 @@ import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 
+@Slf4j
 public class DimensionDerivator 
 {
 	
 	protected static BasicTypeEnum DEFAULT_METRIC_TYPE= BasicTypeEnum.DOUBLE;
 	
 	protected static double DEFAULT_METRIC_VALUE= 1; 
-	
-	/*
-	 * The logger
-	 */
-	protected static Logger logger= GenerationOrchestrator.getLogger(); 
-	
 	
 	protected static String NUMBER_OF_VMS_SUBSTRING= "Instance"; 
 	
@@ -73,7 +69,7 @@ public class DimensionDerivator
 	
 	public void createDimensions(CamelModel camel, ConstraintProblem cp, List<OptimisationRequirement> complexOptRequirements)
 	{
-		//logger.debug("DimensionDerivator - createDimensions 1");
+		//log.debug("DimensionDerivator - createDimensions 1");
 		RequirementModel reqs= camel.getRequirementModels().get(0); 
 
 		
@@ -145,14 +141,14 @@ public class DimensionDerivator
 					}
 /*					else
 					{
-						logger.warn("DimensionDerivator - createDimensions - The optimisation requirement "+optReq.getName()+"does not have a related metric context. The dimension will be not generated!");
+						log.warn("DimensionDerivator - createDimensions - The optimisation requirement "+optReq.getName()+"does not have a related metric context. The dimension will be not generated!");
 					}*/
 
 					
 				}
 				else
 				{	
-					logger.warn("DimensionDerivator - createDimensions - The optimisation requirement "+optReq.getName()+"does not have a related metric. The dimension will be not generated!");
+					log.warn("DimensionDerivator - createDimensions - The optimisation requirement "+optReq.getName()+"does not have a related metric. The dimension will be not generated!");
 				}	
 					
 				
@@ -204,10 +200,10 @@ public class DimensionDerivator
 			if(var!=null)
 				cp.getVariables().add(var); 
 			else
-				logger.warn("DimensionDerivator - createDimensions - The variable  "+varName+" cannot be created with the provided domain!");	
+				log.warn("DimensionDerivator - createDimensions - The variable  "+varName+" cannot be created with the provided domain!");	
 		}
 		else
-			logger.warn("DimensionDerivator - createDimensions - The variable  "+varName+" cannot be created with the provided domain!");
+			log.warn("DimensionDerivator - createDimensions - The variable  "+varName+" cannot be created with the provided domain!");
 		
 		return var;
 	}
@@ -245,7 +241,7 @@ public class DimensionDerivator
 			cp.getGoals().add(goalCP); 
 		}
 		else
-			logger.warn("DimensionDerivator - createDimension - The dimension for the metric  "+varName+" cannot be created!");
+			log.warn("DimensionDerivator - createDimension - The dimension for the metric  "+varName+" cannot be created!");
 	}
 	
 	protected void createDimension(NumericExpression exp, ConstraintProblem cp, OptimisationFunctionType goal, double priority, String goalId)
@@ -351,7 +347,7 @@ public class DimensionDerivator
 		List<NumericExpression> expressions= new ArrayList<NumericExpression>();
 		List<InternalComponent> components = new ArrayList<>();
 		
-		//logger.debug("DimensionDerivator - processRawMetric 1");
+		//log.debug("DimensionDerivator - processRawMetric 1");
 		//The context is a raw context - It is mandatory
 		if(metricContext!=null && metricContext.getComponent()!=null && metricContext.getComponent() instanceof InternalComponent)
 		{
@@ -450,7 +446,7 @@ public class DimensionDerivator
 		List<NumericExpression> expressions= new ArrayList<>();
 		NumericExpression exp= null;
 		
-		//logger.debug("DimensionDerivator - processFormula 1");
+		//log.debug("DimensionDerivator - processFormula 1");
 		for(MetricFormulaParameter parameter:formula.getParameters())
 		{
 			
@@ -494,7 +490,7 @@ public class DimensionDerivator
 				}
 /*				else
 				{
-					logger.warn("DimensionDerivator - processFormula - The metric "+theMetric.getName()+" does not have a context. It will be ignored!");
+					log.warn("DimensionDerivator - processFormula - The metric "+theMetric.getName()+" does not have a context. It will be ignored!");
 				}*/
 				
 			}
@@ -609,10 +605,10 @@ public class DimensionDerivator
 				
 			}
 			else
-				logger.warn("DimensionDerivator - processFormula - There is not enough arguments for the formula "+ formula.getName()+", It will be not created!");
+				log.warn("DimensionDerivator - processFormula - There is not enough arguments for the formula "+ formula.getName()+", It will be not created!");
 		}
 		else
-			logger.warn("DimensionDerivator - processFormula - The operator "+formula.getFunction().getName()+" is not currently supperted. The formula "+ formula.getName()+" will be not created!");
+			log.warn("DimensionDerivator - processFormula - The operator "+formula.getFunction().getName()+" is not currently supperted. The formula "+ formula.getName()+" will be not created!");
 		
 		return exp;
 	}
@@ -701,7 +697,7 @@ public class DimensionDerivator
 						
 						if(varsRelated.size()==0)
 						{
-							logger.warn("DimensionDerivator - createConstraint - VM variables does not exist for the component "+ic.getName()+". The condition "+condition.getName()+" will be no used to create a constraint related to it!");
+							log.warn("DimensionDerivator - createConstraint - VM variables does not exist for the component "+ic.getName()+". The condition "+condition.getName()+" will be no used to create a constraint related to it!");
 						}
 							
 						
@@ -717,7 +713,7 @@ public class DimensionDerivator
 							expressions.add(var); 
 						}
 						else
-							logger.warn("DimensionDerivator - createConstraint - The variable  "+varName+" does not exist. The condition "+condition.getName()+" will be no used to create a constraint related to it!");
+							log.warn("DimensionDerivator - createConstraint - The variable  "+varName+" does not exist. The condition "+condition.getName()+" will be no used to create a constraint related to it!");
 					}
 					else //It is a metric
 					{
@@ -730,7 +726,7 @@ public class DimensionDerivator
 							expressions.add(metricVar); 
 						}
 						else
-							logger.warn("DimensionDerivator - createConstraint - The metric  "+metricName+" does not exist. The condition "+condition.getName()+" will be no used to create a constraint related to it!");
+							log.warn("DimensionDerivator - createConstraint - The metric  "+metricName+" does not exist. The condition "+condition.getName()+" will be no used to create a constraint related to it!");
 					}
 					
 				}	
@@ -759,7 +755,7 @@ public class DimensionDerivator
 					expressions.add((NumericExpression) exp);
 				}
 				else
-					logger.warn("DimensionDerivator - createConstraint - The composite metric with formula  "+expId+" does not exist. The condition "+condition.getName()+" will be no used to create a constraint related to it!");
+					log.warn("DimensionDerivator - createConstraint - The composite metric with formula  "+expId+" does not exist. The condition "+condition.getName()+" will be no used to create a constraint related to it!");
 			}
 			
 			if(expressions.size()>0)
@@ -785,7 +781,7 @@ public class DimensionDerivator
 			
 		}
 		else
-			logger.warn("DimensionDerivator - createConstraint - The operator "+condition.getComparisonOperator().getName()+" is not currently supperted. The metric condition "+ condition.getName()+" cannot be translated into a constraint!");
+			log.warn("DimensionDerivator - createConstraint - The operator "+condition.getComparisonOperator().getName()+" is not currently supperted. The metric condition "+ condition.getName()+" cannot be translated into a constraint!");
 		
 	}
 		

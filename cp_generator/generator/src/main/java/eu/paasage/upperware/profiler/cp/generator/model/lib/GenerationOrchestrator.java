@@ -28,6 +28,7 @@ import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.cp.generator.FromRuleProcessorSlo;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -55,7 +56,7 @@ import eu.paasage.upperware.profiler.cp.generator.zeroMQ.lib.ZeroMQServer;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
-
+@Slf4j
 public class GenerationOrchestrator 
 {
 	/*
@@ -88,27 +89,6 @@ public class GenerationOrchestrator
 		ERROR, NO_CHANGE_REQUIRED, NO_SOLUTION_AVAILABLE, MODEL_CHANGED
 	}
 
-
-	/*
-	 * ATTRIBUTES
-	 */
-	/*
-	 * THE LOGGER 
-	 */
-	private static Logger logger= null;
-	
-	public static Logger getLogger()
-	{
-		if(logger==null)
-		{	
-			logger= Logger.getLogger("paasage-profiler-log");
-			configLog();
-		}	
-			
-		return logger; 
-		
-	}
-		
 	/*
 	 * The CP model derivator
 	 */
@@ -137,7 +117,6 @@ public class GenerationOrchestrator
 	 */
 	public GenerationOrchestrator()
 	{	
-		getLogger(); 
 		propertyManager= PaaSagePropertyManager.getInstance(); 
 
 		ApplicationPackage.eINSTANCE.eClass();
@@ -160,7 +139,7 @@ public class GenerationOrchestrator
 			derivator= new CPModelDerivator(creatorFile, database); 
 		else
 		{
-			logger.error("GenerationOrchestrator - The creators file does not exist. The derivator will be not created!");
+			log.error("GenerationOrchestrator - The creators file does not exist. The derivator will be not created!");
 		}
 	}
 	
@@ -184,7 +163,7 @@ public class GenerationOrchestrator
 	public String generateCPModel(String modelPath)
 	//TODO - tutaj dopisac
 	{
-		logger.info("************************************CP Generator Model To Solver************************************"); 
+		log.info("************************************CP Generator Model To Solver************************************"); 
 		
 		CamelModelProcessor camelProcessor= createCamelModelProcessor(modelPath); //TO_TUTAJ
 		
@@ -226,12 +205,12 @@ public class GenerationOrchestrator
 			Set<String> preferedProviders = getPreferedProviders(camelProcessor.getCamelModel());
 
 
-			logger.info("** Calling CamelModel Processor");
+			log.info("** Calling CamelModel Processor");
 			camelProcessor.parseModel(pcw, preferedProviders);
 				
 		
 			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships) {
-				logger.info("** Calling CPModelDerivator");
+				log.info("** Calling CPModelDerivator");
 				ConstraintProblem cp= derivator.derivateConstraintProblem(camelProcessor.getCamelModel(),pc, database); 
 				//pc.getId();
 
@@ -240,9 +219,9 @@ public class GenerationOrchestrator
 				FromRuleProcessorSlo fromRuleProcessorSlo = new FromRuleProcessorSlo();
 				fromRuleProcessorSlo.update(camelModel, cp);
 
-				logger.debug("** Calling DatabseProxy ");
+				log.debug("** Calling DatabseProxy ");
 				database.saveModels(pc, cp, resSet); 
-				logger.debug("** Calling Sender");
+				log.debug("** Calling Sender");
 				sender.sendPaasageConfigurationFiles(auxId);
 				
 				PrintStream outputFile= System.err; 
@@ -251,27 +230,27 @@ public class GenerationOrchestrator
 	
 				id= auxId;
 				
-				logger.info("** CP Model Id: "+id); 
+				log.info("** CP Model Id: "+id); 
 			} else if(pcw.hasUserSolution && pcw.isValidUserSolution()) {
-				logger.info("** The user already provided a solution for the deployment. The CP Model will be not generated!"); 
+				log.info("** The user already provided a solution for the deployment. The CP Model will be not generated!"); 
 			} else if(pcw.getPaasageConfiguration().getProviders().size()==0) {
-				logger.info("** There is not a suitable provider. The CP Model will be not generated!"); 
+				log.info("** There is not a suitable provider. The CP Model will be not generated!"); 
 			} else if(!pcw.hasCorrectHostingRelationships) {
-				logger.info("** There are missing hosting relationships in the deployment model. The CP Model will be not generated!"); 
+				log.info("** There are missing hosting relationships in the deployment model. The CP Model will be not generated!"); 
 			} else if(pcw.getComponentsWithoutVM()!=null && pcw.getComponentsWithoutVM().size()>0) {
-				logger.info("** There are not suitable providers for the following components: ");
+				log.info("** There are not suitable providers for the following components: ");
 				for(ApplicationComponent ac: pcw.getComponentsWithoutVM()) {
-					logger.info("** "+ac.getCloudMLId());
+					log.info("** "+ac.getCloudMLId());
 				}
-				logger.info("** The CP Model will be not generated! ");
+				log.info("** The CP Model will be not generated! ");
 			} else {
-				logger.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 
+				log.info("** The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!"); 
 			}
 		} else {
-			logger.error("** There is not Processor for Camel Models. The input model can not be processed");
+			log.error("** There is not Processor for Camel Models. The input model can not be processed");
 		}
 		
-		logger.info("****************************************************************************************************"); 
+		log.info("****************************************************************************************************"); 
 		
 		return id; 
 		
@@ -308,14 +287,14 @@ public class GenerationOrchestrator
 		InputStream inpFile= selectExistingLog4File(); 
 		
 		PropertyConfigurator.configure(inpFile);
-		logger.setLevel(Level.DEBUG);
-		
-		//Configures the CDO Client logger
-		Logger templogger = org.apache.log4j.Logger.getLogger(CDOClient.class);
-		templogger.setLevel(Level.INFO);
-	
-		org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
-		
+//		log.setLevel(Level.DEBUG);
+//
+//		//Configures the CDO Client logger
+//		Logger templogger = org.apache.log4j.log.getLogger(CDOClient.class);
+//		templog.setLevel(Level.INFO);
+//
+//		org.apache.log4j.log.getRootLogger().setLevel(Level.INFO);
+//
 		OutputStream output;
 		try {
 			output = new FileOutputStream("."+File.separator+"system.err.txt");
@@ -353,7 +332,7 @@ public class GenerationOrchestrator
 			try {
 				fis= new FileInputStream(pFile);
 			} catch (FileNotFoundException e) {
-				logger.error("GenerationOrchestrator - selectExistingLog4File - Problems loading log4 properties file!"); 
+				log.error("GenerationOrchestrator - selectExistingLog4File - Problems loading log4 properties file!"); 
 				e.printStackTrace();
 			} 	
 		
@@ -379,7 +358,7 @@ public class GenerationOrchestrator
 			try {
 				is= new FileInputStream(estimatorsFile);
 			} catch (FileNotFoundException e) {
-				logger.error("GenerationOrchestrator- selectExistingEstimatorFactoryFile - Problems loading the estimators file!"); 
+				log.error("GenerationOrchestrator- selectExistingEstimatorFactoryFile - Problems loading the estimators file!"); 
 				e.printStackTrace();
 			} 
 		
@@ -406,7 +385,7 @@ public class GenerationOrchestrator
 			try {
 				is= new FileInputStream(estimatorsFile);
 			} catch (FileNotFoundException e) {
-				logger.error("GenerationOrchestrator- selectExistingCreatorFile - Problems loading the creators file!"); 
+				log.error("GenerationOrchestrator- selectExistingCreatorFile - Problems loading the creators file!"); 
 				e.printStackTrace();
 			} 
 		
@@ -453,8 +432,8 @@ public class GenerationOrchestrator
 		}
 		else
 		{	
-			GenerationOrchestrator.getLogger().error("Usage: You have to specifiy a valid resouce in CDO containing the Camel Model and a Output file!"); 
-			GenerationOrchestrator.getLogger().error("       or -daemon for ZeroMQ daemon mode!"); 
+			log.error("Usage: You have to specifiy a valid resouce in CDO containing the Camel Model and a Output file!");
+			log.error("       or -daemon for ZeroMQ daemon mode!");
 			System.exit(1);
 		}	
 		
@@ -474,7 +453,7 @@ public class GenerationOrchestrator
 			} 
 			catch (IOException e) 
 			{
-				GenerationOrchestrator.logger.error("GenerationOrchestrator- Main- Problems creating the temp dir!"); 
+				GenerationOrchestrator.log.error("GenerationOrchestrator- Main- Problems creating the temp dir!"); 
 				e.printStackTrace();
 			} 
 		
@@ -507,7 +486,7 @@ public class GenerationOrchestrator
 			modelProcessor= new CamelModelProcessor(camelModel); 
 			modelProcessor.setValid(true);
 		} catch(Exception e) {
-			GenerationOrchestrator.logger.error("GenerationOrchestrator- createCamelModelProcessor- Problems loading the model with path: "+modelPath); 
+			GenerationOrchestrator.log.error("GenerationOrchestrator- createCamelModelProcessor- Problems loading the model with path: "+modelPath); 
 		}
 		return modelProcessor;
 	}

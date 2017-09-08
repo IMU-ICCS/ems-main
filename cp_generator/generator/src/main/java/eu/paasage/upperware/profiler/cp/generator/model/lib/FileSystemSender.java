@@ -13,7 +13,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.lib;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
@@ -27,6 +27,7 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyMan
  * @author danielromero
  *
  */
+@Slf4j
 public class FileSystemSender implements ISender 
 {
 	
@@ -34,8 +35,6 @@ public class FileSystemSender implements ISender
 	/*
 	 * ATTRIBUTES
 	 */
-	
-	private Logger logger= GenerationOrchestrator.getLogger();
 	
 	/*
 	 * (non-Javadoc)
@@ -60,11 +59,11 @@ public class FileSystemSender implements ISender
 				FileTool.saveFile(PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME), content);
 			} catch (IOException e) {
 				e.printStackTrace();
-				logger.error("FileSystemSender - sendPaasageConfigurationFiles - Problems creating the file "+PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME));
+				log.error("FileSystemSender - sendPaasageConfigurationFiles - Problems creating the file "+PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME));
 			}
 		}
 		else
-			logger.warn("FileSystemSender - sendPaasageConfigurationFiles - The file for saving the model id was not specified");
+			log.warn("FileSystemSender - sendPaasageConfigurationFiles - The file for saving the model id was not specified");
 	}
 
 }

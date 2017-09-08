@@ -1,5 +1,6 @@
 package eu.paasage.upperware.profiler.cp.generator.model.derivator.lib;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.EList;
@@ -21,6 +22,7 @@ import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 
+@Slf4j
 public class DeltaFunctionDerivator 
 {
 	
@@ -55,10 +57,6 @@ public class DeltaFunctionDerivator
 	/*
 	 * ATTRIBUTES
 	 */
-	/*
-	 * The logger
-	 */
-	protected static Logger logger= GenerationOrchestrator.getLogger(); 
 	
 	/*
 	 * Factory of Cp objects
@@ -78,7 +76,7 @@ public class DeltaFunctionDerivator
 		cp.setDeltaUtility(deltaUtility);
 		
 		//Adding the related solutions as parameters. They have to be defined by someone else
-		logger.debug("DeltaFunctionDerivator - createDeltaFunction - Creating parameters"); 
+		log.debug("DeltaFunctionDerivator - createDeltaFunction - Creating parameters"); 
 		Parameter parameterA= cpFactory.createParameter();
 		parameterA.setName(SOLUTION_A_NAME);
 		
@@ -93,7 +91,7 @@ public class DeltaFunctionDerivator
 		
 		
 		//Creation of the total weight constant
-		logger.debug("DeltaFunctionDerivator - createDeltaFunction - Creating Priority Constant"); 
+		log.debug("DeltaFunctionDerivator - createDeltaFunction - Creating Priority Constant"); 
 		double total= computeTotalPriorityWeight(cp.getGoals());
 		Constant totalPrioroty= cpFactory.createConstant();
 		
@@ -114,7 +112,7 @@ public class DeltaFunctionDerivator
 		
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(deltaUtility);
 		
-		logger.debug("DeltaFunctionDerivator - createDeltaFunction - Ended "+diagnostic); 
+		log.debug("DeltaFunctionDerivator - createDeltaFunction - Ended "+diagnostic); 
 		
 	}
 	
@@ -134,7 +132,7 @@ public class DeltaFunctionDerivator
 		
 		String goalExpressionID= goal.getExpression().getId();
 		
-		logger.debug("DeltaFunctionDerivator - createNormalisedUtilityDimension - Creating NUD for "+goalExpressionID); 
+		log.debug("DeltaFunctionDerivator - createNormalisedUtilityDimension - Creating NUD for "+goalExpressionID); 
 		
 		String nudId= goalExpressionID+NORMALISED_UTILITY_FUNCTION_SUFFIX;
 		
