@@ -19,7 +19,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = NONE)
 
-class ApplicationTaskExecutorTests extends Specification {
+class ApplicationTaskExecutorSpec extends Specification {
 
   String name, oldName
 

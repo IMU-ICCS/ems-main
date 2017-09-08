@@ -22,7 +22,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = NONE)
 
-class ApplicationInstanceTaskExecutorTests extends Specification {
+class ApplicationInstanceTaskExecutorSpec extends Specification {
 
   String name, appName
   Long id

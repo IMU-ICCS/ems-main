@@ -18,7 +18,7 @@ import spock.lang.Specification
 
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
 
-class DefaultGraphGeneratorConfigTests extends Specification {
+class DefaultGraphGeneratorConfigSpec extends Specification {
 
   POJOCreatorExample c
   Map<TaskType, Set<Task>> tasks
