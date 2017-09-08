@@ -7,7 +7,7 @@
 
 package eu.paasage.mddb.cdo.client;
 
-import org.apache.log4j.BasicConfigurator;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -20,17 +20,13 @@ import org.eclipse.ocl.examples.library.oclstdlib.OCLstdlibPackage;
 import org.eclipse.ocl.examples.pivot.OCL;
 import org.eclipse.ocl.examples.pivot.utilities.PivotEnvironmentFactory;
 
+@Slf4j
 public class OCLValidation {
-	
-	private static final org.apache.log4j.Logger logger =  org.apache.log4j.Logger.getLogger(OCLValidation.class);
-	
+
 	static {
 		initOcl();
 	}
-	
-	public OCLValidation(){
-	}
-	
+
 	private static void initOcl(){
 		System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 		final ResourceSet resourceSet =new ResourceSetImpl();
@@ -50,10 +46,10 @@ public class OCLValidation {
 	}
 	
 	public static boolean validate(EObject obj) throws RuntimeException{
-		logger.info("VALIDATING EOBJECT: " + obj);
+		log.info("VALIDATING EOBJECT: {}", obj);
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(obj);
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
-			logger.error("VALIDATION ERROR: " + diagnostic);
+			log.error("VALIDATION ERROR: {}", diagnostic);
 			return false;
 		}
 		return true;

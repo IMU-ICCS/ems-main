@@ -27,8 +27,6 @@ import eu.paasage.camel.organisation.User;
 import eu.paasage.camel.organisation.impl.OrganisationModelImpl;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.cp.generator.FromRuleProcessorSlo;
-import eu.paasage.upperware.profiler.cp.generator.model.log.LogPrinter;
-import eu.paasage.upperware.profiler.cp.generator.model.log.PrintStreamLogPrinter;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.*;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -131,8 +129,6 @@ public class GenerationOrchestrator
 	 */
 	protected PaaSagePropertyManager propertyManager; 
 
-	private LogPrinter logPrinter;
-
 	/*
 	 * CONSTRUCTOR
 	 */
@@ -143,7 +139,6 @@ public class GenerationOrchestrator
 	{	
 		getLogger(); 
 		propertyManager= PaaSagePropertyManager.getInstance(); 
-		logPrinter = new PrintStreamLogPrinter(System.out);
 
 		ApplicationPackage.eINSTANCE.eClass();
 		CpPackage.eINSTANCE.eClass();
