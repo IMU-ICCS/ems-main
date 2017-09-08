@@ -10,7 +10,6 @@ package eu.paasage.mddb.cdo.client;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,12 +20,11 @@ import java.io.PrintWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MyIOUtils {
-	
-	private static final Logger logger = org.apache.log4j.Logger.getLogger(MyIOUtils.class);
-	
+
 	private static final int BUFFER = 2048;
 	private static int id = 1;
 
@@ -35,8 +33,6 @@ public class MyIOUtils {
 
 	    try {
 	        BufferedInputStream origin = null;
-
-	        //FileOutputStream  output = new FileOutputStream(new File(srcFolder+ ".zip"));
 
 	        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(output));
 	        byte data[] = new byte[BUFFER];
@@ -53,7 +49,7 @@ public class MyIOUtils {
 		                    File files[] = f.listFiles();
 	
 		                    for (int i = 0; i < files.length; i++) {
-		                        logger.debug("Adding: " + files[i].getName());
+		                        log.debug("Adding: {}", files[i].getName());
 		                        FileInputStream fi = new FileInputStream(files[i]);
 		                        origin = new BufferedInputStream(fi, BUFFER);
 		                        ZipEntry entry = new ZipEntry(f.getName() + File.separator + files[i].getName());
@@ -72,7 +68,7 @@ public class MyIOUtils {
 	                else //it is just a file
 	                {
 	                	if (!f.getName().endsWith(suffix)) continue;
-	                	logger.debug("Adding: " + f.getName() + " canRead:" + f.canRead());
+	                	log.debug("Adding: {} canRead: {}", f.getName(), f.canRead());
 	                    FileInputStream fi = new FileInputStream(f);
 	                    origin = new BufferedInputStream(fi, BUFFER);
 	                    ZipEntry entry = new ZipEntry(f.getName());
@@ -83,26 +79,21 @@ public class MyIOUtils {
 	                        out.write(data, 0, count);
 	                        //out.flush();
 	                        totalCount = totalCount + count;
-	                        logger.debug("Read inc. " + count + " bytes for: " + f.getName());
+	                        log.debug("Read inc. {} bytes for: {}", count, f.getName());
 	                    }
-	                    logger.debug("Read totally " + totalCount + " bytes for: " + f.getName());
+	                    log.debug("Read totally {} bytes for: {}", totalCount, f.getName());
 	                    entry.setSize(totalCount);
 	                    out.closeEntry();
 	                    origin.close();
 
 	                }
 	        }
-	        //out.flush();
 	        out.finish();
 	        out.close();
 	    } catch (Exception e) {
-	    	logger.error("", e);
-	        logger.debug("createZipArchive threw exception: " + e.getMessage());        
+	    	log.error("createZipArchive threw exception: ", e);
 	        return false;
-
 	    }
-
-
 	    return true;
 	} 
 	

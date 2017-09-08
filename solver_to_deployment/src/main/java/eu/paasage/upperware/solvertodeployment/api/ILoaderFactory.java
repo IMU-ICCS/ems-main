@@ -8,6 +8,6 @@ import eu.paasage.upperware.loadPaaSageInstance.ModelProcess;
 
 public interface ILoaderFactory {
 
-	public ModelProcess loadModel(String path); 
+	ModelProcess loadModel(String path);
 
 }

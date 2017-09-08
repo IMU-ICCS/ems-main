@@ -17,8 +17,7 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.Locations;
 import eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes;
 
-public interface IDatabaseProxy 
-{
+public interface IDatabaseProxy {
 
 	// UPPERWARE ELEMENTS ------------------------------------------
 	
@@ -26,32 +25,32 @@ public interface IDatabaseProxy
 	 * Retrieves an OperatingSystems object that contains a list of available operating systems in the database
 	 * @return List of operating systems
 	 */
-	public OperatingSystems getOperatingSystems(); 
+	OperatingSystems getOperatingSystems();
 	
 	/**
 	 * Retrieves a Locations object that contains a list of available locations in the database
 	 * @return List of locations
 	 */
-	public Locations getLocations();
+	Locations getLocations();
 	
 	/**
 	 * Retrieves a ProviderTypes object that contains a list of available provider types in the database
 	 * @return List of provider types
 	 */
-	public ProviderTypes getProviderTypes(); 
+	ProviderTypes getProviderTypes();
 	
 	/**
 	 * Retrieves a FunctionTypes object that contains a list of available function types in the database
 	 * @return List of function types
 	 */
-	public FunctionTypes getFunctionTypes(); 
+	FunctionTypes getFunctionTypes();
 	
 	/**
 	 * Stores the related models (i.e., operating systems, locations, function types and provider types) of a configuration
 	 * @param resSet The resource set used to save models
 	 * @param dir The directory for saving the models
 	 */
-	public void saveRelatedModels(ResourceSet resSet, File dir); 
+	void saveRelatedModels(ResourceSet resSet, File dir);
 	
 	/**
 	 * Loads the related models (i.e., operating systems, locations, function types and provider types) of a configuration
@@ -59,33 +58,33 @@ public interface IDatabaseProxy
 	 * @param dir The directory containing the models
 	 * @param wrapper The wrapper of the configuration
 	 */
-	public void loadRelatedModels(ResourceSet resSet, File dir, PaasageConfiguration wrapper); 
+	void loadRelatedModels(ResourceSet resSet, File dir, PaasageConfiguration wrapper);
 	
-	public void saveModels(PaasageConfiguration pc, ResourceSet resSet); 
+	void saveModels(PaasageConfiguration pc, ResourceSet resSet);
 	
 	/**
 	 * Verifies if there is a PaaSage Configuration model with the specified ID
 	 * @param paasageConfigurationId The configuration id
 	 * @return true if Paasage configuration model exists; false if the configuration does not exist
 	 */
-	public boolean existPaaSageConfigurationModel(String paasageConfigurationId); 
+	boolean existPaaSageConfigurationModel(String paasageConfigurationId);
 	
 	/**
 	 * Loads the PaaSage Configuration model with the specified Id
 	 * @param paasageConfigurationId The configuration id
 	 * @return  PaaSage Configuration model 
 	 */
-	public PaasageConfiguration loadPaaSageConfigurationModel(String paasageConfigurationId); 
+	PaasageConfiguration loadPaaSageConfigurationModel(String paasageConfigurationId);
 	
 	/**
 	 * Closes the database session
 	 */
-	public void closeSession(); 
+	void closeSession();
 	
 	/**
 	 * Opens the database session
 	 */
-	public void openSession(); 
+	void openSession();
 		
 	/**
 	 * Loads a provider model
@@ -93,7 +92,7 @@ public interface IDatabaseProxy
 	 * @param provider The provider related to the provider model
 	 * @return The provider model
 	 */
-	public ProviderModel loadPM(PaasageConfiguration pc, Provider provider);
+	ProviderModel loadPM(PaasageConfiguration pc, Provider provider);
 
 	// CAMEL ELEMENTS ------------------------------------------
 
@@ -102,6 +101,6 @@ public interface IDatabaseProxy
 	 * @param modelPath The model path
 	 * @return The camel model
 	 */
-	public CamelModel getCamelModel(String modelPath); 
+	CamelModel getCamelModel(String modelPath);
 
 }

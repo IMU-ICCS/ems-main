@@ -4,7 +4,6 @@
 
 package eu.paasage.upperware.solvertodeployment.derivator.lib;
 
-import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.deployment.Communication;
@@ -32,115 +31,70 @@ public class CloudMLHelper {
 	private static int _globalCount = 0;
 	private static int _newDMIdx = -1;
 
-	private static int getGlobalCount()
-	{
+	private static int getGlobalCount() {
 		return _globalCount++;
 	}
 
-	public static void resetGlobalCount()
-	{
+	public static void resetGlobalCount() {
 		_globalCount=0;
 	}
 
-	public static void setGlobalDMIdx(int idx)
-	{
+	public static void setGlobalDMIdx(int idx) {
 		_newDMIdx = idx;
 	}
 
-	private static int getGlobalDMIdx()
-	{
+	private static int getGlobalDMIdx() {
 		return _newDMIdx;
 	}
 
-	public static String getGlobalSuffix()
-	{
+	private static String getGlobalSuffix() {
 		return getGlobalDMIdx() + "_" + getGlobalCount();
-	}
-	
-	
-	@SuppressWarnings("unused")
-	private static Logger log = Logger.getLogger(CloudMLHelper.class);
-
-	private static String findProviderName(String input)
-	{	
-		String[] split = input.split("_provider_");		
-		return split[1];
-	}
-
-	public  static String[] CPToKey(String key)
-	{
-		String[] split1 = key.split("_vm_");
-		String[] split2 = split1[0].split("U_app_component_");
-
-		String [] result = new String [3]; 
-		result[0]=split2[1];
-		result[1]=split1[1];
-		result[2]=findProviderName(key);
-		return result;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Internal Component Comnunication
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static InternalComponent findProvidedComponentFromCommunication(Communication com)
-	{
-		InternalComponent internalComponentProv = (InternalComponent)(com.getProvidedCommunication().eContainer());
-		return internalComponentProv;
+	public static InternalComponent findProvidedComponentFromCommunication(Communication com) {
+		return (InternalComponent)(com.getProvidedCommunication().eContainer());
 	}
 
-	public static InternalComponent findRequiredComponentFromCommunication(Communication com)
-	{
-		InternalComponent internalComponentReq = (InternalComponent)(com.getRequiredCommunication().eContainer());
-		return internalComponentReq;
+	public static InternalComponent findRequiredComponentFromCommunication(Communication com) {
+		return (InternalComponent)(com.getRequiredCommunication().eContainer());
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Internal Component Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	public static InternalComponentInstance createICInstance(InternalComponent ic1)
-	{
+	public static InternalComponentInstance createICInstance(InternalComponent ic1) {
 		// Create Instance + name + type
 		InternalComponentInstance internalComponentInstance = DeploymentFactory.eINSTANCE.createInternalComponentInstance();
 		internalComponentInstance.setName(ic1.getName() + "Instance_" + getGlobalSuffix());
 		internalComponentInstance.setType(ic1);
 
 		//Create ProvidedCommunicationInstance
-		for(int i=0 ;i <ic1.getProvidedCommunications().size();i++)
-		{	
+		for(int i=0 ;i <ic1.getProvidedCommunications().size();i++) {
 			ProvidedCommunicationInstance providedCommunicationInstance = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
-			{
-				ProvidedCommunication providedCommunication = ic1.getProvidedCommunications().get(i);
-				providedCommunicationInstance.setType(providedCommunication);
-				//		providedCommunicationInstance.setOwner(internalComponentInstance);
-				providedCommunicationInstance.setName(providedCommunication.getName() + "ProvidedCommunicationInstance_" + getGlobalCount());
-			}
+			ProvidedCommunication providedCommunication = ic1.getProvidedCommunications().get(i);
+			providedCommunicationInstance.setType(providedCommunication);
+			providedCommunicationInstance.setName(providedCommunication.getName() + "ProvidedCommunicationInstance_" + getGlobalCount());
 			internalComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance);
 		}
 
 		//Create RequiredCommunicationInstance
-		for(int i=0 ;i <ic1.getRequiredCommunications().size();i++)
-		{	
+		for(int i=0 ;i <ic1.getRequiredCommunications().size();i++) {
 			RequiredCommunicationInstance requiredCommunicationInstance = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance(); 
-			{
-				RequiredCommunication requiredCommunication = ic1.getRequiredCommunications().get(i);
-
-				requiredCommunicationInstance.setType(requiredCommunication);
-				//	requiredCommunicationInstance.setOwner(internalComponentInstance);
-				requiredCommunicationInstance.setName(requiredCommunication.getName() + "ReqCommunicationInstance_" + getGlobalCount());
-			}
+			RequiredCommunication requiredCommunication = ic1.getRequiredCommunications().get(i);
+			requiredCommunicationInstance.setType(requiredCommunication);
+			requiredCommunicationInstance.setName(requiredCommunication.getName() + "ReqCommunicationInstance_" + getGlobalCount());
 			internalComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance);
-
 		}	
 
 		//Create RequiredHostInstance
 		RequiredHostInstance requiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-		{
-			requiredHostInstance.setType(ic1.getRequiredHost());
-			requiredHostInstance.setName(ic1.getName() + "RequiredHostInstance_" + getGlobalCount());
-			//	requiredHostInstance.setOwner(internalComponentInstance);
-		}
+		requiredHostInstance.setType(ic1.getRequiredHost());
+		requiredHostInstance.setName(ic1.getName() + "RequiredHostInstance_" + getGlobalCount());
 		internalComponentInstance.setRequiredHostInstance(requiredHostInstance);
 
 		return internalComponentInstance;
@@ -150,35 +104,27 @@ public class CloudMLHelper {
 	// VM Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static VMInstance createVMInstance(VM vm, ProviderModel providerModel)
-	{
+	public static VMInstance createVMInstance(VM vm) {
 		// Create VMi
 		VMInstance vmInstance = DeploymentFactory.eINSTANCE.createVMInstance();
 		vmInstance.setType(vm);
 		vmInstance.setName(vm.getName() + "VMInstance_" + getGlobalSuffix());
 
 		// Create ProviderHostInstance
-		for(int i=0 ;i < vm.getProvidedHosts().size();i++)
-		{
+		for(int i=0 ;i < vm.getProvidedHosts().size();i++) {
 			ProvidedHostInstance providedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-			{
-				ProvidedHost providedHost = vm.getProvidedHosts().get(i);
-				providedHostInstance.setName(providedHost.getName() +"ProvidedHostInstance_" + getGlobalCount());
-				//providedHostInstance.setOwner(vmInstance);
-				providedHostInstance.setType(providedHost);
-			}
+			ProvidedHost providedHost = vm.getProvidedHosts().get(i);
+			providedHostInstance.setName(providedHost.getName() +"ProvidedHostInstance_" + getGlobalCount());
+			providedHostInstance.setType(providedHost);
 			vmInstance.getProvidedHostInstances().add(providedHostInstance);
 		}
 		return vmInstance;
 	}
 
-	public static Attribute findVMType(ProviderModel _providerModel) throws S2DException
-	{
+	public static Attribute findVMType(ProviderModel _providerModel) throws S2DException {
 		Attribute result = null;
-		if(_providerModel == null )
-		{
+		if(_providerModel == null ) {
 			throw new S2DException("Bad calling . Provider musn't not be null");
-
 		}
 		EList<Feature> subFeatures = _providerModel.getRootFeature().getSubFeatures(); 
 		String logTxt = "\n * Start looking vmType for providerModel " + _providerModel.getName();
@@ -190,8 +136,7 @@ public class CloudMLHelper {
 			for (Attribute attribute : attributes) {	
 				logTxt+=("\n    *** Is attribute name equals vmType ? : " + attribute.getName() + " bla " + attribute.getValue());
 
-				if(attribute.getName().equals("VMType"))
-				{
+				if(attribute.getName().equals("VMType")) {
 					result = attribute;
 				}
 			}

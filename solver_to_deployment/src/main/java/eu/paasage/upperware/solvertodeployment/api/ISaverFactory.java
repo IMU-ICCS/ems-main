@@ -10,6 +10,6 @@ import eu.paasage.camel.deployment.DeploymentModel;
 
 public interface ISaverFactory {
 	
-	public void saveCloudML(DeploymentModel pc, String path); 
+	void saveCloudML(DeploymentModel pc, String path);
 
 }

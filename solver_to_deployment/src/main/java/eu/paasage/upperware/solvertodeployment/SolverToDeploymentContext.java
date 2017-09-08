@@ -17,14 +17,11 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class ApplicationContext {
-
-  //private AdapterProperties adapterProperties;
+public class SolverToDeploymentContext {
 
   @Bean
   public RestTemplate getRestTemplate() {
     return new RestTemplate();
   }
-
 
 }

@@ -4,13 +4,12 @@
 
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import org.apache.log4j.Logger;
+import eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.Communication;
-import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.HostingInstance;
@@ -22,9 +21,7 @@ import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
@@ -33,9 +30,8 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 
+@Slf4j
 public class SolverToDeployementHelper {
-
-	public static Logger log= Logger.getLogger(SolverToDeployementHelper.class);
 
 	/**
 	 * <pre>
@@ -79,73 +75,48 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 		log.info(logg);
 	}
 
-	public static void printVar(PaasageConfiguration pc)
-	{
-		EList<PaaSageVariable> paasageVar = pc.getVariables();
-		for (PaaSageVariable paaSageVariable : paasageVar) {
-			printVar(paaSageVariable);
-		}
-	}
-	
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Internal Component Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static InternalComponent findInternalComponentFromPaasageConfigurationApplicationComponent(DeploymentModel deploymentModel,
-			String paasageConfigurationApplicationId) throws S2DException
-	{
-		EList<InternalComponent> components = deploymentModel.getInternalComponents();
-		for (InternalComponent internalComponent : components)
-		{
-			if(internalComponent.getName().toLowerCase().equals(paasageConfigurationApplicationId.toLowerCase()))
-				return internalComponent;
-		}
-		throw new S2DException("Unable to find "+ paasageConfigurationApplicationId+ " component in camel model");
-	}
-
-	public static EList<InternalComponentInstance> createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,DeploymentModel deploymentModel, Long nb) throws S2DException
-	{
+	public static EList<InternalComponentInstance> createInternalComponentInstanceFromPaasageVariable(PaaSageVariable paaSageVariable,
+																									  DeploymentModel deploymentModel, Long nb) throws S2DException {
 		ApplicationComponent component = paaSageVariable.getRelatedComponent();
 
-		InternalComponent internalComponent = null;
-		internalComponent = findInternalComponentFromPaasageConfigurationApplicationComponent(deploymentModel,component.getCloudMLId());
-		EList<InternalComponentInstance> internalCIs = new BasicEList<InternalComponentInstance>();
-		for(int i=0; i<nb; i++)
-		{
+		InternalComponent internalComponent = findInternalComponentFromPaasageConfigurationApplicationComponent(deploymentModel,component.getCloudMLId());
+		EList<InternalComponentInstance> internalCIs = new BasicEList<>();
+		for(int i=0; i<nb; i++) {
 			internalCIs.add(CloudMLHelper.createICInstance(internalComponent));			
 		}
 		return internalCIs;
+	}
+
+	public static InternalComponent findInternalComponentFromPaasageConfigurationApplicationComponent(DeploymentModel deploymentModel,
+																									  String paasageConfigurationApplicationId) throws S2DException {
+		return deploymentModel.getInternalComponents().stream()
+				.filter(internalComponent -> internalComponent.getName().equalsIgnoreCase(paasageConfigurationApplicationId))
+				.findFirst()
+				.orElseThrow(() -> new S2DException("Unable to find "+ paasageConfigurationApplicationId+ " component in camel model"));
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Hosting Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	static public Hosting findHosting(InternalComponent component,DeploymentModel _deploymentModel) throws S2DException
-	{
-//		log.info("=> Looking for an hosting for component: "+component.getName()+ " of name "+component.getRequiredHost().getName());
-		for(Hosting h : _deploymentModel.getHostings())
-		{
-//			log.info("  ? "+h.getProvidedHost().getName());
-			if (h.getRequiredHost().getName().equals(component.getRequiredHost().getName()))
-			{
-//				log.info("  returns  "+h.getProvidedHost().getName());
-				return h;
-			}
-		}
-		throw new S2DException("Unable to find hosting for application component name :" + component.getName() + " . Seems to have error in original model");
-
+	static public Hosting findHosting(InternalComponent component,DeploymentModel deploymentModel) throws S2DException {
+		return deploymentModel.getHostings()
+				.stream()
+				.filter(h -> h.getRequiredHost().getName().equals(component.getRequiredHost().getName()))
+				.findFirst()
+				.orElseThrow(() -> new S2DException("Unable to find hosting for application component name :" + component.getName() + " . Seems to have error in original model"));
 	}
 
-	static public HostingInstance createHostingInstance(VMInstance vmInstance, InternalComponentInstance internalComponentInstance, DeploymentModel deploymentModel) throws S2DException 
-	{
+	static public HostingInstance createHostingInstance(VMInstance vmInstance, InternalComponentInstance internalComponentInstance, DeploymentModel deploymentModel) throws S2DException {
 		InternalComponent internalComponent = (InternalComponent) internalComponentInstance.getType();
 		Hosting hosting = findHosting(internalComponent, deploymentModel);
 
-		HostingInstance hostingInstance = CloudMLHelper.buildNewHostingInstance(internalComponentInstance.getType().getName(),vmInstance,internalComponentInstance,hosting);
-
-		if(hostingInstance == null)
-		{
+		HostingInstance hostingInstance = CloudMLHelper.buildNewHostingInstance(internalComponentInstance.getType().getName(), vmInstance, internalComponentInstance, hosting);
+		if(hostingInstance == null) {
 			throw new S2DException("Unable to find hosting for application component name" + internalComponentInstance.getName());
 		}	
 		return hostingInstance;
@@ -155,61 +126,31 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	// VM Instance
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	static VM findVM(EList<VM> vms, String vmIdentifier)
-	{
-		VM result = null;
-		@SuppressWarnings("unused")
-		String log = "";
-		for (VM vm : vms) {
-
-			log += (" \nLooking vm " + vm.getName() + " in camel deployement model " + "compare to" +vm.getName()); 
-			//
-			//						if(vms.get(i).getName().equals(computedVMProfileName))
-			//						{
-
-			if(vm instanceof VM && vm.getName().equals(vmIdentifier))
-			{
-				log += "\n Find  vm for name" + vmIdentifier;
-				result = vm;
-				break;
-			}
-		}
-		return result;
+	static VM findVMByName(EList<VM> vms, String vmIdentifier) {
+		return vms.stream()
+				.filter(vm -> vm.getName().equals(vmIdentifier))
+				.findFirst().orElse(null);
 	}
 
 
-	public static EList<VMInstance> searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, String passageConfigurationID, Long nb) throws S2DException
-	{
-		EList<VM> vms = deploymentModel.getVms();
-
+	public static EList<VMInstance> searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, Long nb) throws S2DException {
 		String vmIdentifier = paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId();
 
-		VM result = findVM(vms, vmIdentifier);
+		VM result = findVMByName(deploymentModel.getVms(), vmIdentifier);
 		// Why do we need '#'+vmIdentifier (cf CDODatabaseProxy2)
 		String providerModelId =  paaSageVariable.getRelatedProvider().getId()+"#"+vmIdentifier;
 
-		ProviderModel providerModel = null;
 		CamelModel cm = (CamelModel) deploymentModel.eContainer();
-//		log.info("Looking for PM id:"+providerModelId);
-		for(ProviderModel p : cm.getProviderModels())
-		{
-//			log.info("Testing for PM id:"+p.getName());
-			if (p.getName().equals(providerModelId)) {
-				providerModel = p;
-				break;
-			}
-		}
-		if (providerModel==null)
-		{
-			log.fatal("Oops: no Provider model found:");
-			throw new S2DException("Provider not found: "+providerModelId);
-		}
-		log.debug("Creating VM instances providerModel = "+providerModel.getName());
+		ProviderModel providerModel = cm.getProviderModels().stream()
+				.filter(p -> p.getName().equals(providerModelId))
+				.findFirst()
+				.orElseThrow(() -> new S2DException("Provider not found: " + providerModelId));
+
+		log.debug("Creating VM instances providerModel = {}", providerModel.getName());
 		//Create now
-		EList<VMInstance> vmInstances = new BasicEList<VMInstance>();
-		for(int i=0; i<nb; i++)
-		{
-			VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result, providerModel);
+		EList<VMInstance> vmInstances = new BasicEList<>();
+		for(int i=0; i<nb; i++) {
+			VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(result);
 			//Set VM Type/value 
 			Attribute attribute = CloudMLHelper.findVMType(providerModel);
 			vmInstanceResult.setVmType(attribute);
@@ -224,47 +165,28 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	// Helper
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static String providerModelToProviderModelId(String providerModelName)
-	{
-		String[] results = providerModelName.split("-");
-		String result = results[0];
-		return result;
-	}
+	protected static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem constraintProblem, int solutionId) throws S2DException {
+		Solution solution = constraintProblem.getSolution().get(solutionId);
 
-	
-	public static Long findCardinalityOf(PaaSageVariable paaSageVariable, ConstraintProblem _constraintProblem, int solutionId) throws S2DException
-	{		
-		Solution solution = _constraintProblem.getSolution().get(solutionId);
-		
-		for(MetricVariable mv : _constraintProblem.getMetricVariables()) {
-			String metricId = mv.getId();
-		}
+		EList<VariableValue> variables = solution.getVariableValue();
 
-			EList<VariableValue> variables  = solution.getVariableValue();
-
-			for (VariableValue variableValue : variables) {
-				log.debug("Compare " + paaSageVariable.getCpVariableId() + "  with " +  variableValue.getVariable().getId());
-				if(paaSageVariable.getCpVariableId().equals(variableValue.getVariable().getId()))
-				{
-					NumericValueUpperware value = variableValue.getValue();
-					Long result;
-					if (value instanceof LongValueUpperware) {
-						LongValueUpperware longValueUpperware = (LongValueUpperware) value;
-						result = longValueUpperware.getValue();
-					} else if (value instanceof IntegerValueUpperware) {
-						IntegerValueUpperware intValueUpperware = (IntegerValueUpperware) value;
-						result = (long) intValueUpperware.getValue();
-					}
-					else {
-						String msg ="Did not support type for: "+value;
-						throw new S2DException(msg);
-					}
-					log.debug("Find !" + result);
-
-					return result;
+		for (VariableValue variableValue : variables) {
+			log.debug("Compare {} with {}", paaSageVariable.getCpVariableId(), variableValue.getVariable().getId());
+			if (paaSageVariable.getCpVariableId().equals(variableValue.getVariable().getId())) {
+				NumericValueUpperware value = variableValue.getValue();
+				Long result;
+				if (value instanceof LongValueUpperware) {
+					result = ((LongValueUpperware) value).getValue();
+				} else if (value instanceof IntegerValueUpperware) {
+					result = (long) ((IntegerValueUpperware) value).getValue();
+				} else {
+					throw new S2DException("Did not support type for: " + value);
 				}
-			}			
-		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId() );
+				log.debug("Find ! {}", result);
+				return result;
+			}
+		}
+		throw new S2DException("Input error. Solver seems to have done something wrong. Unable to find the cardinality value for Solver constraint " + paaSageVariable.getCpVariableId());
 	}
 	
 }
