@@ -13,6 +13,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.derivator.lib;
 
 import java.io.InputStream;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 
 import eu.paasage.camel.provider.ProviderModel;
@@ -30,6 +31,7 @@ import fr.inria.paasage.saloon.price.model.lib.EstimatorsManager;
  * @author danielromero
  *
  */
+@Slf4j
 public class CostEstimator implements IDimensionValueEstimator 
 {
 	/*
@@ -38,12 +40,7 @@ public class CostEstimator implements IDimensionValueEstimator
 	/*
 	 * The manager of estimators
 	 */
-	protected EstimatorsManager manager; 
-	
-	/*
-	 * The logger
-	 */
-	protected static Logger logger= GenerationOrchestrator.getLogger(); 
+	protected EstimatorsManager manager;
 	
 	/*
 	 * The database proxy
@@ -81,15 +78,15 @@ public class CostEstimator implements IDimensionValueEstimator
 			{	
 				Provider provider= pc.getProvider();
 				
-				logger.debug("CostEstimator - estimateDimensionValue - Defining the price for provider "+provider.getId()); 
+				log.debug("CostEstimator - estimateDimensionValue - Defining the price for provider "+provider.getId()); 
 				
 				ProviderModel fm= loadProviderPM(provider, configuration); 
 				
-				logger.debug("CostEstimator - estimateDimensionValue - Defining the price for provider "+provider.getId()+ " with FM "+fm.getRootFeature().getName()); 
+				log.debug("CostEstimator - estimateDimensionValue - Defining the price for provider "+provider.getId()+ " with FM "+fm.getRootFeature().getName()); 
 				
 				double price=manager.estimatePrice(fm); 
 				
-				logger.debug("CostEstimator - estimateDimensionValue - The computed price "+price); 
+				log.debug("CostEstimator - estimateDimensionValue - The computed price "+price); 
 				
 				pc.setValue(price); 
 			}	

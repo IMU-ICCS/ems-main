@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.passage.upperware.commons.model.tools.ModelTool;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -50,10 +51,9 @@ import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrat
 /**
  * @author Daniel Romero
  */
+@Slf4j
 public class CDOClientExtended extends CDOClient
-{	
-	
-	protected static Logger logger= GenerationOrchestrator.getLogger(); 
+{
 	
 	protected static PrintStream originalErrOutput; 
 	
@@ -222,21 +222,21 @@ public class CDOClientExtended extends CDOClient
 		EList<EObject> content = resource.getContents();
 		
 		List<EObject> qr= new ArrayList<EObject>(); 
-		logger.debug("CDOClientExtended - getResourceContents - Retrieved Resource "+resource +" path "+path );
+		log.debug("CDOClientExtended - getResourceContents - Retrieved Resource "+resource +" path "+path );
 		
 		if(!content.isEmpty())
 		{
-			logger.debug("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
+			log.debug("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
 			
 			for(EObject o:content)
 			{
-				logger.debug("CDOClientExtended - getResourceContents - Content "+o );
+				log.debug("CDOClientExtended - getResourceContents - Content "+o );
 				qr.add(o); 
 			}
 		
 		}
 		else
-			logger.warn("CDOClientExtended - getResourceContents - Resource path "+path+ " is empty ");
+			log.warn("CDOClientExtended - getResourceContents - Resource path "+path+ " is empty ");
 		
 		//closeView(view);
 		
@@ -267,9 +267,9 @@ public class CDOClientExtended extends CDOClient
 		CDOQuery query = null;
 		query = view.createQuery("sql", "SELECT resource_id FROM "+"camel_"+type.toLowerCase());
 		
-		logger.debug("CDOClientExtended - existResourceOfType - Query "+query+ " type: "+type);
+		log.debug("CDOClientExtended - existResourceOfType - Query "+query+ " type: "+type);
 		List<EObject> result= query.getResult();
-		logger.debug("CDOClientExtended - existResourceOfType - Result "+result);
+		log.debug("CDOClientExtended - existResourceOfType - Result "+result);
 		view.close();
 	
 		return result!=null && result.size()>0; 
@@ -282,21 +282,21 @@ public class CDOClientExtended extends CDOClient
 		EList<EObject> content = resource.getContents();
 		
 		List<EObject> qr= new ArrayList<EObject>(); 
-		logger.debug("CDOClientExtended - getResourceContents - Retrieved Resource "+resource +" path "+path );
+		log.debug("CDOClientExtended - getResourceContents - Retrieved Resource "+resource +" path "+path );
 		
 		if(!content.isEmpty())
 		{
-			logger.debug("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
+			log.debug("CDOClientExtended - getResourceContents - Resource path "+path+ " size "+content.size() );
 			
 			for(EObject o:content)
 			{
-				logger.debug("CDOClientExtended - getResourceContents - Content "+o );
+				log.debug("CDOClientExtended - getResourceContents - Content "+o );
 				qr.add(o); 
 			}
 		
 		}
 		else
-			logger.warn("CDOClientExtended - getResourceContents - Resource path "+path+ " is empty ");
+			log.warn("CDOClientExtended - getResourceContents - Resource path "+path+ " is empty ");
 		
 		return qr;
 	}

@@ -13,7 +13,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.derivator.lib;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.ProviderModel;
@@ -36,13 +36,12 @@ import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrat
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import fr.inria.paasage.saloon.camel.ProviderModelDecorator;
 
+@Slf4j
 public class AvailabilityFunctionCreator implements IFunctionCreator {
 
 	private IDatabaseProxy database; 
 	
 	public static String AVAILABILITY_ATTRIBUTE= "Availability"; 
-	
-	private static Logger logger= GenerationOrchestrator.getLogger();
 	
 	public AvailabilityFunctionCreator() {
 		
@@ -51,20 +50,20 @@ public class AvailabilityFunctionCreator implements IFunctionCreator {
 
 	public void createFunction(ConstraintProblem cp, PaaSageGoal goal) {
 		
-		logger.debug("AvailabilityFunctionCreator - createFunction - 1");
+		log.debug("AvailabilityFunctionCreator - createFunction - 1");
 		ComposedExpression ce= CPModelTool.createComposedExpression(OperatorEnum.PLUS,CPModelTool.getAuxExpressionId());                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 	
 		cp.getAuxExpressions().add(ce); 
-		logger.debug("AvailabilityFunctionCreator - createFunction - 2");
+		log.debug("AvailabilityFunctionCreator - createFunction - 2");
 
 			
 		for(ComponentMetricRelationship cmr:goal.getApplicationComponent())
 		{
-			logger.debug("AvailabilityFunctionCreator - createFunction - 3");
+			log.debug("AvailabilityFunctionCreator - createFunction - 3");
 			ApplicationComponent apc= cmr.getComponent(); 
-			logger.debug("AvailabilityFunctionCreator - createFunction - 4");
+			log.debug("AvailabilityFunctionCreator - createFunction - 4");
 			List<Variable> vars= CPModelTool.getVariablesRelatedToAppComponent(apc, cp); 
-			logger.debug("AvailabilityFunctionCreator - createFunction - 5");
+			log.debug("AvailabilityFunctionCreator - createFunction - 5");
 			for(Variable var: vars)
 			{
 				if(cmr.getMetricId()!=null)
@@ -82,15 +81,15 @@ public class AvailabilityFunctionCreator implements IFunctionCreator {
 					PaasageConfiguration pc= (PaasageConfiguration) goal.eContainer(); 
 					String appId= pc.getId(); 
 					
-					logger.debug("AvailabilityFunctionCreator - createFunction - 6"); 
+					log.debug("AvailabilityFunctionCreator - createFunction - 6"); 
 					ProviderModel pm= database.loadPM(appId, providerId); 
-					logger.debug("AvailabilityFunctionCreator - createFunction - 7 "+providerId+" "+pm);
+					log.debug("AvailabilityFunctionCreator - createFunction - 7 "+providerId+" "+pm);
 					
 					ProviderModelDecorator pmd= new ProviderModelDecorator(providerId, pm); 
 					
-					logger.debug("AvailabilityFunctionCreator - createFunction - 8");
+					log.debug("AvailabilityFunctionCreator - createFunction - 8");
 					Attribute av= pmd.getAttributeByName(AVAILABILITY_ATTRIBUTE);
-					logger.debug("AvailabilityFunctionCreator - createFunction - 9");
+					log.debug("AvailabilityFunctionCreator - createFunction - 9");
 					Constant availability= null; 
 					
 					if(av.getValue() instanceof IntegerValue)
@@ -104,10 +103,10 @@ public class AvailabilityFunctionCreator implements IFunctionCreator {
 						availability=CPModelTool.createIntegerConstant(Integer.parseInt(stringVal.getValue()), CPModelTool.getConstantName()); 
 					}
 					
-					logger.debug("AvailabilityFunctionCreator - createFunction - 10");
+					log.debug("AvailabilityFunctionCreator - createFunction - 10");
 					cp.getConstants().add(availability); 
 					
-					logger.debug("AvailabilityFunctionCreator - createFunction - 11");
+					log.debug("AvailabilityFunctionCreator - createFunction - 11");
 					//aux.getExpressions().add(metric); 
 					aux.getExpressions().add(availability); 
 					

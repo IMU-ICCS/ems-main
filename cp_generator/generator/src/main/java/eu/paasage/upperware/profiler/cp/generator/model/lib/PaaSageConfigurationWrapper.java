@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import eu.passage.upperware.commons.model.tools.ModelTool;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -47,6 +47,7 @@ import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
  * @author danielromero
  *
  */
+@Slf4j
 public class PaaSageConfigurationWrapper 
 {
 	
@@ -86,15 +87,9 @@ public class PaaSageConfigurationWrapper
 	
 	protected boolean validUserSolution; 
 	
-	protected boolean hasCorrectHostingRelationships;  
-	
+	protected boolean hasCorrectHostingRelationships;
 
 
-	/*
-	 * The logger
-	 */
-	protected Logger logger= GenerationOrchestrator.getLogger(); 
-	
 	public PaaSageConfigurationWrapper(PaasageConfiguration pc)//, File modelsDir, ResourceSet resSet)
 	{
 		paasageConfiguration= pc; 

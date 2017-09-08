@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -65,6 +66,7 @@ import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfiguration
  * @author danielromero
  *
  */
+@Slf4j
 public class PaasageModelTool 
 {
 	/*
@@ -74,11 +76,6 @@ public class PaasageModelTool
 	public static String NAME_SEPARATOR="_"; 
 	
 	public static String SUFFIX="VM_PROFILE"; 
-	
-	/*
-	 * THE LOGGER 
-	 */
-	public static Logger logger= Logger.getLogger("paasage-profiler-log");
 		
 	/*
 	 * METHODS
@@ -110,19 +107,19 @@ public class PaasageModelTool
 	public static OS getOSFromNameAndArchitecture(String osName, boolean is64Bits, PaaSageConfigurationWrapper pcw)
 	{
 
-		logger.debug("*************** new req");
+		log.debug("*************** new req");
 
 		for(OS os: pcw.getOperatingSystems().getOss())
 		{
 
 			boolean is64= os.getArchitecture().getValue()==OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE; 
 
-			logger.debug("*************** ==> "+os.getName()+" ==? "+osName+ " = "+os.getName().equals(osName));
-			logger.debug("*************** ==> "+os.getArchitecture().getValue() + " ==? " + OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE);
-			logger.debug("***************==> "+is64+" ==? "+is64Bits);
+			log.debug("*************** ==> "+os.getName()+" ==? "+osName+ " = "+os.getName().equals(osName));
+			log.debug("*************** ==> "+os.getArchitecture().getValue() + " ==? " + OSArchitectureEnum.SIXTY_FOUR_BITS_VALUE);
+			log.debug("***************==> "+is64+" ==? "+is64Bits);
 
 			if(os.getName().equals(osName) && is64==is64Bits) {
-				logger.debug("*************** SUCCESS");
+				log.debug("*************** SUCCESS");
 				return os; 
 			}
 
@@ -172,7 +169,7 @@ public class PaasageModelTool
 	public static LocationUpperware getLocation(Location loc, PaaSageConfigurationWrapper pcw)
 	{
 		String locationName= loc.getId(); 
-		logger.debug("***************looking for location "+locationName);
+		log.debug("***************looking for location "+locationName);
 		
 		if(loc instanceof CloudLocation)
 		{
@@ -304,8 +301,8 @@ public class PaasageModelTool
 		
 		for(LocationUpperware loc: locations)
 		{
-			logger.debug("***************Comparing location name "+loc.getName()+" with city "+cityName);
-			logger.debug("***************Alternative names size "+loc.getAlternativeNames().size());
+			log.debug("***************Comparing location name "+loc.getName()+" with city "+cityName);
+			log.debug("***************Alternative names size "+loc.getAlternativeNames().size());
 			if((loc instanceof CityUpperware) && (loc.getName().equals(cityName) || isInList(loc.getAlternativeNames(), cityName)))
 			{
 				cities.add((CityUpperware) loc); 
@@ -328,7 +325,7 @@ public class PaasageModelTool
 		
 		for(LocationUpperware loc: locations)
 		{
-			logger.debug("***************Comparing country name "+loc.getName()+" with "+countryName);
+			log.debug("***************Comparing country name "+loc.getName()+" with "+countryName);
 			if((loc instanceof CountryUpperware) && (loc.getName().equals(countryName) || isInList(loc.getAlternativeNames(), countryName)))
 			{
 				return (CountryUpperware) loc; 
@@ -349,7 +346,7 @@ public class PaasageModelTool
 	{
 		for(LocationUpperware loc: locations)
 		{
-			logger.debug("***************Comparing continent name "+loc.getName()+" with "+continentName);
+			log.debug("***************Comparing continent name "+loc.getName()+" with "+continentName);
 			if((loc instanceof ContinentUpperware) && (loc.getName().equals(continentName) || isInList(loc.getAlternativeNames(), continentName)))
 			{
 				return (ContinentUpperware) loc; 
@@ -369,7 +366,7 @@ public class PaasageModelTool
 	public static boolean isInList(EList<String> names, String name)
 	{
 		for(String n:names)
-		{	logger.debug("***************Comparing name "+n+" with "+name);
+		{	log.debug("***************Comparing name "+n+" with "+name);
 			if(n.equals(name))
 				return true; 
 		}
@@ -491,7 +488,7 @@ public class PaasageModelTool
 	{
 		for(ComponentMetricRelationship cmr:components)
 		{
-			logger.debug("PaasageModelTool - searchApplicationComponentByIdInRel "+cmr.getComponent().getCloudMLId());
+			log.debug("PaasageModelTool - searchApplicationComponentByIdInRel "+cmr.getComponent().getCloudMLId());
 			if(cmr.getComponent().getCloudMLId().equals(id))
 				return cmr.getComponent();
 		}
@@ -738,7 +735,7 @@ public class PaasageModelTool
 		
 		for(VirtualMachineProfile p: profiles)
 		{
-			logger.debug("PaasageModelTool - searchRelatedVMProfiles - Cloud VM  ID "+cloudVMId+" Considering profile "+p.getRelatedCloudVMId());
+			log.debug("PaasageModelTool - searchRelatedVMProfiles - Cloud VM  ID "+cloudVMId+" Considering profile "+p.getRelatedCloudVMId());
 			if(p.getRelatedCloudVMId().equals(cloudVMId))
 				relatedProfiles.add(p); 
 		}
@@ -845,7 +842,7 @@ public class PaasageModelTool
 			while(j< profiles.get(i).getProviderDimension().size())
 			{	
 				ProviderDimension pc= profiles.get(i).getProviderDimension().get(j); 
-				logger.debug("Provider type "+pc.getProvider().getType().getId());
+				log.debug("Provider type "+pc.getProvider().getType().getId());
 				if(pc.getProvider().getType().getId().equals(type.getId()))
 				{
 					profiles.get(i).getProviderDimension().remove(j); 
@@ -898,7 +895,7 @@ public class PaasageModelTool
 			while(j< profiles.get(i).getProviderDimension().size())
 			{	
 				ProviderDimension pc= profiles.get(i).getProviderDimension().get(j); 
-				logger.debug("Provider type "+pc.getProvider().getType().getId());
+				log.debug("Provider type "+pc.getProvider().getType().getId());
 				if(pc.getProvider().getId().equals(provider.getId()))
 				{
 					profiles.get(i).getProviderDimension().remove(j); 
@@ -941,7 +938,7 @@ public class PaasageModelTool
 	 * @param pcw The paasage configuration
 	 */
 	public static void removeVirtualMahineProfilesByProvider(List<VirtualMachineProfile> profiles, Provider provider, PaaSageConfigurationWrapper pcw) {
-		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider to remove " + provider.getId());
+		log.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider to remove " + provider.getId());
 		Iterator<VirtualMachineProfile> iterator = profiles.iterator();
 		while (iterator.hasNext()){
 			VirtualMachineProfile virtualMachineProfile = iterator.next();
@@ -950,9 +947,9 @@ public class PaasageModelTool
 			while(providerDimensionIterator.hasNext()){
 				ProviderDimension providerDimension = providerDimensionIterator.next();
 
-				logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider type "+providerDimension.getProvider().getType().getId());
+				log.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Provider type "+providerDimension.getProvider().getType().getId());
 				if(providerDimension.getProvider().getId().equals(provider.getId())){
-					logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Removing "+virtualMachineProfile.getProviderDimension());
+					log.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - Removing "+virtualMachineProfile.getProviderDimension());
 					providerDimensionIterator.remove();
 				}
 			}
@@ -967,7 +964,7 @@ public class PaasageModelTool
 			apc.getRequiredProfile().removeIf(virtualMachineProfile -> CollectionUtils.isEmpty(virtualMachineProfile.getProviderDimension()));
 		}
 
-		logger.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - End ");
+		log.debug("PaasageModelTool - removeVirtualMahineProfilesByProvider - End ");
 		
 	}
 	

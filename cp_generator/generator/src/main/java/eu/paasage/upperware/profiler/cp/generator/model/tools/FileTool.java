@@ -42,11 +42,6 @@ import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrat
  */
 public class FileTool 
 {
-	/*
-	 * Logger
-	 */
-	protected static Logger logger= GenerationOrchestrator.getLogger(); 
-	
 	
 	/**
 	 * Unzip a zip file

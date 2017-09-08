@@ -14,6 +14,7 @@ package eu.paasage.upperware.profiler.cp.generator.model.camel.lib;
 import java.util.*;
 
 import eu.paasage.camel.deployment.Configuration;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
@@ -46,6 +47,7 @@ import fr.inria.paasage.saloon.camel.ontology.QuantifiableElementCamel;
  * @author danielromero
  *
  */
+@Slf4j
 public class ProviderModelParser 
 {
 	/*
@@ -55,12 +57,6 @@ public class ProviderModelParser
 	 * The database proxy
 	 */
 	protected IDatabaseProxy db; 
-	
-	/*
-	 * The logger
-	 */
-	private static Logger logger= GenerationOrchestrator.getLogger(); 
-	
 	
 	/*
 	 * CONSTRUCTOR
@@ -89,11 +85,11 @@ public class ProviderModelParser
 
 		String vmName= vm.getName(); 
 		
-		logger.debug("ProviderModelParser- parseOntology 3- Init...");
+		log.debug("ProviderModelParser- parseOntology 3- Init...");
 		List<ConceptCamel> selectedConcepts= getSelectedConcepts(ontology); 
-		logger.debug("ProviderModelParser- parseOntology 4- Init...Selected concepts size: "+selectedConcepts.size());
+		log.debug("ProviderModelParser- parseOntology 4- Init...Selected concepts size: "+selectedConcepts.size());
 		QuantifiableElementCamel cpuConcept= (QuantifiableElementCamel) ProviderModelParser.getConceptByName("CPU", ontology.getConcepts());
-		logger.debug("ProviderModelParser - parseOntology - CPU concept unit 2 "+cpuConcept.getUnit().getName());
+		log.debug("ProviderModelParser - parseOntology - CPU concept unit 2 "+cpuConcept.getUnit().getName());
 		
 		PaasageConfiguration configuration= configurationWrapper.getPaasageConfiguration(); 
 		
@@ -109,10 +105,10 @@ public class ProviderModelParser
 			boolean found= false;
 			if(candidate.getLocation()!=null)
 			{
-				logger.debug("ProviderModelParser - parseOntology - Searching Candidate with Location "+candidate.getLocation().getName() +" and Id "+candidate.getId());
-				logger.debug("ProviderModelParser - parseOntology - Candidate list: ");
+				log.debug("ProviderModelParser - parseOntology - Searching Candidate with Location "+candidate.getLocation().getName() +" and Id "+candidate.getId());
+				log.debug("ProviderModelParser - parseOntology - Candidate list: ");
 				for(Provider c: candidates) {
-					logger.debug("ProviderModelParser - parseOntology - "+c.getId());
+					log.debug("ProviderModelParser - parseOntology - "+c.getId());
 				}
 				
 				Provider aux= PaasageModelTool.searchProviderWithLocationInList(candidates, candidate);
@@ -129,23 +125,23 @@ public class ProviderModelParser
 			}
 			
 			if(!found)
-				logger.warn("** 		The candidate with ID "+candidate.getId()+" was not found. It will be not considerd in the problem creation");
+				log.warn("** 		The candidate with ID "+candidate.getId()+" was not found. It will be not considerd in the problem creation");
 			
 			CamelModel camelModel= (CamelModel) pmd.getPm().eContainer(); 
 			camelModel.setName(vmName);
 			db.savePM(pmd.getPm(), configuration, candidate);
 			
-			logger.info("** 		Adding candidate: "+candidate.getId()+" with type: "+candidate.getType().getId());
+			log.info("** 		Adding candidate: "+candidate.getId()+" with type: "+candidate.getType().getId());
 			
 			if(!PaasageModelTool.isProviderInList(candidates, candidate)) {
 				candidates.add(candidate); 
-				logger.info("** 		Candidate added!");
+				log.info("** 		Candidate added!");
 			} else {
-				logger.info("** 		Candidate already added!");
+				log.info("** 		Candidate already added!");
 			}
 
 			if(candidates.size()==0)
-				logger.warn("ProviderModelParser- parseOntology- There is not cloud provider candidate!");
+				log.warn("ProviderModelParser- parseOntology- There is not cloud provider candidate!");
 			
 			alreadySelectedCandidates.add(candidate); 
 			
@@ -155,25 +151,25 @@ public class ProviderModelParser
 		{
 			ProviderType pt= PaasageModelTool.searchProviderTypeById(pmd.getProviderId(), configurationWrapper); 
 			
-			logger.debug("ProviderModelParser - parseOntology - 3 parameters - Removing candidate with type: "+pt.getId()); 
+			log.debug("ProviderModelParser - parseOntology - 3 parameters - Removing candidate with type: "+pt.getId()); 
 			
 			Provider pv=PaasageModelTool.removeProvidersFromListByType(configuration.getProviders(), pt); 
 			
 			if(pv!=null)
 			{	
-				logger.info("** 		Removing candidate: "+pv.getId()+" with type: "+pt.getId()); 
-				logger.info("** 		Candidate removed!");
+				log.info("** 		Removing candidate: "+pv.getId()+" with type: "+pt.getId()); 
+				log.info("** 		Candidate removed!");
 			
 			}
 			else
-				logger.info("** 		Candidate Already removed!");
+				log.info("** 		Candidate Already removed!");
 			
 			
-			logger.debug("ProviderModelParser - parseOntology -  3 parameters - Profiles before deleting "+configuration.getVmProfiles().size()); 
+			log.debug("ProviderModelParser - parseOntology -  3 parameters - Profiles before deleting "+configuration.getVmProfiles().size()); 
 			
 			PaasageModelTool.removeVirtualMahineProfilesByProviderType(configuration.getVmProfiles(), pt, configuration.getComponents()); 
 			
-			logger.debug("ProviderModelParser - parseOntology -  3 parameters - Profiles after deleting "+configuration.getVmProfiles().size()); 
+			log.debug("ProviderModelParser - parseOntology -  3 parameters - Profiles after deleting "+configuration.getVmProfiles().size()); 
 								
 		}*/
 	}
@@ -181,13 +177,13 @@ public class ProviderModelParser
 
 	public void removeNotPreferedProviders(Set<String> preferedProviders, PaasageConfiguration configuration){
 		if (preferedProviders.isEmpty()){
-			logger.info("** 		No prefered provider defined!");
+			log.info("** 		No prefered provider defined!");
 			return;
 		}
 
-		logger.info("** 		Prefered provider defined! Size: " + preferedProviders.size());
+		log.info("** 		Prefered provider defined! Size: " + preferedProviders.size());
 		for (String preferedProvider : preferedProviders) {
-			logger.info("** 		-> " + preferedProvider);
+			log.info("** 		-> " + preferedProvider);
 		}
 
 		Iterator<Provider> iterator = configuration.getProviders().iterator();
@@ -195,18 +191,18 @@ public class ProviderModelParser
 			Provider provider = iterator.next();
 			if (!preferedProviders.contains(provider.getId())) {
 				PaasageModelTool.removeVirtualMahineProfilesByProvider(configuration.getVmProfiles(), provider, configuration.getComponents());
-				logger.info("** 		Removing candidate: "+provider.getId()+" with type: "+provider.getType().getId());
+				log.info("** 		Removing candidate: "+provider.getId()+" with type: "+provider.getType().getId());
 				iterator.remove();
-				logger.info("** 		Candidate removed!");
+				log.info("** 		Candidate removed!");
 			}
 		}
 	}
 
 	public void removeNoCandidateProviders(PaasageConfiguration configuration, List<Provider> candidates) {
-		logger.debug("ProviderModelParser - removeNoCandidateProviders	-	Candidates size: "+candidates.size());
+		log.debug("ProviderModelParser - removeNoCandidateProviders	-	Candidates size: "+candidates.size());
 	
 		for(Provider c: candidates) {
-			logger.debug("ProviderModelParser - removeNoCandidateProviders	- 	Candidates ID: "+c.getId()); 
+			log.debug("ProviderModelParser - removeNoCandidateProviders	- 	Candidates ID: "+c.getId()); 
 		}
 
 		Iterator<Provider> iterator = configuration.getProviders().iterator();
@@ -214,9 +210,9 @@ public class ProviderModelParser
 			Provider provider = iterator.next();
 			if(!PaasageModelTool.isProviderInListById(candidates, provider)) {
 				PaasageModelTool.removeVirtualMahineProfilesByProvider(configuration.getVmProfiles(), provider, configuration.getComponents());
-				logger.info("** 		Removing candidate: "+provider.getId()+" with type: "+provider.getType().getId());
+				log.info("** 		Removing candidate: "+provider.getId()+" with type: "+provider.getType().getId());
 				iterator.remove();
-				logger.info("** 		Candidate removed!");
+				log.info("** 		Candidate removed!");
 			}
 		}
 	}
@@ -225,7 +221,7 @@ public class ProviderModelParser
 	{
 		List<VirtualMachineProfile> vmProfiles= PaasageModelTool.searchRelatedVMProfiles(pcw.getPaasageConfiguration().getVmProfiles(), vm.getName());
 		
-		logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - Profiles size "+vmProfiles.size());
+		log.debug("ProviderModelParser - removeCandidatesWithLocationForVM - Profiles size "+vmProfiles.size());
 		
 		List<Provider> vmProviders= PaasageModelTool.getProvidersFromVirtualMachineProfiles(vmProfiles);
 		
@@ -237,12 +233,12 @@ public class ProviderModelParser
 			{
 				if(location!=null)
 				{
-					logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - location "+location.getName()+" and candidate location "+current.getLocation().getName());
+					log.debug("ProviderModelParser - removeCandidatesWithLocationForVM - location "+location.getName()+" and candidate location "+current.getLocation().getName());
 					if(location.getName().equals(current.getLocation().getName()) || PaasageModelTool.isInList(current.getLocation().getAlternativeNames(), locationId) || 
 							(location instanceof CountryUpperware && (PaasageModelTool.isProviderInCountry((CountryUpperware) location, current) || (current.getLocation() instanceof ContinentUpperware &&
 									PaasageModelTool.isCountryInContinent((CountryUpperware) location, (ContinentUpperware) current.getLocation())))) || (location instanceof ContinentUpperware && PaasageModelTool.isProviderInContinent((ContinentUpperware) location, current)))
 					{
-						logger.debug("ProviderModelParser - removeCandidatesWithLocationForVM - removing candidates with location "+location.getName()+" and provider "+current.getId());
+						log.debug("ProviderModelParser - removeCandidatesWithLocationForVM - removing candidates with location "+location.getName()+" and provider "+current.getId());
 						PaasageModelTool.removeVirtualMahineProfilesByProvider(vmProfiles, current, pcw);
 					}
 				}
@@ -261,7 +257,7 @@ public class ProviderModelParser
 	{
 		Map<String,ProviderModelDecorator> pmsMap= db.getPMsMap(); 
 		
-		logger.debug("ProviderModelParser - parseOntology - Feature Map keys "+pmsMap.keySet());
+		log.debug("ProviderModelParser - parseOntology - Feature Map keys "+pmsMap.keySet());
 		
 		List<ConceptCamel> selectedConcepts= getSelectedConcepts(ontology); 
 			
@@ -273,13 +269,13 @@ public class ProviderModelParser
 		if(candidates.size()==0) //We consider only all the candidates if there are not preferred ones 
 		{	
 			
-			logger.debug("ProviderModelParser - parseOntology - Not preferred candidates preselected! Clouds to consider: "+pmsMap.keySet().size()); 
+			log.debug("ProviderModelParser - parseOntology - Not preferred candidates preselected! Clouds to consider: "+pmsMap.keySet().size()); 
 		
 			Iterator<String> it=pmsMap.keySet().iterator();  
 			while(it.hasNext())
 			{
 				String cloud= it.next(); 
-				logger.debug("ProviderModelParser - parseOntology - Canditate: "+cloud); 
+				log.debug("ProviderModelParser - parseOntology - Canditate: "+cloud); 
 				ProviderModelDecorator pmw= pmsMap.get(cloud); 
 				
 				Provider candidate= processCloud(pmw, selectedConcepts, ontology, configurationWrapper); 
@@ -323,15 +319,15 @@ public class ProviderModelParser
 				else //The candidate has to be deleted
 				{
 					
-					logger.debug("ProviderModelParser - parseOntology - Removing candidate with type: "+type.getId()); 
+					log.debug("ProviderModelParser - parseOntology - Removing candidate with type: "+type.getId()); 
 					
 					PaasageModelTool.removeProvidersFromListByType(candidates, type); 
 					
-					logger.debug("ProviderModelParser - parseOntology - Profiles before deleting "+configuration.getVmProfiles().size()); 
+					log.debug("ProviderModelParser - parseOntology - Profiles before deleting "+configuration.getVmProfiles().size()); 
 					
 					PaasageModelTool.removeVirtualMahineProfilesByProviderType(configuration.getVmProfiles(), type, configuration.getComponents()); 
 					
-					logger.debug("ProviderModelParser - parseOntology - Profiles after deleting "+configuration.getVmProfiles().size()); 
+					log.debug("ProviderModelParser - parseOntology - Profiles after deleting "+configuration.getVmProfiles().size()); 
 										
 				}
 					
@@ -339,7 +335,7 @@ public class ProviderModelParser
 		}
 				
 		if(candidates.size()==0)
-			logger.warn("ProviderModelParser- parseOntology- There is not cloud provider candidate!");
+			log.warn("ProviderModelParser- parseOntology- There is not cloud provider candidate!");
 		
 	}
 	
@@ -354,19 +350,19 @@ public class ProviderModelParser
 	 */
 	protected Provider processCloud(ProviderModelDecorator pmw, List<ConceptCamel> selectedConcepts, OntologyCamel ontology, PaaSageConfigurationWrapper pcw)
 	{
-		logger.debug("ProviderModelParser- processCloud - Processing cloud "+pmw.getProviderId());
+		log.debug("ProviderModelParser- processCloud - Processing cloud "+pmw.getProviderId());
 		
 		QuantifiableElementCamel cpuConcept= (QuantifiableElementCamel) ProviderModelParser.getConceptByName("CPU", ontology.getConcepts()); 
-		logger.debug("ProviderModelParser - processCloud - CPU concept unit 2 "+cpuConcept.getUnit().getName());
+		log.debug("ProviderModelParser - processCloud - CPU concept unit 2 "+cpuConcept.getUnit().getName());
 		
 		SaloonCamelSolver solver= new SaloonCamelSolver(pmw); 
 		SaloonCamelSolver.logger.setLevel(Level.OFF);
 		boolean allRespected= solver.verifyConceptsMapping(selectedConcepts); 
 		
 		cpuConcept= (QuantifiableElementCamel) ProviderModelParser.getConceptByName("CPU", ontology.getConcepts()); 
-		logger.debug("ProviderModelParser - processCloud - CPU concept unit 3 "+cpuConcept.getUnit().getName());
+		log.debug("ProviderModelParser - processCloud - CPU concept unit 3 "+cpuConcept.getUnit().getName());
 		
-		logger.debug("ProviderModelParser- processCloud - Mapping respected "+allRespected);
+		log.debug("ProviderModelParser- processCloud - Mapping respected "+allRespected);
 		
 		if(allRespected)
 		{
@@ -381,7 +377,7 @@ public class ProviderModelParser
 			if(solver.existsSolution())
 			{	
 				//candidates.add(cloud); 
-				logger.debug("ProviderModelParser- processCloud - Candidate accepted: "+pmw.getProviderId());
+				log.debug("ProviderModelParser- processCloud - Candidate accepted: "+pmw.getProviderId());
 				
 				solver.defineConfigurationOnFeatureModel(); 
 				
@@ -390,7 +386,7 @@ public class ProviderModelParser
 				ProviderType pt= PaasageModelTool.searchProviderTypeById(pmw.getProviderId(), pcw); 
 				
 				if(pt==null)
-					logger.warn("ProviderModelParser- processCloud- The type "+pmw.getProviderId()+" does not exist. The provider type will be not set!");
+					log.warn("ProviderModelParser- processCloud- The type "+pmw.getProviderId()+" does not exist. The provider type will be not set!");
 				
 				provider.setType(pt);
 				
@@ -404,7 +400,7 @@ public class ProviderModelParser
 					
 					
 					if(location==null)
-						logger.debug("ProviderModelParser- processCloud- The location "+ locationFeature.getName() + " for the provider "+pmw.getProviderId()+" does not exist. The location for this provider will be not set!");
+						log.debug("ProviderModelParser- processCloud- The location "+ locationFeature.getName() + " for the provider "+pmw.getProviderId()+" does not exist. The location for this provider will be not set!");
 					else
 					{	
 						provider.setLocation(location);
@@ -415,7 +411,7 @@ public class ProviderModelParser
 					
 				}
 				else
-					logger.debug("ProviderModelParser- processCloud- The location for the provider "+pmw.getProviderId()+" has not been selected. The location for this provider will be not set!");
+					log.debug("ProviderModelParser- processCloud- The location for the provider "+pmw.getProviderId()+" has not been selected. The location for this provider will be not set!");
 				
 				String id= PaasageModelTool.buildProviderId(pt.getId(), locationName); 
 				
@@ -426,7 +422,7 @@ public class ProviderModelParser
 		}
 		
 		
-		logger.debug("ProviderModelParser- processCloud - Solution not found!!");
+		log.debug("ProviderModelParser- processCloud - Solution not found!!");
 		
 		return null; 
 	}
@@ -455,7 +451,7 @@ public class ProviderModelParser
 		
 		for(ConceptCamel c: concepts)
 		{
-			//logger.debug("ProviderModelParser- getSelectedConcepts - concept "+c.getName()+" selected: "+c.isSelected());
+			//log.debug("ProviderModelParser- getSelectedConcepts - concept "+c.getName()+" selected: "+c.isSelected());
 			if(c.isSelected() && !isOptimisationConcept(c))
 			{	
 				selected.add(c); 

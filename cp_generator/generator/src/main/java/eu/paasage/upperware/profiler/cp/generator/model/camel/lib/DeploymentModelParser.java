@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
@@ -80,15 +81,12 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
  * @author danielromero
  *
  */
+@Slf4j
 public class DeploymentModelParser 
 {
 	/*
 	 * ATTRIBUTES
 	 */
-	/*
-	 * Logger
-	 */
-	protected Logger logger= GenerationOrchestrator.getLogger(); 
 	
 	/*
 	 * The application factory instance
@@ -154,16 +152,16 @@ public class DeploymentModelParser
 		if(cloudCandidates.size()==0)
 			addNewCandidates=true; 
 		
-		logger.info(" **		Parsing VMInstances");
+		log.info(" **		Parsing VMInstances");
 		parseVMInstances(vmInstances, configurationWrapper, addNewCandidates, pim.getGlobalVMRequirementSet());
 		
-		logger.info(" **		Parsing VMs");
+		log.info(" **		Parsing VMs");
 		parseVMs(vms, configurationWrapper, addNewCandidates, pim.getGlobalVMRequirementSet());
 		
-		logger.info("**		Parsing Component Instances");
+		log.info("**		Parsing Component Instances");
 		parseComponentInstances(componentInstances, configuration);
 		
-		logger.info("**		Parsing Components");
+		log.info("**		Parsing Components");
 		parseComponents(components, componentInstances, configuration, ((CamelModel) pim.eContainer()).getRequirementModels().get(0));
 				
 		
@@ -198,7 +196,7 @@ public class DeploymentModelParser
 		
 		for(ComponentInstance ci:componentInstances)
 		{
-			logger.debug("DeployementModelParser - resolveCommunicationDependencies - component instance "+ci.getName());
+			log.debug("DeployementModelParser - resolveCommunicationDependencies - component instance "+ci.getName());
 		}
 		
 		for(Communication communication: communications)
@@ -212,7 +210,7 @@ public class DeploymentModelParser
 			
 			List<ComponentInstance> filtredComponentInstances= PaasageModelTool.getComponentInstancesByTypeId(componentInstances, client.getName()); 
 			
-			logger.debug("DeployementModelParser - resolveCommunicationDependencies - component instances size "+ filtredComponentInstances.size()+" client name "+client.getName());
+			log.debug("DeployementModelParser - resolveCommunicationDependencies - component instances size "+ filtredComponentInstances.size()+" client name "+client.getName());
 			
 			if(filtredComponentInstances.size()>0)
 				for(ComponentInstance ci: filtredComponentInstances)
@@ -223,11 +221,11 @@ public class DeploymentModelParser
 						createCommunicationDependency(configuration, provider, ci.getName(), communication);
 						/*ApplicationComponent providerAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), provider.getName()); 
 						
-						logger.debug("DeployementModelParser - resolveCommunicationDependencies - providerAppComponent "+providerAppComponent+ "provider name "+provider.getName());
+						log.debug("DeployementModelParser - resolveCommunicationDependencies - providerAppComponent "+providerAppComponent+ "provider name "+provider.getName());
 						
 						ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), ci.getName()); 
 						
-						logger.debug("DeployementModelParser - resolveCommunicationDependencies - clientAppComponent "+clientAppComponent+" client name "+ci.getName());
+						log.debug("DeployementModelParser - resolveCommunicationDependencies - clientAppComponent "+clientAppComponent+" client name "+ci.getName());
 						
 						RequiredFeature rf= buildRequiredCommunicationPortFeature(communication.getRequiredCommunication(), providerAppComponent); 
 						
@@ -239,11 +237,11 @@ public class DeploymentModelParser
 				createCommunicationDependency(configuration, provider, client.getName(), communication);
 				/*ApplicationComponent providerAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), provider.getName()); 
 				
-				logger.debug("DeployementModelParser - resolveCommunicationDependencies - providerAppComponent "+providerAppComponent+ "provider name "+provider.getName());
+				log.debug("DeployementModelParser - resolveCommunicationDependencies - providerAppComponent "+providerAppComponent+ "provider name "+provider.getName());
 				
 				ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), client.getName()); 
 				
-				logger.debug("DeployementModelParser - resolveCommunicationDependencies - clientAppComponent "+clientAppComponent+" client name "+client.getName());
+				log.debug("DeployementModelParser - resolveCommunicationDependencies - clientAppComponent "+clientAppComponent+" client name "+client.getName());
 				
 				RequiredFeature rf= buildRequiredCommunicationPortFeature(communication.getRequiredCommunication(), providerAppComponent); 
 				
@@ -261,11 +259,11 @@ public class DeploymentModelParser
 	{
 		ApplicationComponent providerAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), provider.getName()); 
 		
-		logger.debug("DeployementModelParser - createCommunicationDependency - providerAppComponent "+providerAppComponent+ " provider name "+provider.getName());
+		log.debug("DeployementModelParser - createCommunicationDependency - providerAppComponent "+providerAppComponent+ " provider name "+provider.getName());
 		
 		ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), clientId); 
 		
-		logger.debug("DeployementModelParser - createCommunicationDependency - clientAppComponent "+clientAppComponent+" client name "+clientId);
+		log.debug("DeployementModelParser - createCommunicationDependency - clientAppComponent "+clientAppComponent+" client name "+clientId);
 		
 		CommunicationTypeUpperware ct= CommunicationTypeUpperware.ANY; 
 		
@@ -293,11 +291,11 @@ public class DeploymentModelParser
 			
 			ApplicationComponent providerAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), provider.getName()); 
 			
-			logger.debug("DeployementModelParser - resolveCommunicationDependencyInstances - providerAppComponent "+providerAppComponent+ "provider name "+provider.getName());
+			log.debug("DeployementModelParser - resolveCommunicationDependencyInstances - providerAppComponent "+providerAppComponent+ "provider name "+provider.getName());
 			
 			ApplicationComponent clientAppComponent= PaasageModelTool.searchApplicationComponentById(configuration.getComponents(), client.getName()); 
 			
-			logger.debug("DeployementModelParser - resolveCommunicationDependencyInstances - clientAppComponent "+clientAppComponent+" client name "+client.getName());
+			log.debug("DeployementModelParser - resolveCommunicationDependencyInstances - clientAppComponent "+clientAppComponent+" client name "+client.getName());
 			
 			RequiredFeature rf= buildRequiredCommunicationInstancePortFeature(communication.getRequiredCommunicationInstance(), providerAppComponent); 
 			
@@ -343,13 +341,13 @@ public class DeploymentModelParser
 						{
 							VM vm= (VM) hosting.getProvidedHost().eContainer(); 
 							
-							logger.debug("DeployementModelParser - resolveContaimentDependencies - VM type name "+vm.getName()+"!");
+							log.debug("DeployementModelParser - resolveContaimentDependencies - VM type name "+vm.getName()+"!");
 							
 							VirtualMachineProfile vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vm.getName()); //TODO CHANGED BY VM NAME 
-							logger.debug("DeployementModelParser - resolveContaimentDependencies - Client component "+clientAppComponent+ " Name "+instance.getName());
+							log.debug("DeployementModelParser - resolveContaimentDependencies - Client component "+clientAppComponent+ " Name "+instance.getName());
 							clientAppComponent.getRequiredProfile().add(vmp); 
 							
-							logger.debug("DeployementModelParser - resolveContaimentDependencies - VM dependency add between "+instance.getName()+" and "+vm.getName()+"!");
+							log.debug("DeployementModelParser - resolveContaimentDependencies - VM dependency add between "+instance.getName()+" and "+vm.getName()+"!");
 						}	
 						else //I assume that it is a component
 						{
@@ -361,7 +359,7 @@ public class DeploymentModelParser
 							
 							clientAppComponent.getRequiredFeatures().add(rf); 
 							
-							logger.debug("DeployementModelParser - resolveContaimentDependencies - Dependency between "+instance.getName()+" and "+provider.getName()+" created!");
+							log.debug("DeployementModelParser - resolveContaimentDependencies - Dependency between "+instance.getName()+" and "+provider.getName()+" created!");
 						}*/
 
 					}
@@ -375,13 +373,13 @@ public class DeploymentModelParser
 				{
 					VM vm= (VM) hosting.getProvidedHost().eContainer(); 
 					
-					logger.debug("DeployementModelParser - resolveContaimentDependencies - VM type name "+vm.getName()+"!");
+					log.debug("DeployementModelParser - resolveContaimentDependencies - VM type name "+vm.getName()+"!");
 					
 					VirtualMachineProfile vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vm.getName()); //TODO CHANGED BY VM NAME 
-					logger.debug("DeployementModelParser - resolveContaimentDependencies - Client component "+clientAppComponent+ " Name "+client.getName());
+					log.debug("DeployementModelParser - resolveContaimentDependencies - Client component "+clientAppComponent+ " Name "+client.getName());
 					clientAppComponent.getRequiredProfile().add(vmp); 
 					
-					logger.debug("DeployementModelParser - resolveContaimentDependencies - VM dependency add between "+client.getName()+" and "+vm.getName()+"!");
+					log.debug("DeployementModelParser - resolveContaimentDependencies - VM dependency add between "+client.getName()+" and "+vm.getName()+"!");
 				}	
 				else //I assume that it is a component
 				{
@@ -393,7 +391,7 @@ public class DeploymentModelParser
 					
 					clientAppComponent.getRequiredFeatures().add(rf); 
 					
-					logger.debug("DeployementModelParser - resolveContaimentDependencies - Dependency between "+client.getName()+" and "+provider.getName()+" created!");
+					log.debug("DeployementModelParser - resolveContaimentDependencies - Dependency between "+client.getName()+" and "+provider.getName()+" created!");
 				}*/
 			}
 				
@@ -409,7 +407,7 @@ public class DeploymentModelParser
 		{
 			VM vm= (VM) hosting.getProvidedHost().eContainer(); 
 			
-			logger.debug("DeployementModelParser - defineContainmentDependency - VM type name "+vm.getName()+"!");
+			log.debug("DeployementModelParser - defineContainmentDependency - VM type name "+vm.getName()+"!");
 			
 			List<VirtualMachineProfile> profiles= vmProfiles.get(vm.getName()); 
 			
@@ -418,10 +416,10 @@ public class DeploymentModelParser
 			
 				 //TODO CREATE A MAPPING FOR THE VM AND THEIR RELATED VM PROFILES
 				//VirtualMachineProfile vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vm.getName()); //TODO CHANGED BY VM NAME 
-				logger.debug("DeployementModelParser - defineContainmentDependency - Client component "+clientAppComponent+ " Name "+clientId);
+				log.debug("DeployementModelParser - defineContainmentDependency - Client component "+clientAppComponent+ " Name "+clientId);
 				clientAppComponent.getRequiredProfile().add(vmp); 
 				
-				logger.debug("DeployementModelParser - defineContainmentDependency - VM dependency add between "+clientId+" and "+vmp.getCloudMLId()+"!");
+				log.debug("DeployementModelParser - defineContainmentDependency - VM dependency add between "+clientId+" and "+vmp.getCloudMLId()+"!");
 			}	
 		}	
 		else //I assume that it is a component
@@ -434,11 +432,11 @@ public class DeploymentModelParser
 			
 			rf.setContaiment(true);
 			
-			logger.debug("DeployementModelParser - resolveContaimentDependencies - Client component "+clientAppComponent+ " Name "+clientId);
+			log.debug("DeployementModelParser - resolveContaimentDependencies - Client component "+clientAppComponent+ " Name "+clientId);
 			
 			clientAppComponent.getRequiredFeatures().add(rf); 
 			
-			logger.debug("DeployementModelParser - defineContainmentDependency - Dependency between "+clientId+" and "+provider.getName()+" created!");
+			log.debug("DeployementModelParser - defineContainmentDependency - Dependency between "+clientId+" and "+provider.getName()+" created!");
 		}
 	}
 	
@@ -459,16 +457,16 @@ public class DeploymentModelParser
 			{
 				VMInstance vmInstance= (VMInstance) hosting.getProvidedHostInstance().eContainer(); 
 				
-				logger.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance name "+vmInstance.getName()+"!");
+				log.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance name "+vmInstance.getName()+"!");
 				
 				VirtualMachine vm= PaasageModelTool.searchVMById(configuration.getVms(), vmInstance.getName()); 
 				
-				logger.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance created "+vm);
-				logger.debug("DeployementModelParser - resolveContaimentDependencyInstances - Client component "+clientAppComponent+ " Name "+client.getName());
+				log.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance created "+vm);
+				log.debug("DeployementModelParser - resolveContaimentDependencyInstances - Client component "+clientAppComponent+ " Name "+client.getName());
 				clientAppComponent.getRequiredProfile().add(vm.getProfile());
 				clientAppComponent.setVm(vm);
 				
-				logger.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance dependency add between "+client.getName()+" and "+vmInstance.getName()+"!");
+				log.debug("DeployementModelParser - resolveContaimentDependencyInstances - VM Instance dependency add between "+client.getName()+" and "+vmInstance.getName()+"!");
 			}	
 			else //I assume that it is a component
 			{
@@ -482,7 +480,7 @@ public class DeploymentModelParser
 				
 				clientAppComponent.getRequiredFeatures().add(rf); 
 				
-				logger.debug("DeployementModelParser - resolveContaimentDependencyInstances - Dependency between "+client.getName()+" and "+provider.getName()+" created!");
+				log.debug("DeployementModelParser - resolveContaimentDependencyInstances - Dependency between "+client.getName()+" and "+provider.getName()+" created!");
 			}
 		}
 	}
@@ -498,7 +496,7 @@ public class DeploymentModelParser
 	{
 		for(VM vm:vms)
 		{
-			logger.info("parseVMs -	Parsing VM Type: "+vm.getName());
+			log.info("parseVMs -	Parsing VM Type: "+vm.getName());
 			
 			parseVM(vm, configurationWrapper, addNewCandidates, globalVMRequirements);
 				
@@ -514,7 +512,7 @@ public class DeploymentModelParser
 		
 		vmProfiles.put(vm.getName(), profiles);
 
-		logger.info("**			Parsing VM Type: "+vm.getName());
+		log.info("**			Parsing VM Type: "+vm.getName());
 			
 		EList<Location> locations=null;  
 		String idLocations=	""; 	
@@ -535,7 +533,7 @@ public class DeploymentModelParser
 			//Location reqs		
 			if(vm.getVmRequirementSet().getLocationRequirement()!=null && vm.getVmRequirementSet().getLocationRequirement().getLocations().size()>0)
 			{	
-				logger.debug("**			Considering Location requirements");
+				log.debug("**			Considering Location requirements");
 				locations= vm.getVmRequirementSet().getLocationRequirement().getLocations();
 				idLocations= vm.getVmRequirementSet().getLocationRequirement().getName();
 			}
@@ -545,7 +543,7 @@ public class DeploymentModelParser
 			//Provider reqs
 			if(vm.getVmRequirementSet().getProviderRequirement()!=null && vm.getVmRequirementSet().getProviderRequirement().getProviders().size()>0)
 			{
-				logger.debug("**			Considering Provider requirements");
+				log.debug("**			Considering Provider requirements");
 				providers= vm.getVmRequirementSet().getProviderRequirement().getProviders(); 
 				idProviders= vm.getVmRequirementSet().getProviderRequirement().getName(); 
 			}
@@ -553,7 +551,7 @@ public class DeploymentModelParser
 			//Hardware reqs
 			if(vm.getVmRequirementSet().getQuantitativeHardwareRequirement()!=null)
 			{
-				logger.debug("**			Considering Hardware requirements");
+				log.debug("**			Considering Hardware requirements");
 				hardware= vm.getVmRequirementSet().getQuantitativeHardwareRequirement(); 
 				hardwareId= vm.getVmRequirementSet().getQuantitativeHardwareRequirement().getName(); 
 			}
@@ -561,7 +559,7 @@ public class DeploymentModelParser
 			//Os Image reqs
 			if(vm.getVmRequirementSet().getOsOrImageRequirement()!=null)
 			{
-				logger.debug("**			Considering OS-Image requirements");
+				log.debug("**			Considering OS-Image requirements");
 				osImage= vm.getVmRequirementSet().getOsOrImageRequirement(); 
 				osImageId= vm.getVmRequirementSet().getOsOrImageRequirement().getName(); 
 			}
@@ -571,11 +569,11 @@ public class DeploymentModelParser
 		
 		if(globalVMRequirements!=null)
 		{	
-			logger.debug("**			Considering Global requirements");
+			log.debug("**			Considering Global requirements");
 			//Global Location reqs, only considered if there are not local ones 	
 			if(locations==null && globalVMRequirements.getLocationRequirement()!=null && globalVMRequirements.getLocationRequirement().getLocations().size()>0)
 			{
-				logger.debug("**			Considering Global Location requirement");
+				log.debug("**			Considering Global Location requirement");
 				locations= globalVMRequirements.getLocationRequirement().getLocations(); 
 				idLocations= globalVMRequirements.getLocationRequirement().getName(); 
 			}
@@ -597,7 +595,7 @@ public class DeploymentModelParser
 			//Global Os Image reqs, only considered if there are not local ones
 			if(osImage==null && globalVMRequirements.getOsOrImageRequirement()!=null)
 			{
-				logger.debug("**			Considering Global OS/Image requirement");
+				log.debug("**			Considering Global OS/Image requirement");
 				osImage= globalVMRequirements.getOsOrImageRequirement(); 
 				osImageId= globalVMRequirements.getOsOrImageRequirement().getName(); 
 			}
@@ -606,10 +604,10 @@ public class DeploymentModelParser
 		String vmTypeId= null; 
 		
 		VirtualMachineProfile vmp= null; 
-		logger.debug("**			Locations: "+locations);
+		log.debug("**			Locations: "+locations);
 		if(locations!=null)
 		{
-			logger.debug("**			Analysing locations: "+locations.size());
+			log.debug("**			Analysing locations: "+locations.size());
 			for(Location location:locations)
 			{
 				if(providers!=null)
@@ -624,7 +622,7 @@ public class DeploymentModelParser
 						
 						if(vmp==null)
 						{	
-							logger.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+"!");
+							log.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+"!");
 							
 							String providerTypeId= provider.getName(); 
 							
@@ -649,15 +647,15 @@ public class DeploymentModelParser
 					{	
 						vmTypeId= PaasageModelTool.getVMProfileId(location.getId(),pt.getId(), hardwareId, osImageId, vm.getName()); 
 						
-						logger.debug("DeployementModelParser - parseVMs - Vm Type Id "+vmTypeId+"!");
+						log.debug("DeployementModelParser - parseVMs - Vm Type Id "+vmTypeId+"!");
 						
 						vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vmTypeId); 
 						
-						logger.debug("DeployementModelParser - parseVMs - Vm Type "+vmp+"!");
+						log.debug("DeployementModelParser - parseVMs - Vm Type "+vmp+"!");
 						
 						if(vmp==null)
 						{	
-							logger.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+" with provider: "+pt.getId());
+							log.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+" with provider: "+pt.getId());
 							//vmp= buildVMProfile(location, null, hardware, osImage, vmTypeId, configurationWrapper, addNewCandidates); 
 							
 							vmp= buildVMProfile(vm,location, pt, hardware, osImage, vmTypeId, configurationWrapper, addNewCandidates); 
@@ -684,7 +682,7 @@ public class DeploymentModelParser
 				
 				if(vmp==null)
 				{	
-					logger.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+" without location!");
+					log.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+" without location!");
 					String providerTypeId= provider.getName(); 
 					ProviderType pt= PaasageModelTool.searchProviderTypeById(providerTypeId, configurationWrapper);
 					
@@ -700,17 +698,17 @@ public class DeploymentModelParser
 		}
 		else
 		{
-			logger.debug("**			Creating VM ID ");
+			log.debug("**			Creating VM ID ");
 			
 			for(ProviderType pt:proxy.getProviderTypes().getTypes())
 			{	
 				vmTypeId= PaasageModelTool.getVMProfileId("", pt.getId(), hardwareId, osImageId, vm.getName()); 
-				logger.debug("**			VM ID "+vmTypeId);
+				log.debug("**			VM ID "+vmTypeId);
 				vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vmTypeId); 
 				
 				if(vmp==null)
 				{	
-					logger.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+" without location!");
+					log.debug("DeployementModelParser - parseVMs - Adding Vm Type "+vmTypeId+" without location!");
 					//vmp= buildVMProfile(null, null, hardware, osImage, vmTypeId, configurationWrapper, addNewCandidates); 
 					vmp= buildVMProfile(vm,null, pt, hardware, osImage, vmTypeId, configurationWrapper, addNewCandidates); 
 					
@@ -740,8 +738,8 @@ public class DeploymentModelParser
 		
 		for(VMInstance vm:vms)
 		{
-			logger.info("**			Parsing VM Instance: "+vm.getName());
-			logger.debug("DeployementModelParser - parseVMInstances - Adding Vm Instance "+vm.getName()+"!");
+			log.info("**			Parsing VM Instance: "+vm.getName());
+			log.debug("DeployementModelParser - parseVMInstances - Adding Vm Instance "+vm.getName()+"!");
 			VirtualMachineProfile vmp= PaasageModelTool.searchVMProfileById(configuration.getVmProfiles(), vm.getName()); 
 			if(vmp==null)
 			{	
@@ -757,7 +755,7 @@ public class DeploymentModelParser
 				
 				configuration.getVms().add(instance); 
 				
-				logger.debug("DeployementModelParser - parseVMInstances - Vm Instance "+instance.getId()+" added!");
+				log.debug("DeployementModelParser - parseVMInstances - Vm Instance "+instance.getId()+" added!");
 			}
 			
 
@@ -815,11 +813,11 @@ public class DeploymentModelParser
 		//Location
 		//Location loc= vm.getLocation(); 
 		
-		logger.debug("DeploymentModelParser- buildVMProfile- The VM type: "+vmTypeId);
+		log.debug("DeploymentModelParser- buildVMProfile- The VM type: "+vmTypeId);
 		
 		if(location!=null)
 		{
-			logger.debug("DeploymentModelParser- buildVMProfile- The Location name: "+location.getId());
+			log.debug("DeploymentModelParser- buildVMProfile- The Location name: "+location.getId());
 			
 			locationUpperware= PaasageModelTool.getLocation(location, configurationWrapper); 
 			
@@ -829,18 +827,18 @@ public class DeploymentModelParser
 		
 		if(location!=null && locationUpperware==null)
 		{
-			logger.warn("DeploymentModelParser- - buildVMProfile - The Location "+location.getId()+" does not exist in the DB. TheVM profile can not be created!");
+			log.warn("DeploymentModelParser- - buildVMProfile - The Location "+location.getId()+" does not exist in the DB. TheVM profile can not be created!");
 			return null;
 		}
 		else
-			logger.debug("DeploymentModelParser- buildVMProfile- Location found!");
+			log.debug("DeploymentModelParser- buildVMProfile- Location found!");
 		
 		
 		vmp= applicationFactory.createVirtualMachineProfile(); 
 		vmp.setCloudMLId(vmTypeId);
 		vmp.setRelatedCloudVMId(vm.getName());
 		
-		logger.debug("DeploymentModelParser- VM id "+vmTypeId); 
+		log.debug("DeploymentModelParser- VM id "+vmTypeId); 
 		
 		if(locationUpperware!=null)
 			vmp.setLocation(locationUpperware); 
@@ -887,7 +885,7 @@ public class DeploymentModelParser
 					
 					configuration.getProviders().add(providerUpperware); 
 					
-					logger.debug("DeploymentModelParser- buildVMProfile -Provider "+providerId+" created!");
+					log.debug("DeploymentModelParser- buildVMProfile -Provider "+providerId+" created!");
 				}
 
 
@@ -904,7 +902,7 @@ public class DeploymentModelParser
 			}
 			
 			else
-				logger.error("DeploymentModelProcessor- buildVMProfile- The Provider does not exist in the DB. The VM profile can not be created!");
+				log.error("DeploymentModelProcessor- buildVMProfile- The Provider does not exist in the DB. The VM profile can not be created!");
 		//}	
 		
 		//OS
@@ -922,7 +920,7 @@ public class DeploymentModelParser
 				vmp.setOs(theOs);
 			}	
 			else
-				logger.warn("DeploymentModelParser- The OS "+os+" does not exist in the DB. The os of the VM with id "+vmTypeId+" will be not set");
+				log.warn("DeploymentModelParser- The OS "+os+" does not exist in the DB. The os of the VM with id "+vmTypeId+" will be not set");
 		}
 		else if(osImagerReq!=null)//Is an image
 		{
@@ -1012,11 +1010,11 @@ public class DeploymentModelParser
 		//Location
 		//Location loc= vm.getLocation(); 
 		
-		logger.debug("DeploymentModelParser- buildVMProfile- The VM type: "+vmTypeId);
+		log.debug("DeploymentModelParser- buildVMProfile- The VM type: "+vmTypeId);
 		
 		if(location!=null)
 		{
-			logger.debug("DeploymentModelParser- buildVMProfile- The Location name: "+location.getName());
+			log.debug("DeploymentModelParser- buildVMProfile- The Location name: "+location.getName());
 			
 			locationUpperware= PaasageModelTool.getLocation(location, configurationWrapper); 
 			
@@ -1026,17 +1024,17 @@ public class DeploymentModelParser
 		
 		if(location!=null && locationUpperware==null)
 		{
-			logger.warn("DeploymentModelParser- - buildVMProfile - The Location "+location.getName()+" does not exist in the DB. TheVM profile can not be created!");
+			log.warn("DeploymentModelParser- - buildVMProfile - The Location "+location.getName()+" does not exist in the DB. TheVM profile can not be created!");
 			return null;
 		}
 		else
-			logger.debug("DeploymentModelParser- buildVMProfile- Location found!");
+			log.debug("DeploymentModelParser- buildVMProfile- Location found!");
 		
 		
 		vmp= applicationFactory.createVirtualMachineProfile(); 
 		vmp.setCloudMLId(vmTypeId);
 		
-		logger.debug("DeploymentModelParser- VM id "+vmTypeId); 
+		log.debug("DeploymentModelParser- VM id "+vmTypeId); 
 		
 		if(locationUpperware!=null)
 			vmp.setLocation(locationUpperware); 
@@ -1079,7 +1077,7 @@ public class DeploymentModelParser
 				
 				configuration.getProviders().add(providerUpperware); 
 				
-				logger.debug("DeploymentModelParser- buildVMProfile -Provider "+providerId+" created!");
+				log.debug("DeploymentModelParser- buildVMProfile -Provider "+providerId+" created!");
 			}
 			
 			
@@ -1106,7 +1104,7 @@ public class DeploymentModelParser
 			if(theOs!=null)
 				vmp.setOs(theOs);
 			else
-				logger.warn("DeploymentModelParser- The OS "+os+" does not exist in the DB. The os of the VM with id "+vmTypeId+" will be not set");
+				log.warn("DeploymentModelParser- The OS "+os+" does not exist in the DB. The os of the VM with id "+vmTypeId+" will be not set");
 		}
 		else if(osImagerReq!=null)//Is an image
 		{
@@ -1181,12 +1179,12 @@ public class DeploymentModelParser
 	 */
 	protected void parseComponentInstances(List<ComponentInstance> components, PaasageConfiguration configuration)
 	{
-		logger.debug("DeploymentModelProcessor - parseComponentInstances - component instace size "+components.size());
+		log.debug("DeploymentModelProcessor - parseComponentInstances - component instace size "+components.size());
 		for(ComponentInstance component:components)
 		{	
 
-			logger.info("**			Parsing component instance: "+component.getName());
-			logger.debug("DeploymentModelProcessor - parseComponentInstances - components name "+component.getName());
+			log.info("**			Parsing component instance: "+component.getName());
+			log.debug("DeploymentModelProcessor - parseComponentInstances - components name "+component.getName());
 			
 			ApplicationComponent apc= buildApplicationComponent(component); 
 				
@@ -1205,7 +1203,7 @@ public class DeploymentModelParser
 	 */
 	protected void parseComponents(List<Component> components, List<ComponentInstance> instances, PaasageConfiguration configuration, RequirementModel requirements)
 	{
-		logger.debug("DeploymentModelProcessor - parseComponents - components size "+components.size());
+		log.debug("DeploymentModelProcessor - parseComponents - components size "+components.size());
 		for(Component component:components)
 		{
 			//Only processes the Component if there are not instances
@@ -1213,8 +1211,8 @@ public class DeploymentModelParser
 			{	
 				if(!(component instanceof VM))
 				{	
-					logger.info("**			Parsing component: "+component.getName());
-					logger.debug("DeploymentModelProcessor - parseComponents - components name "+component.getName());
+					log.info("**			Parsing component: "+component.getName());
+					log.debug("DeploymentModelProcessor - parseComponents - components name "+component.getName());
 					
 					ApplicationComponent apc= buildApplicationComponent(component, requirements); 
 						
@@ -1234,10 +1232,10 @@ public class DeploymentModelParser
 	 */
 	protected void parseInternalComponents(EList<InternalComponent> components, PaasageConfiguration configuration, RequirementModel requirements)
 	{
-		logger.debug("DeploymentModelProcessor - parseInternalComponents - internalComponents size "+components.size());
+		log.debug("DeploymentModelProcessor - parseInternalComponents - internalComponents size "+components.size());
 		for(InternalComponent component:components)
 		{	
-			logger.debug("DeploymentModelProcessor - parseInternalComponents - internalComponents name "+component.getName());
+			log.debug("DeploymentModelProcessor - parseInternalComponents - internalComponents name "+component.getName());
 			
 			ApplicationComponent apc= buildApplicationComponent(component, requirements); 
 				
@@ -1255,7 +1253,7 @@ public class DeploymentModelParser
 	protected ApplicationComponent buildApplicationComponent(Component component, RequirementModel requirements)
 	{
 		ApplicationComponent apc= applicationFactory.createApplicationComponent(); 
-		logger.debug("DeploymentModelParser- buildApplicationComponent- The component "+component.getName());
+		log.debug("DeploymentModelParser- buildApplicationComponent- The component "+component.getName());
 		String id= component.getName(); 
 		
 		apc.setCloudMLId(id);
@@ -1296,7 +1294,7 @@ public class DeploymentModelParser
 	protected ApplicationComponent buildApplicationComponent(ComponentInstance component)
 	{
 		ApplicationComponent apc= applicationFactory.createApplicationComponent(); 
-		logger.debug("DeploymentModelParser- buildApplicationComponent- The component instance "+component.getName());
+		log.debug("DeploymentModelParser- buildApplicationComponent- The component instance "+component.getName());
 		String id= component.getName(); 
 		
 		apc.setCloudMLId(id);
@@ -1439,7 +1437,7 @@ public class DeploymentModelParser
 	
 	protected void checkGivenSolutionByUser(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
 	{
-		logger.debug("DeploymentModelParser - checkGivenSolutionByUser - Checking solution");
+		log.debug("DeploymentModelParser - checkGivenSolutionByUser - Checking solution");
 		List<Component> componentTypes= PaasageModelTool.getComponentsList(pim); 
 		List<ComponentInstance> componentInstances= PaasageModelTool.getComponentInstancesList(pim);
 		
@@ -1449,7 +1447,7 @@ public class DeploymentModelParser
 		{
 			if(!PaasageModelTool.existComponentInstance(componentTypes.get(i), componentInstances))
 			{	
-				logger.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related instance");
+				log.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related instance");
 				instacesOk= false; 
 				
 			}	
@@ -1464,7 +1462,7 @@ public class DeploymentModelParser
 			{
 				if(!PaasageModelTool.existHostingInstanceForComponentInstance(hostingInstances, componentInstances.get(i)))
 				{	
-					logger.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related hosting instance");
+					log.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related hosting instance");
 					hostingOk= false; 
 				}	
 			}
@@ -1500,7 +1498,7 @@ public class DeploymentModelParser
 	
 	public void checkCorrectHostingRelationships(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
 	{
-		logger.debug("DeploymentModelParser - checkCorrectHostingRelationships - Checking hosting relationships");
+		log.debug("DeploymentModelParser - checkCorrectHostingRelationships - Checking hosting relationships");
 		List<Component> componentTypes= PaasageModelTool.getComponentsList(pim); 
 		EList<Hosting> hostingRelationships= pim.getHostings(); 
 		
@@ -1517,13 +1515,13 @@ public class DeploymentModelParser
 				if(((Component)hosting.getRequiredHost().eContainer()).getName().equals(ct.getName()))
 				{	
 					hostingOk=true; 
-					logger.debug("DeploymentModelParser - checkCorrectHostingRelationships - There is at least a hosting relationship for "+ct.getName()+" component");
+					log.debug("DeploymentModelParser - checkCorrectHostingRelationships - There is at least a hosting relationship for "+ct.getName()+" component");
 				}	
 			}
 			
 			if(!hostingOk)
 			{
-				logger.error("DeploymentModelParser - checkCorrectHostingRelationships - There is not hosting relationship for "+ct.getName()+" component");
+				log.error("DeploymentModelParser - checkCorrectHostingRelationships - There is not hosting relationship for "+ct.getName()+" component");
 				relsOk= false; 
 			}
 		}
