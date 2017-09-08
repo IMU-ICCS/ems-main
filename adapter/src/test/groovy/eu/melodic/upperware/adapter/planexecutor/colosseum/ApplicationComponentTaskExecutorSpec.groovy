@@ -27,7 +27,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = NONE)
 
-class ApplicationComponentTaskExecutorTests extends Specification {
+class ApplicationComponentTaskExecutorSpec extends Specification {
 
   String name, appName, lcName, vmName, cloudName, location, hardware, image
   Long id

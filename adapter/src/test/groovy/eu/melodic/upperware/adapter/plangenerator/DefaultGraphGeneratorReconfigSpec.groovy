@@ -24,7 +24,7 @@ import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.ini
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE
 
-class DefaultGraphGeneratorReconfigTests extends Specification {
+class DefaultGraphGeneratorReconfigSpec extends Specification {
 
   POJOCreatorExample c
   Map<TaskType, Set<Task>> mockTasks = Mock(Map)
