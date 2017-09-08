@@ -13,4 +13,17 @@
   <include resource="org/springframework/boot/logging/logback/base.xml"/>
   <logger name="eu.melodic.upperware.cpsolver" level="DEBUG"/>
   <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
+
+  <!-- choco solver begin -->
+  <logger name="choco" level="WARN"/>
+  <logger name="choco.util" level="INFO"/>
+  <logger name="bench" level="info"/>
+  <logger name="solver" level="info"/>
+  <logger name="fzn" level="info"/>
+  <logger name="explainer" level="info"/>
+  <logger name="configuration" level="info"/>
+  <logger name="tree" level="info"/>
+  <logger name="visualization" level="info"/>
+  <!-- choco solver end -->
+
 </configuration>
