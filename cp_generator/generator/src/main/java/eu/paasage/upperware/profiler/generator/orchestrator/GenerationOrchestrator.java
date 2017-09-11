@@ -22,6 +22,7 @@ import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
+import eu.paasage.upperware.profiler.generator.db.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
@@ -139,7 +140,7 @@ public class GenerationOrchestrator {
                 ConstraintProblem cp = constraintProblemService.derivateConstraintProblem(camelModel, pc);
                 sloService.update(camelModel, cp);
 
-                String cpId = pc.getId();
+                String cpId = CDODatabaseProxy.CDO_SERVER_PATH + pc.getId();
                 log.debug("** Calling DatabseProxy ");
                 database.saveModels(pc, cp);
                 log.info("** CP Model Id: "+ cpId);
