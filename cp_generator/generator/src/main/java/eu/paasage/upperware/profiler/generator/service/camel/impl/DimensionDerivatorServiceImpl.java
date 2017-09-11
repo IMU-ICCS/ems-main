@@ -157,11 +157,11 @@ public class DimensionDerivatorServiceImpl implements DimensionDerivatorService 
                     if (metricVar != null) {
                         //A solution is required
                         if (sol == null) {
-                            System.out.println("Creating solution for metric var " + metricVar.getId());
+                            log.debug("Creating solution for metric var {}", metricVar.getId());
                             sol = createSolution();
                             cp.getSolution().add(sol);
                         }
-                        createValueInSolutionForMetricVariable((RawMetric) metric, cp, ic, sol);
+                        createValueInSolutionForMetricVariable(metric, cp, ic, sol);
                     }
                 }
 

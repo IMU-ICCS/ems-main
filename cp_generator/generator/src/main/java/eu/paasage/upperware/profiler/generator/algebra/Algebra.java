@@ -62,8 +62,7 @@ public class Algebra {
 		boolean solvable = false;
 		
 		if (answer.size() > 2) {
-			String message = "The current implementation does not support more than two variables.";
-			throw new UnsupportedOperationException(message);
+			throw new UnsupportedOperationException("The current implementation does not support more than two variables.");
 		}
 
 		int x_lower = Integer.MAX_VALUE;

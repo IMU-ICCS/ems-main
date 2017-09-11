@@ -249,9 +249,9 @@ public class SloServiceImpl implements SloService {
         } catch (MissingVariablesException e) {
             log.error("User requirements: Missing variables: ", e);
         } catch (WrongStatementException e) {
-            log.error("User requirements: Invalid statement. Please check the model.");
+            log.error("User requirements: Invalid statement. Please check the model.", e);
         } catch (NotSolvableException e) {
-            log.error("User requirements: Invalid statement. Not Solvable");
+            log.error("User requirements: Invalid statement. Not Solvable", e);
         }
     }
 

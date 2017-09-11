@@ -36,7 +36,7 @@ public class ModelServiceImpl implements ModelService {
                 log.info(d.toString());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error during loading models from input stream {}", e);
             return null;
         }
         return r;

@@ -1024,7 +1024,7 @@ public class CPSolver {
 			        rc.addFunction(func, all_vars);
 				}
 				else if (expr1 instanceof MetricVariable){
-					System.out.println("CASE 2");
+					log.debug("CASE 2");
 					MetricVariable var = (MetricVariable)expr1;
 					String id = var.getId();
 					RealVar v = idToRealVar.get(id);
@@ -1035,7 +1035,7 @@ public class CPSolver {
 			        rc.addFunction(func, all_vars);
 				}
 				else if (expr1 instanceof Constant){
-					System.out.println("CASE 3");
+					log.debug("CASE 3");
 					Constant constant = (Constant)expr1;
 					BasicTypeEnum type = constant.getType();
 					if (type.equals(BasicTypeEnum.INTEGER)){
