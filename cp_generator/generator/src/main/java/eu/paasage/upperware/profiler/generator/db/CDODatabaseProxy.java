@@ -27,13 +27,11 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.*;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
-import eu.paasage.upperware.profiler.generator.service.camel.ModelService;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,23 +50,15 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	private final static String LOCATIONS_ID="cpGenerator-locations";
 	private final static String PROVIDER_TYPES_ID="cpGenerator-providerTypes";
 
-	private static final String FUNCTION_TYPES_FILE = "/model/cp/FunctionTypes.xmi";
-	private static final String OPERATING_SYSTEMS_FILE = "/model/cp/OperatingSystems.xmi";
-	private static final String LOCATIONS_FILE = "/model/cp/Locations.xmi";
-	private static final String PROVIDER_TYPES_FILE = "/model/cp/ProviderTypes.xmi";
-
 	public final static String CDO_SERVER_PATH= "upperware-models/";
 	public final static String FMS_APP_CDO_SERVER_PATH= CDO_SERVER_PATH+"fms/";
 
 	private CPCloner cloner;
 	private CDOClientExtended cdoClient;
-	private ModelService modelService;
 
 	@Autowired
-	public CDODatabaseProxy(CDOClientExtended cdoClient, ModelService modelService) {
+	public CDODatabaseProxy(CDOClientExtended cdoClient) {
 		this.cdoClient = cdoClient;
-		this.modelService = modelService;
-
 		cloner = new CPCloner();
 
 		registerPackages();
@@ -168,7 +158,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	 */
 	public FunctionTypes loadFunctionTypes() {
 		log.debug("Loading FunctionTypes");
-		return loadFromCdoOrFile(FUNCTION_TYPES_FILE, FUNCTION_TYPES_ID);
+		return loadFromCdo(FUNCTION_TYPES_ID);
 	}
 
 	/**
@@ -176,7 +166,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	 */
 	public OperatingSystems loadOperatingSystems() {
 		log.debug("Loading OperatingSystems");
-		return loadFromCdoOrFile(OPERATING_SYSTEMS_FILE, OPERATING_SYSTEMS_ID);
+		return loadFromCdo(OPERATING_SYSTEMS_ID);
 	}
 
 	/**
@@ -184,7 +174,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	 */
 	public Locations loadLocations() {
 		log.debug("Loading Locations");
-		return loadFromCdoOrFile(LOCATIONS_FILE, LOCATIONS_ID);
+		return loadFromCdo(LOCATIONS_ID);
 	}
 
 	/**
@@ -192,38 +182,18 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	 */
 	public ProviderTypes loadProviderTypes() {
 		log.debug("Loading ProviderTypes");
-		return loadFromCdoOrFile(PROVIDER_TYPES_FILE, PROVIDER_TYPES_ID);
+		return loadFromCdo(PROVIDER_TYPES_ID);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends EObject> T loadFromCdoOrFile(String fileName, String cdoName) {
+	private <T extends EObject> T loadFromCdo(String cdoName) {
 		List<EObject> providerTypesList = getResourceWithID(cdoName);
-		if (CollectionUtils.isEmpty(providerTypesList)) {
-			return loadFile(fileName, cdoName);
-		} else {
+		if (!CollectionUtils.isEmpty(providerTypesList)) {
+			log.info("Getting resource for {} path from CDO", cdoName);
 			return (T) getLastElement(providerTypesList);
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T extends EObject> T loadFile(String fileName, String cdoName){
-		T result = null;
-
-		InputStream is = getExistingModelFile(fileName);
-		if(is != null) {
-			log.debug("Loading file {}", fileName);
-			Resource r= modelService.loadModelFromInputStream(fileName,is);
-			if (r != null) {
-				result = (T) r.getContents().get(0);
-				cdoClient.storeModel(result, cdoName);
-				log.info("{} loaded from File {} and stored under {}", result.getClass().getSimpleName(), fileName, cdoName);
-			} else {
-				log.error("File {} exists, but there is problem during file loading. The object will not be loaded!", fileName);
-			}
-		} else {
-			log.error("File {} does not exist. The object will not be loaded!", fileName);
-		}
-		return result;
+		log.warn("Empty resource for {} path.", cdoName);
+		return null;
 	}
 
 	/**
@@ -244,17 +214,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 			}
 		}
 		return result;
-	}
-
-	private InputStream getExistingModelFile(String fileName) {
-		InputStream fis= null;
-		try {
-			fis= CDODatabaseProxy.class.getClass().getResourceAsStream(fileName);
-			log.debug("Loaded file {}", fileName);
-		} catch (Exception e){
-			log.error("Could not create InputStream for file {}", fileName);
-		}
-		return fis;
 	}
 
 	public void saveModels(PaasageConfiguration pc, ConstraintProblem cp) {
