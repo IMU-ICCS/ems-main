@@ -39,7 +39,6 @@ public class CPSolverExecutor {
   public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid) {
     try {
       CPSolver cpSolver = new CPSolver(cdoResourcePath,null);
-      cpSolver.solve();
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
