@@ -36,12 +36,11 @@ public class GeneratorRestApp {
 
 
         log.info("GeneratorRestApp is starting...");
-        String pattern = "yyyy-MM-dd HH:mm:ss.SSS";
-
-        log.info("Timestamp {}, Date for pattern '{}' is {}", System.currentTimeMillis(), pattern, new SimpleDateFormat(pattern).format(new Date()));
 
         SpringApplication.run(GeneratorRestApp.class, args);
 
+        String pattern = "yyyy-MM-dd HH:mm:ss.SSS";
+        log.info("Timestamp {}, Date for pattern '{}' is {}", System.currentTimeMillis(), pattern, new SimpleDateFormat(pattern).format(new Date()));
         log.info("GeneratorRestApp started...");
     }
 }
