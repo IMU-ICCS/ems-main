@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @SpringBootApplication
 @Slf4j
 @EnableAsync
@@ -33,6 +36,9 @@ public class GeneratorRestApp {
 
 
         log.info("GeneratorRestApp is starting...");
+        String pattern = "yyyy-MM-dd HH:mm:ss.SSS";
+
+        log.info("Timestamp {}, Date for pattern '{}' is {}", System.currentTimeMillis(), pattern, new SimpleDateFormat(pattern).format(new Date()));
 
         SpringApplication.run(GeneratorRestApp.class, args);
 
