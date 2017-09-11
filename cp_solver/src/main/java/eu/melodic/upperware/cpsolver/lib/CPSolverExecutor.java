@@ -49,8 +49,7 @@ public class CPSolverExecutor {
         notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
       }
     } catch (Exception e) {
-      log.info("CPSolver returned exception.");
-      e.printStackTrace();
+      log.error("CPSolver returned exception.", e);
       notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
     }
   }
