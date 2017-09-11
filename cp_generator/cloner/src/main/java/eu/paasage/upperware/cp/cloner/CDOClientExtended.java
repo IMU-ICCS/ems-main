@@ -56,8 +56,7 @@ public class CDOClientExtended extends CDOClient {
 				qr.add(o); 
 			}
 		} catch(Throwable ex) {
-			log.error("CDOClientExtended - getResourceContents - Problems retrieving the resource with path "+path+"!\n");
-			ex.printStackTrace();
+			log.error("CDOClientExtended - getResourceContents - Problems retrieving the resource with path {}!", path, ex);
 		}
 		return qr;
 	}
@@ -74,7 +73,7 @@ public class CDOClientExtended extends CDOClient {
 			trans.commit();
 			trans.close();
 		} catch(Exception e){
-			e.printStackTrace();
+			log.error("Error during storing models", e);
 		}
 	}
 	
@@ -90,9 +89,7 @@ public class CDOClientExtended extends CDOClient {
 		EList<EObject> list = cdo.getContents();
 		
 		try{
-
-			if(list.size()>0)
-			{
+			if(list.size()>0) {
 				 trans.commit();
 				 trans.close();
 				 
@@ -101,39 +98,30 @@ public class CDOClientExtended extends CDOClient {
 				 trans = openTransaction();
 				 cdo = trans.getOrCreateResource(resourceName);
 				 list = cdo.getContents();
-				  
 			 }
 			
 			  list.add(model);
 			  trans.commit();
 			  trans.close();
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e){
+			log.error("Error during storing models", e);
 		}
 	}
 	
-	public void deleteResource(String resourceName)
-	{
+	public void deleteResource(String resourceName) {
 		List<EObject> objs= getResourceContents(resourceName);
-		 
-		 //for(EObject obj:objs)
-		 {
-			 CDOObject cdoO= (CDOObject) objs.get(0); 
-			 deleteObject(cdoO.cdoID());
-		 }
+		CDOObject cdoO= (CDOObject) objs.get(0);
+		deleteObject(cdoO.cdoID());
 	}
-	
+
 	public void storeModelOverwritten(List<EObject> models, String resourceName){
 		CDOTransaction trans = openTransaction();
 		CDOResource cdo = trans.getOrCreateResource(resourceName);
 
 		EList<EObject> list = cdo.getContents();
 		
-		try
-		{
-			if(list.size()>0)
-			{
+		try {
+			if(list.size()>0) {
 				 trans.commit();
 				 trans.close();
 				 
@@ -142,33 +130,26 @@ public class CDOClientExtended extends CDOClient {
 				 trans = openTransaction();
 				 cdo = trans.getOrCreateResource(resourceName);
 				 list = cdo.getContents();
-				  
 			 }
 			
 			list.addAll(models);
 			trans.commit();
 			trans.close();
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e){
+			log.error("Error during storing models", e);
 		}
 	}
 	
 	
-	public boolean existResource(String path)
-	{	try
-		{
+	public boolean existResource(String path) {
+		try {
 			CDOView view= openView();
 			CDOResource resource = view.getResource(path);
 		
 			return resource!=null; 
-		}
-		catch(Exception ex)
-		{
+		} catch(Exception ex) {
 			return false; 
 		}
-		
-		//return false; 
 	}
 	
 	public void storeModelsWithCrossReferences(List<EObject> models, String resourceName){
@@ -180,20 +161,17 @@ public class CDOClientExtended extends CDOClient {
 		
 		
 		
-		for(EObject m: models)
-		{	
+		for(EObject m: models) {
 			EObject cop=copier.copy(m); 
 			list.add(cop);
 		}
 		
-		try
-		{
+		try {
 			copier.copyReferences();
 			trans.commit();
 			trans.close();
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e){
+			log.error("Error during storing models", e);
 		}
 	}
 	
@@ -203,46 +181,33 @@ public class CDOClientExtended extends CDOClient {
 		CDOTransaction trans = openTransaction();
 		CDOResource cdo = trans.getOrCreateResource(resourceName);
 		EList<EObject> list = cdo.getContents();
-		
-		
-		
-		for(Resource r: rs.getResources())
-		{	
-			for(EObject o: r.getContents())
-			{
-				EObject cop=copier.copy(o); 
-				
-				
-				list.add(cop);
-				
-			}	
+
+		for(Resource r: rs.getResources()) {
+			for(EObject o: r.getContents()) {
+				list.add(copier.copy(o));
+			}
 		}
 		
-		try
-		{
+		try {
 			copier.copyReferences();
 			trans.commit();
 			trans.close();
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e){
+			log.error("Error during storing models", e);
 		}
 	}
 	
 	public boolean deleteObject(CDOID uri){
-		try{
+		try {
 			CDOTransaction trans = openTransaction(); 
 			CDOObject object = trans.getObject(uri);
 			deleteObject(object,trans,true);
 			
 			return true; 
+		} catch(Exception e){
+			log.error("Error during deleting models", e);
 		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		return false; 
-			
+		return false;
 	}
 	
 	/* This method can be used to delete an object provided that it has been obtained with the
@@ -258,25 +223,24 @@ public class CDOClientExtended extends CDOClient {
 			//Get all references (non-containment associations) to the object
 			List<CDOObjectReference> refs = trans.queryXRefs(object);
 			for (CDOObjectReference ref: refs){
-				CDOObject source = (CDOObject)ref.getSourceObject();
-				CDOObject target = (CDOObject)ref.getTargetObject();
+				CDOObject source = ref.getSourceObject();
+				CDOObject target = ref.getTargetObject();
 				EStructuralFeature feat = ref.getSourceFeature();
 				Object eGet = source.eGet(feat);
 				List<?> list = null;
 				if(eGet instanceof List<?>){
 					list = (List<?>)eGet;
-					System.out.println("Prev size: is: " + list.size());
+					log.info("Prev size: is: {}", list.size());
 					list.remove(target);
-					System.out.println("New size: is: " + list.size());
-				}
-				else{
+					log.info("New size: is: {}", list.size());
+				} else{
 					source.eSet(feat, null);
 				}
 			}
 			//Get containment association and delete it
 			CDOObject parent = (CDOObject)object.eContainer();
 			EStructuralFeature feat = object.eContainmentFeature();
-			System.out.println("The feature is: " + feat);
+			log.info("The feature is: {}", feat);
 			
 			if(feat!=null)
 			{	
@@ -284,11 +248,10 @@ public class CDOClientExtended extends CDOClient {
 				List<?> list = null;
 				if (eGet instanceof List<?>){
 					list = (List<?>)eGet;
-					System.out.println("Prev size: is: " + list.size());
+					log.info("Prev size: is: {}", list.size());
 					list.remove(object);
-					System.out.println("New size: is: " + list.size());
-				}
-				else{
+					log.info("New size: is: {}", list.size());
+				} else{
 					parent.eSet(feat, null);
 				}
 			}
@@ -299,9 +262,8 @@ public class CDOClientExtended extends CDOClient {
 			}
 			
 			return true;
-		}
-		catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e) {
+			log.error("Error during deleting objects", e);
 		}
 		return false; 
 	}

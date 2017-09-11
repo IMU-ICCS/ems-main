@@ -37,8 +37,7 @@ public class SolverToDeploymentController {
     try {
       solverToDeployment.doWorkTS(applicationId,cdoResourcePath , notificationUri, requestUuid);
     } catch (Exception e) {
-      log.info("doWorkTS returned exception.");
-      e.printStackTrace();
+      log.error("doWorkTS returned exception.", e);
     }
   }
 

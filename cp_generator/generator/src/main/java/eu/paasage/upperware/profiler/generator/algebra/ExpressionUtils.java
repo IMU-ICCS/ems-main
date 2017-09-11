@@ -26,8 +26,7 @@ public class ExpressionUtils {
 			ComparisonExpression expression,
 			List<AlgebraVariable> varList,
 			Map<AlgebraVariable, Integer> varLeftMap,
-			Map<AlgebraVariable, Integer> varRightMap)
-	{
+			Map<AlgebraVariable, Integer> varRightMap) {
 		StringBuilder strExpression = new StringBuilder();
 
 		/* handle exp1 */
@@ -45,8 +44,7 @@ public class ExpressionUtils {
 	private static String expressionToString(
 			Expression exp1,
 			List<AlgebraVariable> varList,
-			Map<AlgebraVariable, Integer> varMap)
-	{
+			Map<AlgebraVariable, Integer> varMap) {
 		if (exp1 instanceof ComposedExpression) {
 			ComposedExpression composed = (ComposedExpression) exp1;
 			for (Expression ex : composed.getExpressions()) {
@@ -56,7 +54,7 @@ public class ExpressionUtils {
 					try {
 						id = id.split("_")[1];
 					} catch (Exception e) {
-						System.out.println("[WARNING] Error while reading component name (" + id + ")");
+						log.error("Error while reading component name ({})", id, e);
 					}
 
 					for (AlgebraVariable candidate : varList) {
@@ -74,7 +72,7 @@ public class ExpressionUtils {
 					try {
 						id = id.split("_")[3];
 					} catch (Exception e) {
-						System.out.println("[WARNING] Error while reading component name (" + id + ")");
+						log.error("Error while reading component name ({})", id, e);
 					}
 					/*
 					 * We have to skip reading the domain range, because
@@ -111,9 +109,7 @@ public class ExpressionUtils {
 				AlgebraVariable av = iter.next();
 				answer.append(av.getVariable());
 				if (iter.hasNext()) {
-					answer.append(" ");
-					answer.append(operator);
-					answer.append(" ");
+					answer.append(" ").append(operator).append(" ");
 				}
 			}
 			return answer.toString();
@@ -130,7 +126,7 @@ public class ExpressionUtils {
 				throw new UnsupportedOperationException();
 			}
 		} else {
-			log.error("unsupported expression: " + exp1.getId());
+			log.error("unsupported expression: {}", exp1.getId());
 			throw new UnsupportedOperationException();
 		}
 	}
