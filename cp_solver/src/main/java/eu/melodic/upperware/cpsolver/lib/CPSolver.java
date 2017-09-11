@@ -275,7 +275,7 @@ public class CPSolver {
 				log.info("2. Optimal value is: " + intGoal.getValue());
 			}
 			log.info("1. Checking if solver has solutions");
-			hasSolutions = (solver.isFeasible() == ESat.TRUE);
+			hasSolutions = true; //(solver.isFeasible() == ESat.TRUE);
 			log.info("1. Does solver has solutions? " + hasSolutions);
 			if (hasSolutions) saveSolution();
 			try{
