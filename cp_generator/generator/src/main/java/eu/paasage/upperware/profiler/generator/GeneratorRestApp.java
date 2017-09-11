@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 @SpringBootApplication
 @Slf4j
@@ -38,6 +39,9 @@ public class GeneratorRestApp {
         log.info("GeneratorRestApp is starting...");
 
         SpringApplication.run(GeneratorRestApp.class, args);
+
+        TimeZone aDefault = TimeZone.getDefault();
+        log.info("ID: {}, displayName: {}", aDefault.getID(), aDefault.getDisplayName());
 
         String pattern = "yyyy-MM-dd HH:mm:ss.SSS";
         log.info("Timestamp {}, Date for pattern '{}' is {}", System.currentTimeMillis(), pattern, new SimpleDateFormat(pattern).format(new Date()));
