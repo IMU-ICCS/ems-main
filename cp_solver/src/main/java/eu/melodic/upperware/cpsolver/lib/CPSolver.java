@@ -248,7 +248,6 @@ public class CPSolver {
 			readModel(cp);
 		}
 		log.info("CDO Mode: " + cdoMode);
-		cl.exportModel(cp, "/logs/cpSolver_cpm_"+cdoPath+".xmi");
 		cl.closeSession();
 	}
 	
