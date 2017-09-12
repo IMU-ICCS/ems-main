@@ -49,7 +49,7 @@ import static eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageMode
 public class PaasageConfigurationServiceImpl implements PaasageConfigurationService {
 
     private static int DEFAULT_MIN_INSTANCE_NUMBER =0;
-    private static int DEFAULT_MAX_INSTANCE_NUMBER =0;
+    private static int DEFAULT_MAX_INSTANCE_NUMBER =Integer.MAX_VALUE;
 
     public static String NAME_SEPARATOR="_";
     public static String SUFFIX="VM_PROFILE";
@@ -450,6 +450,10 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
     }
 
     private void resolveContaimentDependencyInstances(EList<HostingInstance> hostingRelationships, PaasageConfiguration configuration) {
+        if (CollectionUtils.isEmpty(hostingRelationships)){
+            log.warn("Empty hosting relationships");
+        }
+
         for (HostingInstance hosting : hostingRelationships) {
             InternalComponentInstance client = (InternalComponentInstance) hosting.getRequiredHostInstance().eContainer();
 
@@ -495,6 +499,10 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
     }
 
     private void resolveContaimentDependencies(DeploymentModel pim, PaasageConfiguration configuration) {
+
+        if (CollectionUtils.isEmpty(pim.getHostings())){
+            log.warn("Empty Hostings");
+        }
 
         for(Hosting hosting: pim.getHostings()) {
 
