@@ -49,7 +49,7 @@ import static eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageMode
 public class PaasageConfigurationServiceImpl implements PaasageConfigurationService {
 
     private static int DEFAULT_MIN_INSTANCE_NUMBER =0;
-    private static int DEFAULT_MAX_INSTANCE_NUMBER =Integer.MAX_VALUE;
+    private static int DEFAULT_MAX_INSTANCE_NUMBER =1000;
 
     public static String NAME_SEPARATOR="_";
     public static String SUFFIX="VM_PROFILE";
