@@ -132,10 +132,10 @@ public class CDODatabaseProxy2 {
 			List<CamelModel> cms = findAllCamelProviderModel(appId, pmId);
 			log.info("#Camel CloudProvider Model(s) loaded: {}", cms.size());
 			for(CamelModel cm : cms) {
-				if (cloudVMid.equals(cm.getName())) {
-					log.info("Copying {}", cm.getName());
-					copyAllCloudProviderModel(pmId, cloudVMid, cm, camelModelID);
-				}
+//				if (cloudVMid.equals(cm.getName())) {
+				log.info("Copying {}", cm.getName());
+				copyAllCloudProviderModel(pmId, cloudVMid, cm, camelModelID);
+//				}
 			}
 			log.info("Done");
 		} catch (S2DException e) {
