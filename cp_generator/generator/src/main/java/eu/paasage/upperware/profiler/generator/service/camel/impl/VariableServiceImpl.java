@@ -15,9 +15,12 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_MID;
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PREFIX;
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_SUFFIX;
 
 /**
  * Created by pszkup on 16.08.17.
@@ -26,10 +29,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @AllArgsConstructor
 public class VariableServiceImpl implements VariableService {
-
-    private static final String APP_COMPONENT_VAR_PREFIX= "U_app_component_";
-    private static final String APP_COMPONENT_VAR_MID= "_vm_";
-    private static final String APP_COMPONENT_VAR_SUFFIX= "_provider_";
 
     private CpFactory cpFactory;
     private TypesFactoryService typesFactoryService;

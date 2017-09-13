@@ -15,6 +15,8 @@ import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.api.ISender;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
+
 /**
  * This class provides the functionality to send the id of the generate models to the standar output
  * @author danielromero
@@ -23,10 +25,8 @@ import eu.paasage.upperware.profiler.cp.generator.model.api.ISender;
 public class StandardOutputSender implements ISender {
 
 	@Override
-	public void sendPaasageConfigurationFiles(PaasageConfiguration pc) 
-	{
-		
-		System.out.println(CDODatabaseProxy.CDO_SERVER_PATH+pc.getId());
+	public void sendPaasageConfigurationFiles(PaasageConfiguration pc) {
+		System.out.println(CDO_SERVER_PATH+pc.getId());
 	}
 	
 	@Override

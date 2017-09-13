@@ -65,6 +65,8 @@ import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyCamel;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 
+import static eu.passage.upperware.commons.MelodicConstants.*;
+
 /**
  * Database proxy for CDO
  * @author danielromero
@@ -114,14 +116,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 	/*
 	 * CONSTANTS 
 	 */
-	public final static String FUNCTION_TYPES_ID="cpGenerator-functionTypes"; 
-	
-	public final static String OPERATING_SYSTEMS_ID="cpGenerator-operatingSystems"; 
-	
-	public final static String LOCATIONS_ID="cpGenerator-locations"; 
-	
-	public final static String PROVIDER_TYPES_ID="cpGenerator-providerTypes"; 
-	
+
 	public final static String PROVIDERS="cpGenerator-providers"; 
 	
 	public final static String PROVIDERS_CAMEL="cpGenerator-providers-camel"; 
@@ -131,15 +126,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 	public final static String PROVIDER_MAPPINGS_CAMEL="cpGenerator-providerMappings-camel"; 
 	
 	public final static String ONTOLOGY="cpGenerator-ontology"; 
-	
-	public final static String FUNCTION_TYPES_FILE= "FunctionTypes.xmi"; 
-	
-	public final static String OPERATING_SYSTEMS_FILE= "OperatingSystems.xmi"; 
-	
-	public final static String LOCATIONS_FILE= "Locations.xmi"; 
-	
-	public final static String PROVIDER_TYPES_FILE= "ProviderTypes.xmi"; 
-	
+
 	public final static String FUNCTION_TYPES_FILE_PATH= Constants.WAR_CP_DIR_PATH+FUNCTION_TYPES_FILE; 
 	
 	public final static String OPERATING_SYSTEMS_FILE_PATH= Constants.WAR_CP_DIR_PATH+OPERATING_SYSTEMS_FILE; 
@@ -147,13 +134,8 @@ public class CDODatabaseProxy extends DatabaseProxy
 	public final static String LOCATIONS_FILE_PATH= Constants.WAR_CP_DIR_PATH+LOCATIONS_FILE; 
 	
 	public final static String PROVIDER_TYPES_FILE_PATH= Constants.WAR_CP_DIR_PATH+PROVIDER_TYPES_FILE; 
-	
-	public final static String CDO_SERVER_PATH= "upperware-models/"; 
-	
-	public static String ONTOLOGY_ID= CDO_SERVER_PATH+"/camelOntology"; 
-	
-	public final static String FMS_APP_CDO_SERVER_PATH= CDO_SERVER_PATH+"fms/"; 
-	
+
+	public static String ONTOLOGY_ID= CDO_SERVER_PATH+"/camelOntology";
 
 	/*
 	 * CONSTRUCTOR 
@@ -275,7 +257,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 				log.debug("CDODatabaseProxy - loadFunctionTypes - FunctionTypes loaded!");
 			}
 			else
-				log.error("CDODatabaseProxy - loadFunctionTypes - The file FunctionTypes.xmi does not exist. The function types will not be loaded!");
+				log.error("CDODatabaseProxy - loadFunctionTypes - The file {} does not exist. The function types will not be loaded!", FUNCTION_TYPES_FILE);
 		}
 		else
 			functionTypes= (FunctionTypes) functionTypesList.get(0); 
@@ -307,7 +289,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 				log.debug("CDODatabaseProxy - loadOperatingSystems - Operating systems loaded!");
 			}
 			else
-				log.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
+				log.error("CDODatabaseProxy - loadOperatingSystems - The file {} does not exist. The operating systems will not be loaded!", OPERATING_SYSTEMS_FILE);
 		}
 		else
 			operatingSystems= (OperatingSystems) operatingSystemsList.get(0); 
@@ -339,7 +321,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 				log.debug("CDODatabaseProxy- loadLocations - Locations loaded!");
 			}
 			else
-				log.error("CDODatabaseProxy - loadLocations - The file locations.xmi does not exist. The locations will not be loaded!");
+				log.error("CDODatabaseProxy - loadLocations - The file {} does not exist. The locations will not be loaded!", LOCATIONS_FILE);
 		}
 		//System.out.println("Location list "+locationsList);
 		else
@@ -398,7 +380,7 @@ public class CDODatabaseProxy extends DatabaseProxy
 				cdoClient.storeModel(providerTypes, PROVIDER_TYPES_ID);
 			}
 			else
-				log.error("CDODatabaseProxy- The file ProviderTypes.xmi does not exist. The provider types will not be loaded!");
+				log.error("CDODatabaseProxy- The file {} does not exist. The provider types will not be loaded!", PROVIDER_TYPES_FILE);
 		}
 		else
 		{

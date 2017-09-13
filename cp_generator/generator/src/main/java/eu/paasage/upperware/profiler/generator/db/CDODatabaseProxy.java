@@ -38,20 +38,14 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.*;
 
+import static eu.passage.upperware.commons.MelodicConstants.*;
+
 /**
  * Database proxy for CDO
  */
 @Slf4j
 @Service
-public class CDODatabaseProxy extends DatabaseProxy {
-
-	private final static String FUNCTION_TYPES_ID="cpGenerator-functionTypes";
-	private final static String OPERATING_SYSTEMS_ID="cpGenerator-operatingSystems";
-	private final static String LOCATIONS_ID="cpGenerator-locations";
-	private final static String PROVIDER_TYPES_ID="cpGenerator-providerTypes";
-
-	public final static String CDO_SERVER_PATH= "upperware-models/";
-	public final static String FMS_APP_CDO_SERVER_PATH= CDO_SERVER_PATH+"fms/";
+public class CDODatabaseProxy implements IDatabaseProxy {
 
 	private CPCloner cloner;
 	private CDOClientExtended cdoClient;
@@ -223,7 +217,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 		String cpPath = CDO_SERVER_PATH + pcId;
 //
 		//cdoClient.exportModel(pc, "/logs/cpGenerator_cpm_"+cpPath+".xmi");
-		cdoClient.exportModel(cp, "/logs/cpGenerator_cpm_"+cpPath+".xmi");
+//		cdoClient.exportModel(cp, "/logs/cpGenerator_cpm_"+cpPath+".xmi");
 
 		cdoClient.storeModels(Arrays.asList(pc, cp), cpPath);
 		log.debug("CDODatabaseProxy - saveModels - Models stored! ");

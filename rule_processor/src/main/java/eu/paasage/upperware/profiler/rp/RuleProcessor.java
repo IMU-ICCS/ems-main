@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
+import eu.passage.upperware.commons.MelodicConstants;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
@@ -94,9 +95,11 @@ import eu.paasage.upperware.profiler.rp.util.UnavailableModelException;
 import eu.paasage.upperware.profiler.rp.util.Utilities;
 import eu.paasage.upperware.profiler.rp.zeromq.RuleProcessorService;
 
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PREFIX;
+import static eu.passage.upperware.commons.MelodicConstants.FMS_APP_CDO_SERVER_PATH;
+
 public class RuleProcessor {
 
-	private static final String U_APP_COMPONENT = "U_app_component_";
 	private static final String GLOBAL_PROVIDER_REQUIREMENTS = "GlobalProviderRequirements";
 	private static final String RP_PROVIDER_REQUIREMENTS = "RP_ProviderRequirements";
 
@@ -472,12 +475,12 @@ public class RuleProcessor {
 
 	private boolean isProviderPublic(String cpModelId, String cloudProviderId)
 			throws UnavailableModelException {
-		CamelModel model = getCamelModel("upperware-models/fms/"
-				+ cpModelId + "/" + cloudProviderId);
+
+		String modelPath = FMS_APP_CDO_SERVER_PATH + cpModelId + "/" + cloudProviderId;
+
+		CamelModel model = getCamelModel(modelPath);
 		if (model == null) {
-			String error = "> ERROR: Could not retrieve the following model: "
-					+ "upperware-models/fms/" + cpModelId + "/"
-					+ cloudProviderId;
+			String error = "> ERROR: Could not retrieve the following model: " + modelPath;
 			System.out.println(error);
 			throw new UnavailableModelException(error);
 		}
@@ -1569,7 +1572,7 @@ public class RuleProcessor {
 							if (exp instanceof Variable) {
 								Variable v = (Variable) exp;
 								String id = v.getId();
-								if (id.startsWith(U_APP_COMPONENT)) {
+								if (id.startsWith(APP_COMPONENT_VAR_PREFIX)) {
 									String var = id.split("_")[3];
 									unique.add(var);
 								}
@@ -1628,7 +1631,7 @@ public class RuleProcessor {
 				/* update variables */
 				for (Variable variable : cpModel.getVariables()) {
 					String id = variable.getId();
-					if (id.startsWith(U_APP_COMPONENT)) {
+					if (id.startsWith(APP_COMPONENT_VAR_PREFIX)) {
 						id = id.split("_")[3];
 						for (AlgebraVariable av : ranges) {
 							if (av.getVariable().equals(id)) {

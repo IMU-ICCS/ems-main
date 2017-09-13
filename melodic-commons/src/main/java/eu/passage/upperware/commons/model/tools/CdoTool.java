@@ -16,6 +16,8 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
+
 /**
  * A utility to help interaction with the CDO server.
  * <p>
@@ -29,8 +31,6 @@ public final class CdoTool {
      * log4j message logger
      */
     protected static Logger log = Logger.getLogger(CdoTool.class);
-
-    private static final String CDO_SERVER_PATH = "upperware-models/";
 
     /**
      * Register the PaaSage Upperware Model CDO packages with the {@link eu.paasage.mddb.cdo.client.CDOClient <em>CDOClient</em>}.

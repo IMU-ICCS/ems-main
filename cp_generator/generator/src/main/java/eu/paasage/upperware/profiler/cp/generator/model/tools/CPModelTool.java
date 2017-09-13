@@ -38,6 +38,10 @@ import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_MID;
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PREFIX;
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_SUFFIX;
+
 public class CPModelTool {
 	
 	private static final String SEPARATOR="_"; 
@@ -51,15 +55,7 @@ public class CPModelTool {
 	public static final String CERO_CONSTANT ="cero_constant"; 
 	
 	private static final String VM_PROFILE_CONSTANT_PREFIX= "number_vm_"; 
-	
-	public static final String APP_COMPONENT_VAR_PREFIX= "U_app_component_";
-	
-	
-	public static final String APP_COMPONENT_VAR_MID= "_vm_"; 
-	
-	public static final String APP_COMPONENT_VAR_SUFFIX= "_provider_"; 
-	
-	
+
 	
 	/*
 	 * Counter for aux expressions
@@ -805,24 +801,12 @@ public class CPModelTool {
 		return VM_PROFILE_CONSTANT_PREFIX+vmpId; 
 	}
 
-	public static String getProviderRelatedToVariable(Variable v)
-	{
-		int posSuffix= v.getId().indexOf(APP_COMPONENT_VAR_SUFFIX); 
-		
-		String providerId= v.getId().substring(posSuffix+APP_COMPONENT_VAR_SUFFIX.length()); 
-		
-		return providerId; 
+	public static String getProviderRelatedToVariable(Variable v) {
+		return v.getProviderId();
 	}
 
-	public static String getVmProfileRelatedToVariable(Variable v)
-	{
-		int posPrefix= v.getId().indexOf(APP_COMPONENT_VAR_MID); 
-		
-		int postSuffix= v.getId().indexOf(APP_COMPONENT_VAR_SUFFIX); 
-		
-		String vmId= v.getId().substring(posPrefix+APP_COMPONENT_VAR_MID.length(), postSuffix); 
-		
-		return vmId; 
+	public static String getVmProfileRelatedToVariable(Variable v) {
+		return v.getVmId();
 	}
 	
 	public static String getUserVariableName(Metric metric, InternalComponent ic)
@@ -1118,17 +1102,13 @@ public class CPModelTool {
 	 * @param providerId The provider id
 	 * @return Id of the variable
 	 */
-	public static String generateApplicationComponentVarName(String appComponentName, String vmpName, String providerId)
-	{
-		String varName= CPModelTool.APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId; 
-		
-		return varName; 
+	public static String generateApplicationComponentVarName(String appComponentName, String vmpName, String providerId) {
+		String varName= APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId;
+		return varName;
 	}
 
-	public static String generateApplicationComponentVarName1(String appComponentName, String vmpName, String providerId, String vmTypeName)
-	{
-		String varName= CPModelTool.APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId+"_"+vmTypeName;
-
+	public static String generateApplicationComponentVarName1(String appComponentName, String vmpName, String providerId, String vmTypeName) {
+		String varName= APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId+"_"+vmTypeName;
 		return varName;
 	}
 	

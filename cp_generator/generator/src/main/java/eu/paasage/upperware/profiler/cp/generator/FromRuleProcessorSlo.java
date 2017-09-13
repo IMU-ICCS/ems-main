@@ -18,9 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FromRuleProcessorSlo {
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PREFIX;
 
-    private static final String U_APP_COMPONENT = "U_app_component_";
+public class FromRuleProcessorSlo {
 
     public void update(CamelModel cModel, ConstraintProblem cpModel) { //SLO
 
@@ -58,8 +58,8 @@ public class FromRuleProcessorSlo {
 
         printValidatingUserRequirementsHeader();
 
-        Map<AlgebraVariable, Integer> varLeftMap = new HashMap<AlgebraVariable, Integer>();
-        Map<AlgebraVariable, Integer> varRightMap = new HashMap<AlgebraVariable, Integer>();
+        Map<AlgebraVariable, Integer> varLeftMap = new HashMap<>();
+        Map<AlgebraVariable, Integer> varRightMap = new HashMap<>();
         Set<String> slos = new HashSet<String>();
 
 
@@ -106,8 +106,8 @@ public class FromRuleProcessorSlo {
         System.out.println();
 
 
-        Set<Integer> domain = new HashSet<Integer>();
-        Map<AlgebraVariable, AlgebraVariable> replaceMap = new HashMap<AlgebraVariable, AlgebraVariable>();
+        Set<Integer> domain = new HashSet<>();
+        Map<AlgebraVariable, AlgebraVariable> replaceMap = new HashMap<>();
 
         List<AlgebraVariable> ranges;
         try {
@@ -159,14 +159,14 @@ public class FromRuleProcessorSlo {
 
             /* check comparison expressions */
             for (ComparisonExpression comp : cpModel.getConstraints()) {
-                Set<String> unique = new HashSet<String>();
+                Set<String> unique = new HashSet<>();
                 if (comp.getExp1() instanceof ComposedExpression) {
                     ComposedExpression composed = (ComposedExpression) comp.getExp1();
                     for (Expression exp : composed.getExpressions()) {
                         if (exp instanceof Variable) {
                             Variable v = (Variable) exp;
                             String id = v.getId();
-                            if (id.startsWith(U_APP_COMPONENT)) {
+                            if (id.startsWith(APP_COMPONENT_VAR_PREFIX)) {
                                 String var = id.split("_")[3];
                                 unique.add(var);
                             }
@@ -225,7 +225,7 @@ public class FromRuleProcessorSlo {
             /* update variables */
             for (Variable variable : cpModel.getVariables()) {
                 String id = variable.getId();
-                if (id.startsWith(U_APP_COMPONENT)) {
+                if (id.startsWith(APP_COMPONENT_VAR_PREFIX)) {
                     id = id.split("_")[3];
                     for (AlgebraVariable av : ranges) {
                         if (av.getVariable().equals(id)) {

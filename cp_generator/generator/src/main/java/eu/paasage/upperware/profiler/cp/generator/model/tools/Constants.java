@@ -95,15 +95,7 @@ public interface Constants
 	
 	public static final String WAR_ONTOLOGY_PATH=WAR_MODEL_PATH+File.separator+ONTOLOGY_DIR+File.separator; 
 	
-	public static final String WAR_CP_DIR_PATH=WAR_MODEL_PATH+File.separator+CP_DIR; 
-	
-	public static final String OPERATING_SYSTEMS_MODEL_FILE_NAME= "OperatingSystems.xmi"; 
-	
-	public static final String FUNCTION_TYPES_MODEL_FILE_NAME= "FunctionTypes.xmi"; 
-	
-	public static final String LOCATIONS_MODEL_FILE_NAME= "Locations.xmi"; 
-	
-	public static final String PROVIDER_TYPES_MODEL_FILE_NAME= "ProviderTypes.xmi"; 
+	public static final String WAR_CP_DIR_PATH=WAR_MODEL_PATH+File.separator+CP_DIR;
 	
 	public static final String FILE_NAME_SENDER_PROPERTY_NAME= "fileToSend"; 
 	

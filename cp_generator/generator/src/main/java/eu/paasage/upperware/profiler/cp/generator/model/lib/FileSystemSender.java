@@ -22,6 +22,8 @@ import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
+
 /**
  * This class provides the functionality to send the id of the generate models to the standar output
  * @author danielromero
@@ -53,7 +55,7 @@ public class FileSystemSender implements ISender
 		
 		if(PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME)!=null && !PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME).equals(""))
 		{
-			String content=CDODatabaseProxy.CDO_SERVER_PATH+id;
+			String content=CDO_SERVER_PATH+id;
 				
 			try {
 				FileTool.saveFile(PaaSagePropertyManager.getInstance().getCPGeneratorProperty(Constants.FILE_NAME_SENDER_PROPERTY_NAME), content);

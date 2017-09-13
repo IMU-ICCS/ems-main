@@ -23,14 +23,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PREFIX;
+
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class SloServiceImpl implements SloService {
 
     private Algebra algebra;
-
-    private static final String U_APP_COMPONENT = "U_app_component_";
 
     public void update(CamelModel cModel, ConstraintProblem cpModel) {
 
@@ -168,7 +168,7 @@ public class SloServiceImpl implements SloService {
                     for (Expression exp : composed.getExpressions()) {
                         if (exp instanceof Variable) {
                             Variable v = (Variable) exp;
-                            if (v.getId().startsWith(U_APP_COMPONENT)) {
+                            if (v.getId().startsWith(APP_COMPONENT_VAR_PREFIX)) {
                                 unique.add(v.getComponentName());
                             }
                         }
@@ -225,7 +225,7 @@ public class SloServiceImpl implements SloService {
 
             /* update variables */
             for (Variable variable : cpModel.getVariables()) {
-                if (variable.getId().startsWith(U_APP_COMPONENT)) {
+                if (variable.getId().startsWith(APP_COMPONENT_VAR_PREFIX)) {
                     String id = variable.getComponentName();
                     for (AlgebraVariable av : ranges) {
                         if (av.getVariable().equals(id)) {

@@ -1267,7 +1267,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
         if (!mappingName.equals("")){
             id += mappingName + NAME_SEPARATOR;
         }
-
+//vm
         if("".equals(location) && "".equals(provider) && "".equals(hardwareId) && "".equals(osImageId) && "".equals(mappingName)) {
             id+=vmID+SUFFIX;
         } else {

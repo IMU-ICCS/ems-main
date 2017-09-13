@@ -38,6 +38,8 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.OperatingSystems;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 
+import static eu.passage.upperware.commons.MelodicConstants.*;
+
 @Slf4j
 public class CDODatabaseProxy extends DatabaseProxy {
 
@@ -68,16 +70,8 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	/*
 	 * CONSTANTS
 	 */
-	public final static String GENERATION_DIR = "paasage" + File.separator
-			+ "configurations" + File.separator;
+	public final static String GENERATION_DIR = "paasage" + File.separator + "configurations" + File.separator;
 	public final static String WAR_MODEL_PATH = "std-models/";
-	public final static String FUNCTION_TYPES_ID = "cpGenerator-functionTypes";
-
-	public final static String OPERATING_SYSTEMS_ID = "cpGenerator-operatingSystems";
-
-	public final static String LOCATIONS_ID = "cpGenerator-locations";
-
-	public final static String PROVIDER_TYPES_ID = "cpGenerator-providerTypes";
 
 	public final static String PROVIDERS = "cpGenerator-providers";
 
@@ -86,14 +80,6 @@ public class CDODatabaseProxy extends DatabaseProxy {
 	public final static String PROVIDER_MAPPINGS = "cpGenerator-providerMappings";
 
 	public final static String PROVIDER_MAPPINGS_CAMEL = "cpGenerator-providerMappings-camel";
-
-	public final static String FUNCTION_TYPES_FILE = "FunctionTypes.xmi";
-
-	public final static String OPERATING_SYSTEMS_FILE = "OperatingSystems.xmi";
-
-	public final static String LOCATIONS_FILE = "Locations.xmi";
-
-	public final static String PROVIDER_TYPES_FILE = "ProviderTypes.xmi";
 
 	public final static String OPERATING_SYSTEMS_FILE_PATH = WAR_MODEL_PATH
 			+ OPERATING_SYSTEMS_FILE;
@@ -192,7 +178,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 				log.info("CDODatabaseProxy - loadOperatingSystems - Operating systems loaded!");
 			} else
-				log.error("CDODatabaseProxy - loadOperatingSystems - The file OperatingSystems.xmi does not exist. The operating systems will not be loaded!");
+				log.error("CDODatabaseProxy - loadOperatingSystems - The file {} does not exist. The operating systems will not be loaded!", OPERATING_SYSTEMS_FILE);
 		} else
 			operatingSystems = (OperatingSystems) operatingSystemsList.get(0);
 	}
@@ -217,7 +203,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 				log.info("CDODatabaseProxy- loadLocations - Locations loaded!");
 			} else
-				log.error("CDODatabaseProxy - loadLocations - The file locations.xmi does not exist. The locations will not be loaded!");
+				log.error("CDODatabaseProxy - loadLocations - The file {} does not exist. The locations will not be loaded!", LOCATIONS_FILE);
 		} else {
 			locations = (Locations) locationsList.get(0);
 		}
@@ -287,7 +273,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 
 				cdoClient.storeModel(providerTypes, PROVIDER_TYPES_ID, true);
 			} else
-				log.error("CDODatabaseProxy- The file ProviderTypes.xmi does not exist. The provider types will not be loaded!");
+				log.error("CDODatabaseProxy- The file {} does not exist. The provider types will not be loaded!", PROVIDER_TYPES_FILE);
 		} else {
 			providerTypes = (ProviderTypes) providerTypesList.get(0);
 		}
@@ -413,8 +399,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 			try {
 				fis = new FileInputStream(new File(modelDir, fileName));
 			} catch (FileNotFoundException e) {
-
-				e.printStackTrace();
+				log.error("File {} not found", fileName, e);
 			}
 		}
 
@@ -490,7 +475,7 @@ public class CDODatabaseProxy extends DatabaseProxy {
 					+ camelId);
 			return deployementModels.get(0);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Exception during loading deployment model", e);
 			return null;
 		} finally {
 			// TODO : To close ?

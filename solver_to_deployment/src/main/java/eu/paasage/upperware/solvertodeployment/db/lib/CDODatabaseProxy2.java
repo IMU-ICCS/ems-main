@@ -19,6 +19,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static eu.passage.upperware.commons.MelodicConstants.FMS_APP_CDO_SERVER_PATH;
+
 @Slf4j
 public class CDODatabaseProxy2 {
 	
@@ -27,9 +29,6 @@ public class CDODatabaseProxy2 {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	private static CDODatabaseProxy2 cdoDatabaseProxy2 = new CDODatabaseProxy2();
-
-	private static String FMS_APP_CDO_SERVER_PATH = "upperware-models/fms/";
-
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Helper class for transactions
@@ -54,7 +53,7 @@ public class CDODatabaseProxy2 {
 			try {
 				transaction.commit();
 			} catch (CommitException e) {
-				e.printStackTrace();
+				log.error("Problem with commit", e);
 			} finally {
 				if (transaction != null && !transaction.isClosed()) {
 					transaction.close();
@@ -139,7 +138,6 @@ public class CDODatabaseProxy2 {
 			}
 			log.info("Done");
 		} catch (S2DException e) {
-			e.printStackTrace();
 			log.error("Error when copying PM into CAMEL", e);
 			throw e;
 		}
@@ -171,7 +169,7 @@ public class CDODatabaseProxy2 {
 		try {
 			transaction.commit();
 		} catch (CommitException e) {
-			e.printStackTrace();
+			log.error("Error during commit transaction", e);
 			throw e;
 		} finally {
 			if (transaction != null && !transaction.isClosed()) {

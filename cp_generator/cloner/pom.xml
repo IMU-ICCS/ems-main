@@ -40,6 +40,10 @@
             <artifactId>upperware-metamodel</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>

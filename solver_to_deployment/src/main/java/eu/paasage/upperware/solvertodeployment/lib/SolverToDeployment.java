@@ -121,14 +121,13 @@ public class SolverToDeployment {
 				DataUtils.registerDataHolderToCDO(camelModelID, dataholder); // COPY TO CDO
 
 			} catch (S2DException | CommitException e) {
-				e.printStackTrace();
-				log.error("Unable to complete data model instances registration");
+				log.error("Unable to complete data model instances registration", e);
 				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 				return;
 			}
 			dumpDM(camelModel, 2);
 		} catch (RuntimeException exception) {
-			exception.printStackTrace();
+			log.error("RuntimeException", exception);
 			notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 			return;
 		}

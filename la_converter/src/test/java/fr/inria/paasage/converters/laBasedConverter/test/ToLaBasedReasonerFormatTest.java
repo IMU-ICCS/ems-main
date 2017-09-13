@@ -34,6 +34,8 @@ import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
+
 public class ToLaBasedReasonerFormatTest 
 {
 	
@@ -128,7 +130,7 @@ public class ToLaBasedReasonerFormatTest
 		
 		modelsNF.add(cpEmptyNF); 
 		modelsNF.add(cpNF); 
-		client.storeModels(modelsNF, ToLaBasedReasonerFormat.CDO_SERVER_PATH+appNameNF);
+		client.storeModels(modelsNF, CDO_SERVER_PATH+appNameNF);
 		
 		tempDir= new File("."+File.separator+"temp"+File.separator);
 		tempDir.mkdirs(); 
@@ -218,7 +220,7 @@ public class ToLaBasedReasonerFormatTest
 		
 		converter.assignValues( valuesFileName, appNameNF);
 		
-		List<EObject> resources= client.getResourceContents(ToLaBasedReasonerFormat.CDO_SERVER_PATH+appNameNF); 
+		List<EObject> resources= client.getResourceContents(CDO_SERVER_PATH+appNameNF);
 		
 		ConstraintProblem cp= (ConstraintProblem) resources.get(1); 
 		
@@ -252,7 +254,7 @@ public class ToLaBasedReasonerFormatTest
 		
 		converter.assignValues( valuesCommentsFileName, appNameNF);
 		
-		List<EObject> resources= client.getResourceContents(ToLaBasedReasonerFormat.CDO_SERVER_PATH+appNameNF); 
+		List<EObject> resources= client.getResourceContents(CDO_SERVER_PATH+appNameNF);
 		
 		ConstraintProblem cp= (ConstraintProblem) resources.get(1); 
 		

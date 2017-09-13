@@ -49,7 +49,6 @@ import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
 import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.Expression;
@@ -68,7 +67,6 @@ import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.metamodel.tool.UpperwareModelTool;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
@@ -79,6 +77,7 @@ import eu.paasage.upperware.metamodel.types.StringValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
 
 /**
@@ -202,11 +201,7 @@ public class ToLaBasedReasonerFormat
 	public final static int GENERATION=0; 
 	
 	public final static int ASSIGNMENT=1; 
-	
-	
-	//CDO
-	public final static String CDO_SERVER_PATH= "upperware-models/"; 
-	
+
 	
 	//Log
 	
@@ -742,7 +737,7 @@ public class ToLaBasedReasonerFormat
 	{
 		CDOClientExtended client= createCDOClient(); 
 		
-		List<EObject> models= client.getResourceContentsWithTransanction(CDO_SERVER_PATH+appId); 
+		List<EObject> models= client.getResourceContentsWithTransanction(CDO_SERVER_PATH+appId);
 		
 		
 		if(models!=null && models.size()>1)

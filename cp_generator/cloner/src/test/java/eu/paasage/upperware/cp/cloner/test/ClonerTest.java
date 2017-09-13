@@ -35,6 +35,10 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.tool.UpperwareModelTool;
 
+import static eu.passage.upperware.commons.MelodicConstants.FUNCTION_TYPES_FILE;
+import static eu.passage.upperware.commons.MelodicConstants.OPERATING_SYSTEMS_FILE;
+import static eu.passage.upperware.commons.MelodicConstants.PROVIDER_TYPES_FILE;
+
 public class ClonerTest 
 {
 	protected static String CP_MODEL_FILE_PATH= "."+File.separator+"src"+File.separator+"test"+File.separator+"resources"+File.separator+"examples"+File.separator+"sensApp"+File.separator+"sensAppCP.xmi"; 
@@ -63,11 +67,11 @@ public class ClonerTest
 	
 	protected static String MODEL_PATH=  "."+File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"models"+File.separator; 
 	
-	protected static String FUNCTION_MODEL_PATH=MODEL_PATH+"FunctionTypes.xmi"; 
+	protected static String FUNCTION_MODEL_PATH=MODEL_PATH + FUNCTION_TYPES_FILE;
 	
-	protected static String OS_MODEL_PATH=MODEL_PATH+"OperatingSystems.xmi"; 
+	protected static String OS_MODEL_PATH=MODEL_PATH + OPERATING_SYSTEMS_FILE;
 	
-	protected static String PROVIDER_TYPES_MODEL_PATH=MODEL_PATH+"ProviderTypes.xmi"; 
+	protected static String PROVIDER_TYPES_MODEL_PATH=MODEL_PATH + PROVIDER_TYPES_FILE;
 	
 	protected static String PROVIDER_TYPES_ID="providerTypesCloner"; 
 	

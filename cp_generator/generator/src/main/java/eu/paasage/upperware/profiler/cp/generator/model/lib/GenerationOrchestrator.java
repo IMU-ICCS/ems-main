@@ -30,8 +30,6 @@ import eu.paasage.upperware.profiler.cp.generator.FromRuleProcessorSlo;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -40,7 +38,6 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.type.TypePackage;
-import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.application.ApplicationComponent;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
@@ -81,13 +78,6 @@ public class GenerationOrchestrator
 	private static final String WAR_CREATORS_PROPERTIES_FILE=Constants.WAR_CONFIG_PATH+CREATORS_FILE_NAME;
 
 	private static final String GLOBAL_PROVIDER_REQUIREMENTS = "GlobalProviderRequirements";
-	private static final String RP_PROVIDER_REQUIREMENTS = "RP_ProviderRequirements";
-
-	private static final String U_APP_COMPONENT = "U_app_component_";
-
-	public enum SOLUTION_STATUS {
-		ERROR, NO_CHANGE_REQUIRED, NO_SOLUTION_AVAILABLE, MODEL_CHANGED
-	}
 
 	/*
 	 * The CP model derivator

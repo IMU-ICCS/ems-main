@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,15 +32,16 @@ import eu.paasage.upperware.metamodel.types.StringValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.ValueUpperware;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
-import eu.paasage.upperware.solvertodeployment.lib.SolverToDeployment;
 
 @Slf4j
 public class SolutionManager {
 
+	private static final int LIST_MAX_LEVEL=3;
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	CDOClient _cdoClient=null;
-	String _cdoResId;
+	private CDOClient _cdoClient=null;
+	private String _cdoResId;
 
 	PaasageConfiguration paasageConfiguration; // set by loadFromCDO
 	ConstraintProblem constraintProblem; // set by loadFromCDO
@@ -170,7 +170,7 @@ public class SolutionManager {
 				log.info("id: {} val: {}", id, val);
 				for (VariableValue vv : sol.getVariableValue()) {
 					if (id.compareTo(vv.getVariable().getId()) == 0) {
-						log.info("=> need to overwrite {} wiht {}", vv.getVariable().getId(), val);
+						log.info("=> need to overwrite {} with {}", vv.getVariable().getId(), val);
 						setValueUpperware(vv.getValue(), val);
 						log.info("   new value is: {}", vv.getValue());
 					}
@@ -273,8 +273,6 @@ public class SolutionManager {
 	
 	////////////////////////////////////////////////////////////////////
 
-	final int LIST_MAX_LEVEL=3;
-
 	private String getValueUpperware(ValueUpperware val) throws S2DException {
 		String res;
 		if      (val instanceof StringValueUpperware)  res = ((StringValueUpperware) val).getValue();
@@ -300,17 +298,17 @@ public class SolutionManager {
 	////////////////////////////////////////////////////////////////////
 
 	private void listSolution(Solution sol, int level) throws S2DException {
-		System.out.println("  Solution timestamp: "+sol.getTimestamp()+" #VariableValue: "+sol.getVariableValue().size()+" #MetricVariableValue: "+sol.getMetricVariableValue().size());
+		log.info("Solution timestamp: {}  #VariableValue: {}  #MetricVariableValue: {}", sol.getTimestamp(), sol.getVariableValue().size(), sol.getMetricVariableValue().size());
 		if (level>0) {
-			System.out.println("    #VariableValue: "+sol.getVariableValue().size());
+			log.info("#VariableValue: {}", sol.getVariableValue().size());
 			if (level>1)
 				for(VariableValue vv : sol.getVariableValue()) {
-					System.out.println("    "+vv.getVariable().getId()+" = "+getValueUpperware(vv.getValue()));
+					log.info("\t{} = {}", vv.getVariable().getId(), getValueUpperware(vv.getValue()));
 				}
-			System.out.println("    #MetricVariableValue: "+sol.getMetricVariableValue().size());
+			log.info("#MetricVariableValue: {}", sol.getMetricVariableValue().size());
 			if (level>1){
 				for(MetricVariableValue mvv : sol.getMetricVariableValue()) {
-					System.out.println("    "+mvv.getVariable().getId()+" = "+this.getValueUpperware(mvv.getValue()));
+					log.info("\t{} = {}", mvv.getVariable().getId(), this.getValueUpperware(mvv.getValue()));
 				}
 			}
 		}
@@ -319,7 +317,7 @@ public class SolutionManager {
 	private void listSolutions(String slevel) throws S2DException {
 		int level = Integer.parseInt(slevel);
 		if ((level<0)||(level>LIST_MAX_LEVEL)) {
-			log.error("List level has to be between 0 and "+LIST_MAX_LEVEL);
+			log.error("List level has to be between 0 and {}", LIST_MAX_LEVEL);
 		}
 
 		CDOTransaction trans = _cdoClient.openTransaction();
@@ -327,8 +325,7 @@ public class SolutionManager {
 		loadFromCDO(trans);
 		EList<Solution> sols = constraintProblem.getSolution();
 
-		log.info("Listing #Solution: "+sols.size());
-
+		log.info("Listing #Solution: {}", sols.size());
 		for(Solution sol : sols){
 			listSolution(sol, level);
 		}
@@ -410,7 +407,7 @@ public class SolutionManager {
 				usage();
 
 		} catch (S2DException e) {
-			log.error("Got an S2D Exception: "+e.getMessage());
+			log.error("Got an S2D Exception: ", e);
 			System.exit(-1);
 		}
 		

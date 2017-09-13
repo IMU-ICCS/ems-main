@@ -5,12 +5,11 @@ import java.nio.charset.StandardCharsets;
 import eu.paasage.upperware.profiler.cp.generator.OrchestratorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.zeromq.ZMQ;
 
-import eu.paasage.upperware.profiler.cp.generator.db.lib.CDODatabaseProxy;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaaSagePropertyManager;
+
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
 @Slf4j
 public class ZeroMQServer 
@@ -79,13 +78,13 @@ public class ZeroMQServer
 
 					publisher.sendMore(cpModelIdTopic);
 					publisher.sendMore(modelId);
-		            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
-		            log.debug("CP Model Id sent "+CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+		            publisher.send(CDO_SERVER_PATH+paasageConfigID);
+		            log.debug("CP Model Id sent "+CDO_SERVER_PATH+paasageConfigID);
 
 		            //EC
 		            publisher.sendMore(camelModelIdTopic);
 		            publisher.sendMore(modelId);
-		            publisher.send(CDODatabaseProxy.CDO_SERVER_PATH+paasageConfigID);
+		            publisher.send(CDO_SERVER_PATH+paasageConfigID);
 				} else {
 					String errorMessage = "Le CP Model was not generated";
 					log.debug(errorMessage);

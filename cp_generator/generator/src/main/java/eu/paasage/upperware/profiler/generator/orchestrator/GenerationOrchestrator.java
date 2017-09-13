@@ -22,6 +22,7 @@ import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
+import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
 import eu.paasage.upperware.profiler.generator.db.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
@@ -29,6 +30,7 @@ import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
+import eu.passage.upperware.commons.MelodicConstants;
 import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.AllArgsConstructor;
@@ -43,6 +45,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 import static java.lang.String.format;
 
 @Service
@@ -57,6 +60,7 @@ public class GenerationOrchestrator {
     private ConstraintProblemService constraintProblemService;
     private NotificationService notificationService;
     private SloService sloService;
+    private CDOClientExtended cdoClientExtended;
 
 
     /**
@@ -128,6 +132,9 @@ public class GenerationOrchestrator {
 
         log.info("Loading camel model {}", resourceName);
         CamelModel camelModel = createCamelModel(resourceName);
+
+//        cdoClientExtended.exportModel(camelModel, "/home/pszkup/logs/"+resourceName+".xmi");
+
         log.info("Camel model {} loaded", resourceName);
         if (camelModel != null) {
 
@@ -140,7 +147,7 @@ public class GenerationOrchestrator {
                 ConstraintProblem cp = constraintProblemService.derivateConstraintProblem(camelModel, pc);
                 sloService.update(camelModel, cp);
 
-                String cpId = CDODatabaseProxy.CDO_SERVER_PATH + pc.getId();
+                String cpId = CDO_SERVER_PATH + pc.getId();
                 log.debug("** Calling DatabseProxy ");
                 database.saveModels(pc, cp);
                 log.info("** CP Model Id: "+ cpId);
