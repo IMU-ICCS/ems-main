@@ -20,7 +20,12 @@ import org.jgrapht.traverse.TopologicalOrderIterator
 import spock.lang.Specification
 
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.addDeleteTasks
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDeleteDependencies
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDependencies
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createModel
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
+import static eu.melodic.upperware.adapter.plangenerator.ReconfigGraphValidator.checkReconfigGraph
+import static eu.melodic.upperware.adapter.plangenerator.ReconfigGraphValidator.checkReconfigVertex
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE
 
@@ -34,6 +39,12 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
   Map<TaskType, Set<TaskType>> dependencies
   Map<TaskType, Set<TaskType>> deletingDependencies
   DefaultGraphGenerator generator
+
+  ComparableModel model
+  ComparableModel newModel
+
+  Application application
+  Application newApplication
 
   def apiName = "testApiName"
   def cloudName = "testCloudName"
@@ -95,19 +106,42 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     c = new POJOCreatorExample()
     newTasks = initMap()
     oldTasks = initMap()
-    dependencies = GraphValidator.createDependencies()
-    deletingDependencies = ReconfigGraphValidator.createDeleteDependencies()
+    dependencies = createDependencies()
+    deletingDependencies = createDeleteDependencies()
     generator = new DefaultGraphGenerator()
 
+  }
+
+  def setDefaultMonitors(){
     virtualMachineInstanceMonitors = Lists.newArrayList(
-            c.toMonitor1(vmInstName, false, oldTasks))
+      c.toMonitor1(vmInstName, false, oldTasks))
     applicationComponentInstanceMonitors = Lists.newArrayList(
-            c.toMonitor3(appCompInstName, appName, false, oldTasks))
+      c.toMonitor3(appCompInstName, appName, false, oldTasks))
 
     newApplicationComponentInstanceMonitors = Lists.newArrayList(
-            c.toMonitor3(appCompInstName, appName, true, newTasks))
+      c.toMonitor3(appCompInstName, appName, true, newTasks))
     newVirtualMachineInstanceMonitors = Lists.newArrayList(
-            c.toMonitor1(vmInstName, true, newTasks))
+      c.toMonitor1(vmInstName, true, newTasks))
+  }
+
+  def createModel() {
+    model = createModel(
+      cloudApis, clouds, cloudProperties, cloudCredentials,
+      application, null, lifecycleComponents,
+      virtualMachines, virtualMachineInstances, applicationComponents,
+      applicationComponentInstances, communications, portsProvided,
+      portsRequired, virtualMachineInstanceMonitors,
+      applicationComponentInstanceMonitors)
+  }
+
+  def createNewModel(){
+    newModel = createModel(
+      newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
+      newApplication, null, newLifecycleComponents,
+      newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
+      newApplicationComponentInstances, newCommunications, newPortsProvided,
+      newPortsRequired, newVirtualMachineInstanceMonitors,
+      newApplicationComponentInstanceMonitors)
 
   }
 
@@ -115,28 +149,14 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     setup:
     reconfig = true
-    Application oldApplication =
-            c.createApplication(appName, false, oldTasks, mockTasks)
-    Application application =
-            c.createApplication(appName, reconfig, newTasks, oldTasks)
+    application = c.createApplication(appName, false, oldTasks, mockTasks)
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
+    setDefaultMonitors()
     addDeleteTasks(c, newTasks, oldTasks)
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            oldApplication, null, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-    ComparableModel newModel = createModel(
-            newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
-            application, null, newLifecycleComponents,
-            newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
-            newApplicationComponentInstances, newCommunications, newPortsProvided,
-            newPortsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+    createModel()
+    createNewModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -162,10 +182,8 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createCloudProperty(cloudPropName, cloudName, reconfig, oldTasks, mockTasks))
     cloudCredentials = Lists.newArrayList(
             c.createCloudCredential(cloudCredName, cloudName, reconfig, oldTasks, mockTasks))
-    Application application =
-            c.createApplication(appName, reconfig, oldTasks, mockTasks)
-    ApplicationInstance applicationInstance =
-            c.createApplicationInstance(appInstName, appName, oldTasks)
+    application = c.createApplication(appName, reconfig, oldTasks, mockTasks)
+
     lifecycleComponents = Lists.newArrayList(
             c.createLifecycleComponent(lifecycleName, reconfig, oldTasks, mockTasks),
             c.createLifecycleComponent(lifecycleName2, reconfig, oldTasks, mockTasks))
@@ -201,35 +219,30 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.toMonitor3(appCompInstName2, appCompName2, reconfig, oldTasks))
 
     /* new Application - change cloud Property and create monitors */
+    newApplication = c.createApplication(appName, true, newTasks, oldTasks)
+
     newCloudProperties = Lists.newArrayList(
             c.createCloudProperty(cloudPropName2, cloudName, true, newTasks, oldTasks))
 
-    c.addTasksToDelete(TaskType.CLOUD_PROPERTY, newTasks, oldTasks)
-    newApplicationComponentInstanceMonitors = Lists.newArrayList(
-            c.toMonitor3(appCompInstName, appCompName, reconfig, newTasks),
-            c.toMonitor3(appCompInstName2, appCompName2, reconfig, newTasks),
-    )
-    newVirtualMachineInstanceMonitors = Lists.newArrayList(
-            c.toMonitor1(vmInstName, reconfig, newTasks),
-            c.toMonitor1(vmInstName2, reconfig, newTasks),
-    )
-
     addDeleteTasks(c, newTasks, oldTasks)
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
 
-    ComparableModel newModel = createModel(
-            cloudApis, clouds, newCloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+
+    newApplicationComponentInstanceMonitors = Lists.newArrayList(
+            c.toMonitor3(appCompInstName, appCompName, true, newTasks),
+            c.toMonitor3(appCompInstName2, appCompName2, true, newTasks))
+    newVirtualMachineInstanceMonitors = Lists.newArrayList(
+            c.toMonitor1(vmInstName, true, newTasks),
+            c.toMonitor1(vmInstName2, true, newTasks))
+
+
+    createModel()
+    newModel = createModel(
+      cloudApis, clouds, newCloudProperties, cloudCredentials,
+      newApplication, null, lifecycleComponents,
+      virtualMachines, virtualMachineInstances, applicationComponents,
+      applicationComponentInstances, communications, portsProvided,
+      portsRequired, newVirtualMachineInstanceMonitors,
+      newApplicationComponentInstanceMonitors)
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -245,34 +258,18 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     setup:
     reconfig = true
-    Application oldApplication =
-            c.createApplication(appName, false, oldTasks, mockTasks)
-    Application application =
-            c.createApplication(appName, reconfig, newTasks, oldTasks)
-
+    application = c.createApplication(appName, false, oldTasks, mockTasks)
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
 
     newLifecycleComponents = Lists.newArrayList(
             c.createLifecycleComponent(lifecycleName, reconfig, newTasks, oldTasks))
 
+    setDefaultMonitors()
     addDeleteTasks(c, newTasks, oldTasks)
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            oldApplication, null, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-
-    ComparableModel newModel = createModel(
-            newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
-            application, null, newLifecycleComponents,
-            newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
-            newApplicationComponentInstances, newCommunications, newPortsProvided,
-            newPortsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+    createModel()
+    createNewModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -290,8 +287,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     setup:
     reconfig = true
 
-    Application application =
-            c.createApplication(appName, false, oldTasks, mockTasks)
+    application = c.createApplication(appName, false, oldTasks, mockTasks)
 
     applicationComponents = Lists.newArrayList(
             c.createAppComponent(
@@ -302,6 +298,12 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createAppComponentInstance(
                     appCompInstName, appName, vmInstName, appCompName, false, oldTasks, mockTasks))
 
+    virtualMachineInstanceMonitors = Lists.newArrayList(
+      c.toMonitor1(vmInstName, false, oldTasks))
+    applicationComponentInstanceMonitors = Lists.newArrayList(
+      c.toMonitor3(appCompInstName, appName, false, oldTasks))
+
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     newApplicationComponents = Lists.newArrayList(
             c.createAppComponent(
@@ -311,28 +313,17 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createAppComponentInstance(
                     appCompInstName2, appName, vmInstName, appCompName2, reconfig, newTasks, oldTasks)
     )
-    ApplicationComponent
-    newApplicationComponentInstanceMonitors = Lists.newArrayList(
-            c.toMonitor3(appCompInstName2, appCompName2, reconfig, newTasks)
-    )
 
     addDeleteTasks(c, newTasks, oldTasks)
 
+    newApplicationComponentInstanceMonitors = Lists.newArrayList(
+      c.toMonitor3(appCompInstName2, appCompName2, reconfig, newTasks))
+    newVirtualMachineInstanceMonitors = Lists.newArrayList(
+      c.toMonitor1(vmInstName, reconfig, newTasks))
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, null, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors, applicationComponentInstanceMonitors)
 
-    ComparableModel newModel = createModel(
-            newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
-            application, null, newLifecycleComponents,
-            newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
-            newApplicationComponentInstances, newCommunications, newPortsProvided,
-            newPortsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+    createModel()
+    createNewModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -349,10 +340,8 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     setup:
     reconfig = true
-    Application oldApplication =
-            c.createApplication(appName, false, oldTasks, mockTasks)
-    Application newApplication =
-            c.createApplication(appName, reconfig, newTasks, oldTasks)
+    application = c.createApplication(appName, false, oldTasks, mockTasks)
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     cloudApis = Lists.newArrayList(
             c.createApi(apiName, cloudPropName, false, oldTasks, mockTasks)
@@ -361,24 +350,11 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     newCloudApis = Lists.newArrayList(
             c.createApi(apiName, cloudName, reconfig, newTasks, oldTasks)
     )
-
+    setDefaultMonitors()
     addDeleteTasks(c, newTasks, oldTasks)
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            oldApplication, null, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-    ComparableModel newModel = createModel(
-            newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
-            newApplication, null, newLifecycleComponents,
-            newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
-            newApplicationComponentInstances, newCommunications, newPortsProvided,
-            newPortsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+    createModel()
+    createNewModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -394,10 +370,8 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     setup:
     reconfig = true
-    Application oldApplication =
-            c.createApplication(appName, false, oldTasks, mockTasks)
-    Application newApplication =
-            c.createApplication(appName, reconfig, newTasks, oldTasks)
+    application = c.createApplication(appName, false, oldTasks, mockTasks)
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     portsRequired = Lists.newArrayList(
             c.createPortRequired(
@@ -411,21 +385,11 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     )
     addDeleteTasks(c, newTasks, oldTasks)
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            oldApplication, null, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
+    setDefaultMonitors()
 
-    ComparableModel newModel = createModel(
-            newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
-            newApplication, null, newLifecycleComponents,
-            newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
-            newApplicationComponentInstances, newCommunications, newPortsProvided,
-            newPortsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+
+    createModel()
+    createNewModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -445,6 +409,17 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createApplication(appName, false, oldTasks, mockTasks)
     Application newApplication =
             c.createApplication(appName, reconfig, newTasks, oldTasks)
+
+    virtualMachineInstanceMonitors = Lists.newArrayList(
+        c.toMonitor1(vmInstName, false, oldTasks)
+    )
+    applicationComponentInstanceMonitors = Lists.newArrayList(
+      c.toMonitor3(appCompInstName, appName, false, oldTasks)
+    )
+
+    newApplicationComponentInstanceMonitors = Lists.newArrayList(
+      c.toMonitor3(appCompInstName, appName, true, newTasks)
+    )
 
     virtualMachines = Lists.newArrayList(
             c.createVirtualMachine(vmName, cloudName, false, oldTasks, mockTasks)
@@ -512,10 +487,8 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     newCloudCredentials = Lists.newArrayList(
             c.createCloudCredential(cloudCredName, cloudName, reconfig, newTasks, oldTasks))
 
-    Application application =
-            c.createApplication(appInstName, false, oldTasks, mockTasks)
-    Application newApplication =
-            c.createApplication(appName, reconfig, newTasks, oldTasks)
+    application = c.createApplication(appInstName, false, oldTasks, mockTasks)
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     newLifecycleComponents = Lists.newArrayList(
             c.createLifecycleComponent(lifecycleName, reconfig, newTasks, oldTasks),
@@ -549,6 +522,9 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     newPortsRequired = Lists.newArrayList(
             c.createPortRequired(portRequiredName, appCompName, reconfig, newTasks, oldTasks))
 
+    addDeleteTasks(c, newTasks, oldTasks)
+
+
     newVirtualMachineInstanceMonitors = Lists.newArrayList(
             c.toMonitor1(vmInstName, reconfig, newTasks),
             c.toMonitor1(vmInstName2, reconfig, newTasks))
@@ -557,23 +533,11 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.toMonitor3(appCompInstName2, appCompName2, reconfig, newTasks))
 
 
-    addDeleteTasks(c, newTasks, oldTasks)
 
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, null, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, Lists.newArrayList(), Lists.newArrayList())
+    ComparableModel model = createModel()
 
-    ComparableModel newModel = createModel(
-            newCloudApis, newClouds, newCloudProperties, newCloudCredentials,
-            newApplication, null, newLifecycleComponents,
-            newVirtualMachines, newVirtualMachineInstances, newApplicationComponents,
-            newApplicationComponentInstances, newCommunications, newPortsProvided,
-            newPortsRequired, newVirtualMachineInstanceMonitors,
-            newApplicationComponentInstanceMonitors)
+    ComparableModel newModel = createNewModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(model, newModel)
@@ -584,55 +548,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     graph.vertexSet().size() == 23
     graph.edgeSet().size() == 46
     checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
-  }
-
-  ComparableModel createModel(Collection<CloudApi> cloudApis, Collection<Cloud> clouds,
-                              Collection<CloudProperty> cloudProperties,
-                              Collection<CloudCredential> cloudCredentials,
-                              Application application, ApplicationInstance applicationInstance,
-                              Collection<LifecycleComponent> lifecycleComponents,
-                              Collection<VirtualMachine> virtualMachines,
-                              Collection<VirtualMachineInstance> virtualMachineInstances,
-                              Collection<ApplicationComponent> applicationComponents,
-                              Collection<ApplicationComponentInstance> applicationComponentInstances,
-                              Collection<Communication> communications,
-                              Collection<PortProvided> portsProvided,
-                              Collection<PortRequired> portsRequired,
-                              Collection<VirtualMachineInstanceMonitor> vmInstMonitors,
-                              Collection<ApplicationComponentInstanceMonitor> appCompInstMonitors) {
-    return ComparableModel.builder()
-            .cloudApis(cloudApis)
-            .clouds(clouds)
-            .cloudProperties(cloudProperties)
-            .cloudCredentials(cloudCredentials)
-            .application(application)
-            .applicationInstance(applicationInstance)
-            .lifecycleComponents(lifecycleComponents)
-            .virtualMachines(virtualMachines)
-            .virtualMachineInstances(virtualMachineInstances)
-            .applicationComponents(applicationComponents)
-            .applicationComponentInstances(applicationComponentInstances)
-            .communications(communications)
-            .portsProvided(portsProvided)
-            .portsRequired(portsRequired)
-            .virtualMachineInstanceMonitors(vmInstMonitors)
-            .applicationComponentInstanceMonitors(appCompInstMonitors)
-            .build()
-  }
-
-  void checkReconfigGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
-                          Map<TaskType, Set<Task>> tasks,
-                          Map<TaskType, Set<TaskType>> dependencies,
-                          Map<TaskType, Set<TaskType>> deletingDependencies) {
-
-    int tasksSize = 0
-    for (Set<Task> s in tasks.values()) {
-      tasksSize += s.size()
-    }
-
-    for (Task v in graph.vertexSet()) {
-      assert (ReconfigGraphValidator.checkReconfigVertex(v, graph, tasks, dependencies, deletingDependencies))
-    }
   }
 
 }

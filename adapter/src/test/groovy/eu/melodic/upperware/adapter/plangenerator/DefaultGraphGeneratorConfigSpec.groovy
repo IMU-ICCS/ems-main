@@ -16,6 +16,10 @@ import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
 import spock.lang.Specification
 
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidator.checkGraph
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidator.checkVertex
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDependencies
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createModel
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
 
 class DefaultGraphGeneratorConfigSpec extends Specification {
@@ -73,7 +77,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
     c = new POJOCreatorExample()
     tasks = initMap()
     oldTasks = initMap()
-    dependencies = GraphValidator.createDependencies()
+    dependencies = createDependencies()
     generator = new DefaultGraphGenerator()
   }
 
@@ -370,53 +374,4 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
 
   }
 
-  boolean checkGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
-                     Map<TaskType, Set<Task>> tasks,
-                     Map<TaskType, Set<TaskType>> dependencies) {
-
-    int tasksSize = 0
-    for (Set<Task> s in tasks.values()) {
-      tasksSize += s.size()
-    }
-    assert (graph.vertexSet().size() == tasksSize)
-
-    for (Task v in graph.vertexSet()) {
-      assert (GraphValidator.checkVertex(v, graph, tasks, dependencies))
-    }
-    return true
-  }
-
-  ComparableModel createModel(Collection<CloudApi> cloudApis, Collection<Cloud> clouds,
-                                     Collection<CloudProperty> cloudProperties,
-                                     Collection<CloudCredential> cloudCredentials,
-                                     Application application, ApplicationInstance applicationInstance,
-                                     Collection<LifecycleComponent> lifecycleComponents,
-                                     Collection<VirtualMachine> virtualMachines,
-                                     Collection<VirtualMachineInstance> virtualMachineInstances,
-                                     Collection<ApplicationComponent> applicationComponents,
-                                     Collection<ApplicationComponentInstance> applicationComponentInstances,
-                                     Collection<Communication> communications,
-                                     Collection<PortProvided> portsProvided,
-                                     Collection<PortRequired> portsRequired,
-                                     Collection<VirtualMachineInstanceMonitor> vmInstMonitors,
-                                     Collection<ApplicationComponentInstanceMonitor> appCompInstMonitors) {
-    return ComparableModel.builder()
-            .cloudApis(cloudApis)
-            .clouds(clouds)
-            .cloudProperties(cloudProperties)
-            .cloudCredentials(cloudCredentials)
-            .application(application)
-            .applicationInstance(applicationInstance)
-            .lifecycleComponents(lifecycleComponents)
-            .virtualMachines(virtualMachines)
-            .virtualMachineInstances(virtualMachineInstances)
-            .applicationComponents(applicationComponents)
-            .applicationComponentInstances(applicationComponentInstances)
-            .communications(communications)
-            .portsProvided(portsProvided)
-            .portsRequired(portsRequired)
-            .virtualMachineInstanceMonitors(vmInstMonitors)
-            .applicationComponentInstanceMonitors(appCompInstMonitors)
-            .build()
-  }
 }
