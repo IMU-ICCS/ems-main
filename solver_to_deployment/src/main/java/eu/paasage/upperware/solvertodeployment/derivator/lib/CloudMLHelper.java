@@ -4,6 +4,10 @@
 
 package eu.paasage.upperware.solvertodeployment.derivator.lib;
 
+import eu.paasage.camel.type.EnumerateValue;
+import eu.paasage.camel.type.Enumeration;
+import eu.paasage.camel.type.TypeModel;
+import eu.paasage.camel.type.ValueType;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.deployment.Communication;
@@ -144,6 +148,24 @@ public class CloudMLHelper {
 		if(result == null) 
 			throw new S2DException("Unable to find VMType . There is error in original model ! .Details :" + logTxt);
 		return result;
+	}
+
+	//TODO - uwspolnic.
+	public static EnumerateValue findValueForFlavour(String flavourName, EList<TypeModel> typeModels){
+		for (TypeModel typeModel : typeModels) {
+			EList<ValueType> dataTypes = typeModel.getDataTypes();
+			for (ValueType dataType : dataTypes) {
+				if ("VMTypeEnum".equals(dataType.getName()) && dataType instanceof Enumeration){
+					Enumeration enumerationDataType = (Enumeration) dataType;
+					for (EnumerateValue enumerateValue : enumerationDataType.getValues()) {
+						if (flavourName.equals(enumerateValue.getName())){
+							return enumerateValue;
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

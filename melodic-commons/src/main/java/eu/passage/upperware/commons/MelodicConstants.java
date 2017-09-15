@@ -22,5 +22,11 @@ public class MelodicConstants {
     public static final String LOCATIONS_FILE = "Locations.xmi";
     public static final String PROVIDER_TYPES_FILE = "ProviderTypes.xmi";
 
+    public static final String ATTRIB_LOCATION = "Location";
+    public static final String ATTRIB_LOCATION_ID = "LocationId";
+
+    public static final String ATTRIB_VM = "VM";
+    public static final String ATTRIB_VM_IMAGE_ID = "VMImageId";
+
     private MelodicConstants() {}
 }

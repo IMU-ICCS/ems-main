@@ -162,7 +162,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 						log.info("VMs for key {}: {}", mykey, vmInstanceToRegisters);
 						if (vmInstanceToRegisters == null) {
 							log.info("Creating new VM Instances...");
-							vmInstanceToRegisters = SolverToDeployementHelper.searchAndCreateVMInstance(deploymentModel,paaSageVariable, nb);
+							vmInstanceToRegisters = SolverToDeployementHelper.searchAndCreateVMInstance(deploymentModel,paaSageVariable, nb, constraintProblem);
 							result.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
 							// memorize
 							localGroupVMInstances.put(mykey,  vmInstanceToRegisters);

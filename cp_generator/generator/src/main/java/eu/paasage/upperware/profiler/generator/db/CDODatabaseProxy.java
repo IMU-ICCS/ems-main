@@ -15,9 +15,12 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.organisation.OrganisationPackage;
+import eu.paasage.camel.provider.Attribute;
+import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.provider.ProviderPackage;
-import eu.paasage.camel.type.TypePackage;
+import eu.paasage.camel.type.*;
+import eu.paasage.camel.type.impl.EnumerationImpl;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
@@ -31,12 +34,15 @@ import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
 import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 import static eu.passage.upperware.commons.MelodicConstants.*;
 
@@ -90,9 +96,83 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 			List<EObject> cloned= cloner.cloneModel(FMS_APP_CDO_SERVER_PATH+cloud);
 			CamelModel pm= (CamelModel) cloned.get(cloned.size()-1); //We pick the last added model. It is necessary as it is not possible to delete models from CDO.
 			log.debug("CDODatabaseProxy- The PM "+cloud+" has been cloaned!");
-			return pm.getProviderModels().get(0);
+
+			ProviderModel providerModel = pm.getProviderModels().get(0);
+			populateFields(providerModel, pm.getTypeModels());
+
+			return providerModel;
 		}
 		return null;
+	}
+
+	//TODO - remove in the future
+	private void populateFields(ProviderModel providerModel, EList<TypeModel> typeModels) {
+		populateField(providerModel, typeModels, ATTRIB_LOCATION, ATTRIB_LOCATION_ID);
+		populateField(providerModel, typeModels, ATTRIB_VM, ATTRIB_VM_IMAGE_ID);
+	}
+
+	private void populateField(ProviderModel providerModel, EList<TypeModel> typeModels, String subFeatureName, String attributeName){
+		Attribute type = getType(providerModel, subFeatureName, attributeName);
+
+		if (type == null) {
+			log.warn("Could not find attributes for subfeature {} and attribute {}", subFeatureName, attributeName);
+			return;
+		}
+
+		String valueStr = null;
+		SingleValue value = type.getValue();
+		if (value != null && value instanceof StringsValue ){
+			valueStr = ((StringsValue) value).getValue();
+		}
+
+		if (StringUtils.isEmpty(valueStr)){
+			log.warn("Could not find String value for attribute {}", type.getName());
+			return;
+		}
+
+		List<EnumerateValue> enumerationValues = getEnumerationValues(typeModels, type.getValueType().getName());
+		EnumerateValue correctEnumerationValue = getCorrectEnumerationValue(enumerationValues, valueStr);
+
+		if (correctEnumerationValue != null){
+			type.setValue(correctEnumerationValue);
+		} else {
+			log.warn("Could not find String value for subfeature {} and attribute {}", subFeatureName, attributeName);
+		}
+	}
+
+	private Attribute getType(ProviderModel providerModel, String subFeatureName, String attributeName) {
+
+		return providerModel.getRootFeature()
+				.getSubFeatures()
+				.stream()
+				.filter(feature -> subFeatureName.equals(feature.getName()))
+				.map(Feature::getAttributes)
+				.flatMap(Collection::stream)
+				.filter(attribute -> attributeName.equals(attribute.getName()))
+				.findFirst().orElse(null);
+	}
+
+	private List<EnumerateValue> getEnumerationValues(EList<TypeModel> typeModels, String dataTypeName) {
+
+		ValueType valueType = typeModels
+				.stream()
+				.map(TypeModel::getDataTypes)
+				.flatMap(Collection::stream)
+				.filter(vt -> dataTypeName.equals(vt.getName()))
+				.findFirst().orElse(null);
+
+		if (valueType != null && valueType instanceof EnumerationImpl){
+			return ((EnumerationImpl) valueType).getValues();
+		} else {
+			log.warn("Could not find values for {} ", dataTypeName);
+		}
+		return new ArrayList<>();
+	}
+
+	private EnumerateValue getCorrectEnumerationValue(List<EnumerateValue> enumerationValues, String strValue){
+		return enumerationValues.stream()
+				.filter(enumerateValue -> enumerateValue.getName().equals(strValue))
+				.findFirst().orElse(null);
 	}
 
 	/**

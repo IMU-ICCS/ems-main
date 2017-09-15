@@ -4,7 +4,10 @@
 
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl;
+import eu.paasage.camel.impl.CamelModelImpl;
+import eu.paasage.camel.type.EnumerateValue;
+import eu.paasage.camel.type.TypeModel;
+import eu.paasage.upperware.metamodel.cp.Variable;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
@@ -133,7 +136,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 	}
 
 
-	public static EList<VMInstance> searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, Long nb) throws S2DException {
+	public static EList<VMInstance> searchAndCreateVMInstance(DeploymentModel deploymentModel, PaaSageVariable paaSageVariable, Long nb, ConstraintProblem constraintProblem) throws S2DException {
 		String vmIdentifier = paaSageVariable.getRelatedVirtualMachineProfile().getRelatedCloudVMId();
 
 		VM result = findVMByName(deploymentModel.getVms(), vmIdentifier);
@@ -147,6 +150,17 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 				.orElseThrow(() -> new S2DException("Provider not found: " + providerModelId));
 
 		log.debug("Creating VM instances providerModel = {}", providerModel.getName());
+
+		Variable cpVariable = constraintProblem.getVariables().stream()
+				.filter(variable -> variable.getId().equals(paaSageVariable.getCpVariableId()))
+				.findFirst().orElseThrow(() -> new S2DException("Could not find variable with id: " + paaSageVariable.getCpVariableId()));
+
+		String flavourName = cpVariable.getFlavourName();
+		EList<TypeModel> typeModels = ((CamelModelImpl) deploymentModel.eContainer()).getTypeModels();
+		EnumerateValue valueForFlavour = CloudMLHelper.findValueForFlavour(flavourName, typeModels);
+
+
+
 		//Create now
 		EList<VMInstance> vmInstances = new BasicEList<>();
 		for(int i=0; i<nb; i++) {
@@ -154,7 +168,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 			//Set VM Type/value 
 			Attribute attribute = CloudMLHelper.findVMType(providerModel);
 			vmInstanceResult.setVmType(attribute);
-			vmInstanceResult.setVmTypeValue(attribute.getValue());
+			vmInstanceResult.setVmTypeValue(valueForFlavour);
 			vmInstances.add(vmInstanceResult);
 		}
 		return vmInstances;
