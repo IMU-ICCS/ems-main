@@ -349,7 +349,7 @@ public class POJOCreatorExample {
     return t;
   }
 
-  private void addDeleteTaskToMap(Task task, Map<TaskType, Set<Task>> tasks){
+  void addDeleteTaskToMap(Task task, Map<TaskType, Set<Task>> tasks){
     if (task instanceof CloudPropertyTask){
       addToMap(new CloudPropertyTask(
               DELETE, (CloudProperty) task.getData()), CLOUD_PROPERTY, tasks);

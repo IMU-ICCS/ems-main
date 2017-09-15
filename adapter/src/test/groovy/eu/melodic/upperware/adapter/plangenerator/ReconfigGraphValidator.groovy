@@ -27,8 +27,21 @@ import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE
 
 class ReconfigGraphValidator {
 
+  static void checkReconfigGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
+                                 Map<TaskType, Set<Task>> tasks,
+                                 Map<TaskType, Set<Task>> oldTasks,
+                                 Map<TaskType, Set<TaskType>> dependencies,
+                                 Map<TaskType, Set<TaskType>> deletingDependencies) {
+
+    for (Task v in graph.vertexSet()) {
+      checkReconfigVertex(v, graph, tasks, oldTasks, dependencies, deletingDependencies)
+    }
+  }
+
+
   static void checkReconfigVertex(Task v, SimpleDirectedGraph<Task, DefaultEdge> graph,
                                   Map<TaskType, Set<Task>> tasks,
+                                  Map<TaskType, Set<Task>> oldTasks,
                                   Map<TaskType, Set<TaskType>> dependencies,
                                   Map<TaskType, Set<TaskType>> deletingDependencies) {
 
@@ -62,7 +75,7 @@ class ReconfigGraphValidator {
     int appCrCnt =  tasks.get(TaskType.APP_COMP_INSTANCE_MONITOR).stream().filter(isCreateOrUpdateMonitor).count()
     int vmCrCnt = tasks.get(TaskType.VM_INSTANCE_MONITOR).stream().filter(isCreateOrUpdateMonitor).count()
 
-    int createOrUpdatemonitorCounter = appCrCnt + vmCrCnt
+    int createOrUpdatemonitorCounter = appCrCnt + vmCrCnt// + countCreateMonitorsForDeletingInstances(tasks)
 
     int appDelCnt = tasks.get(TaskType.APP_COMP_INSTANCE_MONITOR).stream().filter(isDeleteMonitor).count()
     int vmDelCnt = tasks.get(TaskType.VM_INSTANCE_MONITOR).stream().filter(isDeleteMonitor).count()
@@ -100,10 +113,18 @@ class ReconfigGraphValidator {
         } else { /* delete task */
           inEdgesCnt = countAndCheckConnections(v, taskType, graph, tasks, deletingDependencies, predicateMap)
 
-          /* in delete task with no dependency edges should be in-edges from monitor tasks*/
           if (inEdgesCnt == 0) {
-            assert (setInEdges.stream().allMatch(edgeSrcIsMonitor))
-            assert (setInEdges.size() == deleteMonitorCounter)
+            /* in delete task with no dependency edges and no create or update task in graph should be no in-edges */
+            if (!existsAnyCreateOrUpdateTask(tasks)){
+              assert (setInEdges.size() == 0)
+            }
+            /* in delete task with no dependency edges should be in-edges from monitor tasks*/
+            else {
+              assert (setInEdges.stream().allMatch(edgeSrcIsMonitor))
+              //assert (setInEdges.size() == deleteMonitorCounter)
+              assert (setInEdges.size() == createOrUpdatemonitorCounter)
+
+            }
           }
           /* all edges must be monitors or none */
           if (!(setOutEdges.stream().noneMatch(edgeTrgtIsMonitor))) {
@@ -120,13 +141,25 @@ class ReconfigGraphValidator {
     }
   }
 
-  static void checkReconfigGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
-                                 Map<TaskType, Set<Task>> tasks,
-                                 Map<TaskType, Set<TaskType>> dependencies,
-                                 Map<TaskType, Set<TaskType>> deletingDependencies) {
+  static int countCreateMonitorsForDeletingInstances(Map<TaskType, Set<Task>> tasks){
 
-    for (Task v in graph.vertexSet()) {
-      checkReconfigVertex(v, graph, tasks, dependencies, deletingDependencies)
-    }
+    Predicate<Task> isDeleteTask = { task -> DELETE.equals(task.getType()) }
+    int deletingVmInstances = tasks.get(TaskType.VIRTUALMACHINE_INSTANCE).stream().filter(isDeleteTask).count()
+    int deletingAcInstances = tasks.get(TaskType.APPLICATION_COMPONENT_INSTANCE).stream().filter(isDeleteTask).count()
+    return deletingAcInstances + deletingVmInstances
   }
+
+  static boolean existsAnyCreateOrUpdateTask(Map<TaskType, Set<Task>> tasks){
+    Predicate<Task> isCreateOrUpdateTask = { task -> !DELETE.equals(task.getType()) }
+    for (TaskType taskType: tasks.keySet()){
+      if (!(TaskType.APP_COMP_INSTANCE_MONITOR.equals(taskType)) && !(TaskType.VM_INSTANCE_MONITOR.equals(taskType))) {
+        Set<Task> set = tasks.get(taskType)
+        if (set.stream().anyMatch(isCreateOrUpdateTask)){
+          return true
+        }
+      }
+    }
+    return false
+  }
+
 }

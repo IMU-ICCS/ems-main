@@ -10,23 +10,18 @@ package eu.melodic.upperware.adapter.plangenerator
 
 import eu.melodic.upperware.adapter.plangenerator.graph.DefaultGraphGenerator
 import eu.melodic.upperware.adapter.plangenerator.model.*
-import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentInstanceMonitorTask
+import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentInstanceTask
+import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentTask
+import eu.melodic.upperware.adapter.plangenerator.tasks.CloudPropertyTask
+import eu.melodic.upperware.adapter.plangenerator.tasks.PortRequiredTask
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task
-import eu.melodic.upperware.adapter.plangenerator.tasks.VirtualMachineInstanceMonitorTask
 import org.assertj.core.util.Lists
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
-import org.jgrapht.traverse.TopologicalOrderIterator
 import spock.lang.Specification
 
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.addDeleteTasks
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDeleteDependencies
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDependencies
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createModel
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.*
 import static eu.melodic.upperware.adapter.plangenerator.ReconfigGraphValidator.checkReconfigGraph
-import static eu.melodic.upperware.adapter.plangenerator.ReconfigGraphValidator.checkReconfigVertex
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE
 
 class DefaultGraphGeneratorReconfigSpec extends Specification {
@@ -153,7 +148,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     setDefaultMonitors()
-    addDeleteTasks(c, newTasks, oldTasks)
+    //addDeleteTasks(c, newTasks, oldTasks)
 
     createModel()
     createNewModel()
@@ -164,7 +159,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     then:
     noExceptionThrown()
     graph.vertexSet().size() == 0
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
 
   }
 
@@ -173,13 +168,16 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     setup:
     reconfig = false
+    CloudProperty property = c.createCloudProperty(cloudPropName, cloudName, reconfig, oldTasks, mockTasks)
+
+
     /*old Application - all components exist */
     cloudApis = Lists.newArrayList(
             c.createApi(apiName, null, reconfig, oldTasks, mockTasks))
     clouds = Lists.newArrayList(
             c.createCloud(cloudName, apiName, reconfig, oldTasks, mockTasks))
-    cloudProperties = Lists.newArrayList(
-            c.createCloudProperty(cloudPropName, cloudName, reconfig, oldTasks, mockTasks))
+    cloudProperties = Lists.newArrayList(property)
+
     cloudCredentials = Lists.newArrayList(
             c.createCloudCredential(cloudCredName, cloudName, reconfig, oldTasks, mockTasks))
     application = c.createApplication(appName, reconfig, oldTasks, mockTasks)
@@ -218,14 +216,16 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.toMonitor3(appCompInstName, appCompName, reconfig, oldTasks),
             c.toMonitor3(appCompInstName2, appCompName2, reconfig, oldTasks))
 
-    /* new Application - change cloud Property and create monitors */
-    newApplication = c.createApplication(appName, true, newTasks, oldTasks)
+    reconfig = true
 
     newCloudProperties = Lists.newArrayList(
-            c.createCloudProperty(cloudPropName2, cloudName, true, newTasks, oldTasks))
+      c.createCloudProperty(cloudPropName2, cloudName, reconfig, newTasks, oldTasks))
 
-    addDeleteTasks(c, newTasks, oldTasks)
+    newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
+    c.addDeleteTaskToMap(new CloudPropertyTask(DELETE, property), newTasks)
+
+    //addDeleteTasks(c, newTasks, oldTasks)
 
     newApplicationComponentInstanceMonitors = Lists.newArrayList(
             c.toMonitor3(appCompInstName, appCompName, true, newTasks),
@@ -251,7 +251,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     noExceptionThrown()
     graph.vertexSet().size() == 10
     graph.edgeSet().size() == 12
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
   }
 
   def "reconfiguration graph generation: only lifecycle component"() {
@@ -266,7 +266,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createLifecycleComponent(lifecycleName, reconfig, newTasks, oldTasks))
 
     setDefaultMonitors()
-    addDeleteTasks(c, newTasks, oldTasks)
+    //addDeleteTasks(c, newTasks, oldTasks)
 
     createModel()
     createNewModel()
@@ -278,7 +278,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     noExceptionThrown()
     graph.vertexSet().size() == 3
     graph.edgeSet().size() == 2
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
 
   }
 
@@ -289,14 +289,13 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     application = c.createApplication(appName, false, oldTasks, mockTasks)
 
-    applicationComponents = Lists.newArrayList(
-            c.createAppComponent(
-                    appCompName, appName, lifecycleName, vmName, false, oldTasks, mockTasks)
-    )
+    ApplicationComponent ac = c.createAppComponent(appCompName, appName, lifecycleName, vmName, false, oldTasks, mockTasks)
+    ApplicationComponentInstance acInst =
+      c.createAppComponentInstance(appCompInstName, appName, vmInstName, appCompName, false, oldTasks, mockTasks)
 
-    applicationComponentInstances = Lists.newArrayList(
-            c.createAppComponentInstance(
-                    appCompInstName, appName, vmInstName, appCompName, false, oldTasks, mockTasks))
+    applicationComponents = Lists.newArrayList(ac)
+
+    applicationComponentInstances = Lists.newArrayList(acInst)
 
     virtualMachineInstanceMonitors = Lists.newArrayList(
       c.toMonitor1(vmInstName, false, oldTasks))
@@ -314,7 +313,10 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
                     appCompInstName2, appName, vmInstName, appCompName2, reconfig, newTasks, oldTasks)
     )
 
-    addDeleteTasks(c, newTasks, oldTasks)
+    //addDeleteTasks(c, newTasks, oldTasks)
+    c.addDeleteTaskToMap(new ApplicationComponentTask(DELETE, ac), newTasks)
+    c.addDeleteTaskToMap(new ApplicationComponentInstanceTask(DELETE, acInst), newTasks)
+    c.toMonitor3(appCompInstName, appName, false, newTasks)
 
     newApplicationComponentInstanceMonitors = Lists.newArrayList(
       c.toMonitor3(appCompInstName2, appCompName2, reconfig, newTasks))
@@ -332,7 +334,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     noExceptionThrown()
     graph.vertexSet().size() == 9
     graph.edgeSet().size() == 10
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
   }
 
 
@@ -362,7 +364,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     then:
     noExceptionThrown()
     graph.vertexSet().size() == 3
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
 
   }
 
@@ -373,17 +375,19 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     application = c.createApplication(appName, false, oldTasks, mockTasks)
     newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
+    PortRequired pr = c.createPortRequired(portRequiredName2, appCompName2, false, oldTasks, mockTasks)
     portsRequired = Lists.newArrayList(
             c.createPortRequired(
-                    portRequiredName, appCompName, false, oldTasks, mockTasks),
-            c.createPortRequired(
-                    portRequiredName2, appCompName2, false, oldTasks, mockTasks)
-    )
+                    portRequiredName, appCompName, false, oldTasks, mockTasks), pr)
 
     newPortsRequired = Lists.newArrayList(
             c.createPortRequired(portRequiredName, appCompName, reconfig, newTasks, oldTasks)
     )
-    addDeleteTasks(c, newTasks, oldTasks)
+
+    c.addDeleteTaskToMap(new PortRequiredTask(DELETE, pr), newTasks)
+
+    //addDeleteTasks(c, newTasks, oldTasks)
+
 
     setDefaultMonitors()
 
@@ -397,7 +401,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     then:
     noExceptionThrown()
     graph.vertexSet().size() == 3
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
 
   }
 
@@ -444,7 +448,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.toMonitor1(vmInstName2, reconfig, newTasks)
     )
 
-    addDeleteTasks(c, newTasks, oldTasks)
+    //addDeleteTasks(c, newTasks, oldTasks)
 
     ComparableModel model = createModel(
             cloudApis, clouds, cloudProperties, cloudCredentials,
@@ -469,7 +473,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     noExceptionThrown()
     graph.vertexSet().size() == 5
     graph.edgeSet().size() == 4
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
 
   }
 
@@ -547,7 +551,7 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     graph.vertexSet().size() == 23
     graph.edgeSet().size() == 46
-    checkReconfigGraph(graph, newTasks, dependencies, deletingDependencies)
+    checkReconfigGraph(graph, newTasks, oldTasks, dependencies, deletingDependencies)
   }
 
 }
