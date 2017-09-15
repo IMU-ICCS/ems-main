@@ -16,15 +16,19 @@ import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
 import spock.lang.Specification
 
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidator.checkGraph
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDependencies
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createModel
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
 
 class DefaultGraphGeneratorConfigSpec extends Specification {
 
+
+  DefaultGraphGenerator generator
   POJOCreatorExample c
   Map<TaskType, Set<Task>> tasks
   Map<TaskType, Set<Task>> oldTasks
   Map<TaskType, Set<TaskType>> dependencies
-  DefaultGraphGenerator generator
   boolean reconfig = false
 
 
@@ -54,6 +58,8 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
   def portProvidedName2 = "testPortProvidedName_2"
   def portRequiredName = "testPortRequiredName"
 
+  Application application
+  ApplicationInstance applicationInstance
   Collection<CloudApi> cloudApis = new LinkedList<>()
   Collection<Cloud> clouds = new LinkedList<>()
   Collection<CloudProperty> cloudProperties = new LinkedList<>()
@@ -69,12 +75,24 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
   Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors = new LinkedList<>()
   Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors = new LinkedList<>()
 
+  ComparableModel model
+
   def setup() {
     c = new POJOCreatorExample()
     tasks = initMap()
     oldTasks = initMap()
-    dependencies = GraphValidator.createDependencies()
+    dependencies = createDependencies()
     generator = new DefaultGraphGenerator()
+  }
+
+  def createModel() {
+    model = createModel(
+      cloudApis, clouds, cloudProperties, cloudCredentials,
+      application, applicationInstance, lifecycleComponents,
+      virtualMachines, virtualMachineInstances, applicationComponents,
+      applicationComponentInstances, communications, portsProvided,
+      portsRequired, virtualMachineInstanceMonitors,
+      applicationComponentInstanceMonitors)
   }
 
   def "configuration graph generation: all components"() {
@@ -89,10 +107,8 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
     cloudCredentials = Lists.newArrayList(
             c.createCloudCredential(cloudCredName, cloudName, reconfig, tasks, oldTasks))
 
-    Application application =
-            c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance =
-            c.createApplicationInstance(appInstName, appName, tasks)
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
 
     lifecycleComponents = Lists.newArrayList(
             c.createLifecycleComponent(lifecycleName, reconfig, tasks, oldTasks),
@@ -130,13 +146,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
             c.toMonitor3(appCompInstName, appCompName, reconfig, tasks),
             c.toMonitor3(appCompInstName2, appCompName2, reconfig, tasks))
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
+    createModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateConfigGraph(model)
@@ -159,10 +169,8 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
     cloudCredentials = Lists.newArrayList(
             c.createCloudCredential(cloudCredName, cloudName, reconfig, tasks, oldTasks))
 
-    Application application =
-            c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance =
-            c.createApplicationInstance(appInstName, appName, tasks)
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
 
     lifecycleComponents = Lists.newArrayList(
             c.createLifecycleComponent(lifecycleName, reconfig, tasks, oldTasks),
@@ -192,13 +200,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
             c.toMonitor3(appCompInstName, appCompName, reconfig, tasks),
             c.toMonitor3(appCompInstName2, appCompName2, reconfig, tasks))
 
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
+    createModel()
 
 
     when:
@@ -212,153 +214,27 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
 
   }
 
-  def "configuration graph generation: only communication - exception"() {
-
-    setup:
-    Application application = c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
-
-    communications = Lists.newArrayList(c.createCommunication(
-            communicationName, portProvidedName, portRequiredName, reconfig, tasks, oldTasks))
-    portsProvided = Lists.newArrayList(
-            c.createPortProvided(portProvidedName, appCompName, reconfig, tasks, oldTasks),
-            c.createPortProvided(portProvidedName2, appCompName2, reconfig, tasks, oldTasks))
-    portsRequired = Lists.newArrayList(
-            c.createPortRequired(portRequiredName, appCompName, reconfig, tasks, oldTasks))
-
-
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-    when:
-    generator.generateConfigGraph(model)
-
-    then:
-    thrown(IllegalStateException)
-  }
-
-  def "configuration graph generation: only vm instance - exception"() {
-
-    setup:
-    Application application = c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
-
-    virtualMachineInstances = Lists.newArrayList(
-            c.createVirtualMachineInstance(vmInstName, vmName, reconfig, tasks, oldTasks))
-
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-    when:
-    generator.generateConfigGraph(model)
-
-    then:
-    thrown(IllegalStateException)
-  }
-
-  def "configuration graph generation: three virtualmachines"() {
-
-    setup:
-    Application application = c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
-
-    cloudApis = Lists.newArrayList(
-            c.createApi(apiName, null, reconfig, tasks, oldTasks))
-    clouds = Lists.newArrayList(
-            c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
-
-    virtualMachines = Lists.newArrayList(
-            c.createVirtualMachine(vmName, cloudName, reconfig, tasks, oldTasks))
-    virtualMachineInstances = Lists.newArrayList(
-            c.createVirtualMachineInstance(vmInstName, vmName, reconfig, tasks, oldTasks),
-            c.createVirtualMachineInstance(vmInstName2, vmName, reconfig, tasks, oldTasks),
-            c.createVirtualMachineInstance(vmInstName3, vmName, reconfig, tasks, oldTasks))
-
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-    when:
-    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateConfigGraph(model)
-
-    then:
-    graph.edgeSet().size() == 6
-    noExceptionThrown()
-    checkGraph(graph, tasks, dependencies)
-  }
-
-  def "configuration graph generation: app component without lifecycle - exception"() {
-
-    setup:
-    Application application = c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
-
-    cloudApis = Lists.newArrayList(
-            c.createApi(apiName, null, reconfig, tasks, oldTasks))
-    clouds = Lists.newArrayList(
-            c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
-    virtualMachines = Lists.newArrayList(
-            c.createVirtualMachine(vmName, cloudName, reconfig, tasks, oldTasks))
-    applicationComponents = Lists.newArrayList(
-            c.createAppComponent(appCompName, appName, lifecycleName, vmName, reconfig, tasks, oldTasks))
-
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
-
-    when:
-    generator.generateConfigGraph(model)
-
-    then:
-    thrown(IllegalStateException)
-  }
-
   def "configuration graph generation: two clouds"() {
 
     setup:
-    Application application = c.createApplication(appName, reconfig, tasks, oldTasks)
-    ApplicationInstance applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
 
 
     cloudApis = Lists.newArrayList(
-            c.createApi(apiName, null, reconfig, tasks, oldTasks),
-            c.createApi(apiName2, null, reconfig, tasks, oldTasks))
+      c.createApi(apiName, null, reconfig, tasks, oldTasks),
+      c.createApi(apiName2, null, reconfig, tasks, oldTasks))
     clouds = Lists.newArrayList(
-            c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks),
-            c.createCloud(cloudName2, apiName2, reconfig, tasks, oldTasks))
+      c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks),
+      c.createCloud(cloudName2, apiName2, reconfig, tasks, oldTasks))
     cloudProperties = Lists.newArrayList(
-            c.createCloudProperty(cloudPropName, cloudName, reconfig, tasks, oldTasks),
-            c.createCloudProperty(cloudPropName2, cloudName2, reconfig, tasks, oldTasks))
+      c.createCloudProperty(cloudPropName, cloudName, reconfig, tasks, oldTasks),
+      c.createCloudProperty(cloudPropName2, cloudName2, reconfig, tasks, oldTasks))
     cloudCredentials = Lists.newArrayList(
-            c.createCloudCredential(cloudCredName, cloudName, reconfig, tasks, oldTasks),
-            c.createCloudCredential(cloudCredName2, cloudName2, reconfig, tasks, oldTasks))
+      c.createCloudCredential(cloudCredName, cloudName, reconfig, tasks, oldTasks),
+      c.createCloudCredential(cloudCredName2, cloudName2, reconfig, tasks, oldTasks))
 
-
-    ComparableModel model = createModel(
-            cloudApis, clouds, cloudProperties, cloudCredentials,
-            application, applicationInstance, lifecycleComponents,
-            virtualMachines, virtualMachineInstances, applicationComponents,
-            applicationComponentInstances, communications, portsProvided,
-            portsRequired, virtualMachineInstanceMonitors,
-            applicationComponentInstanceMonitors)
+    createModel()
 
     when:
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateConfigGraph(model)
@@ -370,53 +246,101 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
 
   }
 
-  boolean checkGraph(SimpleDirectedGraph<Task, DefaultEdge> graph,
-                     Map<TaskType, Set<Task>> tasks,
-                     Map<TaskType, Set<TaskType>> dependencies) {
 
-    int tasksSize = 0
-    for (Set<Task> s in tasks.values()) {
-      tasksSize += s.size()
-    }
-    assert (graph.vertexSet().size() == tasksSize)
+  def "configuration graph generation: three virtualmachines"() {
 
-    for (Task v in graph.vertexSet()) {
-      assert (GraphValidator.checkVertex(v, graph, tasks, dependencies))
-    }
-    return true
+    setup:
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
+
+    cloudApis = Lists.newArrayList(
+      c.createApi(apiName, null, reconfig, tasks, oldTasks))
+    clouds = Lists.newArrayList(
+      c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
+
+    virtualMachines = Lists.newArrayList(
+      c.createVirtualMachine(vmName, cloudName, reconfig, tasks, oldTasks))
+    virtualMachineInstances = Lists.newArrayList(
+      c.createVirtualMachineInstance(vmInstName, vmName, reconfig, tasks, oldTasks),
+      c.createVirtualMachineInstance(vmInstName2, vmName, reconfig, tasks, oldTasks),
+      c.createVirtualMachineInstance(vmInstName3, vmName, reconfig, tasks, oldTasks))
+
+    createModel()
+
+    when:
+    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateConfigGraph(model)
+
+    then:
+    graph.edgeSet().size() == 6
+    noExceptionThrown()
+    checkGraph(graph, tasks, dependencies)
   }
 
-  ComparableModel createModel(Collection<CloudApi> cloudApis, Collection<Cloud> clouds,
-                                     Collection<CloudProperty> cloudProperties,
-                                     Collection<CloudCredential> cloudCredentials,
-                                     Application application, ApplicationInstance applicationInstance,
-                                     Collection<LifecycleComponent> lifecycleComponents,
-                                     Collection<VirtualMachine> virtualMachines,
-                                     Collection<VirtualMachineInstance> virtualMachineInstances,
-                                     Collection<ApplicationComponent> applicationComponents,
-                                     Collection<ApplicationComponentInstance> applicationComponentInstances,
-                                     Collection<Communication> communications,
-                                     Collection<PortProvided> portsProvided,
-                                     Collection<PortRequired> portsRequired,
-                                     Collection<VirtualMachineInstanceMonitor> vmInstMonitors,
-                                     Collection<ApplicationComponentInstanceMonitor> appCompInstMonitors) {
-    return ComparableModel.builder()
-            .cloudApis(cloudApis)
-            .clouds(clouds)
-            .cloudProperties(cloudProperties)
-            .cloudCredentials(cloudCredentials)
-            .application(application)
-            .applicationInstance(applicationInstance)
-            .lifecycleComponents(lifecycleComponents)
-            .virtualMachines(virtualMachines)
-            .virtualMachineInstances(virtualMachineInstances)
-            .applicationComponents(applicationComponents)
-            .applicationComponentInstances(applicationComponentInstances)
-            .communications(communications)
-            .portsProvided(portsProvided)
-            .portsRequired(portsRequired)
-            .virtualMachineInstanceMonitors(vmInstMonitors)
-            .applicationComponentInstanceMonitors(appCompInstMonitors)
-            .build()
+
+  def "configuration graph generation: only communication - exception"() {
+
+    setup:
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
+
+    communications = Lists.newArrayList(c.createCommunication(
+            communicationName, portProvidedName, portRequiredName, reconfig, tasks, oldTasks))
+    portsProvided = Lists.newArrayList(
+            c.createPortProvided(portProvidedName, appCompName, reconfig, tasks, oldTasks),
+            c.createPortProvided(portProvidedName2, appCompName2, reconfig, tasks, oldTasks))
+    portsRequired = Lists.newArrayList(
+            c.createPortRequired(portRequiredName, appCompName, reconfig, tasks, oldTasks))
+
+    createModel()
+
+    when:
+    generator.generateConfigGraph(model)
+
+    then:
+    thrown(IllegalStateException)
   }
+
+  def "configuration graph generation: only vm instance - exception"() {
+
+    setup:
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
+
+    virtualMachineInstances = Lists.newArrayList(
+            c.createVirtualMachineInstance(vmInstName, vmName, reconfig, tasks, oldTasks))
+
+    createModel()
+
+    when:
+    generator.generateConfigGraph(model)
+
+    then:
+    thrown(IllegalStateException)
+  }
+
+  def "configuration graph generation: app component without lifecycle - exception"() {
+
+    setup:
+    application = c.createApplication(appName, reconfig, tasks, oldTasks)
+    applicationInstance = c.createApplicationInstance(appInstName, appName, tasks)
+
+    cloudApis = Lists.newArrayList(
+      c.createApi(apiName, null, reconfig, tasks, oldTasks))
+    clouds = Lists.newArrayList(
+      c.createCloud(cloudName, apiName, reconfig, tasks, oldTasks))
+    virtualMachines = Lists.newArrayList(
+      c.createVirtualMachine(vmName, cloudName, reconfig, tasks, oldTasks))
+    applicationComponents = Lists.newArrayList(
+      c.createAppComponent(appCompName, appName, lifecycleName, vmName, reconfig, tasks, oldTasks))
+
+    createModel()
+
+    when:
+    generator.generateConfigGraph(model)
+
+    then:
+    thrown(IllegalStateException)
+  }
+
+
 }

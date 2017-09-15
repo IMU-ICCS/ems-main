@@ -219,7 +219,7 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
     then:
     thrown(IllegalStateException)
   }
-//FIXME
+
   def "application component create: lifecycle component does not exist - exception"(){
 
     setup:
@@ -239,7 +239,7 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
     then:
     thrown(IllegalStateException)
   }
-//FIXME
+
   def "application component create: virtual machine does not exist - exception"(){
 
     setup:
