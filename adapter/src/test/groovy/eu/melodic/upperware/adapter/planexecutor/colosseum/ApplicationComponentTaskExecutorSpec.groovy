@@ -333,7 +333,7 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
   }
 
 
-  private static fillFieldsInApplicationComponent(Map componentDetails) {
+  private fillFieldsInApplicationComponent(Map componentDetails) {
     componentDetails['ac'].getName() >> componentDetails['name']
     componentDetails['ac'].getAppName() >> componentDetails['appName']
     componentDetails['ac'].getLcName() >> componentDetails['lcName']
@@ -351,15 +351,15 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
     details['api'].getImage(_, _) >> details['image']
   }
 
-  private static setMockLocationEntity(Map details) {
+  private setMockLocationEntity(Map details) {
     details['entity'].getId() >> details['id']
   }
 
-  private static setMockHardwareEntity(Map details) {
+  private setMockHardwareEntity(Map details) {
     details['entity'].getId() >> details['id']
   }
 
-  private static setMockImageEntity(Map details) {
+  private setMockImageEntity(Map details) {
     details['entity'].getId() >> details['id']
   }
 
