@@ -65,10 +65,11 @@ class ApplicationTaskExecutorSpec extends Specification {
     executor.create(application)
 
     then:
-    1 * context.addApplication(_)
+    noExceptionThrown()
+    1 * context.addApplication(applicationEntity)
   }
 
-  def "application create: application already exists - exception"() {
+  def "application create: application already exists - skip task"() {
 
     setup:
     context.getApplication(_) >> Optional.of(Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.Application))
@@ -88,6 +89,8 @@ class ApplicationTaskExecutorSpec extends Specification {
 
     then:
     thrown(NullPointerException)
+    0 * context.getApplication(name).isPresent()
+
   }
 
   def "application create: null application fields - exception"() {
@@ -110,7 +113,8 @@ class ApplicationTaskExecutorSpec extends Specification {
     executor.update(application)
 
     then:
-    1 * api.updateApplication(_)
+    noExceptionThrown()
+    1 * api.updateApplication(applicationEntity)
 
   }
 
@@ -124,6 +128,7 @@ class ApplicationTaskExecutorSpec extends Specification {
 
     then:
     thrown(IllegalStateException)
+    0 * api.updateApplication(_)
   }
 
   def "application update: null argument - exception"() {
@@ -133,6 +138,7 @@ class ApplicationTaskExecutorSpec extends Specification {
 
     then:
     thrown(NullPointerException)
+    0 * context.getApplication(_)
   }
 
   def "application update: null application fields - exception"() {
@@ -155,7 +161,8 @@ class ApplicationTaskExecutorSpec extends Specification {
     executor.delete(application)
 
     then:
-    1 * context.deleteApplication(_)
+    noExceptionThrown()
+    1 * context.deleteApplication(applicationEntity)
 
   }
 
@@ -169,6 +176,7 @@ class ApplicationTaskExecutorSpec extends Specification {
 
     then:
     thrown(IllegalStateException)
+    0 * context.deleteApplication(_)
   }
 
   def "application delete: null argument - exception"() {
@@ -178,6 +186,7 @@ class ApplicationTaskExecutorSpec extends Specification {
 
     then:
     thrown(NullPointerException)
+    0 * context.getApplication(_)
   }
 
   def "application delete: null application fields - exception"() {

@@ -75,7 +75,7 @@ class ReconfigGraphValidator {
     int appCrCnt =  tasks.get(TaskType.APP_COMP_INSTANCE_MONITOR).stream().filter(isCreateOrUpdateMonitor).count()
     int vmCrCnt = tasks.get(TaskType.VM_INSTANCE_MONITOR).stream().filter(isCreateOrUpdateMonitor).count()
 
-    int createOrUpdatemonitorCounter = appCrCnt + vmCrCnt// + countCreateMonitorsForDeletingInstances(tasks)
+    int createOrUpdatemonitorCounter = appCrCnt + vmCrCnt
 
     int appDelCnt = tasks.get(TaskType.APP_COMP_INSTANCE_MONITOR).stream().filter(isDeleteMonitor).count()
     int vmDelCnt = tasks.get(TaskType.VM_INSTANCE_MONITOR).stream().filter(isDeleteMonitor).count()
@@ -139,14 +139,6 @@ class ReconfigGraphValidator {
 
       }
     }
-  }
-
-  static int countCreateMonitorsForDeletingInstances(Map<TaskType, Set<Task>> tasks){
-
-    Predicate<Task> isDeleteTask = { task -> DELETE.equals(task.getType()) }
-    int deletingVmInstances = tasks.get(TaskType.VIRTUALMACHINE_INSTANCE).stream().filter(isDeleteTask).count()
-    int deletingAcInstances = tasks.get(TaskType.APPLICATION_COMPONENT_INSTANCE).stream().filter(isDeleteTask).count()
-    return deletingAcInstances + deletingVmInstances
   }
 
   static boolean existsAnyCreateOrUpdateTask(Map<TaskType, Set<Task>> tasks){

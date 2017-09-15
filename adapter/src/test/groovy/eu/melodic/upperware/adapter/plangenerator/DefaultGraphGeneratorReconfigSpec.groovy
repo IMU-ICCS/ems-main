@@ -148,7 +148,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     newApplication = c.createApplication(appName, reconfig, newTasks, oldTasks)
 
     setDefaultMonitors()
-    //addDeleteTasks(c, newTasks, oldTasks)
 
     createModel()
     createNewModel()
@@ -225,8 +224,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
 
     c.addDeleteTaskToMap(new CloudPropertyTask(DELETE, property), newTasks)
 
-    //addDeleteTasks(c, newTasks, oldTasks)
-
     newApplicationComponentInstanceMonitors = Lists.newArrayList(
             c.toMonitor3(appCompInstName, appCompName, true, newTasks),
             c.toMonitor3(appCompInstName2, appCompName2, true, newTasks))
@@ -266,7 +263,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createLifecycleComponent(lifecycleName, reconfig, newTasks, oldTasks))
 
     setDefaultMonitors()
-    //addDeleteTasks(c, newTasks, oldTasks)
 
     createModel()
     createNewModel()
@@ -313,7 +309,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
                     appCompInstName2, appName, vmInstName, appCompName2, reconfig, newTasks, oldTasks)
     )
 
-    //addDeleteTasks(c, newTasks, oldTasks)
     c.addDeleteTaskToMap(new ApplicationComponentTask(DELETE, ac), newTasks)
     c.addDeleteTaskToMap(new ApplicationComponentInstanceTask(DELETE, acInst), newTasks)
     c.toMonitor3(appCompInstName, appName, false, newTasks)
@@ -353,7 +348,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.createApi(apiName, cloudName, reconfig, newTasks, oldTasks)
     )
     setDefaultMonitors()
-    addDeleteTasks(c, newTasks, oldTasks)
 
     createModel()
     createNewModel()
@@ -385,9 +379,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
     )
 
     c.addDeleteTaskToMap(new PortRequiredTask(DELETE, pr), newTasks)
-
-    //addDeleteTasks(c, newTasks, oldTasks)
-
 
     setDefaultMonitors()
 
@@ -447,8 +438,6 @@ class DefaultGraphGeneratorReconfigSpec extends Specification {
             c.toMonitor1(vmInstName, reconfig, newTasks),
             c.toMonitor1(vmInstName2, reconfig, newTasks)
     )
-
-    //addDeleteTasks(c, newTasks, oldTasks)
 
     ComparableModel model = createModel(
             cloudApis, clouds, cloudProperties, cloudCredentials,

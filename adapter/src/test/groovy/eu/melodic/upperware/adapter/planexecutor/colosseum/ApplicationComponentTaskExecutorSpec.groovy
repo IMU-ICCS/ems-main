@@ -219,7 +219,7 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
     then:
     thrown(IllegalStateException)
   }
-//FIXME
+
   def "application component create: lifecycle component does not exist - exception"(){
 
     setup:
@@ -239,7 +239,7 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
     then:
     thrown(IllegalStateException)
   }
-//FIXME
+
   def "application component create: virtual machine does not exist - exception"(){
 
     setup:
@@ -333,7 +333,7 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
   }
 
 
-  private fillFieldsInApplicationComponent(Map componentDetails) {
+  private static fillFieldsInApplicationComponent(Map componentDetails) {
     componentDetails['ac'].getName() >> componentDetails['name']
     componentDetails['ac'].getAppName() >> componentDetails['appName']
     componentDetails['ac'].getLcName() >> componentDetails['lcName']
@@ -351,15 +351,15 @@ class ApplicationComponentTaskExecutorSpec extends Specification {
     details['api'].getImage(_, _) >> details['image']
   }
 
-  private setMockLocationEntity(Map details) {
+  private static setMockLocationEntity(Map details) {
     details['entity'].getId() >> details['id']
   }
 
-  private setMockHardwareEntity(Map details) {
+  private static setMockHardwareEntity(Map details) {
     details['entity'].getId() >> details['id']
   }
 
-  private setMockImageEntity(Map details) {
+  private static setMockImageEntity(Map details) {
     details['entity'].getId() >> details['id']
   }
 

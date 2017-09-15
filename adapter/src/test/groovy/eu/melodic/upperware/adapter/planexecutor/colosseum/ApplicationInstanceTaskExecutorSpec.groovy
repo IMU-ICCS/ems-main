@@ -75,10 +75,11 @@ class ApplicationInstanceTaskExecutorSpec extends Specification {
     executor.create(appInstance)
 
     then:
-    1 * context.addApplicationInstance(_)
+    noExceptionThrown()
+    1 * context.addApplicationInstance(appInstEntity)
   }
 
-  def "application instance create: instance already exists - exception"() {
+  def "application instance create: instance already exists - skip task"() {
 
     setup:
     context.getApplicationInstance(_) >> Optional.of(Mock(de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance))
@@ -110,6 +111,7 @@ class ApplicationInstanceTaskExecutorSpec extends Specification {
 
     then:
     thrown(NullPointerException)
+    0 * context.getApplicationInstance(appName).isPresent()
   }
 
   def "application instance create: null application fields - exception"() {
@@ -137,7 +139,7 @@ class ApplicationInstanceTaskExecutorSpec extends Specification {
     then:
     1 * appEntity.getId()
     thrown(NullPointerException)
-    0 * api.createApplicationInstance(_)//fixme: constructor?
+    0 * api.createApplicationInstance(_)
   }
 
 
@@ -166,6 +168,7 @@ class ApplicationInstanceTaskExecutorSpec extends Specification {
     executor.delete(appInstance)
 
     then:
+    noExceptionThrown()
     1 * context.deleteApplicationInstance(_)
   }
 
