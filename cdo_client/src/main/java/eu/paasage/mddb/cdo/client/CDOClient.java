@@ -14,6 +14,7 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
 import org.eclipse.emf.cdo.eresource.CDOResourceNode;
+import org.eclipse.emf.cdo.eresource.EresourcePackage;
 import org.eclipse.emf.cdo.internal.common.id.CDOIDObjectLongWithClassifierImpl;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
@@ -339,6 +340,7 @@ public class CDOClient
 	/* This method is used to register all Packages of Camel meta-model
 	 */
 	public void registerCamelPackages(){
+		registerPackage(EresourcePackage.eINSTANCE);
 		registerPackage(CamelPackage.eINSTANCE);
 		registerPackage(ScalabilityPackage.eINSTANCE);
 		registerPackage(DeploymentPackage.eINSTANCE);
