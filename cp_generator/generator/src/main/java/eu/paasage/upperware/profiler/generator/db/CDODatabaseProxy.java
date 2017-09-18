@@ -83,7 +83,15 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 
 	public CamelModel getCamelModel(String modelPath) {
 		List<EObject> camelModels = cloner.cloneModel(modelPath);
-		return (CamelModel) getLastElement(camelModels);
+		CamelModel camelModel = (CamelModel) getLastElement(camelModels);
+		if (camelModel != null) {
+			EList<ProviderModel> providerModels = camelModel.getProviderModels();
+			for (ProviderModel providerModel : providerModels) {
+				populateFields(providerModel, camelModel.getTypeModels());
+			}
+		}
+
+		return camelModel;
 	}
 
 	private EObject getLastElement(List<EObject> collection){
@@ -315,6 +323,7 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 	public void savePM(ProviderModel pm, String paasageConfigurationId, String providerId) {
 		String providerResourceId = getFMResourceId(paasageConfigurationId, providerId);
 		log.info("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {}", paasageConfigurationId, providerId, providerResourceId);
+		cdoClient.exportModel(pm.eContainer(), "/home/pszkup/logs/providers/" + paasageConfigurationId + "_" + providerId + "xmi");
 		cdoClient.storeModel(pm.eContainer(), FMS_APP_CDO_SERVER_PATH+ providerResourceId);
 		log.info("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {} - saved", paasageConfigurationId, providerId, providerResourceId);
 	}
