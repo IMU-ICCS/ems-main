@@ -11,72 +11,39 @@
 
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
-import com.google.common.collect.Maps;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.type.TypePackage;
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.CloudMLElementUpperware;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
-import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
-import eu.paasage.upperware.profiler.generator.db.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
-import eu.passage.upperware.commons.MelodicConstants;
-import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
-import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
-import static java.lang.String.format;
 
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GenerationOrchestrator {
 
-    private static final Map<String, Object> LOCKS = Maps.newConcurrentMap();
-
     private IDatabaseProxy database;
     private PaasageConfigurationService paaSageConfigurationService;
     private ConstraintProblemService constraintProblemService;
     private NotificationService notificationService;
     private SloService sloService;
-    private CDOClientExtended cdoClientExtended;
-
-
-    /**
-     * The default constructor
-     */
-    public GenerationOrchestrator() {
-        ApplicationPackage.eINSTANCE.eClass();
-        CpPackage.eINSTANCE.eClass();
-        TypesPackage.eINSTANCE.eClass();
-        TypesPaasagePackage.eINSTANCE.eClass();
-        OntologyPackage.eINSTANCE.eClass();
-        MappingPackage.eINSTANCE.eClass();
-        TypePackage.eINSTANCE.eClass();
-
-        Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
-    }
+    private RequestSynchronizer requestSynchronizer;
 
     /**
      * Generates the CP model by using the provided model path
@@ -89,7 +56,7 @@ public class GenerationOrchestrator {
     public void generateCPModelAndSendNotification(String resourceName, String notificationUri, String requestUuid){
 
         try {
-            acquireLock(resourceName);
+            requestSynchronizer.acquireLock(resourceName);
         } catch (Exception e) {
             notificationService.notifyError(resourceName, notificationUri, requestUuid, e.getMessage());
         }
@@ -102,7 +69,7 @@ public class GenerationOrchestrator {
             notificationService.notifyError(resourceName, notificationUri, requestUuid, e.getMessage());
             return;
         } finally {
-            releaseLock(resourceName);
+            requestSynchronizer.releaseLock(resourceName);
         }
         sendNotification(cpGenerationResult, resourceName, notificationUri, requestUuid);
     }
@@ -206,22 +173,4 @@ public class GenerationOrchestrator {
     private CamelModel createCamelModel(String resourceName) {
         return database.getCamelModel(resourceName);
     }
-
-    private static void acquireLock(String resourceName) {
-        synchronized (LOCKS) {
-            log.info("Acquiring lock for application {}", resourceName);
-            Object obj = LOCKS.get(resourceName);
-            if (obj != null) {
-                throw new IllegalStateException(format("(Re)configuration process for %s is running. " +
-                        "Wait until it is completed and repeat request.", resourceName));
-            }
-            LOCKS.put(resourceName, Boolean.TRUE);
-        }
-    }
-
-    private static void releaseLock(String resourceName) {
-        log.info("Releasing lock for application {}", resourceName);
-        LOCKS.remove(resourceName);
-    }
-
 }
