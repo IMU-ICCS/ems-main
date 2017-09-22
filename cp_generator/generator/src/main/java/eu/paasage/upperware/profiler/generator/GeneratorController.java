@@ -2,6 +2,8 @@ package eu.paasage.upperware.profiler.generator;
 
 import eu.melodic.models.interfaces.cpGenerator.ConstraintProblemRequestImpl;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
+import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestratorFactory;
+//import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +20,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GeneratorController {
 
-    private GenerationOrchestrator generationOrchestrator;
+    private GenerationOrchestratorFactory generationOrchestratorFactory;
 
     @RequestMapping(value = "/constraintProblem", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public void generateConstraintProblem(@RequestBody ConstraintProblemRequestImpl request) {
+    public void generateConstraintProblem(@RequestBody ConstraintProblemRequestImpl request) throws Exception {
 //        validator.validate(request);
 
         String resourceName = request.getApplicationId();
@@ -30,6 +32,7 @@ public class GeneratorController {
 
         log.info("resourceName: " + resourceName + ", notificationUri: " + notificationUri + ", requestUuid: " + requestUuid);
 
+        GenerationOrchestrator generationOrchestrator = generationOrchestratorFactory.getObject();
         generationOrchestrator.generateCPModelAndSendNotification(resourceName, notificationUri, requestUuid);
     }
 

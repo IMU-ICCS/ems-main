@@ -5,14 +5,22 @@ import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
+import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
+import eu.paasage.upperware.profiler.generator.db.CDODatabaseProxy;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class GeneratorContext {
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     private static final String CONSTRAINT_PREFIX= "c_";
     private static final String AUX_EXPRESSION_PREFIX= "aux_expression_";
@@ -63,5 +71,11 @@ public class GeneratorContext {
         return new RestTemplate();
     }
 
+    @Bean
+    @Scope("prototype")
+    public CDODatabaseProxy cDODatabaseProxy() {
+        CDOClientExtended cDOClientExtended = applicationContext.getBean(CDOClientExtended.class);
+        return new CDODatabaseProxy(cDOClientExtended);
+    }
 
 }
