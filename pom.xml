@@ -36,6 +36,7 @@
         <module>srl-adapter</module>
         <module>cp_solver</module>
         <module>la_converter</module>
+        <module>utility-generator</module>
         <!--<module>rule_processor</module>-->
     </modules>
 
