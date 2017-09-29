@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class Metric {
 
-  private String type;
+  private MetricType type;
   private double value;
 }

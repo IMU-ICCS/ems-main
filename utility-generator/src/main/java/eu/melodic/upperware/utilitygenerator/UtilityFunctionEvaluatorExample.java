@@ -1,16 +1,21 @@
 package eu.melodic.upperware.utilitygenerator;
 
 import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricType;
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 
 import org.apache.commons.math3.distribution.*;
 
-import java.util.Collection;
+import lombok.extern.slf4j.Slf4j;
 
+
+import java.util.Collection;
+import java.util.Map;
+
+@Slf4j
 public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator{
 
   private final double alpha = 7;
-  private final double beta;
   private final double maxResponseTime;
   private final double nomResponseTime;
 
@@ -24,22 +29,23 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
   private double actUtilityCost;
 
 
-  public UtilityFunctionEvaluatorExample(Collection<VirtualMachine> actualConfiguration, Metric responseTime, double
-    maxResponseTime,
-    double nomResponseTime, double costWeight){
+  public UtilityFunctionEvaluatorExample(Collection<VirtualMachine> actualConfiguration,
+    Map<MetricType, Metric> metrics){
 
-    this.maxResponseTime = maxResponseTime;
-    this.nomResponseTime = nomResponseTime;
-    this.costWeight = costWeight;
+    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
+    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
+    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
+    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
+
+
     this.actualConfiguration = actualConfiguration;
     actUtilityCost = 1;
 
 
-    beta = alpha * (this.maxResponseTime / this.nomResponseTime -1);
+    double beta = alpha * (this.maxResponseTime / this.nomResponseTime -1);
 
     responseUtilityFunction = new BetaDistribution(alpha, beta);
 
-    avgResponseTime = responseTime.getValue();
   }
 
   @Override
@@ -57,13 +63,17 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
   }
 
   private double evaluateResponseUtilityFunction(double x){
-    System.out.println("evaluateResponseUtilityFunction: x = " + x);
+    //log.info("evaluateResponseUtilityFunction: x = " + x);
     double result = responseUtilityFunction.density(x);
-    System.out.println("evaluateResponseUtilityFunction: result = " + result);
+    //log.info("evaluateResponseUtilityFunction: result = " + result);
 
     double min = responseUtilityFunction.getSupportLowerBound();
     double max = responseUtilityFunction.getSupportUpperBound();
-    return normalize(min,max,x);
+    double normalizedResult = normalize(min,max,x);
+
+    log.info("evaluateResponseUtilityFunction: result = " + normalizedResult);
+
+    return normalizedResult;
   }
 
   private double evaluateCostUtilityFunction(Collection<VirtualMachine> newConfiguration){
@@ -72,9 +82,9 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     double newCost = calculateCost(newConfiguration);
     double result = actUtilityCost * oldCost / newCost;
 
-    System.out.println("evaluateCostUtilityFunction: oldCost = " + oldCost);
-    System.out.println("evaluateCostUtilityFunction: newCost = " + newCost);
-    System.out.println("evaluateCostUtilityFunction: result = " + result);
+    //log.info("evaluateCostUtilityFunction: oldCost = " + oldCost);
+    //log.info("evaluateCostUtilityFunction: newCost = " + newCost);
+    log.info("evaluateCostUtilityFunction: result = " + result);
     return result;
 
   }
@@ -91,10 +101,9 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
 
   private double estimateNextAvgResponseTime(double avgResponseTime, Collection<VirtualMachine> newConfig){
 
-    double nextAvgResponseTime = (
-      (countVirtualMachines(actualConfiguration)) * avgResponseTime)
+    double nextAvgResponseTime = (countVirtualMachines(actualConfiguration) * avgResponseTime)
       / countVirtualMachines(newConfig);
-    System.out.println("estimate Time: " + nextAvgResponseTime);
+    log.info("estimate Time: " + nextAvgResponseTime);
     return nextAvgResponseTime;
 
   }
@@ -108,9 +117,7 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
   }
 
   private double normalize(double min, double max, double x){
-    double result = (x-min)/(max-min);
-    System.out.println("after normalization: " + result);
-    return result;
+    return (x-min)/(max-min);
   }
 
 
