@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.cpsolver;
 
+import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionFromFileRequestImpl;
 import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionRequestImpl;
 import eu.melodic.upperware.cpsolver.lib.CPSolverExecutor;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,15 @@ public class CPSolverController {
 
     executor.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
     log.info("Sleeping...");
+  }
+
+  @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
+  public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
+    String applicationId = request.getApplicationId();
+    String filePath = request.getFileModelsPath();
+    String requestUuid = request.getWatermark().getUuid();
+    log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + filePath + " " +requestUuid);
+    executor.generateCPSolutionFromFile(applicationId, filePath, requestUuid);
   }
 
 

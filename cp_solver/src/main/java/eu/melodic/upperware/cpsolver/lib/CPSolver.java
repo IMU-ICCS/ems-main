@@ -223,12 +223,14 @@ public class CPSolver {
 	 * name for this model is provided as input
 	 */
 	public void readCPModel(String cdoPath, String pathName){
+		log.info("Reading CP model...");
 		CDOClient cl = new CDOClient();
 		cl.registerPackage(TypesPackage.eINSTANCE);
 		cl.registerPackage(CpPackage.eINSTANCE);
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		if (cdoPath != null){
+			log.info("Loading resource from CDO: " +cdoPath);
 			cdoMode = true;
 			CDOView view = cl.openView();
 			CDOResource res = view.getResource(cdoPath);
@@ -243,6 +245,7 @@ public class CPSolver {
 			view.close();
 		}
 		else if (pathName != null){
+			log.info("Loading resource from file: " +pathName);
 			cdoMode = false;
 			cp = (ConstraintProblem)cl.loadModel(pathName);
 			readModel(cp);

@@ -53,6 +53,16 @@ public class CPSolverExecutor {
     }
   }
 
+  public void generateCPSolutionFromFile(String applicationId, String filePath, String requestUuid) throws Exception {
+      CPSolver cpSolver = new CPSolver(null,filePath);
+      boolean hasSolution = cpSolver.solve();
+      if (hasSolution) {
+        log.info("Solution has been produced");
+      } else {
+        log.info("Problem is infeasible");
+      }
+  }
+
 
   private void notifySolutionProduced(String camelModelID, String notificationUri, String uuid) {
     log.info("Sending solution available notification");
