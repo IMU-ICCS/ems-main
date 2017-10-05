@@ -126,7 +126,7 @@ public class CommunicationProvidedRequiredDomain {
 			provInstances = findComponentInstanceFromComponent(result.provComponent, internalComponentInstances);
 		}
 		
-		if (CollectionUtils.isEmpty(communicationInstances)) {
+		if (CollectionUtils.isEmpty(reqInstances)) {
 			log.info("WARNING: ignoring communication {}", com.getName());
 			return communicationInstances;
 		}
