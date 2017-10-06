@@ -11,6 +11,7 @@ package eu.melodic.upperware.adapter.communication.cdoserver;
 
 import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
+import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
@@ -18,21 +19,55 @@ import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
+@Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CdoServerClientApi implements CdoServerApi {
 
   private CDOClient cdoClient;
+
+
+  private static HashMap<String, Object> opts = new HashMap<String, Object>();
+
+  static {
+//    	logger = org.apache.log4j.log.getLogger(CDOClient.class);
+    XMIResToResFact();
+    opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
+  }
+
+
+  private static void XMIResToResFact(){
+    Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
+            ("*",
+                    new XMIResourceFactoryImpl()
+                    {
+                      public Resource createResource(URI uri)
+                      {
+                        XMIResource xmiResource = new XMIResourceImpl(uri);
+                        return xmiResource;
+                      }
+                    });
+  }
+
 
   @Override
   public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
@@ -55,6 +90,10 @@ public class CdoServerClientApi implements CdoServerApi {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
       CamelModel model = (CamelModel) contents.get(0);
+
+      exportModel(model, "~/"+resourceName+".xmi");
+      exportModel(model, "~/dupka_blada.xmi");
+
       if (model != null) {
         List<ExecutionModel> execModels = model.getExecutionModels();
         int numberOfExecModels = execModels.size();
@@ -72,6 +111,25 @@ public class CdoServerClientApi implements CdoServerApi {
     throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
       "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
+
+
+  public boolean exportModel(EObject model, String filePath){
+    try{
+      final ResourceSet rs = new ResourceSetImpl();
+      rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+      Resource res = rs.createResource(URI.createFileURI(filePath));
+      res.getContents().add(model);
+      res.save(opts);
+      return true;
+    }
+    catch(Exception e){
+      log.error("Something went wrong while exporting model: " + model + " at path: " + filePath,e);
+      //e.printStackTrace();
+    }
+    return false;
+  }
+
+
 
   @Override
   public void setExecutionContext(DeploymentModel deploymentModel, String execContextName, CDOTransaction tr) {
