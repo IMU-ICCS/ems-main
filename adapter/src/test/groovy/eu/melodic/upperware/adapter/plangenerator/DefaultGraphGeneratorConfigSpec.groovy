@@ -15,6 +15,7 @@ import org.assertj.core.util.Lists
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
 import spock.lang.Specification
+import spock.lang.Ignore
 
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidator.checkGraph
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDependencies
@@ -95,6 +96,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
       applicationComponentInstanceMonitors)
   }
 
+@Ignore
   def "configuration graph generation: all components"() {
 
     setup:

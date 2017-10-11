@@ -25,4 +25,6 @@ public class Communication implements Data {
   private String portProvName;
   private String portReqName;
 
+  //TODO: add ac instance
+
 }
