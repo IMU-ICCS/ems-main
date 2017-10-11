@@ -168,7 +168,8 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
 
   protected Collection<ApplicationComponentInstanceTask> genAcInstTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
-          Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<ApplicationComponentInstance> acInsts) {
+          Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<CommunicationTask> commTasks,
+          Collection<ApplicationComponentInstance> acInsts) {
     Collection<ApplicationComponentInstanceTask> acInstTasks = acInsts.stream()
       .map(acInst -> new ApplicationComponentInstanceTask(type, acInst)).collect(toList());
 
@@ -186,6 +187,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
 
       findAndSetDependencies(graph, acInstTask, acName, acTasks, type);
       findAndSetDependencies(graph, acInstTask, vmInstName, vmInstTasks, type);
+      commTasks.forEach(commTask -> setDependencies(graph, type, commTask, acInstTask));
     });
 
     return acInstTasks;

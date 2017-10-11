@@ -61,15 +61,16 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     Collection<ApplicationComponentTask> acTasks = genAcConfigTasks(
       graph, appTask, lcTasks, vmTasks, model.getApplicationComponents());
-    Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstConfigTasks(
-      graph, appInstTask, acTasks, vmInstTasks, model.getApplicationComponentInstances());
 
     Collection<PortProvidedTask> portProvTasks = genPortProvConfigTasks(
-      graph, acTasks, model.getPortsProvided());
+            graph, acTasks, model.getPortsProvided());
     Collection<PortRequiredTask> portReqTasks = genPortReqConfigTasks(
-      graph, acTasks, model.getPortsRequired());
+            graph, acTasks, model.getPortsRequired());
     Collection<CommunicationTask> commTasks = genCommConfigTasks(
-      graph, portProvTasks, portReqTasks, model.getCommunications());
+            graph, portProvTasks, portReqTasks, model.getCommunications());
+
+    Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstConfigTasks(
+      graph, appInstTask, acTasks, vmInstTasks, commTasks, model.getApplicationComponentInstances());
 
     genVmInstMonitorConfigTasks(graph, vmInstTasks, model.getVirtualMachineInstanceMonitors());
     genAcInstMonitorConfigTasks(graph, acInstTasks, model.getApplicationComponentInstanceMonitors());
@@ -339,9 +340,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   }
 
   private Collection<ApplicationComponentInstanceTask> genAcInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
-          Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<ApplicationComponentInstance> acInsts) {
-    return genAcInstTasks(graph, CREATE, appInstTask, acTasks, vmInstTasks, acInsts);
+      ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
+      Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<CommunicationTask> commTasks, Collection<ApplicationComponentInstance> acInsts) {
+    return genAcInstTasks(graph, CREATE, appInstTask, acTasks, vmInstTasks, commTasks, acInsts);
   }
 
   private Collection<ApplicationComponentInstanceTask> genAcInstReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
@@ -349,9 +350,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<ApplicationComponentInstance> oldAcInsts, Collection<ApplicationComponentInstance> newAcInsts) {
     Collection<ApplicationComponentInstanceTask> acInstTasks = Lists.newArrayList();
 
-    acInstTasks.addAll(genAcInstTasks(graph, CREATE, null, acTasks, vmInstTasks,
+    acInstTasks.addAll(genAcInstTasks(graph, CREATE, null, acTasks, vmInstTasks, Lists.newArrayList(),
       newAcInsts.stream().filter(newAcInst -> !oldAcInsts.contains(newAcInst)).collect(toList())));
-    acInstTasks.addAll(genAcInstTasks(graph, DELETE, null, acTasks, vmInstTasks,
+    acInstTasks.addAll(genAcInstTasks(graph, DELETE, null, acTasks, vmInstTasks, Lists.newArrayList(),
       oldAcInsts.stream().filter(oldAcInst -> !newAcInsts.contains(oldAcInst)).collect(toList())));
 
     return acInstTasks;
