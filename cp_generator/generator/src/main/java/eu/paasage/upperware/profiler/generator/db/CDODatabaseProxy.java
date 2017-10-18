@@ -138,14 +138,20 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 			return;
 		}
 
-		List<EnumerateValue> enumerationValues = getEnumerationValues(typeModels, type.getValueType().getName());
-		EnumerateValue correctEnumerationValue = getCorrectEnumerationValue(enumerationValues, valueStr);
+		ValueType valueType = type.getValueType();
+		if (valueType != null) {
+			List<EnumerateValue> enumerationValues = getEnumerationValues(typeModels, type.getValueType().getName());
+			EnumerateValue correctEnumerationValue = getCorrectEnumerationValue(enumerationValues, valueStr);
 
-		if (correctEnumerationValue != null){
-			type.setValue(correctEnumerationValue);
+			if (correctEnumerationValue != null){
+				type.setValue(correctEnumerationValue);
+			} else {
+				log.warn("Could not find String value for subfeature {} and attribute {}", subFeatureName, attributeName);
+			}
 		} else {
-			log.warn("Could not find String value for subfeature {} and attribute {}", subFeatureName, attributeName);
+			log.info("Value for subfeature {} and attribute {} are set as it is", subFeatureName, attributeName);
 		}
+
 	}
 
 	private Attribute getType(ProviderModel providerModel, String subFeatureName, String attributeName) {
