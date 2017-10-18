@@ -18,7 +18,7 @@ public interface CdoServerApi {
 
   DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr);
 
-  void setExecutionContext(DeploymentModel deploymentModel, String execContextName, CDOTransaction tr);
+  void setExecutionContext(DeploymentModel deploymentModel, String execContextName, String requirementGroupName, CDOTransaction tr);
 
   CDOTransaction openTransaction();
 

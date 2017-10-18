@@ -16,6 +16,7 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
+import eu.paasage.camel.requirement.*;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -37,6 +38,9 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.lang.String.format;
 
 @Slf4j
 @Service
@@ -46,10 +50,9 @@ public class CdoServerClientApi implements CdoServerApi {
   private CDOClient cdoClient;
 
 
-  private static HashMap<String, Object> opts = new HashMap<String, Object>();
+  private static Map<String, Object> opts = new HashMap<>();
 
   static {
-//    	logger = org.apache.log4j.log.getLogger(CDOClient.class);
     XMIResToResFact();
     opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
   }
@@ -58,14 +61,12 @@ public class CdoServerClientApi implements CdoServerApi {
   private static void XMIResToResFact(){
     Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
             ("*",
-                    new XMIResourceFactoryImpl()
-                    {
-                      public Resource createResource(URI uri)
-                      {
-                        XMIResource xmiResource = new XMIResourceImpl(uri);
-                        return xmiResource;
+                    new XMIResourceFactoryImpl() {
+                      public Resource createResource(URI uri) {
+                        return new XMIResourceImpl(uri);
                       }
-                    });
+                    }
+            );
   }
 
 
@@ -92,7 +93,6 @@ public class CdoServerClientApi implements CdoServerApi {
       CamelModel model = (CamelModel) contents.get(0);
 
       exportModel(model, "~/"+resourceName+".xmi");
-      exportModel(model, "~/dupka_blada.xmi");
 
       if (model != null) {
         List<ExecutionModel> execModels = model.getExecutionModels();
@@ -132,22 +132,52 @@ public class CdoServerClientApi implements CdoServerApi {
 
 
   @Override
-  public void setExecutionContext(DeploymentModel deploymentModel, String execContextName, CDOTransaction tr) {
+  public void setExecutionContext(DeploymentModel deploymentModel, String execContextName, String requirementGroupName, CDOTransaction tr) {
     CamelModel camelModel = (CamelModel) deploymentModel.eContainer();
     Collection<ExecutionModel> execModels = camelModel.getExecutionModels();
     Application app = camelModel.getApplications().get(0);
 
-    ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
-    newExecModel.setName(execContextName);
+    RequirementGroup result = getRequirementGroupForApp(camelModel.getRequirementModels(), app);
+    if (result != null) {
+      ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+      newExecModel.setName(execContextName);
 
-    ExecutionContext execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
-    execContext.setName(execContextName);
-    execContext.setApplication(app);
-    execContext.setDeploymentModel(deploymentModel);
+      ExecutionContext execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
+      execContext.setName(execContextName);
+      execContext.setApplication(app);
+      execContext.setDeploymentModel(deploymentModel);
+      execContext.setRequirementGroup(result);
 
-    newExecModel.getExecutionContexts().add(execContext);
+      newExecModel.getExecutionContexts().add(execContext);
 
-    execModels.add(newExecModel);
+      execModels.add(newExecModel);
+    } else {
+      throw new IllegalArgumentException(format("Could not find RequirementGroup for %s application", app.getName()));
+    }
+  }
+
+  private RequirementGroup getRequirementGroupForApp(EList<RequirementModel> requirementModels, Application app) {
+    RequirementGroup result = null;
+    for (RequirementModel requirementModel : requirementModels) {
+      for (Requirement requirement : requirementModel.getRequirements()) {
+        if (requirement instanceof RequirementGroup) {
+          RequirementGroup requirementGroup = (RequirementGroup) requirement;
+          for (Application application : requirementGroup.getApplication()) {
+            if (application.getName() != null && application.getName().equals(app.getName())) {
+              result = requirementGroup;
+              break;
+            }
+          }
+        }
+        if (result != null) {
+          break;
+        }
+      }
+      if (result != null) {
+        break;
+      }
+    }
+    return result;
   }
 
   @Override

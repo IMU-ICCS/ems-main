@@ -25,7 +25,6 @@ import java.util.Date;
 public class CdoServerClientUpdater implements CdoServerUpdater {
 
   private CdoServerApi cdoServerApi;
-//  private ColosseumContext context;
 
   @Override
   public void updateCamelModel(String resourceName) {
@@ -39,7 +38,8 @@ public class CdoServerClientUpdater implements CdoServerUpdater {
     try {
       DeploymentModel camelModel = cdoServerApi.getModelToDeploy(resourceName, tr);
       String executionContextName = getRandomExecutionContextName();
-      cdoServerApi.setExecutionContext(camelModel, executionContextName, tr);
+      String requirementGroupName = getRandomRequirementGroupName();
+      cdoServerApi.setExecutionContext(camelModel, executionContextName, requirementGroupName, tr);
       tr.commit();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -50,6 +50,10 @@ public class CdoServerClientUpdater implements CdoServerUpdater {
 
   private String getRandomExecutionContextName() {
     return ("ExecutionContext_" + getUniqueId());
+  }
+
+  private String getRandomRequirementGroupName() {
+    return ("RequirementGroup_" + getUniqueId());
   }
 
   private String getUniqueId() {
