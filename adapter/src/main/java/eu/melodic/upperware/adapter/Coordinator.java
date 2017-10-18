@@ -17,6 +17,7 @@ import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
+import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
@@ -27,14 +28,18 @@ import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.PlanValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.alg.DirectedNeighborIndex;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 import static eu.melodic.models.commons.NotificationResult.StatusType.*;
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
@@ -107,10 +112,64 @@ public class Coordinator {
       context.refreshContext();
     }
 //    String jsonGraph = new Gson().toJson(plan.getTaskGraph());
+
+
+    logGraph(plan.getTaskGraph());
     planExecutor.executePlan(plan);
     cdoServerUpdater.updateCamelModel(resourceName);
     notifyPlanApplied(resourceName, notificationUri, uuid);
   }
+
+
+
+  private void logGraph(DirectedGraph<Task, DefaultEdge> taskGraph) {
+
+    List<Pair<Task, Task>> result = new ArrayList<>();
+
+    List<GNode> nodes = new ArrayList<>();
+
+    DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(taskGraph);
+    TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(taskGraph);
+
+    while (it.hasNext()) {
+      Task task = it.next();
+      Set<Task> dependentTasks = neighbors.predecessorsOf(task);
+
+      if (dependentTasks.isEmpty()) {
+        result.add(Pair.of(null, task));
+      } else {
+        dependentTasks.forEach(dependentTask -> result.add(Pair.of(dependentTask, task)));
+      }
+    }
+
+    for (Pair<Task, Task> pair : result) {
+      GNode gNode = getFirstElementFor(pair.getLeft(), nodes);
+      if (gNode != null) {
+        gNode.getChildren().add(pair.getRight());
+      } else {
+        GNode newGNode = new GNode();
+        newGNode.setParent(pair.getLeft());
+        newGNode.getChildren().add(pair.getRight());
+        nodes.add(newGNode);
+      }
+    }
+
+    log.info("GRAPH");
+    for (GNode gNode: nodes){
+      log.info(gNode.toString());
+    }
+
+  }
+
+  private GNode getFirstElementFor(Task right, List<GNode> nodes) {
+    for (GNode gNode : nodes) {
+      if (gNode.getParent() != null && gNode.getParent().equals(right)){
+        return gNode;
+      }
+    }
+    return null;
+  }
+
 
   private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
     log.info("Sending plan applied notification");
