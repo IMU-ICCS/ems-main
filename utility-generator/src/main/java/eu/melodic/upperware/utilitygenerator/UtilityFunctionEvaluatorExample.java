@@ -16,13 +16,12 @@ import java.util.Map;
 public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator{
 
   private final double alpha = 7;
+  private final double beta;
   private final double maxResponseTime;
   private final double nomResponseTime;
-
   private final double costWeight;
 
   private BetaDistribution responseUtilityFunction;
-
   private double avgResponseTime;
 
   private Collection<VirtualMachine> actualConfiguration;
@@ -42,7 +41,7 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     actUtilityCost = 1;
 
 
-    double beta = alpha * (this.maxResponseTime / this.nomResponseTime -1);
+    this.beta = alpha * (this.maxResponseTime / this.nomResponseTime -1);
 
     responseUtilityFunction = new BetaDistribution(alpha, beta);
 
@@ -67,12 +66,11 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     double result = responseUtilityFunction.density(x);
     //log.info("evaluateResponseUtilityFunction: result = " + result);
 
-    double min = responseUtilityFunction.getSupportLowerBound();
-    double max = responseUtilityFunction.getSupportUpperBound();
-    double normalizedResult = normalize(min,max,x);
+    double max = responseUtilityFunction.density((alpha-1)/(alpha+beta-2));
+    double normalizedResult = normalize(0,max,result);
 
-    log.info("evaluateResponseUtilityFunction: result = " + normalizedResult);
 
+    log.info("evaluateResponseUtilityFunction: normalized result = " + normalizedResult);
     return normalizedResult;
   }
 
@@ -80,10 +78,8 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
 
     double oldCost = calculateCost(actualConfiguration);
     double newCost = calculateCost(newConfiguration);
-    double result = actUtilityCost * oldCost / newCost;
+    double result = Math.min(1, actUtilityCost * oldCost / newCost);
 
-    //log.info("evaluateCostUtilityFunction: oldCost = " + oldCost);
-    //log.info("evaluateCostUtilityFunction: newCost = " + newCost);
     log.info("evaluateCostUtilityFunction: result = " + result);
     return result;
 
