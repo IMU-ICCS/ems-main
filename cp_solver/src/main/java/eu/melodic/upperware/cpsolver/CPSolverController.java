@@ -34,9 +34,10 @@ public class CPSolverController {
     String cdoResourcePath = request.getCdoModelsPath();
     String notificationUri = request.getNotificationURI();
     String requestUuid = request.getWatermark().getUuid();
-    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
+    Boolean useExternalOptimizer = request.getUseExternalOptimizer();
+    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid + " " + useExternalOptimizer );
 
-    executor.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
+    executor.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, useExternalOptimizer);
     log.info("Sleeping...");
   }
 
@@ -45,8 +46,9 @@ public class CPSolverController {
     String applicationId = request.getApplicationId();
     String filePath = request.getFileModelsPath();
     String requestUuid = request.getWatermark().getUuid();
-    log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + filePath + " " +requestUuid);
-    executor.generateCPSolutionFromFile(applicationId, filePath, requestUuid);
+    Boolean useExternalOptimizer = request.getUseExternalOptimizer();
+    log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + filePath + " " +requestUuid + " " +useExternalOptimizer);
+    executor.generateCPSolutionFromFile(applicationId, filePath, requestUuid, useExternalOptimizer);
   }
 
 

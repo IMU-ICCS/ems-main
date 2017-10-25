@@ -36,9 +36,9 @@ public class CPSolverExecutor {
   private RestTemplate restTemplate;
 
   @Async
-  public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid) {
+  public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid, Boolean useExternalOptimizer) {
     try {
-      CPSolver cpSolver = new CPSolver(cdoResourcePath,null);
+      CPSolver cpSolver = new CPSolver(cdoResourcePath,null,useExternalOptimizer);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -53,8 +53,8 @@ public class CPSolverExecutor {
     }
   }
 
-  public void generateCPSolutionFromFile(String applicationId, String filePath, String requestUuid) throws Exception {
-      CPSolver cpSolver = new CPSolver(null,filePath);
+  public void generateCPSolutionFromFile(String applicationId, String filePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
+      CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");

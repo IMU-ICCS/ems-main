@@ -90,14 +90,16 @@ public class CPSolver {
 	private int constNum = 0;
 	private boolean cdoMode = false;
 	private long timestamp = 0;
+	private boolean useExternalOptimizer = false;
 	
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName){
+	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer){
 		solver = new Solver();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
+		this.useExternalOptimizer = useExternalOptimizer;
 		readCPModel(cdoPath,pathName);
 	}
 	
@@ -268,38 +270,53 @@ public class CPSolver {
 			}
 			solver.set(IntStrategyFactory.random(vars, System.currentTimeMillis()));
 		}
-		if (policy != null){
-			if (realGoal != null){
-				solver.findOptimalSolution(policy, realGoal);
-				log.info("1. Optimal value is: " + realGoal.getUB());
+
+		//if useExternalOptimizer is set - use Utility Generator
+		if(useExternalOptimizer){
+			log.info("Using Utility Generator for solution space:");
+			//Long l = solver.findAllSolutions();
+			//log.info("Number of solutions found: " +l);
+			if(solver.findSolution()) {
+				log.info("Checking utility of #1 solution.");
+				//TODO: do the utility stuff
+				Integer i=1;
+				while(solver.nextSolution()){
+					i++;
+					log.info("Checking utility of: #" +i +" solution.");
+					//TODO: do the utility
+
+				}
 			}
-			else{
-				solver.findOptimalSolution(policy, intGoal);
-				log.info("2. Optimal value is: " + intGoal.getValue());
-			}
-			log.info("1. Checking if solver has solutions");
-			hasSolutions = (solver.isFeasible() == ESat.TRUE);
-			log.info("1. Does solver has solutions? " + hasSolutions);
-			if (hasSolutions) saveSolution();
-			try{
-				dispose();
-				solver.getIbex().release();
-			}
-			catch(Exception e){
-				log.error("1. Something went wrong while disposing the solver", e);
-			}
-		}
-		else{
-			log.info("2. Checking if solver has solutions");
-			hasSolutions = solver.findSolution();
-			log.info("2. Does solver has solutions? " + hasSolutions);
-			if (hasSolutions) saveSolution();
-			try{
-				dispose();
-				solver.getIbex().release();
-			}
-			catch(Exception e){
-				log.error("2. Something went wrong while disposing the solver", e);
+		} else {
+			if (policy != null) {
+				if (realGoal != null) {
+					solver.findOptimalSolution(policy, realGoal);
+					log.info("1. Optimal value is: " + realGoal.getUB());
+				} else {
+					solver.findOptimalSolution(policy, intGoal);
+					log.info("2. Optimal value is: " + intGoal.getValue());
+				}
+				log.info("1. Checking if solver has solutions");
+				hasSolutions = (solver.isFeasible() == ESat.TRUE);
+				log.info("1. Does solver has solutions? " + hasSolutions);
+				if (hasSolutions) saveSolution();
+				try {
+					dispose();
+					solver.getIbex().release();
+				} catch (Exception e) {
+					log.error("1. Something went wrong while disposing the solver", e);
+				}
+			} else {
+				log.info("2. Checking if solver has solutions");
+				hasSolutions = solver.findSolution();
+				log.info("2. Does solver has solutions? " + hasSolutions);
+				if (hasSolutions) saveSolution();
+				try {
+					dispose();
+					solver.getIbex().release();
+				} catch (Exception e) {
+					log.error("2. Something went wrong while disposing the solver", e);
+				}
 			}
 		}
 		return hasSolutions;
