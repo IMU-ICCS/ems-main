@@ -1,4 +1,13 @@
-package eu.melodic.upperware.dlm.controllers;
+/*
+ * Copyright (C) 2017 Simula.no
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.upperware.dlms.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +15,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-//@Service
+import eu.melodic.upperware.dlms.store.DataCostHistory;
+import eu.melodic.upperware.dlms.store.DataCostRepository;
+
+@Service
 public class DataCostService {
 
 	@Autowired

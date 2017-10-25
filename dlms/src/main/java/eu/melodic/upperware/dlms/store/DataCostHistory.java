@@ -1,18 +1,25 @@
-package eu.melodic.upperware.dlm.controllers;
+/*
+ * Copyright (C) 2017 Simula.no
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
 
-import java.util.Date;
+package eu.melodic.upperware.dlms.store;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-//@Entity
+@Entity
 public class DataCostHistory {
 
 	@Id
 	private String id;
 	private String dataSrcName;
 	private int dlmCostValue;
-	//private Date registered;
+	// private Date registered;
 
 	public DataCostHistory() {
 
@@ -23,7 +30,7 @@ public class DataCostHistory {
 		this.id = id;
 		this.dataSrcName = dataSrcName;
 		this.dlmCostValue = dlmCostValue;
-	//	this.registered = new Date();
+		// this.registered = new Date();
 	}
 
 	public String getId() {
@@ -50,14 +57,11 @@ public class DataCostHistory {
 		this.dlmCostValue = dlmCostValue;
 	}
 
-//	public Date getRegistered() {
-//		return registered;
-//	}
-//
-//	public void setRegistered(Date registered) {
-//		this.registered = registered;
-//	}
-
-	
-
+	// public Date getRegistered() {
+	// return registered;
+	// }
+	//
+	// public void setRegistered(Date registered) {
+	// this.registered = registered;
+	// }
 }
