@@ -36,8 +36,7 @@ public class CloudMLHelper {
 	private static int _newDMIdx = -1;
 
 	private static int getGlobalCount() {
-		return 1;
-//		return _globalCount++;
+		return _globalCount++;
 	}
 
 	public static void resetGlobalCount() {
@@ -53,8 +52,7 @@ public class CloudMLHelper {
 	}
 
 	private static String getGlobalSuffix() {
-		return "";
-//		return getGlobalDMIdx() + "_" + getGlobalCount();
+		return getGlobalDMIdx() + "_" + getGlobalCount();
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
