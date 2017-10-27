@@ -99,7 +99,7 @@ public class Coordinator {
       if (currentModel == null) {
         plan = planGenerator.buildConfigurationPlan(targetModel);
       } else {
-        plan = planGenerator.buildReconfigurationPlan(targetModel, currentModel);
+        plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
         if (!planValidator.validate(plan)) {
           notifyPlanRejected(resourceName, notificationUri, uuid);
           return;
