@@ -35,10 +35,7 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.String.format;
 
@@ -124,7 +121,6 @@ public class CdoServerClientApi implements CdoServerApi {
     }
     catch(Exception e){
       log.error("Something went wrong while exporting model: " + model + " at path: " + filePath,e);
-      //e.printStackTrace();
     }
     return false;
   }
@@ -137,8 +133,10 @@ public class CdoServerClientApi implements CdoServerApi {
     Collection<ExecutionModel> execModels = camelModel.getExecutionModels();
     Application app = camelModel.getApplications().get(0);
 
-    RequirementGroup result = getRequirementGroupForApp(camelModel.getRequirementModels(), app);
-    if (result != null) {
+    Optional<RequirementGroup> requirementGroupOpt = getRequirementGroup(camelModel.getRequirementModels());
+    RequirementGroup requirementGroup = requirementGroupOpt
+            .orElseThrow(() -> new IllegalArgumentException(format("Could not find RequirementGroup for %s application", app.getName())));
+
       ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
       newExecModel.setName(execContextName);
 
@@ -146,38 +144,20 @@ public class CdoServerClientApi implements CdoServerApi {
       execContext.setName(execContextName);
       execContext.setApplication(app);
       execContext.setDeploymentModel(deploymentModel);
-      execContext.setRequirementGroup(result);
+      execContext.setRequirementGroup(requirementGroup);
 
       newExecModel.getExecutionContexts().add(execContext);
 
       execModels.add(newExecModel);
-    } else {
-      throw new IllegalArgumentException(format("Could not find RequirementGroup for %s application", app.getName()));
-    }
   }
 
-  private RequirementGroup getRequirementGroupForApp(EList<RequirementModel> requirementModels, Application app) {
-    RequirementGroup result = null;
-    for (RequirementModel requirementModel : requirementModels) {
-      for (Requirement requirement : requirementModel.getRequirements()) {
-        if (requirement instanceof RequirementGroup) {
-          RequirementGroup requirementGroup = (RequirementGroup) requirement;
-          for (Application application : requirementGroup.getApplication()) {
-            if (application.getName() != null && application.getName().equals(app.getName())) {
-              result = requirementGroup;
-              break;
-            }
-          }
-        }
-        if (result != null) {
-          break;
-        }
-      }
-      if (result != null) {
-        break;
-      }
-    }
-    return result;
+  private Optional<RequirementGroup> getRequirementGroup(EList<RequirementModel> requirementModels) {
+    return requirementModels.stream()
+            .map(RequirementModel::getRequirements)
+            .flatMap(Collection::stream)
+            .filter(requirement -> requirement instanceof RequirementGroup)
+            .map(requirement -> (RequirementGroup) requirement)
+            .findFirst();
   }
 
   @Override
