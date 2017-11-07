@@ -6,24 +6,20 @@ package eu.paasage.upperware.solvertodeployment.utils;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import eu.paasage.camel.Model;
-import eu.paasage.camel.type.impl.IntegerValueImpl;
+import eu.paasage.camel.deployment.*;
+import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
 
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.Communication;
-import eu.paasage.camel.deployment.CommunicationInstance;
-import eu.paasage.camel.deployment.CommunicationType;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.HostingInstance;
-import eu.paasage.camel.deployment.InternalComponent;
-import eu.paasage.camel.deployment.InternalComponentInstance;
-import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.application.PaaSageVariable;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.application.Provider;
@@ -75,7 +71,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
  </pre>
 	 */
 	public static DataHolder computeDatasToRegister(PaasageConfiguration paasageConfiguration,
-			DeploymentModel deploymentModel, ConstraintProblem constraintProblem, int solutionId ) throws S2DException {
+			DeploymentModel deploymentModel, ConstraintProblem constraintProblem, int solutionId, String camelModelID) throws S2DException {
 
 		// Analyzing the model for LOCAL group, ie component connected by LOCAL communication
 		// component i => i
@@ -179,8 +175,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 							c2vminstances.put(iCI, vmI);
 							vm2cinstances.computeIfAbsent(vmI, k -> new HashSet<>()).add(iCI);
 						}
-					}
-					catch(S2DException e) {
+					} catch(S2DException e) {
 						SolverToDeployementHelper.printVar(paaSageVariable);
 						throw e;
 					}
@@ -194,7 +189,9 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication,deploymentModel,result.getComponentInstancesToRegister());
 				result.getCommunicationInstances().addAll(communicationInstances);
 			}
-			log.debug("3. Done.");
+			log.debug("3. Changing names.");
+			changeNames(result, camelModelID);
+			log.debug("4. Done.");
 			return result;
 		} catch(Exception e) {
 			log.error("Error details : ", e);
@@ -206,7 +203,55 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 			}
 		}
 		return null;
-	}	
+	}
+
+	private static void changeNames(DataHolder result, String camelModelID) {
+		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+		try {
+			DeploymentModel deployedModel = CDODatabaseProxy2.getLastDeployedModel(camelModelID, transaction);
+			if (deployedModel != null) {
+				//1. VMInstances
+				changeNames(result.getVmInstancesToRegister(), deployedModel.getVmInstances(), VMKey::getInstance);
+
+				//2. Component
+				changeNames(result.getComponentInstancesToRegister(), deployedModel.getInternalComponentInstances(), VMKey::getInstance);
+			}
+		} finally {
+			if (transaction != null && !transaction.isClosed()) {
+				CDODatabaseProxy.getInstance().getCdoClient().closeTransaction(transaction);
+			}
+		}
+	}
+
+	private static <T extends DeploymentElement> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, VMKey> function) {
+		Map<VMKey, List<T>> newVmTemporaryMap = createInstanceMap(newInstances, function);
+		Map<VMKey, List<T>> deployedInstances = createInstanceMap(oldInstances, function);
+		for (VMKey vmKey : deployedInstances.keySet()) {
+            List<T> oldVmInstances = deployedInstances.get(vmKey);
+            List<T> newVmInstances = newVmTemporaryMap.getOrDefault(vmKey, Collections.emptyList());
+
+            for (int i=0; i< oldVmInstances.size(); i++) {
+                if (newVmInstances.size()>i) {
+                    T newVmInstance = newVmInstances.get(i);
+                    newVmInstance.setName(oldVmInstances.get(i).getName());
+                }
+            }
+        }
+	}
+
+	private static <T extends DeploymentElement> Map<VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, VMKey> function) {
+		Map<VMKey, List<T>> result = new HashMap<>();
+
+		for (T instance : vmInstancesToRegister) {
+			VMKey vmKey = function.apply(instance);
+
+			if (!result.containsKey(vmKey)){
+			    result.put(vmKey, new ArrayList<>());
+            }
+            result.get(vmKey).add(instance);
+		}
+		return result;
+	}
 
 	public static void copyCloudProviders(CamelModel cm, String camelModelID, String appId, PaasageConfiguration paasageConfiguration,
 			ConstraintProblem constraintProblem, int solutionId) throws S2DException, CommitException {
@@ -256,6 +301,56 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 			CDODatabaseProxy2.registerCommunicationInstance(communicationInstance,camelModelID, dataholder.getDmId());
 		}
 	}
+
+	@Getter
+	@AllArgsConstructor
+	static class VMKey {
+
+		private String name;
+		private String type;
+
+		private static VMKey getInstance(VMInstance vmInstance) {
+			String vmName = removeSuffixFromInstance(vmInstance.getName());
+			String vmType = ((eu.paasage.camel.type.impl.EnumerateValueImpl)vmInstance.getVmTypeValue()).getName();
+			return new VMKey(vmName, vmType);
+		}
+
+		private static VMKey getInstance(InternalComponentInstance internalComponentInstance) {
+			String vmName = removeSuffixFromInstance(internalComponentInstance.getName());
+			return new VMKey(vmName, "");
+		}
+
+		private static String removeSuffixFromInstance(String vmName){
+			return removeSuffix(removeSuffix(vmName));
+		}
+
+		private static String removeSuffix(String vmName){
+			if (vmName != null) {
+				int i = vmName.lastIndexOf("_");
+				return vmName.substring(0, i);
+			}
+			return vmName;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			VMKey vmKey = (VMKey) o;
+
+			if (name != null ? !name.equals(vmKey.name) : vmKey.name != null) return false;
+			return type != null ? type.equals(vmKey.type) : vmKey.type == null;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = name != null ? name.hashCode() : 0;
+			result = 31 * result + (type != null ? type.hashCode() : 0);
+			return result;
+		}
+	}
+
 
 }
 
