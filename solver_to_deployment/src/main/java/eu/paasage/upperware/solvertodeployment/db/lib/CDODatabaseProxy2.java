@@ -6,8 +6,11 @@ package eu.paasage.upperware.solvertodeployment.db.lib;
 
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.execution.ExecutionContext;
+import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
@@ -177,6 +180,22 @@ public class CDODatabaseProxy2 {
 			}
 		}
 		return dmId;
+	}
+
+	public static DeploymentModel getLastDeployedModel(String camelModelID, CDOTransaction transaction){
+		CamelModel camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+		ExecutionModel lastExecutionModel = getLastElement(camelModel.getExecutionModels());
+		if (lastExecutionModel != null) {
+			ExecutionContext lastExecutionContext = getLastElement(lastExecutionModel.getExecutionContexts());
+			if (lastExecutionContext != null) {
+				return lastExecutionContext.getDeploymentModel();
+			}
+		}
+		return null;
+	}
+
+	private static <T extends EObject> T getLastElement(List<T> collection) {
+		return CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
