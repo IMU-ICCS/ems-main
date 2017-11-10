@@ -10,15 +10,19 @@
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
 import com.google.common.collect.Lists;
+import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.alg.DirectedNeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -28,11 +32,15 @@ import java.util.function.Predicate;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<ComparableModel> {
+
+  private ToLogGraphLogger toLogGraphLogger;
 
   @Override
   public SimpleDirectedGraph<Task, DefaultEdge> generateConfigGraph(ComparableModel model) {
@@ -123,6 +131,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = genAcInstMonitorReconfigTasks(
       graph, acInstTasks, oldModel.getApplicationComponentInstanceMonitors(),
       newModel.getApplicationComponentInstanceMonitors());
+
+    toLogGraphLogger.logGraph(graph);
 
     setMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
 
@@ -474,6 +484,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
           Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks) {
 
+    toLogGraphLogger.logCount(graph);
+
     DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);
     TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(graph);
 
@@ -487,6 +499,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
       setMonitorsAfterTask(graph, vmInstMonitorTasks, acInstMonitorTasks, task, neighbors.successorsOf(task));
       setDeleteTaskAfterMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks, task, neighbors.predecessorsOf(task));
 
+      log.info("Current task {}", task.toString());
+      toLogGraphLogger.logCount(graph);
+      toLogGraphLogger.logCycles(graph);
+
+      if (new CycleDetector<>(graph).detectCycles()){
+        throw new IllegalArgumentException("Graph contains cycles!");
+      }
     }
   }
 
@@ -496,22 +515,31 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     if (CollectionUtils.isEmpty(successors)) {
       Type monitorType = DELETE.equals(task.getType()) ? DELETE : CREATE;
 
-      vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> monitorType.equals(vmInstMonitorTask.getType()))
-        .forEach(vmInstMonitorTask -> setDependencies(graph, CREATE, task, vmInstMonitorTask));
-      acInstMonitorTasks.stream().filter(acInstMonitorTask -> monitorType.equals(acInstMonitorTask.getType()))
-        .forEach(acInstMonitorTask -> setDependencies(graph, CREATE, task, acInstMonitorTask));
+      setMonitorsAfterTask(vmInstMonitorTasks, task, monitorType, graph);
+      setMonitorsAfterTask(acInstMonitorTasks, task, monitorType, graph);
     }
 
+  }
+
+  private <T extends ConfigurationTask> void setMonitorsAfterTask(Collection<T> tasks, Task task, Type monitorType, MelodicGraph<Task, DefaultEdge> graph){
+    tasks.stream()
+            .filter(t -> monitorType.equals(t.getType()))
+            .forEach(t -> setDependencies(graph, CREATE, task, t));
   }
 
   private void setDeleteTaskAfterMonitors(MelodicGraph<Task, DefaultEdge> graph, Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
           Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks, Task task, Set<Task> predecessors) {
 
     if (DELETE.equals(task.getType()) && CollectionUtils.isEmpty(predecessors)) {
-      vmInstMonitorTasks.stream().filter(vmInstMonitorTask -> CREATE.equals(vmInstMonitorTask.getType()))
-        .forEach(vmInstMonitorTask -> setDependencies(graph, CREATE, vmInstMonitorTask, task));
-      acInstMonitorTasks.stream().filter(acInstMonitorTask -> CREATE.equals(acInstMonitorTask.getType()))
-        .forEach(acInstMonitorTask -> setDependencies(graph, CREATE, acInstMonitorTask, task));
+      setDeleteTaskAfterMonitors(vmInstMonitorTasks, task, graph);
+      setDeleteTaskAfterMonitors(acInstMonitorTasks, task, graph);
     }
   }
+
+  private <T extends ConfigurationTask> void setDeleteTaskAfterMonitors(Collection<T> tasks, Task task, MelodicGraph<Task, DefaultEdge> graph){
+    tasks.stream()
+            .filter(t -> CREATE.equals(t.getType()))
+            .forEach(t -> setDependencies(graph, CREATE, t, task));
+  }
+
 }
