@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.adapter.plangenerator
 
+import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger
 import eu.melodic.upperware.adapter.plangenerator.graph.DefaultGraphGenerator
 import eu.melodic.upperware.adapter.plangenerator.model.*
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task
@@ -83,7 +84,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
     tasks = initMap()
     oldTasks = initMap()
     dependencies = createDependencies()
-    generator = new DefaultGraphGenerator()
+    generator = new DefaultGraphGenerator(new ToLogGraphLogger())
   }
 
   def createModel() {
