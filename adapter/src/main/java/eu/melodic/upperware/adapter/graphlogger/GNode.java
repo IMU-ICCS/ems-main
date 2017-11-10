@@ -1,4 +1,4 @@
-package eu.melodic.upperware.adapter;
+package eu.melodic.upperware.adapter.graphlogger;
 
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import lombok.Getter;
