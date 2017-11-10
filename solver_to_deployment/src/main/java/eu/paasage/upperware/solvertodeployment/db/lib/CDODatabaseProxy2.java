@@ -154,7 +154,7 @@ public class CDODatabaseProxy2 {
 		DeploymentModel dm = deploymentModels.get(srcId);
 		DeploymentModel dmCopy = EcoreUtil.copy(dm);
 
-		dmCopy.getVms().forEach(vm -> vm.setName(vm.getName() + "_" + CloudMLHelper.getGlobalDMIdx()));
+//		dmCopy.getVms().forEach(vm -> vm.setName(vm.getName() + "_" + CloudMLHelper.getGlobalDMIdx()));
 
 		int dmId;
 		if (overwriteDM) {
