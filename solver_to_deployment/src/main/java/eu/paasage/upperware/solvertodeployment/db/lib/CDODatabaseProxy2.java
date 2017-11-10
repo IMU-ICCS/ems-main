@@ -8,6 +8,7 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionModel;
+import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -152,7 +153,9 @@ public class CDODatabaseProxy2 {
 		EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
 		DeploymentModel dm = deploymentModels.get(srcId);
 		DeploymentModel dmCopy = EcoreUtil.copy(dm);
-		
+
+		dmCopy.getVms().forEach(vm -> vm.setName(vm.getName() + "_" + CloudMLHelper.getGlobalDMIdx()));
+
 		int dmId;
 		if (overwriteDM) {
 			// Checking that dmId exists

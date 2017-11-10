@@ -47,7 +47,7 @@ public class CloudMLHelper {
 		_newDMIdx = idx;
 	}
 
-	private static int getGlobalDMIdx() {
+	public static int getGlobalDMIdx() {
 		return _newDMIdx;
 	}
 
