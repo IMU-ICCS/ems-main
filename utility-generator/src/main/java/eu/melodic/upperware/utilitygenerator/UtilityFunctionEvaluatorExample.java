@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator{
 
-  private final double alpha = 7;
+  private static final double ALPHA = 7;
   private final double beta;
   private final double maxResponseTime;
   private final double nomResponseTime;
@@ -41,9 +41,9 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     actUtilityCost = 1;
 
 
-    this.beta = alpha * (this.maxResponseTime / this.nomResponseTime -1);
+    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
 
-    responseUtilityFunction = new BetaDistribution(alpha, beta);
+    responseUtilityFunction = new BetaDistribution(ALPHA, beta);
 
   }
 
@@ -66,11 +66,11 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     double result = responseUtilityFunction.density(x);
     //log.info("evaluateResponseUtilityFunction: result = " + result);
 
-    double max = responseUtilityFunction.density((alpha-1)/(alpha+beta-2));
+    double max = responseUtilityFunction.density((ALPHA-1)/(ALPHA+beta-2));
     double normalizedResult = normalize(0,max,result);
 
 
-    log.info("evaluateResponseUtilityFunction: normalized result = " + normalizedResult);
+    log.info("evaluateResponseUtilityFunction: normalized result = {}", normalizedResult);
     return normalizedResult;
   }
 
@@ -80,7 +80,7 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     double newCost = calculateCost(newConfiguration);
     double result = Math.min(1, actUtilityCost * oldCost / newCost);
 
-    log.info("evaluateCostUtilityFunction: result = " + result);
+    log.info("evaluateCostUtilityFunction: result = {}",result);
     return result;
 
   }
@@ -99,7 +99,7 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
 
     double nextAvgResponseTime = (countVirtualMachines(actualConfiguration) * avgResponseTime)
       / countVirtualMachines(newConfig);
-    log.info("estimate Time: " + nextAvgResponseTime);
+    log.info("estimate Time: {}", nextAvgResponseTime);
     return nextAvgResponseTime;
 
   }
