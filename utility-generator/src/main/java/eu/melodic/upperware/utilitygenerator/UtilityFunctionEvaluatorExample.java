@@ -28,7 +28,7 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
   private double actUtilityCost;
 
 
-  public UtilityFunctionEvaluatorExample(Collection<VirtualMachine> actualConfiguration,
+  public UtilityFunctionEvaluatorExample(Collection<VirtualMachine> actConfiguration,
     Map<MetricType, Metric> metrics){
 
     this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
@@ -37,7 +37,7 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
 
 
-    this.actualConfiguration = actualConfiguration;
+    this.actualConfiguration = actConfiguration;
     actUtilityCost = 1;
 
 
