@@ -2,4 +2,6 @@ FROM java:8
 VOLUME /tmp
 ADD adapter.jar adapter.jar
 RUN bash -c 'touch /app.jar'
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Duser.timezone=Europe/Warsaw", "-jar", "/adapter.jar"]
+RUN bash -c 'apt-get update'
+RUN bash -c 'apt-get install -y netcat'
+ENTRYPOINT ["/config/wait-for-cdo.sh", "java", "-Djava.security.egd=file:/dev/./urandom", "-Duser.timezone=Europe/Warsaw", "-jar", "/adapter.jar"]
