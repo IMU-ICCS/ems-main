@@ -85,7 +85,7 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
     checkNotNull(imageId);
 
     if (context.getVirtualMachine(cloudId, locationId, hardwareId, imageId).isPresent()) {
-      log.warn("Virtual Machine with params (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) already exists " +
+      log.warn("Virtual Machine with params (cloudId={}, locationId={}, hardwareId={}, imageId={}) already exists " +
         "in Colosseum - skipping execution of the task", cloudId, locationId, hardwareId, imageId);
       return;
     }

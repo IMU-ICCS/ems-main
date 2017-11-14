@@ -32,7 +32,6 @@ import java.util.function.Predicate;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -118,12 +117,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstReconfigTasks(
       graph, acTasks, vmInstTasks, oldModel.getApplicationComponentInstances(), newModel.getApplicationComponentInstances());
 
-    Collection<PortProvidedTask> portProvTasks = genPortProvReconfigTasks(
-      graph, acTasks, oldModel.getPortsProvided(), newModel.getPortsProvided());
-    Collection<PortRequiredTask> portReqTasks = genPortReqReconfigTasks(
-      graph, acTasks, oldModel.getPortsRequired(), newModel.getPortsRequired());
-    Collection<CommunicationTask> commTasks = genCommReconfigTasks(
-      graph, portProvTasks, portReqTasks, oldModel.getCommunications(), newModel.getCommunications());
+    Collection<PortProvidedTask> portProvTasks = genPortProvReconfigTasks(graph, acTasks, oldModel.getPortsProvided(), newModel.getPortsProvided());
+    Collection<PortRequiredTask> portReqTasks = genPortReqReconfigTasks(graph, acTasks, oldModel.getPortsRequired(), newModel.getPortsRequired());
+
+    Collection<CommunicationTask> commTasks = genCommReconfigTasks(graph, portProvTasks, portReqTasks, oldModel.getCommunications(), newModel.getCommunications());
 
     Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = genVmInstMonitorReconfigTasks(
       graph, vmInstTasks, oldModel.getVirtualMachineInstanceMonitors(), newModel.getVirtualMachineInstanceMonitors());
@@ -378,10 +375,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<PortProvided> newPortsProv) {
     Collection<PortProvidedTask> portProvTasks = Lists.newArrayList();
 
-    portProvTasks.addAll(genPortProvTasks(graph, CREATE, acTasks,
-      newPortsProv.stream().filter(newPortProv -> !oldPortsProv.contains(newPortProv)).collect(toList())));
-    portProvTasks.addAll(genPortProvTasks(graph, DELETE, acTasks,
-      oldPortsProv.stream().filter(oldPortProv -> !newPortsProv.contains(oldPortProv)).collect(toList())));
+    portProvTasks.addAll(genPortProvTasks(graph, CREATE, acTasks, newPortsProv.stream().filter(newPortProv -> !oldPortsProv.contains(newPortProv)).collect(toList())));
+    portProvTasks.addAll(genPortProvTasks(graph, DELETE, acTasks, oldPortsProv.stream().filter(oldPortProv -> !newPortsProv.contains(oldPortProv)).collect(toList())));
 
     return portProvTasks;
   }
@@ -415,10 +410,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<Communication> oldComms, Collection<Communication> newComms) {
     Collection<CommunicationTask> commTasks = Lists.newArrayList();
 
-    commTasks.addAll(genCommTasks(graph, CREATE, portProvTasks, portReqTasks,
-      newComms.stream().filter(newComm -> !oldComms.contains(newComm)).collect(toList())));
-    commTasks.addAll(genCommTasks(graph, DELETE, portProvTasks, portReqTasks,
-      oldComms.stream().filter(oldComm -> !newComms.contains(oldComm)).collect(toList())));
+    commTasks.addAll(genCommTasks(graph, CREATE, portProvTasks, portReqTasks, newComms.stream().filter(newComm -> !oldComms.contains(newComm)).collect(toList())));
+    commTasks.addAll(genCommTasks(graph, DELETE, portProvTasks, portReqTasks, oldComms.stream().filter(oldComm -> !newComms.contains(oldComm)).collect(toList())));
 
     return commTasks;
   }

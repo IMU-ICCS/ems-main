@@ -195,8 +195,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
 
   protected Collection<PortProvidedTask> genPortProvTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
           Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> portsProv) {
-    Collection<PortProvidedTask> portProvTasks = portsProv.stream()
-      .map(portProv -> new PortProvidedTask(type, portProv)).collect(toList());
+    Collection<PortProvidedTask> portProvTasks = portsProv.stream().map(portProv -> new PortProvidedTask(type, portProv)).collect(toList());
 
     portProvTasks.forEach(portProvTask -> {
       addVertex(graph, portProvTask);
@@ -298,7 +297,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
                                       Collection<? extends Task> depTasks, Type type) {
     boolean wasSet = false;
     for (Task depTask : depTasks) {
-      if (depTask.getData().getName().equals(depName)) {
+      if (depTask.getData().getName().equals(depName) && depTask.getType().equals(task.getType())) {
         setDependencies(graph, type, depTask, task);
         wasSet = true;
       }

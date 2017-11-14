@@ -121,7 +121,7 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
     checkNotNull(vmInstId);
 
     if (context.getApplicationComponentInstance(acId, appInstId, vmInstId).isPresent()) {
-      log.warn("Application Component Instance with params (acId=%s, appInstId=%s, vmInstId=%s) already exists " +
+      log.warn("Application Component Instance with params (acId={}, appInstId={}, vmInstId={}) already exists " +
         "in Colosseum - skipping execution of the task", acId, appInstId, vmInstId);
       return;
     }
