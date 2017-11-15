@@ -190,7 +190,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				result.getCommunicationInstances().addAll(communicationInstances);
 			}
 			log.debug("3. Changing names.");
-//			changeNames(result, camelModelID);
+			changeNames(result, camelModelID);
 			log.debug("4. Done.");
 			return result;
 		} catch(Exception e) {
