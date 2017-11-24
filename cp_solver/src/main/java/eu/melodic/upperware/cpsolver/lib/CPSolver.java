@@ -96,8 +96,7 @@ public class CPSolver {
 	private boolean useExternalOptimizer = false;
 	private UtilityFunctionEvaluator utilityFunctionEvaluator;
 	private double maxUtility;
-	private IntVar[] bestSolution;
-	
+
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
@@ -115,10 +114,12 @@ public class CPSolver {
 		metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
 		metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
 
-		this.utilityFunctionEvaluator =
-			new UtilityFunctionEvaluatorExample(metrics, false, null);
+
 				//Lists.newArrayList(vm1_inst, vm2_inst), metrics);
 		readCPModel(cdoPath,pathName);
+
+		this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
+			//new UtilityFunctionEvaluatorExample(solver.retrieveIntVars(), solver.metrics, false, null);
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
@@ -292,34 +293,22 @@ public class CPSolver {
 		//if useExternalOptimizer is set - use Utility Generator
 		if(useExternalOptimizer){
 			log.info("Using Utility Generator for solution space:");
-			//Long l = solver.findAllSolutions();
-			//log.info("Number of solutions found: " +l);
+
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
-				//TODO: do the utility stuff
 
 				Integer i=1;
 				maxUtility = 0.0;
-				bestSolution = solver.retrieveIntVars();
+
 				while(solver.nextSolution()){
 					i++;
 					log.info("Checking utility of: #" +i +" solution.");
-					//TODO: do the utility
 					//calculateUtility();
 					calculateUtility2();
-
-				}
-
-				log.info("Best solution");
-				for (int j=0; j<bestSolution.length; j++){
-					IntVar var = bestSolution[j];
-					//log.info(var.getName() + " value = " + var.getValue());
-					log.info("s" + var);
-
 				}
 				log.info("max Utility = " + maxUtility);
 				hasSolutions = (solver.isFeasible() == ESat.TRUE);
-				saveSolution();
+				//saveSolution();
 			}
 		} else {
 			if (policy != null) {
@@ -1295,40 +1284,14 @@ public class CPSolver {
 		constNum = 0;
 	}
 
-	private double calculateUtility(){
-
-		Collection<VirtualMachine> newConfig = new ArrayList<>();
-		for (int j=0; j<3; j++){
-			IntVar var = solver.retrieveIntVars()[j];
-			log.info("Solution " + var);
-			newConfig.add(new VirtualMachine(var.getName(), 10.0+j, var.getValue()));
-		}
-
-		double utility = utilityFunctionEvaluator.evaluate(newConfig);
-		log.info("utility = " + utility);
-		if (utility > maxUtility){
-			maxUtility = utility;
-			bestSolution = solver.retrieveIntVars();
-			log.info("Find max utility: " + maxUtility);
-			Arrays.stream(bestSolution)
-				.forEach(var -> log.info("Solution with max utility: " + var));
-
-		}
-		return utility;
-
-	}
-
 	private double calculateUtility2(){
 
 		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
 		log.info("utility = " + utility);
 		if (utility > maxUtility){
 			maxUtility = utility;
-			bestSolution = solver.retrieveIntVars();
 			log.info("Find max utility: " + maxUtility);
-			Arrays.stream(bestSolution)
-				.forEach(var -> log.info("Solution with max utility: " + var));
-
+			saveSolution();
 		}
 		return utility;
 
