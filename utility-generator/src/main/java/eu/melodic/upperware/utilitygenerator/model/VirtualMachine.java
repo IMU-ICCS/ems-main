@@ -1,15 +1,17 @@
 package eu.melodic.upperware.utilitygenerator.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class VirtualMachine {
 
-  private final String id;
-  private final Double cost;
+  private String id;
+  private Double cost;
   @Setter
   private int count;
+
 }
