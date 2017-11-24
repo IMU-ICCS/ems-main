@@ -7,11 +7,12 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
+import com.google.common.collect.Lists;
+import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricType;
+import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -66,6 +67,8 @@ import solver.variables.VariableFactory;
 import util.ESat;
 import util.tools.ArrayUtils;
 
+import eu.melodic.upperware.utilitygenerator.*;
+
 @Slf4j
 public class CPSolver {
 
@@ -91,6 +94,9 @@ public class CPSolver {
 	private boolean cdoMode = false;
 	private long timestamp = 0;
 	private boolean useExternalOptimizer = false;
+	private UtilityFunctionEvaluator utilityFunctionEvaluator;
+	private double maxUtility;
+	private IntVar[] bestSolution;
 	
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
@@ -100,6 +106,18 @@ public class CPSolver {
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		this.useExternalOptimizer = useExternalOptimizer;
+		//FIXME
+//		VirtualMachine vm1_inst = new VirtualMachine("mBig", 13.0, 1);
+//		VirtualMachine vm2_inst = new VirtualMachine("mXXL", 10.0, 1);
+		Map<MetricType, Metric> metrics = new HashMap<>();
+		metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
+		metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
+		metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
+		metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
+
+		this.utilityFunctionEvaluator =
+			new UtilityFunctionEvaluatorExample(metrics, false, null);
+				//Lists.newArrayList(vm1_inst, vm2_inst), metrics);
 		readCPModel(cdoPath,pathName);
 	}
 	
@@ -279,13 +297,29 @@ public class CPSolver {
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
 				//TODO: do the utility stuff
+
 				Integer i=1;
+				maxUtility = 0.0;
+				bestSolution = solver.retrieveIntVars();
 				while(solver.nextSolution()){
 					i++;
 					log.info("Checking utility of: #" +i +" solution.");
 					//TODO: do the utility
+					//calculateUtility();
+					calculateUtility2();
 
 				}
+
+				log.info("Best solution");
+				for (int j=0; j<bestSolution.length; j++){
+					IntVar var = bestSolution[j];
+					//log.info(var.getName() + " value = " + var.getValue());
+					log.info("s" + var);
+
+				}
+				log.info("max Utility = " + maxUtility);
+				hasSolutions = (solver.isFeasible() == ESat.TRUE);
+				saveSolution();
 			}
 		} else {
 			if (policy != null) {
@@ -1154,6 +1188,7 @@ public class CPSolver {
 				else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
 					String id = var.getId();
 					RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+					log.info("RealVar: " + v);
 					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(id,v);
 				}
@@ -1260,5 +1295,45 @@ public class CPSolver {
 		constNum = 0;
 	}
 
+	private double calculateUtility(){
+
+		Collection<VirtualMachine> newConfig = new ArrayList<>();
+		for (int j=0; j<3; j++){
+			IntVar var = solver.retrieveIntVars()[j];
+			log.info("Solution " + var);
+			newConfig.add(new VirtualMachine(var.getName(), 10.0+j, var.getValue()));
+		}
+
+		double utility = utilityFunctionEvaluator.evaluate(newConfig);
+		log.info("utility = " + utility);
+		if (utility > maxUtility){
+			maxUtility = utility;
+			bestSolution = solver.retrieveIntVars();
+			log.info("Find max utility: " + maxUtility);
+			Arrays.stream(bestSolution)
+				.forEach(var -> log.info("Solution with max utility: " + var));
+
+		}
+		return utility;
+
+	}
+
+	private double calculateUtility2(){
+
+		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
+		log.info("utility = " + utility);
+		if (utility > maxUtility){
+			maxUtility = utility;
+			bestSolution = solver.retrieveIntVars();
+			log.info("Find max utility: " + maxUtility);
+			Arrays.stream(bestSolution)
+				.forEach(var -> log.info("Solution with max utility: " + var));
+
+		}
+		return utility;
+
+	}
+
 	
 }
+

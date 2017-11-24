@@ -20,14 +20,14 @@ class SimpleTest extends Specification{
   Map<MetricType, Metric> metrics
 
   def setup(){
-    vm1_1inst = new VirtualMachine("mBig", 3)
+    vm1_1inst = new VirtualMachine("mBig", 3, 1)
     vm1_1inst.setCount(1)
-    vm1_2inst = new VirtualMachine("mBig", 3)
+    vm1_2inst = new VirtualMachine("mBig", 3, 1)
     vm1_2inst.setCount(2)
-    vm1_3inst = new VirtualMachine("mBig", 3)
+    vm1_3inst = new VirtualMachine("mBig", 3, 1)
     vm1_3inst.setCount(3)
 
-    vm2 = new VirtualMachine("mXXL", 10)
+    vm2 = new VirtualMachine("mXXL", 10, 1)
     vm2.setCount(0)
     initialConfiguration = Lists.newArrayList(vm1_2inst, vm2)
 
