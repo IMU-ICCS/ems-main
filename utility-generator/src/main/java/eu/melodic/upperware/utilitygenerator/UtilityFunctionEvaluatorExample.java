@@ -53,6 +53,18 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     responseUtilityFunction = new BetaDistribution(ALPHA, beta);
   }
 
+  public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig){
+    this.isReconfig = isReconfig;
+    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
+    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
+    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
+    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
+    actUtilityCost = 1;
+    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
+    responseUtilityFunction = new BetaDistribution(ALPHA, beta);
+
+  }
+
 
 
 //  public UtilityFunctionEvaluatorExample(Collection<VirtualMachine> actConfiguration,
@@ -87,10 +99,26 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
 
     Collection<VirtualMachine> newConfig = new ArrayList<>();
 
-    for (int j=0; j<3; j++){
+    for (int j=0; j<newConfiguration.length; j++){
       IntVar var = newConfiguration[j];
-      log.info("Solution " + var);
-      newConfig.add(new VirtualMachine(var.getName(), 10.0+j, var.getValue()));
+
+
+      //FIXME - parsing variables and get costs
+      if (!(var.getName().startsWith("IntVar"))){
+        log.info("Solution " + var);
+        double cost = 10.0;
+        if (var.getName().contains("xlarge")) {
+          cost *= 4;
+        } else if (var.getName().contains("large")) {
+          cost *= 3;
+
+        }
+        else if (var.getName().contains("medium")){
+          cost *= 2;
+
+        }
+        newConfig.add(new VirtualMachine(var.getName(), cost, var.getValue()));
+      }
     }
     return evaluate(newConfig);
 
