@@ -323,4 +323,4 @@ fi
 log "info" "Starting $(mysqld --version)"
 #exec mysqld > /dev/null 2>&1
 log "info" "Starting $(mysqld --version) is done"
-java -Djava.security.egd=file:/dev/./urandom -jar ./server.jar
+java -Djava.security.egd=file:/dev/./urandom -Duser.timezone=Europe/Warsaw -jar ./server.jar
