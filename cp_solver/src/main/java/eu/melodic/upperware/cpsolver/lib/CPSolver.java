@@ -105,21 +105,16 @@ public class CPSolver {
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		this.useExternalOptimizer = useExternalOptimizer;
+
+		readCPModel(cdoPath,pathName);
+
 		//FIXME
-//		VirtualMachine vm1_inst = new VirtualMachine("mBig", 13.0, 1);
-//		VirtualMachine vm2_inst = new VirtualMachine("mXXL", 10.0, 1);
 		Map<MetricType, Metric> metrics = new HashMap<>();
 		metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
 		metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
 		metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
 		metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
-
-
-				//Lists.newArrayList(vm1_inst, vm2_inst), metrics);
-		readCPModel(cdoPath,pathName);
-
-		this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
-			//new UtilityFunctionEvaluatorExample(solver.retrieveIntVars(), solver.metrics, false, null);
+		this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false);
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
@@ -294,21 +289,21 @@ public class CPSolver {
 		if(useExternalOptimizer){
 			log.info("Using Utility Generator for solution space:");
 
+//			utilityFunctionEvaluator.setActualConfiguration(null);
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
 
 				Integer i=1;
 				maxUtility = 0.0;
 
+				calculateUtility();
 				while(solver.nextSolution()){
 					i++;
 					log.info("Checking utility of: #" +i +" solution.");
-					//calculateUtility();
-					calculateUtility2();
+					calculateUtility();
 				}
 				log.info("max Utility = " + maxUtility);
 				hasSolutions = (solver.isFeasible() == ESat.TRUE);
-				//saveSolution();
 			}
 		} else {
 			if (policy != null) {
@@ -1284,10 +1279,10 @@ public class CPSolver {
 		constNum = 0;
 	}
 
-	private double calculateUtility2(){
+	private double calculateUtility(){
 
 		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
-		log.info("utility = " + utility);
+		log.info("Utility = " + utility);
 		if (utility > maxUtility){
 			maxUtility = utility;
 			log.info("Find max utility: " + maxUtility);
