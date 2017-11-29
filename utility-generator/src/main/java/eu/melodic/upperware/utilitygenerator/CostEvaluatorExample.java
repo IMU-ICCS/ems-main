@@ -13,8 +13,8 @@ public class CostEvaluatorExample extends CostEvaluator{
 
 
   public CostEvaluatorExample(boolean isReconfig){
-
     this.isReconfig = isReconfig;
+
     actUtilityCost = 1;
   }
 
