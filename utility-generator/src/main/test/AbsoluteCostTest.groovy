@@ -1,4 +1,6 @@
 import com.google.common.collect.Lists
+import eu.melodic.upperware.utilitygenerator.CostEvaluator
+import eu.melodic.upperware.utilitygenerator.CostEvaluatorWithAbsoluteCost
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluator
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluatorExample
 import eu.melodic.upperware.utilitygenerator.model.Metric
@@ -7,7 +9,7 @@ import eu.melodic.upperware.utilitygenerator.model.VirtualMachine
 
 import spock.lang.Specification
 
-class SimpleTest extends Specification{
+class AbsoluteCostTest extends Specification{
 
   VirtualMachine vm1_1inst
   VirtualMachine vm1_2inst
@@ -18,6 +20,9 @@ class SimpleTest extends Specification{
   Collection<VirtualMachine> newConfigurationWithMoreMachines
   UtilityFunctionEvaluator evaluator
   Map<MetricType, Metric> metrics
+
+  int maxVMs
+  CostEvaluator costEvaluator
 
   def setup(){
     vm1_1inst = new VirtualMachine("mBig", 3, 1)
@@ -38,12 +43,15 @@ class SimpleTest extends Specification{
 
     newConfigurationWithLessMachines = Lists.newArrayList(vm1_1inst, vm2)
     newConfigurationWithMoreMachines = Lists.newArrayList(vm1_3inst, vm2)
+
+    maxVMs = 10
+    costEvaluator = new CostEvaluatorWithAbsoluteCost(maxVMs)
   }
 
   def "avg response time=3, more machines"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
 
 
@@ -58,7 +66,7 @@ class SimpleTest extends Specification{
   def "avg response time=3, less machines"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
     when:
     double result = evaluator.evaluate(newConfigurationWithLessMachines)
 
@@ -70,7 +78,7 @@ class SimpleTest extends Specification{
   def "avg response time=3, no changes"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(initialConfiguration)
@@ -83,7 +91,7 @@ class SimpleTest extends Specification{
   def "avg response time=25, more machines"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 25))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(newConfigurationWithMoreMachines)
@@ -96,7 +104,7 @@ class SimpleTest extends Specification{
   def "avg response time=25, less machines"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 25))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(newConfigurationWithLessMachines)
@@ -109,7 +117,7 @@ class SimpleTest extends Specification{
   def "avg response time=25, no changes"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 25))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(initialConfiguration)
@@ -122,7 +130,7 @@ class SimpleTest extends Specification{
   def "avg response time=28, more machines"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 28))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(newConfigurationWithMoreMachines)
@@ -135,7 +143,7 @@ class SimpleTest extends Specification{
   def "avg response time=28, less machines"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 28))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(newConfigurationWithLessMachines)
@@ -148,7 +156,7 @@ class SimpleTest extends Specification{
   def "avg response time=28, no changes"(){
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 28))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(initialConfiguration)
@@ -164,7 +172,7 @@ class SimpleTest extends Specification{
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 25))
     metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.05))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(newConfigurationWithMoreMachines)
@@ -180,7 +188,7 @@ class SimpleTest extends Specification{
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 25))
     metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.05))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(newConfigurationWithLessMachines)
@@ -196,7 +204,7 @@ class SimpleTest extends Specification{
     setup:
     metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 25))
     metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.05))
-    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration)
+    evaluator = new UtilityFunctionEvaluatorExample(metrics, true, initialConfiguration, costEvaluator)
 
     when:
     double result = evaluator.evaluate(initialConfiguration)
@@ -209,3 +217,4 @@ class SimpleTest extends Specification{
 
 
 }
+

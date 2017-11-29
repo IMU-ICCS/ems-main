@@ -10,5 +10,5 @@ public interface UtilityFunctionEvaluator {
   double evaluate(Collection<VirtualMachine> newConfiguration);
   double evaluate(IntVar[] newConfiguration);
 
-  void setActualConfiguration(Collection<VirtualMachine> configuration);
+  //void setActualConfiguration(Collection<VirtualMachine> configuration);
 }
