@@ -7,7 +7,7 @@ import eu.melodic.upperware.utilitygenerator.model.VirtualMachine
 
 import spock.lang.Specification
 
-class SimpleTest extends Specification{
+class SimpleTestFirstVersion extends Specification{
 
   VirtualMachine vm1_1inst
   VirtualMachine vm1_2inst

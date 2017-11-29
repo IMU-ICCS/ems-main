@@ -6,6 +6,7 @@ import java.util.Collection;
 
 public abstract class CostEvaluator {
 
+
   abstract double evaluateCostUtilityFunction(Collection<VirtualMachine> actualConfiguration,
     Collection<VirtualMachine> newConfiguration);
 
