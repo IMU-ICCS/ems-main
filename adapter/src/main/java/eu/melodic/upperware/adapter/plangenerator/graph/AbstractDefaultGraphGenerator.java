@@ -129,15 +129,17 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
   }
 
   protected Collection<VirtualMachineInstanceTask> genVmInstTasks(MelodicGraph<Task, DefaultEdge> graph, Type type,
-          Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> vmInsts) {
+          Collection<VirtualMachineTask> vmTasks, Collection<CommunicationTask> commTasks, Collection<VirtualMachineInstance> vmInsts) {
     Collection<VirtualMachineInstanceTask> vmInstTasks = vmInsts.stream()
-      .map(vmInst -> new VirtualMachineInstanceTask(type, vmInst)).collect(toList());
+            .map(vmInst -> new VirtualMachineInstanceTask(type, vmInst)).collect(toList());
 
     vmInstTasks.forEach(vmInstTask -> {
       addVertex(graph, vmInstTask);
 
       String vmName = vmInstTask.getData().getVmName();
       findAndSetDependencies(graph, vmInstTask, vmName, vmTasks, type);
+
+      commTasks.forEach(commTask -> setDependencies(graph, type, commTask, vmInstTask));
     });
 
     return vmInstTasks;

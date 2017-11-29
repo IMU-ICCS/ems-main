@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -63,8 +64,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     Collection<VirtualMachineTask> vmTasks = genVmConfigTasks(
       graph, cloudTasks, model.getVirtualMachines());
-    Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstConfigTasks(
-      graph, vmTasks, model.getVirtualMachineInstances());
 
     Collection<ApplicationComponentTask> acTasks = genAcConfigTasks(
       graph, appTask, lcTasks, vmTasks, model.getApplicationComponents());
@@ -75,6 +74,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
             graph, acTasks, model.getPortsRequired());
     Collection<CommunicationTask> commTasks = genCommConfigTasks(
             graph, portProvTasks, portReqTasks, model.getCommunications());
+
+    Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstConfigTasks(
+            graph, vmTasks, commTasks, model.getVirtualMachineInstances());
 
     Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstConfigTasks(
       graph, appInstTask, acTasks, vmInstTasks, commTasks, model.getApplicationComponentInstances());
@@ -310,8 +312,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
   }
 
   private Collection<VirtualMachineInstanceTask> genVmInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> vmInsts) {
-    return genVmInstTasks(graph, CREATE, vmTasks, vmInsts);
+          Collection<VirtualMachineTask> vmTasks, Collection<CommunicationTask> commTasks, Collection<VirtualMachineInstance> vmInsts) {
+    return genVmInstTasks(graph, CREATE, vmTasks, commTasks, vmInsts);
   }
 
   private Collection<VirtualMachineInstanceTask> genVmInstReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
@@ -319,9 +321,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<VirtualMachineInstance> newVmInsts) {
     Collection<VirtualMachineInstanceTask> vmInstTasks = Lists.newArrayList();
 
-    vmInstTasks.addAll(genVmInstTasks(graph, CREATE, vmTasks,
+    vmInstTasks.addAll(genVmInstTasks(graph, CREATE, vmTasks, Collections.emptyList(),
       newVmInsts.stream().filter(newVmInst -> !oldVmInsts.contains(newVmInst)).collect(toList())));
-    vmInstTasks.addAll(genVmInstTasks(graph, DELETE, vmTasks,
+    vmInstTasks.addAll(genVmInstTasks(graph, DELETE, vmTasks, Collections.emptyList(),
       oldVmInsts.stream().filter(oldVmInst -> !newVmInsts.contains(oldVmInst)).collect(toList())));
 
     return vmInstTasks;
