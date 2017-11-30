@@ -19,12 +19,14 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.Task
 import org.assertj.core.util.Lists
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.*
 import static eu.melodic.upperware.adapter.plangenerator.ReconfigGraphValidator.checkReconfigGraph
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE
 
+@Ignore
 class DefaultGraphGeneratorReconfigSpec extends Specification {
 
   POJOCreatorExample c
