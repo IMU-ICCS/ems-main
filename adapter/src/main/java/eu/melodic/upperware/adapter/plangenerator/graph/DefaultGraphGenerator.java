@@ -94,42 +94,28 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     log.info("Building reconfiguration graph from prepared models");
 
     MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, RECONFIG);
-
-    Collection<CloudApiTask> cloudApiTasks = genCloudApiReconfigTasks(
-      graph,oldModel.getCloudApis(), newModel.getCloudApis());
-    Collection<CloudTask> cloudTasks = genCloudReconfigTasks(
-      graph, cloudApiTasks, oldModel.getClouds(), newModel.getClouds());
-    Collection<CloudPropertyTask> cloudPropertyTasks = genCloudPropertyReconfigTasks(
-      graph, cloudTasks, oldModel.getCloudProperties(), newModel.getCloudProperties());
-    Collection<CloudCredentialTask> cloudCredentialTasks = genCloudCredentialReconfigTasks(
-      graph, cloudTasks, oldModel.getCloudCredentials(), newModel.getCloudCredentials());
-
+    Collection<CloudTask> cloudTasks = Collections.emptyList();
     ApplicationTask appTask = genReconfigAppTask(graph, oldModel.getApplication(), newModel.getApplication());
 
-    Collection<LifecycleComponentTask> lcTasks = genLcReconfigTasks(
-      graph, oldModel.getLifecycleComponents(), newModel.getLifecycleComponents());
-
     Collection<VirtualMachineTask> vmTasks = genVmReconfigTasks(
-      graph, cloudTasks, oldModel.getVirtualMachines(), newModel.getVirtualMachines());
+            graph, cloudTasks, oldModel.getVirtualMachines(), newModel.getVirtualMachines());
+
+    //TAK
     Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstReconfigTasks(
-      graph, vmTasks, oldModel.getVirtualMachineInstances(), newModel.getVirtualMachineInstances());
+            graph, vmTasks, oldModel.getVirtualMachineInstances(), newModel.getVirtualMachineInstances());
 
-    Collection<ApplicationComponentTask> acTasks = genAcReconfigTasks(
-      graph, appTask, lcTasks, vmTasks, oldModel.getApplicationComponents(), newModel.getApplicationComponents());
+
+    Collection<ApplicationComponentTask> acTasks = Collections.emptyList();
+
     Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstReconfigTasks(
-      graph, acTasks, vmInstTasks, oldModel.getApplicationComponentInstances(), newModel.getApplicationComponentInstances());
-
-    Collection<PortProvidedTask> portProvTasks = genPortProvReconfigTasks(graph, acTasks, oldModel.getPortsProvided(), newModel.getPortsProvided());
-    Collection<PortRequiredTask> portReqTasks = genPortReqReconfigTasks(graph, acTasks, oldModel.getPortsRequired(), newModel.getPortsRequired());
-
-    Collection<CommunicationTask> commTasks = genCommReconfigTasks(graph, portProvTasks, portReqTasks, oldModel.getCommunications(), newModel.getCommunications());
+            graph, acTasks, vmInstTasks, oldModel.getApplicationComponentInstances(), newModel.getApplicationComponentInstances());
 
     Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = genVmInstMonitorReconfigTasks(
-      graph, vmInstTasks, oldModel.getVirtualMachineInstanceMonitors(), newModel.getVirtualMachineInstanceMonitors());
+            graph, vmInstTasks, oldModel.getVirtualMachineInstanceMonitors(), newModel.getVirtualMachineInstanceMonitors());
 
     Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = genAcInstMonitorReconfigTasks(
-      graph, acInstTasks, oldModel.getApplicationComponentInstanceMonitors(),
-      newModel.getApplicationComponentInstanceMonitors());
+            graph, acInstTasks, oldModel.getApplicationComponentInstanceMonitors(),
+            newModel.getApplicationComponentInstanceMonitors());
 
     toLogGraphLogger.logGraph(graph);
 
@@ -145,59 +131,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return genCloudApiTasks(graph, CREATE, cloudApis);
   }
 
-  private Collection<CloudApiTask> genCloudApiReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudApi> oldCloudApis, Collection<CloudApi> newCloudApis) {
-    Collection<CloudApiTask> cloudApiTasks = Lists.newArrayList();
-
-    newCloudApis.stream()
-      .filter(newCloudApi -> !oldCloudApis.contains(newCloudApi))
-      .forEach(newCloudApi -> {
-        boolean isNew = true;
-        String newCloudApiName = newCloudApi.getName();
-
-        for (CloudApi oldCloudApi : oldCloudApis) {
-          if (newCloudApiName.equals(oldCloudApi.getName())) {
-            cloudApiTasks.addAll(genCloudApiTasks(graph, UPDATE, Lists.newArrayList(newCloudApi)));
-            isNew = false;
-            break;
-          }
-        }
-        if (isNew) {
-          cloudApiTasks.addAll(genCloudApiTasks(graph, CREATE, Lists.newArrayList(newCloudApi)));
-        }
-      });
-
-    return cloudApiTasks;
-  }
-
   private Collection<CloudTask> genCloudConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> clouds) {
     return genCloudTasks(graph, CREATE, cloudApiTasks, clouds);
-  }
-
-  private Collection<CloudTask> genCloudReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> oldClouds, Collection<Cloud> newClouds) {
-    Collection<CloudTask> cloudTasks = Lists.newArrayList();
-
-    newClouds.stream()
-      .filter(newCloud -> !oldClouds.contains(newCloud))
-      .forEach(newCloud -> {
-        boolean isNew = true;
-        String newCloudName = newCloud.getName();
-
-        for (Cloud oldCloud : oldClouds) {
-          if (newCloudName.equals(oldCloud.getName())) {
-            cloudTasks.addAll(genCloudTasks(graph, UPDATE, cloudApiTasks, Lists.newArrayList(newCloud)));
-            isNew = false;
-            break;
-          }
-        }
-        if (isNew) {
-          cloudTasks.addAll(genCloudTasks(graph, CREATE, cloudApiTasks, Lists.newArrayList(newCloud)));
-        }
-      });
-
-    return cloudTasks;
   }
 
   private Collection<CloudPropertyTask> genCloudPropertyConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
@@ -205,59 +141,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return genCloudPropertyTasks(graph, CREATE, cloudTasks, cloudProperties);
   }
 
-  private Collection<CloudPropertyTask> genCloudPropertyReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudTask> cloudTasks, Collection<CloudProperty> oldCloudProperties,
-          Collection<CloudProperty> newCloudProperties) {
-    Collection<CloudPropertyTask> cloudPropertyTasks = Lists.newArrayList();
-
-    newCloudProperties.stream()
-      .filter(newCloudProperty -> !oldCloudProperties.contains(newCloudProperty))
-      .forEach(newCloudProperty ->
-        cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, CREATE, cloudTasks,
-          Lists.newArrayList(newCloudProperty)))
-      );
-
-    oldCloudProperties.stream()
-      .filter(oldCloudProperty -> !newCloudProperties.contains(oldCloudProperty))
-      .forEach(oldCloudProperty ->
-        cloudPropertyTasks.addAll(genCloudPropertyTasks(graph, DELETE, cloudTasks,
-          Lists.newArrayList(oldCloudProperty)))
-      );
-
-    return cloudPropertyTasks;
-  }
-
   private Collection<CloudCredentialTask> genCloudCredentialConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<CloudTask> cloudTasks, Collection<CloudCredential> cloudCredentials) {
     return genCloudCredentialTasks(graph, CREATE, cloudTasks, cloudCredentials);
-  }
-
-  private Collection<CloudCredentialTask> genCloudCredentialReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudTask> cloudTasks, Collection<CloudCredential> oldCloudCredentials,
-          Collection<CloudCredential> newCloudCredentials) {
-    Collection<CloudCredentialTask> cloudCredentialTasks = Lists.newArrayList();
-
-    newCloudCredentials.stream()
-      .filter(newCloudCredential -> !oldCloudCredentials.contains(newCloudCredential))
-      .forEach(newCloudCredential -> {
-        boolean isNew = true;
-        String newCloudCredentialName = newCloudCredential.getName();
-
-        for (CloudCredential oldCloudCredential : oldCloudCredentials) {
-          if (newCloudCredentialName.equals(oldCloudCredential.getName())) {
-            cloudCredentialTasks.addAll(genCloudCredentialTasks(graph, UPDATE, cloudTasks,
-              Lists.newArrayList(newCloudCredential)));
-            isNew = false;
-            break;
-          }
-        }
-        if (isNew) {
-          cloudCredentialTasks.addAll(genCloudCredentialTasks(graph, CREATE, cloudTasks,
-            Lists.newArrayList(newCloudCredential)));
-        }
-      });
-
-    return cloudCredentialTasks;
   }
 
   private ApplicationTask genAppConfigTask(MelodicGraph<Task, DefaultEdge> graph, Application app) {
@@ -335,19 +221,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return genAcTasks(graph, CREATE, appTask, lcTasks, vmTasks, acs);
   }
 
-  private Collection<ApplicationComponentTask> genAcReconfigTasks(MelodicGraph<Task, DefaultEdge> graph, ApplicationTask appTask,
-          Collection<LifecycleComponentTask> lcTasks, Collection<VirtualMachineTask> vmTasks,
-          Collection<ApplicationComponent> oldAcs, Collection<ApplicationComponent> newAcs) {
-    Collection<ApplicationComponentTask> acTasks = Lists.newArrayList();
-
-    acTasks.addAll(genAcTasks(graph, CREATE, appTask, lcTasks, vmTasks,
-      newAcs.stream().filter(newAc -> !oldAcs.contains(newAc)).collect(toList())));
-    acTasks.addAll(genAcTasks(graph, DELETE, appTask, lcTasks, vmTasks,
-      oldAcs.stream().filter(oldAc -> !newAcs.contains(oldAc)).collect(toList())));
-
-    return acTasks;
-  }
-
   private Collection<ApplicationComponentInstanceTask> genAcInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
       ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
       Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<CommunicationTask> commTasks, Collection<ApplicationComponentInstance> acInsts) {
@@ -372,50 +245,15 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     return genPortProvTasks(graph, CREATE, acTasks, portsProv);
   }
 
-  private Collection<PortProvidedTask> genPortProvReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> oldPortsProv,
-          Collection<PortProvided> newPortsProv) {
-    Collection<PortProvidedTask> portProvTasks = Lists.newArrayList();
-
-    portProvTasks.addAll(genPortProvTasks(graph, CREATE, acTasks, newPortsProv.stream().filter(newPortProv -> !oldPortsProv.contains(newPortProv)).collect(toList())));
-    portProvTasks.addAll(genPortProvTasks(graph, DELETE, acTasks, oldPortsProv.stream().filter(oldPortProv -> !newPortsProv.contains(oldPortProv)).collect(toList())));
-
-    return portProvTasks;
-  }
-
   private Collection<PortRequiredTask> genPortReqConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> portsReq) {
     return genPortReqTasks(graph, CREATE, acTasks, portsReq);
-  }
-
-  private Collection<PortRequiredTask> genPortReqReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> oldPortsReq,
-          Collection<PortRequired> newPortsReq) {
-    Collection<PortRequiredTask> portReqTasks = Lists.newArrayList();
-
-    portReqTasks.addAll(genPortReqTasks(graph, CREATE, acTasks,
-      newPortsReq.stream().filter(newPortReq -> !oldPortsReq.contains(newPortReq)).collect(toList())));
-    portReqTasks.addAll(genPortReqTasks(graph, DELETE, acTasks,
-      oldPortsReq.stream().filter(oldPortReq -> !newPortsReq.contains(oldPortReq)).collect(toList())));
-
-    return portReqTasks;
   }
 
   private Collection<CommunicationTask> genCommConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
           Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
           Collection<Communication> comms) {
     return genCommTasks(graph, CREATE, portProvTasks, portReqTasks, comms);
-  }
-
-  private Collection<CommunicationTask> genCommReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
-          Collection<Communication> oldComms, Collection<Communication> newComms) {
-    Collection<CommunicationTask> commTasks = Lists.newArrayList();
-
-    commTasks.addAll(genCommTasks(graph, CREATE, portProvTasks, portReqTasks, newComms.stream().filter(newComm -> !oldComms.contains(newComm)).collect(toList())));
-    commTasks.addAll(genCommTasks(graph, DELETE, portProvTasks, portReqTasks, oldComms.stream().filter(oldComm -> !newComms.contains(oldComm)).collect(toList())));
-
-    return commTasks;
   }
 
   private Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
