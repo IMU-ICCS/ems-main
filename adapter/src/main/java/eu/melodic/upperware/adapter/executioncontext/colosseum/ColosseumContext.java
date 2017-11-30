@@ -248,6 +248,10 @@ public class ColosseumContext implements ContextOperations {
   }
 
   public Optional<ApplicationComponent> getApplicationComponent(String appName, Long lcId, Long vmId) {
+    return getApplicationComponent(appName, lcId);
+  }
+
+  public Optional<ApplicationComponent> getApplicationComponent(String appName, Long lcId) {
     Optional<Application> app = getApplication(appName);
     if (!app.isPresent()) {
       return Optional.empty();
@@ -255,12 +259,12 @@ public class ColosseumContext implements ContextOperations {
     Long appId = app.get().getId();
     synchronized (applicationComponents) {
       Supplier<Stream<ApplicationComponent>> $acs = () -> applicationComponents.stream().filter(
-        $ac -> appId.equals($ac.getApplication())
-          && lcId.equals($ac.getComponent()) && vmId.equals($ac.getVirtualMachineTemplate())
+              $ac -> appId.equals($ac.getApplication())
+                      && lcId.equals($ac.getComponent())
       );
       if ($acs.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are more than one application component " +
-          "with the same params (appName=%s, lcId=%s, vmId=%s)", appName, lcId, vmId));
+                "with the same params (appName=%s, lcId=%s)", appName, lcId));
       }
       return $acs.get().findAny();
     }
@@ -275,18 +279,22 @@ public class ColosseumContext implements ContextOperations {
   }
 
   public Optional<Instance> getApplicationComponentInstance(Long acId, Long appInstId, Long vmInstId) {
+    return getApplicationComponentInstance(appInstId, vmInstId);
+  }
+
+  public Optional<Instance> getApplicationComponentInstance(Long appInstId, Long vmInstId) {
     synchronized (applicationComponentInstances) {
       Supplier<Stream<Instance>> $acInsts = () -> applicationComponentInstances.stream().filter(
-        $acInst -> acId.equals($acInst.getApplicationComponent())
-          && appInstId.equals($acInst.getApplicationInstance()) && vmInstId.equals($acInst.getVirtualMachine())
+              $acInst ->  appInstId.equals($acInst.getApplicationInstance()) && vmInstId.equals($acInst.getVirtualMachine())
       );
       if ($acInsts.get().count() > 1) {
         throw new IllegalStateException(format("Ambiguous search result - there are more than one application " +
-          "component instance with the same params (acId=%s, appInstId=%s, vmInstId=%s)", acId, appInstId, vmInstId));
+                "component instance with the same params (appInstId=%s, vmInstId=%s)", appInstId, vmInstId));
       }
       return $acInsts.get().findAny();
     }
   }
+
 
   public void deleteApplicationComponentInstance(@NonNull Instance acInst) {
     applicationComponentInstances.remove(acInst);
