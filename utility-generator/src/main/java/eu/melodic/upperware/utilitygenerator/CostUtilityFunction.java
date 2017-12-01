@@ -19,12 +19,9 @@ public abstract class CostUtilityFunction {
     Collection<VirtualMachine> newConfiguration);
 
   double calculateCost(Collection<VirtualMachine> vms){
-    double cost = 0.0;
-    for (VirtualMachine vm: vms){
-      cost+= vm.getCount() * vm.getCost();
-    }
 
-    return cost;
+    return vms.stream().mapToDouble(vm -> vm.getCount() * vm.getCost()).sum();
+
   }
 
   double normalize(double min, double max, double x){

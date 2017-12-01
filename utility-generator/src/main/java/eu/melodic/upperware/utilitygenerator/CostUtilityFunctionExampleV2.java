@@ -21,7 +21,7 @@ public class CostUtilityFunctionExampleV2 extends CostUtilityFunction {
 
   public CostUtilityFunctionExampleV2(boolean isReconfig){
     this.isReconfig = isReconfig;
-    prevUtilityCost = 1.0;
+    this.prevUtilityCost = 1.0;
   }
 
 

@@ -17,7 +17,7 @@ import lombok.Setter;
 public class VirtualMachine {
 
   private String id;
-  private Double cost;
+  private double cost;
   @Setter
   private int count;
 

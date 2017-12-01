@@ -108,7 +108,7 @@ public class CPSolver {
 
 		readCPModel(cdoPath,pathName);
 
-		if (useExternalOptimizer){
+		if (useExternalOptimizer != null & useExternalOptimizer){
 			//FIXME metrics should be from Metric Collector
 			Map<MetricType, Metric> metrics = new HashMap<>();
 			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
@@ -300,7 +300,6 @@ public class CPSolver {
 
 				Integer i=1;
 				maxUtility = 0.0;
-
 				calculateUtility();
 				while(solver.nextSolution()){
 					i++;
