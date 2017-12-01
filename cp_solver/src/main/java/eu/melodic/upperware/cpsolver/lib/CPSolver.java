@@ -108,22 +108,18 @@ public class CPSolver {
 
 		readCPModel(cdoPath,pathName);
 
-		//FIXME
-		Map<MetricType, Metric> metrics = new HashMap<>();
-		metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
-		metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
-		metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
-		metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
+		if (useExternalOptimizer){
+			//FIXME metrics should be from Metric Collector
+			Map<MetricType, Metric> metrics = new HashMap<>();
+			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
+			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
+			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
+			metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
 
-		//simple cost function - first example
-		//this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false);
+			//simple cost function - first example
+			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
+		}
 
-
-		//absolute cost utility function
-		int maxNumerOfVirtualMachines = solver.retrieveIntVars().length * solver.retrieveIntVars()[0].getDomainSize();
-		log.info("maxNumberOfVirtualMachines = {}", maxNumerOfVirtualMachines);
-		this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(
-			metrics, false, null, new CostEvaluatorWithAbsoluteCost(maxNumerOfVirtualMachines));
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
@@ -1298,7 +1294,6 @@ public class CPSolver {
 			saveSolution();
 		}
 		return utility;
-
 	}
 
 	

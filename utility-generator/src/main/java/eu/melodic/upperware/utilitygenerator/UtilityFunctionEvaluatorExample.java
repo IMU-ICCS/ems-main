@@ -1,14 +1,19 @@
+/* * Copyright (C) 2017 7bulls.com
+*
+* This Source Code Form is subject to the terms of the
+* Mozilla Public License, v. 2.0. If a copy of the MPL
+* was not distributed with this file, You can obtain one at
+* http://mozilla.org/MPL/2.0/.
+*/
+
 package eu.melodic.upperware.utilitygenerator;
 
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
-
-import org.apache.commons.math3.distribution.*;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.distribution.BetaDistribution;
 import solver.variables.IntVar;
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,70 +23,39 @@ import java.util.Map;
 public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator{
 
   private static final double ALPHA = 7;
-  private final double beta;
-  private final double maxResponseTime;
-  private final double nomResponseTime;
-  private final double costWeight;
-  private final boolean isReconfig;
 
-  private BetaDistribution responseUtilityFunction;
+  private double beta;
+  private boolean isReconfig;
 
+  private double maxResponseTime;
+  private double nomResponseTime;
+  private double costWeight;
   private double avgResponseTime;
 
-  private Collection<VirtualMachine> actualConfiguration;
+  private Collection<VirtualMachine> actConfiguration;
 
-  private CostEvaluator costEvaluator;
+  private CostUtilityFunction costUtilityFunction;
+  private BetaDistribution responseUtilityFunction;
 
 
 
   public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig,
     Collection<VirtualMachine> actConfiguration){
 
-    this.isReconfig = isReconfig;
-    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
-    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
-    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
-    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
+    getAndAssignMetrics(metrics);
+    setFields(isReconfig, actConfiguration);
 
-    if (isReconfig){
-      this.actualConfiguration = actConfiguration;
-    }
+    this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
 
-    this.costEvaluator = new CostEvaluatorExample(isReconfig);
-
-    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
-
-    responseUtilityFunction = new BetaDistribution(ALPHA, beta);
-  }
-
-  public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig){
-    this.isReconfig = isReconfig;
-    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
-    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
-    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
-    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
-    this.costEvaluator = new CostEvaluatorExample(isReconfig);
-    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
-    responseUtilityFunction = new BetaDistribution(ALPHA, beta);
   }
 
   public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig,
-    Collection<VirtualMachine> actConfiguration, CostEvaluator costEvaluator){
-    this.isReconfig = isReconfig;
-    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
-    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
-    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
-    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
+    Collection<VirtualMachine> actConfiguration, CostUtilityFunction costUtilityFunction){
 
-    if (isReconfig){
-      this.actualConfiguration = actConfiguration;
-    }
+    getAndAssignMetrics(metrics);
+    setFields(isReconfig, actConfiguration);
 
-    this.costEvaluator = costEvaluator;
-
-    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
-
-    responseUtilityFunction = new BetaDistribution(ALPHA, beta);
+    this.costUtilityFunction = costUtilityFunction;
   }
 
 
@@ -89,11 +63,8 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
   public double evaluate(Collection<VirtualMachine> newConfiguration) {
 
     double nextAvgResponseTime = estimateNextAvgResponseTime(avgResponseTime, newConfiguration);
-    double result =  (1-costWeight) * evaluateResponseUtilityFunction(nextAvgResponseTime/maxResponseTime)
-      + costWeight * costEvaluator.evaluateCostUtilityFunction(actualConfiguration, newConfiguration);
-
-    log.info("result = {}", result);
-    return result;
+    return (1-costWeight) * evaluateResponseUtilityFunction(nextAvgResponseTime/maxResponseTime)
+      + costWeight * costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
   }
 
   @Override
@@ -101,20 +72,16 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
 
     Collection<VirtualMachine> newConfig = new ArrayList<>();
 
-    for (int j=0; j<newConfiguration.length; j++){
-      IntVar var = newConfiguration[j];
-
-      //FIXME - parsing variables and get costs
-      if (!(var.getName().startsWith("IntVar"))){
-        log.info("Solution " + var);
+    for (IntVar var : newConfiguration) {
+      //FIXME - parsing variables and get cost
+      if (!(var.getName().startsWith("IntVar"))) {
+        //log.info("Solution " + var);
         double cost = 10.0;
         if (var.getName().contains("xlarge")) {
           cost *= 4;
         } else if (var.getName().contains("large")) {
           cost *= 3;
-
-        }
-        else if (var.getName().contains("medium")){
+        } else if (var.getName().contains("medium")) {
           cost *= 2;
 
         }
@@ -141,19 +108,19 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     double normalizedResult = normalize(0,max,result);
 
 
-    //log.info("evaluateResponseUtilityFunction: normalized result = {}", normalizedResult);
+    log.info("evaluateResponseUtilityFunction: normalized result = {}", normalizedResult);
     return normalizedResult;
   }
 
   private double estimateNextAvgResponseTime(double avgResponseTime, Collection<VirtualMachine> newConfig){
 
     double nextAvgResponseTime;
-    //FIXME - for configuration? how to estimate?
+
     if (isReconfig){
-      nextAvgResponseTime = (countVirtualMachines(actualConfiguration) * avgResponseTime)
+      nextAvgResponseTime = (countVirtualMachines(actConfiguration) * avgResponseTime)
         / countVirtualMachines(newConfig);
     }
-    else {
+    else { //FIXME - for configuration - how to estimate?
       nextAvgResponseTime = avgResponseTime/countVirtualMachines(newConfig);
     }
 
@@ -175,6 +142,25 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
   }
 
 
+  /* utils for constructors */
+  private void getAndAssignMetrics(Map<MetricType, Metric> metrics){
+    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
+    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
+    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
+    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
+  }
+
+  private void setFields(boolean isReconfig, Collection<VirtualMachine> actualConfiguration){
+
+    this.isReconfig = isReconfig;
+
+    if (isReconfig){
+      this.actConfiguration = actualConfiguration;
+    }
+    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
+    this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
+
+  }
 
 
 }
