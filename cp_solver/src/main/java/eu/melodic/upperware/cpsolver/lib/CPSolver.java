@@ -104,11 +104,11 @@ public class CPSolver {
 		solver = new Solver();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
-		this.useExternalOptimizer = useExternalOptimizer;
+		this.useExternalOptimizer = useExternalOptimizer != null && useExternalOptimizer;
 
 		readCPModel(cdoPath,pathName);
 
-		if (useExternalOptimizer != null & useExternalOptimizer){
+		if (this.useExternalOptimizer){
 			//FIXME metrics should be from Metric Collector
 			Map<MetricType, Metric> metrics = new HashMap<>();
 			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
