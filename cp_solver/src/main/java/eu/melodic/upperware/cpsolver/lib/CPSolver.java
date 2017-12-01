@@ -7,11 +7,12 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
+import com.google.common.collect.Lists;
+import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricType;
+import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -66,6 +67,8 @@ import solver.variables.VariableFactory;
 import util.ESat;
 import util.tools.ArrayUtils;
 
+import eu.melodic.upperware.utilitygenerator.*;
+
 @Slf4j
 public class CPSolver {
 
@@ -91,7 +94,9 @@ public class CPSolver {
 	private boolean cdoMode = false;
 	private long timestamp = 0;
 	private boolean useExternalOptimizer = false;
-	
+	private UtilityFunctionEvaluator utilityFunctionEvaluator;
+	private double maxUtility;
+
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
@@ -99,8 +104,22 @@ public class CPSolver {
 		solver = new Solver();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
-		this.useExternalOptimizer = useExternalOptimizer;
+		this.useExternalOptimizer = useExternalOptimizer != null && useExternalOptimizer;
+
 		readCPModel(cdoPath,pathName);
+
+		if (this.useExternalOptimizer){
+			//FIXME metrics should be from Metric Collector
+			Map<MetricType, Metric> metrics = new HashMap<>();
+			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
+			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
+			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
+			metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
+
+			//simple cost function - first example
+			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
+		}
+
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
@@ -274,18 +293,21 @@ public class CPSolver {
 		//if useExternalOptimizer is set - use Utility Generator
 		if(useExternalOptimizer){
 			log.info("Using Utility Generator for solution space:");
-			//Long l = solver.findAllSolutions();
-			//log.info("Number of solutions found: " +l);
+
+//			utilityFunctionEvaluator.setActualConfiguration(null);
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
-				//TODO: do the utility stuff
+
 				Integer i=1;
+				maxUtility = 0.0;
+				calculateUtility();
 				while(solver.nextSolution()){
 					i++;
 					log.info("Checking utility of: #" +i +" solution.");
-					//TODO: do the utility
-
+					calculateUtility();
 				}
+				log.info("max Utility = " + maxUtility);
+				hasSolutions = (solver.isFeasible() == ESat.TRUE);
 			}
 		} else {
 			if (policy != null) {
@@ -1154,6 +1176,7 @@ public class CPSolver {
 				else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
 					String id = var.getId();
 					RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+					log.info("RealVar: " + v);
 					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(id,v);
 				}
@@ -1260,5 +1283,18 @@ public class CPSolver {
 		constNum = 0;
 	}
 
+	private double calculateUtility(){
+
+		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
+		log.info("Utility = " + utility);
+		if (utility > maxUtility){
+			maxUtility = utility;
+			log.info("Find max utility: " + maxUtility);
+			saveSolution();
+		}
+		return utility;
+	}
+
 	
 }
+

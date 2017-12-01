@@ -41,6 +41,12 @@
         </dependency>
 
         <dependency>
+            <groupId>choco</groupId>
+            <artifactId>choco-solver</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <version>${spock.version}</version>
@@ -61,6 +67,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>choco.repos</id>
+            <url>http://www.emn.fr/z-info/choco-repo/mvn/repository/</url>
+        </repository>
+        <repository>
+            <id>myrepo.local</id>
+            <name>myrepo</name>
+            <url>file://${basedir}/lib</url>
+        </repository>
+    </repositories>
 
     <parent>
         <groupId>org.ow2.paasage</groupId>
