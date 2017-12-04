@@ -16,6 +16,9 @@ import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -275,7 +278,9 @@ public class ColosseumContext implements ContextOperations {
   }
 
   public void addApplicationComponentInstance(@NonNull Instance acInst) {
+    printInstances("Before adding: ", applicationComponentInstances);
     applicationComponentInstances.add(acInst);
+    printInstances("After adding: ", applicationComponentInstances);
   }
 
   public Optional<Instance> getApplicationComponentInstance(Long acId, Long appInstId, Long vmInstId) {
@@ -295,9 +300,11 @@ public class ColosseumContext implements ContextOperations {
     }
   }
 
-
   public void deleteApplicationComponentInstance(@NonNull Instance acInst) {
-    applicationComponentInstances.remove(acInst);
+    printInstances("Before removing: ", applicationComponentInstances);
+//    applicationComponentInstances.remove(acInst);
+    applicationComponentInstances.removeIf(instance -> instance.getId().equals(acInst.getId()));
+    printInstances("After removing: ", applicationComponentInstances);
   }
 
   public void addPortProvided(@NonNull PortProvided pp) {
@@ -421,4 +428,27 @@ public class ColosseumContext implements ContextOperations {
   private <E> List<E> synchronizedList() {
     return Collections.synchronizedList(Lists.newLinkedList());
   }
+
+    private void printInstances(String text, List<Instance> instances) {
+        JSONArray array = new JSONArray();
+        String result = "";
+        try {
+            for (Instance instance : instances) {
+                array.put(createJsonRepresentation(instance));
+            }
+            result = array.toString(3);
+        } catch (Exception e) {
+            log.error("Problem with json", e);
+        }
+        log.info("{} Instances: {}\n{}", text, array.length(), result);
+    }
+
+    private JSONObject createJsonRepresentation(Instance instance) throws JSONException {
+        JSONObject result = new JSONObject();
+        result.put("id", instance.getId());
+        result.put("applicationComponent", instance.getApplicationComponent());
+        result.put("applicationInstance", instance.getApplicationInstance());
+        result.put("virtualMachine", instance.getVirtualMachine());
+        return result;
+    }
 }

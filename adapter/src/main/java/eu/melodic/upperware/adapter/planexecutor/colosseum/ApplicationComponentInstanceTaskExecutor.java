@@ -228,7 +228,7 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
     Long vmInstId = vmInstEntity.getId();
     checkNotNull(vmInstId);
 
-    Instance acInstEntity = context.getApplicationComponentInstance(acId, appInstId, vmInstId)
+    Instance acInstEntity = context.getApplicationComponentInstance(appInstId, vmInstId)
       .orElseThrow(() -> new IllegalStateException(format("Application component instance %s (acId=%s, appInstId=%s, vmInstId=%s) " +
         "does not exist in Colosseum - cannot be deleted", name, acId, appInstId, vmInstId)));
     api.deleteApplicationComponentInstance(acInstEntity);
