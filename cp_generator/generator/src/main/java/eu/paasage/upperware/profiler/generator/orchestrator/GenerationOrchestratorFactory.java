@@ -2,6 +2,7 @@ package eu.paasage.upperware.profiler.generator.orchestrator;
 
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
+import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
@@ -34,8 +35,10 @@ public class GenerationOrchestratorFactory extends AbstractFactoryBean<Generatio
         NotificationService notificationService = applicationContext.getBean(NotificationService.class);
         SloService sloService = applicationContext.getBean(SloService.class);
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
+        GeneratorProperties generatorProperties = applicationContext.getBean(GeneratorProperties.class);
+
 
         return new GenerationOrchestrator(database, paaSageConfigurationService,
-                constraintProblemService, notificationService, sloService, requestSynchronizer);
+                constraintProblemService, notificationService, sloService, requestSynchronizer, generatorProperties);
     }
 }

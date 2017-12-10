@@ -3,7 +3,6 @@ package eu.paasage.upperware.profiler.generator;
 import eu.melodic.models.interfaces.cpGenerator.ConstraintProblemRequestImpl;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestratorFactory;
-//import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ public class GeneratorController {
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
 
-        log.info("resourceName: " + resourceName + ", notificationUri: " + notificationUri + ", requestUuid: " + requestUuid);
+      log.info("resourceName: " + resourceName + ", notificationUri: " + notificationUri + ", requestUuid: " + requestUuid);
 
         GenerationOrchestrator generationOrchestrator = generationOrchestratorFactory.getObject();
         generationOrchestrator.generateCPModelAndSendNotification(resourceName, notificationUri, requestUuid);

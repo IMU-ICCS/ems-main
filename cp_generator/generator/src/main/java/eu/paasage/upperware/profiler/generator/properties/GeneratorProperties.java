@@ -24,12 +24,28 @@ public class GeneratorProperties {
     @NotNull
     private Esb esb;
 
+    @Valid
+    @NotNull
+    private Memcache memcache;
+
     @Getter
     @Setter
     public static class Esb {
 
         @NotBlank
         private String url;
+
+    }
+
+    @Getter
+    @Setter
+    public static class Memcache {
+
+        private String host;
+
+        private Integer port;
+
+        private Integer ttl;
 
     }
 }
