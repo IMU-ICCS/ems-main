@@ -51,13 +51,13 @@ import static eu.passage.upperware.commons.MelodicConstants.*;
  */
 @Slf4j
 @Service
-public class CDODatabaseProxy implements IDatabaseProxy {
+public class CCDODatabaseProxy implements IDatabaseProxy {
 
 	private CPCloner cloner;
 	private CDOClientExtended cdoClient;
 
 	@Autowired
-	public CDODatabaseProxy(CDOClientExtended cdoClient) {
+	public CCDODatabaseProxy(CDOClientExtended cdoClient) {
 		this.cdoClient = cdoClient;
 		cloner = new CPCloner();
 

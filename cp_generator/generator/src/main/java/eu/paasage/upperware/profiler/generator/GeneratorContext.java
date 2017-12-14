@@ -6,7 +6,7 @@ import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
 import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
-import eu.paasage.upperware.profiler.generator.db.CDODatabaseProxy;
+import eu.paasage.upperware.profiler.generator.db.CCDODatabaseProxy;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,9 +73,9 @@ public class GeneratorContext {
 
     @Bean
     @Scope("prototype")
-    public CDODatabaseProxy cDODatabaseProxy() {
+    public CCDODatabaseProxy cDODatabaseProxy() {
         CDOClientExtended cDOClientExtended = applicationContext.getBean(CDOClientExtended.class);
-        return new CDODatabaseProxy(cDOClientExtended);
+        return new CCDODatabaseProxy(cDOClientExtended);
     }
 
 }
