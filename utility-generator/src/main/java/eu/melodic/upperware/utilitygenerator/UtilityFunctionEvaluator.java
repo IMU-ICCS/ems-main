@@ -11,12 +11,36 @@ package eu.melodic.upperware.utilitygenerator;
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import solver.variables.IntVar;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
-public interface UtilityFunctionEvaluator {
+public abstract class UtilityFunctionEvaluator {
 
-  double evaluate(Collection<VirtualMachine> newConfiguration);
-  double evaluate(IntVar[] newConfiguration);
+  boolean isReconfig;
+  Collection<VirtualMachine> actConfiguration;
 
-  //void setActualConfiguration(Collection<VirtualMachine> configuration);
+
+  public abstract double evaluate(Collection<VirtualMachine> newConfiguration);
+  public double evaluate(IntVar[] newConfiguration){
+    Collection<VirtualMachine> newConfig = new ArrayList<>();
+
+    for (IntVar var : newConfiguration) {
+      //FIXME - parsing variables and get cost
+      if (!(var.getName().startsWith("IntVar"))) {
+        //log.info("Solution " + var);
+        double cost = 10.0;
+        if (var.getName().contains("xlarge")) {
+          cost *= 4;
+        } else if (var.getName().contains("large")) {
+          cost *= 3;
+        } else if (var.getName().contains("medium")) {
+          cost *= 2;
+
+        }
+        newConfig.add(new VirtualMachine(var.getName(), cost, var.getValue()));
+      }
+    }
+    return evaluate(newConfig);
+  }
+
 }

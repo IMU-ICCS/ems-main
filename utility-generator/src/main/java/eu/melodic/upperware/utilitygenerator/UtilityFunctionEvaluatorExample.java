@@ -19,25 +19,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countVirtualMachines;
+import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.normalize;
+
 @Slf4j
-public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator{
+public class UtilityFunctionEvaluatorExample extends UtilityFunctionEvaluator{
 
   private static final double ALPHA = 7;
 
   private double beta;
-  private boolean isReconfig;
 
   private double maxResponseTime;
   private double nomResponseTime;
   private double costWeight;
   private double avgResponseTime;
 
-  private Collection<VirtualMachine> actConfiguration;
-
   private CostUtilityFunction costUtilityFunction;
   private BetaDistribution responseUtilityFunction;
 
 
+  /* constructors */
 
   public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig,
     Collection<VirtualMachine> actConfiguration){
@@ -67,38 +68,8 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
       + costWeight * costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
   }
 
-  @Override
-  public double evaluate(IntVar[] newConfiguration) {
 
-    Collection<VirtualMachine> newConfig = new ArrayList<>();
-
-    for (IntVar var : newConfiguration) {
-      //FIXME - parsing variables and get cost
-      if (!(var.getName().startsWith("IntVar"))) {
-        //log.info("Solution " + var);
-        double cost = 10.0;
-        if (var.getName().contains("xlarge")) {
-          cost *= 4;
-        } else if (var.getName().contains("large")) {
-          cost *= 3;
-        } else if (var.getName().contains("medium")) {
-          cost *= 2;
-
-        }
-        newConfig.add(new VirtualMachine(var.getName(), cost, var.getValue()));
-      }
-    }
-    return evaluate(newConfig);
-
-  }
-
-/*
-  @Override
-  public void setActualConfiguration(Collection<VirtualMachine> configuration) {
-    actUtilityCost = evaluateCostUtilityFunction(configuration);
-    actualConfiguration = configuration;
-  }*/
-
+  /* response time utility function */
   private double evaluateResponseUtilityFunction(double x){
     //log.info("evaluateResponseUtilityFunction: x = " + x);
     double result = responseUtilityFunction.density(x);
@@ -112,7 +83,8 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     return normalizedResult;
   }
 
-  private double estimateNextAvgResponseTime(double avgResponseTime, Collection<VirtualMachine> newConfig){
+  private double estimateNextAvgResponseTime(double avgResponseTime,
+    Collection<VirtualMachine> newConfig){
 
     double nextAvgResponseTime;
 
@@ -127,18 +99,6 @@ public class UtilityFunctionEvaluatorExample implements UtilityFunctionEvaluator
     //log.info("estimate Time: {}", nextAvgResponseTime);
     return nextAvgResponseTime;
 
-  }
-
-  private int countVirtualMachines(Collection<VirtualMachine> configuration){
-    int counter = 0;
-    for (VirtualMachine vm: configuration){
-      counter += vm.getCount();
-    }
-    return counter;
-  }
-
-  private double normalize(double min, double max, double x){
-    return (x-min)/(max-min);
   }
 
 
