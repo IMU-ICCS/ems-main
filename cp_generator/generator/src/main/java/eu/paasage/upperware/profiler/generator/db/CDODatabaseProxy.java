@@ -50,7 +50,7 @@ import static eu.passage.upperware.commons.MelodicConstants.*;
  * Database proxy for CDO
  */
 @Slf4j
-//@Service
+@Service
 public class CDODatabaseProxy implements IDatabaseProxy {
 
 	private CPCloner cloner;
