@@ -71,11 +71,11 @@ public class GeneratorContext {
         return new RestTemplate();
     }
 
-    @Bean
+   /* @Bean
     @Scope("prototype")
     public CCDODatabaseProxy cDODatabaseProxy() {
         CDOClientExtended cDOClientExtended = applicationContext.getBean(CDOClientExtended.class);
         return new CCDODatabaseProxy(cDOClientExtended);
-    }
+    }*/
 
 }
