@@ -18,7 +18,26 @@ public abstract class UtilityFunctionEvaluator {
 
   boolean isReconfig;
   Collection<VirtualMachine> actConfiguration;
+  CostUtilityFunction costUtilityFunction;
 
+  public UtilityFunctionEvaluator(Collection<VirtualMachine> actConfiguration, boolean isReconfig,
+    CostUtilityFunction costUtilityFunction){
+    this.isReconfig = isReconfig;
+    if (isReconfig){
+      this.actConfiguration = actConfiguration;
+    }
+    this.costUtilityFunction = costUtilityFunction;
+  }
+
+  public UtilityFunctionEvaluator(Collection<VirtualMachine> actConfiguration, boolean isReconfig){
+
+    this.isReconfig = isReconfig;
+    if (isReconfig){
+      this.actConfiguration = actConfiguration;
+    }
+    this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
+
+  }
 
   public abstract double evaluate(Collection<VirtualMachine> newConfiguration);
   public double evaluate(IntVar[] newConfiguration){

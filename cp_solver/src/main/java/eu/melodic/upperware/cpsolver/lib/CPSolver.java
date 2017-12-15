@@ -9,6 +9,8 @@ package eu.melodic.upperware.cpsolver.lib;
 
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluatorExample;
+import java.util.*;
+
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
 import eu.paasage.mddb.cdo.client.CDOClient;

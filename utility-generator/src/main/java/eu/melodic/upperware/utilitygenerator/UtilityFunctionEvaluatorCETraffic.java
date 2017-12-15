@@ -6,22 +6,10 @@ import java.util.Collection;
 
 public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator{
 
-  private CostUtilityFunction costUtilityFunction;
 
-
-  public UtilityFunctionEvaluatorCETraffic(Collection<VirtualMachine> actConfiguration, boolean isReconfig,
-    CostUtilityFunction costUtilityFunction){
-    this.actConfiguration = actConfiguration;
-    this.costUtilityFunction = costUtilityFunction;
-    this.isReconfig = isReconfig;
+  public UtilityFunctionEvaluatorCETraffic(Collection<VirtualMachine> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+    super(actConfiguration, isReconfig, costUtilityFunction);
   }
-
-  public UtilityFunctionEvaluatorCETraffic(Collection<VirtualMachine> actConfiguration, boolean isReconfig){
-    this.actConfiguration = actConfiguration;
-    this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
-    this.isReconfig = isReconfig;
-  }
-
 
   @Override
   public double evaluate(Collection<VirtualMachine> newConfiguration) {
