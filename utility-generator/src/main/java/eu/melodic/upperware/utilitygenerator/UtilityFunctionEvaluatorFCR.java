@@ -23,40 +23,32 @@ import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countVi
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.normalize;
 
 @Slf4j
-public class UtilityFunctionEvaluatorExample extends UtilityFunctionEvaluator{
+public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
   private static final double ALPHA = 7;
-
   private double beta;
 
   private double maxResponseTime;
-  private double nomResponseTime;
   private double costWeight;
   private double avgResponseTime;
 
-  private CostUtilityFunction costUtilityFunction;
   private BetaDistribution responseUtilityFunction;
 
 
   /* constructors */
 
-  public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig,
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics, boolean isReconfig,
     Collection<VirtualMachine> actConfiguration){
 
+    super(actConfiguration, isReconfig);
     getAndAssignMetrics(metrics);
-    setFields(isReconfig, actConfiguration);
-
-    this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
-
   }
 
-  public UtilityFunctionEvaluatorExample(Map<MetricType, Metric> metrics, boolean isReconfig,
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics, boolean isReconfig,
     Collection<VirtualMachine> actConfiguration, CostUtilityFunction costUtilityFunction){
 
+    super(actConfiguration, isReconfig, costUtilityFunction);
     getAndAssignMetrics(metrics);
-    setFields(isReconfig, actConfiguration);
-
-    this.costUtilityFunction = costUtilityFunction;
   }
 
 
@@ -105,22 +97,14 @@ public class UtilityFunctionEvaluatorExample extends UtilityFunctionEvaluator{
   /* utils for constructors */
   private void getAndAssignMetrics(Map<MetricType, Metric> metrics){
     this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
-    this.nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
     this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
     this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
-  }
+    double nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
 
-  private void setFields(boolean isReconfig, Collection<VirtualMachine> actualConfiguration){
-
-    this.isReconfig = isReconfig;
-
-    if (isReconfig){
-      this.actConfiguration = actualConfiguration;
-    }
-    this.beta = ALPHA * (this.maxResponseTime / this.nomResponseTime -1);
+    this.beta = ALPHA * (this.maxResponseTime / nomResponseTime -1);
     this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
-
   }
+
 
 
 }

@@ -9,10 +9,8 @@ package eu.melodic.upperware.cpsolver.lib;
 
 import java.util.*;
 
-import com.google.common.collect.Lists;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -117,7 +115,7 @@ public class CPSolver {
 			metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
 
 			//simple cost function - first example
-			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
+			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorFCR(metrics, false, null);
 		}
 
 	}
