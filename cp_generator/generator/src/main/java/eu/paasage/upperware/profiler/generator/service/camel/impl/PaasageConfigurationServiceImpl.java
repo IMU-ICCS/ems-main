@@ -673,6 +673,8 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
 //                        storeRelatedProviderModel(providerModel, pcId, provider);
                     }
                 } else {
+                    log.debug("**			parseVM database:" + database );
+                    log.debug("**			parseVM  database loadProviderTypes:" + database.loadProviderTypes() );
                     for (ProviderType pt : database.loadProviderTypes().getTypes()) {
                         ProviderModel providerModel = database.loadPM(pt.getId());
                         vmp = getVirtualMachineProfile(vm, configurationWrapper, preferedProviders, hardware, osImage, location, pt, providerModel);
