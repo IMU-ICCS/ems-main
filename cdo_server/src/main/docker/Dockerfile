@@ -35,6 +35,9 @@ VOLUME /var/lib/mysql
 
 COPY ./scripts/docker-entrypoint.sh /entrypoint.sh
 COPY ./scripts/healthcheck.sh /healthcheck.sh
+
+USER root
+
 ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD /healthcheck.sh
 EXPOSE 3306
