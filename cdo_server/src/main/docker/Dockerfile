@@ -14,6 +14,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 FROM oraclelinux:7-slim
 
+USER root
+
 ARG PACKAGE_URL=https://repo.mysql.com/yum/mysql-5.5-community/docker/x86_64/mysql-community-server-minimal-5.5.58-2.el7.x86_64.rpm
 ARG PACKAGE_URL_SHELL=""
 
@@ -36,7 +38,9 @@ VOLUME /var/lib/mysql
 COPY ./scripts/docker-entrypoint.sh /entrypoint.sh
 COPY ./scripts/healthcheck.sh /healthcheck.sh
 
-USER root
+RUN chmod +x ./healthcheck.sh
+RUN chmod +x ./entrypoint.sh
+
 
 ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD /healthcheck.sh
