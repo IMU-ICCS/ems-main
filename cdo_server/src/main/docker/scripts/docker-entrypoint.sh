@@ -207,7 +207,7 @@ EOF
 	echo "[Entrypoint] Starting MySQL 5.5.58-1.1.2"
 fi
 
-exec mysqld > /dev/null 2>&1
+nohup mysqld &
 
 #exec "$@"
 java -Djava.security.egd=file:/dev/./urandom -Duser.timezone=Europe/Warsaw -jar ./server.jar
