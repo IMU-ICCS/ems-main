@@ -66,8 +66,9 @@ if [ "$1" = 'mysqld' ]; then
 		if [ -z "$MYSQL_ROOT_PASSWORD" -a -z "$MYSQL_ALLOW_EMPTY_PASSWORD" -a -z "$MYSQL_RANDOM_ROOT_PASSWORD" ]; then
 			echo >&2 '[Entrypoint] No password option specified for new database.'
 			echo >&2 '[Entrypoint]   A random onetime password will be generated.'
-			MYSQL_RANDOM_ROOT_PASSWORD=true
-			MYSQL_ONETIME_PASSWORD=true
+			#FIXME to be changed...
+			MYSQL_RANDOM_ROOT_PASSWORD=false
+			MYSQL_ONETIME_PASSWORD=false
 		fi
 		mkdir -p "$DATADIR"
 		chown -R mysql:mysql "$DATADIR"
@@ -172,12 +173,13 @@ EOF
 				install /dev/null -m0600 -omysql -gmysql "$SQL"
 				if [ ! -z "$MYSQL_ROOT_HOST" ]; then
 					cat << EOF > "$SQL"
-ALTER USER 'root'@'${MYSQL_ROOT_HOST}' PASSWORD EXPIRE;
-ALTER USER 'root'@'localhost' PASSWORD EXPIRE;
+#FIXME to be changed...
+#ALTER USER 'root'@'${MYSQL_ROOT_HOST}' PASSWORD EXPIRE;
+#ALTER USER 'root'@'localhost' PASSWORD EXPIRE;
 EOF
 				else
 					cat << EOF > "$SQL"
-ALTER USER 'root'@'localhost' PASSWORD EXPIRE;
+#ALTER USER 'root'@'localhost' PASSWORD EXPIRE;
 EOF
 				fi
 				set -- "$@" --init-file="$SQL"
@@ -204,6 +206,8 @@ EOF
 	chown -R mysql:mysql "$DATADIR"
 	echo "[Entrypoint] Starting MySQL 5.5.58-1.1.2"
 fi
+
+exec mysqld > /dev/null 2>&1
 
 #exec "$@"
 java -Djava.security.egd=file:/dev/./urandom -Duser.timezone=Europe/Warsaw -jar ./server.jar

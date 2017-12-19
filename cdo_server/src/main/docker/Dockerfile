@@ -25,6 +25,8 @@ RUN rpmkeys --import https://repo.mysql.com/RPM-GPG-KEY-mysql \
   && yum clean all \
   && mkdir /docker-entrypoint-initdb.d
 
+RUN yum install -y procps
+
 ADD server.jar server.jar
 
 RUN YUM_CMD="yum install -y java-1.8.0-openjdk" && \
