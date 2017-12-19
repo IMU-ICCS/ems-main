@@ -1,176 +1,41 @@
-##
-## MySQL 5.5
-##
-FROM centos:7
-MAINTAINER "cytopia" <cytopia@everythingcli.org>
+# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+FROM oraclelinux:7-slim
 
+ARG PACKAGE_URL=https://repo.mysql.com/yum/mysql-5.5-community/docker/x86_64/mysql-community-server-minimal-5.5.58-2.el7.x86_64.rpm
+ARG PACKAGE_URL_SHELL=""
 
-##
-## Labels
-##
-LABEL \
-	name="cytopia's MySQL 5.5 Image" \
-	image="mysql-5.5" \
-	vendor="cytopia" \
-	license="MIT" \
-	build-date="2017-07-01"
-
-
-###
-### Envs
-###
-
-# Version
-# Check for Updates:
-# https://dev.mysql.com/downloads/repo/yum/
-ENV YUM_REPO_URL="https://dev.mysql.com/get/mysql57-community-release-el7-10.noarch.rpm "
-
-# User/Group
-ENV MY_USER="mysql"
-ENV MY_GROUP="mysql"
-ENV MY_UID="48"
-ENV MY_GID="48"
-
-# Files
-ENV MYSQL_BASE_INCL="/etc/my.cnf.d"
-ENV MYSQL_CUST_INCL1="/etc/mysql/conf.d"
-ENV MYSQL_CUST_INCL2="/etc/mysql/docker-default.d"
-ENV MYSQL_DEF_DAT="/var/lib/mysql"
-ENV MYSQL_DEF_LOG="/var/log/mysql"
-ENV MYSQL_DEF_PID="/var/run/mysqld"
-ENV MYSQL_DEF_SCK="/var/sock/mysqld"
-
-ENV MYSQL_LOG_SLOW="${MYSQL_DEF_LOG}/slow.log"
-ENV MYSQL_LOG_ERROR="${MYSQL_DEF_LOG}/error.log"
-ENV MYSQL_LOG_QUERY="${MYSQL_DEF_LOG}/query.log"
-
-
-ENV MYSQL_ROOT_PASSWORD="admin"
-
-USER root
-
-###
-### Install
-###
-RUN groupadd -g ${MY_GID} -r ${MY_GROUP} && \
-	adduser ${MY_USER} -u ${MY_UID} -M -s /sbin/nologin -g ${MY_GROUP}
-
-RUN \
-	yum -y install epel-release && \
-	rpm -ivh ${YUM_REPO_URL} && \
-	yum-config-manager --enable mysql55-community && \
-	yum-config-manager --disable mysql56-community && \
-	yum-config-manager --disable mysql57-community && \
-	yum-config-manager --disable mysql80-community && \
-	yum clean all
-
-RUN yum -y update && yum -y install \
-	mysql-community-server
-
-RUN \
-	yum -y autoremove && \
-	yum clean metadata && \
-	yum clean all && \
-	yum -y install hostname && \
-	yum clean all
-
-
-##
-## Configure
-##
-RUN \
-	rm -rf ${MYSQL_BASE_INCL} && \
-	rm -rf ${MYSQL_CUST_INCL1} && \
-	rm -rf ${MYSQL_CUST_INCL2} && \
-	rm -rf ${MYSQL_DEF_DAT} && \
-	rm -rf ${MYSQL_DEF_SCK} && \
-	rm -rf ${MYSQL_DEF_PID} && \
-	rm -rf ${MYSQL_DEF_LOG} && \
-	\
-	mkdir -p ${MYSQL_BASE_INCL} && \
-	mkdir -p ${MYSQL_CUST_INCL1} && \
-	mkdir -p ${MYSQL_CUST_INCL2} && \
-	mkdir -p ${MYSQL_DEF_DAT} && \
-	mkdir -p ${MYSQL_DEF_SCK} && \
-	mkdir -p ${MYSQL_DEF_PID} && \
-	mkdir -p ${MYSQL_DEF_LOG} && \
-	\
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_BASE_INCL} && \
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_CUST_INCL1} && \
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_CUST_INCL2} && \
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_DEF_DAT} && \
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_DEF_SCK} && \
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_DEF_PID} && \
-	chown -R ${MY_USER}:${MY_GROUP} ${MYSQL_DEF_LOG} && \
-	\
-	chmod 0775 ${MYSQL_BASE_INCL} && \
-	chmod 0775 ${MYSQL_CUST_INCL1} && \
-	chmod 0775 ${MYSQL_CUST_INCL2} && \
-	chmod 0775 ${MYSQL_DEF_DAT} && \
-	chmod 0775 ${MYSQL_DEF_SCK} && \
-	chmod 0775 ${MYSQL_DEF_PID} && \
-	chmod 0775 ${MYSQL_DEF_LOG}
-
-RUN \
-	echo "[client]"                                         > /etc/my.cnf && \
-	echo "socket = ${MYSQL_DEF_SCK}/mysqld.sock"           >> /etc/my.cnf && \
-	\
-	echo "[mysql]"                                         >> /etc/my.cnf && \
-	echo "socket = ${MYSQL_DEF_SCK}/mysqld.sock"           >> /etc/my.cnf && \
-	\
-	echo "[mysqld]"                                        >> /etc/my.cnf && \
-	echo "skip-host-cache"                                 >> /etc/my.cnf && \
-	echo "skip-name-resolve"                               >> /etc/my.cnf && \
-	echo "datadir = ${MYSQL_DEF_DAT}"                      >> /etc/my.cnf && \
-	echo "user = ${MY_USER}"                               >> /etc/my.cnf && \
-	echo "port = 2036"                                     >> /etc/my.cnf && \
-	echo "bind-address = 0.0.0.0"                          >> /etc/my.cnf && \
-	echo "socket = ${MYSQL_DEF_SCK}/mysqld.sock"           >> /etc/my.cnf && \
-	echo "pid-file = ${MYSQL_DEF_PID}/mysqld.pid"          >> /etc/my.cnf && \
-	echo "general_log_file = ${MYSQL_LOG_QUERY}"           >> /etc/my.cnf && \
-	echo "slow_query_log_file = ${MYSQL_LOG_SLOW}"         >> /etc/my.cnf && \
-	echo "log-error = ${MYSQL_LOG_ERROR}"                  >> /etc/my.cnf && \
-	echo "!includedir ${MYSQL_BASE_INCL}/"                 >> /etc/my.cnf && \
-	echo "!includedir ${MYSQL_CUST_INCL1}/"                >> /etc/my.cnf && \
-	echo "!includedir ${MYSQL_CUST_INCL2}/"                >> /etc/my.cnf
-
-
-##
-## Bootstrap Scipts
-##
-COPY ./scripts/docker-entrypoint.sh /
-RUN chmod +x ./docker-entrypoint.sh
-
-##
-## Ports
-##
-EXPOSE 2036
-
-
-##
-## Volumes
-##
-VOLUME /var/lib/mysql
-VOLUME /var/log/mysql
-VOLUME /var/sock/mysqld
-VOLUME /etc/mysql/conf.d
-VOLUME etc/mysql/docker-default.d
-
+# Install server
+RUN rpmkeys --import https://repo.mysql.com/RPM-GPG-KEY-mysql \
+  && yum install -y $PACKAGE_URL $PACKAGE_URL_SHELL libpwquality \
+  && yum clean all \
+  && mkdir /docker-entrypoint-initdb.d
 
 ADD server.jar server.jar
 
-# Set correct environment variables.
-ENV	HOME /root
-ENV	LANG en_US.UTF-8
-ENV	LC_ALL en_US.UTF-8
-
-# See https://github.com/docker/docker/issues/10180# for why the strange yum!
 RUN YUM_CMD="yum install -y java-1.8.0-openjdk" && \
     (${YUM_CMD} || ${YUM_CMD}) && \
     yum clean all
 ENV JAVA_HOME=/usr/lib/jvm/jre-openjdk
 
-##
-## Entrypoint
-##
-ENTRYPOINT ["/docker-entrypoint.sh"]
+
+VOLUME /var/lib/mysql
+
+COPY ./scripts/docker-entrypoint.sh /entrypoint.sh
+COPY ./scripts/healthcheck.sh /healthcheck.sh
+ENTRYPOINT ["/entrypoint.sh"]
+HEALTHCHECK CMD /healthcheck.sh
+EXPOSE 3306
+CMD ["mysqld"]
