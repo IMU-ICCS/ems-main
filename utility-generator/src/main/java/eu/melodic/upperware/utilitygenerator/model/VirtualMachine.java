@@ -18,6 +18,7 @@ public class VirtualMachine {
 
   private String id;
   private double cost;
+  private int ram;
   @Setter
   private int count;
 

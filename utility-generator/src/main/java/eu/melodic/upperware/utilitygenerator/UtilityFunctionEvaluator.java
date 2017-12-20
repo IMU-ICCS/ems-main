@@ -8,6 +8,8 @@
 
 package eu.melodic.upperware.utilitygenerator;
 
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import solver.variables.IntVar;
 
@@ -56,7 +58,7 @@ public abstract class UtilityFunctionEvaluator {
           cost *= 2;
 
         }
-        newConfig.add(new VirtualMachine(var.getName(), cost, var.getValue()));
+        newConfig.add(new VirtualMachine(var.getName(), cost, var.getValue(), 0));
       }
     }
     return evaluate(newConfig);

@@ -8,14 +8,13 @@
 
 package eu.melodic.upperware.utilitygenerator;
 
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.BetaDistribution;
-import solver.variables.IntVar;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,15 +36,15 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
   /* constructors */
 
-  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics, boolean isReconfig,
-    Collection<VirtualMachine> actConfiguration){
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics,
+    Collection<VirtualMachine> actConfiguration, boolean isReconfig){
 
     super(actConfiguration, isReconfig);
     getAndAssignMetrics(metrics);
   }
 
-  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics, boolean isReconfig,
-    Collection<VirtualMachine> actConfiguration, CostUtilityFunction costUtilityFunction){
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics, Collection<VirtualMachine> actConfiguration,
+    boolean isReconfig, CostUtilityFunction costUtilityFunction){
 
     super(actConfiguration, isReconfig, costUtilityFunction);
     getAndAssignMetrics(metrics);

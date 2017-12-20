@@ -1,8 +1,16 @@
+/* * Copyright (C) 2017 7bulls.com
+*
+* This Source Code Form is subject to the terms of the
+* Mozilla Public License, v. 2.0. If a copy of the MPL
+* was not distributed with this file, You can obtain one at
+* http://mozilla.org/MPL/2.0/.
+*/
+
 import com.google.common.collect.Lists
-import eu.melodic.upperware.utilitygenerator.CostUtilityFunction
-import eu.melodic.upperware.utilitygenerator.CostUtilityFunctionExample
-import eu.melodic.upperware.utilitygenerator.CostUtilityFunctionExampleV2
-import eu.melodic.upperware.utilitygenerator.CostUtilityFunctionWithAbsoluteCost
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExampleV2
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionWithAbsoluteCost
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluator
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluatorCETraffic
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine
@@ -37,12 +45,12 @@ class CETrafficUseCaseTest extends Specification {
   CostUtilityFunction costUtilityFunctionAbs = new CostUtilityFunctionWithAbsoluteCost(10)
 
   def setup(){
-    vm1_1inst = new VirtualMachine("mBig", 3, 1)
-    vm1_2inst = new VirtualMachine("mBig", 3, 2)
-    vm1_3inst = new VirtualMachine("mBig", 3, 3)
-    vm1_4inst = new VirtualMachine("mBig", 3, 4)
-    vm1_6inst = new VirtualMachine("mBig", 3, 6)
-    vm2 = new VirtualMachine("mXXL", 10, 0)
+    vm1_1inst = new VirtualMachine("mBig", 3, 4, 1)
+    vm1_2inst = new VirtualMachine("mBig", 3, 4, 2)
+    vm1_3inst = new VirtualMachine("mBig", 3, 4, 3)
+    vm1_4inst = new VirtualMachine("mBig", 3, 4, 4)
+    vm1_6inst = new VirtualMachine("mBig", 3, 4, 6)
+    vm2 = new VirtualMachine("mXXL", 10, 16, 0)
 
     initialConfiguration = Lists.newArrayList(vm1_3inst, vm2)
     newConfigurationWith1Machine = Lists.newArrayList(vm1_1inst, vm2)

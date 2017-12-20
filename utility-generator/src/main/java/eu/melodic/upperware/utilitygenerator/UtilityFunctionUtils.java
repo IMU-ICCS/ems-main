@@ -4,9 +4,9 @@ import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 
 import java.util.Collection;
 
-class UtilityFunctionUtils {
+public class UtilityFunctionUtils {
 
-  static double normalize(double min, double max, double x){
+  public static double normalize(double min, double max, double x){
     return (x-min)/(max-min);
   }
 

@@ -6,7 +6,7 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator;
+package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 
@@ -15,16 +15,12 @@ import java.util.Collection;
 public abstract class CostUtilityFunction {
 
 
-  abstract double evaluateCostUtilityFunction(Collection<VirtualMachine> actualConfiguration,
+  public abstract double evaluateCostUtilityFunction(Collection<VirtualMachine> actualConfiguration,
     Collection<VirtualMachine> newConfiguration);
 
   double calculateCost(Collection<VirtualMachine> vms){
 
     return vms.stream().mapToDouble(vm -> vm.getCount() * vm.getCost()).sum();
 
-  }
-
-  double normalize(double min, double max, double x){
-    return (x-min)/(max-min);
   }
 }

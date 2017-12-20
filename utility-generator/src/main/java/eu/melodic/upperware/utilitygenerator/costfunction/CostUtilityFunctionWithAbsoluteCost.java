@@ -6,12 +6,15 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator;
+package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+
+import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.normalize;
+
 
 @Slf4j
 public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction {
@@ -24,10 +27,9 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction {
   }
 
   @Override
-  double evaluateCostUtilityFunction(Collection<VirtualMachine> act, Collection<VirtualMachine> newConfiguration) {
+  public double evaluateCostUtilityFunction(Collection<VirtualMachine> act, Collection<VirtualMachine> newConfiguration) {
 
     double newCost = calculateCost(newConfiguration);
-
     //int numberOfVirtualMachines = countVirtualMachines(newConfiguration);
     //double avgCost = newCost/numberOfVirtualMachines;
 

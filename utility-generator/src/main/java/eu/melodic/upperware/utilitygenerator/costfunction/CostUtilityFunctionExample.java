@@ -6,7 +6,7 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator;
+package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
@@ -14,32 +14,30 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 
 @Slf4j
-public class CostUtilityFunctionExampleV2 extends CostUtilityFunction {
+public class CostUtilityFunctionExample extends CostUtilityFunction {
 
+  private double actUtilityCost;
   private boolean isReconfig;
-  private double prevUtilityCost;
 
-  public CostUtilityFunctionExampleV2(boolean isReconfig){
+
+  public CostUtilityFunctionExample(boolean isReconfig){
     this.isReconfig = isReconfig;
-    this.prevUtilityCost = 1.0;
+    this.actUtilityCost = 1;
   }
 
 
   @Override
-  double evaluateCostUtilityFunction(Collection<VirtualMachine> actConfiguration, Collection<VirtualMachine> newConfiguration) {
-
+  public double evaluateCostUtilityFunction(Collection<VirtualMachine> actConfiguration, Collection<VirtualMachine>
+    newConfiguration) {
     double oldCost = 1.0; //FIXME - how to set oldCost?
     if (isReconfig){
       oldCost = calculateCost(actConfiguration);
     }
 
     double newCost = calculateCost(newConfiguration);
-    double result = Math.min(1, prevUtilityCost * oldCost / newCost);
+    double result = Math.min(1, actUtilityCost * oldCost / newCost);
 
-    prevUtilityCost = result;
     log.info("evaluateCostUtilityFunction: result = {}",result);
     return result;
-
-
   }
 }
