@@ -16,5 +16,6 @@ import lombok.Getter;
 public class Metric {
 
   private MetricType type;
+  private String vmId;
   private double value;
 }
