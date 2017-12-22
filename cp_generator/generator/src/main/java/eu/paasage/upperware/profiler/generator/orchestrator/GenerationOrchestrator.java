@@ -29,14 +29,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
-import java.net.InetSocketAddress;
-import net.spy.memcached.MemcachedClient;
 
 @Service
 @Slf4j
@@ -50,10 +46,6 @@ public class GenerationOrchestrator {
     private SloService sloService;
     private RequestSynchronizer requestSynchronizer;
 
-    //memcache test START
-    private GeneratorProperties generatorProperties;
-    //memcache test END
-
     /**
      * Generates the CP model by using the provided model path
      *
@@ -63,25 +55,6 @@ public class GenerationOrchestrator {
 
     @Async
     public void generateCPModelAndSendNotification(String resourceName, String notificationUri, String requestUuid){
-
-        //memcache test START
-        log.info("Connecting to memcache under: " +generatorProperties.getMemcache().getHost() +":"+generatorProperties.getMemcache().getPort());
-        MemcachedClient jmemcache = null;
-        try {
-            jmemcache = new MemcachedClient(
-                    new InetSocketAddress(generatorProperties.getMemcache().getHost(), generatorProperties.getMemcache().getPort()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Integer storeExp = generatorProperties.getMemcache().getTtl();
-        // adding a new key
-        jmemcache.add("myKey", storeExp, "this is test value");
-        log.info("Got value for key myKey: "+jmemcache.get("myKey"));
-
-        //memcache test END
-
-
 
 
         try {

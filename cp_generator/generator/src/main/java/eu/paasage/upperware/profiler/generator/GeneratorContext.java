@@ -7,6 +7,13 @@ import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
 import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
 import eu.paasage.upperware.profiler.generator.db.CCDODatabaseProxy;
+import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
+import eu.paasage.upperware.profiler.generator.notification.NotificationService;
+import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
+import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
+import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
+import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
+import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,5 +84,20 @@ public class GeneratorContext {
         CDOClientExtended cDOClientExtended = applicationContext.getBean(CDOClientExtended.class);
         return new CCDODatabaseProxy(cDOClientExtended);
     }*/
+
+    @Bean
+    @Scope("prototype")
+    protected GenerationOrchestrator generationOrchestrator() throws Exception {
+
+        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
+        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
+        ConstraintProblemService constraintProblemService = applicationContext.getBean(ConstraintProblemService.class);
+        NotificationService notificationService = applicationContext.getBean(NotificationService.class);
+        SloService sloService = applicationContext.getBean(SloService.class);
+        RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
+
+        return new GenerationOrchestrator(database, paaSageConfigurationService,
+                constraintProblemService, notificationService, sloService, requestSynchronizer);
+    }
 
 }

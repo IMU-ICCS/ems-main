@@ -2,7 +2,6 @@ package eu.paasage.upperware.profiler.generator;
 
 import eu.melodic.models.interfaces.cpGenerator.ConstraintProblemRequestImpl;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
-import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestratorFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GeneratorController {
 
-    private GenerationOrchestratorFactory generationOrchestratorFactory;
+    private GeneratorContext generatorContext;
 
     @RequestMapping(value = "/constraintProblem", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public void generateConstraintProblem(@RequestBody ConstraintProblemRequestImpl request) throws Exception {
@@ -31,7 +30,7 @@ public class GeneratorController {
 
       log.info("resourceName: " + resourceName + ", notificationUri: " + notificationUri + ", requestUuid: " + requestUuid);
 
-        GenerationOrchestrator generationOrchestrator = generationOrchestratorFactory.getObject();
+        GenerationOrchestrator generationOrchestrator = generatorContext.generationOrchestrator();
         generationOrchestrator.generateCPModelAndSendNotification(resourceName, notificationUri, requestUuid);
     }
 
