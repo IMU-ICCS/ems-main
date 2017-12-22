@@ -30,8 +30,11 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
+
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
+
 
 @Service
 @Slf4j
@@ -56,6 +59,7 @@ public class GenerationOrchestrator {
 
     @Async
     public void generateCPModelAndSendNotification(String resourceName, String notificationUri, String requestUuid){
+
 
         try {
             requestSynchronizer.acquireLock(resourceName);
