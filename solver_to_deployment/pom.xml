@@ -13,6 +13,7 @@
 
         <!--DOCKER plugin properties-->
         <docker.imageName>${docker.repository}melodic/s2d</docker.imageName>
+        <commons-collections.version>4.1</commons-collections.version>
 
     </properties>
 
@@ -75,6 +76,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons-collections.version}</version>
+        </dependency>
+
     </dependencies>
     <build>
         <finalName>${project.artifactId}</finalName>
@@ -90,4 +97,3 @@
         </plugins>
     </build>
 </project>
-

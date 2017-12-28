@@ -20,6 +20,10 @@
 
     <name>Upperware - CP Generator - Price Estimation Tool</name>
 
+    <properties>
+        <commons-collections.version>4.1</commons-collections.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
@@ -83,6 +87,15 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>4.3.9.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>upperware-metamodel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons-collections.version}</version>
         </dependency>
     </dependencies>
 

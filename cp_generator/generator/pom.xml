@@ -23,6 +23,7 @@
     <properties>
         <!--DOCKER plugin properties-->
         <docker.imageName>${docker.repository}melodic/generator</docker.imageName>
+        <commons-collections.version>4.1</commons-collections.version>
     </properties>
 
     <dependencies>
@@ -146,6 +147,12 @@
             <groupId>net.spy</groupId>
             <artifactId>spymemcached</artifactId>
             <version>2.12.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons-collections.version}</version>
         </dependency>
 
     </dependencies>
