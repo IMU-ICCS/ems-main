@@ -59,7 +59,7 @@ class NewTest extends Specification {
       new UtilityGeneratorApplication(metrics, Lists.newArrayList(c), true, UtilityFunctionType.FCR, costUtilityFunction)
 
     when:
-    double result = utilityGenerator.evaluate()
+    double result = utilityGenerator.evaluate(3)
 
     then:
     noExceptionThrown()

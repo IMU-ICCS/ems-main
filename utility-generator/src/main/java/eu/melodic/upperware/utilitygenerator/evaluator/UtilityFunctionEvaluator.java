@@ -55,8 +55,8 @@ public abstract class UtilityFunctionEvaluator {
   public abstract double evaluate(Collection<Component> newConfiguration);
 
 
-  //fixme: Variable[], nie IntVar[]
-  public double evaluate(IntVar[] newConfiguration){
+  //fixme: Variable[], nie IntVar[] i usunąć cardinality
+  public double evaluate(IntVar[] newConfiguration, int cardinality){
 
     //fixme: get real node candidates from cache
     List<NodeCandidate> nodeCandidates = getSampleNodeCandidates();
@@ -65,7 +65,7 @@ public abstract class UtilityFunctionEvaluator {
     //System.out.println("cheapest " + theCheapest);
 
     //fixme: wyciągnij z solution cardinality dla każdego komponentu
-    int cardinality = 3;
+
 
     //fixme: muszę wiedzieć ile jest komponentów
 

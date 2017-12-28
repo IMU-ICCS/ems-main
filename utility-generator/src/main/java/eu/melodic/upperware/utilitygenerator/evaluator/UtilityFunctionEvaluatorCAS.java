@@ -40,7 +40,7 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
   @Override
   public double evaluate(Collection<Component> newConfiguration) {
 
-    double totalUseOfRam = countTotalRamUsage(ramUsage);
+    double totalUseOfRam = countTotalRamUsage(this.ramUsage);
     int totalRamInNewConfiguration = 0;
 
     for (Component component : newConfiguration){
@@ -68,15 +68,15 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
       long ram = getRamForVm(metric.getVmId());
       totalRamUsage += metric.getValue() * ram;
 
-      //System.out.println("count total ram usage, act is " + totalRamUsage);
     }
     return totalRamUsage;
   }
 
+  //fixme: to powinno być po czymś innym dopasowywane - metryki z maszynami
   private long getRamForVm(String vmId) {
     return actConfiguration
       .stream()
-      .filter(c -> vmId.equals(c.getNodeCandidate().getHardware().getId()))
+      .filter(c -> vmId.equals(c.getNodeCandidate().getHardware().getName()))
       .findFirst()
       .get()
       .getNodeCandidate()

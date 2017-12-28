@@ -66,11 +66,11 @@ public class UtilityGeneratorApplication {
   }
 
   public double evaluate(IntVar[] newConfiguration){
-    return this.utilityFunctionEvaluator.evaluate(newConfiguration);
+    return this.utilityFunctionEvaluator.evaluate(newConfiguration, 1);
   }
 
-  public double evaluate() {
-    return this.utilityFunctionEvaluator.evaluate(new IntVar[]{});
+  public double evaluate(int cardinality) {
+    return this.utilityFunctionEvaluator.evaluate(new IntVar[]{}, cardinality);
 
   }
 
