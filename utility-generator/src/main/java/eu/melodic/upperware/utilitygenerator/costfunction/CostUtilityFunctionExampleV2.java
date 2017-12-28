@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
+import eu.melodic.upperware.utilitygenerator.model.Component;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -24,13 +24,13 @@ public class CostUtilityFunctionExampleV2 extends CostUtilityFunction {
     this.prevUtilityCost = 1.0;
   }
 
-
   @Override
-  public double evaluateCostUtilityFunction(Collection<VirtualMachine> actConfiguration, Collection<VirtualMachine> newConfiguration) {
+  public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
+      Collection<Component> newConfiguration) {
 
     double oldCost = 1.0; //FIXME - how to set oldCost?
     if (isReconfig){
-      oldCost = calculateCost(actConfiguration);
+      oldCost = calculateCost(actualConfiguration);
     }
 
     double newCost = calculateCost(newConfiguration);
@@ -39,7 +39,5 @@ public class CostUtilityFunctionExampleV2 extends CostUtilityFunction {
     prevUtilityCost = result;
     log.info("evaluateCostUtilityFunction: result = {}",result);
     return result;
-
-
   }
 }

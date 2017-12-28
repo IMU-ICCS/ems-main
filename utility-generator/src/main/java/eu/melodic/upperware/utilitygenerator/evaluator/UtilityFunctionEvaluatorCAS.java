@@ -6,12 +6,12 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator;
+package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
+import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 
 import java.util.Collection;
 import java.util.Map;
@@ -22,29 +22,29 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
   private Metric[] ramUsage;
 
 
-  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric> metrics, Metric[] ramUsage,
-      Collection<VirtualMachine> actConfiguration, boolean isReconfig,
-      CostUtilityFunction costUtilityFunction) {
+  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
+    Collection<Component> actConfiguration, boolean isReconfig,
+    CostUtilityFunction costUtilityFunction) {
 
     super(actConfiguration, isReconfig, costUtilityFunction);
-    getAndAssignMetrics(metrics, ramUsage);
+    getAndAssignMetrics(metrics);
 
   }
 
-  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric> metrics, Metric[] ramUsage,
-      Collection<VirtualMachine> actConfiguration, boolean isReconfig) {
+  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
+    Collection<Component> actConfiguration, boolean isReconfig) {
     super(actConfiguration, isReconfig);
-    getAndAssignMetrics(metrics, ramUsage);
+    getAndAssignMetrics(metrics);
   }
 
   @Override
-  public double evaluate(Collection<VirtualMachine> newConfiguration) {
+  public double evaluate(Collection<Component> newConfiguration) {
 
     double totalUseOfRam = countTotalRamUsage(ramUsage);
     int totalRamInNewConfiguration = 0;
 
-    for (VirtualMachine vm : newConfiguration){
-      totalRamInNewConfiguration += vm.getRam() * vm.getCount();
+    for (Component component : newConfiguration){
+      totalRamInNewConfiguration += component.getNodeCandidate().getHardware().getRam() * component.getCardinality();
     }
 
     System.out.println("total Ram In New Configuration: " + totalRamInNewConfiguration);
@@ -56,16 +56,16 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
     return 0;
   }
 
-  private void getAndAssignMetrics(Map<MetricType, Metric> metrics, Metric[] ramUsage){
-    this.maxRamUsage = metrics.get(MetricType.MAX_RAM_USAGE).getValue();
-    this.ramUsage = ramUsage;
+  private void getAndAssignMetrics(Map<MetricType, Metric[]> metrics){
+    this.maxRamUsage = metrics.get(MetricType.MAX_RAM_USAGE)[0].getValue();
+    this.ramUsage = metrics.get(MetricType.RAM_USAGE);
 
   }
 
   private double countTotalRamUsage(Metric[] ramUsage){
     double totalRamUsage = 0.0;
     for (Metric metric: ramUsage){
-      int ram = getRamForVm(metric.getVmId());
+      long ram = getRamForVm(metric.getVmId());
       totalRamUsage += metric.getValue() * ram;
 
       //System.out.println("count total ram usage, act is " + totalRamUsage);
@@ -73,8 +73,15 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
     return totalRamUsage;
   }
 
-  private int getRamForVm(String vmName){
-    return actConfiguration.stream().filter(vm -> vm.getId().equals(vmName)).findFirst().get().getRam();
-  //fixme
+  private long getRamForVm(String vmId) {
+    return actConfiguration
+      .stream()
+      .filter(c -> vmId.equals(c.getNodeCandidate().getHardware().getId()))
+      .findFirst()
+      .get()
+      .getNodeCandidate()
+      .getHardware()
+      .getRam();
   }
+
 }

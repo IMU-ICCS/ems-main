@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
+import eu.melodic.upperware.utilitygenerator.model.Component;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -26,8 +26,10 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction {
     this.maxNumberOfVms = maxVms;
   }
 
+
   @Override
-  public double evaluateCostUtilityFunction(Collection<VirtualMachine> act, Collection<VirtualMachine> newConfiguration) {
+  public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
+      Collection<Component> newConfiguration) {
 
     double newCost = calculateCost(newConfiguration);
     //int numberOfVirtualMachines = countVirtualMachines(newConfiguration);
@@ -40,23 +42,25 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction {
   }
 
 
-  private double getLowestCost(Collection<VirtualMachine> configuration){
+  private double getLowestCost(Collection<Component> configuration){
     double min = getHighestCost(configuration);
-    for (VirtualMachine vm: configuration){
-      if (min> vm.getCost()){
-        min = vm.getCost();
+    for (Component p: configuration){
+      if (min> p.getNodeCandidate().getPrice()){
+        min = p.getNodeCandidate().getPrice();
       }
     }
     return min;
   }
 
-  private double getHighestCost(Collection<VirtualMachine> configuration){
+  private double getHighestCost(Collection<Component> configuration){
     double max = 0.0;
-    for (VirtualMachine vm: configuration){
-      if (max< vm.getCost()){
-        max = vm.getCost();
+    for (Component p: configuration){
+      if (max< p.getNodeCandidate().getPrice()){
+        max = p.getNodeCandidate().getPrice();
       }
     }
     return max * maxNumberOfVms;
   }
+
+
 }

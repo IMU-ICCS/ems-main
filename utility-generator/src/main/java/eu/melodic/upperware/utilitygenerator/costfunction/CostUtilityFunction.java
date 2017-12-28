@@ -8,19 +8,19 @@
 
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
+import eu.melodic.upperware.utilitygenerator.model.Component;
 
 import java.util.Collection;
 
 public abstract class CostUtilityFunction {
 
 
-  public abstract double evaluateCostUtilityFunction(Collection<VirtualMachine> actualConfiguration,
-    Collection<VirtualMachine> newConfiguration);
+  public abstract double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
+    Collection<Component> newConfiguration);
 
-  double calculateCost(Collection<VirtualMachine> vms){
+  double calculateCost(Collection<Component> vms){
 
-    return vms.stream().mapToDouble(vm -> vm.getCount() * vm.getCost()).sum();
+    return vms.stream().mapToDouble(c -> c.getCardinality() * c.getNodeCandidate().getPrice()).sum();
 
   }
 }

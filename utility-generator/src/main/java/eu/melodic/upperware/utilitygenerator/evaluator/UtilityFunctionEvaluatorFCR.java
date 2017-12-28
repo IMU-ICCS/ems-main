@@ -6,12 +6,12 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator;
+package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
+import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.BetaDistribution;
 
@@ -36,14 +36,14 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
   /* constructors */
 
-  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics,
-    Collection<VirtualMachine> actConfiguration, boolean isReconfig){
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric[]> metrics,
+    Collection<Component> actConfiguration, boolean isReconfig){
 
     super(actConfiguration, isReconfig);
     getAndAssignMetrics(metrics);
   }
 
-  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric> metrics, Collection<VirtualMachine> actConfiguration,
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric[]> metrics, Collection<Component> actConfiguration,
     boolean isReconfig, CostUtilityFunction costUtilityFunction){
 
     super(actConfiguration, isReconfig, costUtilityFunction);
@@ -52,8 +52,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
 
   @Override
-  public double evaluate(Collection<VirtualMachine> newConfiguration) {
-
+  public double evaluate(Collection<Component> newConfiguration) {
     double nextAvgResponseTime = estimateNextAvgResponseTime(avgResponseTime, newConfiguration);
     return (1-costWeight) * evaluateResponseUtilityFunction(nextAvgResponseTime/maxResponseTime)
       + costWeight * costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
@@ -75,7 +74,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
   }
 
   private double estimateNextAvgResponseTime(double avgResponseTime,
-    Collection<VirtualMachine> newConfig){
+    Collection<Component> newConfig){
 
     double nextAvgResponseTime;
 
@@ -94,11 +93,11 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
 
   /* utils for constructors */
-  private void getAndAssignMetrics(Map<MetricType, Metric> metrics){
-    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME).getValue();
-    this.costWeight = metrics.get(MetricType.COST_WEIGHT).getValue();
-    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME).getValue();
-    double nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME).getValue();
+  private void getAndAssignMetrics(Map<MetricType, Metric[]> metrics){
+    this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME)[0].getValue();
+    this.costWeight = metrics.get(MetricType.COST_WEIGHT)[0].getValue();
+    this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME)[0].getValue();
+    double nomResponseTime = metrics.get(MetricType.NOM_RESPONSE_TIME)[0].getValue();
 
     this.beta = ALPHA * (this.maxResponseTime / nomResponseTime -1);
     this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);

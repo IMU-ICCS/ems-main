@@ -63,7 +63,7 @@ public class CPSolver {
 	private boolean cdoMode = false;
 	private long timestamp = 0;
 	private boolean useExternalOptimizer = false;
-	private UtilityFunctionEvaluator utilityFunctionEvaluator;
+	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
 
 	/* Constructor which also reads the CP Model either from CDO via
@@ -79,14 +79,14 @@ public class CPSolver {
 
 		if (this.useExternalOptimizer){
 			//FIXME metrics should be from Metric Collector
-			Map<MetricType, Metric> metrics = new HashMap<>();
-			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, "",30));
-			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, "",20));
-			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, "",3));
-			metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, "",0.5));
+			Map<MetricType, Metric[]> metrics = new HashMap<>();
+			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric[]{new Metric(MetricType.MAX_RESPONSE_TIME, "", 30)});
+			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric[]{new Metric(MetricType.NOM_RESPONSE_TIME, "", 20)});
+			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric[]{new Metric(MetricType.AVG_RESPONSE_TIME, "",3)});
+			metrics.put(MetricType.COST_WEIGHT, new Metric[]{new Metric(MetricType.COST_WEIGHT, "",0.5)});
 
-			//simple cost function - first example
-			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorFCR(metrics, null, false);
+			//for FCR use case
+			this.utilityGenerator = new UtilityGeneratorApplication(metrics, null, false, UtilityFunctionType.FCR);
 		}
 
 	}
@@ -1209,7 +1209,7 @@ public class CPSolver {
 
 	private double calculateUtility(){
 
-		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
+		double utility = utilityGenerator.evaluate(solver.retrieveIntVars());
 		log.info("Utility = " + utility);
 		if (utility > maxUtility){
 			maxUtility = utility;

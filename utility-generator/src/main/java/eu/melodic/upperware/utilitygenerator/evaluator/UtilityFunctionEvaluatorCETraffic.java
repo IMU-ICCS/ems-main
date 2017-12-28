@@ -6,23 +6,27 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator;
+package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
+import eu.melodic.upperware.utilitygenerator.model.Component;
 
 import java.util.Collection;
 
 public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator{
 
 
-  public UtilityFunctionEvaluatorCETraffic(Collection<VirtualMachine> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+  public UtilityFunctionEvaluatorCETraffic(Collection<Component> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
     super(actConfiguration, isReconfig, costUtilityFunction);
   }
 
-  @Override
-  public double evaluate(Collection<VirtualMachine> newConfiguration) {
-    return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+  public UtilityFunctionEvaluatorCETraffic(Collection<Component> actConfiguration, boolean isReconfig){
+    super(actConfiguration, isReconfig);
   }
 
+
+  @Override
+  public double evaluate(Collection<Component> newConfiguration) {
+    return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+  }
 }

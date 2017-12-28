@@ -8,18 +8,14 @@
 
 package eu.melodic.upperware.utilitygenerator.model;
 
+import eu.melodic.cloudiator.client.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
-@Getter
 @AllArgsConstructor
-public class VirtualMachine {
+@Getter
+public class Component {
 
-  private String id;
-  private double cost;
-  private int ram;
-  @Setter
-  private int count;
-
+  private NodeCandidate nodeCandidate;
+  private int cardinality;
 }
