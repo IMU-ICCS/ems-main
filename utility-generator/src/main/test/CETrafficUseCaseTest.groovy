@@ -45,6 +45,69 @@ class CETrafficUseCaseTest extends Specification {
 
   }
 
+  def "less machines - one machine"(){
+    cardinality = 1
+    UtilityGeneratorApplication utilityGenerator =
+      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
+        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+
+    when:
+    System.out.println("ONE MACHINE ")
+    System.out.println("CARDINALITY = " + cardinality)
+    double result = utilityGenerator.evaluate(cardinality)
+
+    then:
+    noExceptionThrown()
+    System.out.println("utility = " + result)
+
+    where:
+    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                            costUtilityFunctionAbs, costUtilityFunctionFraction]
+  }
+
+  def "less machines"(){
+    setup:
+    cardinality = 2
+    UtilityGeneratorApplication utilityGenerator =
+      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
+        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+
+    when:
+    System.out.println("LESS MACHINES ")
+    System.out.println("CARDINALITY = " + cardinality)
+    double result = utilityGenerator.evaluate(cardinality)
+
+    then:
+    noExceptionThrown()
+    System.out.println("utility = " + result)
+
+    where:
+    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                            costUtilityFunctionAbs, costUtilityFunctionFraction]
+  }
+
+
+
+  def "no changes"(){
+    cardinality = 3
+    UtilityGeneratorApplication utilityGenerator =
+      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
+        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+
+    when:
+    System.out.println("MORE MACHINES ")
+    System.out.println("CARDINALITY = " + cardinality)
+    double result = utilityGenerator.evaluate(cardinality)
+
+    then:
+    noExceptionThrown()
+    System.out.println("utility = " + result)
+
+    where:
+    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                            costUtilityFunctionAbs, costUtilityFunctionFraction]
+  }
+
   def "more machines"(){
     cardinality = 4
     UtilityGeneratorApplication utilityGenerator =
@@ -84,70 +147,5 @@ class CETrafficUseCaseTest extends Specification {
     costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
                             costUtilityFunctionAbs, costUtilityFunctionFraction]
   }
-
-
-  def "less machines"(){
-    setup:
-    cardinality = 2
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
-
-    when:
-    System.out.println("LESS MACHINES ")
-    System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
-
-    then:
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
-
-  def "less machines - one machine"(){
-    cardinality = 1
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
-
-    when:
-    System.out.println("ONE MACHINE ")
-    System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
-
-    then:
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
-
-  def "no changes"(){
-    cardinality = 3
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
-
-    when:
-    System.out.println("MORE MACHINES ")
-    System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
-
-    then:
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
-
-
-
 
 }
