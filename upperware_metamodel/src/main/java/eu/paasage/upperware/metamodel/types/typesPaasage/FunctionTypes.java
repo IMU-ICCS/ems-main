@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -19,15 +11,17 @@ import org.eclipse.emf.common.util.EList;
  * A representation of the model object '<em><b>Function Types</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.types.typesPaasage.FunctionTypes#getTypes <em>Types</em>}</li>
  * </ul>
  *
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getFunctionTypes()
- * 
- *  CDOObject
- * 
+ * @model
+ * @extends CDOObject
+ * @generated
  */
 public interface FunctionTypes extends CDOObject {
 	/**
@@ -41,8 +35,8 @@ public interface FunctionTypes extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Types</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getFunctionTypes_Types()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	EList<FunctionType> getTypes();
 

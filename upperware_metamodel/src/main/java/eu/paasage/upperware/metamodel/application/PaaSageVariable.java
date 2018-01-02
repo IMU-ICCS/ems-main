@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -21,6 +13,7 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageVariable#getPaasageType <em>Paasage Type</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageVariable#getRelatedComponent <em>Related Component</em>}</li>
@@ -28,12 +21,11 @@ import org.eclipse.emf.cdo.CDOObject;
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageVariable#getRelatedProvider <em>Related Provider</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageVariable#getRelatedVirtualMachineProfile <em>Related Virtual Machine Profile</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageVariable()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface PaaSageVariable extends CDOObject {
 	/**
@@ -49,8 +41,8 @@ public interface PaaSageVariable extends CDOObject {
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.VariableElementTypeEnum
 	 * @see #setPaasageType(VariableElementTypeEnum)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageVariable_PaasageType()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	VariableElementTypeEnum getPaasageType();
 
@@ -61,7 +53,7 @@ public interface PaaSageVariable extends CDOObject {
 	 * @param value the new value of the '<em>Paasage Type</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.VariableElementTypeEnum
 	 * @see #getPaasageType()
-	 * 
+	 * @generated
 	 */
 	void setPaasageType(VariableElementTypeEnum value);
 
@@ -76,8 +68,8 @@ public interface PaaSageVariable extends CDOObject {
 	 * @return the value of the '<em>Related Component</em>' reference.
 	 * @see #setRelatedComponent(ApplicationComponent)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageVariable_RelatedComponent()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	ApplicationComponent getRelatedComponent();
 
@@ -87,7 +79,7 @@ public interface PaaSageVariable extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Related Component</em>' reference.
 	 * @see #getRelatedComponent()
-	 * 
+	 * @generated
 	 */
 	void setRelatedComponent(ApplicationComponent value);
 
@@ -102,8 +94,8 @@ public interface PaaSageVariable extends CDOObject {
 	 * @return the value of the '<em>Cp Variable Id</em>' attribute.
 	 * @see #setCpVariableId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageVariable_CpVariableId()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getCpVariableId();
 
@@ -113,7 +105,7 @@ public interface PaaSageVariable extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Cp Variable Id</em>' attribute.
 	 * @see #getCpVariableId()
-	 * 
+	 * @generated
 	 */
 	void setCpVariableId(String value);
 
@@ -128,8 +120,8 @@ public interface PaaSageVariable extends CDOObject {
 	 * @return the value of the '<em>Related Provider</em>' reference.
 	 * @see #setRelatedProvider(Provider)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageVariable_RelatedProvider()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	Provider getRelatedProvider();
 
@@ -139,7 +131,7 @@ public interface PaaSageVariable extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Related Provider</em>' reference.
 	 * @see #getRelatedProvider()
-	 * 
+	 * @generated
 	 */
 	void setRelatedProvider(Provider value);
 
@@ -154,8 +146,8 @@ public interface PaaSageVariable extends CDOObject {
 	 * @return the value of the '<em>Related Virtual Machine Profile</em>' reference.
 	 * @see #setRelatedVirtualMachineProfile(VirtualMachineProfile)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageVariable_RelatedVirtualMachineProfile()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	VirtualMachineProfile getRelatedVirtualMachineProfile();
 
@@ -165,7 +157,7 @@ public interface PaaSageVariable extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Related Virtual Machine Profile</em>' reference.
 	 * @see #getRelatedVirtualMachineProfile()
-	 * 
+	 * @generated
 	 */
 	void setRelatedVirtualMachineProfile(VirtualMachineProfile value);
 

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -17,7 +9,9 @@ import org.eclipse.emf.cdo.CDOObject;
  * A representation of the model object '<em><b>Application Component Profile</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentProfile#getName <em>Name</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentProfile#getVers <em>Vers</em>}</li>
@@ -25,9 +19,9 @@ import org.eclipse.emf.cdo.CDOObject;
  * </ul>
  *
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getApplicationComponentProfile()
- *  abstract="true"
- *  CDOObject
- * 
+ * @model abstract="true"
+ * @extends CDOObject
+ * @generated
  */
 public interface ApplicationComponentProfile extends CDOObject {
 	/**
@@ -41,8 +35,8 @@ public interface ApplicationComponentProfile extends CDOObject {
 	 * @return the value of the '<em>Name</em>' attribute.
 	 * @see #setName(String)
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getApplicationComponentProfile_Name()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getName();
 
@@ -52,7 +46,7 @@ public interface ApplicationComponentProfile extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Name</em>' attribute.
 	 * @see #getName()
-	 * 
+	 * @generated
 	 */
 	void setName(String value);
 
@@ -67,8 +61,8 @@ public interface ApplicationComponentProfile extends CDOObject {
 	 * @return the value of the '<em>Vers</em>' attribute.
 	 * @see #setVers(String)
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getApplicationComponentProfile_Vers()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getVers();
 
@@ -78,7 +72,7 @@ public interface ApplicationComponentProfile extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Vers</em>' attribute.
 	 * @see #getVers()
-	 * 
+	 * @generated
 	 */
 	void setVers(String value);
 
@@ -93,8 +87,8 @@ public interface ApplicationComponentProfile extends CDOObject {
 	 * @return the value of the '<em>Type</em>' reference.
 	 * @see #setType(ApplicationComponentType)
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getApplicationComponentProfile_Type()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	ApplicationComponentType getType();
 
@@ -104,7 +98,7 @@ public interface ApplicationComponentProfile extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Type</em>' reference.
 	 * @see #getType()
-	 * 
+	 * @generated
 	 */
 	void setType(ApplicationComponentType value);
 

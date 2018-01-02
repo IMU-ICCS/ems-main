@@ -305,13 +305,10 @@ public class CCDODatabaseProxy implements IDatabaseProxy {
 	}
 
 	public void saveModels(PaasageConfiguration pc, ConstraintProblem cp) {
-		String pcId= pc.getId();
+		String pcId= cp.getId();
 
 		log.debug("CDODatabaseProxy - saveModels - Storing Models ");
 		String cpPath = CDO_SERVER_PATH + pcId;
-
-		cdoClient.exportModel(pc, "/logs/cpGenerator_pcm_"+cpPath+".xmi");
-		cdoClient.exportModel(cp, "/logs/cpGenerator_cpm_"+cpPath+".xmi");
 
 		cdoClient.storeModels(Arrays.asList(pc, cp), cpPath);
 		log.debug("CDODatabaseProxy - saveModels - Models stored! ");
@@ -323,13 +320,13 @@ public class CCDODatabaseProxy implements IDatabaseProxy {
 		List<EObject> content = cloner.cloneModel(cpPath);
 
 		log.debug("CDODatabaseProxy - saveModels - Saving file "+paasageConfigModel.getAbsolutePath());
-		cdoClient.exportModel(content.get(0), cpModel.getAbsolutePath());
+		cdoClient.exportModel(content.get(0), paasageConfigModel.getAbsolutePath());
+		cdoClient.exportModel(content.get(1), cpModel.getAbsolutePath());
 	}
 
 	public void savePM(ProviderModel pm, String paasageConfigurationId, String providerId) {
 		String providerResourceId = getFMResourceId(paasageConfigurationId, providerId);
 		log.info("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {}", paasageConfigurationId, providerId, providerResourceId);
-//		cdoClient.exportModel(pm.eContainer(), "/home/pszkup/logs/providers/" + paasageConfigurationId + "_" + providerId + "xmi");
 		cdoClient.storeModel(pm.eContainer(), FMS_APP_CDO_SERVER_PATH+ providerResourceId);
 		log.info("CDODatabaseProxy - savePM - Saving PM Configuration Id {} Provider id {} under id: {} - saved", paasageConfigurationId, providerId, providerResourceId);
 	}

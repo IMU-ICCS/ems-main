@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -27,20 +19,20 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ConditionUpperwareImpl#getOperator <em>Operator</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ConditionUpperwareImpl#getExp1 <em>Exp1</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ConditionUpperwareImpl#getExp2 <em>Exp2</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class ConditionUpperwareImpl extends BooleanExpressionImpl implements ConditionUpperware {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ConditionUpperwareImpl() {
 		super();
@@ -49,7 +41,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -59,7 +51,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public LogicOperatorEnum getOperator() {
 		return (LogicOperatorEnum)eGet(ApplicationPackage.Literals.CONDITION_UPPERWARE__OPERATOR, true);
@@ -68,7 +60,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setOperator(LogicOperatorEnum newOperator) {
 		eSet(ApplicationPackage.Literals.CONDITION_UPPERWARE__OPERATOR, newOperator);
@@ -77,7 +69,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public BooleanExpression getExp1() {
 		return (BooleanExpression)eGet(ApplicationPackage.Literals.CONDITION_UPPERWARE__EXP1, true);
@@ -86,7 +78,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setExp1(BooleanExpression newExp1) {
 		eSet(ApplicationPackage.Literals.CONDITION_UPPERWARE__EXP1, newExp1);
@@ -95,7 +87,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public BooleanExpression getExp2() {
 		return (BooleanExpression)eGet(ApplicationPackage.Literals.CONDITION_UPPERWARE__EXP2, true);
@@ -104,7 +96,7 @@ public class ConditionUpperwareImpl extends BooleanExpressionImpl implements Con
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setExp2(BooleanExpression newExp2) {
 		eSet(ApplicationPackage.Literals.CONDITION_UPPERWARE__EXP2, newExp2);

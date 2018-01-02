@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.util;
 
@@ -25,14 +17,14 @@ import org.eclipse.emf.ecore.EObject;
  * It provides an adapter <code>createXXX</code> method for each class of the model.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.TypesPackage
- * 
+ * @generated
  */
 public class TypesAdapterFactory extends AdapterFactoryImpl {
 	/**
 	 * The cached model package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static TypesPackage modelPackage;
 
@@ -40,7 +32,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * Creates an instance of the adapter factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesAdapterFactory() {
 		if (modelPackage == null) {
@@ -54,7 +46,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
 	 * <!-- end-user-doc -->
 	 * @return whether this factory is applicable for the type of the object.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public boolean isFactoryForType(Object object) {
@@ -71,7 +63,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * The switch that delegates to the <code>createXXX</code> methods.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected TypesSwitch<Adapter> modelSwitch =
 		new TypesSwitch<Adapter>() {
@@ -119,7 +111,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @param target the object to adapt.
 	 * @return the adapter for the <code>target</code>.
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Adapter createAdapter(Notifier target) {
@@ -135,7 +127,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.ValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createValueUpperwareAdapter() {
 		return null;
@@ -149,7 +141,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.NumericValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createNumericValueUpperwareAdapter() {
 		return null;
@@ -163,7 +155,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.IntegerValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createIntegerValueUpperwareAdapter() {
 		return null;
@@ -177,7 +169,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.LongValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createLongValueUpperwareAdapter() {
 		return null;
@@ -191,7 +183,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.FloatValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createFloatValueUpperwareAdapter() {
 		return null;
@@ -205,7 +197,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.DoubleValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createDoubleValueUpperwareAdapter() {
 		return null;
@@ -219,7 +211,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.StringValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createStringValueUpperwareAdapter() {
 		return null;
@@ -233,7 +225,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
 	 * @see eu.paasage.upperware.metamodel.types.BooleanValueUpperware
-	 * 
+	 * @generated
 	 */
 	public Adapter createBooleanValueUpperwareAdapter() {
 		return null;
@@ -245,7 +237,7 @@ public class TypesAdapterFactory extends AdapterFactoryImpl {
 	 * This default implementation returns null.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * 
+	 * @generated
 	 */
 	public Adapter createEObjectAdapter() {
 		return null;

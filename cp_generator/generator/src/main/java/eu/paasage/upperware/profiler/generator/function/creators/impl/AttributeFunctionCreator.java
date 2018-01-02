@@ -15,7 +15,7 @@ import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.function.creators.FunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintService;
-import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
+import eu.paasage.upperware.profiler.generator.tools.ProviderModelTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
@@ -43,7 +43,7 @@ public class AttributeFunctionCreator implements FunctionCreator {
 
     @Override
     public void createFunction(ConstraintProblem cp, PaaSageGoal goal) {
-        setAttributeName(goal.getOptimisationAttribute());
+//        setAttributeName(goal.getOptimisationAttribute());
 
         EList<Variable> variables = cp.getVariables();
         PaasageConfiguration pc = (PaasageConfiguration) goal.eContainer();

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.util;
 
@@ -28,14 +20,14 @@ import org.eclipse.emf.ecore.util.Switch;
  * which is the result of the switch.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.TypesPackage
- * 
+ * @generated
  */
 public class TypesSwitch<T> extends Switch<T> {
 	/**
 	 * The cached model package
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected static TypesPackage modelPackage;
 
@@ -43,7 +35,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * Creates an instance of the switch.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesSwitch() {
 		if (modelPackage == null) {
@@ -57,7 +49,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * <!-- end-user-doc -->
 	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected boolean isSwitchFor(EPackage ePackage) {
@@ -69,7 +61,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the first non-null result returned by a <code>caseXXX</code> call.
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected T doSwitch(int classifierID, EObject theEObject) {
@@ -146,7 +138,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseValueUpperware(ValueUpperware object) {
 		return null;
@@ -161,7 +153,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Numeric Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseNumericValueUpperware(NumericValueUpperware object) {
 		return null;
@@ -176,7 +168,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Integer Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseIntegerValueUpperware(IntegerValueUpperware object) {
 		return null;
@@ -191,7 +183,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Long Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseLongValueUpperware(LongValueUpperware object) {
 		return null;
@@ -206,7 +198,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Float Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseFloatValueUpperware(FloatValueUpperware object) {
 		return null;
@@ -221,7 +213,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Double Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseDoubleValueUpperware(DoubleValueUpperware object) {
 		return null;
@@ -236,7 +228,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>String Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseStringValueUpperware(StringValueUpperware object) {
 		return null;
@@ -251,7 +243,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>Boolean Value Upperware</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * 
+	 * @generated
 	 */
 	public T caseBooleanValueUpperware(BooleanValueUpperware object) {
 		return null;
@@ -266,7 +258,7 @@ public class TypesSwitch<T> extends Switch<T> {
 	 * @param object the target of the switch.
 	 * @return the result of interpreting the object as an instance of '<em>EObject</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject)
-	 * 
+	 * @generated
 	 */
 	@Override
 	public T defaultCase(EObject object) {

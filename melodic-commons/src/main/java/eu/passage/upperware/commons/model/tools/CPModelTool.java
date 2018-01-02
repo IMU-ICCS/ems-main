@@ -301,8 +301,6 @@ public class CPModelTool {
 		String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
 				+"  providerId: " +var.getProviderId() + System.lineSeparator()
 				+"  vmId " + var.getVmId() + System.lineSeparator()
-				+"  componentName " + var.getComponentName() + System.lineSeparator()
-				+"  flavourName " + var.getFlavourName() + System.lineSeparator()
 				+"  osImageId: " + var.getOsImageId()+ System.lineSeparator()
 				+"  hardwareId: " + var.getHardwareId() + System.lineSeparator()
 				+"  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
@@ -318,8 +316,7 @@ public class CPModelTool {
 	 */
 	public static String toString(Goal goal)
 	{
-		String retString = "Goal Type: " +goal.getId()+ System.lineSeparator() + toString(goal.getExpression());
-		return retString;
+		return "Goal Type: " +goal.getId()+ System.lineSeparator() + toString(goal.getExpression());
 	}
 
 	/**

@@ -10,10 +10,10 @@ package eu.paasage.upperware.metamodel.cp;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression#getOperator <em>Operator</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getSimpleUnaryExpression()
  * @model abstract="true"

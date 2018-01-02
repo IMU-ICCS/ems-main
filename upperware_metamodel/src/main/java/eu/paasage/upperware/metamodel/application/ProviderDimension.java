@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,17 +11,17 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ProviderDimension#getValue <em>Value</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ProviderDimension#getProvider <em>Provider</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ProviderDimension#getMetricID <em>Metric ID</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProviderDimension()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface ProviderDimension extends CDOObject {
 	/**
@@ -43,8 +35,8 @@ public interface ProviderDimension extends CDOObject {
 	 * @return the value of the '<em>Value</em>' attribute.
 	 * @see #setValue(double)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProviderDimension_Value()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	double getValue();
 
@@ -54,7 +46,7 @@ public interface ProviderDimension extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Value</em>' attribute.
 	 * @see #getValue()
-	 * 
+	 * @generated
 	 */
 	void setValue(double value);
 
@@ -69,8 +61,8 @@ public interface ProviderDimension extends CDOObject {
 	 * @return the value of the '<em>Provider</em>' reference.
 	 * @see #setProvider(Provider)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProviderDimension_Provider()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	Provider getProvider();
 
@@ -80,7 +72,7 @@ public interface ProviderDimension extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Provider</em>' reference.
 	 * @see #getProvider()
-	 * 
+	 * @generated
 	 */
 	void setProvider(Provider value);
 
@@ -96,8 +88,8 @@ public interface ProviderDimension extends CDOObject {
 	 * @return the value of the '<em>Metric ID</em>' attribute.
 	 * @see #setMetricID(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProviderDimension_MetricID()
-	 *  default=""
-	 * 
+	 * @model default=""
+	 * @generated
 	 */
 	String getMetricID();
 
@@ -107,7 +99,7 @@ public interface ProviderDimension extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Metric ID</em>' attribute.
 	 * @see #getMetricID()
-	 * 
+	 * @generated
 	 */
 	void setMetricID(String value);
 

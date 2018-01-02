@@ -47,7 +47,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @parameter ePackage the package in question.
+	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
@@ -284,17 +284,6 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = caseNumericExpression(configurationUpperware);
 				if (result == null) result = caseExpression(configurationUpperware);
 				if (result == null) result = caseCPElement(configurationUpperware);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
-			case CpPackage.DELTA_UTILITY: {
-				DeltaUtility deltaUtility = (DeltaUtility)theEObject;
-				T result = caseDeltaUtility(deltaUtility);
-				if (result == null) result = caseFunction(deltaUtility);
-				if (result == null) result = caseComposedExpression(deltaUtility);
-				if (result == null) result = caseNumericExpression(deltaUtility);
-				if (result == null) result = caseExpression(deltaUtility);
-				if (result == null) result = caseCPElement(deltaUtility);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -719,21 +708,6 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseConfigurationUpperware(ConfigurationUpperware object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Delta Utility</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Delta Utility</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseDeltaUtility(DeltaUtility object) {
 		return null;
 	}
 

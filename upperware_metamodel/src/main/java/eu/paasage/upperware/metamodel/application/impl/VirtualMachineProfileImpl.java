@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -32,6 +24,7 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.VirtualMachineProfileImpl#getSize <em>Size</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.VirtualMachineProfileImpl#getMemory <em>Memory</em>}</li>
@@ -43,15 +36,14 @@ import org.eclipse.emf.ecore.EClass;
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.VirtualMachineProfileImpl#getImage <em>Image</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.VirtualMachineProfileImpl#getRelatedCloudVMId <em>Related Cloud VM Id</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl implements VirtualMachineProfile {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected VirtualMachineProfileImpl() {
 		super();
@@ -60,7 +52,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -70,7 +62,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VMSizeEnum getSize() {
 		return (VMSizeEnum)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__SIZE, true);
@@ -79,7 +71,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setSize(VMSizeEnum newSize) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__SIZE, newSize);
@@ -88,7 +80,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Memory getMemory() {
 		return (Memory)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__MEMORY, true);
@@ -97,7 +89,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setMemory(Memory newMemory) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__MEMORY, newMemory);
@@ -106,7 +98,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public Storage getStorage() {
 		return (Storage)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__STORAGE, true);
@@ -115,7 +107,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setStorage(Storage newStorage) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__STORAGE, newStorage);
@@ -124,7 +116,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public CPU getCpu() {
 		return (CPU)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__CPU, true);
@@ -133,7 +125,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setCpu(CPU newCpu) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__CPU, newCpu);
@@ -142,7 +134,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public OS getOs() {
 		return (OS)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__OS, true);
@@ -151,7 +143,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setOs(OS newOs) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__OS, newOs);
@@ -160,7 +152,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<ProviderDimension> getProviderDimension() {
@@ -170,7 +162,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public LocationUpperware getLocation() {
 		return (LocationUpperware)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__LOCATION, true);
@@ -179,7 +171,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setLocation(LocationUpperware newLocation) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__LOCATION, newLocation);
@@ -188,7 +180,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ImageUpperware getImage() {
 		return (ImageUpperware)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__IMAGE, true);
@@ -197,7 +189,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setImage(ImageUpperware newImage) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__IMAGE, newImage);
@@ -206,7 +198,7 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getRelatedCloudVMId() {
 		return (String)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__RELATED_CLOUD_VM_ID, true);
@@ -215,20 +207,10 @@ public class VirtualMachineProfileImpl extends CloudMLElementUpperwareImpl imple
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setRelatedCloudVMId(String newRelatedCloudVMId) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__RELATED_CLOUD_VM_ID, newRelatedCloudVMId);
-	}
-
-	@Override
-	public String getFlavourName() {
-		return (String)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID, true);
-	}
-
-	@Override
-	public void setFlavourName(String newFlavourName) {
-		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID, newFlavourName);
 	}
 
 } //VirtualMachineProfileImpl

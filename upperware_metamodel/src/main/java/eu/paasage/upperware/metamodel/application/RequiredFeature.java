@@ -3,6 +3,7 @@
 package eu.paasage.upperware.metamodel.application;
 
 import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
+
 import org.eclipse.emf.cdo.CDOObject;
 
 /**
@@ -12,6 +13,7 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#getFeature <em>Feature</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#getProvidedBy <em>Provided By</em>}</li>
@@ -19,7 +21,6 @@ import org.eclipse.emf.cdo.CDOObject;
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#isOptional <em>Optional</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.RequiredFeature#isContaiment <em>Contaiment</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getRequiredFeature()
  * @model

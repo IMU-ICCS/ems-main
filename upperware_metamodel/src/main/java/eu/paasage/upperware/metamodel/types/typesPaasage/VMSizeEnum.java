@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -22,8 +14,8 @@ import org.eclipse.emf.common.util.Enumerator;
  * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getVMSizeEnum()
- * 
- * 
+ * @model
+ * @generated
  */
 public enum VMSizeEnum implements Enumerator {
 	/**
@@ -31,8 +23,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #XS_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	XS(0, "XS", "XS"),
 
@@ -41,8 +33,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #S_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	S(1, "S", "S"),
 
@@ -51,8 +43,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #L_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	L(2, "L", "L"),
 
@@ -61,8 +53,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #XL_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	XL(3, "XL", "XL"),
 
@@ -71,8 +63,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #XXL_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	XXL(4, "XXL", "XXL"),
 
@@ -81,8 +73,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #A6_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	A6(5, "A6", "A6"),
 
@@ -91,8 +83,8 @@ public enum VMSizeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #A7_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	A7(6, "A7", "A7");
 
@@ -105,9 +97,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #XS
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int XS_VALUE = 0;
 
@@ -120,9 +112,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #S
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int S_VALUE = 1;
 
@@ -135,9 +127,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #L
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int L_VALUE = 2;
 
@@ -150,9 +142,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #XL
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int XL_VALUE = 3;
 
@@ -165,9 +157,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #XXL
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int XXL_VALUE = 4;
 
@@ -180,9 +172,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #A6
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int A6_VALUE = 5;
 
@@ -195,9 +187,9 @@ public enum VMSizeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #A7
-	 * 
-	 * 
-	 * 
+	 * @model
+	 * @generated
+	 * @ordered
 	 */
 	public static final int A7_VALUE = 6;
 
@@ -205,7 +197,7 @@ public enum VMSizeEnum implements Enumerator {
 	 * An array of all the '<em><b>VM Size Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static final VMSizeEnum[] VALUES_ARRAY =
 		new VMSizeEnum[] {
@@ -222,11 +214,18 @@ public enum VMSizeEnum implements Enumerator {
 	 * A public read-only list of all the '<em><b>VM Size Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static final List<VMSizeEnum> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
-
+	/**
+	 * Returns the '<em><b>VM Size Enum</b></em>' literal with the specified literal value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static VMSizeEnum get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			VMSizeEnum result = VALUES_ARRAY[i];
@@ -237,7 +236,14 @@ public enum VMSizeEnum implements Enumerator {
 		return null;
 	}
 
-
+	/**
+	 * Returns the '<em><b>VM Size Enum</b></em>' literal with the specified name.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static VMSizeEnum getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			VMSizeEnum result = VALUES_ARRAY[i];
@@ -248,7 +254,14 @@ public enum VMSizeEnum implements Enumerator {
 		return null;
 	}
 
-
+	/**
+	 * Returns the '<em><b>VM Size Enum</b></em>' literal with the specified integer value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static VMSizeEnum get(int value) {
 		switch (value) {
 			case XS_VALUE: return XS;
@@ -265,47 +278,69 @@ public enum VMSizeEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String literal;
 
-
+	/**
+	 * Only this class can construct instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private VMSizeEnum(int value, String name, String literal) {
 		this.value = value;
 		this.name = name;
 		this.literal = literal;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public int getValue() {
 	  return value;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getName() {
 	  return name;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getLiteral() {
 	  return literal;
 	}
 
-
+	/**
+	 * Returns the literal value of the enumerator, which is its string representation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public String toString() {
 		return literal;

@@ -12,11 +12,9 @@ import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.derivator.api.IFunctionCreator;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
-import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
+import eu.paasage.upperware.profiler.generator.tools.ProviderModelTool;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 
 @Slf4j
@@ -29,7 +27,7 @@ public class AttributeFunctionCreator implements IFunctionCreator {
 
     @Override
     public void createFunction(ConstraintProblem cp, PaaSageGoal goal) {
-        setAttributeName(goal.getOptimisationAttribute());
+//        setAttributeName(goal.getOptimisationAttribute());
 
         EList<Variable> variables = cp.getVariables();
         PaasageConfiguration pc = (PaasageConfiguration) goal.eContainer();

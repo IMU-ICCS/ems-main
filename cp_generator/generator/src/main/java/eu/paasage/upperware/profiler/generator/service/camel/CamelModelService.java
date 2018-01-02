@@ -7,7 +7,7 @@ import eu.paasage.camel.type.ValueType;
 import eu.paasage.camel.type.impl.EnumerationImpl;
 import eu.paasage.camel.type.impl.StringsValueImpl;
 import eu.paasage.upperware.profiler.generator.service.camel.model.Flavour;
-import fr.inria.paasage.saloon.price.model.tools.ProviderModelTool;
+import eu.paasage.upperware.profiler.generator.tools.ProviderModelTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;

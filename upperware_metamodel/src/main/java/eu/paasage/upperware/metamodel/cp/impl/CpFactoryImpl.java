@@ -77,7 +77,6 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 			case CpPackage.NORMALISED_UTILITY_DIMENSION: return (EObject)createNormalisedUtilityDimension();
 			case CpPackage.FUNCTION: return (EObject)createFunction();
 			case CpPackage.CONFIGURATION_UPPERWARE: return (EObject)createConfigurationUpperware();
-			case CpPackage.DELTA_UTILITY: return (EObject)createDeltaUtility();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -101,6 +100,8 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 				return createSimpleUnaryOperatorEnumFromString(eDataType, initialValue);
 			case CpPackage.COMPOSED_UNARY_OPERATOR_ENUM:
 				return createComposedUnaryOperatorEnumFromString(eDataType, initialValue);
+			case CpPackage.VARIABLE_TYPE:
+				return createVariableTypeFromString(eDataType, initialValue);
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
@@ -124,6 +125,8 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 				return convertSimpleUnaryOperatorEnumToString(eDataType, instanceValue);
 			case CpPackage.COMPOSED_UNARY_OPERATOR_ENUM:
 				return convertComposedUnaryOperatorEnumToString(eDataType, instanceValue);
+			case CpPackage.VARIABLE_TYPE:
+				return convertVariableTypeToString(eDataType, instanceValue);
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
@@ -334,16 +337,6 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public DeltaUtility createDeltaUtility() {
-		DeltaUtilityImpl deltaUtility = new DeltaUtilityImpl();
-		return deltaUtility;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public OperatorEnum createOperatorEnumFromString(EDataType eDataType, String initialValue) {
 		OperatorEnum result = OperatorEnum.get(initialValue);
 		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
@@ -436,6 +429,26 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * @generated
 	 */
 	public String convertComposedUnaryOperatorEnumToString(EDataType eDataType, Object instanceValue) {
+		return instanceValue == null ? null : instanceValue.toString();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public VariableType createVariableTypeFromString(EDataType eDataType, String initialValue) {
+		VariableType result = VariableType.get(initialValue);
+		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+		return result;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String convertVariableTypeToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
 	}
 

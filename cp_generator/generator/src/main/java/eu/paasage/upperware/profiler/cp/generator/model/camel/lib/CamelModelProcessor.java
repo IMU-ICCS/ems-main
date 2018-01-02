@@ -261,10 +261,6 @@ public class CamelModelProcessor {
 		
 		providerModelParser.checkExistSolution(pc);
 		
-		log.debug("CamelModelProcessor - parseModel - Checking solution existency ");
-		deploymentModelParser.checkExistencyOfValidUserSolution(model.getDeploymentModels().get(0), pc);
-		log.debug("CamelModelProcessor - parseModel - Checking solution existency ended ");
-		
 		log.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ");
 		deploymentModelParser.checkCorrectHostingRelationships(model.getDeploymentModels().get(0), pc);
 		log.debug("CamelModelProcessor - parseModel - Checking hosting relationships existency ended ");
@@ -545,7 +541,7 @@ public class CamelModelProcessor {
 
 						if (ATTRIBUTE.equalsIgnoreCase(ft.getId())){
 							String pathToAttribute = getPathToAttribute(optReq);
-							goal.setOptimisationAttribute(pathToAttribute);
+//							goal.setOptimisationAttribute(pathToAttribute);
 						}
 
 						log.debug("CamelModelProcessor - parseOptimisationRequirements 11");

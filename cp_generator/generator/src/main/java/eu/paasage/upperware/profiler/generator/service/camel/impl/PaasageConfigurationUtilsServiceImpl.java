@@ -44,7 +44,7 @@ public class PaasageConfigurationUtilsServiceImpl implements PaasageConfiguratio
     public List<Variable> getVariablesRelatedToAppComponent(ApplicationComponent ac, ConstraintProblem cp) {
         String componentName = ac.getCloudMLId();
         return cp.getVariables().stream()
-                .filter(variable -> variable.getComponentName().equals(componentName))
+                .filter(variable -> variable.getComponentId().equals(componentName))
                 .collect(Collectors.toList());
     }
 

@@ -16,11 +16,11 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ParameterImpl#getSolution <em>Solution</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ParameterImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

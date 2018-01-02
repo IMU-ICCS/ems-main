@@ -15,10 +15,10 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.CPElementImpl#getId <em>Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

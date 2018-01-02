@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -23,14 +15,16 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ActionUpperware#getParameters <em>Parameters</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ActionUpperware#getType <em>Type</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getActionUpperware()
+ * @model
  * @extends CDOObject
+ * @generated
  */
 public interface ActionUpperware extends CDOObject {
 	/**
@@ -44,6 +38,8 @@ public interface ActionUpperware extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Parameters</em>' attribute list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getActionUpperware_Parameters()
+	 * @model
+	 * @generated
 	 */
 	EList<String> getParameters();
 
@@ -58,6 +54,8 @@ public interface ActionUpperware extends CDOObject {
 	 * @return the value of the '<em>Type</em>' reference.
 	 * @see #setType(ActionType)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getActionUpperware_Type()
+	 * @model required="true"
+	 * @generated
 	 */
 	ActionType getType();
 
@@ -67,6 +65,7 @@ public interface ActionUpperware extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Type</em>' reference.
 	 * @see #getType()
+	 * @generated
 	 */
 	void setType(ActionType value);
 

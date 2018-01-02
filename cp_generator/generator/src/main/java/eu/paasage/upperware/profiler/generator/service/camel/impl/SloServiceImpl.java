@@ -169,7 +169,7 @@ public class SloServiceImpl implements SloService {
                         if (exp instanceof Variable) {
                             Variable v = (Variable) exp;
                             if (v.getId().startsWith(APP_COMPONENT_VAR_PREFIX)) {
-                                unique.add(v.getComponentName());
+                                unique.add(v.getComponentId());
                             }
                         }
                     }
@@ -226,7 +226,7 @@ public class SloServiceImpl implements SloService {
             /* update variables */
             for (Variable variable : cpModel.getVariables()) {
                 if (variable.getId().startsWith(APP_COMPONENT_VAR_PREFIX)) {
-                    String id = variable.getComponentName();
+                    String id = variable.getComponentId();
                     for (AlgebraVariable av : ranges) {
                         if (av.getVariable().equals(id)) {
                             Domain d = variable.getDomain();

@@ -10,7 +10,7 @@ import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfiguration
 
 public interface PaasageConfigurationService {
 
-    PaaSageConfigurationWrapper createPaasageConfigurationWrapper(CamelModel camelModel);
+    PaaSageConfigurationWrapper createPaasageConfigurationWrapper(CamelModel camelModel, String appId);
 
     PaaSageVariable createPaaSageVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, Variable var);
 

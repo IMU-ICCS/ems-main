@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -21,16 +13,16 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.LogicOperatorEnum;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ConditionUpperware#getOperator <em>Operator</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ConditionUpperware#getExp1 <em>Exp1</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ConditionUpperware#getExp2 <em>Exp2</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getConditionUpperware()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface ConditionUpperware extends BooleanExpression {
 	/**
@@ -46,8 +38,8 @@ public interface ConditionUpperware extends BooleanExpression {
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.LogicOperatorEnum
 	 * @see #setOperator(LogicOperatorEnum)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getConditionUpperware_Operator()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	LogicOperatorEnum getOperator();
 
@@ -58,7 +50,7 @@ public interface ConditionUpperware extends BooleanExpression {
 	 * @param value the new value of the '<em>Operator</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.LogicOperatorEnum
 	 * @see #getOperator()
-	 * 
+	 * @generated
 	 */
 	void setOperator(LogicOperatorEnum value);
 
@@ -73,8 +65,8 @@ public interface ConditionUpperware extends BooleanExpression {
 	 * @return the value of the '<em>Exp1</em>' containment reference.
 	 * @see #setExp1(BooleanExpression)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getConditionUpperware_Exp1()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	BooleanExpression getExp1();
 
@@ -84,7 +76,7 @@ public interface ConditionUpperware extends BooleanExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Exp1</em>' containment reference.
 	 * @see #getExp1()
-	 * 
+	 * @generated
 	 */
 	void setExp1(BooleanExpression value);
 
@@ -99,8 +91,8 @@ public interface ConditionUpperware extends BooleanExpression {
 	 * @return the value of the '<em>Exp2</em>' containment reference.
 	 * @see #setExp2(BooleanExpression)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getConditionUpperware_Exp2()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	BooleanExpression getExp2();
 
@@ -110,7 +102,7 @@ public interface ConditionUpperware extends BooleanExpression {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Exp2</em>' containment reference.
 	 * @see #getExp2()
-	 * 
+	 * @generated
 	 */
 	void setExp2(BooleanExpression value);
 

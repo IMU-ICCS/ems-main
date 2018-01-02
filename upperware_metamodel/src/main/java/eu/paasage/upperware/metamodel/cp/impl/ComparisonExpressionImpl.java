@@ -15,12 +15,12 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ComparisonExpressionImpl#getExp1 <em>Exp1</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ComparisonExpressionImpl#getExp2 <em>Exp2</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ComparisonExpressionImpl#getComparator <em>Comparator</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

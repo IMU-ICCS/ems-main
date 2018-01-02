@@ -17,8 +17,6 @@
     <description>The cp generator component</description>
 
     <modules>
-        <module>price-estimation-tool</module>
-        <!--<module>init</module>-->
         <module>cloner</module>
         <module>generator</module>
     </modules>

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,15 +11,15 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.PaaSageCPElement;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.VirtualMachine#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.VirtualMachine#getProfile <em>Profile</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachine()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface VirtualMachine extends PaaSageCPElement {
 	/**
@@ -41,8 +33,8 @@ public interface VirtualMachine extends PaaSageCPElement {
 	 * @return the value of the '<em>Id</em>' attribute.
 	 * @see #setId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachine_Id()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getId();
 
@@ -52,7 +44,7 @@ public interface VirtualMachine extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Id</em>' attribute.
 	 * @see #getId()
-	 * 
+	 * @generated
 	 */
 	void setId(String value);
 
@@ -67,8 +59,8 @@ public interface VirtualMachine extends PaaSageCPElement {
 	 * @return the value of the '<em>Profile</em>' reference.
 	 * @see #setProfile(VirtualMachineProfile)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachine_Profile()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	VirtualMachineProfile getProfile();
 
@@ -78,7 +70,7 @@ public interface VirtualMachine extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Profile</em>' reference.
 	 * @see #getProfile()
-	 * 
+	 * @generated
 	 */
 	void setProfile(VirtualMachineProfile value);
 

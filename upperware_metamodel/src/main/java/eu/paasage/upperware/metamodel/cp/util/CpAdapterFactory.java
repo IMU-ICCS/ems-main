@@ -180,10 +180,6 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createConfigurationUpperwareAdapter();
 			}
 			@Override
-			public Adapter caseDeltaUtility(DeltaUtility object) {
-				return createDeltaUtilityAdapter();
-			}
-			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -592,20 +588,6 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createConfigurationUpperwareAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.DeltaUtility <em>Delta Utility</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.DeltaUtility
-	 * @generated
-	 */
-	public Adapter createDeltaUtilityAdapter() {
 		return null;
 	}
 

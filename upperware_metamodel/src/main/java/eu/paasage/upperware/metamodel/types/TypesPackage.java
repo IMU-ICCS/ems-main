@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types;
 
@@ -28,15 +20,15 @@ import org.eclipse.emf.ecore.EPackage;
  * </ul>
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.TypesFactory
- *  kind="package"
- * 
+ * @model kind="package"
+ * @generated
  */
 public interface TypesPackage extends EPackage {
 	/**
 	 * The package name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	String eNAME = "types";
 
@@ -44,7 +36,7 @@ public interface TypesPackage extends EPackage {
 	 * The package namespace URI.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	String eNS_URI = "http://www.paasage.eu/eu/paasage/upperware/metamodel/types";
 
@@ -52,7 +44,7 @@ public interface TypesPackage extends EPackage {
 	 * The package namespace name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	String eNS_PREFIX = "types";
 
@@ -60,7 +52,7 @@ public interface TypesPackage extends EPackage {
 	 * The singleton instance of the package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	TypesPackage eINSTANCE = eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl.init();
 
@@ -70,7 +62,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.ValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int VALUE_UPPERWARE = 0;
 
@@ -78,8 +70,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int VALUE_UPPERWARE_FEATURE_COUNT = 0;
 
@@ -87,8 +79,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int VALUE_UPPERWARE_OPERATION_COUNT = 0;
 
@@ -98,7 +90,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.NumericValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getNumericValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int NUMERIC_VALUE_UPPERWARE = 1;
 
@@ -106,8 +98,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Numeric Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT = VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -115,8 +107,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Numeric Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int NUMERIC_VALUE_UPPERWARE_OPERATION_COUNT = VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -126,7 +118,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.IntegerValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getIntegerValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int INTEGER_VALUE_UPPERWARE = 2;
 
@@ -134,8 +126,8 @@ public interface TypesPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int INTEGER_VALUE_UPPERWARE__VALUE = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -143,8 +135,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Integer Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int INTEGER_VALUE_UPPERWARE_FEATURE_COUNT = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 1;
 
@@ -152,8 +144,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Integer Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int INTEGER_VALUE_UPPERWARE_OPERATION_COUNT = NUMERIC_VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -163,7 +155,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.LongValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getLongValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int LONG_VALUE_UPPERWARE = 3;
 
@@ -171,8 +163,8 @@ public interface TypesPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int LONG_VALUE_UPPERWARE__VALUE = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -180,8 +172,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Long Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int LONG_VALUE_UPPERWARE_FEATURE_COUNT = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 1;
 
@@ -189,8 +181,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Long Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int LONG_VALUE_UPPERWARE_OPERATION_COUNT = NUMERIC_VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -200,7 +192,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.FloatValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getFloatValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int FLOAT_VALUE_UPPERWARE = 4;
 
@@ -208,8 +200,8 @@ public interface TypesPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int FLOAT_VALUE_UPPERWARE__VALUE = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -217,8 +209,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Float Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int FLOAT_VALUE_UPPERWARE_FEATURE_COUNT = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 1;
 
@@ -226,8 +218,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Float Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int FLOAT_VALUE_UPPERWARE_OPERATION_COUNT = NUMERIC_VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -237,7 +229,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.DoubleValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getDoubleValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int DOUBLE_VALUE_UPPERWARE = 5;
 
@@ -245,8 +237,8 @@ public interface TypesPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int DOUBLE_VALUE_UPPERWARE__VALUE = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -254,8 +246,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Double Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int DOUBLE_VALUE_UPPERWARE_FEATURE_COUNT = NUMERIC_VALUE_UPPERWARE_FEATURE_COUNT + 1;
 
@@ -263,8 +255,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Double Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int DOUBLE_VALUE_UPPERWARE_OPERATION_COUNT = NUMERIC_VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -274,7 +266,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.StringValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getStringValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int STRING_VALUE_UPPERWARE = 6;
 
@@ -282,8 +274,8 @@ public interface TypesPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int STRING_VALUE_UPPERWARE__VALUE = VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -291,8 +283,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>String Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int STRING_VALUE_UPPERWARE_FEATURE_COUNT = VALUE_UPPERWARE_FEATURE_COUNT + 1;
 
@@ -300,8 +292,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>String Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int STRING_VALUE_UPPERWARE_OPERATION_COUNT = VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -311,7 +303,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.impl.BooleanValueUpperwareImpl
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getBooleanValueUpperware()
-	 * 
+	 * @generated
 	 */
 	int BOOLEAN_VALUE_UPPERWARE = 7;
 
@@ -319,8 +311,8 @@ public interface TypesPackage extends EPackage {
 	 * The feature id for the '<em><b>Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int BOOLEAN_VALUE_UPPERWARE__VALUE = VALUE_UPPERWARE_FEATURE_COUNT + 0;
 
@@ -328,8 +320,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of structural features of the '<em>Boolean Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int BOOLEAN_VALUE_UPPERWARE_FEATURE_COUNT = VALUE_UPPERWARE_FEATURE_COUNT + 1;
 
@@ -337,8 +329,8 @@ public interface TypesPackage extends EPackage {
 	 * The number of operations of the '<em>Boolean Value Upperware</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	int BOOLEAN_VALUE_UPPERWARE_OPERATION_COUNT = VALUE_UPPERWARE_OPERATION_COUNT + 0;
 
@@ -348,7 +340,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @see eu.paasage.upperware.metamodel.types.BasicTypeEnum
 	 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getBasicTypeEnum()
-	 * 
+	 * @generated
 	 */
 	int BASIC_TYPE_ENUM = 8;
 
@@ -359,7 +351,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.ValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getValueUpperware();
 
@@ -369,7 +361,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Numeric Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.NumericValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getNumericValueUpperware();
 
@@ -379,7 +371,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Integer Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.IntegerValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getIntegerValueUpperware();
 
@@ -390,7 +382,7 @@ public interface TypesPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.IntegerValueUpperware#getValue()
 	 * @see #getIntegerValueUpperware()
-	 * 
+	 * @generated
 	 */
 	EAttribute getIntegerValueUpperware_Value();
 
@@ -400,7 +392,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Long Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.LongValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getLongValueUpperware();
 
@@ -411,7 +403,7 @@ public interface TypesPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.LongValueUpperware#getValue()
 	 * @see #getLongValueUpperware()
-	 * 
+	 * @generated
 	 */
 	EAttribute getLongValueUpperware_Value();
 
@@ -421,7 +413,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Float Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.FloatValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getFloatValueUpperware();
 
@@ -432,7 +424,7 @@ public interface TypesPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.FloatValueUpperware#getValue()
 	 * @see #getFloatValueUpperware()
-	 * 
+	 * @generated
 	 */
 	EAttribute getFloatValueUpperware_Value();
 
@@ -442,7 +434,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Double Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.DoubleValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getDoubleValueUpperware();
 
@@ -453,7 +445,7 @@ public interface TypesPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.DoubleValueUpperware#getValue()
 	 * @see #getDoubleValueUpperware()
-	 * 
+	 * @generated
 	 */
 	EAttribute getDoubleValueUpperware_Value();
 
@@ -463,7 +455,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>String Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.StringValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getStringValueUpperware();
 
@@ -474,7 +466,7 @@ public interface TypesPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.StringValueUpperware#getValue()
 	 * @see #getStringValueUpperware()
-	 * 
+	 * @generated
 	 */
 	EAttribute getStringValueUpperware_Value();
 
@@ -484,7 +476,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Boolean Value Upperware</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.BooleanValueUpperware
-	 * 
+	 * @generated
 	 */
 	EClass getBooleanValueUpperware();
 
@@ -495,7 +487,7 @@ public interface TypesPackage extends EPackage {
 	 * @return the meta object for the attribute '<em>Value</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.BooleanValueUpperware#isValue()
 	 * @see #getBooleanValueUpperware()
-	 * 
+	 * @generated
 	 */
 	EAttribute getBooleanValueUpperware_Value();
 
@@ -505,7 +497,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @return the meta object for enum '<em>Basic Type Enum</em>'.
 	 * @see eu.paasage.upperware.metamodel.types.BasicTypeEnum
-	 * 
+	 * @generated
 	 */
 	EEnum getBasicTypeEnum();
 
@@ -514,7 +506,7 @@ public interface TypesPackage extends EPackage {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the factory that creates the instances of the model.
-	 * 
+	 * @generated
 	 */
 	TypesFactory getTypesFactory();
 
@@ -529,7 +521,7 @@ public interface TypesPackage extends EPackage {
 	 *   <li>and each data type</li>
 	 * </ul>
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	interface Literals {
 		/**
@@ -538,7 +530,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.ValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass VALUE_UPPERWARE = eINSTANCE.getValueUpperware();
 
@@ -548,7 +540,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.NumericValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getNumericValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass NUMERIC_VALUE_UPPERWARE = eINSTANCE.getNumericValueUpperware();
 
@@ -558,7 +550,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.IntegerValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getIntegerValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass INTEGER_VALUE_UPPERWARE = eINSTANCE.getIntegerValueUpperware();
 
@@ -566,7 +558,7 @@ public interface TypesPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute INTEGER_VALUE_UPPERWARE__VALUE = eINSTANCE.getIntegerValueUpperware_Value();
 
@@ -576,7 +568,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.LongValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getLongValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass LONG_VALUE_UPPERWARE = eINSTANCE.getLongValueUpperware();
 
@@ -584,7 +576,7 @@ public interface TypesPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute LONG_VALUE_UPPERWARE__VALUE = eINSTANCE.getLongValueUpperware_Value();
 
@@ -594,7 +586,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.FloatValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getFloatValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass FLOAT_VALUE_UPPERWARE = eINSTANCE.getFloatValueUpperware();
 
@@ -602,7 +594,7 @@ public interface TypesPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute FLOAT_VALUE_UPPERWARE__VALUE = eINSTANCE.getFloatValueUpperware_Value();
 
@@ -612,7 +604,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.DoubleValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getDoubleValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass DOUBLE_VALUE_UPPERWARE = eINSTANCE.getDoubleValueUpperware();
 
@@ -620,7 +612,7 @@ public interface TypesPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute DOUBLE_VALUE_UPPERWARE__VALUE = eINSTANCE.getDoubleValueUpperware_Value();
 
@@ -630,7 +622,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.StringValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getStringValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass STRING_VALUE_UPPERWARE = eINSTANCE.getStringValueUpperware();
 
@@ -638,7 +630,7 @@ public interface TypesPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute STRING_VALUE_UPPERWARE__VALUE = eINSTANCE.getStringValueUpperware_Value();
 
@@ -648,7 +640,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.impl.BooleanValueUpperwareImpl
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getBooleanValueUpperware()
-		 * 
+		 * @generated
 		 */
 		EClass BOOLEAN_VALUE_UPPERWARE = eINSTANCE.getBooleanValueUpperware();
 
@@ -656,7 +648,7 @@ public interface TypesPackage extends EPackage {
 		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * 
+		 * @generated
 		 */
 		EAttribute BOOLEAN_VALUE_UPPERWARE__VALUE = eINSTANCE.getBooleanValueUpperware_Value();
 
@@ -666,7 +658,7 @@ public interface TypesPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @see eu.paasage.upperware.metamodel.types.BasicTypeEnum
 		 * @see eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl#getBasicTypeEnum()
-		 * 
+		 * @generated
 		 */
 		EEnum BASIC_TYPE_ENUM = eINSTANCE.getBasicTypeEnum();
 

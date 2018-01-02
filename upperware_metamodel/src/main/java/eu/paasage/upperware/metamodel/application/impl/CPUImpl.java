@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -23,19 +15,19 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.CPUImpl#getFrequency <em>Frequency</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.CPUImpl#getCores <em>Cores</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class CPUImpl extends ResourceUpperwareImpl implements CPU {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected CPUImpl() {
 		super();
@@ -44,7 +36,7 @@ public class CPUImpl extends ResourceUpperwareImpl implements CPU {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -54,7 +46,7 @@ public class CPUImpl extends ResourceUpperwareImpl implements CPU {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public FrequencyEnum getFrequency() {
 		return (FrequencyEnum)eGet(ApplicationPackage.Literals.CPU__FREQUENCY, true);
@@ -63,7 +55,7 @@ public class CPUImpl extends ResourceUpperwareImpl implements CPU {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setFrequency(FrequencyEnum newFrequency) {
 		eSet(ApplicationPackage.Literals.CPU__FREQUENCY, newFrequency);
@@ -72,7 +64,7 @@ public class CPUImpl extends ResourceUpperwareImpl implements CPU {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public int getCores() {
 		return (Integer)eGet(ApplicationPackage.Literals.CPU__CORES, true);
@@ -81,7 +73,7 @@ public class CPUImpl extends ResourceUpperwareImpl implements CPU {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setCores(int newCores) {
 		eSet(ApplicationPackage.Literals.CPU__CORES, newCores);

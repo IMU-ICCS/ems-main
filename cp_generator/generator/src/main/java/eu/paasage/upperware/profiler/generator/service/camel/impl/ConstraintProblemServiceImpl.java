@@ -6,7 +6,6 @@ import eu.paasage.upperware.metamodel.application.*;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionType;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
-import eu.paasage.upperware.profiler.generator.function.creators.impl.CostFunctionCreator;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.function.creators.FunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
@@ -41,7 +40,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
     private PaasageConfigurationServiceImpl paasageConfigurationService;
     private PaasageConfigurationUtilsService paasageConfigurationUtilsService;
     private DimensionDerivatorService dimensionDerivatorService;
-    private DeltaFunctionService deltaFunctionService;
 
     private List<GeneratorService> generatorServices;
     private List<FunctionCreator> functionCreators;
@@ -71,13 +69,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
 
         log.info("** 		Creating User objective functions ");
         dimensionDerivatorService.createDimensions(camel, cp, complexOptRequirements);
-
-
-//        log.info("** 		Creating User constraints ");
-//        dimensionsDerivator.createConstraints(camel, cp);
-
-        log.info("** 		Creating Delta Utility Function ");
-        deltaFunctionService.createDeltaFunction(cp);
 
         log.info("** 		Creating functions");
         createFunction(cp, configuration);
@@ -126,8 +117,9 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
 
         //Create the Cost creator
 
-        Optional<FunctionCreator> costCreatorOpt = getFunctionCreator(CostFunctionCreator.NAME);
-        costCreatorOpt.ifPresent(functionCreator -> functionCreator.createFunction(cp, goal));
+        //PSZKUP - tu byla Tworzona funkcja kosztu
+//        Optional<FunctionCreator> costCreatorOpt = getFunctionCreator(CostFunctionCreator.NAME);
+//        costCreatorOpt.ifPresent(functionCreator -> functionCreator.createFunction(cp, goal));
         log.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
     }
 
@@ -332,10 +324,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
         for(Goal goal : cp.getGoals()){
             log.info(CPModelTool.toString(goal));
         }
-
-        log.info("DELTA UTILITY");
-        DeltaUtility deltaUtility = cp.getDeltaUtility();
-        log.info(CPModelTool.toString(deltaUtility));
 
     }
 
