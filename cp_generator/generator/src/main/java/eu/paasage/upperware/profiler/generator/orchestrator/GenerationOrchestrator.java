@@ -129,7 +129,7 @@ public class GenerationOrchestrator {
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
-        database.saveModels(pc, cp);
+        database.saveModels(pc, cp, camelModel);
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);
