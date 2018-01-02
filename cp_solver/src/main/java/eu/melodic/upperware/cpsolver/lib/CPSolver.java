@@ -452,7 +452,7 @@ public class CPSolver {
 		else if (type.equals(GoalOperatorEnum.MIN)) return -1;
 		return 0;
 	}
-	
+
 	/* Checking whether an expression contains only integer variables */
 	private boolean involvesOnlyInt(Expression expr){
 		boolean onlyInt = false;
