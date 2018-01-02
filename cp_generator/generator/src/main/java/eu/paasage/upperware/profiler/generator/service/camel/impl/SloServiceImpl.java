@@ -6,13 +6,13 @@ import eu.paasage.camel.requirement.RequirementModel;
 import eu.paasage.camel.requirement.ServiceLevelObjective;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
 import eu.paasage.upperware.profiler.generator.algebra.Algebra;
 import eu.paasage.upperware.profiler.generator.algebra.AlgebraVariable;
 import eu.paasage.upperware.profiler.generator.algebra.ExpressionUtils;
 import eu.paasage.upperware.profiler.generator.algebra.exceptions.MissingVariablesException;
 import eu.paasage.upperware.profiler.generator.algebra.exceptions.NotSolvableException;
 import eu.paasage.upperware.profiler.generator.algebra.exceptions.WrongStatementException;
+import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +31,7 @@ import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PR
 public class SloServiceImpl implements SloService {
 
     private Algebra algebra;
+    private ConstantService constantService;
 
     public void update(CamelModel cModel, ConstraintProblem cpModel) {
 
@@ -154,7 +155,9 @@ public class SloServiceImpl implements SloService {
             }
             domain.removeAll(availableDomain);
             for (Integer value : domain) {
-                Constant c = CPModelTool.createIntegerConstant(value, "constant_" + ++nextId);
+                //TODO - pszkup - I commented
+//                Constant c = CPModelTool.createIntegerConstant(value, "constant_" + ++nextId);
+                Constant c = null;
                 cpModel.getConstants().add(c);
                 newConstants.put(value, c);
                 log.info("    -> ADDED " + c.getId());

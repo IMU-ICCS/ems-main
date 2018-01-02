@@ -115,24 +115,27 @@ public class GenerationOrchestrator {
 
         log.info("Camel model {} loaded", resourceName);
 
-        String appId = getAppId(camelModel);
+        String cpName = getCpName(camelModel);
 
         //TODO - ten wrapper moze nie byc potrzebny.
-        PaasageConfiguration pc = paaSageConfigurationService.createPaasageConfigurationWrapper(camelModel, appId).getPaasageConfiguration();
+        PaasageConfiguration pc = paaSageConfigurationService.createPaasageConfiguration(camelModel, cpName);
 
         log.info("** Calling CPModelDerivator");
-
-        String cpName = appId + System.currentTimeMillis();
 
         ConstraintProblem cp = newConstraintProblemService.createConstraintProblem(camelModel, cpName);
         sloService.update(camelModel, cp);
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
-        database.saveModels(pc, cp);
+        database.saveModels(pc, cp, camelModel);
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);
+    }
+
+    private String getCpName(CamelModel camelModel) {
+        String appId = getAppId(camelModel);
+        return appId + System.currentTimeMillis();
     }
 
     private String getAppId(CamelModel camelModel) {

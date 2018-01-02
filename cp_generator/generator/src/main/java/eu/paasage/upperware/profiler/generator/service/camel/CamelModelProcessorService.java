@@ -2,8 +2,8 @@ package eu.paasage.upperware.profiler.generator.service.camel;
 
 
 import eu.paasage.camel.metric.Property;
-import eu.paasage.upperware.profiler.cp.generator.model.camel.lib.DeploymentModelParser;
-import eu.paasage.upperware.profiler.cp.generator.model.camel.lib.ProviderModelParser;
+//import eu.paasage.upperware.profiler.cp.generator.model.camel.lib.DeploymentModelParser;
+//import eu.paasage.upperware.profiler.cp.generator.model.camel.lib.ProviderModelParser;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,8 +28,8 @@ public class CamelModelProcessorService {
 
     public static final String ATTRIBUTE = "Attribute";
 
-    protected DeploymentModelParser deploymentModelParser;
-    protected ProviderModelParser providerModelParser;
+//    protected DeploymentModelParser deploymentModelParser;
+//    protected ProviderModelParser providerModelParser;
 
     protected IDatabaseProxy proxy;
 

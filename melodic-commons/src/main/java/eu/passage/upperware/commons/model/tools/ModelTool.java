@@ -19,6 +19,8 @@ import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
 
+import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
+import eu.passage.upperware.commons.MelodicConstants;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -142,7 +144,6 @@ public class ModelTool {
                 if (fos != null)
                     fos.close();
             } catch (IOException e) {
-
                 e.printStackTrace();
             }
         }
@@ -174,6 +175,45 @@ public class ModelTool {
      */
     public static Resource loadModel(ResourceSet resSet, File path) {
         return resSet.getResource(URI.createFileURI(path.getPath()), true);
+    }
+
+    /**
+     * Generates an ID for a paasage Application Configuration
+     * @param appId The application Id
+     * @return  appId+System.currentTimeMillis()
+     */
+    public static String generatePaasageAppConfigurationId(String appId)
+    {
+        return appId+System.currentTimeMillis();
+    }
+
+    /**
+     * Creates a directory with a given id
+     *
+     * @param pcId The id
+     * @return The created directory
+     */
+    public static File getGenerationDirForPaasageAppConfiguration(String pcId) {
+        File tempDir = new File(MelodicConstants.GENERATION_DIR);
+        if (!tempDir.isDirectory()) {
+            File tomcatTempDir = new File(MelodicConstants.TOMCAT_TEM_DIR);
+
+            if (tomcatTempDir.exists()) {
+                tempDir = new File(MelodicConstants.TOMCAT_GENERATION_DIR);
+                tempDir.mkdirs();
+            } else {
+                tempDir = new File(MelodicConstants.TOMCAT_ALT_GENERATION_TEMP_DIR);
+                tempDir.mkdirs();
+            }
+        }
+
+        File configDir = new File(tempDir, pcId);
+
+        if (!configDir.isDirectory()) {
+            configDir.mkdirs();
+        }
+
+        return configDir;
     }
 
 }
