@@ -54,13 +54,7 @@ public class ClonerTest
 	protected static String CAMEL_MODEL_COPY_ID=  CPCloner.CDO_SERVER_PATH+"camelTestCopy";
 	
 	protected static String MODEL_PATH=  "."+File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"models"+File.separator; 
-	
-	protected static String FUNCTION_MODEL_PATH=MODEL_PATH + FUNCTION_TYPES_FILE;
-	
-	protected static String OS_MODEL_PATH=MODEL_PATH + OPERATING_SYSTEMS_FILE;
-	
-	protected static String PROVIDER_TYPES_MODEL_PATH=MODEL_PATH + PROVIDER_TYPES_FILE;
-	
+
 	protected static String PROVIDER_TYPES_ID="providerTypesCloner"; 
 	
 	protected static String OS_ID="osCloner"; 

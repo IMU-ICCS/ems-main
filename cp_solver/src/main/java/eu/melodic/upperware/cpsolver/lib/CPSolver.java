@@ -7,15 +7,13 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
-import java.util.*;
-import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.Lists;
+import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluator;
+import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluatorExample;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.eresource.CDOResource;
@@ -23,33 +21,22 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-
-import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
-import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
-import eu.paasage.upperware.metamodel.types.LongValueUpperware;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
-import eu.paasage.upperware.metamodel.types.TypesFactory;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
 import solver.ResolutionPolicy;
 import solver.Solver;
 import solver.constraints.Constraint;
 import solver.constraints.IntConstraintFactory;
-import solver.constraints.LogicalConstraintFactory;
 import solver.constraints.real.RealConstraint;
-import solver.constraints.unary.Member;
 import solver.search.strategy.IntStrategyFactory;
 import solver.variables.BoolVar;
 import solver.variables.IntVar;
 import solver.variables.RealVar;
 import solver.variables.VariableFactory;
-import solver.variables.fast.BooleanBoolVarImpl;
 import util.ESat;
 import util.tools.ArrayUtils;
 
-import eu.melodic.upperware.utilitygenerator.*;
+import java.util.*;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CPSolver {
@@ -127,7 +114,6 @@ public class CPSolver {
 		createVariables(cp.getVariables());
 		createMetricVariables(cp.getMetricVariables());
 		createConstraints(cp.getConstraints());
-		createGoals(cp.getGoals());
 
 		//Checking if metric-based solution exists
 		if (timestamp != 0){
@@ -339,17 +325,15 @@ public class CPSolver {
 					break;
 				}
 			}
-		}
-		else{
-			cp = (ConstraintProblem)cl.loadModel(pathName);
+		} else{
+			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
 		}
 		Solution solution = null;
 		if (timestamp == 0){
 			solution = CpFactory.eINSTANCE.createSolution();
 			solution.setTimestamp(new Date().getTime());
 			cp.getSolution().add(solution);
-		}
-		else{
+		} else {
 			for (Solution s: cp.getSolution()){
 				if (s.getTimestamp() == timestamp){
 					solution = s;
@@ -469,82 +453,6 @@ public class CPSolver {
 		return 0;
 	}
 	
-	/* Creating the optimisation objective from the list of goals contained in the cp model */
-	private void createGoals(EList<Goal> goals){
-		log.info("--------------- Goals ---------------");
-		int size = goals.size();
-		if (size == 1){
-			Goal goal = goals.get(0);
-			NumericExpression expr = goal.getExpression();
-			boolean isInt = involvesOnlyInt(expr);
-			if (isInt){
-				intGoal = parseExpression(expr);
-				log.info("Optimization Variable: " + intGoal.getName());
-			}
-			else{
-				RealConstraint rc = new RealConstraint(solver);
-				realGoal = parseRealExpression(expr,rc);
-				log.info("Optimization Variable: " + realGoal.getName());
-				solver.post(rc);
-			}
-			GoalOperatorEnum type = goal.getGoalType();
-			policy = getPolicy(type);
-		}
-		else if (size > 1){
-			boolean isInt = true;
-			for (Goal goal: goals){
-				NumericExpression expr = goal.getExpression();
-				if (!involvesOnlyInt(expr)){
-					isInt = false;
-					break;
-				}
-			}
-			if (isInt){
-				IntVar[] vars = new IntVar[size];
-				int[] dirs = new int[size];
-				for (int i = 0; i < size; i++){
-					Goal goal = goals.get(i);
-					vars[i] = parseExpression(goal.getExpression());
-					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
-				}
-				intGoal = createIntVar("maximize");
-				log.info("Optimization Variable: " + intGoal.getName());
-				solver.post(IntConstraintFactory.scalar(vars, dirs, intGoal));
-				policy = ResolutionPolicy.MAXIMIZE;
-			}
-			else{
-				//RealConstraint rc = new RealConstraint(solver);
-				RealVar[] vars = new RealVar[size];
-				int[] dirs = new int[size];
-				for (int i = 0; i < size; i++){
-					RealConstraint rc = new RealConstraint(solver);
-					Goal goal = goals.get(i);
-					log.info("Processing goal: " + goal.getId());
-					vars[i] = parseRealExpression(goal.getExpression(),rc);
-					log.info("var created was: " + vars[i]);
-					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
-					solver.post(rc);
-				}
-				log.info("Optimisation goals created successfully");
-				RealConstraint rc = new RealConstraint(solver);
-				realGoal = VariableFactory.real("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, epsilon, solver);
-				StringBuilder function = new StringBuilder("(");
-				function.append(dirs[0] + " * {0} ");
-				for (int i = 1; i < size; i++){
-					function.append(" + " + dirs[i] + " * {" + i + "} ");
-				}
-				function.append(") = { " + size + "}");
-				log.info("Optimisation formula is: " + function.toString());
-				RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{realGoal});
-				rc.addFunction(function.toString(), finalVars);
-				solver.post(rc);
-				policy = ResolutionPolicy.MAXIMIZE;
-				log.info("Optimization Variable: " + realGoal.getName());
-			}
-		}
-		log.info("------------------------------------------");
-	}
-	
 	/* Checking whether an expression contains only integer variables */
 	private boolean involvesOnlyInt(Expression expr){
 		boolean onlyInt = false;
@@ -570,18 +478,18 @@ public class CPSolver {
 			boolean res = false;
 			for (NumericExpression ne: cep.getExpressions()){
 				res = involvesOnlyInt(ne);
-				if (res == false) break;
+				if (!res) break;
 			}
-			if (res == true) onlyInt = true;
+			if (res) onlyInt = true;
 		}
 		else if (expr instanceof ComparisonExpression){
 			ComparisonExpression cep = (ComparisonExpression)expr;
 			Expression expr1 = cep.getExp1();
 			Expression expr2 = cep.getExp2();
 			boolean res = involvesOnlyInt(expr1);
-			if (res == true){
+			if (res){
 				res = involvesOnlyInt(expr2);
-				if (res == true) onlyInt = true;
+				if (res) onlyInt = true;
 			}
 		}
 		else if (expr instanceof UnaryExpression){
@@ -778,9 +686,9 @@ public class CPSolver {
 		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
 			if (expr instanceof Variable){
 				RealVar v = null;
-				v = idToRealVar.get(((Variable)expr).getId());
+				v = idToRealVar.get(expr.getId());
 				if (v == null){
-					IntVar iv = idToIntVar.get(((Variable)expr).getId());
+					IntVar iv = idToIntVar.get(expr.getId());
 					if (iv != null){
 						v = VariableFactory.real(iv,epsilon);
 						log.info("RealVar: " + v + " on top of IntVar: " + iv.getName());

@@ -5,9 +5,9 @@
 
 	<artifactId>dlms</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
 
-	<name>melodicDLMS</name>
+	<name>Upperware - DLMS</name>
+
 	<description>DLMS using Spring Boot</description>
 
 	<!--<parent>-->
