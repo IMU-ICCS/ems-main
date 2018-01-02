@@ -3,8 +3,6 @@
 package eu.paasage.upperware.metamodel.cp;
 
 
-import org.eclipse.emf.common.util.EList;
-
 /**
  * <!-- begin-user-doc -->
  * A representation of the model object '<em><b>Variable</b></em>'.
@@ -12,15 +10,17 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getDomain <em>Domain</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationIds <em>Location Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationId <em>Location Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getProviderId <em>Provider Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getVmId <em>Vm Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getOsImageId <em>Os Image Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getHardwareId <em>Hardware Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getVariableType <em>Variable Type</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.Variable#getComponentId <em>Component Id</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable()
  * @model
@@ -62,11 +62,22 @@ public interface Variable extends NumericExpression {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Location Id</em>' attribute.
+	 * @see #setLocationId(String)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_LocationId()
 	 * @model
 	 * @generated
 	 */
-	EList<String> getLocationIds();
+	String getLocationId();
+
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationId <em>Location Id</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Location Id</em>' attribute.
+	 * @see #getLocationId()
+	 * @generated
+	 */
+	void setLocationId(String value);
 
 	/**
 	 * Returns the value of the '<em><b>Provider Id</b></em>' attribute.
@@ -172,15 +183,59 @@ public interface Variable extends NumericExpression {
 	 */
 	void setHardwareId(String value);
 
+	/**
+	 * Returns the value of the '<em><b>Variable Type</b></em>' attribute.
+	 * The literals are from the enumeration {@link eu.paasage.upperware.metamodel.cp.VariableType}.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Variable Type</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Variable Type</em>' attribute.
+	 * @see eu.paasage.upperware.metamodel.cp.VariableType
+	 * @see #setVariableType(VariableType)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_VariableType()
+	 * @model required="true"
+	 * @generated
+	 */
+	VariableType getVariableType();
 
-	void setComponentName(String newComponentName) ;
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.Variable#getVariableType <em>Variable Type</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Variable Type</em>' attribute.
+	 * @see eu.paasage.upperware.metamodel.cp.VariableType
+	 * @see #getVariableType()
+	 * @generated
+	 */
+	void setVariableType(VariableType value);
 
-	String getComponentName();
+	/**
+	 * Returns the value of the '<em><b>Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Component Id</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Component Id</em>' attribute.
+	 * @see #setComponentId(String)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariable_ComponentId()
+	 * @model required="true"
+	 * @generated
+	 */
+	String getComponentId();
 
-
-	void setFlavourName(String newFlavourName) ;
-
-	String getFlavourName();
-
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.Variable#getComponentId <em>Component Id</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Component Id</em>' attribute.
+	 * @see #getComponentId()
+	 * @generated
+	 */
+	void setComponentId(String value);
 
 } // Variable

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -22,6 +14,7 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ApplicationComponent#getVm <em>Vm</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ApplicationComponent#getPreferredLocations <em>Preferred Locations</em>}</li>
@@ -32,10 +25,9 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.application.ApplicationComponent#getMin <em>Min</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ApplicationComponent#getMax <em>Max</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent()
- * 
+ * @model
  * @generated
  */
 public interface ApplicationComponent extends CloudMLElementUpperware {
@@ -50,6 +42,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Vm</em>' reference.
 	 * @see #setVm(VirtualMachine)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_Vm()
+	 * @model
+	 * @generated
 	 */
 	VirtualMachine getVm();
 
@@ -59,6 +53,7 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Vm</em>' reference.
 	 * @see #getVm()
+	 * @generated
 	 */
 	void setVm(VirtualMachine value);
 
@@ -73,6 +68,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Preferred Locations</em>' reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_PreferredLocations()
+	 * @model
+	 * @generated
 	 */
 	EList<LocationUpperware> getPreferredLocations();
 
@@ -87,6 +84,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Required Profile</em>' reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_RequiredProfile()
+	 * @model
+	 * @generated
 	 */
 	EList<VirtualMachineProfile> getRequiredProfile();
 
@@ -101,6 +100,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Features</em>' attribute list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_Features()
+	 * @model
+	 * @generated
 	 */
 	EList<String> getFeatures();
 
@@ -115,6 +116,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Required Features</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_RequiredFeatures()
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<RequiredFeature> getRequiredFeatures();
 
@@ -129,6 +132,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Preferred Providers</em>' reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_PreferredProviders()
+	 * @model
+	 * @generated
 	 */
 	EList<ProviderType> getPreferredProviders();
 
@@ -143,6 +148,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Min</em>' attribute.
 	 * @see #setMin(int)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_Min()
+	 * @model required="true"
+	 * @generated
 	 */
 	int getMin();
 
@@ -151,6 +158,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Min</em>' attribute.
+	 * @see #getMin()
+	 * @generated
 	 */
 	void setMin(int value);
 
@@ -165,6 +174,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Max</em>' attribute.
 	 * @see #setMax(int)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getApplicationComponent_Max()
+	 * @model required="true"
+	 * @generated
 	 */
 	int getMax();
 
@@ -173,6 +184,8 @@ public interface ApplicationComponent extends CloudMLElementUpperware {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Max</em>' attribute.
+	 * @see #getMax()
+	 * @generated
 	 */
 	void setMax(int value);
 

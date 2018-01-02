@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ApplicationComponentImpl#getVm <em>Vm</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ApplicationComponentImpl#getPreferredLocations <em>Preferred Locations</em>}</li>
@@ -31,7 +32,6 @@ import org.eclipse.emf.ecore.EClass;
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ApplicationComponentImpl#getMin <em>Min</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ApplicationComponentImpl#getMax <em>Max</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

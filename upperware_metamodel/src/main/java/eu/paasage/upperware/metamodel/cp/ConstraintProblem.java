@@ -13,7 +13,9 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getGoals <em>Goals</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getConstants <em>Constants</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getVariables <em>Variables</em>}</li>
@@ -21,9 +23,7 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getAuxExpressions <em>Aux Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables <em>Metric Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getSolution <em>Solution</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeltaUtility <em>Delta Utility</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem()
  * @model
@@ -31,6 +31,32 @@ import org.eclipse.emf.common.util.EList;
  * @generated
  */
 public interface ConstraintProblem extends CDOObject {
+	/**
+	 * Returns the value of the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Id</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Id</em>' attribute.
+	 * @see #setId(String)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Id()
+	 * @model required="true"
+	 * @generated
+	 */
+	String getId();
+
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getId <em>Id</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Id</em>' attribute.
+	 * @see #getId()
+	 * @generated
+	 */
+	void setId(String value);
+
 	/**
 	 * Returns the value of the '<em><b>Goals</b></em>' containment reference list.
 	 * The list contents are of type {@link eu.paasage.upperware.metamodel.cp.Goal}.
@@ -142,31 +168,5 @@ public interface ConstraintProblem extends CDOObject {
 	 * @generated
 	 */
 	EList<Solution> getSolution();
-
-	/**
-	 * Returns the value of the '<em><b>Delta Utility</b></em>' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <p>
-	 * If the meaning of the '<em>Delta Utility</em>' reference isn't clear,
-	 * there really should be more of a description here...
-	 * </p>
-	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Delta Utility</em>' containment reference.
-	 * @see #setDeltaUtility(DeltaUtility)
-	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_DeltaUtility()
-	 * @model containment="true" required="true"
-	 * @generated
-	 */
-	DeltaUtility getDeltaUtility();
-
-	/**
-	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeltaUtility <em>Delta Utility</em>}' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Delta Utility</em>' containment reference.
-	 * @see #getDeltaUtility()
-	 * @generated
-	 */
-	void setDeltaUtility(DeltaUtility value);
 
 } // ConstraintProblem

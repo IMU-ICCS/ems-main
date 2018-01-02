@@ -1,9 +1,9 @@
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
+import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
-import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
-import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
+import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +31,14 @@ public class GenerationOrchestratorFactory extends AbstractFactoryBean<Generatio
 
         IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
         PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
-        ConstraintProblemService constraintProblemService = applicationContext.getBean(ConstraintProblemService.class);
         NotificationService notificationService = applicationContext.getBean(NotificationService.class);
         SloService sloService = applicationContext.getBean(SloService.class);
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
-        GeneratorProperties generatorProperties = applicationContext.getBean(GeneratorProperties.class);
 
+        CdoService cdoService = applicationContext.getBean(CdoService.class);
+        NewConstraintProblemService bean = applicationContext.getBean(NewConstraintProblemService.class);
 
         return new GenerationOrchestrator(database, paaSageConfigurationService,
-                constraintProblemService, notificationService, sloService, requestSynchronizer, generatorProperties);
+                notificationService, sloService, requestSynchronizer, cdoService, bean);
     }
 }

@@ -313,11 +313,8 @@ public class CPModelTool {
 		String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
 				+"  providerId: " +var.getProviderId() + System.lineSeparator()
 				+"  vmId " + var.getVmId() + System.lineSeparator()
-				+"  componentName " + var.getComponentName() + System.lineSeparator()
-				+"  flavourName " + var.getFlavourName() + System.lineSeparator()
 				+"  osImageId: " + var.getOsImageId()+ System.lineSeparator()
 				+"  hardwareId: " + var.getHardwareId() + System.lineSeparator()
-				+"  locationId: " + var.getLocationIds().stream().collect(Collectors.joining(",")) + System.lineSeparator()
 				+"  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
 				+"  domainTo: " +  CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getTo()).get(0).toString()
 				;
@@ -375,55 +372,6 @@ public class CPModelTool {
 
 		return retString;
 	}
-
-	public static String toString(DeltaUtility deltaUtility){
-		String retString = "";
-
-		if (deltaUtility != null) {
-			retString = retString + "Delta utility id: " + deltaUtility.getId() + "\n";
-			retString = retString + "Delta utility operator: " + deltaUtility.getOperator() + "\n";
-
-
-			Parameter selectedSolution = deltaUtility.getSelectedSolution();
-			if (selectedSolution != null){
-				retString = retString + "Selected solution parameter id: " + selectedSolution.getName() + "\n";
-				Solution solution = selectedSolution.getSolution();
-				if (solution != null){
-					retString = retString + "solution timestamp: " + solution.getTimestamp() + "\n";
-				} else {
-					retString = retString + "solution is null\n";
-				}
-			} else {
-				retString = retString + "parameter is null\n";
-			}
-
-			EList<Parameter> solutions = deltaUtility.getSolutions();
-			for (Parameter parameter : solutions){
-				if (parameter != null){
-					retString = retString + "solution parameter id: " + parameter.getName() + "\n";
-					Solution solution = parameter.getSolution();
-					if (solution != null){
-						retString = retString + "solution timestamp: " + solution.getTimestamp() + "\n";
-					} else {
-						retString = retString + "solution is null\n";
-					}
-				} else {
-					retString = retString + "parameter is null\n";
-				}
-			}
-
-			EList<NumericExpression> expressions = deltaUtility.getExpressions();
-			for (Expression expression: expressions){
-				retString = retString + toString(expression);
-			}
-
-		} else {
-			retString = retString + "Delta utility = null\n";
-		}
-
-		return retString;
-	}
-
 
 	/**
 	 * Searches a constant in a list with a provided name

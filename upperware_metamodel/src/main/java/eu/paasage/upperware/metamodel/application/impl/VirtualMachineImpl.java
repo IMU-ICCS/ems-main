@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -24,19 +16,19 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.VirtualMachineImpl#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.VirtualMachineImpl#getProfile <em>Profile</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class VirtualMachineImpl extends PaaSageCPElementImpl implements VirtualMachine {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected VirtualMachineImpl() {
 		super();
@@ -45,7 +37,7 @@ public class VirtualMachineImpl extends PaaSageCPElementImpl implements VirtualM
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -55,7 +47,7 @@ public class VirtualMachineImpl extends PaaSageCPElementImpl implements VirtualM
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getId() {
 		return (String)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE__ID, true);
@@ -64,7 +56,7 @@ public class VirtualMachineImpl extends PaaSageCPElementImpl implements VirtualM
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setId(String newId) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE__ID, newId);
@@ -73,7 +65,7 @@ public class VirtualMachineImpl extends PaaSageCPElementImpl implements VirtualM
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public VirtualMachineProfile getProfile() {
 		return (VirtualMachineProfile)eGet(ApplicationPackage.Literals.VIRTUAL_MACHINE__PROFILE, true);
@@ -82,7 +74,7 @@ public class VirtualMachineImpl extends PaaSageCPElementImpl implements VirtualM
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setProfile(VirtualMachineProfile newProfile) {
 		eSet(ApplicationPackage.Literals.VIRTUAL_MACHINE__PROFILE, newProfile);

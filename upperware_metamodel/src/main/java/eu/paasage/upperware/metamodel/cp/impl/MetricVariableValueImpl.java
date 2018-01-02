@@ -18,11 +18,11 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl#getVariable <em>Variable</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

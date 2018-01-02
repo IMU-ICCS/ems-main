@@ -320,19 +320,19 @@ public class DimensionDerivatorServiceImpl implements DimensionDerivatorService 
                 IntegerValue lowerValue= (IntegerValue) domain.getLowerLimit().getValue();
                 IntegerValue upperValue= (IntegerValue) domain.getUpperLimit().getValue();
 
-                var = variableService.createIntegerVariableWithRangeDomain(varName, lowerValue.getValue(), upperValue.getValue());
+                var = variableService.createIntegerVariableWithRangeDomain(varName, lowerValue.getValue(), upperValue.getValue(), null, null);
 
             } else if(domain.getPrimitiveType().getValue()==TypeEnum.DOUBLE_TYPE_VALUE) {
                 DoublePrecisionValue lowerValue= (DoublePrecisionValue) domain.getLowerLimit().getValue();
                 DoublePrecisionValue upperValue= (DoublePrecisionValue) domain.getUpperLimit().getValue();
 
-                var = variableService.createDoubleVariableWithRangeDomain(varName, lowerValue.getValue(), upperValue.getValue());
+                var = variableService.createDoubleVariableWithRangeDomain(varName, lowerValue.getValue(), upperValue.getValue(), null, null);
 
             } else if(domain.getPrimitiveType().getValue()==TypeEnum.FLOAT_TYPE_VALUE) {
                 FloatsValue lowerValue= (FloatsValue) domain.getLowerLimit().getValue();
                 FloatsValue upperValue= (FloatsValue) domain.getUpperLimit().getValue();
 
-                var = variableService.createDoubleVariableWithRangeDomain(varName, lowerValue.getValue(), upperValue.getValue());
+                var = variableService.createDoubleVariableWithRangeDomain(varName, lowerValue.getValue(), upperValue.getValue(), null, null);
             }
 
             if(var!=null){

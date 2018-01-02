@@ -176,7 +176,7 @@ public class DeploymentModelParser
 		
 		resolveCommunicationDependencies(pim, configuration);
 		
-		checkGivenSolutionByUser(pim, configurationWrapper);
+//		checkGivenSolutionByUser(pim, configurationWrapper);
 			
 	}
 		
@@ -574,7 +574,7 @@ public class DeploymentModelParser
 			if(locations==null && globalVMRequirements.getLocationRequirement()!=null && globalVMRequirements.getLocationRequirement().getLocations().size()>0)
 			{
 				log.debug("**			Considering Global Location requirement");
-				locations= globalVMRequirements.getLocationRequirement().getLocations(); 
+				locations= globalVMRequirements.getLocationRequirement().getLocations();
 				idLocations= globalVMRequirements.getLocationRequirement().getName(); 
 			}
 		
@@ -819,7 +819,7 @@ public class DeploymentModelParser
 		{
 			log.debug("DeploymentModelParser- buildVMProfile- The Location name: "+location.getId());
 			
-			locationUpperware= PaasageModelTool.getLocation(location, configurationWrapper); 
+			locationUpperware= PaasageModelTool.getLocation(location, configurationWrapper);
 			
 		}
 		
@@ -1318,7 +1318,6 @@ public class DeploymentModelParser
 	 * Build a required feature by using a required communication camel dependency 
 	 * @param port The required communication 
 	 * @param providedBy The Cloud element providing the required port
-	 * @param isLocal Indicates if the communication is local
 	 * @return The required feature
 	 */
 	protected RequiredFeature buildRequiredCommunicationPortFeature(RequiredCommunication port, CloudMLElementUpperware providedBy, CommunicationTypeUpperware ct)
@@ -1435,66 +1434,66 @@ public class DeploymentModelParser
 		
 	}
 	
-	protected void checkGivenSolutionByUser(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
-	{
-		log.debug("DeploymentModelParser - checkGivenSolutionByUser - Checking solution");
-		List<Component> componentTypes= PaasageModelTool.getComponentsList(pim); 
-		List<ComponentInstance> componentInstances= PaasageModelTool.getComponentInstancesList(pim);
-		
-		boolean instacesOk= true; 
-		
-		for(int i=0; i<componentTypes.size() && instacesOk; i++) //Check that there is at least one instance by component type
-		{
-			if(!PaasageModelTool.existComponentInstance(componentTypes.get(i), componentInstances))
-			{	
-				log.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related instance");
-				instacesOk= false; 
-				
-			}	
-		}
-		
-		if(instacesOk) //Check if there is hosting relationship by each instance
-		{
-			EList<HostingInstance> hostingInstances= pim.getHostingInstances();
-			boolean hostingOk= true; 
-			
-			for(int i=0; i<componentInstances.size() && hostingOk; i++)
-			{
-				if(!PaasageModelTool.existHostingInstanceForComponentInstance(hostingInstances, componentInstances.get(i)))
-				{	
-					log.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related hosting instance");
-					hostingOk= false; 
-				}	
-			}
-			
-			configurationWrapper.setHasUserSolution(hostingOk);
-		}
-		
-	}
+//	protected void checkGivenSolutionByUser(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
+//	{
+//		log.debug("DeploymentModelParser - checkGivenSolutionByUser - Checking solution");
+//		List<Component> componentTypes= PaasageModelTool.getComponentsList(pim);
+//		List<ComponentInstance> componentInstances= PaasageModelTool.getComponentInstancesList(pim);
+//
+//		boolean instacesOk= true;
+//
+//		for(int i=0; i<componentTypes.size() && instacesOk; i++) //Check that there is at least one instance by component type
+//		{
+//			if(!PaasageModelTool.existComponentInstance(componentTypes.get(i), componentInstances))
+//			{
+//				log.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related instance");
+//				instacesOk= false;
+//
+//			}
+//		}
+//
+//		if(instacesOk) //Check if there is hosting relationship by each instance
+//		{
+//			EList<HostingInstance> hostingInstances= pim.getHostingInstances();
+//			boolean hostingOk= true;
+//
+//			for(int i=0; i<componentInstances.size() && hostingOk; i++)
+//			{
+//				if(!PaasageModelTool.existHostingInstanceForComponentInstance(hostingInstances, componentInstances.get(i)))
+//				{
+//					log.debug("DeploymentModelParser - checkGivenSolutionByUser - The component type "+componentTypes.get(i).getName()+" does not have a related hosting instance");
+//					hostingOk= false;
+//				}
+//			}
+//
+//			configurationWrapper.setHasUserSolution(hostingOk);
+//		}
+//
+//	}
 	
 	
-	public void checkExistencyOfValidUserSolution(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
-	{
-		if(configurationWrapper.hasUserSolution())
-		{	
-			EList<VMInstance> vmInstances= pim.getVmInstances(); 
-			
-			EList<Provider> providers= configurationWrapper.getPaasageConfiguration().getProviders(); 
-			
-			boolean providersOk=true; 
-			
-			for(int i=0; vmInstances.size()>i && providersOk; i++)
-			{
-				VM vm= (VM) vmInstances.get(i).getType();
-								
-				if(vm.getVmRequirementSet().getProviderRequirement()!=null && !PaasageModelTool.existProviderOfVMInList(vmInstances.get(i), providers))
-					providersOk= false; 
-			}
-			
-			configurationWrapper.setValidUserSolution(providersOk);
-		}	
-		
-	}
+//	public void checkExistencyOfValidUserSolution(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
+//	{
+//		if(configurationWrapper.hasUserSolution())
+//		{
+//			EList<VMInstance> vmInstances= pim.getVmInstances();
+//
+//			EList<Provider> providers= configurationWrapper.getPaasageConfiguration().getProviders();
+//
+//			boolean providersOk=true;
+//
+//			for(int i=0; vmInstances.size()>i && providersOk; i++)
+//			{
+//				VM vm= (VM) vmInstances.get(i).getType();
+//
+//				if(vm.getVmRequirementSet().getProviderRequirement()!=null && !PaasageModelTool.existProviderOfVMInList(vmInstances.get(i), providers))
+//					providersOk= false;
+//			}
+//
+//			configurationWrapper.setValidUserSolution(providersOk);
+//		}
+//
+//	}
 	
 	public void checkCorrectHostingRelationships(DeploymentModel pim, PaaSageConfigurationWrapper configurationWrapper)
 	{

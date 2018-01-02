@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,17 +11,17 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ElasticityRule#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ElasticityRule#getAction <em>Action</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ElasticityRule#getCondition <em>Condition</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getElasticityRule()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface ElasticityRule extends CDOObject {
 	/**
@@ -43,8 +35,8 @@ public interface ElasticityRule extends CDOObject {
 	 * @return the value of the '<em>Id</em>' attribute.
 	 * @see #setId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getElasticityRule_Id()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getId();
 
@@ -54,7 +46,7 @@ public interface ElasticityRule extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Id</em>' attribute.
 	 * @see #getId()
-	 * 
+	 * @generated
 	 */
 	void setId(String value);
 
@@ -69,8 +61,8 @@ public interface ElasticityRule extends CDOObject {
 	 * @return the value of the '<em>Action</em>' containment reference.
 	 * @see #setAction(ActionUpperware)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getElasticityRule_Action()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	ActionUpperware getAction();
 
@@ -80,7 +72,7 @@ public interface ElasticityRule extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Action</em>' containment reference.
 	 * @see #getAction()
-	 * 
+	 * @generated
 	 */
 	void setAction(ActionUpperware value);
 
@@ -95,8 +87,8 @@ public interface ElasticityRule extends CDOObject {
 	 * @return the value of the '<em>Condition</em>' containment reference.
 	 * @see #setCondition(ConditionUpperware)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getElasticityRule_Condition()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	ConditionUpperware getCondition();
 
@@ -106,7 +98,7 @@ public interface ElasticityRule extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Condition</em>' containment reference.
 	 * @see #getCondition()
-	 * 
+	 * @generated
 	 */
 	void setCondition(ConditionUpperware value);
 

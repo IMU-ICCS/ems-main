@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -22,8 +14,8 @@ import org.eclipse.emf.common.util.Enumerator;
  * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getVariableElementTypeEnum()
- * 
- * 
+ * @model
+ * @generated
  */
 public enum VariableElementTypeEnum implements Enumerator {
 	/**
@@ -31,8 +23,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #GEO_LOCATION_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	GEO_LOCATION(0, "GeoLocation", "GeoLocation"),
 
@@ -41,8 +33,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #PHYSICAL_LOCCATION_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	PHYSICAL_LOCCATION(1, "PhysicalLoccation", "PhysicalLoccation"),
 
@@ -51,8 +43,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #VIRTUAL_LOCATION_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	VIRTUAL_LOCATION(2, "VirtualLocation", "VirtualLocation"),
 
@@ -61,8 +53,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #RESPONSE_TIME_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	RESPONSE_TIME(3, "ResponseTime", "ResponseTime"),
 
@@ -71,8 +63,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #PROVIDER_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	PROVIDER(4, "Provider", "Provider"),
 
@@ -81,8 +73,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #BANDWIDTH_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	BANDWIDTH(5, "Bandwidth", "Bandwidth"),
 
@@ -91,8 +83,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #USERS_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	USERS(6, "Users", "Users"),
 
@@ -101,8 +93,8 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #QUANTITY_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	QUANTITY(7, "Quantity", "Quantity");
 
@@ -115,9 +107,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #GEO_LOCATION
-	 *  name="GeoLocation"
-	 * 
-	 * 
+	 * @model name="GeoLocation"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int GEO_LOCATION_VALUE = 0;
 
@@ -130,9 +122,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #PHYSICAL_LOCCATION
-	 *  name="PhysicalLoccation"
-	 * 
-	 * 
+	 * @model name="PhysicalLoccation"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int PHYSICAL_LOCCATION_VALUE = 1;
 
@@ -145,9 +137,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #VIRTUAL_LOCATION
-	 *  name="VirtualLocation"
-	 * 
-	 * 
+	 * @model name="VirtualLocation"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int VIRTUAL_LOCATION_VALUE = 2;
 
@@ -160,9 +152,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #RESPONSE_TIME
-	 *  name="ResponseTime"
-	 * 
-	 * 
+	 * @model name="ResponseTime"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int RESPONSE_TIME_VALUE = 3;
 
@@ -175,9 +167,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #PROVIDER
-	 *  name="Provider"
-	 * 
-	 * 
+	 * @model name="Provider"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int PROVIDER_VALUE = 4;
 
@@ -190,9 +182,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #BANDWIDTH
-	 *  name="Bandwidth"
-	 * 
-	 * 
+	 * @model name="Bandwidth"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int BANDWIDTH_VALUE = 5;
 
@@ -205,9 +197,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #USERS
-	 *  name="Users"
-	 * 
-	 * 
+	 * @model name="Users"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int USERS_VALUE = 6;
 
@@ -220,9 +212,9 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #QUANTITY
-	 *  name="Quantity"
-	 * 
-	 * 
+	 * @model name="Quantity"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int QUANTITY_VALUE = 7;
 
@@ -230,7 +222,7 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * An array of all the '<em><b>Variable Element Type Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static final VariableElementTypeEnum[] VALUES_ARRAY =
 		new VariableElementTypeEnum[] {
@@ -248,11 +240,18 @@ public enum VariableElementTypeEnum implements Enumerator {
 	 * A public read-only list of all the '<em><b>Variable Element Type Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static final List<VariableElementTypeEnum> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
-
+	/**
+	 * Returns the '<em><b>Variable Element Type Enum</b></em>' literal with the specified literal value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static VariableElementTypeEnum get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			VariableElementTypeEnum result = VALUES_ARRAY[i];
@@ -263,6 +262,14 @@ public enum VariableElementTypeEnum implements Enumerator {
 		return null;
 	}
 
+	/**
+	 * Returns the '<em><b>Variable Element Type Enum</b></em>' literal with the specified name.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static VariableElementTypeEnum getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			VariableElementTypeEnum result = VALUES_ARRAY[i];
@@ -273,6 +280,14 @@ public enum VariableElementTypeEnum implements Enumerator {
 		return null;
 	}
 
+	/**
+	 * Returns the '<em><b>Variable Element Type Enum</b></em>' literal with the specified integer value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static VariableElementTypeEnum get(int value) {
 		switch (value) {
 			case GEO_LOCATION_VALUE: return GEO_LOCATION;
@@ -290,43 +305,69 @@ public enum VariableElementTypeEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String literal;
 
+	/**
+	 * Only this class can construct instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private VariableElementTypeEnum(int value, String name, String literal) {
 		this.value = value;
 		this.name = name;
 		this.literal = literal;
 	}
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public int getValue() {
 	  return value;
 	}
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getName() {
 	  return name;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getLiteral() {
 	  return literal;
 	}
 
+	/**
+	 * Returns the literal value of the enumerator, which is its string representation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public String toString() {
 		return literal;

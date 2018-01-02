@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -23,6 +15,7 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.VirtualMachineProfile#getSize <em>Size</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.VirtualMachineProfile#getMemory <em>Memory</em>}</li>
@@ -34,11 +27,10 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.application.VirtualMachineProfile#getImage <em>Image</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.VirtualMachineProfile#getRelatedCloudVMId <em>Related Cloud VM Id</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	/**
@@ -54,8 +46,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.VMSizeEnum
 	 * @see #setSize(VMSizeEnum)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Size()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	VMSizeEnum getSize();
 
@@ -66,7 +58,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @param value the new value of the '<em>Size</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.VMSizeEnum
 	 * @see #getSize()
-	 * 
+	 * @generated
 	 */
 	void setSize(VMSizeEnum value);
 
@@ -81,8 +73,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Memory</em>' containment reference.
 	 * @see #setMemory(Memory)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Memory()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	Memory getMemory();
 
@@ -92,7 +84,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Memory</em>' containment reference.
 	 * @see #getMemory()
-	 * 
+	 * @generated
 	 */
 	void setMemory(Memory value);
 
@@ -107,8 +99,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Storage</em>' containment reference.
 	 * @see #setStorage(Storage)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Storage()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	Storage getStorage();
 
@@ -118,7 +110,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Storage</em>' containment reference.
 	 * @see #getStorage()
-	 * 
+	 * @generated
 	 */
 	void setStorage(Storage value);
 
@@ -133,8 +125,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Cpu</em>' containment reference.
 	 * @see #setCpu(CPU)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Cpu()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	CPU getCpu();
 
@@ -144,7 +136,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Cpu</em>' containment reference.
 	 * @see #getCpu()
-	 * 
+	 * @generated
 	 */
 	void setCpu(CPU value);
 
@@ -159,8 +151,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Os</em>' containment reference.
 	 * @see #setOs(OS)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Os()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	OS getOs();
 
@@ -170,7 +162,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Os</em>' containment reference.
 	 * @see #getOs()
-	 * 
+	 * @generated
 	 */
 	void setOs(OS value);
 
@@ -185,8 +177,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Provider Dimension</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_ProviderDimension()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<ProviderDimension> getProviderDimension();
 
@@ -201,8 +193,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Location</em>' reference.
 	 * @see #setLocation(LocationUpperware)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Location()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	LocationUpperware getLocation();
 
@@ -212,7 +204,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Location</em>' reference.
 	 * @see #getLocation()
-	 * 
+	 * @generated
 	 */
 	void setLocation(LocationUpperware value);
 
@@ -227,8 +219,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Image</em>' containment reference.
 	 * @see #setImage(ImageUpperware)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_Image()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	ImageUpperware getImage();
 
@@ -238,7 +230,7 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Image</em>' containment reference.
 	 * @see #getImage()
-	 * 
+	 * @generated
 	 */
 	void setImage(ImageUpperware value);
 
@@ -253,8 +245,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * @return the value of the '<em>Related Cloud VM Id</em>' attribute.
 	 * @see #setRelatedCloudVMId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getVirtualMachineProfile_RelatedCloudVMId()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getRelatedCloudVMId();
 
@@ -264,12 +256,8 @@ public interface VirtualMachineProfile extends CloudMLElementUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Related Cloud VM Id</em>' attribute.
 	 * @see #getRelatedCloudVMId()
-	 * 
+	 * @generated
 	 */
 	void setRelatedCloudVMId(String value);
-
-	String getFlavourName();
-
-	void setFlavourName(String newFlavourName);
 
 } // VirtualMachineProfile

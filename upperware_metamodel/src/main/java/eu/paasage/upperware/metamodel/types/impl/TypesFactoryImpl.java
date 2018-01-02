@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.impl;
 
@@ -25,14 +17,14 @@ import org.eclipse.emf.ecore.plugin.EcorePlugin;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Factory</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * Creates the default factory implementation.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static TypesFactory init() {
 		try {
@@ -51,7 +43,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	 * Creates an instance of the factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesFactoryImpl() {
 		super();
@@ -60,7 +52,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public EObject create(EClass eClass) {
@@ -79,7 +71,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public Object createFromString(EDataType eDataType, String initialValue) {
@@ -94,7 +86,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	public String convertToString(EDataType eDataType, Object instanceValue) {
@@ -109,7 +101,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public IntegerValueUpperware createIntegerValueUpperware() {
 		IntegerValueUpperwareImpl integerValueUpperware = new IntegerValueUpperwareImpl();
@@ -119,7 +111,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public LongValueUpperware createLongValueUpperware() {
 		LongValueUpperwareImpl longValueUpperware = new LongValueUpperwareImpl();
@@ -129,7 +121,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public FloatValueUpperware createFloatValueUpperware() {
 		FloatValueUpperwareImpl floatValueUpperware = new FloatValueUpperwareImpl();
@@ -139,7 +131,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public DoubleValueUpperware createDoubleValueUpperware() {
 		DoubleValueUpperwareImpl doubleValueUpperware = new DoubleValueUpperwareImpl();
@@ -149,7 +141,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public StringValueUpperware createStringValueUpperware() {
 		StringValueUpperwareImpl stringValueUpperware = new StringValueUpperwareImpl();
@@ -159,7 +151,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public BooleanValueUpperware createBooleanValueUpperware() {
 		BooleanValueUpperwareImpl booleanValueUpperware = new BooleanValueUpperwareImpl();
@@ -169,7 +161,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public BasicTypeEnum createBasicTypeEnumFromString(EDataType eDataType, String initialValue) {
 		BasicTypeEnum result = BasicTypeEnum.get(initialValue);
@@ -180,7 +172,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String convertBasicTypeEnumToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
@@ -189,7 +181,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesPackage getTypesPackage() {
 		return (TypesPackage)getEPackage();
@@ -199,7 +191,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @deprecated
-	 * 
+	 * @generated
 	 */
 	@Deprecated
 	public static TypesPackage getPackage() {

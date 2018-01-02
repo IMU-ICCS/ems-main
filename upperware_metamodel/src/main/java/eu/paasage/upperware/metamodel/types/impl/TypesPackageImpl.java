@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.impl;
 
@@ -45,69 +37,69 @@ import org.eclipse.emf.ecore.impl.EPackageImpl;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Package</b>.
  * <!-- end-user-doc -->
- * 
+ * @generated
  */
 public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass valueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass numericValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass integerValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass longValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass floatValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass doubleValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass stringValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EClass booleanValueUpperwareEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private EEnum basicTypeEnumEEnum = null;
 
@@ -124,7 +116,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	 * @see org.eclipse.emf.ecore.EPackage.Registry
 	 * @see eu.paasage.upperware.metamodel.types.TypesPackage#eNS_URI
 	 * @see #init()
-	 * 
+	 * @generated
 	 */
 	private TypesPackageImpl() {
 		super(eNS_URI, TypesFactory.eINSTANCE);
@@ -133,7 +125,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static boolean isInited = false;
 
@@ -147,7 +139,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	 * @see #eNS_URI
 	 * @see #createPackageContents()
 	 * @see #initializePackageContents()
-	 * 
+	 * @generated
 	 */
 	public static TypesPackage init() {
 		if (isInited) return (TypesPackage)EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI);
@@ -158,21 +150,21 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 		isInited = true;
 
 		// Obtain or create and register interdependencies
-		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
 		CpPackageImpl theCpPackage = (CpPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) instanceof CpPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) : CpPackage.eINSTANCE);
 		TypesPaasagePackageImpl theTypesPaasagePackage = (TypesPaasagePackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) instanceof TypesPaasagePackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) : TypesPaasagePackage.eINSTANCE);
+		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
 
 		// Create package meta-data objects
 		theTypesPackage.createPackageContents();
-		theApplicationPackage.createPackageContents();
 		theCpPackage.createPackageContents();
 		theTypesPaasagePackage.createPackageContents();
+		theApplicationPackage.createPackageContents();
 
 		// Initialize created meta-data
 		theTypesPackage.initializePackageContents();
-		theApplicationPackage.initializePackageContents();
 		theCpPackage.initializePackageContents();
 		theTypesPaasagePackage.initializePackageContents();
+		theApplicationPackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed
 		theTypesPackage.freeze();
@@ -186,7 +178,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getValueUpperware() {
 		return valueUpperwareEClass;
@@ -195,7 +187,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getNumericValueUpperware() {
 		return numericValueUpperwareEClass;
@@ -204,7 +196,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getIntegerValueUpperware() {
 		return integerValueUpperwareEClass;
@@ -213,7 +205,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getIntegerValueUpperware_Value() {
 		return (EAttribute)integerValueUpperwareEClass.getEStructuralFeatures().get(0);
@@ -222,7 +214,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getLongValueUpperware() {
 		return longValueUpperwareEClass;
@@ -231,7 +223,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getLongValueUpperware_Value() {
 		return (EAttribute)longValueUpperwareEClass.getEStructuralFeatures().get(0);
@@ -240,7 +232,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getFloatValueUpperware() {
 		return floatValueUpperwareEClass;
@@ -249,7 +241,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getFloatValueUpperware_Value() {
 		return (EAttribute)floatValueUpperwareEClass.getEStructuralFeatures().get(0);
@@ -258,7 +250,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getDoubleValueUpperware() {
 		return doubleValueUpperwareEClass;
@@ -267,7 +259,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getDoubleValueUpperware_Value() {
 		return (EAttribute)doubleValueUpperwareEClass.getEStructuralFeatures().get(0);
@@ -276,7 +268,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getStringValueUpperware() {
 		return stringValueUpperwareEClass;
@@ -285,7 +277,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getStringValueUpperware_Value() {
 		return (EAttribute)stringValueUpperwareEClass.getEStructuralFeatures().get(0);
@@ -294,7 +286,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EClass getBooleanValueUpperware() {
 		return booleanValueUpperwareEClass;
@@ -303,7 +295,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EAttribute getBooleanValueUpperware_Value() {
 		return (EAttribute)booleanValueUpperwareEClass.getEStructuralFeatures().get(0);
@@ -312,7 +304,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public EEnum getBasicTypeEnum() {
 		return basicTypeEnumEEnum;
@@ -321,7 +313,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public TypesFactory getTypesFactory() {
 		return (TypesFactory)getEFactoryInstance();
@@ -330,7 +322,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private boolean isCreated = false;
 
@@ -339,7 +331,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	 * guarded to have no affect on any invocation but its first.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void createPackageContents() {
 		if (isCreated) return;
@@ -375,7 +367,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private boolean isInitialized = false;
 
@@ -384,7 +376,7 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 	 * method is guarded to have no affect on any invocation but its first.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void initializePackageContents() {
 		if (isInitialized) return;

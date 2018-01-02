@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -30,6 +22,7 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaaSageGoalImpl#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaaSageGoalImpl#getGoal <em>Goal</em>}</li>
@@ -37,15 +30,14 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaaSageGoalImpl#getApplicationComponent <em>Application Component</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaaSageGoalImpl#getApplicationMetric <em>Application Metric</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected PaaSageGoalImpl() {
 		super();
@@ -54,7 +46,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -64,7 +56,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -74,7 +66,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getId() {
 		return (String)eGet(ApplicationPackage.Literals.PAA_SAGE_GOAL__ID, true);
@@ -83,7 +75,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setId(String newId) {
 		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__ID, newId);
@@ -92,7 +84,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public GoalOperatorEnum getGoal() {
 		return (GoalOperatorEnum)eGet(ApplicationPackage.Literals.PAA_SAGE_GOAL__GOAL, true);
@@ -101,7 +93,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setGoal(GoalOperatorEnum newGoal) {
 		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__GOAL, newGoal);
@@ -110,7 +102,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public FunctionType getFunction() {
 		return (FunctionType)eGet(ApplicationPackage.Literals.PAA_SAGE_GOAL__FUNCTION, true);
@@ -119,7 +111,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setFunction(FunctionType newFunction) {
 		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__FUNCTION, newFunction);
@@ -128,7 +120,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<ComponentMetricRelationship> getApplicationComponent() {
@@ -138,7 +130,7 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getApplicationMetric() {
 		return (String)eGet(ApplicationPackage.Literals.PAA_SAGE_GOAL__APPLICATION_METRIC, true);
@@ -147,20 +139,10 @@ public class PaaSageGoalImpl extends CDOObjectImpl implements PaaSageGoal {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setApplicationMetric(String newApplicationMetric) {
 		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__APPLICATION_METRIC, newApplicationMetric);
-	}
-
-	@Override
-	public void setOptimisationAttribute(String optimisationAttribute) {
-		eSet(ApplicationPackage.Literals.PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE_ID, optimisationAttribute);
-	}
-
-	@Override
-	public String getOptimisationAttribute() {
-		return (String)eGet(ApplicationPackage.Literals.PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE_ID, true);
 	}
 
 } //PaaSageGoalImpl

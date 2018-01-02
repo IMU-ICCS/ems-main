@@ -17,11 +17,11 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl#getExpressions <em>Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ComposedExpressionImpl#getOperator <em>Operator</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

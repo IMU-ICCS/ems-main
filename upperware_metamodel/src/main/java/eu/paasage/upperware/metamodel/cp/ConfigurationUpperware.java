@@ -11,12 +11,12 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getSolution <em>Solution</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getValue <em>Value</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware#getGoal <em>Goal</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConfigurationUpperware()
  * @model

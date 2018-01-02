@@ -19,12 +19,12 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getTimestamp <em>Timestamp</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getVariableValue <em>Variable Value</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getMetricVariableValue <em>Metric Variable Value</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

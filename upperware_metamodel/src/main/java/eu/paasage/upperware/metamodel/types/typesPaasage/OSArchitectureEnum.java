@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -22,8 +14,8 @@ import org.eclipse.emf.common.util.Enumerator;
  * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getOSArchitectureEnum()
- * 
- * 
+ * @model
+ * @generated
  */
 public enum OSArchitectureEnum implements Enumerator {
 	/**
@@ -31,8 +23,8 @@ public enum OSArchitectureEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #THIRTY_TWO_BITS_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	THIRTY_TWO_BITS(32, "thirty_two_bits", "32bits"),
 
@@ -41,8 +33,8 @@ public enum OSArchitectureEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #SIXTY_FOUR_BITS_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	SIXTY_FOUR_BITS(64, "sixty_four_bits", "64bits");
 
@@ -55,9 +47,9 @@ public enum OSArchitectureEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #THIRTY_TWO_BITS
-	 *  name="thirty_two_bits" literal="32bits"
-	 * 
-	 * 
+	 * @model name="thirty_two_bits" literal="32bits"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int THIRTY_TWO_BITS_VALUE = 32;
 
@@ -70,9 +62,9 @@ public enum OSArchitectureEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #SIXTY_FOUR_BITS
-	 *  name="sixty_four_bits" literal="64bits"
-	 * 
-	 * 
+	 * @model name="sixty_four_bits" literal="64bits"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int SIXTY_FOUR_BITS_VALUE = 64;
 
@@ -80,7 +72,7 @@ public enum OSArchitectureEnum implements Enumerator {
 	 * An array of all the '<em><b>OS Architecture Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static final OSArchitectureEnum[] VALUES_ARRAY =
 		new OSArchitectureEnum[] {
@@ -92,11 +84,18 @@ public enum OSArchitectureEnum implements Enumerator {
 	 * A public read-only list of all the '<em><b>OS Architecture Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static final List<OSArchitectureEnum> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
-
+	/**
+	 * Returns the '<em><b>OS Architecture Enum</b></em>' literal with the specified literal value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static OSArchitectureEnum get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			OSArchitectureEnum result = VALUES_ARRAY[i];
@@ -107,7 +106,14 @@ public enum OSArchitectureEnum implements Enumerator {
 		return null;
 	}
 
-
+	/**
+	 * Returns the '<em><b>OS Architecture Enum</b></em>' literal with the specified name.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static OSArchitectureEnum getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			OSArchitectureEnum result = VALUES_ARRAY[i];
@@ -118,7 +124,14 @@ public enum OSArchitectureEnum implements Enumerator {
 		return null;
 	}
 
-
+	/**
+	 * Returns the '<em><b>OS Architecture Enum</b></em>' literal with the specified integer value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static OSArchitectureEnum get(int value) {
 		switch (value) {
 			case THIRTY_TWO_BITS_VALUE: return THIRTY_TWO_BITS;
@@ -127,33 +140,72 @@ public enum OSArchitectureEnum implements Enumerator {
 		return null;
 	}
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private final int value;
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private final String name;
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private final String literal;
 
+	/**
+	 * Only this class can construct instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private OSArchitectureEnum(int value, String name, String literal) {
 		this.value = value;
 		this.name = name;
 		this.literal = literal;
 	}
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public int getValue() {
 	  return value;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getName() {
 	  return name;
 	}
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getLiteral() {
 	  return literal;
 	}
 
+	/**
+	 * Returns the literal value of the enumerator, which is its string representation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public String toString() {
 		return literal;

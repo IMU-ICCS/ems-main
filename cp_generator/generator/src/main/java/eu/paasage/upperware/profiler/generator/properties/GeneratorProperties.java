@@ -28,6 +28,10 @@ public class GeneratorProperties {
     @NotNull
     private Memcache memcache;
 
+    @Valid
+    @NotNull
+    private CloudiatorV2 cloudiatorV2;
+
     @Getter
     @Setter
     public static class Esb {
@@ -41,11 +45,20 @@ public class GeneratorProperties {
     @Setter
     public static class Memcache {
 
+        @NotBlank
         private String host;
 
         private Integer port;
 
         private Integer ttl;
 
+    }
+
+    @Getter
+    @Setter
+    public static class CloudiatorV2 {
+
+        @NotBlank
+        private String url;
     }
 }

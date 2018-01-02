@@ -483,15 +483,6 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getVirtualMachineProfile_FlavourName() {
-		return (EAttribute)virtualMachineProfileEClass.getEStructuralFeatures().get(9);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EClass getCloudMLElementUpperware() {
 		return cloudMLElementUpperwareEClass;
 	}
@@ -910,10 +901,6 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(4);
 	}
 
-	public EAttribute getPaaSageGoal_ExtOptimisationAttribute() {
-		return (EAttribute)paaSageGoalEClass.getEStructuralFeatures().get(5);
-	}
-
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1121,7 +1108,6 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		createEReference(virtualMachineProfileEClass, VIRTUAL_MACHINE_PROFILE__LOCATION);
 		createEReference(virtualMachineProfileEClass, VIRTUAL_MACHINE_PROFILE__IMAGE);
 		createEAttribute(virtualMachineProfileEClass, VIRTUAL_MACHINE_PROFILE__RELATED_CLOUD_VM_ID);
-		createEAttribute(virtualMachineProfileEClass, VIRTUAL_MACHINE_PROFILE__FLAVOUR_NAME_ID);
 
 		cloudMLElementUpperwareEClass = createEClass(CLOUD_ML_ELEMENT_UPPERWARE);
 		createEAttribute(cloudMLElementUpperwareEClass, CLOUD_ML_ELEMENT_UPPERWARE__CLOUD_ML_ID);
@@ -1181,7 +1167,6 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		createEReference(paaSageGoalEClass, PAA_SAGE_GOAL__FUNCTION);
 		createEReference(paaSageGoalEClass, PAA_SAGE_GOAL__APPLICATION_COMPONENT);
 		createEAttribute(paaSageGoalEClass, PAA_SAGE_GOAL__APPLICATION_METRIC);
-		createEAttribute(paaSageGoalEClass, PAA_SAGE_GOAL__EXT_OPTIMISATION_ATTRIBUTE);
 
 		requiredFeatureEClass = createEClass(REQUIRED_FEATURE);
 		createEAttribute(requiredFeatureEClass, REQUIRED_FEATURE__FEATURE);
@@ -1272,14 +1257,10 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		initEReference(getVirtualMachineProfile_Storage(), this.getStorage(), null, "storage", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getVirtualMachineProfile_Cpu(), this.getCPU(), null, "cpu", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getVirtualMachineProfile_Os(), theTypesPaasagePackage.getOS(), null, "os", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
 		initEReference(getVirtualMachineProfile_ProviderDimension(), this.getProviderDimension(), null, "providerDimension", null, 0, -1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
 		initEReference(getVirtualMachineProfile_Location(), theTypesPaasagePackage.getLocationUpperware(), null, "location", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getVirtualMachineProfile_Image(), this.getImageUpperware(), null, "image", null, 0, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getVirtualMachineProfile_RelatedCloudVMId(), ecorePackage.getEString(), "relatedCloudVMId", null, 1, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getVirtualMachineProfile_FlavourName(), ecorePackage.getEString(), "flavourName", null, 1, 1, VirtualMachineProfile.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		//TODO - co tu zrobic ?? EReference czy EAttribute
 
 		initEClass(cloudMLElementUpperwareEClass, CloudMLElementUpperware.class, "CloudMLElementUpperware", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getCloudMLElementUpperware_CloudMLId(), ecorePackage.getEString(), "cloudMLId", null, 0, 1, CloudMLElementUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -1339,7 +1320,6 @@ public class ApplicationPackageImpl extends EPackageImpl implements ApplicationP
 		initEReference(getPaaSageGoal_Function(), theTypesPaasagePackage.getFunctionType(), null, "function", null, 1, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getPaaSageGoal_ApplicationComponent(), this.getComponentMetricRelationship(), null, "applicationComponent", null, 0, -1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getPaaSageGoal_ApplicationMetric(), ecorePackage.getEString(), "applicationMetric", null, 0, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getPaaSageGoal_ExtOptimisationAttribute(), ecorePackage.getEString(), "optimisationAttribute", null, 0, 1, PaaSageGoal.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(requiredFeatureEClass, RequiredFeature.class, "RequiredFeature", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getRequiredFeature_Feature(), ecorePackage.getEString(), "feature", null, 1, 1, RequiredFeature.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

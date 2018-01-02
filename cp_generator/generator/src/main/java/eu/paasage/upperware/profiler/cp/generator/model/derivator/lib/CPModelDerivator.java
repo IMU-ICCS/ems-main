@@ -11,38 +11,10 @@
 
 package eu.paasage.upperware.profiler.cp.generator.model.derivator.lib;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import eu.paasage.upperware.metamodel.cp.*;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.EList;
-
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.requirement.OptimisationRequirement;
-import eu.paasage.upperware.metamodel.application.ApplicationComponent;
-import eu.paasage.upperware.metamodel.application.ApplicationFactory;
-import eu.paasage.upperware.metamodel.application.PaaSageGoal;
-import eu.paasage.upperware.metamodel.application.PaaSageVariable;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.metamodel.application.Provider;
-import eu.paasage.upperware.metamodel.application.ProviderDimension;
-import eu.paasage.upperware.metamodel.application.RequiredFeature;
-import eu.paasage.upperware.metamodel.application.VirtualMachine;
-import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
+import eu.paasage.upperware.metamodel.application.*;
+import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
@@ -55,11 +27,17 @@ import eu.paasage.upperware.profiler.cp.generator.db.api.IDatabaseProxy;
 import eu.paasage.upperware.profiler.cp.generator.model.derivator.api.ICPModelDerivator;
 import eu.paasage.upperware.profiler.cp.generator.model.derivator.api.IEstimatorFactory;
 import eu.paasage.upperware.profiler.cp.generator.model.derivator.api.IFunctionCreator;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.Constants;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.FileTool;
 import eu.paasage.upperware.profiler.cp.generator.model.tools.PaasageModelTool;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.common.util.EList;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * This class provides the functionality to create a constraint problem
@@ -107,9 +85,7 @@ public class CPModelDerivator implements ICPModelDerivator
 	
 	protected Map<String,IFunctionCreator> creatorsMap; 
 	
-	protected DimensionDerivator dimensionsDerivator; 
-	
-	protected DeltaFunctionDerivator deltaFunctionDerivator;
+	protected DimensionDerivator dimensionsDerivator;
 	
 	/*
 	 * Factory of Cp objects
@@ -131,8 +107,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		cpFactory= CpFactory.eINSTANCE; 
 		createFunctionCreators(creatorsFile, database);
 		//createFactories(factoryFile); 
-		dimensionsDerivator= new DimensionDerivator(); 
-		deltaFunctionDerivator= new DeltaFunctionDerivator();
+		dimensionsDerivator= new DimensionDerivator();
 	}
 	
 	/*
@@ -168,9 +143,6 @@ public class CPModelDerivator implements ICPModelDerivator
 
 		log.info("** 		Creating User constraints ");
 		dimensionsDerivator.createConstraints(camel, cp);
-
-		log.info("** 		Creating Delta Utility Function ");
-		deltaFunctionDerivator.createDeltaFunction(cp);
 
 		if(configuration.getGoals().size()>0) {
 			log.debug("CPModelDerivator - derivateConstraintProblem - Goals! ");
@@ -208,9 +180,7 @@ public class CPModelDerivator implements ICPModelDerivator
 		configuration.getGoals().add(goal);
 
 		//Create the Cost creator
-		CostFunctionCreator costCreator = new CostFunctionCreator(selectExistingPriceFile());
-		costCreator.setDatabaseProxy(database);
-		costCreator.createFunction(cp, goal);
+		//PSZKUP - TODO - to byla funkcja
 		log.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
 	}
 
@@ -1404,29 +1374,6 @@ public class CPModelDerivator implements ICPModelDerivator
 		{
 			log.warn("CPModelDerivator - createFactories - The properties file does not exist. The loaders are not initialized!"); 
 		}
-	}
-	
-	
-	public static InputStream selectExistingPriceFile() //TODO
-	{
-		File cloudPricingFile= new File(Constants.CONFIG_FILES_DEFAULT_PATH,"cloudPricing.txt"); 
-		
-		InputStream is= null; 
-		
-		if(!cloudPricingFile.isFile())
-		{	
-			is= FileTool.getInputStreamFromFileName(Constants.WAR_CONFIG_PATH+"cloudPricing.txt"); 
-						
-		} else
-			try {
-				is= new FileInputStream(cloudPricingFile);
-			} 
-			catch (FileNotFoundException e) 
-			{
-				e.printStackTrace();
-			}
-		
-		return is; 
 	}
 
 	class ConstantIdGenerator {

@@ -11,10 +11,10 @@ import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.MetricVariable#getType <em>Type</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getMetricVariable()
  * @model

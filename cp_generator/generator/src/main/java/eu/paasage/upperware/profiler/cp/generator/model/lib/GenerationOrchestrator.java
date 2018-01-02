@@ -199,7 +199,7 @@ public class GenerationOrchestrator
 			camelProcessor.parseModel(pcw, preferedProviders);
 				
 		
-			if(!pcw.hasUserSolution && pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships) {
+			if( pcw.getPaasageConfiguration().getProviders().size()>0 && (pcw.getComponentsWithoutVM()==null || pcw.getComponentsWithoutVM().size()==0) && pcw.hasCorrectHostingRelationships) {
 				log.info("** Calling CPModelDerivator");
 				ConstraintProblem cp= derivator.derivateConstraintProblem(camelProcessor.getCamelModel(),pc, database); 
 				//pc.getId();
@@ -220,9 +220,7 @@ public class GenerationOrchestrator
 	
 				id= auxId;
 				
-				log.info("** CP Model Id: "+id); 
-			} else if(pcw.hasUserSolution && pcw.isValidUserSolution()) {
-				log.info("** The user already provided a solution for the deployment. The CP Model will be not generated!"); 
+				log.info("** CP Model Id: "+id);
 			} else if(pcw.getPaasageConfiguration().getProviders().size()==0) {
 				log.info("** There is not a suitable provider. The CP Model will be not generated!"); 
 			} else if(!pcw.hasCorrectHostingRelationships) {

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -35,6 +27,7 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl#getGoals <em>Goals</em>}</li>
@@ -47,15 +40,14 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl#getVms <em>Vms</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.PaasageConfigurationImpl#getMonitoredDimensions <em>Monitored Dimensions</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageConfiguration {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected PaasageConfigurationImpl() {
 		super();
@@ -64,7 +56,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -74,7 +66,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -84,7 +76,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getId() {
 		return (String)eGet(ApplicationPackage.Literals.PAASAGE_CONFIGURATION__ID, true);
@@ -93,7 +85,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setId(String newId) {
 		eSet(ApplicationPackage.Literals.PAASAGE_CONFIGURATION__ID, newId);
@@ -102,7 +94,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<PaaSageGoal> getGoals() {
@@ -112,7 +104,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<PaaSageVariable> getVariables() {
@@ -122,7 +114,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<ElasticityRule> getRules() {
@@ -132,7 +124,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<ApplicationComponent> getComponents() {
@@ -142,7 +134,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Provider> getProviders() {
@@ -152,7 +144,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<VirtualMachineProfile> getVmProfiles() {
@@ -162,7 +154,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Expression> getAuxExpressions() {
@@ -172,7 +164,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<VirtualMachine> getVms() {
@@ -182,7 +174,7 @@ public class PaasageConfigurationImpl extends CDOObjectImpl implements PaasageCo
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
 	public EList<Dimension> getMonitoredDimensions() {

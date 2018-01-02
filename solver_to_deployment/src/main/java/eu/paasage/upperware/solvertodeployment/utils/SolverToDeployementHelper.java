@@ -155,9 +155,9 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 				.filter(variable -> variable.getId().equals(paaSageVariable.getCpVariableId()))
 				.findFirst().orElseThrow(() -> new S2DException("Could not find variable with id: " + paaSageVariable.getCpVariableId()));
 
-		String flavourName = cpVariable.getFlavourName();
-		EList<TypeModel> typeModels = ((CamelModelImpl) deploymentModel.eContainer()).getTypeModels();
-		EnumerateValue valueForFlavour = CloudMLHelper.findValueForFlavour(flavourName, typeModels);
+//		String flavourName = cpVariable.getFlavourName();
+//		EList<TypeModel> typeModels = ((CamelModelImpl) deploymentModel.eContainer()).getTypeModels();
+//		EnumerateValue valueForFlavour = CloudMLHelper.findValueForFlavour(flavourName, typeModels);
 
 
 
@@ -168,7 +168,7 @@ DE_GWDG_StorageIntensive_UbuntuReq__StorageIntensiveUbuntuGermanyVM_PROFILE
 			//Set VM Type/value 
 			Attribute attribute = CloudMLHelper.findVMType(providerModel);
 			vmInstanceResult.setVmType(attribute);
-			vmInstanceResult.setVmTypeValue(valueForFlavour);
+//			vmInstanceResult.setVmTypeValue(valueForFlavour);
 			vmInstances.add(vmInstanceResult);
 		}
 		return vmInstances;

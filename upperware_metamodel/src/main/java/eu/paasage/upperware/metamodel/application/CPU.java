@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,15 +11,15 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.FrequencyEnum;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.CPU#getFrequency <em>Frequency</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.CPU#getCores <em>Cores</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getCPU()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface CPU extends ResourceUpperware {
 	/**
@@ -43,8 +35,8 @@ public interface CPU extends ResourceUpperware {
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.FrequencyEnum
 	 * @see #setFrequency(FrequencyEnum)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getCPU_Frequency()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	FrequencyEnum getFrequency();
 
@@ -55,7 +47,7 @@ public interface CPU extends ResourceUpperware {
 	 * @param value the new value of the '<em>Frequency</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.FrequencyEnum
 	 * @see #getFrequency()
-	 * 
+	 * @generated
 	 */
 	void setFrequency(FrequencyEnum value);
 
@@ -70,8 +62,8 @@ public interface CPU extends ResourceUpperware {
 	 * @return the value of the '<em>Cores</em>' attribute.
 	 * @see #setCores(int)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getCPU_Cores()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	int getCores();
 
@@ -81,7 +73,7 @@ public interface CPU extends ResourceUpperware {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Cores</em>' attribute.
 	 * @see #getCores()
-	 * 
+	 * @generated
 	 */
 	void setCores(int value);
 

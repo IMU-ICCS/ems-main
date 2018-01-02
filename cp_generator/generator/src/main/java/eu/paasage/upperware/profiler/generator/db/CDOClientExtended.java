@@ -150,28 +150,4 @@ public class CDOClientExtended extends CDOClient {
         }
         return false;
     }
-
-    public List<EObject> getResourceContents(String path, CDOView view) {
-
-        CDOResource resource = view.getResource(path);
-        EList<EObject> content = resource.getContents();
-
-        List<EObject> qr = new ArrayList<EObject>();
-        log.debug("CDOClientExtended - getResourceContents - Retrieved Resource " + resource + " path " + path);
-
-        if (!content.isEmpty()) {
-            log.debug("CDOClientExtended - getResourceContents - Resource path " + path + " size " + content.size());
-
-            for (EObject o : content) {
-                log.debug("CDOClientExtended - getResourceContents - Content " + o);
-                qr.add(o);
-            }
-
-        } else {
-            log.warn("CDOClientExtended - getResourceContents - Resource path " + path + " is empty ");
-        }
-
-        return qr;
-    }
-
 }

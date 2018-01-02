@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,14 +11,14 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.DataUnitEnum;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.Memory#getUnit <em>Unit</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getMemory()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface Memory extends ResourceUpperware {
 	/**
@@ -42,8 +34,8 @@ public interface Memory extends ResourceUpperware {
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.DataUnitEnum
 	 * @see #setUnit(DataUnitEnum)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getMemory_Unit()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	DataUnitEnum getUnit();
 
@@ -54,7 +46,7 @@ public interface Memory extends ResourceUpperware {
 	 * @param value the new value of the '<em>Unit</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.DataUnitEnum
 	 * @see #getUnit()
-	 * 
+	 * @generated
 	 */
 	void setUnit(DataUnitEnum value);
 

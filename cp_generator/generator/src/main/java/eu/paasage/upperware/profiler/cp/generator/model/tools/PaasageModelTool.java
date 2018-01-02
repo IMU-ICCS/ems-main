@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import eu.paasage.camel.location.Country;
+import eu.paasage.camel.location.GeographicalRegion;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -159,7 +161,7 @@ public class PaasageModelTool
 		
 		return null; 
 	}
-	
+
 	/**
 	 * Searches for a location using a camel location
 	 * @param loc The camel location 
@@ -170,104 +172,57 @@ public class PaasageModelTool
 	{
 		String locationName= loc.getId(); 
 		log.debug("***************looking for location "+locationName);
-		
-		if(loc instanceof CloudLocation)
-		{
+
+		EList<LocationUpperware> locations = pcw.getLocations().getLocations();
+		if(loc instanceof CloudLocation) {
 			//TODO Check CloudLocation ??
-			CloudLocation cloudLocation= (CloudLocation) loc; 
-			List<CityUpperware> cities= searchCityByName(locationName, pcw.getLocations().getLocations());
-			
-			if(cities.size()>0)
-			{
-				if(cities.size()==1)
-				{
+			CloudLocation cloudLocation= (CloudLocation) loc;
+			List<CityUpperware> cities= searchCityByName(locationName, locations);
+
+			GeographicalRegion geographicalRegion = cloudLocation.getGeographicalRegion();
+			if(cities.size()>0) {
+				if(cities.size()==1) {
 					return cities.get(0); 
-				}
-				else
-				{
-					
-					if(cloudLocation.getGeographicalRegion()!=null)
-					{
-						if(cloudLocation.getGeographicalRegion() instanceof eu.paasage.camel.location.Country)
-						{
-							eu.paasage.camel.location.Country theCountry= (eu.paasage.camel.location.Country) cloudLocation.getGeographicalRegion(); 
-							
-							String countryName= theCountry.getName(); //TODO TO USE ALTERNATIVE NAMES OF theCountry
-									
-							//if(countryName!=null)
-							for(CityUpperware city:cities)
-							{
-								if(city.getCountry().getName().equals(countryName) || isInList(city.getCountry().getAlternativeNames(), countryName))
-								{
+				} else {
+					if(geographicalRegion !=null) {
+
+						if(geographicalRegion instanceof Country) {
+							String countryName = geographicalRegion.getName();
+							for(CityUpperware city:cities) {
+								if(city.getCountry().getName().equals(countryName) || isInList(city.getCountry().getAlternativeNames(), countryName)) {
 									return city; 
 								}
 							}		
 									
-						}
-						else //It is a continent //TODO TO CHECK THIS
-						{
-							eu.paasage.camel.location.GeographicalRegion theContinent= (eu.paasage.camel.location.GeographicalRegion) cloudLocation.getGeographicalRegion(); 
-							String continentName= theContinent.getName(); 
-							
-							for(CityUpperware city:cities)
-							{
-								if(city.getCountry().getContinent().getName().equals(continentName) || isInList(city.getCountry().getContinent().getAlternativeNames(), continentName))
-								{
+						} else {
+							//It is a continent //TODO TO CHECK THIS
+							String continentName= geographicalRegion.getName();
+							for(CityUpperware city:cities) {
+								if(city.getCountry().getContinent().getName().equals(continentName) || isInList(city.getCountry().getContinent().getAlternativeNames(), continentName)) {
 									return city; 
 								}
 							}
 						}
-							
 					}
 				}
-				
-				
-				
-			}
-			else if(cloudLocation.getGeographicalRegion()!=null) //Try with regions 
-			{
-				String regionName= cloudLocation.getGeographicalRegion().getName(); 
-				
-				{
-					if(cloudLocation.getGeographicalRegion() instanceof eu.paasage.camel.location.Country)
-					{
-						//TODO TO USE ALTERNATIVE NAMES OF theCountry
-						CountryUpperware country= searchCountryByName(regionName, pcw.getLocations().getLocations()); 
-								
-						return country; 
-								
-					}
-					else //It is a continent
-					{						
-						ContinentUpperware continent= searchContinentByName(regionName, pcw.getLocations().getLocations()); 
-						
-						return continent; 
-					}
-						
+			} else if(geographicalRegion !=null) {
+				//Try with regions
+				String regionName= geographicalRegion.getName();
+				if(geographicalRegion instanceof Country) {
+					//TODO TO USE ALTERNATIVE NAMES OF theCountry
+					return searchCountryByName(regionName, locations);
+				} else {
+					//It is a continent
+					return searchContinentByName(regionName, locations);
 				}
 			}
+		} else if(loc instanceof Country) {
+			return searchCountryByName(locationName, locations);
+		} else {
+			//It is a continent
+			return searchContinentByName(locationName, locations);
 		}
-		else if(loc instanceof eu.paasage.camel.location.Country)
-		{
-			CountryUpperware country= searchCountryByName(locationName, pcw.getLocations().getLocations());
-			
-			return country; 
-		}
-		else //It is a continent
-		{
-			ContinentUpperware continent= searchContinentByName(locationName, pcw.getLocations().getLocations()); 
-			
-			return continent; 
-		}
-		
-		if(locationName!=null && !locationName.equals(""))
-		{
-			
-			
 
-		}
-		
-				
 		return null; 
 	}
 	

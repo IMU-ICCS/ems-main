@@ -202,15 +202,6 @@ public interface CpFactory extends EFactory {
 	ConfigurationUpperware createConfigurationUpperware();
 
 	/**
-	 * Returns a new object of class '<em>Delta Utility</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Delta Utility</em>'.
-	 * @generated
-	 */
-	DeltaUtility createDeltaUtility();
-
-	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

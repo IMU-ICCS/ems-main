@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -16,7 +8,9 @@ package eu.paasage.upperware.metamodel.types.typesPaasage;
  * A representation of the model object '<em><b>OS</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.types.typesPaasage.OS#getName <em>Name</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.types.typesPaasage.OS#getVers <em>Vers</em>}</li>
@@ -24,8 +18,8 @@ package eu.paasage.upperware.metamodel.types.typesPaasage;
  * </ul>
  *
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getOS()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface OS extends PaaSageCPElement {
 	/**
@@ -39,8 +33,8 @@ public interface OS extends PaaSageCPElement {
 	 * @return the value of the '<em>Name</em>' attribute.
 	 * @see #setName(String)
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getOS_Name()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getName();
 
@@ -50,7 +44,7 @@ public interface OS extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Name</em>' attribute.
 	 * @see #getName()
-	 * 
+	 * @generated
 	 */
 	void setName(String value);
 
@@ -65,8 +59,8 @@ public interface OS extends PaaSageCPElement {
 	 * @return the value of the '<em>Vers</em>' attribute.
 	 * @see #setVers(String)
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getOS_Vers()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getVers();
 
@@ -76,7 +70,7 @@ public interface OS extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Vers</em>' attribute.
 	 * @see #getVers()
-	 * 
+	 * @generated
 	 */
 	void setVers(String value);
 
@@ -93,8 +87,8 @@ public interface OS extends PaaSageCPElement {
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.OSArchitectureEnum
 	 * @see #setArchitecture(OSArchitectureEnum)
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getOS_Architecture()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	OSArchitectureEnum getArchitecture();
 
@@ -105,7 +99,7 @@ public interface OS extends PaaSageCPElement {
 	 * @param value the new value of the '<em>Architecture</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.types.typesPaasage.OSArchitectureEnum
 	 * @see #getArchitecture()
-	 * 
+	 * @generated
 	 */
 	void setArchitecture(OSArchitectureEnum value);
 
