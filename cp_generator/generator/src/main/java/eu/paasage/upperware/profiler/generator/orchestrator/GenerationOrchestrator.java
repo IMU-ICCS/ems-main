@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
-
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -57,7 +56,6 @@ public class GenerationOrchestrator {
 
     @Async
     public void generateCPModelAndSendNotification(String resourceName, String notificationUri, String requestUuid){
-
 
         try {
             requestSynchronizer.acquireLock(resourceName);
