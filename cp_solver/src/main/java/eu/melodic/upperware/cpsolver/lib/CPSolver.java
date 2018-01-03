@@ -7,10 +7,8 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
-import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluator;
-import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluatorExample;
-import java.util.*;
-
+import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
+import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
 import eu.paasage.mddb.cdo.client.CDOClient;
