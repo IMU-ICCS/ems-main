@@ -11,7 +11,6 @@
 
 package eu.paasage.upperware.profiler.generator.db;
 
-import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
 import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.organisation.OrganisationPackage;
@@ -91,14 +90,6 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 		log.debug("CDODatabaseProxy - saveModels - Saving file {0}", paasageConfigModel.getAbsolutePath());
 		cdoClient.exportModel(content.get(0), paasageConfigModel.getAbsolutePath());
 		cdoClient.exportModel(content.get(1), cpModel.getAbsolutePath());
-	}
-
-	@Override
-	public void saveModels(PaasageConfiguration pc, ConstraintProblem cp, CamelModel camelModel) {
-		saveModels(pc, cp);
-		File configurationDir= ModelTool.getGenerationDirForPaasageAppConfiguration(cp.getId());
-		File camelModelFile= new File(configurationDir, MelodicConstants.APP_MODEL_FILE_NAME);
-		cdoClient.exportModel(camelModel, camelModelFile.getAbsolutePath());
 	}
 
 }
