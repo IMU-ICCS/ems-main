@@ -12,6 +12,7 @@ import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.BetaDistribution;
 
@@ -36,19 +37,13 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
   /* constructors */
 
-  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric[]> metrics,
-    Collection<Component> actConfiguration, boolean isReconfig){
+  public UtilityFunctionEvaluatorFCR(ConstraintProblem cp){
 
-    super(actConfiguration, isReconfig);
-    getAndAssignMetrics(metrics);
+    super(cp);
+    //getAndAssignMetrics(metrics);
   }
 
-  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric[]> metrics, Collection<Component> actConfiguration,
-    boolean isReconfig, CostUtilityFunction costUtilityFunction){
 
-    super(actConfiguration, isReconfig, costUtilityFunction);
-    getAndAssignMetrics(metrics);
-  }
 
 
   @Override
@@ -103,6 +98,14 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
     this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
   }
 
+  /* for tests */
+
+  public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric[]> metrics, Collection<Component> actConfiguration,
+    boolean isReconfig, CostUtilityFunction costUtilityFunction){
+
+    super(actConfiguration, isReconfig, costUtilityFunction);
+    getAndAssignMetrics(metrics);
+  }
 
 
 }

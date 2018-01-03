@@ -1,6 +1,7 @@
 package eu.melodic.upperware.utilitygenerator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCAS;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCETraffic;
@@ -8,6 +9,7 @@ import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorF
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import solver.variables.IntVar;
 
 import java.util.Collection;
@@ -15,35 +17,65 @@ import java.util.Map;
 
 public class UtilityGeneratorApplication {
 
+
   private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-  public UtilityGeneratorApplication(Map<MetricType, Metric[]> metrics,
-      Collection<Component> actConfiguration,
-      boolean isReconfig, UtilityFunctionType useCase){
 
+  public UtilityGeneratorApplication(ConstraintProblem cp, UtilityFunctionType useCase){
+    createUtilityEvaluator(cp, useCase);
+  }
+
+
+  public double evaluate(IntVar[] newConfiguration){
+    return this.utilityFunctionEvaluator.evaluate(newConfiguration); //fixme - without cardinality
+  }
+
+
+  private void createUtilityEvaluator (ConstraintProblem cp, UtilityFunctionType useCase){
     switch (useCase){
 
       case FCR:
         this.utilityFunctionEvaluator =
-          new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig);
+          new UtilityFunctionEvaluatorFCR(cp);
         break;
 
       case CE_TRAFFIC:
         this.utilityFunctionEvaluator =
-          new UtilityFunctionEvaluatorCETraffic(actConfiguration, isReconfig);
+          new UtilityFunctionEvaluatorCETraffic(cp);
         break;
 
       case CAS:
         this.utilityFunctionEvaluator =
-          new UtilityFunctionEvaluatorCAS(metrics, actConfiguration, isReconfig);
+          new UtilityFunctionEvaluatorCAS(cp);
         break;
     }
+  }
 
+
+
+  /* ------------------------------ only for tests ----------------------------------------------*/
+
+  public UtilityGeneratorApplication(Map<MetricType, Metric[]> metrics,
+    Collection<Component> actConfiguration, boolean isReconfig,
+    UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction){
+
+    createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, costUtilityFunction);
   }
 
   public UtilityGeneratorApplication(Map<MetricType, Metric[]> metrics,
-      Collection<Component> actConfiguration, boolean isReconfig,
-      UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction){
+    Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase){
+
+    createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
+  }
+
+  public double evaluate(int cardinality) {
+    return this.utilityFunctionEvaluator.evaluate(new IntVar[]{});
+
+  }
+
+  private void createUtilityEvaluator(Map<MetricType, Metric[]> metrics,
+    Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction
+    costUtilityFunction){
 
     switch (useCase){
 
@@ -62,16 +94,7 @@ public class UtilityGeneratorApplication {
           new UtilityFunctionEvaluatorCAS(metrics, actConfiguration, isReconfig, costUtilityFunction);
         break;
     }
-
   }
 
-  public double evaluate(IntVar[] newConfiguration){
-    return this.utilityFunctionEvaluator.evaluate(newConfiguration, 1);
-  }
-
-  public double evaluate(int cardinality) {
-    return this.utilityFunctionEvaluator.evaluate(new IntVar[]{}, cardinality);
-
-  }
 
 }

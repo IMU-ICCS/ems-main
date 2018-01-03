@@ -9,9 +9,11 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 
 import java.util.Collection;
 import java.util.Map;
@@ -22,19 +24,10 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
   private Metric[] ramUsage;
 
 
-  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
-    Collection<Component> actConfiguration, boolean isReconfig,
-    CostUtilityFunction costUtilityFunction) {
-
-    super(actConfiguration, isReconfig, costUtilityFunction);
-    getAndAssignMetrics(metrics);
-
-  }
-
-  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
-    Collection<Component> actConfiguration, boolean isReconfig) {
-    super(actConfiguration, isReconfig);
-    getAndAssignMetrics(metrics);
+  public UtilityFunctionEvaluatorCAS(ConstraintProblem cp) {
+    super(cp);
+    this.costUtilityFunction = new CostUtilityFunctionFraction();
+    //getAndAssignMetrics(metrics);
   }
 
   @Override
@@ -82,6 +75,17 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
       .getNodeCandidate()
       .getHardware()
       .getRam();
+  }
+
+  /* for tests */
+
+  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
+    Collection<Component> actConfiguration, boolean isReconfig,
+    CostUtilityFunction costUtilityFunction) {
+
+    super(actConfiguration, isReconfig, costUtilityFunction);
+    getAndAssignMetrics(metrics);
+
   }
 
 }

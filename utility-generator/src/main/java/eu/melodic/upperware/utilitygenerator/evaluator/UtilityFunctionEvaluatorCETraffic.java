@@ -10,23 +10,28 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 
 import java.util.Collection;
 
 public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator{
 
 
-  public UtilityFunctionEvaluatorCETraffic(Collection<Component> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
-    super(actConfiguration, isReconfig, costUtilityFunction);
-  }
 
-  public UtilityFunctionEvaluatorCETraffic(Collection<Component> actConfiguration, boolean isReconfig){
-    super(actConfiguration, isReconfig);
+
+  public UtilityFunctionEvaluatorCETraffic(ConstraintProblem cp){
+    super(cp);
   }
 
 
   @Override
   public double evaluate(Collection<Component> newConfiguration) {
     return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+  }
+
+  /* for tests*/
+
+  public UtilityFunctionEvaluatorCETraffic(Collection<Component> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+    super(actConfiguration, isReconfig, costUtilityFunction);
   }
 }

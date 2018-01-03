@@ -138,7 +138,7 @@ class CASUseCaseTest extends Specification {
     System.out.println("utility = " + result)
 
     where:
-    cardinality << [1,2, 3, 4, 5]
+    cardinality << [1, 2, 3, 4, 5]
   }
 
 }
