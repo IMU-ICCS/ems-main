@@ -14,6 +14,8 @@ package eu.passage.upperware.commons.model.tools;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl;
 import eu.paasage.upperware.metamodel.types.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.eclipse.emf.common.util.EList;
 
 import java.util.ArrayList;
@@ -55,8 +57,7 @@ public class CPModelTool {
      * @return string
      */
     public static String toString(Constant cons) {
-        String retString = cons.getId() + ": " + CPModelTool.getValueFromNumericValue(cons.getValue()).get(0).toString();
-        return retString;
+        return cons.getId() + ": " + CPModelTool.getValueFromNumericValue(cons.getValue()).get(0);
 
     }
 
@@ -70,8 +71,8 @@ public class CPModelTool {
                 + "  vmId " + var.getVmId() + System.lineSeparator()
                 + "  osImageId: " + var.getOsImageId() + System.lineSeparator()
                 + "  hardwareId: " + var.getHardwareId() + System.lineSeparator()
-                + "  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0).toString()
-                + "  domainTo: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getTo()).get(0).toString();
+                + "  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0)
+                + "  domainTo: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getTo()).get(0);
         return retString;
 
     }
@@ -107,10 +108,8 @@ public class CPModelTool {
         } else if (expression instanceof ComparisonExpression) {
             ComparisonExpression comparisonExp = (ComparisonExpression) expression;
             retString = System.lineSeparator() + "( " + toString(comparisonExp.getExp1()) + " " + comparisonExp.getComparator().getName() + " " + toString(comparisonExp.getExp2()) + " ) ";
-        } else if (expression instanceof Constant) {
-            retString = ((Constant) expression).getId();
-        } else if (expression instanceof Variable) {
-            retString = ((Variable) expression).getId();
+        } else if (expression instanceof Constant || expression instanceof Variable) {
+            retString = expression.getId();
         } else {
             System.out.println("NumericExpresion: " + expression.getClass().toString() + " not yet supported");
         }
@@ -225,16 +224,6 @@ public class CPModelTool {
         return null;
     }
 
-    public static VariableValue getVariableValueByVariableId(String id, Solution sol) {
-        for (VariableValue vv : sol.getVariableValue()) {
-            if (vv.getVariable().getId().equals(id)) {
-                return vv;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Gets the value from a given Numeric Value as a string
      * @param value The value
@@ -291,36 +280,19 @@ public class CPModelTool {
     }
 
     public static VariableValue searchVariableValue(Solution sol, Variable var) {
-        if (sol.getVariableValue() != null)
-            for (VariableValue value : sol.getVariableValue()) {
-                if (value.getVariable().getId().equals(var.getId()))
-                    return value;
-            }
+        return getVariableValueByVariableId(var.getId(), sol);
+    }
 
-        return null;
-
+    public static VariableValue getVariableValueByVariableId(String id, Solution sol) {
+        return getFirst(sol.getVariableValue(), vv -> vv.getVariable().getId().equals(id));
     }
 
     public static MetricVariableValue searchMetricValue(Solution sol, MetricVariable var) {
-        if (sol.getMetricVariableValue() != null)
-            for (MetricVariableValue value : sol.getMetricVariableValue()) {
-                if (value.getVariable().getId().equals(var.getId()))
-                    return value;
-            }
-
-        return null;
-
+        return getFirst(sol.getMetricVariableValue(), value -> value.getVariable().getId().equals(var.getId()));
     }
 
-    public static MetricVariableValue searchMetricVariableValue(Solution sol, MetricVariable var) {
-
-        for (MetricVariableValue value : sol.getMetricVariableValue()) {
-            if (value.getVariable().getId().equals(var.getId()))
-                return value;
-        }
-
-        return null;
-
+    public static <T> T getFirst(List<T> elements, Predicate<T> predicate) {
+        return CollectionUtils.emptyIfNull(elements).stream().filter(predicate::evaluate).findFirst().orElse(null);
     }
 
     public static Solution createSolution(ConstraintProblem cp) {

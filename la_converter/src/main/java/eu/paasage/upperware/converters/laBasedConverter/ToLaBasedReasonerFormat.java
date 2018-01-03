@@ -820,17 +820,10 @@ public class ToLaBasedReasonerFormat
 	 * @param variables The variables defined in the cp model. 
 	 * @param sol The solution
 	 */
-	public void buildMetricVariables(EList<MetricVariable> variables, Solution sol)
-	{
-		 
-		int varsId= 0; 
-		
-		for(MetricVariable var: variables)
-		{
-			MetricVariableValue metricValue= CPModelTool.searchMetricVariableValue(sol, var);
-			buildMetricDeclaration(var, metricValue); 
-			
-			varsId++; 
+	public void buildMetricVariables(EList<MetricVariable> variables, Solution sol) {
+		for(MetricVariable var: variables) {
+			MetricVariableValue metricValue= CPModelTool.searchMetricValue(sol, var);
+			buildMetricDeclaration(var, metricValue);
 		}
 	}
 	
