@@ -389,7 +389,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
       while (it.hasNext()) {
         VirtualMachineTask task = it.next();
-        setDependencies(graph, task.getType(), prevTask, task);
+        if (task.getType().equals(prevTask.getType())){
+          setDependencies(graph, task.getType(), prevTask, task);
+        }
         prevTask = task;
 
       }
