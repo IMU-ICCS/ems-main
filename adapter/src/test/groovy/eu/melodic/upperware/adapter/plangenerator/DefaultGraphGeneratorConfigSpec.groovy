@@ -15,13 +15,11 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.Task
 import org.assertj.core.util.Lists
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleDirectedGraph
-import spock.lang.Specification
 import spock.lang.Ignore
+import spock.lang.Specification
 
 import static eu.melodic.upperware.adapter.plangenerator.GraphValidator.checkGraph
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createDependencies
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.createModel
-import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.initMap
+import static eu.melodic.upperware.adapter.plangenerator.GraphValidatorUtils.*
 
 class DefaultGraphGeneratorConfigSpec extends Specification {
 
@@ -159,7 +157,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
     checkGraph(graph, tasks, dependencies)
 
   }
-
+@Ignore
   def "configuration graph generation: without communication"() {
 
     setup:
@@ -211,7 +209,7 @@ class DefaultGraphGeneratorConfigSpec extends Specification {
 
     then:
     graph.vertexSet().size() == 20
-    graph.edgeSet().size() == 24
+    graph.edgeSet().size() == 25
     noExceptionThrown()
     checkGraph(graph, tasks, dependencies)
 
