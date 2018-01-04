@@ -10,7 +10,6 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
@@ -18,25 +17,25 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.Variable;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import solver.variables.IntVar;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.Utils.*;
 
+@Slf4j
 public abstract class UtilityFunctionEvaluator {
 
-  //private?
-  boolean isReconfig;
+    boolean isReconfig;
   Collection<Component> actConfiguration;
   CostUtilityFunction costUtilityFunction;
-  EList<Variable> variables;
   EList<MetricVariable> metrics;
+  private EList<Variable> variables;
 
   public abstract double evaluate(Collection<Component> newConfiguration);
 
@@ -44,31 +43,51 @@ public abstract class UtilityFunctionEvaluator {
   UtilityFunctionEvaluator(ConstraintProblem cp){
 
     this.variables = cp.getVariables();
+    log.info("Creating Utility Function Evaluator from Constraint Problem");
+    log.info("Variables from CP");
+    for (Variable v: variables){
+      log.info("{}, type: {}", v.getId(), v.getVariableType() );
+    }
 
     this.metrics = cp.getMetricVariables();     // todo convert
 
     this.isReconfig = !(cp.getSolution().isEmpty());
 
     if (isReconfig){
+      log.info("isReconfig is false");
       Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
       this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(), getSampleNodeCandidates());
     }
   }
 
   public double evaluate(IntVar[] newConfigurationInt){
-  //public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal){
+  //public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal){ todo
+    log.info("Evaluating solution:");
+    int i=0;
+    //debug
+    for (IntVar var: newConfigurationInt){
+      if (i<9){
+        log.info("{} value = {}", var.getName(), var.getValue());
+      }
+      i++;
+    }
 
     //todo: get real node candidates from cache
     List<NodeCandidate> nodeCandidates = getSampleNodeCandidates();
 
-    /*Collection<Component> newConfiguration = new ArrayList<>();
+    Collection<Component> newConfiguration = new ArrayList<>();
     Map<String, Integer> cardinalitiesForComponent = getCardinalities(newConfigurationInt, variables);
 
     for (String componentId: cardinalitiesForComponent.keySet()){
+
+      log.info("Filtering NC for component: {}", componentId);
+
+      //String providerId = getVariableNameForComponent(componentId, VariableType.PROVIDER, variables);
+
       Collection<String> variableNamesForComponent = getVariableNamesForComponent(componentId, variables);
 
-      IntVar[] filteredIntVar = (IntVar[]) Arrays.stream(newConfigurationInt)
-        .filter(v -> variableNamesForComponent.contains(v.getName())).toArray();
+      Collection<IntVar> filteredIntVar = Arrays.stream(newConfigurationInt)
+        .filter(v -> variableNamesForComponent.contains(v.getName())).collect(Collectors.toList());
       //RealVar[] filteredRealVar = (RealVar[]) Arrays.stream(newConfigurationReal)
         //.filter(v -> variableNamesForComponent.contains(v.getName())).toArray();
 
@@ -77,11 +96,11 @@ public abstract class UtilityFunctionEvaluator {
 
       newConfiguration.add(new Component(theCheapest, cardinalitiesForComponent.get(componentId)));
 
-    }*/
+    }
 
 
-    //return evaluate(newConfiguration);
-    return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
+    return evaluate(newConfiguration);
+    //return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
   }
 
 

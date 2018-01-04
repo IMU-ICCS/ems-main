@@ -21,22 +21,24 @@ public class UtilityGeneratorApplication {
   private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
 
-  public UtilityGeneratorApplication(ConstraintProblem cp, UtilityFunctionType useCase){
-    createUtilityEvaluator(cp, useCase);
+  public UtilityGeneratorApplication(ConstraintProblem cp, Map<MetricType, Metric[]> metrics,
+    UtilityFunctionType useCase){
+    createUtilityEvaluator(cp, metrics, useCase);
   }
 
 
   public double evaluate(IntVar[] newConfiguration){
-    return this.utilityFunctionEvaluator.evaluate(newConfiguration); //fixme - without cardinality
+    return this.utilityFunctionEvaluator.evaluate(newConfiguration);
   }
 
 
-  private void createUtilityEvaluator (ConstraintProblem cp, UtilityFunctionType useCase){
+  private void createUtilityEvaluator (ConstraintProblem cp, Map<MetricType, Metric[]> metrics,
+    UtilityFunctionType useCase){
     switch (useCase){
 
       case FCR:
         this.utilityFunctionEvaluator =
-          new UtilityFunctionEvaluatorFCR(cp);
+          new UtilityFunctionEvaluatorFCR(cp, metrics);
         break;
 
       case CE_TRAFFIC:

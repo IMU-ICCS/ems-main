@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Utils {
+class Utils {
 
 
   /* mapping variables from solution and  cp model */
@@ -41,6 +41,13 @@ public class Utils {
     return variableNames;
   }
 
+//  static Collection<String> getComponentNames(EList<Variable> variables){
+//    variables
+//      .stream()
+//      .filter(v -> CARDINALITY.equals(v.getVariableType()))
+//      .
+//  }
+
   static Collection<String> getVariableNamesForComponent(String componentId, EList<Variable> variables){
     Collection<String> variableNames = new ArrayList<>();
     for (Variable v: variables){
@@ -52,8 +59,19 @@ public class Utils {
 
   }
 
+  //todo sprawdzić czy dobry wyjątek
+  static String getVariableNameForComponent(String componentId, VariableType type, EList<Variable> variables){
+    return variables
+      .stream()
+      .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getVariableType())))
+      .findFirst()
+      .orElseThrow(IllegalStateException::new)
+      .getId();
+  }
+
+  //FIXME
   static Map<String,Integer> getCardinalities(IntVar[] newConfiguration, EList<Variable> variables) {
-    //Collection<String>
+
     Collection<String> cardinalitiesNames = getVariableNames(VariableType.CARDINALITY, variables);
     Map<String, Integer> cardinalities = new HashMap<>();
 
@@ -66,7 +84,7 @@ public class Utils {
   }
 
 
-  static List<NodeCandidate> filterNodeCandidates(List<NodeCandidate> nodeCandidates, IntVar[] filteredIntVar,
+  static List<NodeCandidate> filterNodeCandidates(List<NodeCandidate> nodeCandidates, Collection<IntVar> filteredIntVar,
     RealVar[] filteredRealVar){
 
     return nodeCandidates; //todo
@@ -91,7 +109,6 @@ public class Utils {
       Variable variable = vv.getVariable();
       VariableType type = variable.getVariableType();
 
-      //skąd mam wiedzieć, że RAM to LongValue itd?
       switch (type) {
         case RAM:
           nodeCandidatesForOneComponent = nodeCandidatesForOneComponent
@@ -116,7 +133,6 @@ public class Utils {
     }
     return last;
   }
-
 
   static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates){
     checkNotNull(nodeCandidates); //fixme - better exception

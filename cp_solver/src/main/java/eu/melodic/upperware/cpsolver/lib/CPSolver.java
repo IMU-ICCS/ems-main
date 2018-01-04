@@ -84,7 +84,7 @@ public class CPSolver {
 			metrics.put(MetricType.COST_WEIGHT, new Metric[]{new Metric(MetricType.COST_WEIGHT, "",0.5)});
 
 			//for FCR use case
-			this.utilityGenerator = new UtilityGeneratorApplication(metrics, null, false, UtilityFunctionType.FCR);
+			this.utilityGenerator = new UtilityGeneratorApplication(cp, metrics, UtilityFunctionType.FCR);
 		}
 
 	}

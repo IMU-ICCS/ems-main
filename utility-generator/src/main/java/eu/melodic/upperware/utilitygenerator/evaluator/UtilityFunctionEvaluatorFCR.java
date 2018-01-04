@@ -9,6 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionWithAbsoluteCost;
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
@@ -37,10 +38,11 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
   /* constructors */
 
-  public UtilityFunctionEvaluatorFCR(ConstraintProblem cp){
+  public UtilityFunctionEvaluatorFCR(ConstraintProblem cp, Map<MetricType, Metric[]> metrics){
 
     super(cp);
-    //getAndAssignMetrics(metrics);
+    getAndAssignMetrics(metrics);
+    this.costUtilityFunction = new CostUtilityFunctionWithAbsoluteCost(100);
   }
 
 
