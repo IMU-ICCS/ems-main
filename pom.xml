@@ -67,7 +67,7 @@
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository/>
-        <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/${project.name}-release1.5</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
 
