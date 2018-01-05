@@ -9,6 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.Component;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -16,16 +17,11 @@ import java.util.Collection;
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.normalize;
 
 
+@AllArgsConstructor
 @Slf4j
 public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction {
 
   private final int maxNumberOfVms;
-
-
-  public CostUtilityFunctionWithAbsoluteCost(int maxVms){
-    this.maxNumberOfVms = maxVms;
-  }
-
 
   @Override
   public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
@@ -43,22 +39,20 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction {
 
 
   private double getLowestCost(Collection<Component> configuration){
-    double min = getHighestCost(configuration);
-    for (Component p: configuration){
-      if (min> p.getNodeCandidate().getPrice()){
-        min = p.getNodeCandidate().getPrice();
-      }
-    }
-    return min;
+    return configuration
+      .stream()
+      .mapToDouble(c -> c.getNodeCandidate().getPrice())
+      .min()
+      .orElse(0.0);
   }
 
   private double getHighestCost(Collection<Component> configuration){
-    double max = 0.0;
-    for (Component p: configuration){
-      if (max< p.getNodeCandidate().getPrice()){
-        max = p.getNodeCandidate().getPrice();
-      }
-    }
+    double max = configuration
+      .stream()
+      .mapToDouble(c -> c.getNodeCandidate().getPrice())
+      .max()
+      .orElse(0.0);
+
     return max * maxNumberOfVms;
   }
 

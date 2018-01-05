@@ -25,125 +25,125 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.nonNull;
 
 class Utils {
 
 
   /* mapping variables from solution and  cp model */
 
-  static Collection<String> getVariableNames(VariableType type, EList<Variable> variables){
-    Collection<String> variableNames = new ArrayList<>();
-    for (Variable v: variables){
-      if (type.equals(v.getVariableType())){
-        variableNames.add(v.getId());
-      }
+    static Collection<String> getVariableNames(VariableType type, EList<Variable> variables) {
+        Collection<String> variableNames = new ArrayList<>();
+        for (Variable v : variables) {
+            if (type.equals(v.getVariableType())) {
+                variableNames.add(v.getId());
+            }
+        }
+        return variableNames;
     }
-    return variableNames;
-  }
 
-//  static Collection<String> getComponentNames(EList<Variable> variables){
-//    variables
-//      .stream()
-//      .filter(v -> CARDINALITY.equals(v.getVariableType()))
-//      .
-//  }
+    static Collection<String> getVariableNamesForComponent(String componentId, EList<Variable> variables) {
+        Collection<String> variableNames = new ArrayList<>();
+        for (Variable v : variables) {
+            if (componentId.equals(v.getComponentId())) {
+                variableNames.add(v.getId());
+            }
+        }
+        return variableNames;
 
-  static Collection<String> getVariableNamesForComponent(String componentId, EList<Variable> variables){
-    Collection<String> variableNames = new ArrayList<>();
-    for (Variable v: variables){
-      if (componentId.equals(v.getComponentId())){
-        variableNames.add(v.getId());
-      }
     }
-    return variableNames;
 
-  }
-
-  //todo sprawdzić czy dobry wyjątek
-  static String getVariableNameForComponent(String componentId, VariableType type, EList<Variable> variables){
-    return variables
-      .stream()
-      .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getVariableType())))
-      .findFirst()
-      .orElseThrow(IllegalStateException::new)
-      .getId();
-  }
-
-  //FIXME
-  static Map<String,Integer> getCardinalities(IntVar[] newConfiguration, EList<Variable> variables) {
-
-    Collection<String> cardinalitiesNames = getVariableNames(VariableType.CARDINALITY, variables);
-    Map<String, Integer> cardinalities = new HashMap<>();
-
-    for (IntVar v: newConfiguration){
-      if (cardinalitiesNames.contains(v.getName())){
-        cardinalities.put(v.getName(), v.getValue());
-      }
+    static String getVariableNameForComponent(String componentId, VariableType type, EList<Variable> variables) {
+        return variables
+                .stream()
+                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getVariableType())))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Variable with type %s for component %s does not exist"))
+                .getId();
     }
-    return cardinalities;
-  }
+
+    static Map<String, Integer> getCardinalitiesForComponent(IntVar[] newConfiguration, EList<Variable> variables) {
+
+        Collection<Variable> cardinalities = variables
+                .stream()
+                .filter(v -> VariableType.CARDINALITY.equals(v.getVariableType()))
+                .collect(Collectors.toList());
+
+        Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
+
+        Arrays.stream(newConfiguration)
+                .forEach(intVar -> cardinalities
+                        .stream()
+                        .filter(c -> intVar.getName().equals(c.getId()))
+                        .findFirst()
+                        .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), intVar.getValue())));
+        return cardinalitiesForComponent;
+    }
 
 
-  static List<NodeCandidate> filterNodeCandidates(List<NodeCandidate> nodeCandidates, Collection<IntVar> filteredIntVar,
-    RealVar[] filteredRealVar){
+    static List<NodeCandidate> filterNodeCandidates(List<NodeCandidate> nodeCandidates, Collection<IntVar> filteredIntVar,
+            RealVar[] filteredRealVar) {
 
-    return nodeCandidates; //todo
-  }
+        return nodeCandidates; //todo
+    }
 
   /* --------------------------------------------------*/
 
-  //converting actual deployed solution to list of Node Candidates with cardinality
-  static Collection<Component> convertActualDeployment(EList<VariableValue> actualSolution, List<NodeCandidate> nodeCandidates){
+    //converting actual deployed solution to list of Node Candidates with cardinality
+    static Collection<Component> convertActualDeployment(EList<VariableValue> actualSolution, List<NodeCandidate> nodeCandidates) {
 
-    String componentId = "";//fixme
+        String componentId = "";//fixme
 
-    //for one component only
-    List<VariableValue> variablesForOneComponent = actualSolution
-      .stream()
-      .filter(vv -> componentId.equals(vv.getVariable().getComponentId()))
-      .collect(Collectors.toList());
-    List<NodeCandidate> nodeCandidatesForOneComponent = nodeCandidates;
-    int cardinality = 1;
+        //for one component only
+        List<VariableValue> variablesForOneComponent = actualSolution
+                .stream()
+                .filter(vv -> componentId.equals(vv.getVariable().getComponentId()))
+                .collect(Collectors.toList());
+        List<NodeCandidate> nodeCandidatesForOneComponent = nodeCandidates;
+        int cardinality = 1;
 
-    for (VariableValue vv: variablesForOneComponent) {
-      Variable variable = vv.getVariable();
-      VariableType type = variable.getVariableType();
+        for (VariableValue vv : variablesForOneComponent) {
+            Variable variable = vv.getVariable();
+            VariableType type = variable.getVariableType();
 
-      switch (type) {
-        case RAM:
-          nodeCandidatesForOneComponent = nodeCandidatesForOneComponent
-            .stream()
-            .filter(nc -> nc.getHardware().getRam().equals(((LongValueUpperwareImpl) vv.getValue()).getValue()))
-            .collect(Collectors.toList());
-          break;
-        case CARDINALITY:
-          cardinality = ((IntegerValueUpperwareImpl) vv.getValue()).getValue();
-          break;
+            switch (type) {
+                case RAM:
+                    nodeCandidatesForOneComponent = nodeCandidatesForOneComponent
+                            .stream()
+                            .filter(nc -> nc.getHardware().getRam().equals(((LongValueUpperwareImpl) vv.getValue()).getValue()))
+                            .collect(Collectors.toList());
+                    break;
+                case CARDINALITY:
+                    cardinality = ((IntegerValueUpperwareImpl) vv.getValue()).getValue();
+                    break;
 
-      }
+            }
+        }
+        return Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidatesForOneComponent), cardinality));
     }
-    return Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidatesForOneComponent), cardinality));
-  }
 
-  static Solution findLastSolution(EList<Solution> solutions){
-    Iterator<Solution> it = solutions.iterator();
-    Solution last = it.next();
-    while (it.hasNext()){
-      last = it.next();
+    static Solution findLastSolution(EList<Solution> solutions) {
+        Iterator<Solution> it = solutions.iterator();
+        Solution last = null;
+        while (it.hasNext()) {
+            last = it.next();
+        }
+        if (!nonNull(last)) {
+            throw new NullPointerException(); //fixme
+        }
+        return last;
     }
-    return last;
-  }
 
-  static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates){
-    checkNotNull(nodeCandidates); //fixme - better exception
-    NodeCandidate theCheapest = nodeCandidates.get(0);
-    for (NodeCandidate nc: nodeCandidates){
-      if (theCheapest.getPrice() > nc.getPrice()){
-        theCheapest = nc;
-      }
+    static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates) {
+        checkNotNull(nodeCandidates); //fixme - better exception
+        NodeCandidate theCheapest = nodeCandidates.get(0);
+        for (NodeCandidate nc : nodeCandidates) {
+            if (theCheapest.getPrice() > nc.getPrice()) {
+                theCheapest = nc;
+            }
+        }
+        return theCheapest;
     }
-    return theCheapest;
-  }
 
 
 }

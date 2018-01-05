@@ -13,10 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.Variable;
+import eu.paasage.upperware.metamodel.cp.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import solver.variables.IntVar;
@@ -66,7 +63,7 @@ public abstract class UtilityFunctionEvaluator {
     int i=0;
     //debug
     for (IntVar var: newConfigurationInt){
-      if (i<9){
+      if (i<variables.size()){
         log.info("{} value = {}", var.getName(), var.getValue());
       }
       i++;
@@ -76,13 +73,13 @@ public abstract class UtilityFunctionEvaluator {
     List<NodeCandidate> nodeCandidates = getSampleNodeCandidates();
 
     Collection<Component> newConfiguration = new ArrayList<>();
-    Map<String, Integer> cardinalitiesForComponent = getCardinalities(newConfigurationInt, variables);
+    Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
 
     for (String componentId: cardinalitiesForComponent.keySet()){
 
       log.info("Filtering NC for component: {}", componentId);
 
-      //String providerId = getVariableNameForComponent(componentId, VariableType.PROVIDER, variables);
+      String providerId = getVariableNameForComponent(componentId, VariableType.PROVIDER, variables);
 
       Collection<String> variableNamesForComponent = getVariableNamesForComponent(componentId, variables);
 

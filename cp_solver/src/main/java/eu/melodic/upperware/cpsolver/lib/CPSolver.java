@@ -261,7 +261,7 @@ public class CPSolver {
 				Integer i=1;
 				maxUtility = 0.0;
 				calculateUtility();
-				while(solver.nextSolution()){
+				while(solver.nextSolution() && i<10){
 					i++;
 					log.info("Checking utility of: #" +i +" solution.");
 					calculateUtility();

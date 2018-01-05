@@ -9,7 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
-import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionWithAbsoluteCost;
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
@@ -42,7 +42,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator{
 
     super(cp);
     getAndAssignMetrics(metrics);
-    this.costUtilityFunction = new CostUtilityFunctionWithAbsoluteCost(100);
+    this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
   }
 
 
