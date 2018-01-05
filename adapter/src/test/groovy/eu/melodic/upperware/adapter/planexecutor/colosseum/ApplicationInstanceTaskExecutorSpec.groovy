@@ -172,7 +172,7 @@ class ApplicationInstanceTaskExecutorSpec extends Specification {
     1 * context.deleteApplicationInstance(_)
   }
 
-  def "application instance delete: instance does not exist - exception"() {
+  def "application instance delete: instance does not exist - skip"() {
 
     setup:
     context.getApplicationInstance(_) >> Optional.empty()
@@ -181,7 +181,8 @@ class ApplicationInstanceTaskExecutorSpec extends Specification {
     executor.delete(appInstance)
 
     then:
-    thrown(IllegalStateException)
+    noExceptionThrown()
+    0 * context.deleteApplicationInstance(_)
   }
 
   def "application instance delete: null argument - exception"() {

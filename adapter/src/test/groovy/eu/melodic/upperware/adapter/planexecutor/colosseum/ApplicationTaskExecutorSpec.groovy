@@ -175,7 +175,7 @@ class ApplicationTaskExecutorSpec extends Specification {
     executor.delete(application)
 
     then:
-    thrown(IllegalStateException)
+    noExceptionThrown()
     0 * context.deleteApplication(_)
   }
 

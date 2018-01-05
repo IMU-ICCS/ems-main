@@ -10,12 +10,13 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
-import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentTask;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -194,13 +195,17 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.m
     Long vmId = vmEntity.getId();
     checkNotNull(vmId);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent acEntity =
-      context.getApplicationComponent(appName, lcId, vmId)
-        .orElseThrow(() -> new IllegalStateException(format("Application component %s (appName=%s, lcId=%s, vmId=%s) " +
-          "does not exist in Colosseum - cannot be deleted", name, appName, lcId, vmId)));
-    api.deleteApplicationComponent(acEntity);
-    context.deleteApplicationComponent(acEntity);
+    Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent> acEntityOptional =
+      context.getApplicationComponent(appName, lcId, vmId);
 
-    log.info("Application Component {} was successfully deleted from {}", name, acEntity.getSelfLink());
+    if (acEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent acEntity = acEntityOptional.get();
+      api.deleteApplicationComponent(acEntity);
+      context.deleteApplicationComponent(acEntity);
+
+      log.info("Application Component {} was successfully deleted from {}", name, acEntity.getSelfLink());
+    } else {
+      log.warn("Application Component {} (appName={}, lcId={}, vmId={}) does not exist in Colosseum - cannot be deleted - skipping execution of the task", name, appName, lcId, vmId);
+    }
   }
 }

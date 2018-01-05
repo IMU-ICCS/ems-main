@@ -17,6 +17,7 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.VirtualMachineTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -151,12 +152,18 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
     Long imageId = imageEntity.getId();
     checkNotNull(imageId);
 
-    VirtualMachineTemplate vmEntity = context.getVirtualMachine(cloudId, locationId, hardwareId, imageId)
-      .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s does not exist in Colosseum" +
-        "- cannot be deleted", name)));
-    api.deleteVirtualMachine(vmEntity);
-    context.deleteVirtualMachine(vmEntity);
+    Optional<VirtualMachineTemplate> vmEntityOptional = context.getVirtualMachine(cloudId, locationId,
+            hardwareId,
+      imageId);
 
-    log.info("Virtual Machine {} was successfully deleted from {}", name, vmEntity.getSelfLink());
+    if (vmEntityOptional.isPresent()) {
+      VirtualMachineTemplate vmEntity = vmEntityOptional.get();
+      api.deleteVirtualMachine(vmEntity);
+      context.deleteVirtualMachine(vmEntity);
+
+      log.info("Virtual Machine {} was successfully deleted from {}", name, vmEntity.getSelfLink());
+    } else {
+      log.warn("Virtual Machine {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }
