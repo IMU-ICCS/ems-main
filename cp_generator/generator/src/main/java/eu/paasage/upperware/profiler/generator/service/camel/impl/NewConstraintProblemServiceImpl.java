@@ -2,6 +2,9 @@ package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import eu.melodic.cache.CacheService;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.cache.exception.CacheException;
 import eu.melodic.cloudiator.client.ApiException;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.cloudiator.client.model.NodeRequirements;
@@ -12,7 +15,6 @@ import eu.paasage.camel.requirement.OSOrImageRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
-import eu.paasage.upperware.profiler.generator.communication.CacheService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import lombok.AllArgsConstructor;
@@ -36,7 +38,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
     private CpFactory cpFactory;
     private List<GeneratorService> generatorServices;
     private CloudiatorService cloudiatorService;
-    private CacheService cacheService;
+    private CacheService<NodeCandidates> cacheService;
     private NodeCandidatesService nodeCandidatesService;
 
     private ConstantService constantService;
@@ -56,7 +58,11 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         cp.getConstants().add(constantService.createIntegerConstant(1, String.valueOf(1)));
 
         Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
-        cacheService.store(cpName, nodeCandidatesMap);
+        try {
+            cacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
+        } catch (CacheException cacheException) {
+            throw new GeneratorException(String.format("Problem with storing data to cache under key %s", cpName), cacheException);
+        }
 
         for (VM vm : NewCamelModelTools.getVMs(camelModel)) {
             String vmName = vm.getName();

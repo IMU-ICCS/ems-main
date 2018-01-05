@@ -27,6 +27,7 @@
     <modules>
         <module>upperware_metamodel</module>
         <module>melodic-commons</module>
+        <module>melodic-cache</module>
         <module>cdo_client</module>
         <module>cdo_server</module>
         <module>adapter</module>
@@ -39,7 +40,6 @@
         <module>dlms</module>
         <module>utility-generator</module>
         <module>metrics_collector</module>
-        <!--<module>rule_processor</module>-->
     </modules>
 
     <properties>
@@ -79,7 +79,7 @@
                 <version>${interfaces.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.raml</groupId>
+                        <groupId>eu.melodic</groupId>
                         <artifactId>jaxrs-code-generator-7bulls</artifactId>
                     </exclusion>
                 </exclusions>
@@ -247,6 +247,7 @@
             <name>OW2 repository</name>
             <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <!--TODO to remove-->
         <repository>
             <id>gforge.inria.fr-release</id>
             <name>Maven Repository for Saloon</name>

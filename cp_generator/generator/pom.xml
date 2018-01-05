@@ -54,9 +54,19 @@
         </dependency>
 
         <dependency>
-            <groupId>fr.inria.saloon</groupId>
-            <artifactId>paasage-saloon</artifactId>
-            <version>2.2</version>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-cache</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-collections4</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>eu.melodic.cloudiator</groupId>
+                    <artifactId>cloudiator-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -104,6 +114,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -127,14 +143,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/net.spy/spymemcached -->
-        <dependency>
-            <groupId>net.spy</groupId>
-            <artifactId>spymemcached</artifactId>
-            <version>2.12.3</version>
         </dependency>
 
         <dependency>

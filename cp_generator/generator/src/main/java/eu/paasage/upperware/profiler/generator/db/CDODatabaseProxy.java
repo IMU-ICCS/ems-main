@@ -25,11 +25,10 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.passage.upperware.commons.MelodicConstants;
 import eu.passage.upperware.commons.model.tools.ModelTool;
-import fr.inria.paasage.saloon.camel.mapping.MappingPackage;
-import fr.inria.paasage.saloon.camel.ontology.OntologyPackage;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
  * Database proxy for CDO
  */
 @Slf4j
-//@Service
+@Service
 public class CDODatabaseProxy implements IDatabaseProxy {
 
 	private CPCloner cloner;
@@ -63,8 +62,6 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 		cdoClient.registerPackage(CpPackage.eINSTANCE);
 		cdoClient.registerPackage(TypesPackage.eINSTANCE);
 		cdoClient.registerPackage(TypesPaasagePackage.eINSTANCE);
-		cdoClient.registerPackage(OntologyPackage.eINSTANCE);
-		cdoClient.registerPackage(MappingPackage.eINSTANCE);
 		cdoClient.registerPackage(TypePackage.eINSTANCE);
 		cdoClient.registerPackage(CamelPackage.eINSTANCE);
 		cdoClient.registerPackage(ProviderPackage.eINSTANCE);

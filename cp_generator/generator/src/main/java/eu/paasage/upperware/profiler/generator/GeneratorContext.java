@@ -1,5 +1,6 @@
 package eu.paasage.upperware.profiler.generator;
 
+import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.camel.CamelFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
@@ -15,13 +16,20 @@ import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProble
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
+import lombok.extern.slf4j.Slf4j;
+import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
+@Slf4j
 @Configuration
 public class GeneratorContext {
 
@@ -77,13 +85,6 @@ public class GeneratorContext {
         return new RestTemplate();
     }
 
-   /* @Bean
-    @Scope("prototype")
-    public CCDODatabaseProxy cDODatabaseProxy() {
-        CDOClientExtended cDOClientExtended = applicationContext.getBean(CDOClientExtended.class);
-        return new CCDODatabaseProxy(cDOClientExtended);
-    }*/
-
     @Bean
     @Scope("prototype")
     protected GenerationOrchestrator generationOrchestrator() throws Exception {
@@ -99,6 +100,19 @@ public class GeneratorContext {
 
         return new GenerationOrchestrator(database, paaSageConfigurationService,
                 notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
+    }
+
+    @Bean
+    @ConfigurationProperties
+    public CacheProperties cacheProperties(){
+        return new CacheProperties();
+    }
+
+    @Bean
+    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+        String host = cacheProperties.getCache().getHost();
+        Integer port = cacheProperties.getCache().getPort();
+        return new MemcachedClient(new InetSocketAddress(host, port));
     }
 
 }
