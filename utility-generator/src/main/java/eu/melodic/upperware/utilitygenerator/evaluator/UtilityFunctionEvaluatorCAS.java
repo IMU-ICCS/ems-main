@@ -18,74 +18,82 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import java.util.Collection;
 import java.util.Map;
 
-public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator{
+public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
 
-  private double maxRamUsage;
-  private Metric[] ramUsage;
+    private double maxRamUsage;
+    private Metric[] ramUsage;
+    private CostUtilityFunction costUtilityFunction;
 
 
-  public UtilityFunctionEvaluatorCAS(ConstraintProblem cp) {
-    super(cp);
-    this.costUtilityFunction = new CostUtilityFunctionFraction();
-    //getAndAssignMetrics(metrics);
-  }
-
-  @Override
-  public double evaluate(Collection<Component> newConfiguration) {
-
-    double totalUseOfRam = countTotalRamUsage(this.ramUsage);
-    int totalRamInNewConfiguration = 0;
-
-    for (Component component : newConfiguration){
-      totalRamInNewConfiguration += component.getNodeCandidate().getHardware().getRam() * component.getCardinality();
+    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp) {
+        super(cp);
+        this.costUtilityFunction = new CostUtilityFunctionFraction(); //fixme - another function
+        //getAndAssignMetrics(metrics);
     }
 
-    System.out.println("total Ram In New Configuration: " + totalRamInNewConfiguration);
-    System.out.println("total use of Ram: " + totalUseOfRam);
-
-    if ((totalRamInNewConfiguration > totalUseOfRam) && ((totalUseOfRam/totalRamInNewConfiguration) < maxRamUsage)){
-      return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, CostUtilityFunction costUtilityFunction) {
+        super(cp);
+        this.costUtilityFunction = costUtilityFunction;
+        //getAndAssignMetrics(metrics);
     }
-    return 0;
-  }
 
-  private void getAndAssignMetrics(Map<MetricType, Metric[]> metrics){
-    this.maxRamUsage = metrics.get(MetricType.MAX_RAM_USAGE)[0].getValue();
-    this.ramUsage = metrics.get(MetricType.RAM_USAGE);
+    @Override
+    public double evaluate(Collection<Component> newConfiguration) {
 
-  }
+        double totalUseOfRam = countTotalRamUsage(this.ramUsage);
+        int totalRamInNewConfiguration = 0;
 
-  private double countTotalRamUsage(Metric[] ramUsage){
-    double totalRamUsage = 0.0;
-    for (Metric metric: ramUsage){
-      long ram = getRamForVm(metric.getVmId());
-      totalRamUsage += metric.getValue() * ram;
+        for (Component component : newConfiguration) {
+            totalRamInNewConfiguration += component.getNodeCandidate().getHardware().getRam() * component.getCardinality();
+        }
+
+        System.out.println("total Ram In New Configuration: " + totalRamInNewConfiguration);
+        System.out.println("total use of Ram: " + totalUseOfRam);
+
+        if ((totalRamInNewConfiguration > totalUseOfRam) && ((totalUseOfRam / totalRamInNewConfiguration) < maxRamUsage)) {
+            return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+        }
+        return 0;
+    }
+
+    private void getAndAssignMetrics(Map<MetricType, Metric[]> metrics) {
+        this.maxRamUsage = metrics.get(MetricType.MAX_RAM_USAGE)[0].getValue();
+        this.ramUsage = metrics.get(MetricType.RAM_USAGE);
 
     }
-    return totalRamUsage;
-  }
 
-  //fixme: to powinno być po czymś innym dopasowywane - metryki z maszynami
-  private long getRamForVm(String vmId) {
-    return actConfiguration
-      .stream()
-      .filter(c -> vmId.equals(c.getNodeCandidate().getHardware().getName()))
-      .findFirst()
-      .get()
-      .getNodeCandidate()
-      .getHardware()
-      .getRam();
-  }
+    private double countTotalRamUsage(Metric[] ramUsage) {
+        double totalRamUsage = 0.0;
+        for (Metric metric : ramUsage) {
+            long ram = getRamForVm(metric.getVmId());
+            totalRamUsage += metric.getValue() * ram;
+
+        }
+        return totalRamUsage;
+    }
+
+    //fixme: how to match metric with node candidates?
+    private long getRamForVm(String vmId) {
+        return actConfiguration
+                .stream()
+                .filter(c -> vmId.equals(c.getNodeCandidate().getHardware().getName()))
+                .findFirst()
+                .get()
+                .getNodeCandidate()
+                .getHardware()
+                .getRam();
+    }
 
   /* for tests */
 
-  public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
-    Collection<Component> actConfiguration, boolean isReconfig,
-    CostUtilityFunction costUtilityFunction) {
+    public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
+            Collection<Component> actConfiguration, boolean isReconfig,
+            CostUtilityFunction costUtilityFunction) {
 
-    super(actConfiguration, isReconfig, costUtilityFunction);
-    getAndAssignMetrics(metrics);
+        super(actConfiguration, isReconfig);
+        this.costUtilityFunction = costUtilityFunction;
+        getAndAssignMetrics(metrics);
 
-  }
+    }
 
 }

@@ -14,30 +14,30 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 
 @Slf4j
-public class CostUtilityFunctionExampleV2 extends CostUtilityFunction {
+public class CostUtilityFunctionExampleV2 extends CostUtilityFunction { //todo: to remove or rename
 
-  private boolean isReconfig;
-  private double prevUtilityCost;
+    private boolean isReconfig;
+    private double prevUtilityCost;
 
-  public CostUtilityFunctionExampleV2(boolean isReconfig){
-    this.isReconfig = isReconfig;
-    this.prevUtilityCost = 1.0;
-  }
-
-  @Override
-  public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
-      Collection<Component> newConfiguration) {
-
-    double oldCost = 1.0; //FIXME - how to set oldCost?
-    if (isReconfig){
-      oldCost = calculateCost(actualConfiguration);
+    public CostUtilityFunctionExampleV2(boolean isReconfig) {
+        this.isReconfig = isReconfig;
+        this.prevUtilityCost = 1.0;
     }
 
-    double newCost = calculateCost(newConfiguration);
-    double result = Math.min(1, prevUtilityCost * oldCost / newCost);
+    @Override
+    public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
+            Collection<Component> newConfiguration) {
 
-    prevUtilityCost = result;
-    log.info("evaluateCostUtilityFunction: result = {}",result);
-    return result;
-  }
+        double oldCost = 1.0; //FIXME - how to set oldCost?
+        if (isReconfig) {
+            oldCost = calculateCost(actualConfiguration);
+        }
+
+        double newCost = calculateCost(newConfiguration);
+        double result = Math.min(1, prevUtilityCost * oldCost / newCost);
+
+        prevUtilityCost = result;
+        log.info("evaluateCostUtilityFunction: result = {}", result);
+        return result;
+    }
 }

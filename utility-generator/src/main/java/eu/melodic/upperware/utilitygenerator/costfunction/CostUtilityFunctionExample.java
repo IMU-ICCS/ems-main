@@ -14,30 +14,31 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 
 @Slf4j
-public class CostUtilityFunctionExample extends CostUtilityFunction {
-
-  private double actUtilityCost;
-  private boolean isReconfig;
+public class CostUtilityFunctionExample extends CostUtilityFunction { //todo: to rename
 
 
-  public CostUtilityFunctionExample(boolean isReconfig){
-    this.isReconfig = isReconfig;
-    this.actUtilityCost = 1;
-  }
+    private double actUtilityCost;
+    private boolean isReconfig;
 
-  @Override
-  public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
-    Collection<Component> newConfiguration) {
 
-    double oldCost = 1.0; //FIXME - how to set oldCost?
-    if (isReconfig){
-      oldCost = calculateCost(actualConfiguration);
+    public CostUtilityFunctionExample(boolean isReconfig) {
+        this.isReconfig = isReconfig;
+        this.actUtilityCost = 1;
     }
 
-    double newCost = calculateCost(newConfiguration);
-    double result = Math.min(1, actUtilityCost * oldCost / newCost);
+    @Override
+    public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
+            Collection<Component> newConfiguration) {
 
-    log.info("evaluateCostUtilityFunction: result = {}",result);
-    return result;
-  }
+        double oldCost = 1.0; //FIXME - how to set oldCost?
+        if (isReconfig) {
+            oldCost = calculateCost(actualConfiguration);
+        }
+
+        double newCost = calculateCost(newConfiguration);
+        double result = Math.min(1, actUtilityCost * oldCost / newCost);
+
+        log.info("evaluateCostUtilityFunction: result = {}", result);
+        return result;
+    }
 }

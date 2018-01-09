@@ -9,6 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.Component;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
 
@@ -20,7 +21,7 @@ public abstract class CostUtilityFunction {
 
   double calculateCost(Collection<Component> vms){
 
-    return vms.stream().mapToDouble(c -> c.getCardinality() * c.getNodeCandidate().getPrice()).sum();
+    return CollectionUtils.emptyIfNull(vms).stream().mapToDouble(Component::getFullPrice).sum();
 
   }
 }

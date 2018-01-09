@@ -18,4 +18,8 @@ public class Component {
 
   private NodeCandidate nodeCandidate;
   private int cardinality;
+
+  public double getFullPrice(){
+    return nodeCandidate.getPrice() * cardinality;
+  }
 }

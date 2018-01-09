@@ -12,16 +12,16 @@ import eu.melodic.upperware.utilitygenerator.model.Component;
 
 import java.util.Collection;
 
-public class UtilityFunctionUtils {
+public class UtilityFunctionUtils { //todo: to move elsewhere
 
-  public static double normalize(double min, double max, double x){
-    return (x-min)/(max-min);
-  }
+    public static double normalize(double min, double max, double x) {
+        return (x - min) / (max - min);
+    }
 
-  public static int countVirtualMachines(Collection<Component> configuration){
+    public static int countVirtualMachines(Collection<Component> configuration) {
 
-    return configuration.stream().mapToInt(Component::getCardinality).sum();
+        return configuration.stream().mapToInt(Component::getCardinality).sum();
 
-  }
+    }
 
 }

@@ -10,16 +10,15 @@ package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.Component;
 
-
 import java.util.Collection;
 
-public class CostUtilityFunctionFraction extends CostUtilityFunction{
+public class CostUtilityFunctionFraction extends CostUtilityFunction {
 
-  @Override
-  public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
-      Collection<Component> newConfiguration) {
+    @Override
+    public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
+            Collection<Component> newConfiguration) {
 
-    double cost = calculateCost(newConfiguration);
-    return 1/cost;
-  }
+        double cost = calculateCost(newConfiguration);
+        return 1 / cost; //todo: to change according to Geir's paper
+    }
 }
