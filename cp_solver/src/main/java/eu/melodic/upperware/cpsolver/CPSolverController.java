@@ -48,7 +48,7 @@ public class CPSolverController {
     String requestUuid = request.getWatermark().getUuid();
     Boolean useExternalOptimizer = request.getUseExternalOptimizer();
     log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + filePath + " " +requestUuid + " " +useExternalOptimizer);
-    executor.generateCPSolutionFromFile(applicationId, filePath, requestUuid, useExternalOptimizer);
+    executor.generateCPSolutionFromFile(applicationId, filePath, requestUuid, false);
   }
 
 

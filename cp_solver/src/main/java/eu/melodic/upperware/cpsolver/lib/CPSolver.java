@@ -7,8 +7,9 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
-import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluator;
-import eu.melodic.upperware.utilitygenerator.UtilityFunctionEvaluatorExample;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
+import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
 import eu.paasage.mddb.cdo.client.CDOClient;
@@ -61,13 +62,13 @@ public class CPSolver {
 	private boolean cdoMode = false;
 	private long timestamp = 0;
 	private boolean useExternalOptimizer = false;
-	private UtilityFunctionEvaluator utilityFunctionEvaluator;
+	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer){
+	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer, NodeCandidates nodeCandidates){
 		this();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
@@ -77,14 +78,14 @@ public class CPSolver {
 
 		if (this.useExternalOptimizer){
 			//FIXME metrics should be from Metric Collector
-			Map<MetricType, Metric> metrics = new HashMap<>();
-			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
-			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
-			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
-			metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
+			Map<MetricType, Metric[]> metrics = new HashMap<>();
+			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric[]{new Metric(MetricType.MAX_RESPONSE_TIME, "", 30)});
+			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric[]{new Metric(MetricType.NOM_RESPONSE_TIME, "", 20)});
+			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric[]{new Metric(MetricType.AVG_RESPONSE_TIME, "",3)});
+			metrics.put(MetricType.COST_WEIGHT, new Metric[]{new Metric(MetricType.COST_WEIGHT, "",0.5)});
 
-			//simple cost function - first example
-			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
+			//for FCR use case
+			this.utilityGenerator = new UtilityGeneratorApplication(cp, metrics, UtilityFunctionType.FCR, nodeCandidates);
 		}
 
 	}
@@ -258,7 +259,7 @@ public class CPSolver {
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
 
-				Integer i=1;
+				int i=1;
 				maxUtility = 0.0;
 				calculateUtility();
 				while(solver.nextSolution()){
@@ -1207,7 +1208,7 @@ public class CPSolver {
 
 	private double calculateUtility(){
 
-		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
+		double utility = utilityGenerator.evaluate(solver.retrieveIntVars());
 		log.info("Utility = " + utility);
 		if (utility > maxUtility){
 			maxUtility = utility;

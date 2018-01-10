@@ -60,6 +60,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
         try {
             cacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
+            log.info("Node candidates stored under key {}", cpName);
         } catch (CacheException cacheException) {
             throw new GeneratorException(String.format("Problem with storing data to cache under key %s", cpName), cacheException);
         }

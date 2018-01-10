@@ -6,11 +6,9 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-package eu.melodic.upperware.utilitygenerator.model;
+package eu.melodic.upperware.utilitygenerator;
 
-public enum MetricType {
+public enum UtilityFunctionType {
 
-  AVG_RESPONSE_TIME, MAX_RESPONSE_TIME, NOM_RESPONSE_TIME, COST_WEIGHT,
-  RAM_USAGE, MAX_RAM_USAGE
-
+    FCR, CE_TRAFFIC, CAS
 }

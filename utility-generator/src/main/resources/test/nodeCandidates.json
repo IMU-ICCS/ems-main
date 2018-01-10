@@ -1,0 +1,494 @@
+[
+  {
+    "price": 5,
+    "cloud": {
+      "endpoint": "https://endpoint.example.com",
+      "cloudType": "PRIVATE",
+      "api": {
+        "providerName": "openstack-nova"
+      },
+      "credential": {
+        "user": "tenant:username",
+        "secret": "MySuperSecurePassword"
+      },
+      "cloudConfiguration": {
+        "nodeGroup": "cloudiator",
+        "properties": [
+          {
+            "key": "sword.regions",
+            "value": "RegionOne, RegionTwo"
+          }
+        ]
+      },
+      "id": "1a79a4d60de6718e8e5b326e338ae533"
+    },
+    "image": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "Ubuntu 16.04 LTS AMD 64",
+      "providerId": "1",
+      "operatingSystem": {
+        "operatingSystemType": "LINUX",
+        "operatingSystemFamily": "UBUNTU",
+        "operatingSystemArchitecture": "AMD64",
+        "operatingSystemVersion": "16.04 LTS"
+      },
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "hardware": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "t2.micro",
+      "providerId": "1",
+      "cores": 1,
+      "ram": 1024,
+      "disk": 100,
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "location": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+      "name": "RegionOne",
+      "providerId": "RegionOne",
+      "locationScope": "ZONE",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "string",
+        "country": "string",
+        "latitude": 0,
+        "longitude": 0
+      }
+    }
+  },
+  {
+    "price": 10,
+    "cloud": {
+      "endpoint": "https://endpoint.example.com",
+      "cloudType": "PRIVATE",
+      "api": {
+        "providerName": "openstack-nova"
+      },
+      "credential": {
+        "user": "tenant:username",
+        "secret": "MySuperSecurePassword"
+      },
+      "cloudConfiguration": {
+        "nodeGroup": "cloudiator",
+        "properties": [
+          {
+            "key": "sword.regions",
+            "value": "RegionOne, RegionTwo"
+          }
+        ]
+      },
+      "id": "1a79a4d60de6718e8e5b326e338ae533"
+    },
+    "image": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "Ubuntu 16.04 LTS AMD 64",
+      "providerId": "1",
+      "operatingSystem": {
+        "operatingSystemType": "LINUX",
+        "operatingSystemFamily": "UBUNTU",
+        "operatingSystemArchitecture": "AMD64",
+        "operatingSystemVersion": "16.04 LTS"
+      },
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "hardware": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "t2.medium",
+      "providerId": "2",
+      "cores": 2,
+      "ram": 4096,
+      "disk": 100,
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "location": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+      "name": "RegionOne",
+      "providerId": "RegionOne",
+      "locationScope": "ZONE",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "string",
+        "country": "string",
+        "latitude": 0,
+        "longitude": 0
+      }
+    }
+  },
+  {
+    "price": 15,
+    "cloud": {
+      "endpoint": "https://endpoint.example.com",
+      "cloudType": "PRIVATE",
+      "api": {
+        "providerName": "openstack-nova"
+      },
+      "credential": {
+        "user": "tenant:username",
+        "secret": "MySuperSecurePassword"
+      },
+      "cloudConfiguration": {
+        "nodeGroup": "cloudiator",
+        "properties": [
+          {
+            "key": "sword.regions",
+            "value": "RegionOne, RegionTwo"
+          }
+        ]
+      },
+      "id": "1a79a4d60de6718e8e5b326e338ae533"
+    },
+    "image": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "Ubuntu 16.04 LTS AMD 64",
+      "providerId": "1",
+      "operatingSystem": {
+        "operatingSystemType": "LINUX",
+        "operatingSystemFamily": "UBUNTU",
+        "operatingSystemArchitecture": "AMD64",
+        "operatingSystemVersion": "16.04 LTS"
+      },
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "hardware": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "t2.large",
+      "providerId": "3",
+      "cores": 2,
+      "ram": 8192,
+      "disk": 100,
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "location": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+      "name": "RegionOne",
+      "providerId": "RegionOne",
+      "locationScope": "ZONE",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "string",
+        "country": "string",
+        "latitude": 0,
+        "longitude": 0
+      }
+    }
+  },
+  {
+    "price": 20,
+    "cloud": {
+      "endpoint": "https://endpoint.example.com",
+      "cloudType": "PRIVATE",
+      "api": {
+        "providerName": "openstack-nova"
+      },
+      "credential": {
+        "user": "tenant:username",
+        "secret": "MySuperSecurePassword"
+      },
+      "cloudConfiguration": {
+        "nodeGroup": "cloudiator",
+        "properties": [
+          {
+            "key": "sword.regions",
+            "value": "RegionOne, RegionTwo"
+          }
+        ]
+      },
+      "id": "1a79a4d60de6718e8e5b326e338ae533"
+    },
+    "image": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "Ubuntu 16.04 LTS AMD 64",
+      "providerId": "1",
+      "operatingSystem": {
+        "operatingSystemType": "LINUX",
+        "operatingSystemFamily": "UBUNTU",
+        "operatingSystemArchitecture": "AMD64",
+        "operatingSystemVersion": "16.04 LTS"
+      },
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "hardware": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "t2.xlarge",
+      "providerId": "1",
+      "cores": 4,
+      "ram": 16384,
+      "disk": 100,
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "location": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+      "name": "RegionOne",
+      "providerId": "RegionOne",
+      "locationScope": "ZONE",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "string",
+        "country": "string",
+        "latitude": 0,
+        "longitude": 0
+      }
+    }
+  },
+  {
+    "price": 25,
+    "cloud": {
+      "endpoint": "https://endpoint.example.com",
+      "cloudType": "PRIVATE",
+      "api": {
+        "providerName": "openstack-nova"
+      },
+      "credential": {
+        "user": "tenant:username",
+        "secret": "MySuperSecurePassword"
+      },
+      "cloudConfiguration": {
+        "nodeGroup": "cloudiator",
+        "properties": [
+          {
+            "key": "sword.regions",
+            "value": "RegionOne, RegionTwo"
+          }
+        ]
+      },
+      "id": "1a79a4d60de6718e8e5b326e338ae533"
+    },
+    "image": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "Ubuntu 16.04 LTS AMD 64",
+      "providerId": "1",
+      "operatingSystem": {
+        "operatingSystemType": "LINUX",
+        "operatingSystemFamily": "UBUNTU",
+        "operatingSystemArchitecture": "AMD64",
+        "operatingSystemVersion": "16.04 LTS"
+      },
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "hardware": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "m5.xlarge",
+      "providerId": "2",
+      "cores": 4,
+      "ram": 16384,
+      "disk": 100,
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "location": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+      "name": "RegionOne",
+      "providerId": "RegionOne",
+      "locationScope": "ZONE",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "string",
+        "country": "string",
+        "latitude": 0,
+        "longitude": 0
+      }
+    }
+  },
+  {
+    "price": 30,
+    "cloud": {
+      "endpoint": "https://endpoint.example.com",
+      "cloudType": "PRIVATE",
+      "api": {
+        "providerName": "openstack-nova"
+      },
+      "credential": {
+        "user": "tenant:username",
+        "secret": "MySuperSecurePassword"
+      },
+      "cloudConfiguration": {
+        "nodeGroup": "cloudiator",
+        "properties": [
+          {
+            "key": "sword.regions",
+            "value": "RegionOne, RegionTwo"
+          }
+        ]
+      },
+      "id": "1a79a4d60de6718e8e5b326e338ae533"
+    },
+    "image": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "Ubuntu 16.04 LTS AMD 64",
+      "providerId": "1",
+      "operatingSystem": {
+        "operatingSystemType": "LINUX",
+        "operatingSystemFamily": "UBUNTU",
+        "operatingSystemArchitecture": "AMD64",
+        "operatingSystemVersion": "16.04 LTS"
+      },
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "hardware": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
+      "name": "m4.large",
+      "providerId": "3",
+      "cores": 2,
+      "ram": 8096,
+      "disk": 100,
+      "location": {
+        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+        "name": "RegionOne",
+        "providerId": "RegionOne",
+        "locationScope": "ZONE",
+        "isAssignable": true,
+        "geoLocation": {
+          "city": "string",
+          "country": "string",
+          "latitude": 0,
+          "longitude": 0
+        }
+      }
+    },
+    "location": {
+      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
+      "name": "RegionOne",
+      "providerId": "RegionOne",
+      "locationScope": "ZONE",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "string",
+        "country": "string",
+        "latitude": 0,
+        "longitude": 0
+      }
+    }
+  }
+]

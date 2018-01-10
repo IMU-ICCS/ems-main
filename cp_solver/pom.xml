@@ -94,8 +94,25 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>utility-generator</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-cache</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-collections4</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>eu.melodic.cloudiator</groupId>
+                    <artifactId>cloudiator-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
     </dependencies>
 
