@@ -10,7 +10,6 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.Component;
@@ -36,16 +35,17 @@ public abstract class UtilityFunctionEvaluator {
     Collection<Component> actConfiguration;
     EList<MetricVariable> metrics;
 
-    private CacheService<NodeCandidates> cacheService;
     private NodeCandidates nodeCandidates;
     private EList<Variable> variables;
 
     public abstract double evaluate(Collection<Component> newConfiguration);
 
 
-    UtilityFunctionEvaluator(ConstraintProblem cp) {
+    UtilityFunctionEvaluator(ConstraintProblem cp, NodeCandidates nodeCandidates) {
 
         this.variables = cp.getVariables();
+        this.nodeCandidates = nodeCandidates;
+
         log.info("Creating Utility Function Evaluator from Constraint Problem");
         log.info("Variables from CP");
         for (Variable v : variables) {
@@ -61,10 +61,6 @@ public abstract class UtilityFunctionEvaluator {
             Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
             this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(), getSampleNodeCandidates());
         }
-
-//        this.nodeCandidates = cacheService.load("Ghgh"); //fixme
-
-
     }
 
     public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {

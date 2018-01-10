@@ -7,6 +7,7 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.model.Metric;
@@ -67,7 +68,7 @@ public class CPSolver {
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer){
+	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer, NodeCandidates nodeCandidates){
 		this();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
@@ -84,7 +85,7 @@ public class CPSolver {
 			metrics.put(MetricType.COST_WEIGHT, new Metric[]{new Metric(MetricType.COST_WEIGHT, "",0.5)});
 
 			//for FCR use case
-			this.utilityGenerator = new UtilityGeneratorApplication(cp, metrics, UtilityFunctionType.FCR);
+			this.utilityGenerator = new UtilityGeneratorApplication(cp, metrics, UtilityFunctionType.FCR, nodeCandidates);
 		}
 
 	}
@@ -258,7 +259,7 @@ public class CPSolver {
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
 
-				Integer i=1;
+				int i=1;
 				maxUtility = 0.0;
 				calculateUtility();
 				while(solver.nextSolution()){

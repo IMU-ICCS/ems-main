@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator;
 
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
@@ -28,12 +29,13 @@ public class UtilityGeneratorApplication {
 
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
-
+    private NodeCandidates nodeCandidates;
 
     //todo: constructor only with ConstraintProblem
     public UtilityGeneratorApplication(ConstraintProblem cp, Map<MetricType, Metric[]> metrics,
-            UtilityFunctionType useCase) {
+                                       UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
         this.utilityFunctionEvaluator = createUtilityEvaluator(cp, metrics, useCase);
+        this.nodeCandidates = nodeCandidates;
     }
 
 
@@ -48,11 +50,11 @@ public class UtilityGeneratorApplication {
 
         switch (useCase) {
             case FCR:
-                return new UtilityFunctionEvaluatorFCR(cp, metrics);
+                return new UtilityFunctionEvaluatorFCR(cp, nodeCandidates, metrics);
             case CE_TRAFFIC:
-                return new UtilityFunctionEvaluatorCETraffic(cp);
+                return new UtilityFunctionEvaluatorCETraffic(cp, nodeCandidates);
             default: //CAS
-                return new UtilityFunctionEvaluatorCAS(cp);
+                return new UtilityFunctionEvaluatorCAS(cp, nodeCandidates);
         }
     }
 

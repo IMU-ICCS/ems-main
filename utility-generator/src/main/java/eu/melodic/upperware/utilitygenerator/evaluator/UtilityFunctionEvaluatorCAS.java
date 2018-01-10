@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
@@ -25,12 +26,12 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
     private CostUtilityFunction costUtilityFunction;
 
 
-    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp) {
-        this (cp, new CostUtilityFunctionFraction()); //fixme: another function
+    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, NodeCandidates nodeCandidates) {
+        this(cp, nodeCandidates, new CostUtilityFunctionFraction());
     }
 
-    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, CostUtilityFunction costUtilityFunction) {
-        super(cp);
+    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, NodeCandidates nodeCandidates, CostUtilityFunction costUtilityFunction) {
+        super(cp, nodeCandidates);
         this.costUtilityFunction = costUtilityFunction;
         //getAndAssignMetrics(metrics);
     }

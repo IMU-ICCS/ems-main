@@ -9,6 +9,8 @@
 
 package eu.melodic.upperware.cpsolver.lib;
 
+import eu.melodic.cache.CacheService;
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,8 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
 import java.util.Date;
 import org.springframework.core.env.Environment;
 
@@ -34,11 +38,13 @@ public class CPSolverExecutor {
   
   private Environment env;
   private RestTemplate restTemplate;
+  private CacheService<NodeCandidates> cacheService;
 
   @Async
   public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid, Boolean useExternalOptimizer) {
     try {
-      CPSolver cpSolver = new CPSolver(cdoResourcePath,null,useExternalOptimizer);
+      NodeCandidates nodeCandidates = cacheService.load(createCacheKey(cdoResourcePath));
+      CPSolver cpSolver = new CPSolver(cdoResourcePath, null, useExternalOptimizer, nodeCandidates);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -54,7 +60,7 @@ public class CPSolverExecutor {
   }
 
   public void generateCPSolutionFromFile(String applicationId, String filePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
-      CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer);
+    CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer, NodeCandidates.of(Collections.emptyMap()));
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -63,6 +69,9 @@ public class CPSolverExecutor {
       }
   }
 
+  private String createCacheKey(String cdoResourcePath){
+    return cdoResourcePath.substring(cdoResourcePath.indexOf("/") + 1);
+  }
 
   private void notifySolutionProduced(String camelModelID, String notificationUri, String uuid) {
     log.info("Sending solution available notification");
