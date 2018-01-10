@@ -26,9 +26,7 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
 
 
     public UtilityFunctionEvaluatorCAS(ConstraintProblem cp) {
-        super(cp);
-        this.costUtilityFunction = new CostUtilityFunctionFraction(); //fixme - another function
-        //getAndAssignMetrics(metrics);
+        this (cp, new CostUtilityFunctionFraction()); //fixme: another function
     }
 
     public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, CostUtilityFunction costUtilityFunction) {
@@ -41,11 +39,9 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
     public double evaluate(Collection<Component> newConfiguration) {
 
         double totalUseOfRam = countTotalRamUsage(this.ramUsage);
-        int totalRamInNewConfiguration = 0;
-
-        for (Component component : newConfiguration) {
-            totalRamInNewConfiguration += component.getNodeCandidate().getHardware().getRam() * component.getCardinality();
-        }
+        long totalRamInNewConfiguration = newConfiguration.stream()
+                .mapToLong(Component::getFullRam)
+                .sum();
 
         System.out.println("total Ram In New Configuration: " + totalRamInNewConfiguration);
         System.out.println("total use of Ram: " + totalUseOfRam);

@@ -11,10 +11,7 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 import com.google.common.collect.Lists;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.cp.VariableType;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
+import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.impl.IntegerValueUpperwareImpl;
 import eu.paasage.upperware.metamodel.types.impl.LongValueUpperwareImpl;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,13 +36,10 @@ class EvaluatingUtils {
     //todo move to CPModelTool
     static Collection<String> getVariableNames(String componentId, EList<Variable> variables) {
 
-        Collection<String> variableNames = new ArrayList<>();
-
-        variables.stream()
+        return variables.stream()
                 .filter(variable -> componentId.equals(variable.getComponentId()))
-                .forEach(v -> variableNames.add(v.getId()));
-
-        return variableNames;
+                .map(CPElement::getId)
+                .collect(Collectors.toList());
     }
 
     //todo better exception? move to CPModelTool

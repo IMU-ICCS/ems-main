@@ -22,4 +22,8 @@ public class Component {
   public double getFullPrice(){
     return nodeCandidate.getPrice() * cardinality;
   }
+
+  public long getFullRam(){
+    return nodeCandidate.getHardware().getRam() * cardinality;
+  }
 }

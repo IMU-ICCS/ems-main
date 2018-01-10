@@ -78,9 +78,9 @@ public abstract class UtilityFunctionEvaluator {
             i++;
         }
 
-        //return evaluate(convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal));
+        return evaluate(convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal));
         //return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
-        return evaluate(convertSolutionToNodeCandidatesToTest(newConfigurationInt, newConfigurationReal));
+        //return evaluate(convertSolutionToNodeCandidatesToTest(newConfigurationInt, newConfigurationReal));
 
     }
 
