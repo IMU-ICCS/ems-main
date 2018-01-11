@@ -250,6 +250,29 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.1</version>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <!--<configuration>-->
+                        <!---->
+                        <!--<serverId>eu.7bulls</serverId>-->
+                        <!--<nexusUrl>https://nexus.7bulls.eu:8443/</nexusUrl>-->
+                        <!--<skipStaging>true</skipStaging>-->
+
+                        <!--<id>eu.7bulls</id>-->
+                        <!--<name>Melodic 7bulls repository</name>-->
+                        <!--<url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>-->
+                    <!--</configuration>-->
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -275,6 +298,11 @@
             <name>PaaSage repository</name>
             <url>http://jenkins.paasage.cetic.be/repository/</url>
         </repository>
+        <repository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>
@@ -282,10 +310,15 @@
             <name>Internal Releases</name>
             <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
         </repository>
+        <!--<snapshotRepository>-->
+            <!--<id>ow2.snapshot</id>-->
+            <!--<name>Internal Releases</name>-->
+            <!--<url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>-->
+        <!--</snapshotRepository>-->
         <snapshotRepository>
-            <id>ow2.snapshot</id>
-            <name>Internal Releases</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
