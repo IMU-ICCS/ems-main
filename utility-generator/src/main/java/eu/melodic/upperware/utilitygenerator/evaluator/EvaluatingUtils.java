@@ -10,12 +10,9 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import com.google.common.collect.Lists;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
-import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.types.impl.IntegerValueUpperwareImpl;
-import eu.paasage.upperware.metamodel.types.impl.LongValueUpperwareImpl;
-import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.emf.common.util.EList;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.paasage.upperware.metamodel.cp.VariableType;
+import lombok.extern.slf4j.Slf4j;
 import solver.variables.IntVar;
 import solver.variables.RealVar;
 
@@ -27,6 +24,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static eu.melodic.cache.NodeCandidatePredicates.*;
 import static java.lang.String.format;
 
+@Slf4j
+
 class EvaluatingUtils {
 
 
@@ -34,30 +33,30 @@ class EvaluatingUtils {
 
 
     //todo move to CPModelTool
-    static Collection<String> getVariableNames(String componentId, EList<Variable> variables) {
+    static Collection<String> getVariableNames(String componentId, List<VariableDTO> variables) {
 
         return variables.stream()
                 .filter(variable -> componentId.equals(variable.getComponentId()))
-                .map(CPElement::getId)
+                .map(VariableDTO::getId)
                 .collect(Collectors.toList());
     }
 
     //todo better exception? move to CPModelTool
-    static String getVariableName(String componentId, VariableType type, EList<Variable> variables) {
+    static String getVariableName(String componentId, VariableType type, List<VariableDTO> variables) {
         return variables.stream()
-                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getVariableType())))
+                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Variable with type %s for component %s does not exist"))
                 .getId();
     }
 
 
-    static Map<String, Integer> getCardinalitiesForComponent(IntVar[] newConfiguration, EList<Variable> variables) {
+    static Map<String, Integer> getCardinalitiesForComponent(IntVar[] newConfiguration, List<VariableDTO> variables) {
 
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
-        Collection<Variable> cardinalities = variables.stream()
-                .filter(v -> VariableType.CARDINALITY.equals(v.getVariableType()))
+        Collection<VariableDTO> cardinalities = variables.stream()
+                .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
                 .collect(Collectors.toList());
 
         Arrays.stream(newConfiguration)
@@ -70,7 +69,7 @@ class EvaluatingUtils {
     }
 
     //todo: better exception
-    static int getProviderValue(String componentId, EList<Variable> variables, IntVar[] newConfigurationInt) {
+    static int getProviderValue(String componentId, List<VariableDTO> variables, IntVar[] newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return Arrays.stream(newConfigurationInt)
@@ -82,17 +81,17 @@ class EvaluatingUtils {
     }
 
     //todo: better exception move to CPModelTool
-    private static VariableType getVariableType(String name, EList<Variable> variables) {
+    private static VariableType getVariableType(String name, List<VariableDTO> variables) {
         return variables.stream()
                 .filter(variable -> name.equals(variable.getId()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", name)))
-                .getVariableType();
+                .getType();
     }
 
 
     static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId,
-            IntVar[] newConfigurationInt, RealVar[] newConfigurationReal, EList<Variable> variables) {
+            IntVar[] newConfigurationInt, RealVar[] newConfigurationReal, List<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
@@ -112,6 +111,7 @@ class EvaluatingUtils {
 
             switch (type) {
                 case RAM:
+                    log.info("Creating getRamPredicate for value {}", (long) var.getValue());
                     predicates.add(getRamPredicate((long) var.getValue()));
                     break;
                 case CARDINALITY:
@@ -121,9 +121,11 @@ class EvaluatingUtils {
                 case CPU:
                     break;
                 case CORES:
+                    log.info("Creating getCoresPredicate for value {}", var.getValue());
                     predicates.add(getCoresPredicate(var.getValue()));
                     break;
                 case OS:
+                    log.info("Creating getOsPredicate for value {}", var.getValue());
                     predicates.add(getOsPredicate(var.getValue()));
                     break;
                 case LOCATION:
@@ -150,41 +152,41 @@ class EvaluatingUtils {
 
     //converting actual deployed solution to list of Node Candidates with cardinality
     //todo
-    static Collection<Component> convertActualDeployment(EList<VariableValue> actualSolution, List<NodeCandidate> nodeCandidates) {
+//    static Collection<Component> convertActualDeployment(EList<VariableValue> actualSolution, List<NodeCandidate> nodeCandidates) {
+//
+//        String componentId = "";//fixme
+//
+//        //for one component only
+//        List<VariableValue> variablesForOneComponent = actualSolution
+//                .stream()
+//                .filter(vv -> componentId.equals(vv.getVariable().getComponentId()))
+//                .collect(Collectors.toList());
+//        List<NodeCandidate> nodeCandidatesForOneComponent = nodeCandidates;
+//        int cardinality = 1;
+//
+//        for (VariableValue vv : variablesForOneComponent) {
+//            Variable variable = vv.getVariable();
+//            VariableType type = variable.getVariableType();
+//
+//            switch (type) {
+//                case RAM:
+//                    nodeCandidatesForOneComponent = nodeCandidatesForOneComponent
+//                            .stream()
+//                            .filter(nc -> nc.getHardware().getRam().equals(((LongValueUpperwareImpl) vv.getValue()).getValue()))
+//                            .collect(Collectors.toList());
+//                    break;
+//                case CARDINALITY:
+//                    cardinality = ((IntegerValueUpperwareImpl) vv.getValue()).getValue();
+//                    break;
+//
+//            }
+//        }
+//        return Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidatesForOneComponent), cardinality));
+//    }
 
-        String componentId = "";//fixme
-
-        //for one component only
-        List<VariableValue> variablesForOneComponent = actualSolution
-                .stream()
-                .filter(vv -> componentId.equals(vv.getVariable().getComponentId()))
-                .collect(Collectors.toList());
-        List<NodeCandidate> nodeCandidatesForOneComponent = nodeCandidates;
-        int cardinality = 1;
-
-        for (VariableValue vv : variablesForOneComponent) {
-            Variable variable = vv.getVariable();
-            VariableType type = variable.getVariableType();
-
-            switch (type) {
-                case RAM:
-                    nodeCandidatesForOneComponent = nodeCandidatesForOneComponent
-                            .stream()
-                            .filter(nc -> nc.getHardware().getRam().equals(((LongValueUpperwareImpl) vv.getValue()).getValue()))
-                            .collect(Collectors.toList());
-                    break;
-                case CARDINALITY:
-                    cardinality = ((IntegerValueUpperwareImpl) vv.getValue()).getValue();
-                    break;
-
-            }
-        }
-        return Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidatesForOneComponent), cardinality));
-    }
-
-    static Solution findLastSolution(EList<Solution> solutions) {
-        return CollectionUtils.isNotEmpty(solutions) ? solutions.get(solutions.size()-1) : null;
-    }
+//    static Solution findLastSolution(EList<Solution> solutions) {
+//        return CollectionUtils.isNotEmpty(solutions) ? solutions.get(solutions.size()-1) : null;
+//    }
 
 
   /* ---------------------for tests -to delete later -----------------------------*/

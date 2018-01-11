@@ -13,7 +13,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Metric {
+public class MetricDTO {
 
   private MetricType type;
   private String vmId;

@@ -16,6 +16,7 @@ import lombok.Getter;
 @Getter
 public class Component {
 
+  private String id;
   private NodeCandidate nodeCandidate;
   private int cardinality;
 
@@ -25,5 +26,11 @@ public class Component {
 
   public long getFullRam(){
     return nodeCandidate.getHardware().getRam() * cardinality;
+  }
+
+  @Override
+  public String toString(){
+    return "Component: " + id + "( cardinality = " + cardinality + ",  " + nodeCandidate + ")";
+
   }
 }

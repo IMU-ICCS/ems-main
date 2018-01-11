@@ -16,45 +16,55 @@ import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorC
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCETraffic;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorFCR;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import lombok.extern.slf4j.Slf4j;
 import solver.variables.IntVar;
 import solver.variables.RealVar;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class UtilityGeneratorApplication {
 
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
-    private NodeCandidates nodeCandidates;
 
-    //todo: constructor only with ConstraintProblem
-    public UtilityGeneratorApplication(ConstraintProblem cp, Map<MetricType, Metric[]> metrics,
+    //todo: add last solution from ConstraintProblem
+    public UtilityGeneratorApplication(List<VariableDTO> variables, Map<MetricType, MetricDTO[]> metrics,
                                        UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
-        this.utilityFunctionEvaluator = createUtilityEvaluator(cp, metrics, useCase);
-        this.nodeCandidates = nodeCandidates;
+        log.info("Creating of Utility Generator");
+
+        this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, useCase, nodeCandidates);
     }
 
 
-    //todo - better objects with solution from solver?
+    //todo - canonical model
     public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
+    public void printConfigurationWithMaximumUtility(){
+        this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
+    }
 
-    private UtilityFunctionEvaluator createUtilityEvaluator(ConstraintProblem cp, Map<MetricType,
-            Metric[]> metrics, UtilityFunctionType useCase) {
+
+    private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, Map<MetricType,
+            MetricDTO[]> metrics, UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
 
         switch (useCase) {
             case FCR:
-                return new UtilityFunctionEvaluatorFCR(cp, nodeCandidates, metrics);
+                log.info("Creating utility function for FCR");
+                return new UtilityFunctionEvaluatorFCR(variables, nodeCandidates, metrics);
             case CE_TRAFFIC:
-                return new UtilityFunctionEvaluatorCETraffic(cp, nodeCandidates);
+                log.info("Creating utility function for CETraffic");
+                return new UtilityFunctionEvaluatorCETraffic(variables, nodeCandidates);
             default: //CAS
-                return new UtilityFunctionEvaluatorCAS(cp, nodeCandidates);
+                log.info("Creating utility function for CAS");
+                return new UtilityFunctionEvaluatorCAS(variables, nodeCandidates);
         }
     }
 
@@ -62,14 +72,14 @@ public class UtilityGeneratorApplication {
 
   /* ------------------------------ only for tests - to delete later ---------------------------------------------*/
 
-    public UtilityGeneratorApplication(Map<MetricType, Metric[]> metrics,
+    public UtilityGeneratorApplication(Map<MetricType, MetricDTO[]> metrics,
             Collection<Component> actConfiguration, boolean isReconfig,
             UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, costUtilityFunction);
     }
 
-    public UtilityGeneratorApplication(Map<MetricType, Metric[]> metrics,
+    public UtilityGeneratorApplication(Map<MetricType, MetricDTO[]> metrics,
             Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
@@ -85,7 +95,7 @@ public class UtilityGeneratorApplication {
     }
 
 
-    private void createUtilityEvaluator(Map<MetricType, Metric[]> metrics, Collection<Component> actConfiguration,
+    private void createUtilityEvaluator(Map<MetricType, MetricDTO[]> metrics, Collection<Component> actConfiguration,
             boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         switch (useCase) {

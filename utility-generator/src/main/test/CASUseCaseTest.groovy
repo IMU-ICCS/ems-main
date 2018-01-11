@@ -15,7 +15,7 @@ import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction
 import eu.melodic.upperware.utilitygenerator.model.Component
-import eu.melodic.upperware.utilitygenerator.model.Metric
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricType
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -26,10 +26,10 @@ class CASUseCaseTest extends Specification {
 
   CostUtilityFunction costUtilityFunction
 
-  Map<MetricType, Metric[]> metrics
-  Metric[] highRamUsage
-  Metric[] mediumRamUsage
-  Metric[] smallRamUsage
+  Map<MetricType, MetricDTO[]> metrics
+  MetricDTO[] highRamUsage
+  MetricDTO[] mediumRamUsage
+  MetricDTO[] smallRamUsage
 
   Component initialDeployment
 
@@ -48,24 +48,24 @@ class CASUseCaseTest extends Specification {
     costUtilityFunction = new CostUtilityFunctionFraction()
     metrics = new HashMap<>()
 
-    Metric[] ru = new Metric[1]
-    ru[0] = new Metric(MetricType.MAX_RAM_USAGE, "",0.8)
+    MetricDTO[] ru = new MetricDTO[1]
+    ru[0] = new MetricDTO(MetricType.MAX_RAM_USAGE, "",0.8)
     metrics.put(MetricType.MAX_RAM_USAGE, ru)
 
-    smallRamUsage = new Metric[3]
-    smallRamUsage[0] = new Metric(MetricType.RAM_USAGE,"t2.medium", 0.05)
-    smallRamUsage[1] = new Metric(MetricType.RAM_USAGE, "t2.medium", 0.01)
-    smallRamUsage[2] = new Metric(MetricType.RAM_USAGE,"t2.medium", 0.06)
+    smallRamUsage = new MetricDTO[3]
+    smallRamUsage[0] = new MetricDTO(MetricType.RAM_USAGE,"t2.medium", 0.05)
+    smallRamUsage[1] = new MetricDTO(MetricType.RAM_USAGE, "t2.medium", 0.01)
+    smallRamUsage[2] = new MetricDTO(MetricType.RAM_USAGE,"t2.medium", 0.06)
 
-    mediumRamUsage = new Metric[3]
-    mediumRamUsage[0] = new Metric(MetricType.RAM_USAGE, "t2.medium", 0.55)
-    mediumRamUsage[1] = new Metric(MetricType.RAM_USAGE,"t2.medium",  0.11)
-    mediumRamUsage[2] = new Metric(MetricType.RAM_USAGE,"t2.medium", 0.16)
+    mediumRamUsage = new MetricDTO[3]
+    mediumRamUsage[0] = new MetricDTO(MetricType.RAM_USAGE, "t2.medium", 0.55)
+    mediumRamUsage[1] = new MetricDTO(MetricType.RAM_USAGE,"t2.medium",  0.11)
+    mediumRamUsage[2] = new MetricDTO(MetricType.RAM_USAGE,"t2.medium", 0.16)
 
-    highRamUsage = new Metric[3]
-    highRamUsage[0] = new Metric(MetricType.RAM_USAGE, "t2.medium", 0.99)
-    highRamUsage[1] = new Metric(MetricType.RAM_USAGE, "t2.medium", 0.71)
-    highRamUsage[2] = new Metric(MetricType.RAM_USAGE,"t2.medium", 0.86)
+    highRamUsage = new MetricDTO[3]
+    highRamUsage[0] = new MetricDTO(MetricType.RAM_USAGE, "t2.medium", 0.99)
+    highRamUsage[1] = new MetricDTO(MetricType.RAM_USAGE, "t2.medium", 0.71)
+    highRamUsage[2] = new MetricDTO(MetricType.RAM_USAGE,"t2.medium", 0.86)
   }
   //VAR_cardinality * VAR_ram * METRIC_maxRamUsage >= METRIC_currentRamUsage
 
