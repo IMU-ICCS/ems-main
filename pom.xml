@@ -268,6 +268,11 @@
     </build>
     <repositories>
         <repository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+        </repository>
+        <repository>
             <id>ow2.release</id>
             <name>OW2 repository</name>
             <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
@@ -287,11 +292,6 @@
             <id>paasage.repo</id>
             <name>PaaSage repository</name>
             <url>http://jenkins.paasage.cetic.be/repository/</url>
-        </repository>
-        <repository>
-            <id>eu.7bulls</id>
-            <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
         </repository>
     </repositories>
     <distributionManagement>
