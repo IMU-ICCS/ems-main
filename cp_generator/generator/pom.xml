@@ -23,7 +23,6 @@
     <properties>
         <!--DOCKER plugin properties-->
         <docker.imageName>${docker.repository}melodic/generator</docker.imageName>
-        <commons-collections.version>4.1</commons-collections.version>
     </properties>
 
     <dependencies>
@@ -31,7 +30,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -41,7 +39,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.0</version>
         </dependency>
 
         <dependency>
@@ -109,8 +106,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

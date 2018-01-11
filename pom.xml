@@ -55,6 +55,8 @@
         <jeromq.version>0.3.5</jeromq.version>
         <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
+        <commons-lang3.version>3.6</commons-lang3.version>
+        <commons-collections4.version>4.1</commons-collections4.version>
 
         <!-- Versions for common plugins -->
         <source-plugin.version>2.4</source-plugin.version>
@@ -65,7 +67,7 @@
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository/>
-        <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/${project.name}-release1.5</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
 
@@ -106,6 +108,21 @@
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
                 <version>${parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -214,7 +231,7 @@
                     <version>0.4.10</version>
                     <configuration>
                         <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.imageName}</imageName>
+                        <imageName>${docker.imageName}-release1.5</imageName>
                         <pushImage>${docker.push}</pushImage>
                         <resources>
                             <resource>
@@ -233,10 +250,28 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.1</version>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
     <repositories>
+        <repository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+        </repository>
         <repository>
             <id>ow2.release</id>
             <name>OW2 repository</name>
@@ -265,10 +300,15 @@
             <name>Internal Releases</name>
             <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
         </repository>
+        <!--<snapshotRepository>-->
+            <!--<id>ow2.snapshot</id>-->
+            <!--<name>Internal Releases</name>-->
+            <!--<url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>-->
+        <!--</snapshotRepository>-->
         <snapshotRepository>
-            <id>ow2.snapshot</id>
-            <name>Internal Releases</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
