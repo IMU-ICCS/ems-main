@@ -231,7 +231,7 @@
                     <version>0.4.10</version>
                     <configuration>
                         <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.imageName}</imageName>
+                        <imageName>${docker.imageName}-release1.5</imageName>
                         <pushImage>${docker.push}</pushImage>
                         <resources>
                             <resource>
@@ -262,16 +262,6 @@
                             </goals>
                         </execution>
                     </executions>
-                    <!--<configuration>-->
-                        <!---->
-                        <!--<serverId>eu.7bulls</serverId>-->
-                        <!--<nexusUrl>https://nexus.7bulls.eu:8443/</nexusUrl>-->
-                        <!--<skipStaging>true</skipStaging>-->
-
-                        <!--<id>eu.7bulls</id>-->
-                        <!--<name>Melodic 7bulls repository</name>-->
-                        <!--<url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>-->
-                    <!--</configuration>-->
                 </plugin>
             </plugins>
         </pluginManagement>
