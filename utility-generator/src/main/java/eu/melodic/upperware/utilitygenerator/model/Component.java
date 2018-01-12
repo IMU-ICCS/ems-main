@@ -30,7 +30,6 @@ public class Component {
 
   @Override
   public String toString(){
-    return "Component: " + id + "( cardinality = " + cardinality + ",  " + nodeCandidate + ")";
-
+    return String.format("Component: %s ( cardinality = %d,  %s)", id, cardinality, nodeCandidate.toString());
   }
 }

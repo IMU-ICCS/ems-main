@@ -65,7 +65,6 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
         for (MetricDTO metric : ramUsage) {
             long ram = getRamForVm(metric.getVmId());
             totalRamUsage += metric.getValue() * ram;
-
         }
         return totalRamUsage;
     }

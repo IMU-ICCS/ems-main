@@ -23,7 +23,6 @@ import static eu.melodic.cache.NodeCandidatePredicates.*;
 import static java.lang.String.format;
 
 @Slf4j
-
 class EvaluatingUtils {
 
 

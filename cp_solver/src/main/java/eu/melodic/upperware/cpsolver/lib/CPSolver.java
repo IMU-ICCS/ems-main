@@ -65,7 +65,7 @@ public class CPSolver {
 	private boolean useExternalOptimizer = false;
 	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
-	private List<VariableDTO> variablesForUG;
+	private List<VariableDTO> variablesForUG = new ArrayList<>();
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
@@ -139,12 +139,10 @@ public class CPSolver {
 	}
 
 	private void createVariablesForUG(EList<Variable> variables) {
-
 		log.info("Creating variables for Utility Generator");
-		this.variablesForUG = new ArrayList<>();
-
-		variables.forEach(variable -> variablesForUG.add(new VariableDTO(
-						variable.getId(), variable.getComponentId(), variable.getVariableType())));
+		this.variablesForUG = variables.stream()
+				.map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+				.collect(Collectors.toList());
 	}
 
 	//Get solution mapping to the timestamp given
