@@ -39,9 +39,9 @@ public class CloudiatorServiceImpl implements CloudiatorService {
 
     @Override
     public List<NodeCandidate> findNodeCandidates(NodeRequirements nodeRequirements) throws ApiException {
-     //TODO - for tests only
-        return getSampleNodeCandidates();
-     //   return cloudApi.findNodeCandidates(nodeRequirements);
+
+     //   return getSampleNodeCandidates(); //for tests only
+        return cloudApi.findNodeCandidates(nodeRequirements);
     }
 
     @Override
