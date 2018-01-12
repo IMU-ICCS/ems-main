@@ -8,7 +8,6 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import com.google.common.collect.Lists;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
@@ -20,7 +19,6 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static eu.melodic.cache.NodeCandidatePredicates.*;
 import static java.lang.String.format;
 
@@ -103,7 +101,7 @@ class EvaluatingUtils {
                 .filter(realVar -> variableNamesForComponent.contains(realVar.getName()))
                 .collect(Collectors.toList());
 
-        List<Predicate<NodeCandidate>> predicates = Lists.newArrayList();
+        List<Predicate<NodeCandidate>> predicates = new ArrayList<>();
 
 
         for (IntVar var : variablesIntForComponent) {
@@ -192,7 +190,7 @@ class EvaluatingUtils {
   /* ---------------------for tests -to delete later -----------------------------*/
 
     static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates) {
-        checkNotNull(nodeCandidates);
+        Objects.requireNonNull(nodeCandidates);
         NodeCandidate theCheapest = nodeCandidates.get(0);
         for (NodeCandidate nc : nodeCandidates) {
             if (theCheapest.getPrice() > nc.getPrice()) {
