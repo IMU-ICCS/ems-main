@@ -354,7 +354,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
     }
 
     private String toJson(List<Requirement> requirements) {
-        return new Gson().toJson(requirements, new TypeToken<List<String>>() {}.getType());
+        return new Gson().toJson(requirements, new TypeToken<List<Requirement>>() {}.getType());
     }
 
     private void resetServices() {
