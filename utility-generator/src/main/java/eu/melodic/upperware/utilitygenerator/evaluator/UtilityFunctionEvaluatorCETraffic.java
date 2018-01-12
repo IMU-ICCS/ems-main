@@ -12,17 +12,18 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 
 import java.util.Collection;
+import java.util.List;
 
 public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator {
 
     private CostUtilityFunction costUtilityFunction;
 
 
-    public UtilityFunctionEvaluatorCETraffic(ConstraintProblem cp, NodeCandidates nodeCandidates) {
-        super(cp, nodeCandidates);
+    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, NodeCandidates nodeCandidates) {
+        super(variables, nodeCandidates);
         this.costUtilityFunction = new CostUtilityFunctionFraction();
     }
 

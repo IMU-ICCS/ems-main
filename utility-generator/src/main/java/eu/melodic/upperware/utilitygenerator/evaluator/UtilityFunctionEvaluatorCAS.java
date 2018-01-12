@@ -12,26 +12,27 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
 
     private double maxRamUsage;
-    private Metric[] ramUsage;
+    private MetricDTO[] ramUsage;
     private CostUtilityFunction costUtilityFunction;
 
 
-    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, NodeCandidates nodeCandidates) {
-        this(cp, nodeCandidates, new CostUtilityFunctionFraction());
+    public UtilityFunctionEvaluatorCAS(List<VariableDTO> variables, NodeCandidates nodeCandidates) {
+        this(variables, nodeCandidates, new CostUtilityFunctionFraction());
     }
 
-    public UtilityFunctionEvaluatorCAS(ConstraintProblem cp, NodeCandidates nodeCandidates, CostUtilityFunction costUtilityFunction) {
-        super(cp, nodeCandidates);
+    public UtilityFunctionEvaluatorCAS(List<VariableDTO> variables, NodeCandidates nodeCandidates, CostUtilityFunction costUtilityFunction) {
+        super(variables, nodeCandidates);
         this.costUtilityFunction = costUtilityFunction;
         //getAndAssignMetrics(metrics);
     }
@@ -53,18 +54,17 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
         return 0;
     }
 
-    private void getAndAssignMetrics(Map<MetricType, Metric[]> metrics) {
+    private void getAndAssignMetrics(Map<MetricType, MetricDTO[]> metrics) {
         this.maxRamUsage = metrics.get(MetricType.MAX_RAM_USAGE)[0].getValue();
         this.ramUsage = metrics.get(MetricType.RAM_USAGE);
 
     }
 
-    private double countTotalRamUsage(Metric[] ramUsage) {
+    private double countTotalRamUsage(MetricDTO[] ramUsage) {
         double totalRamUsage = 0.0;
-        for (Metric metric : ramUsage) {
+        for (MetricDTO metric : ramUsage) {
             long ram = getRamForVm(metric.getVmId());
             totalRamUsage += metric.getValue() * ram;
-
         }
         return totalRamUsage;
     }
@@ -83,7 +83,7 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
 
   /* for tests */
 
-    public UtilityFunctionEvaluatorCAS(Map<MetricType, Metric[]> metrics,
+    public UtilityFunctionEvaluatorCAS(Map<MetricType, MetricDTO[]> metrics,
             Collection<Component> actConfiguration, boolean isReconfig,
             CostUtilityFunction costUtilityFunction) {
 

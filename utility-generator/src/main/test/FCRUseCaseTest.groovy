@@ -13,7 +13,7 @@ import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*
 import eu.melodic.upperware.utilitygenerator.model.Component
-import eu.melodic.upperware.utilitygenerator.model.Metric
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricType
 import spock.lang.Ignore
 import spock.lang.Shared
@@ -34,11 +34,11 @@ class FCRUseCaseTest extends Specification {
   @Shared
   CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
 
-  Map<MetricType, Metric[]> metrics
+  Map<MetricType, MetricDTO[]> metrics
 
   Component initialDeployment
 
-  Metric[] avgrt = new Metric[1]
+  MetricDTO[] avgrt = new MetricDTO[1]
 
   def setup(){
     metrics = new HashMap<>()
@@ -49,23 +49,23 @@ class FCRUseCaseTest extends Specification {
     initialDeployment = new Component(initNC, 3)
     metrics = new HashMap<>()
 
-    Metric[] rt = new Metric[1]
-    rt[0] = new Metric(MetricType.MAX_RESPONSE_TIME, "",30)
+    MetricDTO[] rt = new MetricDTO[1]
+    rt[0] = new MetricDTO(MetricType.MAX_RESPONSE_TIME, "",30)
     metrics.put(MetricType.MAX_RESPONSE_TIME, rt)
 
-    Metric[] nrt = new Metric[1]
-    nrt[0] = new Metric(MetricType.NOM_RESPONSE_TIME, "",20)
+    MetricDTO[] nrt = new MetricDTO[1]
+    nrt[0] = new MetricDTO(MetricType.NOM_RESPONSE_TIME, "",20)
     metrics.put(MetricType.NOM_RESPONSE_TIME, nrt)
 
-    Metric[] cw = new Metric[1]
-    cw[0] = new Metric(MetricType.COST_WEIGHT, "",0.5)
+    MetricDTO[] cw = new MetricDTO[1]
+    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "",0.5)
     metrics.put(MetricType.COST_WEIGHT, cw)
 
   }
 
   def "avg response time=3, less machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",3)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 2
@@ -92,7 +92,7 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=3, no changes"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",3)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 3
@@ -120,7 +120,7 @@ class FCRUseCaseTest extends Specification {
   def "avg response time=3, more machines"(){
 
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",3)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 4
@@ -144,7 +144,7 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=25, less machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",25)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 2
@@ -171,7 +171,7 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=25, no changes"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",25)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 3
@@ -199,7 +199,7 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=25, more machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",25)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 4
@@ -226,7 +226,7 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=28, less machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",28)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",28)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 2
@@ -252,7 +252,7 @@ class FCRUseCaseTest extends Specification {
   }
   def "avg response time=28, no changes"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",28)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",28)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 3
@@ -278,7 +278,7 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=28, more machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",28)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",28)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
     int cardinality = 4
@@ -307,11 +307,11 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=25, zeta = 0.05, less machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",25)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
-    Metric[] cw = new Metric[1]
-    cw[0] = new Metric(MetricType.COST_WEIGHT, "", 0.05)
+    MetricDTO[] cw = new MetricDTO[1]
+    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "", 0.05)
     metrics.put(MetricType.COST_WEIGHT, cw)
 
     int cardinality = 2
@@ -337,11 +337,11 @@ class FCRUseCaseTest extends Specification {
   }
   def "avg response time=25, zeta = 0.05, no changes"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",25)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
-    Metric[] cw = new Metric[1]
-    cw[0] = new Metric(MetricType.COST_WEIGHT, "", 0.05)
+    MetricDTO[] cw = new MetricDTO[1]
+    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "", 0.05)
     metrics.put(MetricType.COST_WEIGHT, cw)
 
     int cardinality = 3
@@ -367,11 +367,11 @@ class FCRUseCaseTest extends Specification {
 
   def "avg response time=25, zeta = 0.05, more machines"(){
     setup:
-    avgrt[0] = new Metric(MetricType.AVG_RESPONSE_TIME, "",25)
+    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
     metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
 
-    Metric[] cw = new Metric[1]
-    cw[0] = new Metric(MetricType.COST_WEIGHT, "", 0.05)
+    MetricDTO[] cw = new MetricDTO[1]
+    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "", 0.05)
     metrics.put(MetricType.COST_WEIGHT, cw)
 
     int cardinality = 4

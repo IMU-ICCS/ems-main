@@ -13,9 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.paasage.upperware.metamodel.cp.*;
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.emf.common.util.EList;
 import solver.variables.IntVar;
 import solver.variables.RealVar;
 
@@ -26,41 +27,51 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
-import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 @Slf4j
 public abstract class UtilityFunctionEvaluator {
 
     boolean isReconfig;
     Collection<Component> actConfiguration;
-    EList<MetricVariable> metrics;
+    List<MetricDTO> metrics;
+
+    double maxUtility;
+    Collection<Component> configurationWithMaxUtility;
 
     private NodeCandidates nodeCandidates;
-    private EList<Variable> variables;
+    private List<VariableDTO> variables;
 
     public abstract double evaluate(Collection<Component> newConfiguration);
 
 
-    UtilityFunctionEvaluator(ConstraintProblem cp, NodeCandidates nodeCandidates) {
+    UtilityFunctionEvaluator(List<VariableDTO> variables, NodeCandidates nodeCandidates) {
 
-        this.variables = cp.getVariables();
+        this.variables = variables;
         this.nodeCandidates = nodeCandidates;
+
+        if (isNull(nodeCandidates)){
+            throw new NullPointerException("List of Node Candidates is null");
+        }
 
         log.info("Creating Utility Function Evaluator from Constraint Problem");
         log.info("Variables from CP");
-        for (Variable v : variables) {
-            log.info("{}, type: {}", v.getId(), v.getVariableType());
+        for (VariableDTO v : variables) {
+            log.info("{}, type: {}", v.getId(), v.getType());
         }
 
-        this.metrics = cp.getMetricVariables();     // todo convert
+        //this.metrics = cp.getMetricVariables();     // todo convert
 
-        this.isReconfig = !(cp.getSolution().isEmpty());
+        //this.isReconfig = !(cp.getSolution().isEmpty());
 
+        this.isReconfig = false;
         if (isReconfig) {
             log.info("isReconfig is false");
-            Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
-            this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(), getSampleNodeCandidates());
+            //Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
+            //this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(),getSampleNodeCandidates());
         }
+
+        this.maxUtility = 0.0;
     }
 
     public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
@@ -74,7 +85,23 @@ public abstract class UtilityFunctionEvaluator {
             i++;
         }
 
-        return evaluate(convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal));
+        Collection<Component> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt,
+                newConfigurationReal);
+
+        if (isNull(newConfiguration)){
+            log.info("Returning utility value = 0");
+            return 0;
+        }
+
+        double utility = evaluate(newConfiguration);
+
+        if (utility >= maxUtility){
+            maxUtility = utility;
+            configurationWithMaxUtility = newConfiguration;
+            log.info("Actualized configuration with Max Utility");
+        }
+        return utility;
+
         //return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
         //return evaluate(convertSolutionToNodeCandidatesToTest(newConfigurationInt, newConfigurationReal));
 
@@ -82,10 +109,14 @@ public abstract class UtilityFunctionEvaluator {
 
     private Collection<Component> convertSolutionToNodeCandidates(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
 
+        log.info("Converting solution to Node Candidates");
+
         Collection<Component> newConfiguration = new ArrayList<>();
         Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
 
         for (String componentId : cardinalitiesForComponent.keySet()) {
+
+            log.info("Converting solution for component {}", componentId);
 
             Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId,
                     newConfigurationInt, newConfigurationReal, variables);
@@ -93,12 +124,25 @@ public abstract class UtilityFunctionEvaluator {
             int provider = getProviderValue(componentId, variables, newConfigurationInt);
 
             NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent)
-                    .orElseThrow(() -> new IllegalArgumentException(format("Node Candidates for component %s is not found", componentId)));
+                    .orElse(null);
 
-            newConfiguration.add(new Component(theCheapest, cardinalitiesForComponent.get(componentId)));
+            if (isNull(theCheapest)){
+                log.warn("Node Candidates for component {} with provider {} is not found", componentId, provider);
+                return null;
+            }
+
+            log.info("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
+
+            newConfiguration.add(new Component(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
 
         }
         return newConfiguration;
+    }
+
+    public void printConfigurationWithMaximumUtility() {
+
+        log.info("Configuration with maximum utility: {}", configurationWithMaxUtility);
+
     }
 
 
@@ -120,7 +164,7 @@ public abstract class UtilityFunctionEvaluator {
                     .filter(v -> variableNamesForComponent.contains(v.getName())).collect(Collectors.toList());
 
             NodeCandidate theCheapest = findTheCheapestNodeCanidate(nodeCandidates);
-            newConfiguration.add(new Component(theCheapest, cardinalitiesForComponent.get(componentId)));
+            newConfiguration.add(new Component(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
         }
         return newConfiguration;
     }
@@ -143,6 +187,7 @@ public abstract class UtilityFunctionEvaluator {
         }
         return Collections.emptyList();
     }
+
 
 
 }
