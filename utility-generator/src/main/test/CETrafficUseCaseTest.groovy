@@ -13,7 +13,7 @@ import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*
 import eu.melodic.upperware.utilitygenerator.model.Component
-import eu.melodic.upperware.utilitygenerator.model.Metric
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricType
 import spock.lang.Ignore
 import spock.lang.Shared
@@ -35,7 +35,7 @@ class CETrafficUseCaseTest extends Specification {
   CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
 
 
-  Map<MetricType, Metric[]> metrics
+  Map<MetricType, MetricDTO[]> metrics
   int cardinality
   Component initialDeployment
 

@@ -12,13 +12,14 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.BetaDistribution;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countVirtualMachines;
@@ -42,10 +43,13 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
   /* constructors */
 
-    public UtilityFunctionEvaluatorFCR(ConstraintProblem cp, NodeCandidates nodeCandidates, Map<MetricType, Metric[]> metrics) {
-        super(cp, nodeCandidates);
+    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, NodeCandidates nodeCandidates, Map<MetricType,
+            MetricDTO[]> metrics) {
+        super(variables, nodeCandidates);
         getAndAssignMetrics(metrics);
         this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
+        log.info("Utility function was created");
+
     }
 
 
@@ -87,7 +91,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
 
     /* utils for constructors */
-    private void getAndAssignMetrics(Map<MetricType, Metric[]> metrics) {
+    private void getAndAssignMetrics(Map<MetricType, MetricDTO[]> metrics) {
         this.maxResponseTime = metrics.get(MetricType.MAX_RESPONSE_TIME)[0].getValue();
         this.costWeight = metrics.get(MetricType.COST_WEIGHT)[0].getValue();
         this.avgResponseTime = metrics.get(MetricType.AVG_RESPONSE_TIME)[0].getValue();
@@ -99,7 +103,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
   /* for tests */
 
-    public UtilityFunctionEvaluatorFCR(Map<MetricType, Metric[]> metrics, Collection<Component> actConfiguration,
+    public UtilityFunctionEvaluatorFCR(Map<MetricType, MetricDTO[]> metrics, Collection<Component> actConfiguration,
             boolean isReconfig, CostUtilityFunction costUtilityFunction) {
 
         super(actConfiguration, isReconfig);

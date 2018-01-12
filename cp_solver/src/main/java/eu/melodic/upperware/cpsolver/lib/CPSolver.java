@@ -10,8 +10,9 @@ package eu.melodic.upperware.cpsolver.lib;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
-import eu.melodic.upperware.utilitygenerator.model.Metric;
+import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.MetricType;
+import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
@@ -64,6 +65,7 @@ public class CPSolver {
 	private boolean useExternalOptimizer = false;
 	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
+	private List<VariableDTO> variablesForUG = new ArrayList<>();
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
@@ -78,14 +80,15 @@ public class CPSolver {
 
 		if (this.useExternalOptimizer){
 			//FIXME metrics should be from Metric Collector
-			Map<MetricType, Metric[]> metrics = new HashMap<>();
-			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric[]{new Metric(MetricType.MAX_RESPONSE_TIME, "", 30)});
-			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric[]{new Metric(MetricType.NOM_RESPONSE_TIME, "", 20)});
-			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric[]{new Metric(MetricType.AVG_RESPONSE_TIME, "",3)});
-			metrics.put(MetricType.COST_WEIGHT, new Metric[]{new Metric(MetricType.COST_WEIGHT, "",0.5)});
+			Map<MetricType, MetricDTO[]> metrics = new HashMap<>();
+			metrics.put(MetricType.MAX_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.MAX_RESPONSE_TIME, "", 30)});
+			metrics.put(MetricType.NOM_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.NOM_RESPONSE_TIME, "", 20)});
+			metrics.put(MetricType.AVG_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)});
+			metrics.put(MetricType.COST_WEIGHT, new MetricDTO[]{new MetricDTO(MetricType.COST_WEIGHT, "",0.5)});
 
 			//for FCR use case
-			this.utilityGenerator = new UtilityGeneratorApplication(cp, metrics, UtilityFunctionType.FCR, nodeCandidates);
+			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metrics, UtilityFunctionType.FCR,
+					nodeCandidates);
 		}
 
 	}
@@ -115,6 +118,7 @@ public class CPSolver {
 		createVariables(cp.getVariables());
 		createMetricVariables(cp.getMetricVariables());
 		createConstraints(cp.getConstraints());
+		createVariablesForUG(cp.getVariables());
 
 		//Checking if metric-based solution exists
 		if (timestamp != 0){
@@ -133,7 +137,14 @@ public class CPSolver {
 		//Create optimisation goal
 
 	}
-	
+
+	private void createVariablesForUG(EList<Variable> variables) {
+		log.info("Creating variables for Utility Generator");
+		this.variablesForUG = variables.stream()
+				.map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+				.collect(Collectors.toList());
+	}
+
 	//Get solution mapping to the timestamp given
 	private void checkSolution(EList<Solution> sols){
 			Solution sol = null;
@@ -255,7 +266,6 @@ public class CPSolver {
 		if(useExternalOptimizer){
 			log.info("Using Utility Generator for solution space:");
 
-//			utilityFunctionEvaluator.setActualConfiguration(null);
 			if(solver.findSolution()) {
 				log.info("Checking utility of #1 solution.");
 
@@ -268,6 +278,7 @@ public class CPSolver {
 					calculateUtility();
 				}
 				log.info("max Utility = " + maxUtility);
+				utilityGenerator.printConfigurationWithMaximumUtility();
 				hasSolutions = (solver.isFeasible() == ESat.TRUE);
 			}
 		} else {
