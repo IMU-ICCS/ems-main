@@ -103,10 +103,6 @@
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-collections4</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>eu.melodic.cloudiator</groupId>
                     <artifactId>cloudiator-client</artifactId>
                 </exclusion>
