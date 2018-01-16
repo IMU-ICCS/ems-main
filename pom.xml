@@ -105,9 +105,9 @@
                 <groupId>org.ow2.paasage.mddb.cdo</groupId>
                 <artifactId>client</artifactId>
                 <!-- This may be strange but is necessary -
-                while adding dependency in child pom ${project.parent.version}
+                while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
-                <version>${project.parent.version}</version>
+                <version>${parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
