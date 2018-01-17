@@ -50,8 +50,8 @@
       "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
       "name": "t2.micro",
       "providerId": "1",
-      "cores": 1,
-      "ram": 1024,
+      "cores": 2,
+      "ram": 4096,
       "disk": 100,
       "location": {
         "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
@@ -192,7 +192,7 @@
       "providerId": "1",
       "operatingSystem": {
         "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "OPENBSD",
+        "operatingSystemFamily": "UBUNTU",
         "operatingSystemArchitecture": "AMD64",
         "operatingSystemVersion": "16.04 LTS"
       },
@@ -215,7 +215,7 @@
       "name": "t2.large",
       "providerId": "3",
       "cores": 2,
-      "ram": 8192,
+      "ram": 4096,
       "disk": 100,
       "location": {
         "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
@@ -296,8 +296,8 @@
       "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
       "name": "t2.xlarge",
       "providerId": "1",
-      "cores": 4,
-      "ram": 16384,
+      "cores": 2,
+      "ram": 4096,
       "disk": 100,
       "location": {
         "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
@@ -378,8 +378,8 @@
       "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
       "name": "m5.xlarge",
       "providerId": "2",
-      "cores": 4,
-      "ram": 16384,
+      "cores": 2,
+      "ram": 4096,
       "disk": 100,
       "location": {
         "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
@@ -438,7 +438,7 @@
       "providerId": "1",
       "operatingSystem": {
         "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "WINDOWS",
+        "operatingSystemFamily": "UBUNTU",
         "operatingSystemArchitecture": "AMD64",
         "operatingSystemVersion": "16.04 LTS"
       },
@@ -461,7 +461,7 @@
       "name": "m4.large",
       "providerId": "3",
       "cores": 2,
-      "ram": 8096,
+      "ram": 4096,
       "disk": 100,
       "location": {
         "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",

@@ -4,31 +4,12 @@
 
 package eu.paasage.upperware.solvertodeployment.derivator.lib;
 
-import eu.paasage.camel.type.EnumerateValue;
-import eu.paasage.camel.type.Enumeration;
-import eu.paasage.camel.type.TypeModel;
-import eu.paasage.camel.type.ValueType;
-import org.eclipse.emf.common.util.EList;
-
-import eu.paasage.camel.deployment.Communication;
-import eu.paasage.camel.deployment.DeploymentFactory;
-import eu.paasage.camel.deployment.Hosting;
-import eu.paasage.camel.deployment.HostingInstance;
-import eu.paasage.camel.deployment.InternalComponent;
-import eu.paasage.camel.deployment.InternalComponentInstance;
-import eu.paasage.camel.deployment.ProvidedCommunication;
-import eu.paasage.camel.deployment.ProvidedCommunicationInstance;
-import eu.paasage.camel.deployment.ProvidedHost;
-import eu.paasage.camel.deployment.ProvidedHostInstance;
-import eu.paasage.camel.deployment.RequiredCommunication;
-import eu.paasage.camel.deployment.RequiredCommunicationInstance;
-import eu.paasage.camel.deployment.RequiredHostInstance;
-import eu.paasage.camel.deployment.VM;
-import eu.paasage.camel.deployment.VMInstance;
+import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.provider.Attribute;
 import eu.paasage.camel.provider.Feature;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
+import org.eclipse.emf.common.util.EList;
 
 public class CloudMLHelper {
 
@@ -78,22 +59,20 @@ public class CloudMLHelper {
 		internalComponentInstance.setType(ic1);
 
 		//Create ProvidedCommunicationInstance
-		for(int i=0 ;i <ic1.getProvidedCommunications().size();i++) {
+		for (ProvidedCommunication providedCommunication : ic1.getProvidedCommunications()) {
 			ProvidedCommunicationInstance providedCommunicationInstance = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
-			ProvidedCommunication providedCommunication = ic1.getProvidedCommunications().get(i);
 			providedCommunicationInstance.setType(providedCommunication);
 			providedCommunicationInstance.setName(providedCommunication.getName() + "ProvidedCommunicationInstance_" + getGlobalCount());
 			internalComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance);
 		}
 
 		//Create RequiredCommunicationInstance
-		for(int i=0 ;i <ic1.getRequiredCommunications().size();i++) {
-			RequiredCommunicationInstance requiredCommunicationInstance = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance(); 
-			RequiredCommunication requiredCommunication = ic1.getRequiredCommunications().get(i);
+		for (RequiredCommunication requiredCommunication : ic1.getRequiredCommunications()) {
+			RequiredCommunicationInstance requiredCommunicationInstance = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
 			requiredCommunicationInstance.setType(requiredCommunication);
 			requiredCommunicationInstance.setName(requiredCommunication.getName() + "ReqCommunicationInstance_" + getGlobalCount());
 			internalComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance);
-		}	
+		}
 
 		//Create RequiredHostInstance
 		RequiredHostInstance requiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
@@ -115,32 +94,32 @@ public class CloudMLHelper {
 		vmInstance.setName(vm.getName() + "VMInstance_" + getGlobalSuffix());
 
 		// Create ProviderHostInstance
-		for(int i=0 ;i < vm.getProvidedHosts().size();i++) {
+		for (ProvidedHost providedHost : vm.getProvidedHosts()) {
 			ProvidedHostInstance providedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-			ProvidedHost providedHost = vm.getProvidedHosts().get(i);
 			providedHostInstance.setName(providedHost.getName() +"ProvidedHostInstance_" + getGlobalCount());
 			providedHostInstance.setType(providedHost);
 			vmInstance.getProvidedHostInstances().add(providedHostInstance);
 		}
+
 		return vmInstance;
 	}
 
-	public static Attribute findVMType(ProviderModel _providerModel) throws S2DException {
+	public static Attribute findVMType(ProviderModel providerModel) throws S2DException {
 		Attribute result = null;
-		if(_providerModel == null ) {
+		if(providerModel == null ) {
 			throw new S2DException("Bad calling . Provider musn't not be null");
 		}
-		EList<Feature> subFeatures = _providerModel.getRootFeature().getSubFeatures(); 
-		String logTxt = "\n * Start looking vmType for providerModel " + _providerModel.getName();
-		logTxt+=(" \n  ** Scan SubFeature of provider model. Scanning "+ subFeatures.size() +" elements");
+		EList<Feature> subFeatures = providerModel.getRootFeature().getSubFeatures();
+		StringBuilder logTxt = new StringBuilder("\n * Start looking vmType for providerModel " + providerModel.getName());
+		logTxt.append(" \n  ** Scan SubFeature of provider model. Scanning ").append(subFeatures.size()).append(" elements");
 		for (Feature feature : subFeatures) {
 			EList<Attribute> attributes = feature.getAttributes();
-			logTxt+=(" ** Will scanning all attributes for feature " + feature.getName()+ ". Number of attributes : " + attributes.size());
+			logTxt.append(" ** Will scanning all attributes for feature ").append(feature.getName()).append(". Number of attributes : ").append(attributes.size());
 
 			for (Attribute attribute : attributes) {	
-				logTxt+=("\n    *** Is attribute name equals vmType ? : " + attribute.getName() + " bla " + attribute.getValue());
+				logTxt.append("\n    *** Is attribute name equals vmType ? : ").append(attribute.getName()).append(" bla ").append(attribute.getValue());
 
-				if(attribute.getName().equals("VMType")) {
+				if("VMType".equals(attribute.getName())) {
 					result = attribute;
 				}
 			}
@@ -148,24 +127,6 @@ public class CloudMLHelper {
 		if(result == null) 
 			throw new S2DException("Unable to find VMType . There is error in original model ! .Details :" + logTxt);
 		return result;
-	}
-
-	//TODO - uwspolnic.
-	public static EnumerateValue findValueForFlavour(String flavourName, EList<TypeModel> typeModels){
-		for (TypeModel typeModel : typeModels) {
-			EList<ValueType> dataTypes = typeModel.getDataTypes();
-			for (ValueType dataType : dataTypes) {
-				if ("VMTypeEnum".equals(dataType.getName()) && dataType instanceof Enumeration){
-					Enumeration enumerationDataType = (Enumeration) dataType;
-					for (EnumerateValue enumerateValue : enumerationDataType.getValues()) {
-						if (flavourName.equals(enumerateValue.getName())){
-							return enumerateValue;
-						}
-					}
-				}
-			}
-		}
-		return null;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -176,9 +137,7 @@ public class CloudMLHelper {
 		// CreateHostingInstance
 		HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
 		hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalSuffix());
-		
-		EList<ProvidedHostInstance> pis = vmInstance.getProvidedHostInstances();
-		hostingInstance.setProvidedHostInstance(pis.get(0));
+		hostingInstance.setProvidedHostInstance(vmInstance.getProvidedHostInstances().get(0));
 		hostingInstance.setRequiredHostInstance(internalComponentInstance.getRequiredHostInstance());
 		hostingInstance.setType(hosting);
 		return hostingInstance;

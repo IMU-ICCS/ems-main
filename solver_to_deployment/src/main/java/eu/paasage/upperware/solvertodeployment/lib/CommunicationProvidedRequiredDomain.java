@@ -6,7 +6,6 @@ package eu.paasage.upperware.solvertodeployment.lib;
 
 import java.util.List;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,11 +54,11 @@ public class CommunicationProvidedRequiredDomain {
 		EList<InternalComponentInstance> internalCIs = new BasicEList<InternalComponentInstance>();
 		
 		log.debug("Looking for ComponentInstance (InternalCI from DM) for type: "+component.getName());
-		String logTxt = "";
+		StringBuilder logTxt = new StringBuilder();
 		for(InternalComponentInstance internalCI : internalComponentInstances)
 		{
 			log.debug("finComponentInstance: testing"+internalCI.getName()+" of type "+internalCI.getType().getName());
-			logTxt += "Compare " +  internalCI.getType()  + " AND " + component;
+			logTxt.append("Compare ").append(internalCI.getType()).append(" AND ").append(component);
 			if(internalCI.getType().getName().equals(component.getName()))
 			{
 				log.error("Ok Component Instance Find " + logTxt);
@@ -74,11 +73,11 @@ public class CommunicationProvidedRequiredDomain {
 	static EList<InternalComponentInstance> findComponentInstanceFromComponent(Component component, List<InternalComponentInstance> internalComponentInstances){
 		EList<InternalComponentInstance> internalCIs = new BasicEList<>();
 
-		String logTxt = "";
+		StringBuilder logTxt = new StringBuilder();
 		log.debug("Looking for ComponentInstance (InternalCI list) for type: "+component.getName());
 		for (InternalComponentInstance internalCI : internalComponentInstances) {
 			log.debug("finComponentInstance: testing "+internalCI.getName()+" of type "+internalCI.getType().getName());
-			logTxt += "Compare " +  internalCI.getType()  + " AND " + component;
+			logTxt.append("Compare ").append(internalCI.getType()).append(" AND ").append(component);
 			if(internalCI.getType().getName().equals(component.getName())) {
 				log.debug("Ok Component Instance Find " + logTxt);
 				internalCIs.add(internalCI);

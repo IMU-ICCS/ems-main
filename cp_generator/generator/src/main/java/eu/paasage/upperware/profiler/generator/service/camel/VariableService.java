@@ -19,13 +19,13 @@ public interface VariableService {
     List<Variable> getVariablesRelatedToAppComponent(ApplicationComponent ac, ConstraintProblem cp);
 
 
-    Variable createIntegerVariable(VariableType variableType, String componentId, Domain domain);
+    Variable createIntegerVariable(VariableType variableType, String componentId, String vmName, Domain domain);
 
-    Variable createDoubleVariable(VariableType variableType, String componentId, Domain domain);
+    Variable createDoubleVariable(VariableType variableType, String componentId, String vmName, Domain domain);
 
-    Variable createLongVariable(VariableType variableType, String componentId, Domain domain);
+    Variable createLongVariable(VariableType variableType, String componentId, String vmName, Domain domain);
 
-    Variable createFloatVariable(VariableType variableType, String componentId, Domain domain);
+    Variable createFloatVariable(VariableType variableType, String componentId, String vmName, Domain domain);
 
 
     @Deprecated
