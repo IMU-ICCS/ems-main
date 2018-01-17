@@ -1,12 +1,11 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.Hosting;
-import eu.paasage.camel.deployment.VM;
-import eu.paasage.camel.deployment.VMRequirementSet;
+import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
+import eu.paasage.camel.requirement.Requirement;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -73,6 +72,18 @@ public class NewCamelModelTools {
         }
 
         return result;
+    }
+
+
+    public static HorizontalScaleRequirement getScaleRequirementForComponent(List<Requirement> reqs, String componentName) {
+        for (Requirement req : reqs) {
+            if (req instanceof HorizontalScaleRequirement) {
+                HorizontalScaleRequirement hsr = (HorizontalScaleRequirement) req;
+                if (hsr.getComponent().getName().equals(componentName))
+                    return hsr;
+            }
+        }
+        return null;
     }
 
     private static <T> T getLastElement(List<T> elements) {
