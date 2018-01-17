@@ -11,6 +11,7 @@ import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.upperware.metamodel.cp.*;
@@ -84,7 +85,16 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
             List<Integer> valuesForProviders = nodeCandidatesService.getValuesForProviders(nodeCandidatesByComponentName);
             Variable providerVariable = createIntegerVariable(cp, VariableType.PROVIDER, componentName, vmName, valuesForProviders);
 
-            Variable cardinalityVariable = createIntegerVariable(cp, VariableType.CARDINALITY, componentName, vmName, 1, 100, variableService.createIntegerRangeDomain(1, 100));
+            HorizontalScaleRequirement scaleRequirementForComponent = NewCamelModelTools.getScaleRequirementForComponent(camelModel.getRequirementModels().get(0).getRequirements(), componentName);
+
+            int minValue = 1;
+            int maxValue = 100;
+            if (scaleRequirementForComponent != null) {
+                minValue = scaleRequirementForComponent.getMinInstances();
+                maxValue = scaleRequirementForComponent.getMaxInstances();
+            }
+
+            Variable cardinalityVariable = createIntegerVariable(cp, VariableType.CARDINALITY, componentName, vmName, minValue, maxValue, variableService.createIntegerRangeDomain(minValue, maxValue));
 
             //optional variables
             Variable coresVariable = null;
