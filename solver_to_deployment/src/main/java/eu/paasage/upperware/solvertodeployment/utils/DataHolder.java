@@ -11,6 +11,7 @@ import eu.paasage.camel.deployment.CommunicationInstance;
 import eu.paasage.camel.deployment.HostingInstance;
 import eu.paasage.camel.deployment.InternalComponentInstance;
 import eu.paasage.camel.deployment.VMInstance;
+import eu.paasage.camel.provider.ProviderModel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,7 @@ public class DataHolder {
 	@Setter
 	private int dmId;
 
+	private List<ProviderModel> providerModel = new ArrayList<>();
 	private List<InternalComponentInstance> componentInstancesToRegister = new ArrayList<>();
 	private List<VMInstance> vmInstancesToRegister = new ArrayList<>();
 	private List<HostingInstance> hostingInstancesToRegister = new ArrayList<>();

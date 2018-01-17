@@ -10,13 +10,14 @@ import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.VM;
+import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
+import eu.passage.upperware.commons.model.tools.CPModelTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -65,61 +67,67 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
             throw new GeneratorException(String.format("Problem with storing data to cache under key %s", cpName), cacheException);
         }
 
+        List<Hosting> hostings = NewCamelModelTools.getHostings(camelModel);
+        List<InternalComponent> internalComponents = NewCamelModelTools.getLastDeploymentModel(camelModel).getInternalComponents();
+
+
         for (VM vm : NewCamelModelTools.getVMs(camelModel)) {
             String vmName = vm.getName();
 
+            String componentName = getComponentNameForVm(internalComponents, hostings, vm);
+
             //split by provider id
-            Map<Integer, List<NodeCandidate>> nodeCandidatesByVmName = nodeCandidatesMap.get(vm.getName());
+            Map<Integer, List<NodeCandidate>> nodeCandidatesByComponentName = nodeCandidatesMap.get(componentName);
             QuantitativeHardwareRequirement hardwareRequirements = NewCamelModelTools.getHardwareRequirements(vm);
 
             //required variables
-            List<Integer> valuesForProviders = nodeCandidatesService.getValuesForProviders(nodeCandidatesByVmName);
-            Variable providerVariable = createIntegerVariable(cp, VariableType.PROVIDER, vmName, valuesForProviders);
+            List<Integer> valuesForProviders = nodeCandidatesService.getValuesForProviders(nodeCandidatesByComponentName);
+            Variable providerVariable = createIntegerVariable(cp, VariableType.PROVIDER, componentName, vmName, valuesForProviders);
 
-            Variable cardinalityVariable = createIntegerVariable(cp, VariableType.CARDINALITY, vmName, 1, 100, variableService.createIntegerRangeDomain(1, 100));
+            Variable cardinalityVariable = createIntegerVariable(cp, VariableType.CARDINALITY, componentName, vmName, 1, 100, variableService.createIntegerRangeDomain(1, 100));
 
             //optional variables
             Variable coresVariable = null;
             if (shouldAddCores(hardwareRequirements)){
-                List<Integer> valuesForCores = nodeCandidatesService.getValuesForCores(nodeCandidatesByVmName);
-                coresVariable = createIntegerVariable(cp, VariableType.CORES, vm.getName(), valuesForCores);
+                List<Integer> valuesForCores = nodeCandidatesService.getValuesForCores(nodeCandidatesByComponentName);
+                coresVariable = createIntegerVariable(cp, VariableType.CORES, componentName, vmName, valuesForCores);
             }
 
             Variable ramVariable = null;
             if (shouldAddRam(hardwareRequirements)){
-                List<Long> valuesForRam = nodeCandidatesService.getValuesForRam(nodeCandidatesByVmName);
-                ramVariable = createLongVariable(cp, VariableType.RAM, vm.getName(), valuesForRam);
+                List<Long> valuesForRam = nodeCandidatesService.getValuesForRam(nodeCandidatesByComponentName);
+                ramVariable = createLongVariable(cp, VariableType.RAM, componentName, vmName, valuesForRam);
             }
 
             Variable storageVariable = null;
             if (shouldAddStorage(hardwareRequirements)){
-                List<Float> valuesForCores = nodeCandidatesService.getValuesForStorage(nodeCandidatesByVmName);
-                storageVariable = createFloatVariable(cp, VariableType.STORAGE, vm.getName(), valuesForCores);
+                List<Float> valuesForCores = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
+                storageVariable = createFloatVariable(cp, VariableType.STORAGE, componentName, vmName, valuesForCores);
             }
 
             OSOrImageRequirement osOrImageRequirements = NewCamelModelTools.getOsOrImageRequirements(vm);
 
             Variable osVariable = null;
             if (shouldAddOs(osOrImageRequirements)){
-                List<Integer> valuesForOs = nodeCandidatesService.getValuesForOsFamily(nodeCandidatesByVmName);
-                osVariable = createIntegerVariable(cp, VariableType.OS, vm.getName(), valuesForOs);
+                List<Integer> valuesForOs = nodeCandidatesService.getValuesForOsFamily(nodeCandidatesByComponentName);
+                osVariable = createIntegerVariable(cp, VariableType.OS, componentName, vmName, valuesForOs);
             }
 
 
             //F(P,x)
             Map<Integer, ComposedExpression> providerFunctions = new HashMap<>();
 
-            for (Integer providerIndex: nodeCandidatesByVmName.keySet()) {
+            for (Integer providerIndex: nodeCandidatesByComponentName.keySet()) {
                 //F(P,1)
-                List<NodeCandidate> nodeCandidatesForProvider = nodeCandidatesByVmName.get(providerIndex);
+                List<NodeCandidate> nodeCandidatesForProvider = nodeCandidatesByComponentName.get(providerIndex);
                 ComposedExpression providerFunction = providerFunctions.computeIfAbsent(providerIndex, index -> getProviderExpression(cp, providerVariable, index));
 
                 if (coresVariable != null) {
                     Pair<Integer, Integer> rangeForCores = nodeCandidatesService.getRangeForCores(nodeCandidatesForProvider);
-                    Constant min = constantService.createIntegerConstant(rangeForCores.getLeft(), constantService.getConstantName(VariableType.CORES, vmName, "min", "p", String.valueOf(providerIndex)));
+                    Constant min = constantService.createIntegerConstant(rangeForCores.getLeft(), constantService.getConstantName(VariableType.CORES, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createIntegerConstant(rangeForCores.getRight(), constantService.getConstantName(VariableType.CORES, vmName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createIntegerConstant(rangeForCores.getRight(), constantService.getConstantName(VariableType.CORES, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, coresVariable, cardinalityVariable, min, max, providerFunction);
@@ -127,10 +135,10 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
                 if (ramVariable != null) {
                     Pair<Long, Long> rangeForRam = nodeCandidatesService.getRangeForRam(nodeCandidatesForProvider);
-                    Constant min = constantService.createLongConstant(rangeForRam.getLeft(), constantService.getConstantName(VariableType.RAM, vmName, "min", "p", String.valueOf(providerIndex)));
+                    Constant min = constantService.createLongConstant(rangeForRam.getLeft(), constantService.getConstantName(VariableType.RAM, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createLongConstant(rangeForRam.getRight(), constantService.getConstantName(VariableType.RAM, vmName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createLongConstant(rangeForRam.getRight(), constantService.getConstantName(VariableType.RAM, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, ramVariable, cardinalityVariable, min, max, providerFunction);
@@ -138,10 +146,10 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
                 if (storageVariable != null) {
                     Pair<Float, Float> rangeForStorage = nodeCandidatesService.getRangeForStorage(nodeCandidatesForProvider);
-                    Constant min = constantService.createFloatConstant(rangeForStorage.getLeft(), constantService.getConstantName(VariableType.STORAGE, vmName, "min", "p", String.valueOf(providerIndex)));
+                    Constant min = constantService.createFloatConstant(rangeForStorage.getLeft(), constantService.getConstantName(VariableType.STORAGE, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createFloatConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, vmName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createFloatConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, storageVariable, cardinalityVariable, min, max, providerFunction);
@@ -149,10 +157,10 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
                 if (osVariable != null) {
                     Pair<Integer, Integer> rangeForOs = nodeCandidatesService.getRangeForOs(nodeCandidatesForProvider);
-                    Constant min = constantService.createIntegerConstant(rangeForOs.getLeft(), constantService.getConstantName(VariableType.OS, vmName, "min", "p", String.valueOf(providerIndex)));
+                    Constant min = constantService.createIntegerConstant(rangeForOs.getLeft(), constantService.getConstantName(VariableType.OS, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createIntegerConstant(rangeForOs.getRight(), constantService.getConstantName(VariableType.OS, vmName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createIntegerConstant(rangeForOs.getRight(), constantService.getConstantName(VariableType.OS, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, osVariable, cardinalityVariable, min, max, providerFunction);
@@ -160,7 +168,34 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
             }
         }
 
+        CPModelTool.printCpModel(cp);
+
         return cp;
+    }
+
+    private String getComponentNameForVm(List<InternalComponent> internalComponents, List<Hosting> hostings, VM vm) {
+        Hosting hosting = getFirstMatchingHosting(vm.getProvidedHosts(), hostings)
+                .orElseThrow(() -> new GeneratorException(String.format("Hosting for vm %s is null", vm.getName())));
+
+        InternalComponent internalComponent = CollectionUtils.emptyIfNull(internalComponents)
+               .stream()
+               .filter(ic -> ic.getRequiredHost().getName().equals(hosting.getRequiredHost().getName()))
+               .findFirst()
+               .orElseThrow(() -> new GeneratorException(String.format("InternalComponent for hosting %s is null", hosting.getName())));
+
+        return internalComponent.getName();
+    }
+
+    private Optional<Hosting> getFirstMatchingHosting(EList<ProvidedHost> providedHosts, List<Hosting> hostings) {
+        for (ProvidedHost providedHost : providedHosts) {
+            String name = providedHost.getName();
+            for (Hosting hosting : hostings) {
+                if (hosting.getProvidedHost().getName().equals(name)){
+                    return Optional.of(hosting);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private void createConstraints(ConstraintProblem cp, Variable variable, Variable cardinalityVariable, Constant min, Constant max, ComposedExpression providerFunction) {
@@ -185,30 +220,30 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         cp.getConstraints().add(constraintService.createComparisonExpression(multiplyMaxComposedExpression, ComparatorEnum.GREATER_OR_EQUAL_TO, zeroConstant));
     }
 
-    private Variable createIntegerVariable(ConstraintProblem cp, VariableType variableType, String vmName, List<Integer> values) {
+    private Variable createIntegerVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Integer> values) {
         if (CollectionUtils.isEmpty(values)){
-            log.warn("Empty set of variable type: {} for: {}", variableType, vmName);
-            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, vmName));
+            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
+            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
         }
 
         int minPossibleValue = values.get(0);
         int maxPossibleValue = values.get(values.size()-1);
 
-        return createIntegerVariable(cp, variableType, vmName, minPossibleValue, maxPossibleValue, variableService.createIntegerListDomain(values));
+        return createIntegerVariable(cp, variableType, componentId, vmName, minPossibleValue, maxPossibleValue, variableService.createIntegerListDomain(values));
     }
 
-    private Variable createIntegerVariable(ConstraintProblem cp, VariableType variableType, String vmName, int minPossibleValue, int maxPossibleValue, Domain domain) {
+    private Variable createIntegerVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, int minPossibleValue, int maxPossibleValue, Domain domain) {
 
-        Variable variable = variableService.createIntegerVariable(variableType, vmName, domain);
+        Variable variable = variableService.createIntegerVariable(variableType, componentId, vmName, domain);
         cp.getVariables().add(variable);
 
-        Constant minConstant = constantService.createIntegerConstant(minPossibleValue, constantService.getConstantName(variableType, vmName, "min"));
+        Constant minConstant = constantService.createIntegerConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));
         cp.getConstants().add(minConstant);
 
         ComparisonExpression minCompariton = constraintService.createComparisonExpression(variable, ComparatorEnum.GREATER_OR_EQUAL_TO, minConstant);
         cp.getConstraints().add(minCompariton);
 
-        Constant maxConstant = constantService.createIntegerConstant(maxPossibleValue, constantService.getConstantName(variableType, vmName, "max"));
+        Constant maxConstant = constantService.createIntegerConstant(maxPossibleValue, constantService.getConstantName(variableType, componentId, "max"));
         cp.getConstants().add(maxConstant);
 
         ComparisonExpression maxComparition = constraintService.createComparisonExpression(variable, ComparatorEnum.LESS_OR_EQUAL_TO, maxConstant);
@@ -217,25 +252,25 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         return variable;
     }
 
-    private Variable createLongVariable(ConstraintProblem cp, VariableType variableType, String vmName, List<Long> values) {
+    private Variable createLongVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Long> values) {
         if (CollectionUtils.isEmpty(values)){
-            log.warn("Empty set of variable type: {} for: {}", variableType, vmName);
-            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, vmName));
+            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
+            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
         }
 
         long minPossibleValue = values.get(0);
         long maxPossibleValue = values.get(values.size()-1);
 
-        Variable variable = variableService.createLongVariable(variableType, vmName, variableService.createLongListDomain(values));
+        Variable variable = variableService.createLongVariable(variableType, componentId, vmName, variableService.createLongListDomain(values));
         cp.getVariables().add(variable);
 
-        Constant minConstant = constantService.createLongConstant(minPossibleValue, constantService.getConstantName(variableType, vmName, "min"));
+        Constant minConstant = constantService.createLongConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));
         cp.getConstants().add(minConstant);
 
         ComparisonExpression minCompariton = constraintService.createComparisonExpression(variable, ComparatorEnum.GREATER_OR_EQUAL_TO, minConstant);
         cp.getConstraints().add(minCompariton);
 
-        Constant maxConstant = constantService.createLongConstant(maxPossibleValue, constantService.getConstantName(variableType, vmName, "max"));
+        Constant maxConstant = constantService.createLongConstant(maxPossibleValue, constantService.getConstantName(variableType, componentId, "max"));
         cp.getConstants().add(maxConstant);
 
         ComparisonExpression maxComparition = constraintService.createComparisonExpression(variable, ComparatorEnum.LESS_OR_EQUAL_TO, maxConstant);
@@ -244,25 +279,25 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         return variable;
     }
 
-    private Variable createFloatVariable(ConstraintProblem cp, VariableType variableType, String vmName, List<Float> values) {
+    private Variable createFloatVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Float> values) {
         if (CollectionUtils.isEmpty(values)){
-            log.warn("Empty set of variable type: {} for: {}", variableType, vmName);
-            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, vmName));
+            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
+            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
         }
 
         float minPossibleValue = values.get(0);
         float maxPossibleValue = values.get(values.size()-1);
 
-        Variable variable = variableService.createFloatVariable(variableType, vmName, variableService.createFloatListDomain(values));
+        Variable variable = variableService.createFloatVariable(variableType, componentId, vmName, variableService.createFloatListDomain(values));
         cp.getVariables().add(variable);
 
-        Constant minConstant = constantService.createFloatConstant(minPossibleValue, constantService.getConstantName(variableType, vmName, "min"));
+        Constant minConstant = constantService.createFloatConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));
         cp.getConstants().add(minConstant);
 
         ComparisonExpression minCompariton = constraintService.createComparisonExpression(variable, ComparatorEnum.GREATER_OR_EQUAL_TO, minConstant);
         cp.getConstraints().add(minCompariton);
 
-        Constant maxConstant = constantService.createFloatConstant(maxPossibleValue, constantService.getConstantName(variableType, vmName, "max"));
+        Constant maxConstant = constantService.createFloatConstant(maxPossibleValue, constantService.getConstantName(variableType, componentId, "max"));
         cp.getConstants().add(maxConstant);
 
         ComparisonExpression maxComparition = constraintService.createComparisonExpression(variable, ComparatorEnum.LESS_OR_EQUAL_TO, maxConstant);
@@ -282,7 +317,12 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
     private Map<String, Map<Integer, List<NodeCandidate>>> loadProviders(CamelModel camelModel) {
         Map<String, Map<Integer, List<NodeCandidate>>> result = new HashMap<>();
-        for (VM vm : NewCamelModelTools.getVMs(camelModel)) {
+
+        List<InternalComponent> internalComponents = NewCamelModelTools.getLastDeploymentModel(camelModel).getInternalComponents();
+
+        List<Hosting> hostings = NewCamelModelTools.getHostings(camelModel);
+
+            for (VM vm : NewCamelModelTools.getVMs(camelModel)) {
             List<NodeCandidate> nodeCandidates = getNodeCandidates(vm);
             Map<String, List<NodeCandidate>> stringListMap = nodeCandidatesService.groupByProviders(nodeCandidates);
 
@@ -293,17 +333,9 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
                 tempMap.put(i, stringListMap.get(s));
                 i++;
             }
-            result.put(vm.getName(), tempMap);
+            result.put(getComponentNameForVm(internalComponents, hostings, vm), tempMap);
         }
         return result;
-    }
-
-    @Deprecated
-    private Variable findVariableByName(EList<Variable> variables, String varName) {
-        return variables.stream()
-                .filter(variable -> varName.equals(variable.getId()))
-                .findFirst()
-                .orElseThrow(() -> new GeneratorException(String.format("Could not find variable with name: %s", varName)));
     }
 
     private Constant findConstantByName(EList<Constant> constants, String name) {

@@ -5,24 +5,17 @@ import eu.paasage.upperware.metamodel.application.Provider;
 import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
-import eu.paasage.upperware.metamodel.types.typesPaasage.LocationUpperware;
 import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
 import eu.paasage.upperware.profiler.generator.service.camel.VariableService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_MID;
-import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_PREFIX;
-import static eu.passage.upperware.commons.MelodicConstants.APP_COMPONENT_VAR_SUFFIX;
+import static eu.passage.upperware.commons.MelodicConstants.*;
 
 /**
  * Created by pszkup on 16.08.17.
@@ -74,22 +67,22 @@ public class VariableServiceImpl implements VariableService {
     }
 
     @Override
-    public Variable createIntegerVariable(VariableType variableType, String componentId, Domain domain) {
+    public Variable createIntegerVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
+        return createVariable(getVarName(variableType, componentId), domain, variableType, componentId, vmName);
+    }
+
+    @Override
+    public Variable createDoubleVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createDoubleVariable(VariableType variableType, String componentId, Domain domain) {
+    public Variable createLongVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createLongVariable(VariableType variableType, String componentId, Domain domain) {
-        return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
-    }
-
-    @Override
-    public Variable createFloatVariable(VariableType variableType, String componentId, Domain domain) {
+    public Variable createFloatVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
@@ -120,13 +113,17 @@ public class VariableServiceImpl implements VariableService {
         return createVariable(varName, createFloatRangeDomain(lowerLimit, upperLimit), variableType, componentId);
     }
 
-    //TODO - po usunieciu metod deprecated mozna usunac varName i wyliczac je samemeu
     private Variable createVariable(String varName, Domain domain, VariableType variableType, String componentId) {
+        return createVariable(varName, domain, variableType, componentId, null);
+    }
+
+    private Variable createVariable(String varName, Domain domain, VariableType variableType, String componentId, String vmName) {
         Variable variable= cpFactory.createVariable();
         variable.setId(varName);
         variable.setDomain(domain);
         variable.setVariableType(variableType);
         variable.setComponentId(componentId);
+        variable.setVmId(vmName);
         return variable;
     }
 

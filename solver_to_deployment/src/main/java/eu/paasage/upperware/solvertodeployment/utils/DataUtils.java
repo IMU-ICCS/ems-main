@@ -4,31 +4,32 @@
 
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import eu.paasage.camel.Model;
+import com.google.common.collect.Sets;
+import eu.melodic.cache.NodeCandidatePredicates;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.paasage.camel.deployment.*;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.common.util.EList;
-
-import eu.paasage.camel.CamelModel;
-import eu.paasage.upperware.metamodel.application.PaaSageVariable;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.metamodel.application.Provider;
-import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
+import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.cp.VariableValue;
+import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
+import eu.passage.upperware.commons.model.tools.CPModelTool;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.common.util.EList;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DataUtils {
@@ -63,15 +64,16 @@ VMType and VMTypeValue of the VmInstance.
 
 The HostingInstances are created using the previously-created VmInstance and InternalComponentInstances, as well as the InternalComponent
 associated to the ComponentInstance.
-A HostingInstance must be created for each ProvidedHostInstance associated to the VmInstance. Each HostingInstance must be associated to the
+A HostingInstance must be created for each ProvidedHostInstance associated to the VmInstance. Each HostingInstance must be associated to theA
 current ProvidedHostInstance and to the RequiredHostInstance matching the InternalComponentInstance.
 
 4. Create CommunicationInstances
 
  </pre>
 	 */
-	public static DataHolder computeDatasToRegister(PaasageConfiguration paasageConfiguration,
-			DeploymentModel deploymentModel, ConstraintProblem constraintProblem, int solutionId, String camelModelID) throws S2DException {
+	public static DataHolder computeDatasToRegister(DeploymentModel deploymentModel,
+													ConstraintProblem constraintProblem, Solution solution, String camelModelID,
+													NodeCandidates nodeCandidates) throws S2DException {
 
 		// Analyzing the model for LOCAL group, ie component connected by LOCAL communication
 		// component i => i
@@ -82,14 +84,13 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 
 		EList<InternalComponent> internalComponents = deploymentModel.getInternalComponents();
 		for (int i = 0; i < internalComponents.size(); i++) {
-			InternalComponent ic = internalComponents.get(i);
-			log.info("componentGroups: <{}, {}>", ic.getName(), i);
-			localComponentGroups.put(ic.getName(), i);
-			Set<String> set = new HashSet<>();
-			set.add(ic.getName());
-			localGroups.put(i, set);
-			log.info("groups: <{} {} >", i, set);
+			String componentName = internalComponents.get(i).getName();
+			localComponentGroups.put(componentName, i);
+			localGroups.put(i, Sets.newHashSet(componentName));
 		}
+
+		localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
+		localGroups.forEach((index, set) ->log.info("groups: <{} {} >", index, set));
 
 		// Merging sets
 		for (Communication communication : deploymentModel.getCommunications()) {
@@ -128,94 +129,124 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				String msg = localGroups.get(key).stream().collect(Collectors.joining(" "));
 				log.info("Group {}: {}", key, msg);
 			}
-			key=key+1;
+			key++;
 		}
 		
 		// Memory of instances
-//		HashMap<Communication, EList<VMInstance>> vmInstanceComs = new HashMap<Communication, EList<VMInstance>>();
-		Map<InternalComponentInstance, VMInstance> c2vminstances = new HashMap<>();
-		Map<VMInstance, Set<InternalComponentInstance>> vm2cinstances = new HashMap<>();
 		Map<Integer, EList<VMInstance>> localGroupVMInstances = new HashMap<>();
+		Map<String, List<VariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
 
-		PaaSageVariable paaSageVariableCurrent = null;
 		try {
-			DataHolder result = new DataHolder();
+			DataHolder dataHolder = new DataHolder();
+			for (Entry<String, List<VariableValue>> entry : vvByComponentName.entrySet()) {
+				String componentName = entry.getKey();
 
-			log.debug("1. Dealing with Variable for Component, VM, and Hosting Instances");
-			for (PaaSageVariable paaSageVariable : paasageConfiguration.getVariables()) {
-				Long nb = SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem, solutionId);
-				if( nb > 0) {
-					paaSageVariableCurrent = paaSageVariable;
+				int cardinality = CPModelTool.getIntValue(CPModelTool.getCardinality(entry.getValue()).orElseThrow(() -> new S2DException(String.format("Could not find cardinality for component %s", entry.getKey()))));
+				if (cardinality > 0) {
+					int providerId = CPModelTool.getIntValue(CPModelTool.getProviderId(entry.getValue())
+							.orElseThrow(() -> new S2DException(String.format("Could not find provider for component %s", entry.getKey()))));
+
+					Predicate<NodeCandidate>[] nodeCandidatePredicates = getNodeCandidatePredicates(entry.getValue());
+
+					log.info(Arrays.stream(nodeCandidatePredicates)
+							.map(Object::toString)
+							.collect(Collectors.joining(",", "Filtering node candidates by component " + componentName + ", provider with id: " + providerId +  " and " + nodeCandidatePredicates.length + " predicates [", "]")));
+
+					NodeCandidate nodeCandidate = nodeCandidates.getCheapest(componentName, providerId, nodeCandidatePredicates)
+							.orElseThrow(() -> new S2DException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
+
 					try {
-						// Create CI Instance
-						EList<InternalComponentInstance> internalComponentInstanceToRegisters = SolverToDeployementHelper.createInternalComponentInstanceFromPaasageVariable(paaSageVariable, deploymentModel, nb);
-						result.getComponentInstancesToRegister().addAll(internalComponentInstanceToRegisters);
-						
+						EList<InternalComponentInstance> internalComponentInstanceToRegisters = SolverToDeployementHelper.createInternalComponentInstance(componentName, deploymentModel, cardinality);
+						dataHolder.getComponentInstancesToRegister().addAll(internalComponentInstanceToRegisters);
+
 						// Create VM Instance or not (if LOCAL communication)
-						String componentId = paaSageVariable.getRelatedComponent().getCloudMLId();
-						int mykey = localComponentGroups.get(componentId);
-						EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(mykey);
-						log.info("VMs for key {}: {}", mykey, vmInstanceToRegisters);
+						int myKey = localComponentGroups.get(componentName);
+						EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
+						log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
+
 						if (vmInstanceToRegisters == null) {
 							log.info("Creating new VM Instances...");
-							vmInstanceToRegisters = SolverToDeployementHelper.searchAndCreateVMInstance(deploymentModel,paaSageVariable, nb, constraintProblem);
-							result.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
+
+							VM vm = findVMByName(deploymentModel.getVms(), getVmId(entry));
+
+							ProviderModel providerModel = ProviderModelTransformer.createProviderModel(nodeCandidate, componentName, constraintProblem.getId());
+							dataHolder.getProviderModel().add(providerModel);
+
+							vmInstanceToRegisters = SolverToDeployementHelper.searchAndCreateVMInstance(providerModel, vm, cardinality);
+							dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
 							// memorize
-							localGroupVMInstances.put(mykey,  vmInstanceToRegisters);
-							log.info("**NEW** VMs for key {}: {}", mykey, vmInstanceToRegisters);
+							localGroupVMInstances.put(myKey,  vmInstanceToRegisters);
+							log.info("**NEW** VMs for key {}", myKey);
 						}
 
 						// Create Hosting
-						for(int i=0; i<nb; i++) {
+						for(int i=0; i<cardinality; i++) {
 							InternalComponentInstance iCI = internalComponentInstanceToRegisters.get(i);
 							VMInstance vmI = vmInstanceToRegisters.get(i);
-							HostingInstance hostingInstance  = SolverToDeployementHelper.createHostingInstance(vmI, iCI, deploymentModel);
-							result.getHostingInstancesToRegister().add(hostingInstance);
-							// memorizing
-							c2vminstances.put(iCI, vmI);
-							vm2cinstances.computeIfAbsent(vmI, k -> new HashSet<>()).add(iCI);
+							dataHolder.getHostingInstancesToRegister().add(SolverToDeployementHelper.createHostingInstance(vmI, iCI, deploymentModel));
 						}
+
 					} catch(S2DException e) {
-						SolverToDeployementHelper.printVar(paaSageVariable);
 						throw e;
 					}
 				}
 			}
-			
+
 			log.debug("2. Dealing with Communication Instances");
-			EList<Communication> communications = deploymentModel.getCommunications();
-			for (Communication communication : communications) {
+			for (Communication communication : deploymentModel.getCommunications()) {
 				log.info("2a Dealing with communication: {} type: {}", communication.getName(), communication.getType());
-				EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication,deploymentModel,result.getComponentInstancesToRegister());
-				result.getCommunicationInstances().addAll(communicationInstances);
+				EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication, deploymentModel, dataHolder.getComponentInstancesToRegister());
+				dataHolder.getCommunicationInstances().addAll(communicationInstances);
 			}
 			log.debug("3. Changing names.");
-			changeNames(result, camelModelID);
+			changeNames(dataHolder, camelModelID);
 			log.debug("4. Done.");
-			return result;
-		} catch(Exception e) {
-			log.error("Error details : ", e);
-			log.error("Error when try to decode the input paramers : ");
-			if (paaSageVariableCurrent != null) {
-				SolverToDeployementHelper.printVar(paaSageVariableCurrent);	
-			} else{
-				log.error("No parameters. Must never happened");
-			}
+			return dataHolder;
+
+		} catch (Exception e) {
+			log.error("Problem with S2D: ", e);
 		}
 		return null;
+	}
+
+	private static String getVmId(Entry<String, List<VariableValue>> entry) {
+		return entry.getValue().get(0).getVariable().getVmId();
+	}
+
+	private static VM findVMByName(EList<VM> vms, String vmName) {
+		return vms.stream()
+				.filter(vm -> vm.getName().equals(vmName))
+				.findFirst().orElse(null);
+	}
+
+	private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<VariableValue> variableValues) {
+		List<Predicate<NodeCandidate>> result = new ArrayList<>();
+
+		CPModelTool.getCores(variableValues)
+				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getCoresPredicate(CPModelTool.getIntValue(variableValue))));
+
+		CPModelTool.getRam(variableValues)
+				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
+
+		CPModelTool.getStorage(variableValues)
+				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getFloatValue(variableValue))));
+
+		CPModelTool.getOs(variableValues)
+				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));
+
+		return result.toArray(new Predicate[result.size()]);
 	}
 
 	private static void changeNames(DataHolder result, String camelModelID) {
 		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
 		try {
-			DeploymentModel deployedModel = CDODatabaseProxy2.getLastDeployedModel(camelModelID, transaction);
-			if (deployedModel != null) {
+			CDODatabaseProxy2.getLastDeployedModel(camelModelID, transaction).ifPresent(deployedModel -> {
 				//1. VMInstances
 				changeNames(result.getVmInstancesToRegister(), deployedModel.getVmInstances(), VMKey::getInstance);
 
 				//2. Component
 				changeNames(result.getComponentInstancesToRegister(), deployedModel.getInternalComponentInstances(), VMKey::getInstance);
-			}
+					});
 		} finally {
 			if (transaction != null && !transaction.isClosed()) {
 				CDODatabaseProxy.getInstance().getCdoClient().closeTransaction(transaction);
@@ -253,38 +284,12 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		return result;
 	}
 
-	public static void copyCloudProviders(CamelModel cm, String camelModelID, String appId, PaasageConfiguration paasageConfiguration,
-			ConstraintProblem constraintProblem, int solutionId) throws S2DException, CommitException {
-
-		// Set containing added PM
-		// Register all known PM
-		Set<String> pmList = cm.getProviderModels().stream()
-				.map(Model::getName)
-				.peek(s -> log.info("CloudProvider already known: " + s))
-				.collect(Collectors.toSet());
-
-		// Look for new PM
-		EList<PaaSageVariable> variables = paasageConfiguration.getVariables();
-		for (PaaSageVariable paaSageVariable : variables) {
-			if (SolverToDeployementHelper.findCardinalityOf(paaSageVariable, constraintProblem, solutionId) > 0) {
-				Provider upm = paaSageVariable.getRelatedProvider();
-				VirtualMachineProfile relVMprofile = paaSageVariable.getRelatedVirtualMachineProfile();
-				String cloudVMId = relVMprofile.getRelatedCloudVMId();
-				String pId = upm.getId();
-				log.info("New Cloud Provider?: "+pId+" CloudVMid:"+cloudVMId);
-
-				String fullVMid = pId+"#"+cloudVMId;
-				if (!pmList.contains(fullVMid)) {
-					pmList.add(fullVMid);
-					log.info("Copying into CAMEL new ProviderId: "+fullVMid);
-
-					CDODatabaseProxy2.copyAllCloudProviderModel(pId, cloudVMId, camelModelID, appId);
-				}
-			}
-		}
-	}	
-
 	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
+
+		for (ProviderModel providerModel: dataholder.getProviderModel()) {
+			CDODatabaseProxy2.registerProviderModel(providerModel,camelModelID, dataholder.getDmId());
+		}
+
 		for (VMInstance vmInstance : dataholder.getVmInstancesToRegister()) {
 			CDODatabaseProxy2.registerVMInstance(vmInstance,camelModelID, dataholder.getDmId());
 		}

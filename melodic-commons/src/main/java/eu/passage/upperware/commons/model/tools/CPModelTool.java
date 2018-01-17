@@ -12,28 +12,28 @@
 package eu.passage.upperware.commons.model.tools;
 
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl;
 import eu.paasage.upperware.metamodel.types.*;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class CPModelTool {
 
-    public static Variable getVariable(List<Variable> variables, VariableType variableType, String appName){
+    public static Optional<Variable> getVariable(List<Variable> variables, VariableType variableType, String appName){
         Objects.requireNonNull(variableType);
         Objects.requireNonNull(appName);
 
-        return variables.stream()
-                .filter(variable -> variableType.equals(variable.getVariableType()))
-                .filter(variable -> appName.equals(variable.getComponentId()))
-                .findAny().orElse(null);
+        Predicate<Variable> typePredicate = variable -> variableType.equals(variable.getVariableType());
+        Predicate<Variable> namePredicate = variable -> appName.equals(variable.getComponentId());
+
+        return getFirst(variables, typePredicate.and(namePredicate));
     }
 
     public static List<Variable> getVariables(List<Variable> variables, String appName){
@@ -48,8 +48,114 @@ public class CPModelTool {
         return variables.stream().collect(Collectors.groupingBy(Variable::getComponentId));
     }
 
-    public static List<String> getComponentNams(List<Variable> variables){
+    public static List<String> getComponentNames(List<Variable> variables){
         return variables.stream().map(Variable::getComponentId).distinct().sorted().collect(Collectors.toList());
+    }
+
+
+    public static Optional<VariableValue> getVariableValue(List<VariableValue> variables, VariableType variableType, String appName){
+        Objects.requireNonNull(variableType);
+        Objects.requireNonNull(appName);
+
+        Predicate<VariableValue> typePredicate = variableValue -> variableType.equals(variableValue.getVariable().getVariableType());
+        Predicate<VariableValue> namePredicate = variableValue -> appName.equals(variableValue.getVariable().getComponentId());
+
+        return getFirst(variables, typePredicate.and(namePredicate));
+    }
+
+    public static Optional<VariableValue> getVariableValue(List<VariableValue> variables, VariableType variableType){
+        Objects.requireNonNull(variableType);
+
+        return getFirst(variables, variableValue -> variableType.equals(variableValue.getVariable().getVariableType()));
+    }
+
+    public static List<VariableValue> getVariableValues(List<VariableValue> variables, String appName){
+        Objects.requireNonNull(appName);
+
+        return variables.stream()
+                .filter(variableValue -> appName.equals(variableValue.getVariable().getComponentId()))
+                .collect(Collectors.toList());
+    }
+
+    public static Map<String, List<VariableValue>> groupVariableValuesByAppName(List<VariableValue> variables){
+        return variables.stream().collect(Collectors.groupingBy(variableValue -> variableValue.getVariable().getComponentId()));
+    }
+
+    public static List<String> getComponentNamesFromVariableValues(List<VariableValue> variables){
+        return variables.stream().map(variableValue -> variableValue.getVariable().getComponentId()).distinct().sorted().collect(Collectors.toList());
+    }
+
+    public static Optional<VariableValue> getCardinality(List<VariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.CARDINALITY);
+    }
+
+    public static Optional<VariableValue> getProviderId(List<VariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.PROVIDER);
+    }
+
+    public static Optional<VariableValue> getOs(List<VariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.OS);
+    }
+
+    public static Optional<VariableValue> getCores(List<VariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.CORES);
+    }
+
+    public static Optional<VariableValue> getRam(List<VariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.RAM);
+    }
+
+    public static Optional<VariableValue> getStorage(List<VariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.STORAGE);
+    }
+
+    public static int getIntValue(VariableValue variableValue){
+        Objects.requireNonNull(variableValue.getValue());
+        return ((IntegerValueUpperware) variableValue.getValue()).getValue();
+    }
+
+    public static long getLongValue(VariableValue variableValue){
+        Objects.requireNonNull(variableValue.getValue());
+        return ((LongValueUpperware) variableValue.getValue()).getValue();
+    }
+
+    public static float getFloatValue(VariableValue variableValue){
+        Objects.requireNonNull(variableValue.getValue());
+        return ((FloatValueUpperware) variableValue.getValue()).getValue();
+    }
+
+    public static void printCpModel(ConstraintProblem cp){
+        log.info("ConstraintProblem: {}", cp.getId());
+
+        log.info("CONSTANTS:");
+        for (Constant constant : cp.getConstants()) {
+            log.info(toString(constant));
+        }
+
+        log.info("VARIABLES:");
+        for (Variable variable : cp.getVariables()) {
+            log.info(toString(variable));
+        }
+
+        log.info("CONSTRAINTS");
+        for(ComparisonExpression ce : cp.getConstraints()){
+            log.info(ce.getId() + ": " +CPModelTool.toString(ce));
+        }
+
+        log.info("AUX Expressions");
+        for(Expression aux : cp.getAuxExpressions()){
+            log.info(aux.getId() + ": " +CPModelTool.toString(aux));
+        }
+
+        log.info("METRICS");
+        for(MetricVariable met : cp.getMetricVariables()){
+            log.info(met.getId() + ": " +CPModelTool.toString(met));
+        }
+
+        log.info("SOLUTION");
+        for(Solution sol : cp.getSolution()){
+            log.info("Solution: " + sol.getClass());
+        }
     }
 
     /**
@@ -57,8 +163,7 @@ public class CPModelTool {
      * @return string
      */
     public static String toString(Constant cons) {
-        return cons.getId() + ": " + CPModelTool.getValueFromNumericValue(cons.getValue()).get(0);
-
+        return cons.getId() + ": " + CPModelTool.getValueFromNumericValue(cons.getValue()).getLeft();
     }
 
     /**
@@ -67,22 +172,24 @@ public class CPModelTool {
      */
     public static String toString(Variable var) {
         String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
-                + "  providerId: " + var.getProviderId() + System.lineSeparator()
+                + "  componentId " + var.getComponentId()+ System.lineSeparator()
+                + "  variableTpe " + var.getVariableType()+ System.lineSeparator()
                 + "  vmId " + var.getVmId() + System.lineSeparator()
-                + "  osImageId: " + var.getOsImageId() + System.lineSeparator()
-                + "  hardwareId: " + var.getHardwareId() + System.lineSeparator()
-                + "  domainFrom: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getFrom()).get(0)
-                + "  domainTo: " + CPModelTool.getValueFromNumericValue(((RangeDomainImpl) var.getDomain()).getTo()).get(0);
+                + "  domain " + toString(var.getDomain()) + System.lineSeparator();
         return retString;
 
     }
 
-    /**
-     * Provides string representation of goal - for logging purposes
-     * @return string
-     */
-    public static String toString(Goal goal) {
-        return "Goal Type: " + goal.getId() + System.lineSeparator() + toString(goal.getExpression());
+    private static String toString(Domain domain) {
+        if (domain instanceof RangeDomain) {
+            return String.format("RangeDomain: (%s, %s)", getValueFromNumericValue(((RangeDomain) domain).getFrom()).getLeft(), getValueFromNumericValue(((RangeDomain) domain).getTo()).getLeft());
+        } else if (domain instanceof NumericListDomain) {
+            EList<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
+            return values.stream().map(numericValueUpperware -> getValueFromNumericValue(numericValueUpperware).getLeft()).collect(Collectors.joining(", ", "NumericListDomain: {", "}"));
+        } else if (domain instanceof NumericDomain) {
+            return String.format("NumericDomain: (%s)", getValueFromNumericValue(((NumericDomain) domain).getValue()));
+        }
+        throw new IllegalArgumentException("Domian unknown: " + domain.getClass().getCanonicalName());
     }
 
     /**
@@ -111,7 +218,7 @@ public class CPModelTool {
         } else if (expression instanceof Constant || expression instanceof Variable) {
             retString = expression.getId();
         } else {
-            System.out.println("NumericExpresion: " + expression.getClass().toString() + " not yet supported");
+            log.error("NumericExpresion: {} not yet supported", expression.getClass().toString());
         }
 
         return retString;
@@ -190,109 +297,75 @@ public class CPModelTool {
 
         if (cp.getSolution().size() > 0) {
             Solution sol = searchLastSolution(cp.getSolution());
-
             VariableValue vv = getVariableValueByVariableId(var.getId(), sol);
 
             if (vv != null) {
-                NumericValueUpperware valUpp = vv.getValue();
-
-                if (valUpp instanceof IntegerValueUpperware) {
-                    IntegerValueUpperware intValUpperware = (IntegerValueUpperware) valUpp;
-
-                    return Integer.toString(intValUpperware.getValue());
-                } else if (valUpp instanceof LongValueUpperware) {
-                    LongValueUpperware longValUpperware = (LongValueUpperware) valUpp;
-
-                    return Long.toString(longValUpperware.getValue());
-                } else if (valUpp instanceof FloatValueUpperware) {
-                    FloatValueUpperware floatValUpperware = (FloatValueUpperware) valUpp;
-
-                    return Float.toString(floatValUpperware.getValue());
-                } else if (valUpp instanceof DoubleValueUpperware) {
-                    DoubleValueUpperware doubleValUpperware = (DoubleValueUpperware) valUpp;
-
-                    return Double.toString(doubleValUpperware.getValue());
-                } else
-                    System.err.println("ModelTool - assignValue - Unknown type " + var.getClass() + " The value can not be retrieved!");
-            } else
-                System.err.println("ModelTool - assignValue - Unknown val " + var.getId() + " The value can not be retrieved!");
+                return getValueFromNumericValue(vv.getValue()).getLeft();
+            } else {
+                log.error("ModelTool - assignValue - Unknown val {} The value can not be retrieved!", var.getId());
+            }
         } else {
-            System.err.println("ModelTool - assignValue - Unknown val " + var.getId() + " The value can not be retrieved!");
+            log.error("ModelTool - assignValue - Unknown val {} The value can not be retrieved!", var.getId());
         }
-
-
         return null;
     }
 
-    /**
-     * Gets the value from a given Numeric Value as a string
-     * @param value The value
-     * @return A list containing the value (0) and the canonical name of the type class (1)
-     */
-    public static List<String> getValueFromNumericValue(NumericValueUpperware value) {
-        List<String> info = new ArrayList<String>();
-
-        String val = null;
-
+    public static Pair<String, String> getValueFromNumericValue(@NonNull NumericValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
-            val = ((IntegerValueUpperware) value).getValue() + "";
-            info.add(val);
-            info.add(Integer.class.getCanonicalName());
+            return Pair.of(Integer.toString(((IntegerValueUpperware) value).getValue()), Integer.class.getCanonicalName());
         } else if (value instanceof FloatValueUpperware) {
-            val = ((FloatValueUpperware) value).getValue() + "";
-            info.add(val);
-            info.add(Float.class.getCanonicalName());
+            return Pair.of(Float.toString(((FloatValueUpperware) value).getValue()), Float.class.getCanonicalName());
         } else if (value instanceof DoubleValueUpperware) {
-            val = ((DoubleValueUpperware) value).getValue() + "";
-            info.add(val);
-            info.add(Double.class.getCanonicalName());
+            return Pair.of(Double.toString(((DoubleValueUpperware) value).getValue()), Double.class.getCanonicalName());
         } else if (value instanceof LongValueUpperware) {
-            val = ((LongValueUpperware) value).getValue() + "";
-            info.add(val);
-            info.add(Long.class.getCanonicalName());
+            return Pair.of(Long.toString(((LongValueUpperware) value).getValue()), Long.class.getCanonicalName());
         }
-
-        return info;
+        throw new IllegalArgumentException("NumericValueUpperware unknown: " + value.getClass().getCanonicalName());
     }
 
     public static Solution searchLastSolution(EList<Solution> solutions) {
-        if (solutions.size() > 0) {
-            Solution sol = solutions.get(0);
-
-            long solDate = sol.getTimestamp();
-
-            for (int i = 1; i < solutions.size(); i++) {
-                Solution temp = solutions.get(i);
-
-                long tempDate = temp.getTimestamp();
-
-                if (tempDate > solDate) {
-                    solDate = tempDate;
-                    sol = temp;
-                }
-
-            }
-            return sol;
-
-        }
-
-        return null;
+        return getSolutionWithIndex(solutions).getValue();
     }
+
+    private static Pair<Integer, Solution> getSolutionWithIndex(EList<Solution> solutions){
+        int resultIndex=-1;
+        Solution resultSolution = null;
+        long maxTS= -1L;
+
+        List<Solution> notNullSolutions = (List<Solution>) CollectionUtils.emptyIfNull(solutions);
+
+        for(int i =0; i<notNullSolutions.size(); i++) {
+            Solution sol = notNullSolutions.get(i);
+            long timestamp = sol.getTimestamp();
+            if (timestamp == 0) {
+                resultIndex = i;
+                resultSolution = sol;
+                break;
+            } else if (timestamp > maxTS) {
+                maxTS = timestamp;
+                resultIndex=i;
+                resultSolution = sol;
+            }
+        }
+        return Pair.of(resultIndex, resultSolution);
+    }
+
+
 
     public static VariableValue searchVariableValue(Solution sol, Variable var) {
         return getVariableValueByVariableId(var.getId(), sol);
     }
 
     public static VariableValue getVariableValueByVariableId(String id, Solution sol) {
-        return getFirst(sol.getVariableValue(), vv -> vv.getVariable().getId().equals(id));
+        return getFirst(sol.getVariableValue(), vv -> vv.getVariable().getId().equals(id)).orElse(null);
     }
 
     public static MetricVariableValue searchMetricValue(Solution sol, MetricVariable var) {
-        return getFirst(sol.getMetricVariableValue(), value -> value.getVariable().getId().equals(var.getId()));
+        return getFirst(sol.getMetricVariableValue(), value -> value.getVariable().getId().equals(var.getId())).orElse(null);
     }
 
-    public static <T> T getFirst(List<T> elements, Predicate<T> predicate) {
-        return CollectionUtils.emptyIfNull(elements).stream().filter(predicate::evaluate).findFirst().orElse(null);
+    private static <T> Optional<T> getFirst(List<T> elements, Predicate<T> predicate) {
+        return CollectionUtils.emptyIfNull(elements).stream().filter(predicate).findFirst();
     }
 
     public static Solution createSolution(ConstraintProblem cp) {
