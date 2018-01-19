@@ -14,6 +14,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.model.SolutionVariable;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,9 @@ public abstract class UtilityFunctionEvaluator {
     Collection<Component> actConfiguration;
     List<MetricDTO> metrics;
 
-    double maxUtility;
-    Collection<Component> configurationWithMaxUtility;
+    private double maxUtility;
+    private Collection<Component> configurationWithMaxUtility;
+    private Collection<SolutionVariable> solutionWithMaxUtility;
 
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
@@ -97,6 +99,7 @@ public abstract class UtilityFunctionEvaluator {
         if (utility >= maxUtility){
             maxUtility = utility;
             configurationWithMaxUtility = newConfiguration;
+            solutionWithMaxUtility = convertSolution(newConfigurationInt);
             log.info("Actualized configuration with Max Utility");
         }
         return utility;
@@ -144,6 +147,7 @@ public abstract class UtilityFunctionEvaluator {
 
     public void printConfigurationWithMaximumUtility() {
 
+        log.info("Solution with maximum utility: {}", solutionWithMaxUtility);
         log.info("Configuration with maximum utility: {}", configurationWithMaxUtility);
 
     }
