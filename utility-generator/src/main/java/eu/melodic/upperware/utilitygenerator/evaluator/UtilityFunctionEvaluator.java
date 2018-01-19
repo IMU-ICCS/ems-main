@@ -64,9 +64,8 @@ public abstract class UtilityFunctionEvaluator {
 
         //this.isReconfig = !(cp.getSolution().isEmpty());
 
-        this.isReconfig = false;
+        this.isReconfig = false; //todo get actualDeployment
         if (isReconfig) {
-            log.info("isReconfig is false");
             //Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
             //this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(),getSampleNodeCandidates());
         }
@@ -105,6 +104,10 @@ public abstract class UtilityFunctionEvaluator {
         //return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
         //return evaluate(convertSolutionToNodeCandidatesToTest(newConfigurationInt, newConfigurationReal));
 
+    }
+
+    public double evaluateActualSolution() {
+        return evaluate(actConfiguration);
     }
 
     private Collection<Component> convertSolutionToNodeCandidates(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
@@ -187,7 +190,5 @@ public abstract class UtilityFunctionEvaluator {
         }
         return Collections.emptyList();
     }
-
-
 
 }
