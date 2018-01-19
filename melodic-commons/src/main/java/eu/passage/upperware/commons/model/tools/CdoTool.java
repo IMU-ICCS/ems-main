@@ -8,13 +8,19 @@
 package eu.passage.upperware.commons.model.tools;
 
 
+import eu.paasage.camel.CamelModel;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.emf.ecore.EObject;
+
+import java.util.List;
+import java.util.Optional;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -83,6 +89,18 @@ public final class CdoTool {
         }
 
         return current.startsWith(CDO_SERVER_PATH) ? current.substring(CDO_SERVER_PATH.length()) : current;
+    }
+
+
+    private static <T extends EObject> Optional<T> getLastElement(List<T> collection) {
+        return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
+    }
+
+
+    public static Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
+        return getLastElement(contentsCM)
+                .filter(CamelModel.class::isInstance)
+                .map(CamelModel.class::cast);
     }
     
 }
