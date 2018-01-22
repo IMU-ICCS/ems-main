@@ -41,7 +41,6 @@ public class UtilityGeneratorApplication {
         this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, useCase, nodeCandidates);
     }
 
-
     //todo - canonical model
     public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
@@ -50,6 +49,12 @@ public class UtilityGeneratorApplication {
     public void printConfigurationWithMaximumUtility(){
         this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
     }
+
+    public double getUtilityForCurrentDeployedSolution(){
+        return this.utilityFunctionEvaluator.evaluateActualSolution();
+    }
+
+
 
 
     private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, Map<MetricType,
@@ -93,6 +98,7 @@ public class UtilityGeneratorApplication {
     public double evaluate(IntVar[] newConfigurationInt) {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new RealVar[]{});
     }
+
 
 
     private void createUtilityEvaluator(Map<MetricType, MetricDTO[]> metrics, Collection<Component> actConfiguration,

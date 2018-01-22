@@ -9,6 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cloudiator.client.model.NodeCandidate;
+import eu.melodic.upperware.utilitygenerator.model.SolutionVariable;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +87,13 @@ class EvaluatingUtils {
                 .getType();
     }
 
+
+    static Collection<SolutionVariable> convertSolution(IntVar[] newConfigurationInt){
+
+        return Arrays.stream(newConfigurationInt)
+                .map(intVar -> new SolutionVariable(intVar.getName(), intVar.getValue()))
+                .collect(Collectors.toList());
+    }
 
     static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId,
             IntVar[] newConfigurationInt, RealVar[] newConfigurationReal, List<VariableDTO> variables) {

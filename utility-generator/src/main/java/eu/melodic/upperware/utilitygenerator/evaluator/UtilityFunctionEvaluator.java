@@ -14,6 +14,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.Component;
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.model.SolutionVariable;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,9 @@ public abstract class UtilityFunctionEvaluator {
     Collection<Component> actConfiguration;
     List<MetricDTO> metrics;
 
-    double maxUtility;
-    Collection<Component> configurationWithMaxUtility;
+    private double maxUtility;
+    private Collection<Component> configurationWithMaxUtility;
+    private Collection<SolutionVariable> solutionWithMaxUtility;
 
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
@@ -64,9 +66,8 @@ public abstract class UtilityFunctionEvaluator {
 
         //this.isReconfig = !(cp.getSolution().isEmpty());
 
-        this.isReconfig = false;
+        this.isReconfig = false; //todo get actualDeployment
         if (isReconfig) {
-            log.info("isReconfig is false");
             //Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
             //this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(),getSampleNodeCandidates());
         }
@@ -98,6 +99,7 @@ public abstract class UtilityFunctionEvaluator {
         if (utility >= maxUtility){
             maxUtility = utility;
             configurationWithMaxUtility = newConfiguration;
+            solutionWithMaxUtility = convertSolution(newConfigurationInt);
             log.info("Actualized configuration with Max Utility");
         }
         return utility;
@@ -105,6 +107,10 @@ public abstract class UtilityFunctionEvaluator {
         //return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
         //return evaluate(convertSolutionToNodeCandidatesToTest(newConfigurationInt, newConfigurationReal));
 
+    }
+
+    public double evaluateActualSolution() {
+        return evaluate(actConfiguration);
     }
 
     private Collection<Component> convertSolutionToNodeCandidates(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
@@ -141,6 +147,7 @@ public abstract class UtilityFunctionEvaluator {
 
     public void printConfigurationWithMaximumUtility() {
 
+        log.info("Solution with maximum utility: {}", solutionWithMaxUtility);
         log.info("Configuration with maximum utility: {}", configurationWithMaxUtility);
 
     }
@@ -187,7 +194,5 @@ public abstract class UtilityFunctionEvaluator {
         }
         return Collections.emptyList();
     }
-
-
 
 }
