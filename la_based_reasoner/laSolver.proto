@@ -1,0 +1,17 @@
+syntax = "proto3";
+package eu.melodic.models.interfaces.lasolver;
+
+option java_package = "eu.melodic.models.interfaces.lasolver";
+option optimize_for = SPEED;
+
+option java_multiple_files = true;
+
+message ComputeUtilityRequest {
+  map<string, int64> intVars = 1;
+  map<string, double> realVars = 2;
+  map<string, string> stringVars = 3;
+};
+
+message ComputeUtilityResponse {
+  double utilityValue = 1;
+};
