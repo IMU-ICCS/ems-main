@@ -5,6 +5,13 @@ This file gives an example on how the LA Solver should be interfaced by the
 CP-Generator setting up the variables with their domains, and the constraints 
 over the variables.
 
+This file can be compiled by the following command
+
+g++ -std=c++1z -c InterfaceTest.cpp -I.. -I$LA_FRAMEWORK
+
+Where the last include directory is the location of the LA-Framework that can
+be pulled from https://bitbucket.org/GeirHo/la-framework
+
 Author and Copyright: Geir Horn, 2018
 License: LGPL 3.0
 =============================================================================*/

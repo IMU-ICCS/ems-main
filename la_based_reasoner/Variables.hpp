@@ -23,7 +23,10 @@ License: LGPL 3.0
 #include <string>                             // Standard strings
 #include <type_traits>                        // For meta-programming
 #include <typeinfo>                           // To check types
+#include <typeindex>                          // For storing type info in a map
 #include <any>                                // For any value
+#include <unordered_map>                      // For looking up types of Any
+#include <functional>                         // To convert the any 
 #include <sstream>                            // For error messages
 #include <limits>                             // For numeric limits on types
 #include <list>                               // To register the variables
@@ -53,172 +56,6 @@ using namespace eu::melodic::models::interfaces::lasolver;
 using IntMap = ::google::protobuf::Map< std::string, ::google::protobuf::int64 >; 
 using RealMap = ::google::protobuf::Map< std::string, double >; 
 using StringMap = ::google::protobuf::Map< std::string, std::string >; 
-
-// -----------------------------------------------------------------------------
-// Safe Cast
-// -----------------------------------------------------------------------------
-//
-// When converting one type to another type, one has to ensure that the 
-// conversion is done properly. For instance if one has one small number 
-// stored in a long integer type, it may be possible to store that number in 
-// a short integer event though this is generally not possible. Hence, the 
-// safe cast template is overloaded and enabled based on the type of the 
-// argument value and the return type. This had to be done outside of any 
-// name space and class for the GCC compiler to manage the overloading.
-//
-// When the conversion is to an integral value, it is necessary to check that 
-// the value is small enough to fit correctly in the return type. Otherwise,
-// a domain error will be thrown. Note that since the value will be rounded 
-// this will work both for integral variable values and for real integral 
-// values.
-
-template< class ReturnType, class Argument >
-typename std::enable_if< std::is_integral< ReturnType >::value && 
-												 std::is_arithmetic< Argument >::value, 
-												 ReturnType >::type
-SafeCast( const Argument & GivenValue )
-{
-	if ( ( std::numeric_limits< ReturnType >::min() <= GivenValue ) &&
-	   ( GivenValue <= std::numeric_limits< ReturnType >::max() ) )
-		return boost::numeric_cast< ReturnType >( std::round( GivenValue ) );
-	else
-  {
-		std::ostringstream ErrorMessage;
-		
-		ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
-								 << "The value " << GivenValue << " of the variable is outside "
-								 << " the range of vales [" 
-								 << std::numeric_limits< ReturnType >::min() << ", "
-								 << std::numeric_limits< ReturnType >::max() << "] "
-								 << "that can be stored in " << typeid( ReturnType ).name();
-								 
-	  throw std::domain_error( ErrorMessage.str() );
-	}
-}
-
-// If the return type is a real type and the type of the variable is numeric 
-// then the worst that can happen is a lack of precision, and so the type can 
-// be directly cast into the destination type.
-
-template< class ReturnType, class Argument >
-typename std::enable_if< std::is_floating_point< ReturnType >::value && 
-										     std::is_arithmetic< Argument >::value, 
-												 ReturnType >::type
-SafeCast( const Argument & GivenValue )
-{
-	return boost::numeric_cast< ReturnType >( GivenValue );
-}
-
-// When the return value is convertible to a string, all variable data types 
-// can be used.
-
-template< class ReturnType, class Argument >
-typename std::enable_if< 
-						  std::is_convertible< ReturnType, 
-							 										 std::string >::value, std::string >::type
-SafeCast( const Argument & GivenValue )
-{ 
-	std::ostringstream TheValue;
-	
-	TheValue << std::boolalpha;
-	TheValue << GivenValue;
-	
-	return std::string( TheValue.str() );
-}
-
-// Similarly, if the return type is not a string but the value is a string,
-// then it is a simple matter of using the input operator on an stream.
-
-template< class ReturnType >
-ReturnType SafeCast( const std::string & GivenValue )
-{
-	std::istringstream TheValueString( GivenValue );
-	ReturnType Result;
-	
-	TheValueString >> Result;
-	
-	return Result;
-}
-
-// Boolean values must also be treated separately
-
-template< class ReturnType >
-typename std::enable_if< std::is_arithmetic< ReturnType >::value, 
-												 ReturnType >::type
-SafeCast( const bool GivenValue )
-{
-	return static_cast< ReturnType >( GivenValue );
-}
-
-// Finally, the actual conversion from a standard Any type to a given 
-// destination type is managed by a conversion template function that basically
-// has to test every standard type and do the any cast on the match before 
-// performing the safe conversion to the desired result type.
-
-template< class ReturnType >
-ReturnType Convert( const std::any & TheValue )
-{
-	if( TheValue.type() == typeid( bool ) )
-		return SafeCast< ReturnType >( std::any_cast< bool >( TheValue ) );
-	else if ( TheValue.type() == typeid( char ) )
-		return SafeCast< ReturnType >( std::any_cast< char >( TheValue ) );
-	else if ( TheValue.type() == typeid( char16_t ) )
-		SafeCast< ReturnType >( std::any_cast< char16_t >( TheValue ) );
-	else if ( TheValue.type() == typeid( char32_t ) )
-		return SafeCast< ReturnType >( std::any_cast< char32_t >( TheValue ) );
-	else if ( TheValue.type() == typeid( wchar_t ) )
-		return SafeCast< ReturnType >( std::any_cast< wchar_t >( TheValue ) );
-	else if ( TheValue.type() == typeid( signed char ) )
-		return SafeCast< ReturnType >( std::any_cast< signed char >( TheValue ) );
-	else if ( TheValue.type() == typeid( short int ) )
-		return SafeCast< ReturnType >( std::any_cast< short int >( TheValue ) );
-	else if ( TheValue.type() == typeid( int ) )
-		return SafeCast< ReturnType >( std::any_cast< int >( TheValue ) );
-	else if ( TheValue.type() == typeid( long int ) )
-		return SafeCast< ReturnType >( std::any_cast< long int >( TheValue ) );
-	else if ( TheValue.type() == typeid( long long int ) )
-		return 
-			SafeCast< ReturnType >( std::any_cast< long long int >( TheValue ) );
-	else if ( TheValue.type() == typeid( unsigned char ) )
-		return 
-			SafeCast< ReturnType >( std::any_cast< unsigned char >( TheValue ) );
-	else if ( TheValue.type() == typeid( unsigned short int ) )
-		return 
-		SafeCast< ReturnType >( std::any_cast< unsigned short int >( TheValue ) );
-	else if ( TheValue.type() == typeid( unsigned int ) )
-		return 
-			SafeCast< ReturnType >( std::any_cast< unsigned int >( TheValue ) );
-	else if ( TheValue.type() == typeid( unsigned long int ) )
-		return 
-		SafeCast< ReturnType >( std::any_cast< unsigned long int >( TheValue ) );
-	else if ( TheValue.type() == typeid( unsigned long long int ) )
-		return SafeCast< ReturnType >( 
-										 std::any_cast< unsigned long long int >( TheValue ) );
-	else if ( TheValue.type() == typeid( float ) )
-		return SafeCast< ReturnType >( std::any_cast< float >( TheValue ) );
-	else if ( TheValue.type() == typeid( double ) )
-		return SafeCast< ReturnType >( std::any_cast< double >( TheValue ) );
-	else if ( TheValue.type() == typeid( long double ) )
-		return SafeCast< ReturnType >( std::any_cast< long double >( TheValue ) );
-	else if ( TheValue.type() == typeid( std::string ) )
-	  return SafeCast< ReturnType >( std::any_cast< std::string >( TheValue ) );
-	else
-	{
-		// The value type is not one of the standard types, and in this case 
-		// it is only possible to throw an exception indicating this problem
-		
-		std::ostringstream ErrorMessage;
-		
-		ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
-								 << "The type of the variable value " 
-								 << TheValue.type().name() 
-								 << " cannot be converted to the destination type "
-								 << typeid( ReturnType ).name()
-								 << " by the Convert() function";
-								 
-		 throw std::domain_error( ErrorMessage.str() );
-	}
-}
 
 // -----------------------------------------------------------------------------
 // LA Solver name space
@@ -251,10 +88,115 @@ namespace Configuration
 //
 // Every variable IS a generic value element,  The Value Element keeps the 
 // external name of the variable as an read-only element, and provides the 
-// export function to the Google Protocol Buffer.
+// export function to the Google Protocol Buffer to be implemented by derived 
+// value classes according to their type.
+// 
+// More importantly, the value element also implements a generic way to set 
+// and get the value. This mechanism is based on the Any value type 
+// available (since C++17), which needs to be converted to the actual value 
+// held by the derived value class depending on its type. The semantic of the 
+// Any variable is that the receiver should know the type of variable and 
+// therefore be able to read it back correctly. However, in the "value based"
+// system created here, type may depend on what the compiler assigns. For 
+// instance a value of 10 may fit in all kind of integral types, and even if 
+// the value class is defined for an unsigned it, it may be stored in the Any 
+// variable as an unsigned short, or even char, type. The value element class 
+// must ensure safe conversions between the different types depending on their 
+// genetic class (integral, real, or text strings).
 
 class ValueElement
 {
+private:
+	
+	// The safe conversion functions are depending on the argument type and the 
+	// desired destination type, and implemented as type class dependent 
+	// conversion functions. The interface to these functions is the Convert 
+	// function below.
+	//
+	// When the conversion is to an integral value, it is necessary to check that 
+	// the value is small enough to fit correctly in the return type. Otherwise,
+	// a domain error will be thrown. Note that since the value will be rounded 
+	// this will work both for integral variable values and for real integral 
+	// values.
+
+	template< class ReturnType, class Argument >
+	typename std::enable_if< std::is_integral< ReturnType >::value && 
+													 std::is_arithmetic< Argument >::value, 
+													 ReturnType >::type
+	SafeCast( const Argument & GivenValue )
+	{
+		if ( ( std::numeric_limits< ReturnType >::min() <= GivenValue ) &&
+		   ( GivenValue <= std::numeric_limits< ReturnType >::max() ) )
+			return boost::numeric_cast< ReturnType >( std::round( GivenValue ) );
+		else
+	  {
+			std::ostringstream ErrorMessage;
+			
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+									 << "The value " << GivenValue << " of the variable is outside "
+									 << " the range of vales [" 
+									 << std::numeric_limits< ReturnType >::min() << ", "
+									 << std::numeric_limits< ReturnType >::max() << "] "
+									 << "that can be stored in " << typeid( ReturnType ).name();
+									 
+		  throw std::domain_error( ErrorMessage.str() );
+		}
+	}
+
+	// If the return type is a real type and the type of the variable is numeric 
+	// then the worst that can happen is a lack of precision, and so the type can 
+	// be directly cast into the destination type.
+
+	template< class ReturnType, class Argument >
+	typename std::enable_if< std::is_floating_point< ReturnType >::value && 
+											     std::is_arithmetic< Argument >::value, 
+													 ReturnType >::type
+	SafeCast( const Argument & GivenValue )
+	{
+		return boost::numeric_cast< ReturnType >( GivenValue );
+	}
+
+	// When the return value is convertible to a string, all variable data types 
+	// can be used.
+
+	template< class ReturnType, class Argument >
+	typename std::enable_if< 
+							  std::is_convertible< ReturnType, 
+																		 std::string >::value, std::string >::type
+	SafeCast( const Argument & GivenValue )
+	{ 
+		std::ostringstream TheValue;
+		
+		TheValue << std::boolalpha;
+		TheValue << GivenValue;
+		
+		return std::string( TheValue.str() );
+	}
+
+	// Similarly, if the return type is not a string but the value is a string,
+	// then it is a simple matter of using the input operator on an stream.
+
+	template< class ReturnType >
+	ReturnType SafeCast( const std::string & GivenValue )
+	{
+		std::istringstream TheValueString( GivenValue );
+		ReturnType Result;
+		
+		TheValueString >> Result;
+		
+		return Result;
+	}
+
+	// Boolean values must also be treated separately
+
+	template< class ReturnType >
+	typename std::enable_if< std::is_arithmetic< ReturnType >::value, 
+													 ReturnType >::type
+	SafeCast( const bool GivenValue )
+	{
+		return static_cast< ReturnType >( GivenValue );
+	}
+	
 protected:
 	
 	const std::string Name;
@@ -270,8 +212,84 @@ protected:
 	// must therefore be able to return the value as an Any type.
 	
 	virtual std::any GetValue( void ) = 0;
-		
 	
+	// Finally, the actual conversion from a standard Any type to a given 
+	// destination type is managed by a conversion template function that 
+	// basically has to test every standard type and do the any cast on the 
+	// match before performing the safe conversion to the desired result type.
+  // 
+	// When converting from the Any type, only the type info of the stored 
+	// value is available. Type infos can only be compared using the equality 
+	// operator, which implies a massive if-else chain to test all standard 
+	// types, and one may need to test types that are not frequently used for 
+	// a given problem before coming to the type stored in the Any variable. 
+	//
+	// The alternative approach taken here involves using an unordered map 
+	// providing the conversion of the given and setting this in the value 
+	// whose reference is given as a void pointer to have a unified, type-less 
+	// interface.
+	//
+	// This has a memory overhead, but since the map is static it should be 
+	// shared among all value elements, and hopefully the run-time performance 
+	// offsets the memory penalty taken. In order to help setting up this map 
+	// some macros are defined
+	
+	template< class ReturnType >
+	ReturnType Convert( const std::any & TheValue )
+	{
+		static std::unordered_map< std::type_index, 
+				   std::function< ReturnType(const std::any & Value ) > > 
+    AnyCast( {
+			{ std::type_index(typeid( bool )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< bool >(Value) ); } },
+			{ std::type_index(typeid( char )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< char >(Value) ); } },
+			{ std::type_index(typeid( char16_t )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< char16_t >(Value) ); } },
+		  { std::type_index(typeid( char32_t )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< char32_t >(Value) ); } },
+		  { std::type_index(typeid( wchar_t )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< wchar_t >(Value) ); } },
+		  { std::type_index(typeid( signed char )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< signed char >(Value) ); } },
+		  { std::type_index(typeid( short int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< short int >(Value) ); } },
+		  { std::type_index(typeid( int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< int >(Value) ); } },
+	    { std::type_index(typeid( long int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< long int >(Value) ); } },
+		  { std::type_index(typeid( long long int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< long long int >(Value) ); } },
+		  { std::type_index(typeid( unsigned char )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< unsigned char >(Value) ); } },
+		  { std::type_index(typeid( unsigned short int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< unsigned short int >(Value) ); } },
+		  { std::type_index(typeid( unsigned int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< unsigned int >(Value) ); } },
+		  { std::type_index(typeid( unsigned long int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< unsigned long int >(Value) ); } },
+		  { std::type_index(typeid( unsigned long long int )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< unsigned long long int >(Value) ); } },
+		  { std::type_index(typeid( float )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< float >(Value) ); } },
+		  { std::type_index(typeid( double )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< double >(Value) ); } },
+		  { std::type_index(typeid( long double )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< long double >(Value) ); } },
+		  { std::type_index(typeid( std::string )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< std::string >(Value) ); } }
+		} );
+
+		// The Type ID of the received value will then be looked up in this map,
+		// and if it exist, then the corresponding conversion function will be 
+		// returned to convert the value (that must be given as argument to the 
+		// conversion function). If there is no conversion for a given type, the 
+		// lookup fails with an out of range exception which will be thrown again 
+		// as a more understandable domain error.
+		
+		try
+		{
+			return AnyCast.at( TheValue.type() )(TheValue);
+		}
+		catch ( std::out_of_range & Error )
+		{
+			// The value type is not one of the standard types, and in this case 
+			// it is only possible to throw an exception indicating this problem
+			
+			std::ostringstream ErrorMessage;
+			
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+									 << "The type of the variable value " 
+									 << TheValue.type().name() 
+									 << " cannot be converted to the destination type "
+									 << typeid( ReturnType ).name()
+									 << " by the Convert() function";
+									 
+			 throw std::domain_error( ErrorMessage.str() );
+		}
+	}
+
 public:
 	
 	// The export function takes a reference to the Google Protocol buffer 
