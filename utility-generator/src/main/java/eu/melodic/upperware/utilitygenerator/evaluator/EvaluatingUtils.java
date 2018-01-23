@@ -9,12 +9,12 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cloudiator.client.model.NodeCandidate;
+import eu.melodic.upperware.utilitygenerator.model.IntVar;
+import eu.melodic.upperware.utilitygenerator.model.RealVar;
 import eu.melodic.upperware.utilitygenerator.model.SolutionVariable;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
-import solver.variables.IntVar;
-import solver.variables.RealVar;
 
 import java.util.*;
 import java.util.function.Predicate;

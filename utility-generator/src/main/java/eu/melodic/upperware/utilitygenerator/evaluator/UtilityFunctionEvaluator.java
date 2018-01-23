@@ -12,14 +12,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
-import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
-import eu.melodic.upperware.utilitygenerator.model.SolutionVariable;
-import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.*;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
-import solver.variables.IntVar;
-import solver.variables.RealVar;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,11 +45,7 @@ public abstract class UtilityFunctionEvaluator {
     UtilityFunctionEvaluator(List<VariableDTO> variables, NodeCandidates nodeCandidates) {
 
         this.variables = variables;
-        this.nodeCandidates = nodeCandidates;
-
-        if (isNull(nodeCandidates)){
-            throw new NullPointerException("List of Node Candidates is null");
-        }
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
         log.info("Creating Utility Function Evaluator from Constraint Problem");
         log.info("Variables from CP");

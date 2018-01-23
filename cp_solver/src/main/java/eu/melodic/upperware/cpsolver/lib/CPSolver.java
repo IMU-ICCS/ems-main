@@ -273,11 +273,10 @@ public class CPSolver {
 				maxUtility = 0.0;
 				calculateUtility();
 				while(solver.nextSolution()){
-					i++;
-					log.info("Checking utility of: #" +i +" solution.");
+					log.info("Checking utility of: #{} solution.", i++ );
 					calculateUtility();
 				}
-				log.info("max Utility = " + maxUtility);
+				log.info("max Utility = {}", maxUtility);
 				utilityGenerator.printConfigurationWithMaximumUtility();
 				hasSolutions = (solver.isFeasible() == ESat.TRUE);
 			}
@@ -1219,14 +1218,26 @@ public class CPSolver {
 
 	private double calculateUtility(){
 
-		double utility = utilityGenerator.evaluate(solver.retrieveIntVars());
-		log.info("Utility = " + utility);
+		double utility = utilityGenerator.evaluate(convertToUtilityIntVariable(solver.retrieveIntVars())); //TODO
+		log.info("Utility = {}", utility);
 		if (utility > maxUtility){
 			maxUtility = utility;
-			log.info("Find max utility: " + maxUtility);
+			log.info("Find max utility: {}", maxUtility);
 			saveSolution();
 		}
 		return utility;
+	}
+
+	private eu.melodic.upperware.utilitygenerator.model.IntVar[] convertToUtilityIntVariable(IntVar[] intVars) {
+		return Arrays.stream(intVars)
+				.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
+				.toArray(eu.melodic.upperware.utilitygenerator.model.IntVar[]::new);
+	}
+
+	private eu.melodic.upperware.utilitygenerator.model.RealVar[] convertToUtilityRealVariable(RealVar[] realVars) {
+		return Arrays.stream(realVars)
+				.map(realVar -> new eu.melodic.upperware.utilitygenerator.model.RealVar(realVar.getName(), realVar.getUB()))
+				.toArray(eu.melodic.upperware.utilitygenerator.model.RealVar[]::new);
 	}
 
 	private BoolVar createBoolVar(){
