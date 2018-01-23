@@ -173,7 +173,7 @@ public class CPModelTool {
     public static String toString(Variable var) {
         String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
                 + "  componentId " + var.getComponentId()+ System.lineSeparator()
-                + "  variableTpe " + var.getVariableType()+ System.lineSeparator()
+                + "  variableType " + var.getVariableType()+ System.lineSeparator()
                 + "  vmId " + var.getVmId() + System.lineSeparator()
                 + "  domain " + toString(var.getDomain()) + System.lineSeparator();
         return retString;

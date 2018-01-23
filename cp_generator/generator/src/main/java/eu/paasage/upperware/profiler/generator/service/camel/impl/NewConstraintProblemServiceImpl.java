@@ -11,6 +11,7 @@ import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.metric.MetricModel;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
@@ -28,10 +29,7 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -178,9 +176,25 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
             }
         }
 
+        cp.getConstants().addAll(createConstantsFromMetrics(camelModel));
+
         CPModelTool.printCpModel(cp);
 
         return cp;
+    }
+
+    private List<Constant> createConstantsFromMetrics(CamelModel camelModel){
+        List<Constant> result = new ArrayList<>();
+        MetricModel metricModel = camelModel.getMetricModels().get(0);
+        metricModel.getMetrics()
+                .forEach(metric -> result.add(constantService.createIntegerConstant(0, createConstantNameForMetric(metric.getName()))));
+        metricModel.getMetricInstances()
+                .forEach(metric -> result.add(constantService.createIntegerConstant(0, createConstantNameForMetric(metric.getName()))));
+        return result;
+    }
+
+    private String createConstantNameForMetric(String name){
+        return "METRIC_" + name;
     }
 
     private String getComponentNameForVm(List<InternalComponent> internalComponents, List<Hosting> hostings, VM vm) {

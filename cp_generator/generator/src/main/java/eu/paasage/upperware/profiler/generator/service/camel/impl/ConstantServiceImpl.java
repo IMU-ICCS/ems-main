@@ -13,14 +13,10 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.util.function.Function.identity;
 
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -34,8 +30,7 @@ public class ConstantServiceImpl implements ConstantService {
 
     @Override
     public String getConstantName(VariableType variableType, String vmName, String... suffixes) {
-        //TODO - czy nie trzeba sprawdzic nulla???
-        return Stream.concat(Stream.of(variableType.getLiteral(), vmName, String.valueOf(System.currentTimeMillis())), Stream.of(suffixes)).collect(Collectors.joining("_"));
+        return Stream.concat(Stream.of(variableType.getLiteral(), vmName), Stream.of(suffixes)).collect(Collectors.joining("_"));
     }
 
     @Override
