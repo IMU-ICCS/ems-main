@@ -92,15 +92,14 @@ public final class CdoTool {
     }
 
 
-    private static <T extends EObject> Optional<T> getLastElement(List<T> collection) {
-        return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
-    }
-
-
     public static Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
         return getLastElement(contentsCM)
                 .filter(CamelModel.class::isInstance)
                 .map(CamelModel.class::cast);
     }
-    
+
+
+    private static <T extends EObject> Optional<T> getLastElement(List<T> collection) {
+        return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
+    }
 }
