@@ -51,12 +51,12 @@ public class CPSolver {
 	private RealVar realGoal = null;
 	private Hashtable<String,IntVar> idToIntVar = new Hashtable<>();
 	private Hashtable<String,RealVar> idToRealVar = new Hashtable<>();
-	private ConstraintProblem cp = null;
 	private static final double epsilon = 0.000001d;
 	private static final int LOW_INT_LIMIT = -10000;
 	private static final int UPPER_INT_LIMIT = 100000000;
 	private static final double LOW_REAL_LIMIT = -1000000000.0;
 	private static final double UPPER_REAL_LIMIT = 1000000000.0;
+	private static UtilityFunctionType utilityFunctionType;
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
@@ -86,11 +86,9 @@ public class CPSolver {
 			metrics.put(MetricType.AVG_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)});
 			metrics.put(MetricType.COST_WEIGHT, new MetricDTO[]{new MetricDTO(MetricType.COST_WEIGHT, "",0.5)});
 
-			//for FCR use case
-			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metrics, UtilityFunctionType.FCR,
+			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metrics, utilityFunctionType,
 					nodeCandidates);
 		}
-
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
@@ -119,6 +117,7 @@ public class CPSolver {
 		createMetricVariables(cp.getMetricVariables());
 		createConstraints(cp.getConstraints());
 		createVariablesForUG(cp.getVariables());
+		createUtilityFunctionType(cp);
 
 		//Checking if metric-based solution exists
 		if (timestamp != 0){
@@ -220,6 +219,7 @@ public class CPSolver {
 	 * name for this model is provided as input
 	 */
 	public void readCPModel(String cdoPath, String pathName){
+		ConstraintProblem cp = null;
 		log.info("Reading CP model...");
 		CDOClient cl = new CDOClient();
 		cl.registerPackage(TypesPackage.eINSTANCE);
@@ -1227,6 +1227,17 @@ public class CPSolver {
 			saveSolution();
 		}
 		return utility;
+	}
+
+	private void createUtilityFunctionType(ConstraintProblem cp){
+
+		utilityFunctionType = cp.getConstants().stream()
+				.map(constant -> constant.getType().getName())
+				.filter(s -> s.startsWith("METRIC_"))
+				.map(String::toUpperCase)
+				.map(s -> s.replace("METRIC_", ""))
+				.map(UtilityFunctionType::valueOf)
+				.findFirst().orElse(null);
 	}
 
 	private BoolVar createBoolVar(){

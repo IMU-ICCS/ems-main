@@ -64,7 +64,7 @@ public class UtilityGeneratorApplication {
             case FCR:
                 log.info("Creating utility function for FCR");
                 return new UtilityFunctionEvaluatorFCR(variables, nodeCandidates, metrics);
-            case CE_TRAFFIC:
+            case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
                 return new UtilityFunctionEvaluatorCETraffic(variables, nodeCandidates);
             default: //CAS
@@ -111,7 +111,7 @@ public class UtilityGeneratorApplication {
                         new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
                 break;
 
-            case CE_TRAFFIC:
+            case CETRAFFIC:
                 this.utilityFunctionEvaluator =
                         new UtilityFunctionEvaluatorCETraffic(actConfiguration, isReconfig, costUtilityFunction);
                 break;
