@@ -15,13 +15,8 @@ import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCAS;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCETraffic;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorFCR;
-import eu.melodic.upperware.utilitygenerator.model.Component;
-import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
-import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.*;
 import lombok.extern.slf4j.Slf4j;
-import solver.variables.IntVar;
-import solver.variables.RealVar;
 
 import java.util.Collection;
 import java.util.List;
