@@ -67,14 +67,13 @@ public class CdoServerClientApi implements CdoServerApi {
             );
   }
 
+
   @Override
   public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
-
       CamelModel model = CdoTool.getLastCamelModel(contents)
-              .orElseThrow(() -> new IllegalStateException("Could not find camel model"));
-
+              .orElseThrow(() -> new IllegalStateException(String.format("Could not find Camel Model for resourceName=%s", resourceName)));
       if (model != null) {
         EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
         if (CollectionUtils.isNotEmpty(deploymentModels)) {
@@ -101,12 +100,13 @@ public class CdoServerClientApi implements CdoServerApi {
             int numberOfExecModels = executionModels.size();
 
             for (int j = numberOfExecModels - 1; j > -1; j--) {
-              EList<ExecutionContext> executionContexts = executionModels.get(i).getExecutionContexts();
+              EList<ExecutionContext> executionContexts = executionModels.get(j).getExecutionContexts();
               if (!executionContexts.isEmpty()) {
                 exportModel(model, "~/"+resourceName+".xmi");
                 return executionContexts.get(executionContexts.size()-1).getDeploymentModel();
               }
             }
+      exportModel(model, "~/"+resourceName+".xmi");
 
           }
       }
