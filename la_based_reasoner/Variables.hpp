@@ -31,6 +31,7 @@ License: LGPL 3.0
 #include <limits>                             // For numeric limits on types
 #include <list>                               // To register the variables
 #include <memory>                             // For smart pointers
+#include <mutex>                              // Locks for variable registry
 #include <boost/numeric/conversion/cast.hpp>  // Safe numeric casts
 
 #include "Domains.hpp"            // The domain types of the variables
@@ -346,6 +347,10 @@ public:
 
 class Registry
 {
+private:
+	
+	std::mutex RegistryLock;
+	
 protected:
 	
 	std::list< ValueElement * > DiscreteVariables, 
@@ -366,6 +371,8 @@ protected:
 	inline void RegisterVariable( VariableClass VariableType, 
 																ValueElement * TheVariable )
 	{
+		std::lock_guard< std::mutex > TheLock( RegistryLock );
+		
 		switch ( VariableType )
 		{
 			case VariableClass::Discrete: 
@@ -380,6 +387,8 @@ protected:
 	inline void UnregisterVariable( VariableClass VariableType, 
 																	ValueElement * TheVariable )
 	{
+		std::lock_guard< std::mutex > TheLock( RegistryLock );
+		
 		switch ( VariableType )
 		{
 			case VariableClass::Discrete:
@@ -401,7 +410,7 @@ public:
 	// The default constructor initialises the two lists
 	
 	Registry( void )
-	: DiscreteVariables(), ContinuousVairables()
+	: RegistryLock(), DiscreteVariables(), ContinuousVairables()
 	{ }
 };
 
@@ -421,6 +430,9 @@ public:
 extern std::shared_ptr< Registry > Manager;
 
 // The create manager function must be defined to create the manager instance
+// The idea is that if some other class needs to expand the registry class by 
+// inheriting it, a pointer to the derived object can be created instead of 
+// just a registry pointer.
 
 extern void CreateManager( void );
 
