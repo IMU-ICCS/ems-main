@@ -237,8 +237,8 @@ protected:
 	template< class ReturnType >
 	ReturnType Convert( const std::any & TheValue )
 	{
-		static std::unordered_map< std::type_index, 
-				   std::function< ReturnType(const std::any & Value ) > > 
+		static const std::unordered_map< std::type_index, 
+				         std::function< ReturnType(const std::any & Value ) > > 
     AnyCast( {
 			{ std::type_index(typeid( bool )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< bool >(Value) ); } },
 			{ std::type_index(typeid( char )), [this]( const std::any & Value )->ReturnType{ return SafeCast< ReturnType >( std::any_cast< char >(Value) ); } },
@@ -346,12 +346,10 @@ public:
 
 class Registry
 {
-private:
+protected:
 	
 	std::list< ValueElement * > DiscreteVariables, 
 															ContinuousVairables;
-	
-protected:
 	
 	// The type of the registration can be stated by using on of the provided 
 	// variable classes cont
@@ -397,7 +395,7 @@ protected:
 	
 	template< class DomainType, class Enable >
 	friend class LASolver::Variable;
-	
+
 public:
 	
 	// The default constructor initialises the two lists
@@ -412,8 +410,19 @@ public:
 // class. This registry is the manager of the configuration, and ensures the 
 // proper setting of variable values, evaluation of utility and solution to 
 // continuous variables.
+//
+// However, all the problem variables will be defined as global variable 
+// class, and there is no way to ensure that a global manager object will 
+// be initialised before the variable instances. In order to ensure that 
+// variables can register, the Manager is held in a smart pointer that is 
+// initialised by the first Variable Value class that is instantiated 
+// using the Create Manager function.
 
-extern Registry Manager;
+extern std::shared_ptr< Registry > Manager;
+
+// The create manager function must be defined to create the manager instance
+
+extern void CreateManager( void );
 
 // -----------------------------------------------------------------------------
 // Variable Value
@@ -480,7 +489,9 @@ public:
 	
 	inline VariableValue( const std::string & TheName, ValueType InitialValue )
 	: ValueElement( TheName ), TheValue( InitialValue )
-	{ }
+	{
+		if ( ! Manager ) CreateManager();
+	}
 	
 	// ...and therefore there should not be a default constructor and a 
 	// virtual destructor doing nothing.
@@ -703,7 +714,7 @@ public:
 	  TheDomain( GivenDomain )
 	{
 		this->operator()( InitialValue );
-		Configuration::Manager.RegisterVariable( 
+		Configuration::Manager->RegisterVariable( 
 									 Configuration::Registry::VariableClass::Continuous, this );
 	}
 	
@@ -727,7 +738,7 @@ public:
 	// The destructor is virtual to allow correct destruction of base classes
 	
 	virtual ~Variable()
-	{ Configuration::Manager.UnregisterVariable( 
+	{ Configuration::Manager->UnregisterVariable( 
 									 Configuration::Registry::VariableClass::Continuous, this ); }
 };
 
@@ -791,7 +802,7 @@ public:
 	  TheDomain( GivenDomain )
 	{
 		this->operator()( InitialValue );
-		Configuration::Manager.RegisterVariable( 
+		Configuration::Manager->RegisterVariable( 
 									 Configuration::Registry::VariableClass::Discrete, this );
 	}
 	
@@ -816,7 +827,7 @@ public:
 	// The destructor is virtual to allow correct destruction of base classes
 	
 	virtual ~Variable()
-	{ Configuration::Manager.UnregisterVariable( 
+	{ Configuration::Manager->UnregisterVariable( 
 									 Configuration::Registry::VariableClass::Discrete, this ); }
 };
 
@@ -940,7 +951,7 @@ public:
 		// This discrete set index variable can the be registered with the 
 		// configuration master
 		
-		Configuration::Manager.RegisterVariable( 
+		Configuration::Manager->RegisterVariable( 
 									 Configuration::Registry::VariableClass::Discrete, this );
 	}
 	
@@ -968,7 +979,7 @@ public:
 	// and it checks out with the manager. 
 	
 	virtual ~Variable()
-	{ Configuration::Manager.UnregisterVariable( 
+	{ Configuration::Manager->UnregisterVariable( 
 									 Configuration::Registry::VariableClass::Discrete, this ); }
 };
 
