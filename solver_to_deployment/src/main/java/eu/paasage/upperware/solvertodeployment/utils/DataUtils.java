@@ -316,7 +316,8 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 
 		private static VMKey getInstance(VMInstance vmInstance) {
 			String vmName = removeSuffixFromInstance(vmInstance.getName());
-			String vmType = ((eu.paasage.camel.type.impl.EnumerateValueImpl)vmInstance.getVmTypeValue()).getName();
+			//String vmType = ((eu.paasage.camel.type.impl.EnumerateValueImpl)vmInstance.getVmTypeValue()).getName();
+			String vmType = ((eu.paasage.camel.type.impl.StringsValueImpl)vmInstance.getVmTypeValue()).getValue();
 			return new VMKey(vmName, vmType);
 		}
 
