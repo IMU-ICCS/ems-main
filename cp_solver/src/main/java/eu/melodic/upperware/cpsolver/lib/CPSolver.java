@@ -1241,12 +1241,12 @@ public class CPSolver {
 	}
 
 	private void createUtilityFunctionType(ConstraintProblem cp){
-
+		String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
 		utilityFunctionType = cp.getConstants().stream()
 				.map(constant -> constant.getType().getName())
-				.filter(s -> s.startsWith("METRIC_"))
+				.filter(s -> s.startsWith(utilityFunctionTypePrefix))
 				.map(String::toUpperCase)
-				.map(s -> s.replace("METRIC_", ""))
+				.map(s -> s.replace(utilityFunctionTypePrefix, ""))
 				.map(UtilityFunctionType::valueOf)
 				.findFirst().orElse(null);
 	}
