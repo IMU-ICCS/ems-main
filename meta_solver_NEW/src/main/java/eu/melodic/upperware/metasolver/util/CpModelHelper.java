@@ -52,10 +52,18 @@ import org.eclipse.net4j.util.container.IManagedContainer;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 //import eu.paasage.upperware.metamodel.cp.DeltaUtility;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.Variable;
 //import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.types.*;
+//import eu.paasage.upperware.metamodel.types.*;
+import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
+import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
+import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
+import eu.paasage.upperware.metamodel.types.LongValueUpperware;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
+import eu.paasage.upperware.metamodel.types.TypesFactory;
 
 // From: eu.paasage.mddb.cdo.client.CDOClient
 import org.eclipse.emf.cdo.eresource.EresourcePackage;
@@ -155,24 +163,44 @@ public class CpModelHelper {
 			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
 			
 			// check if all metric variable names in CP model exist in 'metricValues' map
-			EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
+			/*EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
 			boolean allfound = true;
 			for (MetricVariable mv : cpMetricVarList) {
 				log.info("CpModelHelper.updateCpModelWithMetricValues():  Found Metric Variable: id={}, type={}", mv.getId(), mv.getType());
 				if (!metricValues.containsKey(mv.getId())) {
 					log.error("CpModelHelper.updateCpModelWithMetricValues(): NOT FOUND Metric Variable: id={}", mv.getId());
 					allfound = false;
-			//XXX: -OR- ???
-			// any missing variables must be added with a default value (WHERE CAN WE FIND 'default metric variable values'??)
+					//XXX: -OR- ???
+					// any missing variables must be added with a default value (WHERE CAN WE FIND 'default metric variable values'??)
 				}
 			}
 			if (!allfound) {
 				log.debug("CpModelHelper.updateCpModelWithMetricValues(): END: helper-id={}, message=Missing MVV", id);
 				return false;
-			}
+			}*/
 			
-			// create new 'solution' in DeltaUtility and add a timestamp
 			// add metric variable values for all (extracted) metric variable names
+			//XXX: R1.5 hack: metric variable are stored as Constants in CP model, with their Id's prefixed with 'METRIC_'
+			EList<Constant> cpConstList = cpModel.getConstants();
+			for (Constant c : cpConstList) {
+				String id = c.getId().trim();
+				if (id.startsWith("METRIC_") && !id.startsWith("METRIC_UTILITYTYPE_")) {
+					String mvName = id.substring("METRIC_".intern().length());
+					String mvValue = metricValues.get(mvName);
+					if (mvValue!=null && !mvValue.isEmpty()) {
+						BasicTypeEnum type = c.getType();
+						NumericValueUpperware newVal = null;
+						switch (type) {
+							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue(Integer.parseInt(mvValue)); break;
+							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue(Float.parseFloat(mvValue)); break;
+							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue(Double.parseDouble(mvValue)); break;
+							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue(Long.parseLong(mvValue)); break;
+						}
+						c.setValue(newVal);
+					}
+				}
+			}
+
 			
 			// commit changes
 			transaction.commit();
