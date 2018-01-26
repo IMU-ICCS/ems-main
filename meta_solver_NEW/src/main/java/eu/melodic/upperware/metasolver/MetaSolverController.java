@@ -1,0 +1,121 @@
+/*
+ * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.upperware.metasolver;
+
+import eu.melodic.models.commons.NotificationResult;
+import eu.melodic.models.commons.NotificationResultImpl;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
+
+import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementRequest;
+import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementRequestImpl;
+import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
+import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponseImpl;
+
+import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationRequest;
+import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationRequestImpl;
+import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
+import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponseImpl;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import javax.ws.rs.BadRequestException;
+
+import static java.lang.String.format;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+@Slf4j
+@RestController
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class MetaSolverController {
+
+  private Coordinator coordinator;
+  
+  @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
+  public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request) {
+	// Get information from request
+    String applicationId = request.getApplicationId();
+    String cdoModelsPath = request.getCdoModelsPath();
+    String requestUuid = request.getWatermark().getUuid();
+    log.info("Received request: " +applicationId +" " + cdoModelsPath + " " + requestUuid );
+	
+	// Select suitable solver
+	log.info("Selecting suitable solver: ");
+	ConstraintProblemEnhancementResponse.DesignatedSolverType selectedSolver = coordinator.selectSolver(applicationId, cdoModelsPath);
+	log.info("Selecting suitable solver: "+selectedSolver);
+	
+	// Set metric values in CP model
+	coordinator.setMetricValuesInCpModel(applicationId, cdoModelsPath);
+	
+	// Prepare and return response
+	NotificationResult notificationResult = new NotificationResultImpl();
+	notificationResult.setStatus( NotificationResult.StatusType.SUCCESS );
+	
+	ConstraintProblemEnhancementResponseImpl response = new ConstraintProblemEnhancementResponseImpl();
+	response.setApplicationId( applicationId );
+	response.setResult( notificationResult );
+	response.setDesignatedSolver( selectedSolver );
+	response.setWatermark( prepareWatermark(requestUuid) );
+	
+	return response;
+  }
+
+  @RequestMapping(value = "/solutionEvaluation", method = POST)
+  public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request) {
+	// Get information from request
+    String applicationId = request.getApplicationId();
+    String cdoModelsPath = request.getCdoModelsPath();
+    String requestUuid = request.getWatermark().getUuid();
+    log.info("Received request: " +applicationId +" " + cdoModelsPath + " " + requestUuid );
+	
+	// Evaluate new solution
+	log.info("Evaluate current sulution: ");
+	SolutionEvaluationResponse.EvaluationResultType solutionEvaluation = coordinator.evaluateSolution(applicationId, cdoModelsPath);
+	log.info("Evaluate current sulution: "+solutionEvaluation);
+	
+	// Prepare and return response
+	SolutionEvaluationResponseImpl response = new SolutionEvaluationResponseImpl();
+	response.setApplicationId( applicationId );
+	response.setEvaluationResult( solutionEvaluation );
+	response.setWatermark( prepareWatermark(requestUuid) );
+	
+	return response;
+  }
+
+  @RequestMapping(value = "/health", method = GET)
+  public void health() {
+  }
+
+  private Watermark prepareWatermark(String uuid) {
+    Watermark watermark = new WatermarkImpl();
+    watermark.setUser("metaSolver");
+    watermark.setSystem("metaSolver");
+    watermark.setDate(new Date());
+    watermark.setUuid(uuid);
+    return watermark;
+  }
+
+  @ExceptionHandler
+  @ResponseStatus(BAD_REQUEST)
+  public String handleException(BadRequestException exception) {
+    log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
+    return exception.getMessage();
+  }
+
+}
