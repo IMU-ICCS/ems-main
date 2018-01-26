@@ -20,6 +20,7 @@ License: LGPL 3.0
 
 #include "Domains.hpp"     // The supported domain types
 #include "Variables.hpp"   // The solver variables
+#include "Metrics.hpp"     // The measured quantities
 #include "Constraints.hpp" // Constraint management
 
 // It is BAD practice of pre-defining the name spaces, and it is only used here
@@ -130,7 +131,27 @@ int main(int argc, char **argv)
 	// subintervals. As an example, consider if 45 was given as initial value in 
 	// this example. It does not belong to any of the subintervals and a random 
 	// initialisation would have been made instead.
-
+  //
+	// ---------------------------------------------------------------------------
+	// Metrics
+	// ---------------------------------------------------------------------------
+	//
+  // A metric is based on monitored information and it is therefore assigned a 
+	// value by the event processing system, and not by the solver. It must have 
+	// a value type (integer, double...) capable of holding the value measured. 
+	// For instance, average CPU load will typically be a real value (double) 
+	// whereas the number of users will be an integral value large enough to 
+	// hold the maximum number of users the system can handle.
+	//
+	// Since it is not possible to confine the measurements, the metric has no 
+	// domain. However, it does need an initial value since there is no way to 
+	// guess this before the first measurement arrives. The name of the metric 
+	// variable should equal the name of the topic under which the measurement 
+	// event for this metric is published. The metric can be used as any variable 
+	// in the constraints and in the utility function.
+	
+	Metric< unsigned int > Users( "SystemUsers", 2 );
+	
 	// ---------------------------------------------------------------------------
 	// Constraints
 	// ---------------------------------------------------------------------------
@@ -189,6 +210,7 @@ int main(int argc, char **argv)
 	Eq_Constraint( FirstVariable() - SecondVariable() - 9 );
 	InEq_Constraint( KroneckerDelta( Provider(), "AWS") * 
 									 (FirstVariable() - 20) );
+	InEq_Constraint( FirstVariable() - Users() );
 	
 	return EXIT_SUCCESS;
 }

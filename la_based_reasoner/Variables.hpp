@@ -369,8 +369,8 @@ protected:
 	// The registration and removal of variables is done from the
 	// constructor and destructor calling the following functions.
 	
-	inline void RegisterVariable( VariableClass VariableType, 
-																ValueElement * TheVariable )
+	virtual void RegisterVariable( VariableClass VariableType, 
+																 ValueElement * TheVariable )
 	{
 		std::lock_guard< std::mutex > TheLock( RegistryLock );
 		
@@ -385,8 +385,8 @@ protected:
 		}
 	}
 	
-	inline void UnregisterVariable( VariableClass VariableType, 
-																	ValueElement * TheVariable )
+	virtual void UnregisterVariable( VariableClass VariableType, 
+																	 ValueElement * TheVariable )
 	{
 		std::lock_guard< std::mutex > TheLock( RegistryLock );
 		
@@ -401,7 +401,7 @@ protected:
 		}
 	}
 	
-	// Only the variable class is allowed to access these functions
+	// Only the variable class is allowed to access these functions directly
 	
 	template< class DomainType, class Enable >
 	friend class LASolver::Variable;
@@ -412,6 +412,12 @@ public:
 	
 	Registry( void )
 	: RegistryLock(), DiscreteVariables(), ContinuousVairables()
+	{ }
+	
+	// It is necessary to provide a virtual destructor because there are virtual 
+	// variables.
+	
+	virtual ~Registry()
 	{ }
 };
 

@@ -51,8 +51,12 @@ namespace LASolver::Constraints
 
 ==============================================================================*/
 //
-// The registry maintains two lists of constraints - one for equality 
-// constraints and one for inequality constraints. 
+// The registry maintains a list of constraints and provides a function to
+// evaluate them. One could think that the constraints would be mapped to 
+// a test result, i.e. a boolean value. However, some solvers estimates the 
+// gradient of the constraint values in order to direct the search, and 
+// the constraint functions should therefore be evaluated, and the test 
+// should be done by the solver when needed.
 
 class Registry
 {
@@ -81,7 +85,6 @@ public:
 		
 		return Result;
 	}
-	
 };
 
 // There are two instances of the registry, one for the equality constraints and 
