@@ -353,7 +353,7 @@ private:
 	std::mutex RegistryLock;
 	
 	std::list< ValueElement * > DiscreteVariables, 
-															ContinuousVairables;
+															ContinuousVariables;
 
 protected:
 	
@@ -380,7 +380,7 @@ protected:
 				DiscreteVariables.push_back( TheVariable );
 				break;
 			case VariableClass::Continuous:
-				ContinuousVairables.push_back( TheVariable );
+				ContinuousVariables.push_back( TheVariable );
 				break;
 		}
 	}
@@ -396,7 +396,7 @@ protected:
 				DiscreteVariables.remove( TheVariable );
 				break;
 			case VariableClass::Continuous:
-				ContinuousVairables.remove( TheVariable );
+				ContinuousVariables.remove( TheVariable );
 				break;
 		}
 	}
@@ -408,10 +408,24 @@ protected:
 
 public:
 	
+	// The registry can export the set of variable values as the current 
+	// configuration.
+	
+	inline void Export( ComputeUtilityRequest & Configuration ) const
+	{
+		for( auto TheVariable = DiscreteVariables.begin(); 
+							TheVariable != DiscreteVariables.end(); ++TheVariable )
+			(*TheVariable)->Export( Configuration );
+		
+		for( auto TheVariable = ContinuousVariables.begin(); 
+							TheVariable != ContinuousVariables.end(); ++TheVariable )
+			(*TheVariable)->Export( Configuration );
+	}
+	
 	// The default constructor initialises the two lists
 	
 	Registry( void )
-	: RegistryLock(), DiscreteVariables(), ContinuousVairables()
+	: RegistryLock(), DiscreteVariables(), ContinuousVariables()
 	{ }
 	
 	// It is necessary to provide a virtual destructor because there are virtual 
