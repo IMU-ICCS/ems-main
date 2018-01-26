@@ -55,6 +55,16 @@ protected:
 	
 public:
 	
+	// The Metric values can also be added to the configuration in the same way 
+	// as variables.
+	
+	inline void Export( ComputeUtilityRequest & Configuration ) const
+	{
+		for( auto TheMetric = TheMetrics.begin(); 
+				      TheMetric != TheMetrics.end(); ++TheMetric )
+			(*TheMetric)->Export( Configuration );
+	}
+	
 	// The default constructor simply initialises the stored list.
 	
 	MetricRegistry( void )
