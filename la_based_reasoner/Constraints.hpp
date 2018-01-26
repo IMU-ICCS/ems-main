@@ -14,6 +14,7 @@ License: LGPL 3.0
 #include <functional>        // To store the constraint functions 
 #include <list>              // The functions are kept in lists
 #include <vector>            // To evaluate all constraints at once
+#include <memory>            // For shared pointers
 
 // -----------------------------------------------------------------------------
 // Kronecker's Delta function
@@ -83,8 +84,18 @@ public:
 	
 };
 
-extern Registry Equality;
-extern Registry Inequality;
+// There are two instances of the registry, one for the equality constraints and 
+// one for the inequality constraints. These could be static, global variables,
+// but there is no way to ensure that they are instantiated before the first 
+// variable is instantiated, as they have to be. For this reason they are kept
+// as shared pointers that will be initialised by the constructor of the 
+// Variable Value object. It is done from the variable since the variables must 
+// be defined before the constraints since the constraints involve the 
+// variables. Thus, instantiating the constraint registries when the first 
+// variable is created will ensure that they exist when the first constraint is 
+// defined.
+
+extern std::shared_ptr< Registry > Equality, Inequality;
 	
 }  // Name space LA Solver
 //
@@ -100,7 +111,7 @@ extern Registry Inequality;
 // applied first to be replaced by the correct C++ form for defining the 
 // constraint functions.
 
-#define Eq_Constraint( FunctionalForm )   ( LASolver::Constraints::Equality.New( [&](void)->double{ return FunctionalForm; } ) )
-#define InEq_Constraint( FunctionalForm ) ( LASolver::Constraints::Inequality.New( [&](void)->double{ return FunctionalForm; } ) )
+#define Eq_Constraint( FunctionalForm )   ( LASolver::Constraints::Equality->New( [&](void)->double{ return FunctionalForm; } ) )
+#define InEq_Constraint( FunctionalForm ) ( LASolver::Constraints::Inequality->New( [&](void)->double{ return FunctionalForm; } ) )
 
 #endif // LA_SOLVER_CONSTRAINTS

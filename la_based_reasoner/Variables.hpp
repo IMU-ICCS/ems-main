@@ -35,6 +35,7 @@ License: LGPL 3.0
 #include <boost/numeric/conversion/cast.hpp>  // Safe numeric casts
 
 #include "Domains.hpp"            // The domain types of the variables
+#include "Constraints.hpp"        // To initialise the constraint registries
 #include "RandomGenerator.hpp"    // To select random numbers over domains
 
 // -----------------------------------------------------------------------------
@@ -351,10 +352,10 @@ private:
 	
 	std::mutex RegistryLock;
 	
-protected:
-	
 	std::list< ValueElement * > DiscreteVariables, 
 															ContinuousVairables;
+
+protected:
 	
 	// The type of the registration can be stated by using on of the provided 
 	// variable classes cont
@@ -497,12 +498,20 @@ public:
 		}
 	}
 	
-	// There must be an initial value given for the value at construction time...
+	// There must be an initial value given for the variable at construction time,
+	// and if the configuration manager has not been instantiated, this is the 
+	// first variable being defined and it should initialise the variable manager 
+	// and the constraint registries for both equality and inequality constraints.
 	
 	inline VariableValue( const std::string & TheName, ValueType InitialValue )
 	: ValueElement( TheName ), TheValue( InitialValue )
 	{
-		if ( ! Manager ) CreateManager();
+		if ( ! Manager ) 
+		{
+			CreateManager();
+			Constraints::Inequality = std::make_shared< Constraints::Registry >();
+			Constraints::Equality   = std::make_shared< Constraints::Registry >();
+		}
 	}
 	
 	// ...and therefore there should not be a default constructor and a 
@@ -884,18 +893,31 @@ public:
 	static constexpr bool Continuous = true;
 	
 	using Index = typename Domain::Set< Domain::Interval< ValueType > >::Index;
-	using value_type = Index;
-	
-	// The value return function is directly re-used
-	
-	using Configuration::Variable< Index >::operator();
+	using value_type = ValueType;
 	
 	// Since the value in the configuration is only reported by the continuous 
 	// sub-variable, the export function will do nothing.
 	
   virtual void Export( ComputeUtilityRequest & Configuration ) const override
   { }
-  
+
+  // The value return function is returning the value held for the selected 
+	// sub interval since that is the true value of the variable. This because 
+	// the variable will be used in constraints, and at that point the internal 
+	// interval variable is not defined, i.e. it has no external presence, but 
+	// it is the value that should be used when evaluating the constraints.
+	
+	inline ValueType operator()( void )
+	{
+		return IntervalVariable->operator()();
+	}
+	  
+  // It should be noted that this variable be seen internally to the solver 
+  // as a discrete variable. Hence the solver will never assign a continuous 
+  // value to this variable. The solver will see the interval variable as any 
+  // other interval variable and assign values directly to this. It is therefore
+  // no need to provide a function to set the continuous value.
+	// 
   // Setting the value means selecting an index in the range [0,..,Size) and
   // the operator for setting values simply checks this condition on the given 
   // value. If it is an allowed subinterval, the value is recorded as a value 
