@@ -75,6 +75,9 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 		log.debug("CDODatabaseProxy - saveModels - Storing Models ");
 		String cpPath = CDO_SERVER_PATH + pcId;
 
+		cdoClient.exportModel(pc, "/logs/pc_model_"+cpPath+".xmi");
+		cdoClient.exportModel(cp, "/logs/cp_model_"+cpPath+".xmi");
+
 		cdoClient.storeModels(Arrays.asList(pc, cp), cpPath);
 		log.debug("CDODatabaseProxy - saveModels - Models stored! ");
 
