@@ -26,69 +26,17 @@ namespace LASolver
 
 ==============================================================================*/
 //
-// The registry stores pointers to the metrics, and export the metric values 
-// to the configuration. The metric pointers are therefore taken to be pointers 
-// to value elements, which is a base class of the various variables.
-
-class MetricRegistry
-{
-private:
-	
-	std::list< Configuration::ValueElement * > TheMetrics;
-	
-protected:
-	
-	virtual void RegisterMetric( Configuration::ValueElement * TheMetric )
-	{
-		TheMetrics.push_back( TheMetric );
-	}
-	
-	virtual void UnregisterMetric( Configuration::ValueElement * TheMetric )
-	{
-		TheMetrics.remove( TheMetric );
-	}
-	
-	// The Metric class is allowed to use these to register.
-	
-	template< class ValueType >
-	friend class Metric;
-	
-public:
-	
-	// The Metric values can also be added to the configuration in the same way 
-	// as variables.
-	
-	inline void Export( ComputeUtilityRequest & Configuration ) const
-	{
-		for( auto TheMetric = TheMetrics.begin(); 
-				      TheMetric != TheMetrics.end(); ++TheMetric )
-			(*TheMetric)->Export( Configuration );
-	}
-	
-	// The default constructor simply initialises the stored list.
-	
-	MetricRegistry( void )
-	: TheMetrics()
-	{ }
-	
-	// The registry has a virtual destructor because the class has virtual 
-	// functions and then a virtual destructor allows the correct destruction of 
-	// bases classes if other classes are derived from this class.
-	
-	virtual ~MetricRegistry()
-	{ }
-};
-
-// The registry is held by a global smart pointer because it is not known 
+// The metric registry is nothing but an instance of the variable registry, 
+// and it is also held by a global smart pointer because it is not known 
 // when an object would be instantiated by the compiler. It could be before the
 // first metric definition, but the consequences can be grave if the metric 
 // registry does not exists when the first metric is created.
 
-extern std::shared_ptr< MetricRegistry > Metrics;
+extern std::shared_ptr< Configuration::Registry > Metrics;
 
 // There is a global function to initialise this pointer and create the 
 // registry object. It is done this way to allow derived classes to define 
-// a different creation function.
+// a different creation function for a derived metrics registry class.
 
 extern void CreateMetricsRegistry( void );
 
@@ -112,7 +60,7 @@ public:
 	{
 		if ( ! Metrics ) CreateMetricsRegistry();
 		
-		Metrics->RegisterMetric( this );
+		Metrics->NewVariable( this );
 	}
 	
 	// The default constructor is deleted
@@ -122,9 +70,7 @@ public:
 	// The destructor is virtual because the variable is polymorphic 
 	
 	virtual ~Metric()
-	{
-		Metrics->UnregisterMetric( this );
-	}
+	{	Metrics->RemoveVariable( this ); }
 };
 
 

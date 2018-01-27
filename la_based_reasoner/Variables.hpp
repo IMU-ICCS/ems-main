@@ -29,9 +29,7 @@ License: LGPL 3.0
 #include <functional>                         // To convert the any 
 #include <sstream>                            // For error messages
 #include <limits>                             // For numeric limits on types
-#include <list>                               // To register the variables
 #include <memory>                             // For smart pointers
-#include <mutex>                              // Locks for variable registry
 #include <boost/numeric/conversion/cast.hpp>  // Safe numeric casts
 
 #include "Domains.hpp"            // The domain types of the variables
@@ -337,69 +335,22 @@ public:
 // -----------------------------------------------------------------------------
 //
 // All variables are recorded depending on whether they are continuous or 
-// discrete, and these two lists are maintained by the registry class. Only 
-// the variables are allowed to use the registry from their constructors.
-//
-// The variables are stored according to the type of variables:
-//
-//   Discrete variables are typically defined over a set of distinct values
-//   Continuous variables are typically continuous intervals over the type 
-//      of the deliverable.
+// discrete, and these two lists are maintained by the registry class. Since 
+// instances of this class will know the variables, this class will typically 
+// be the base class for solver classes that assign values in various ways to 
+// the variables. It is therefore a pure virtual interface describing the 
+// fundamental operations for registering and removing variables.
 
 class Registry
 {
-private:
-	
-	std::mutex RegistryLock;
-	
-	std::list< ValueElement * > DiscreteVariables, 
-															ContinuousVariables;
-
 protected:
 	
-	// The type of the registration can be stated by using on of the provided 
-	// variable classes cont
-	
-	enum class VariableClass
-	{
-		Discrete,
-		Continuous
-	};
-	
-	// The registration and removal of variables is done from the
+	// The registration and removal of variables is done from the variable's
 	// constructor and destructor calling the following functions.
 	
-	virtual void RegisterVariable( VariableClass VariableType, 
-																 ValueElement * TheVariable )
-	{
-		std::lock_guard< std::mutex > TheLock( RegistryLock );
-		
-		switch ( VariableType )
-		{
-			case VariableClass::Discrete: 
-				DiscreteVariables.push_back( TheVariable );
-				break;
-			case VariableClass::Continuous:
-				ContinuousVariables.push_back( TheVariable );
-				break;
-		}
-	}
+	virtual void NewVariable( ValueElement * TheVariable ) = 0;
 	
-	virtual void UnregisterVariable( VariableClass VariableType, 
-																	 ValueElement * TheVariable )
-	{
-		std::lock_guard< std::mutex > TheLock( RegistryLock );
-		
-		switch ( VariableType )
-		{
-			case VariableClass::Discrete:
-				DiscreteVariables.remove( TheVariable );
-				break;
-			case VariableClass::Continuous:
-				ContinuousVariables.remove( TheVariable );
-				break;
-		}
-	}
+	virtual void RemoveVariable( ValueElement * TheVariable ) = 0;
 	
 	// Only the variable class is allowed to access these functions directly
 	
@@ -407,27 +358,7 @@ protected:
 	friend class LASolver::Variable;
 
 public:
-	
-	// The registry can export the set of variable values as the current 
-	// configuration.
-	
-	inline void Export( ComputeUtilityRequest & Configuration ) const
-	{
-		for( auto TheVariable = DiscreteVariables.begin(); 
-							TheVariable != DiscreteVariables.end(); ++TheVariable )
-			(*TheVariable)->Export( Configuration );
 		
-		for( auto TheVariable = ContinuousVariables.begin(); 
-							TheVariable != ContinuousVariables.end(); ++TheVariable )
-			(*TheVariable)->Export( Configuration );
-	}
-	
-	// The default constructor initialises the two lists
-	
-	Registry( void )
-	: RegistryLock(), DiscreteVariables(), ContinuousVariables()
-	{ }
-	
 	// It is necessary to provide a virtual destructor because there are virtual 
 	// variables.
 	
@@ -435,27 +366,24 @@ public:
 	{ }
 };
 
-// There is a global instance of this registry for the variables to use when 
+// There are two global instance of this registry for the variables to use when 
 // a variable is defined to allow each variable to register in the appropriate 
-// class. This registry is the manager of the configuration, and ensures the 
-// proper setting of variable values, evaluation of utility and solution to 
-// continuous variables.
+// class: Continuous or discrete. 
 //
 // However, all the problem variables will be defined as global variable 
-// class, and there is no way to ensure that a global manager object will 
+// class, and there is no way to ensure that a global registry object will 
 // be initialised before the variable instances. In order to ensure that 
-// variables can register, the Manager is held in a smart pointer that is 
-// initialised by the first Variable Value class that is instantiated 
-// using the Create Manager function.
+// variables can register, the registries are held in a smart pointers that are 
+// initialised by the first Variable Value class that is instantiated.
 
-extern std::shared_ptr< Registry > Manager;
+extern std::shared_ptr< Registry > DiscreteVariables, ContinuousVariables;
 
-// The create manager function must be defined to create the manager instance
-// The idea is that if some other class needs to expand the registry class by 
+// The create registries function must be defined to create the instances.
+// The idea is that when some other class implements the registry class by 
 // inheriting it, a pointer to the derived object can be created instead of 
 // just a registry pointer.
 
-extern void CreateManager( void );
+extern void CreateRegistries( void );
 
 // -----------------------------------------------------------------------------
 // Variable Value
@@ -526,9 +454,9 @@ public:
 	inline VariableValue( const std::string & TheName, ValueType InitialValue )
 	: ValueElement( TheName ), TheValue( InitialValue )
 	{
-		if ( ! Manager ) 
+		if ( ! DiscreteVariables ) 
 		{
-			CreateManager();
+			CreateRegistries();
 			Constraints::Inequality = std::make_shared< Constraints::Registry >();
 			Constraints::Equality   = std::make_shared< Constraints::Registry >();
 		}
@@ -755,8 +683,7 @@ public:
 	  TheDomain( GivenDomain )
 	{
 		this->operator()( InitialValue );
-		Configuration::Manager->RegisterVariable( 
-									 Configuration::Registry::VariableClass::Continuous, this );
+		Configuration::ContinuousVariables->NewVariable( this );
 	}
 	
 	// It is also possible to define the variable without the initial value, and
@@ -779,8 +706,7 @@ public:
 	// The destructor is virtual to allow correct destruction of base classes
 	
 	virtual ~Variable()
-	{ Configuration::Manager->UnregisterVariable( 
-									 Configuration::Registry::VariableClass::Continuous, this ); }
+	{ Configuration::ContinuousVariables->RemoveVariable( this ); }
 };
 
 // -----------------------------------------------------------------------------
@@ -843,8 +769,7 @@ public:
 	  TheDomain( GivenDomain )
 	{
 		this->operator()( InitialValue );
-		Configuration::Manager->RegisterVariable( 
-									 Configuration::Registry::VariableClass::Discrete, this );
+		Configuration::DiscreteVariables->NewVariable( this );
 	}
 	
 	// If the initial value is not given it is drawn as a random element of the 
@@ -868,8 +793,7 @@ public:
 	// The destructor is virtual to allow correct destruction of base classes
 	
 	virtual ~Variable()
-	{ Configuration::Manager->UnregisterVariable( 
-									 Configuration::Registry::VariableClass::Discrete, this ); }
+	{ Configuration::DiscreteVariables->RemoveVariable( this ); }
 };
 
 // -----------------------------------------------------------------------------
@@ -1005,8 +929,7 @@ public:
 		// This discrete set index variable can the be registered with the 
 		// configuration master
 		
-		Configuration::Manager->RegisterVariable( 
-									 Configuration::Registry::VariableClass::Discrete, this );
+		Configuration::DiscreteVariables->NewVariable( this );
 	}
 	
 	// In the case a random initialisation is desired in the first place, a 
@@ -1033,8 +956,7 @@ public:
 	// and it checks out with the manager. 
 	
 	virtual ~Variable()
-	{ Configuration::Manager->UnregisterVariable( 
-									 Configuration::Registry::VariableClass::Discrete, this ); }
+	{ Configuration::DiscreteVariables->RemoveVariable( this ); }
 };
 
 
