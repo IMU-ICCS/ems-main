@@ -32,6 +32,7 @@ import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.common.util.EList;
@@ -55,6 +56,7 @@ import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.Variable;
+import eu.paasage.upperware.metamodel.cp.Solution;
 //import eu.paasage.upperware.metamodel.cp.*;
 //import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
@@ -138,11 +140,10 @@ public class CpModelHelper {
 	
 	public CpModelHelper() {
 		id = ++counter;
-		log.error("CpModelHelper.<init>():  ** NEW INSTANCE #{} **", id);
+		//log.debug("CpModelHelper.<init>():  ** NEW INSTANCE #{} **", id);
 	}
 	
 	public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String,String> metricValues) {
-		log.error("CpModelHelper.updateCpModelWithMetricValues(): *** NOT IMPLEMENTED #{} ***", id);
 		log.debug("CpModelHelper.updateCpModelWithMetricValues(): BEGIN: helper-id={}, app-id={}, cp-path={}, mvv={}", id, applicationId, cpModelPath, metricValues);
 		
 		// lock resource
@@ -179,6 +180,7 @@ public class CpModelHelper {
 				return false;
 			}*/
 			
+			
 			// add metric variable values for all (extracted) metric variable names
 			//XXX: R1.5 hack: metric variable are stored as Constants in CP model, with their Id's prefixed with 'METRIC_'
 			EList<Constant> cpConstList = cpModel.getConstants();
@@ -210,22 +212,80 @@ public class CpModelHelper {
 			return false;
 		} finally {
 			if (transaction!=null) transaction.rollback();
+			
+			// release resource
+			synchronized (LOCKS) {
+				LOCKS.remove(cpModelPath);
+			}
+			log.debug("CpModelHelper.updateCpModelWithMetricValues(): RELEASED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
 		}
-		
-		// release resource
-		synchronized (LOCKS) {
-			LOCKS.remove(cpModelPath);
-		}
-		log.debug("CpModelHelper.updateCpModelWithMetricValues(): RELEASED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
 		
 		// return timestamp
 		log.debug("CpModelHelper.updateCpModelWithMetricValues(): END: helper-id={}", id);
 		return true;
 	}
 	
+	public double[] getSolutionUtilities(String applicationId, String cpModelPath) {
+		log.debug("CpModelHelper.getSolutionUtilities(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+		
+		// lock resource
+		synchronized (LOCKS) {
+			if (! LOCKS.contains(cpModelPath)) {
+				LOCKS.add(cpModelPath);
+			} else
+				//throw new ConcurrentAccessException("CpModelHelper.getSolutionUtilities: Resource is locked: "+cpModelPath);
+				return null;
+		}
+		log.debug("CpModelHelper.getSolutionUtilities(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
+		
+		CDOView view = null;
+		try {
+			// retrieve CP model (open view)
+			view = cdoSession.openView();
+			CDOResource resource = view.getResource(cpModelPath);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			
+			// get solutions list
+			EList<Solution> solutions = cpModel.getSolution();
+			int size = solutions.size();
+			
+			if (size==0) return null;	// No solutions found
+			
+			double[] retUv = new double[2];
+			
+			// get deployed solution's utility value, if a deployed solution exists
+			if (size>1) {
+				Solution depSol = solutions.get( size-2 );
+				retUv[0] = ((DoubleValueUpperware)depSol.getUtilityValue()).getValue();
+			} else 
+				retUv[0] = -1;
+			
+			// get new solution's utility value
+			Solution newSol = solutions.get( size-1 );
+			retUv[1] = ((DoubleValueUpperware)newSol.getUtilityValue()).getValue();
+			
+			log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}", id);
+			return retUv;
+			
+		} catch (Exception ex) {
+			log.error("CpModelHelper.getSolutionUtilities(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+			return null;
+		} finally {
+			if (view!=null) view.close();
+			
+			// release resource
+			synchronized (LOCKS) {
+				LOCKS.remove(cpModelPath);
+			}
+			log.debug("CpModelHelper.getSolutionUtilities(): RELEASED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+	
 	@PostConstruct
 	public void connect() {
-		log.info("CpModelHelper.connect(): #{}", id);
+		//log.debug("CpModelHelper.connect(): #{}", id);
 		CpPackage.eINSTANCE.eClass();
 		cdoSession = openCdoSession();
 	}

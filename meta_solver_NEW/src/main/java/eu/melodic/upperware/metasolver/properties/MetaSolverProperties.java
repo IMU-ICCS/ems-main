@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -28,6 +29,7 @@ import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
+@ToString
 @Validated
 @Configuration
 @ConfigurationProperties
@@ -40,6 +42,7 @@ public class MetaSolverProperties {
 
 	@Getter
 	@Setter
+	@ToString
 	public static class Pubsub {
 		private String on;
 
@@ -70,7 +73,7 @@ public class MetaSolverProperties {
 		if (str==null || (str=str.trim()).isEmpty()) return defVal;
 		return (str.equalsIgnoreCase("true") || str.equalsIgnoreCase("yes") || str.equalsIgnoreCase("on"));
 	}
-
+	
 	// --------------------------------------------------------------
 	
 	@Valid
@@ -88,4 +91,10 @@ public class MetaSolverProperties {
 		private String username;
 		private String password;
 	}
+	
+	// --------------------------------------------------------------
+	
+	@Valid
+	@NotNull
+	private double utilityThresholdFactor;
 }

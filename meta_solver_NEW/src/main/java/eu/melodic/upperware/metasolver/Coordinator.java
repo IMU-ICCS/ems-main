@@ -17,7 +17,7 @@ import eu.melodic.upperware.metasolver.util.CpModelHelper;
 
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
+//import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,24 +26,29 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+//import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+//@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class Coordinator implements ApplicationContextAware {
   
-  private RestTemplate restTemplate;
-  private MetaSolverProperties properties;
+  //private RestTemplate restTemplate;
   private ApplicationContext applicationContext;
+  private MetaSolverProperties properties;
+  private double uvThresholdFactor;
 
   @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
+	this.properties = (MetaSolverProperties) applicationContext.getBean(MetaSolverProperties.class);
+    this.uvThresholdFactor = properties.getUtilityThresholdFactor();
+	log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", properties);
   }
 	
-  /*XXX: TODO:
+  /**
 	How can we select the most appropriate solver??
+	For R1.5 it will always be CP solver
   */
   public ConstraintProblemEnhancementResponse.DesignatedSolverType selectSolver(String applicationId, String cpModelPath) {
     log.info("MetaSolver.Coordinator: selectSolver(): appId={}, model={}", applicationId, cpModelPath);
@@ -57,7 +62,6 @@ public class Coordinator implements ApplicationContextAware {
   */
   public void setMetricValuesInCpModel(String applicationId, String cpModelPath) {
     log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}", applicationId, cpModelPath);
-    log.warn("MetaSolver.Coordinator: setMetricValuesInCpModel(): ** NOT IMPLEMENTED **");
 	
 	// get metric values from metric value registry
 	MetricValueMonitorBean monitor = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
@@ -67,32 +71,47 @@ public class Coordinator implements ApplicationContextAware {
 	// Update CP model with current metric variable values
 	CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
 	helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+    
+	log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model updated with current MVV's");
   }
   
-  /*XXX: TODO:
-	IF NO deployed solution EXIST (ie first deployment) THEN
-		RETURN: POSITIVE (ie accept the evaluated solution)
-	ELSE
-	IF a deployed solution EXIST (ie adaptation??) THEN
-		retrieve from CDO the utility values of the deployed solution
-		retrieve from CDO the utility values of the new solution
-		compare solution utility values
-		RETURN: POSITIVE if the utility value of the new solution is better at least by 10% (configurable) than the utility value of deployed solution
-				NEGATIVE else
-		Utility values (both for deployed and new solution) will be stored in CP model by Solvers
-	END-IF
-	
-	NOTE:
-	- The adapter/executionware should notify Metasolver & Solvers if/when new solution has been deployed?
-	- Is it meaningful to periodically (or after a trigger event) check in CDO for a different deployed solution?
-	  (Ie deployed solution changed without Metasolver being notified?)
+  /**
+    Compare new and (currently) deployed solutions using their utility values.
+	- If no deployed solution exists (first deployment) then 'accept' new solution
+	- if a deployed solution exists then new solution's utility value must be better 
+	  than deployed solution's utility value, at least 'uvThresholdFactor' times
   */
-  public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cdoModelsPath) {
-    log.info("MetaSolver.Coordinator: evaluateSolution(): appId={}, model={}", applicationId, cdoModelsPath);
-    log.warn("MetaSolver.Coordinator: evaluateSolution(): ** NOTE: POSITIVE is ALWAYS returned **");
-    log.warn("MetaSolver.Coordinator: evaluateSolution(): ** NOT IMPLEMENTED **");
-	//CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
-	return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
+  public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cpModelPath) {
+    log.info("MetaSolver.Coordinator: evaluateSolution(): appId={}, model={}", applicationId, cpModelPath);
+	
+	// Get utility values of new and deployed solutions
+	CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
+	double[] solUv = helper.getSolutionUtilities(applicationId, cpModelPath);
+    log.debug("MetaSolver.Coordinator: solUv: ()", solUv);
+	
+	// check if an error occurred
+	if (solUv==null) {
+		log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
+		return SolutionEvaluationResponse.EvaluationResultType.ERROR;
+	}
+	
+	// check if a solution is deployed. If no solution is deployed accept new solution
+	if (solUv[0]<0) {
+		log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
+		return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
+	}
+	
+	// a deployed solution exists. We need to compare the utility values of new and deployed solutions
+	log.debug("MetaSolver.Coordinator: evaluateSolution(): utility-threshold-factor={} : appId={}, model={}", uvThresholdFactor, applicationId, cpModelPath);
+	double depSolUv = solUv[0];
+	double newSolUv = solUv[1];
+	if (newSolUv > uvThresholdFactor * depSolUv) {
+		log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+		return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
+	} else {
+		log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+		return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
+	}
   }
   
 }
