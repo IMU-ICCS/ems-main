@@ -27,12 +27,34 @@ namespace LASolver
 ==============================================================================*/
 //
 // The metric registry is nothing but an instance of the variable registry, 
+// and it simply allows access to the protected virtual interface to ensure 
+// that only classes that is a Metric, i.e. inheriting the Metric class, are 
+// allowed to register.
+
+class MetricRegistry : public Configuration::Registry
+{
+protected:
+	
+	using Configuration::Registry::NewVariable;
+	using Configuration::Registry::RemoveVariable;
+	
+	template< class ValueType >
+	friend class Metric;
+	
+public:
+	
+	// Only the virtual destructor must be defined.
+	
+	virtual ~MetricRegistry()
+	{ }
+};
+
 // and it is also held by a global smart pointer because it is not known 
 // when an object would be instantiated by the compiler. It could be before the
 // first metric definition, but the consequences can be grave if the metric 
 // registry does not exists when the first metric is created.
 
-extern std::shared_ptr< Configuration::Registry > Metrics;
+extern std::shared_ptr< MetricRegistry > Metrics;
 
 // There is a global function to initialise this pointer and create the 
 // registry object. It is done this way to allow derived classes to define 
