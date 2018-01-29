@@ -351,21 +351,21 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		isInited = true;
 
 		// Obtain or create and register interdependencies
+		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
 		TypesPackageImpl theTypesPackage = (TypesPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) instanceof TypesPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) : TypesPackage.eINSTANCE);
 		TypesPaasagePackageImpl theTypesPaasagePackage = (TypesPaasagePackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) instanceof TypesPaasagePackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) : TypesPaasagePackage.eINSTANCE);
-		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
 
 		// Create package meta-data objects
 		theCpPackage.createPackageContents();
+		theApplicationPackage.createPackageContents();
 		theTypesPackage.createPackageContents();
 		theTypesPaasagePackage.createPackageContents();
-		theApplicationPackage.createPackageContents();
 
 		// Initialize created meta-data
 		theCpPackage.initializePackageContents();
+		theApplicationPackage.initializePackageContents();
 		theTypesPackage.initializePackageContents();
 		theTypesPaasagePackage.initializePackageContents();
-		theApplicationPackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed
 		theCpPackage.freeze();
@@ -975,15 +975,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EReference getSolution_Value() {
-		return (EReference)solutionEClass.getEStructuralFeatures().get(-1);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EClass getVariableValue() {
 		return variableValueEClass;
 	}
@@ -1310,7 +1301,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEReference(solutionEClass, SOLUTION__VARIABLE_VALUE);
 		createEReference(solutionEClass, SOLUTION__METRIC_VARIABLE_VALUE);
 		createEReference(solutionEClass, SOLUTION__UTILITY_VALUE);
-		createEReference(solutionEClass, SOLUTION__VALUE);
 
 		variableValueEClass = createEClass(VARIABLE_VALUE);
 		createEReference(variableValueEClass, VARIABLE_VALUE__VARIABLE);
@@ -1486,7 +1476,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getSolution_VariableValue(), this.getVariableValue(), null, "variableValue", null, 0, -1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getSolution_MetricVariableValue(), this.getMetricVariableValue(), null, "metricVariableValue", null, 0, -1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getSolution_UtilityValue(), theTypesPackage.getNumericValueUpperware(), null, "utilityValue", null, 1, 1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getSolution_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 1, 1, Solution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(variableValueEClass, VariableValue.class, "VariableValue", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getVariableValue_Variable(), this.getVariable(), null, "variable", null, 1, 1, VariableValue.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

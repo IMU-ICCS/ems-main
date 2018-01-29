@@ -1232,22 +1232,13 @@ public interface CpPackage extends EPackage {
 	int SOLUTION__UTILITY_VALUE = 3;
 
 	/**
-	 * The feature id for the '<em><b>Value</b></em>' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int SOLUTION__VALUE = 4;
-
-	/**
 	 * The number of structural features of the '<em>Solution</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int SOLUTION_FEATURE_COUNT = 5;
+	int SOLUTION_FEATURE_COUNT = 4;
 
 	/**
 	 * The number of operations of the '<em>Solution</em>' class.
@@ -2372,17 +2363,6 @@ public interface CpPackage extends EPackage {
 	EReference getSolution_UtilityValue();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.Solution#getValue <em>Value</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference '<em>Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Solution#getValue()
-	 * @see #getSolution()
-	 * @generated
-	 */
-	EReference getSolution_Value();
-
-	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.VariableValue <em>Variable Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -3228,14 +3208,6 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EReference SOLUTION__UTILITY_VALUE = eINSTANCE.getSolution_UtilityValue();
-
-		/**
-		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference SOLUTION__VALUE = eINSTANCE.getSolution_Value();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl <em>Variable Value</em>}' class.
