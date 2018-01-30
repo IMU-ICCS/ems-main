@@ -106,8 +106,6 @@ public class CdoServerClientApi implements CdoServerApi {
                 return executionContexts.get(executionContexts.size()-1).getDeploymentModel();
               }
             }
-      exportModel(model, "~/"+resourceName+".xmi");
-
           }
       }
       return null;
