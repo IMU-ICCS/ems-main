@@ -28,13 +28,13 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.ecore.resource.Resource;
 //import org.eclipse.emf.ecore.resource.ResourceSet;
 //import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-//import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 //import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 //import com.eclipsesource.json.JsonObject;
-import eu.paasage.mddb.cdo.client.CDOClient;
+//import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.DeltaUtility;
+//import eu.paasage.upperware.metamodel.cp.DeltaUtility;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.Variable;
 import eu.paasage.upperware.metamodel.cp.*;
@@ -42,8 +42,8 @@ import eu.paasage.upperware.metamodel.types.*;
 //import eu.paasage.upperware.metamodel.cp.MetricVariable;
 //import eu.paasage.upperware.metasolver.exception.MetricMapperException;
 //import eu.paasage.upperware.metasolver.metrics.Mapper;
-import eu.paasage.upperware.metasolver.util.CpModelTool;
-import eu.passage.upperware.commons.model.tools.CdoTool;
+//import eu.paasage.upperware.metasolver.util.CpModelTool;
+//import eu.passage.upperware.commons.model.tools.CdoTool;
 //import org.apache.log4j.Logger;
 import org.eclipse.emf.cdo.view.CDOView;
 //import org.eclipse.emf.common.util.EList;
@@ -138,7 +138,7 @@ public class UtilCpModelImport {
 
   public static void main(String[] args) {
 	System.out.println("BEGIN");
-	int op = -1;
+	int op = 1;
 	if (args.length>0) op = Integer.parseInt(args[0]);
 	switch (op) {
 	case 1:
@@ -162,7 +162,7 @@ public class UtilCpModelImport {
 	// Connect to CDO
 	protected static String connectionStr = "localhost:2036";
 	protected static String repoName = "repo1";
-	protected static String resourceId = "/models/cp-scalarm--2";
+	protected static String resourceId = "/models/cp-scalarm--3";
 	
   protected static void testGetCpModel() {
 	  try {
@@ -202,7 +202,7 @@ public class UtilCpModelImport {
 			
 			// Add new solution to Delta Utility
 			System.out.println("-------------      UPDATE     --------------");
-			DeltaUtility du = cpModel.getDeltaUtility();
+/*			DeltaUtility du = cpModel.getDeltaUtility();
 			EList<Variable> cpVarList = cpModel.getVariables();
 			EList<MetricVariable> cpMVarList = cpModel.getMetricVariables();
 			
@@ -256,7 +256,7 @@ public class UtilCpModelImport {
 			cpModel.getSolution().add(newSolution);
 			
 			transaction.commit();
-			
+*/			
 			// Print Delta Utility - AFTER UPDATE
 			System.out.println("-------------  AFTER UPDATE   --------------");
 			printDeltaUtility( cpModel );
@@ -271,7 +271,7 @@ public class UtilCpModelImport {
   
   protected static void printDeltaUtility(ConstraintProblem cpModel) {
 		// Print Delta Utility
-		DeltaUtility du = cpModel.getDeltaUtility();
+/*		DeltaUtility du = cpModel.getDeltaUtility();
 		Parameter solSelected = du.getSelectedSolution();
 		System.out.println("==== SELECTED SOLUTION ====");
 		printSolution( solSelected );
@@ -281,7 +281,7 @@ public class UtilCpModelImport {
 		for (int i=0, n=solutions.size(); i<n; i++) {
 			Parameter sol = solutions.get(i);
 			printSolution( sol );
-		}
+		}*/
   }
   
   protected static void printSolution(Parameter param) {
@@ -315,17 +315,62 @@ public class UtilCpModelImport {
 	  }
   }
   
+	public static void init() {
+		//
+		//log.debug("initialising model ....");
+		// initialise the Upperware model packages
+		ApplicationPackage.eINSTANCE.eClass();
+		TypesPaasagePackage.eINSTANCE.eClass(); 
+		TypesPackage.eINSTANCE.eClass(); 
+		CpPackage.eINSTANCE.eClass();
+//		OntologyPackage.eINSTANCE.eClass();
+		// Register the XMI resource factory for the .xmi extension
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
+				new XMIResourceFactoryImpl());
+	}
+	
+	public static Resource loadFile(String cpModelFilePath) {
+		URI uri = URI.createURI(cpModelFilePath);
+		ResourceSet resSet = new ResourceSetImpl();
+		// load the cpModel xmi file
+		Resource resource = resSet.getResource(uri, true);
+		EcoreUtil.resolveAll(resSet);
+		try {
+			resource.load(null);
+			for (Resource.Diagnostic diagnostic : resource.getWarnings()) {
+				// print the issues
+				System.err.println("loading resource(" + cpModelFilePath
+						+ ") produced warning : " + diagnostic.toString());
+			}
+			for (Resource.Diagnostic error : resource.getErrors()) {
+				// print the errors
+				System.err.println("loading resource(" + cpModelFilePath
+						+ ") produced error : " + error.toString());
+			}
+		} catch (IOException ioe) {
+			System.err.println("loading resource(" + cpModelFilePath
+					+ ") caused IOException: " + ioe.getMessage());
+		} catch (Exception e) {
+			System.err.println("loading resource(" + cpModelFilePath
+					+ ") caused Exception: " + e.getMessage());
+		}
+		return resource;
+
+	}
+	
   protected static void importCpModel(String args[]) {
 	  try {
 		// Initialize CDO classes
 		//CpModelTool.init();
+		init();
 		// ... or the next....
 		CpPackage.eINSTANCE.eClass();
 		
 		// Load CP model from XMI
-		String xmiFile = "var/PaaSageConfiguration1ConstraintProblem.xmi";
+		//String xmiFile = "var/PaaSageConfiguration1ConstraintProblem.xmi";
+		String xmiFile = "var/FCR1516954427666.xmi";
 		if (args.length>0 && !args[0].trim().isEmpty()) xmiFile = args[0].trim();
-		Resource resModel = CpModelTool.loadFile(xmiFile);
+		Resource resModel = loadFile(xmiFile);
 		
 		// Print CP model (XMI)
 		java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
@@ -333,22 +378,22 @@ public class UtilCpModelImport {
 		System.out.println( output.toString() );
 		
 		// Print CP model info
-		ConstraintProblem cpModel_0 = (ConstraintProblem)resModel.getContents().get(0);
+		/*ConstraintProblem cpModel_0 = (ConstraintProblem)resModel.getContents().get(0);
 		EList<Goal> goals = cpModel_0.getGoals();
 		for (int i=0, n=goals.size(); i<n; i++) System.out.printf("\t%s / %f\n", goals.get(i).getId(), goals.get(i).getPriority());
 		EList<Variable> vars = cpModel_0.getVariables();
 		for (int i=0, n=vars.size(); i<n; i++) System.out.printf("\t%s / [%d..%d]\n", vars.get(i).getId(), ((IntegerValueUpperware)((RangeDomain)vars.get(i).getDomain()).getFrom()).getValue(), ((IntegerValueUpperware)((RangeDomain)vars.get(i).getDomain()).getTo()).getValue());
-		
+		*/
 		
 		CDONet4jSession cdoSession = openSession();
 		
 		// Add DeltaUtility to avoid NullPointerException
 		ConstraintProblem cpModel = (ConstraintProblem)resModel.getContents().get(0);
-		System.out.println( "DeltaUtility: "+cpModel.getDeltaUtility());
+		/*System.out.println( "DeltaUtility: "+cpModel.getDeltaUtility());
 		DeltaUtility du = CpFactory.eINSTANCE.createDeltaUtility();
 		du.setId("zzzz-du-id-1");
 		cpModel.setDeltaUtility(du);
-		
+		*/
 		
 		// Store in CDO
 		System.out.println( "Saving to : "+resourceId);
