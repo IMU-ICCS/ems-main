@@ -57,6 +57,7 @@ public class CPSolver {
 	private static final double LOW_REAL_LIMIT = -1000000000.0;
 	private static final double UPPER_REAL_LIMIT = 1000000000.0;
 	private static UtilityFunctionType utilityFunctionType;
+	private static String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
@@ -1241,7 +1242,6 @@ public class CPSolver {
 	}
 
 	private void createUtilityFunctionType(ConstraintProblem cp){
-		String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
 		utilityFunctionType = cp.getConstants().stream()
 				.map(CPElement::getId)
 				.filter(s -> s.startsWith(utilityFunctionTypePrefix))
