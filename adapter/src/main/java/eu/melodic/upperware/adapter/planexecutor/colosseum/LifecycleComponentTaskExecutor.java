@@ -9,17 +9,17 @@
 
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
-import eu.melodic.upperware.adapter.plangenerator.model.LifecycleComponent;
-import eu.melodic.upperware.adapter.plangenerator.tasks.LifecycleComponentTask;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.melodic.upperware.adapter.plangenerator.model.LifecycleComponent;
+import eu.melodic.upperware.adapter.plangenerator.tasks.LifecycleComponentTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
 
 @Slf4j
 public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<LifecycleComponent> {
@@ -82,12 +82,16 @@ public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<Lifecy
 
     log.info("Executing Delete Lifecycle Component task for component {}", name);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent lcEntity = context.getLifecycleComponent(name)
-      .orElseThrow(() -> new IllegalStateException(format("Lifecycle Component %s does not exist in Colosseum" +
-        "- cannot be deleted", name)));
-    api.deleteLifecycleComponent(lcEntity);
-    context.deleteLifecycleComponent(lcEntity);
+    Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent> lcEntityOptional = context.getLifecycleComponent(name);
 
-    log.info("Lifecycle Component {} was successfully deleted from {}", name, lcEntity.getSelfLink());
+    if (lcEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent lcEntity = lcEntityOptional.get();
+      api.deleteLifecycleComponent(lcEntity);
+      context.deleteLifecycleComponent(lcEntity);
+
+      log.info("Lifecycle Component {} was successfully deleted from {}", name, lcEntity.getSelfLink());
+    } else {
+      log.warn("Lifecycle Component {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }

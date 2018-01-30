@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -84,6 +85,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     genVmInstMonitorConfigTasks(graph, vmInstTasks, model.getVirtualMachineInstanceMonitors());
     genAcInstMonitorConfigTasks(graph, acInstTasks, model.getApplicationComponentInstanceMonitors());
 
+    setSequentiallyVirtualMachineTasks(graph, vmTasks);
+
     log.info("Built graph: {}", graph);
 
     return graph;
@@ -119,6 +122,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     toLogGraphLogger.logGraph(graph);
 
+    setSequentiallyVirtualMachineTasks(graph, vmTasks);
     setMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
 
     log.info("Built graph: {}", graph);
@@ -373,6 +377,25 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     tasks.stream()
             .filter(t -> CREATE.equals(t.getType()))
             .forEach(t -> setDependencies(graph, CREATE, t, task));
+  }
+
+  private void setSequentiallyVirtualMachineTasks(MelodicGraph<Task, DefaultEdge> graph,
+    Collection<VirtualMachineTask> vmTasks){
+
+    Iterator<VirtualMachineTask> it = vmTasks.iterator();
+
+    if (it.hasNext()){
+      VirtualMachineTask prevTask = it.next();
+
+      while (it.hasNext()) {
+        VirtualMachineTask task = it.next();
+        if (task.getType().equals(prevTask.getType())){
+          setDependencies(graph, task.getType(), prevTask, task);
+        }
+        prevTask = task;
+
+      }
+    }
   }
 
 }

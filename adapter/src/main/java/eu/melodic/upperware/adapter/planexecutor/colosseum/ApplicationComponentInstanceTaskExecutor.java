@@ -17,6 +17,7 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationComponentInst
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -228,12 +229,17 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
     Long vmInstId = vmInstEntity.getId();
     checkNotNull(vmInstId);
 
-    Instance acInstEntity = context.getApplicationComponentInstance(appInstId, vmInstId)
-      .orElseThrow(() -> new IllegalStateException(format("Application component instance %s (acId=%s, appInstId=%s, vmInstId=%s) " +
-        "does not exist in Colosseum - cannot be deleted", name, acId, appInstId, vmInstId)));
-    api.deleteApplicationComponentInstance(acInstEntity);
-    context.deleteApplicationComponentInstance(acInstEntity);
+    Optional<Instance> acInstEntityOptional = context.getApplicationComponentInstance(appInstId, vmInstId);
 
-    log.info("Application Component Instance {} was successfully deleted from {}", name, acInstEntity.getSelfLink());
+    if (acInstEntityOptional.isPresent()) {
+      Instance acInstEntity = acInstEntityOptional.get();
+      api.deleteApplicationComponentInstance(acInstEntity);
+      context.deleteApplicationComponentInstance(acInstEntity);
+
+      log.info("Application Component Instance {} was successfully deleted from {}", name, acInstEntity.getSelfLink());
+    } else {
+      log.warn("Application Component Instance {} (acId={}, appInstId={}, vmInstId={}) does not exist in Colosseum - " +
+              "cannot be deleted - skipping execution of the task", name, acId, appInstId, vmInstId);
+    }
   }
 }

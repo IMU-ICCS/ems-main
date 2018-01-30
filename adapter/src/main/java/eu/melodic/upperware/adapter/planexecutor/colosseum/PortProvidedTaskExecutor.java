@@ -10,13 +10,14 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
-import eu.melodic.upperware.adapter.plangenerator.tasks.PortProvidedTask;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.PortProvided;
+import eu.melodic.upperware.adapter.plangenerator.tasks.PortProvidedTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -133,12 +134,16 @@ public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided
 
     log.info("Executing Delete Port Provided task for port {}", name);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided portProvEntity = context.getPortProvided(name)
-      .orElseThrow(() -> new IllegalStateException(format("Port provided %s does not exist in Colosseum " +
-        "- cannot be deleted", name)));
-    api.deletePortProvided(portProvEntity);
-    context.deletePortProvided(portProvEntity);
+    Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided> portProvEntityOptional = context.getPortProvided(name);
 
-    log.info("Port Provided {} was successfully deleted from {}", name, portProvEntity.getSelfLink());
+    if (portProvEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided portProvEntity = portProvEntityOptional.get();
+      api.deletePortProvided(portProvEntity);
+      context.deletePortProvided(portProvEntity);
+
+      log.info("Port Provided {} was successfully deleted from {}", name, portProvEntity.getSelfLink());
+    } else {
+      log.warn("Port Provided {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }
