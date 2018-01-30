@@ -287,6 +287,12 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case CpPackage.DEPLOYED_SOLUTION: {
+				DeployedSolution deployedSolution = (DeployedSolution)theEObject;
+				T result = caseDeployedSolution(deployedSolution);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -708,6 +714,21 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseConfigurationUpperware(ConfigurationUpperware object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Deployed Solution</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Deployed Solution</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseDeployedSolution(DeployedSolution object) {
 		return null;
 	}
 

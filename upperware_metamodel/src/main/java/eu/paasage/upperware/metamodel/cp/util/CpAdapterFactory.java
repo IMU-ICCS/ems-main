@@ -180,6 +180,10 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createConfigurationUpperwareAdapter();
 			}
 			@Override
+			public Adapter caseDeployedSolution(DeployedSolution object) {
+				return createDeployedSolutionAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -588,6 +592,20 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createConfigurationUpperwareAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.DeployedSolution <em>Deployed Solution</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see eu.paasage.upperware.metamodel.cp.DeployedSolution
+	 * @generated
+	 */
+	public Adapter createDeployedSolutionAdapter() {
 		return null;
 	}
 
