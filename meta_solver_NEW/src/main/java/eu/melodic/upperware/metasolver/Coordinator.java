@@ -91,7 +91,15 @@ public class Coordinator implements ApplicationContextAware {
 	
 	// check if an error occurred
 	if (solUv==null) {
-		log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
+		log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: An error occurred: appId={}, model={}", applicationId, cpModelPath);
+		return SolutionEvaluationResponse.EvaluationResultType.ERROR;
+	}
+	if (solUv[0]==-2) {
+		log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
+		return SolutionEvaluationResponse.EvaluationResultType.ERROR;
+	}
+	if (solUv[1]==-1) {
+		log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No candidate solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
 		return SolutionEvaluationResponse.EvaluationResultType.ERROR;
 	}
 	
