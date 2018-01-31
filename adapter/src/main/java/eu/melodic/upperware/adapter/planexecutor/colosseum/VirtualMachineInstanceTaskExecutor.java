@@ -17,6 +17,7 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.VirtualMachineInstanceTa
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -106,12 +107,16 @@ public class VirtualMachineInstanceTaskExecutor extends ColosseumTaskExecutor<Vi
 
     log.info("Executing Delete Virtual Machine Instance {} task for VM {}", name, vmName);
 
-    VirtualMachine vmEntity = context.getVirtualMachineInstance(name)
-      .orElseThrow(() -> new IllegalStateException(format("Virtual Machine Instance %s does not exist in Colosseum" +
-        "- cannot be deleted", name)));
-    api.deleteVirtualMachineInstance(vmEntity);
-    context.deleteVirtualMachineInstance(vmEntity);
+    Optional<VirtualMachine> vmEntityOptional = context.getVirtualMachineInstance(name);
 
-    log.info("Virtual Machine Instance {} was successfully deleted from {}", name, vmEntity.getSelfLink());
+    if (vmEntityOptional.isPresent()) {
+      VirtualMachine vmEntity = vmEntityOptional.get();
+      api.deleteVirtualMachineInstance(vmEntity);
+      context.deleteVirtualMachineInstance(vmEntity);
+
+      log.info("Virtual Machine Instance {} was successfully deleted from {}", name, vmEntity.getSelfLink());
+    } else {
+      log.warn("Virtual Machine Instance {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }

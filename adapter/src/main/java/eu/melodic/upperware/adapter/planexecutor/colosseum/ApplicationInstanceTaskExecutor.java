@@ -16,6 +16,7 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationInstanceTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -72,12 +73,17 @@ public class ApplicationInstanceTaskExecutor extends ColosseumTaskExecutor<Appli
 
     log.info("Executing Delete Application Instance {} task of application {}", name, appName);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance appInstEntity = context.getApplicationInstance(appName)
-      .orElseThrow(() -> new IllegalStateException(format("Application Instance of application %s does not exist in Colosseum " +
-        "- cannot be deleted", appName)));
-    api.deleteApplicationInstance(appInstEntity);
-    context.deleteApplicationInstance(appInstEntity);
+    Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance> appInstEntityOptional =
+      context.getApplicationInstance(appName);
 
-    log.info("Application Instance {} of application {} was successfully deleted from {}", name, appName, appInstEntity.getSelfLink());
+    if (appInstEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance appInstEntity = appInstEntityOptional.get();
+      api.deleteApplicationInstance(appInstEntity);
+      context.deleteApplicationInstance(appInstEntity);
+
+      log.info("Application Instance {} of application {} was successfully deleted from {}", name, appName, appInstEntity.getSelfLink());
+    } else {
+      log.warn("Application Instance {} of application {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name, appName);
+    }
   }
 }

@@ -16,6 +16,7 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.ApplicationTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -72,11 +73,17 @@ public class ApplicationTaskExecutor extends ColosseumTaskExecutor<Application> 
 
     log.info("Executing Delete Application task for application {}", name);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.Application appEntity = context.getApplication(name)
-      .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum - cannot be deleted", name)));
-    api.deleteApplication(appEntity);
-    context.deleteApplication(appEntity);
+    Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.Application> appEntityOptional =
+      context.getApplication(name);
 
-    log.info("Application {} was successfully deleted from {}", name, appEntity.getSelfLink());
+    if (appEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.Application appEntity = appEntityOptional.get();
+      api.deleteApplication(appEntity);
+      context.deleteApplication(appEntity);
+
+      log.info("Application {} was successfully deleted from {}", name, appEntity.getSelfLink());
+    } else {
+      log.warn("Application {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }

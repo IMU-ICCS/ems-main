@@ -10,14 +10,15 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
-import eu.melodic.upperware.adapter.plangenerator.model.CloudProperty;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.melodic.upperware.adapter.plangenerator.model.CloudProperty;
 import eu.melodic.upperware.adapter.plangenerator.tasks.CloudPropertyTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -110,14 +111,19 @@ public class CloudPropertyTaskExecutor extends ColosseumTaskExecutor<CloudProper
       Long cloudId = cloudEntity.getId();
       checkNotNull(cloudId);
 
-      de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty cloudPropertyEntity
-        = context.getCloudProperty(cloudId, key).orElseThrow(() -> new IllegalStateException(
-        format("Cloud Property %s of Cloud %s was not configured in Colosseum - cannot be deleted", key, cloudName)));
+      Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty> cloudPropertyOptional =
+        context.getCloudProperty(cloudId, key);
 
-      api.deleteCloudProperty(cloudPropertyEntity);
-      context.deleteCloudProperty(cloudPropertyEntity);
+      if (cloudPropertyOptional.isPresent()) {
+        de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty cloudPropertyEntity = cloudPropertyOptional.get();
+        api.deleteCloudProperty(cloudPropertyEntity);
+        context.deleteCloudProperty(cloudPropertyEntity);
+      } else {
+        log.warn("Cloud Property {} of Cloud {} was not configured in Colosseum - cannot be deleted - skipping execution of the task", key, cloudName);
+      }
     });
-
     log.info("Cloud Property {} was successfully deleted", name);
+
+
   }
 }

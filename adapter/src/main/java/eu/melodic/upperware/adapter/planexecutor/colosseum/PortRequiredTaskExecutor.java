@@ -16,6 +16,7 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.PortRequiredTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -132,12 +133,16 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<eu.melodic.u
 
     log.info("Executing Delete Port Required task for port {}", name);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired portReqEntity = context.getPortRequired(name)
-      .orElseThrow(() -> new IllegalStateException(format("Port required %s does not exist in Colosseum " +
-        "- cannot be deleted", name)));
-    api.deletePortRequired(portReqEntity);
-    context.deletePortRequired(portReqEntity);
+    Optional<PortRequired> portReqEntityOptional = context.getPortRequired(name);
 
-    log.info("Port Required {} was successfully deleted from {}", name, portReqEntity.getSelfLink());
+    if (portReqEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired portReqEntity = portReqEntityOptional.get();
+      api.deletePortRequired(portReqEntity);
+      context.deletePortRequired(portReqEntity);
+
+      log.info("Port Required {} was successfully deleted from {}", name, portReqEntity.getSelfLink());
+    } else {
+      log.warn("Port Required {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }

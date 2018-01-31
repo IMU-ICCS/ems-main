@@ -11,13 +11,14 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired;
-import eu.melodic.upperware.adapter.plangenerator.tasks.CommunicationTask;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.Communication;
+import eu.melodic.upperware.adapter.plangenerator.tasks.CommunicationTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -99,12 +100,17 @@ public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communicati
     Long portReqId = portReqEntity.getId();
     checkNotNull(portReqId);
 
-    de.uniulm.omi.cloudiator.colosseum.client.entities.Communication commEntity = context.getCommunication(portProvId, portReqId)
-      .orElseThrow(() -> new IllegalStateException(format("Communication %s does not exist in Colosseum " +
-        "- cannot be deleted", name)));
-    api.deleteCommunication(commEntity);
-    context.deleteCommunication(commEntity);
+    Optional<de.uniulm.omi.cloudiator.colosseum.client.entities.Communication> commEntityOptional
+      = context.getCommunication(portProvId, portReqId);
 
-    log.info("Communication {} was successfully deleted from {}", name, commEntity.getSelfLink());
+    if (commEntityOptional.isPresent()) {
+      de.uniulm.omi.cloudiator.colosseum.client.entities.Communication commEntity = commEntityOptional.get();
+      api.deleteCommunication(commEntity);
+      context.deleteCommunication(commEntity);
+
+      log.info("Communication {} was successfully deleted from {}", name, commEntity.getSelfLink());
+    } else {
+      log.warn("Communication {} does not exist in Colosseum - cannot be deleted - skipping execution of the task", name);
+    }
   }
 }
