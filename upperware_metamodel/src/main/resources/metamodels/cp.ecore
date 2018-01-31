@@ -33,10 +33,10 @@
                 eType="#//paasage/upperware/metamodel/cp/Solution" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="deployedSolutionId"
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
-                defaultValueLiteral="0"/>
+                defaultValueLiteral="-1"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="candidateSolutionId"
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
-                defaultValueLiteral="0"/>
+                defaultValueLiteral="-1"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="Expression" abstract="true"
               eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement"/>

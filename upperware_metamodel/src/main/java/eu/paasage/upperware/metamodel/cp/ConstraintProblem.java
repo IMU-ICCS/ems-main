@@ -173,7 +173,7 @@ public interface ConstraintProblem extends CDOObject {
 
 	/**
 	 * Returns the value of the '<em><b>Deployed Solution Id</b></em>' attribute.
-	 * The default value is <code>"0"</code>.
+	 * The default value is <code>"-1"</code>.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Deployed Solution Id</em>' attribute isn't clear,
@@ -183,7 +183,7 @@ public interface ConstraintProblem extends CDOObject {
 	 * @return the value of the '<em>Deployed Solution Id</em>' attribute.
 	 * @see #setDeployedSolutionId(int)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_DeployedSolutionId()
-	 * @model default="0"
+	 * @model default="-1"
 	 * @generated
 	 */
 	int getDeployedSolutionId();
@@ -200,7 +200,7 @@ public interface ConstraintProblem extends CDOObject {
 
 	/**
 	 * Returns the value of the '<em><b>Candidate Solution Id</b></em>' attribute.
-	 * The default value is <code>"0"</code>.
+	 * The default value is <code>"-1"</code>.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Candidate Solution Id</em>' attribute isn't clear,
@@ -210,7 +210,7 @@ public interface ConstraintProblem extends CDOObject {
 	 * @return the value of the '<em>Candidate Solution Id</em>' attribute.
 	 * @see #setCandidateSolutionId(int)
 	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_CandidateSolutionId()
-	 * @model default="0"
+	 * @model default="-1"
 	 * @generated
 	 */
 	int getCandidateSolutionId();

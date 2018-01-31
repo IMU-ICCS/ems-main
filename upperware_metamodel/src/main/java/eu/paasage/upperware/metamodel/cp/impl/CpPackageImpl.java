@@ -1421,8 +1421,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getConstraintProblem_AuxExpressions(), this.getExpression(), null, "auxExpressions", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConstraintProblem_MetricVariables(), this.getMetricVariable(), null, "metricVariables", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConstraintProblem_Solution(), this.getSolution(), null, "solution", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConstraintProblem_DeployedSolutionId(), ecorePackage.getEInt(), "deployedSolutionId", "0", 0, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConstraintProblem_CandidateSolutionId(), ecorePackage.getEInt(), "candidateSolutionId", "0", 0, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConstraintProblem_DeployedSolutionId(), ecorePackage.getEInt(), "deployedSolutionId", "-1", 0, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConstraintProblem_CandidateSolutionId(), ecorePackage.getEInt(), "candidateSolutionId", "-1", 0, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(expressionEClass, Expression.class, "Expression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
