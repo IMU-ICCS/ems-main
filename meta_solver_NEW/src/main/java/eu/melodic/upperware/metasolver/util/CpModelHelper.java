@@ -143,18 +143,11 @@ public class CpModelHelper {
 		//log.debug("CpModelHelper.<init>():  ** NEW INSTANCE #{} **", id);
 	}
 	
-	public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String,String> metricValues) {
+	public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String,String> metricValues) throws ConcurrentAccessException {
 		log.debug("CpModelHelper.updateCpModelWithMetricValues(): BEGIN: helper-id={}, app-id={}, cp-path={}, mvv={}", id, applicationId, cpModelPath, metricValues);
 		
 		// lock resource
-		synchronized (LOCKS) {
-			if (! LOCKS.contains(cpModelPath)) {
-				LOCKS.add(cpModelPath);
-			} else
-				//throw new ConcurrentAccessException("CpModelHelper.updateCpModelWithMetricValues: Resource is locked: "+cpModelPath);
-				return false;
-		}
-		log.debug("CpModelHelper.updateCpModelWithMetricValues(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
+		lockCpModel(cpModelPath, "updateCpModelWithMetricValues()");
 		
 		CDOTransaction transaction = null;
 		try {
@@ -211,13 +204,10 @@ public class CpModelHelper {
 			log.error("CpModelHelper.updateCpModelWithMetricValues(): EXCEPTION: helper-id={}, Exception={}", id, ex);
 			return false;
 		} finally {
-			if (transaction!=null) transaction.rollback();
+			if (transaction!=null) { transaction.rollback(); transaction.close(); }
 			
 			// release resource
-			synchronized (LOCKS) {
-				LOCKS.remove(cpModelPath);
-			}
-			log.debug("CpModelHelper.updateCpModelWithMetricValues(): RELEASED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
+			releaseCpModel(cpModelPath, "updateCpModelWithMetricValues()");
 		}
 		
 		// return timestamp
@@ -225,18 +215,11 @@ public class CpModelHelper {
 		return true;
 	}
 	
-	public double[] getSolutionUtilities(String applicationId, String cpModelPath) {
+	public double[] getSolutionUtilities(String applicationId, String cpModelPath) throws ConcurrentAccessException {
 		log.debug("CpModelHelper.getSolutionUtilities(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
 		
 		// lock resource
-		synchronized (LOCKS) {
-			if (! LOCKS.contains(cpModelPath)) {
-				LOCKS.add(cpModelPath);
-			} else
-				//throw new ConcurrentAccessException("CpModelHelper.getSolutionUtilities: Resource is locked: "+cpModelPath);
-				return null;
-		}
-		log.debug("CpModelHelper.getSolutionUtilities(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
+		lockCpModel(cpModelPath, "getSolutionUtilities()");
 		
 		CDOView view = null;
 		try {
@@ -285,10 +268,106 @@ public class CpModelHelper {
 			if (view!=null) view.close();
 			
 			// release resource
-			synchronized (LOCKS) {
-				LOCKS.remove(cpModelPath);
+			releaseCpModel(cpModelPath, "getSolutionUtilities()");
+		}
+	}
+	
+	public int[] updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
+		log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+		
+		// lock resource
+		lockCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
+		
+		CDOTransaction transaction = null;
+		try {
+			// retrieve CP model (open transaction)
+			transaction = cdoSession.openTransaction();
+			CDOResource resource = transaction.getResource(cpModelPath);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			
+			// get solutions list
+			/*EList<Solution> solutions = cpModel.getSolution();
+			int size = solutions.size();*/
+			
+			// get current solution Ids
+			int depSolPos = cpModel.getDeployedSolutionId();
+			int canSolPos = cpModel.getCandidateSolutionId();
+			
+			// update solution Ids
+			if (success && canSolPos>=0) {
+				// set deployed solution id to candidate solution id
+				cpModel.setDeployedSolutionId( canSolPos );
 			}
-			log.debug("CpModelHelper.getSolutionUtilities(): RELEASED LOCK ON: helper-id={}, cp-path={}", id, cpModelPath);
+			// clear candidate solution id
+			cpModel.setCandidateSolutionId(-1);
+			
+			// get new solution Ids
+			int[] retPos = new int[2];
+			retPos[0] = cpModel.getDeployedSolutionId();
+			retPos[1] = cpModel.getCandidateSolutionId();
+			
+			// commit changes
+			transaction.commit();
+			transaction = null;
+			
+			log.debug("CpModelHelper.updateSolutionIdsInCpModel(): END: helper-id={}, solIds={}", id, retPos);
+			return retPos;
+			
+		} catch (Exception ex) {
+			log.error("CpModelHelper.updateSolutionIdsInCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+			return null;
+		} finally {
+			if (transaction!=null) { transaction.rollback(); transaction.close(); }
+			
+			// release resource
+			releaseCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
+		}
+	}
+	
+	public int findAndSetCandidateSolutionIdInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+		log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+		
+		// lock resource
+		lockCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
+		
+		CDOTransaction transaction = null;
+		try {
+			// retrieve CP model (open transaction)
+			transaction = cdoSession.openTransaction();
+			CDOResource resource = transaction.getResource(cpModelPath);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			
+			// get current candidate solution Id
+			int oldPos = cpModel.getCandidateSolutionId();
+			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, old-candidate-solution-position={}", oldPos);
+			
+			// find new candidate solution id
+			EList<Solution> solutions = cpModel.getSolution();
+			int size = solutions.size();
+			int position = size-1;
+			
+			// update candidate solution Id
+			cpModel.setCandidateSolutionId(position);
+			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, new-candidate-solution-position={}", position);
+			
+			// find new candidate solution id
+			int retPos = cpModel.getCandidateSolutionId();
+			
+			// commit changes
+			transaction.commit();
+			transaction = null;
+			
+			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): END: helper-id={}, solIds={}", id, retPos);
+			return retPos;
+			
+		} catch (Exception ex) {
+			log.error("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+			return -2;
+		} finally {
+			if (transaction!=null) { transaction.rollback(); transaction.close(); }
+			
+			// release resource
+			releaseCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
 		}
 	}
 	
@@ -369,5 +448,24 @@ public class CpModelHelper {
 		cdoSession.getPackageRegistry().putEPackage(LocationPackage.eINSTANCE);
 
 		return cdoSession;
+	}
+	
+	protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
+		synchronized (LOCKS) {
+			if (! LOCKS.contains(cpModelPath)) {
+				LOCKS.add(cpModelPath);
+			} else {
+				throw new ConcurrentAccessException("CpModelHelper."+caller+"->lockCpModel: Resource is locked: "+cpModelPath);
+				//return null;
+			}
+		}
+		log.debug("CpModelHelper.{}->lockCpModel(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
+	}
+	
+	protected void releaseCpModel(String cpModelPath, String caller) {
+		synchronized (LOCKS) {
+			LOCKS.remove(cpModelPath);
+		}
+		log.debug("CpModelHelper.{}->releaseCpModel(): RELEASED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
 	}
 }

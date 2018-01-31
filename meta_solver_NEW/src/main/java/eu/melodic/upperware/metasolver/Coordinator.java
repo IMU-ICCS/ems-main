@@ -20,6 +20,7 @@ import java.util.Map;
 //import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -50,7 +51,7 @@ public class Coordinator implements ApplicationContextAware {
 	How can we select the most appropriate solver??
 	For R1.5 it will always be CP solver
   */
-  public ConstraintProblemEnhancementResponse.DesignatedSolverType selectSolver(String applicationId, String cpModelPath) {
+  public ConstraintProblemEnhancementResponse.DesignatedSolverType selectSolver(String applicationId, String cpModelPath) throws ConcurrentAccessException {
     log.info("MetaSolver.Coordinator: selectSolver(): appId={}, model={}", applicationId, cpModelPath);
     log.warn("MetaSolver.Coordinator: selectSolver(): ** NOTE: CP Solver is ALWAYS selected **");
     log.warn("MetaSolver.Coordinator: selectSolver(): ** NOT IMPLEMENTED **");
@@ -60,7 +61,7 @@ public class Coordinator implements ApplicationContextAware {
   /**
 	Update CP model with current metric variable values
   */
-  public void setMetricValuesInCpModel(String applicationId, String cpModelPath) {
+  public void setMetricValuesInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
     log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}", applicationId, cpModelPath);
 	
 	// get metric values from metric value registry
@@ -81,11 +82,17 @@ public class Coordinator implements ApplicationContextAware {
 	- if a deployed solution exists then new solution's utility value must be better 
 	  than deployed solution's utility value, at least 'uvThresholdFactor' times
   */
-  public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cpModelPath) {
+  public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cpModelPath) throws ConcurrentAccessException {
     log.info("MetaSolver.Coordinator: evaluateSolution(): appId={}, model={}", applicationId, cpModelPath);
 	
-	// Get utility values of new and deployed solutions
+	// Update candidate solution
 	CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
+	int newCanPos = helper.findAndSetCandidateSolutionIdInCpModel(applicationId, cpModelPath);
+	if (newCanPos>=0) log.debug("MetaSolver.Coordinator: candidate solution updated: id={}", newCanPos);
+    else if (newCanPos==-1) log.debug("MetaSolver.Coordinator: no candidate solution found");
+    else log.debug("MetaSolver.Coordinator: an error occurred while looking for candidate solution");
+	
+	// Get utility values of new and deployed solutions
 	double[] solUv = helper.getSolutionUtilities(applicationId, cpModelPath);
     log.debug("MetaSolver.Coordinator: solUv: ()", solUv);
 	
@@ -120,6 +127,36 @@ public class Coordinator implements ApplicationContextAware {
 		log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
 		return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
 	}
+  }
+  
+  /**
+	Update deployed and candidate solutions in CP model
+	Input:
+	  applicationId : application id
+	  cpModelPath: the path to CP model resource in CDO server
+	  success: indicates whether adapter succeeded to deploy candidate solution or not
+	    if SUCCESS
+	      deployed Id <-- candidate Id
+	      candidate Id <-- -1
+	    if ERROR
+	      candidate Id <-- -1
+	Returns:
+	  the new solution positions (int[])
+	    int[0] : Index of deployed solution in 'solutions' EList
+	    int[1] : Index of candidate solution in 'solutions' EList
+	    An index equal to -1 means absence of deployed/candidate solution
+	    An index equal to -2 means empty 'solutions' EList
+	    An index >=0 indicates the position of the deployed/candidate solution in 'solutions' EList
+  */
+  public int[] updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
+    log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): appId={}, model={}, deploy-success={}", applicationId, cpModelPath, success);
+	
+	// Update CP model with new solution positions (or Ids)
+	CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
+	int[] newPos = helper.updateSolutionIdsInCpModel(applicationId, cpModelPath, success);
+    
+	log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): Solution Ids have been updated in CP model: deployed-solution-id={}, candidate-solution-id={}", newPos[0], newPos[1]);
+	return newPos;
   }
   
 }

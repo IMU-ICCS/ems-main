@@ -15,7 +15,7 @@ This provides application with the properties (in that way can be provided exter
 
 */
 
-package eu.melodic.upperware.metasolver;
+package eu.melodic.upperware.metasolver.util;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -138,7 +138,7 @@ public class UtilCpModelImport {
 
   public static void main(String[] args) {
 	System.out.println("BEGIN");
-	int op = 1;
+	int op = -1;
 	if (args.length>0) op = Integer.parseInt(args[0]);
 	switch (op) {
 	case 1:
@@ -369,7 +369,7 @@ public class UtilCpModelImport {
 		// Load CP model from XMI
 		//String xmiFile = "var/PaaSageConfiguration1ConstraintProblem.xmi";
 		String xmiFile = "var/FCR1516954427666.xmi";
-		if (args.length>0 && !args[0].trim().isEmpty()) xmiFile = args[0].trim();
+		if (args.length>1 && !args[1].trim().isEmpty()) xmiFile = args[1].trim();
 		Resource resModel = loadFile(xmiFile);
 		
 		// Print CP model (XMI)
@@ -394,6 +394,8 @@ public class UtilCpModelImport {
 		du.setId("zzzz-du-id-1");
 		cpModel.setDeltaUtility(du);
 		*/
+		cpModel.setDeployedSolutionId(1);
+		cpModel.setCandidateSolutionId(2);
 		
 		// Store in CDO
 		System.out.println( "Saving to : "+resourceId);

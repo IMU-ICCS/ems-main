@@ -31,6 +31,7 @@ import eu.melodic.models.interfaces.metaSolver.UpdateSolutionResponseImpl;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,7 +54,7 @@ public class MetaSolverController {
   private Coordinator coordinator;
   
   @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
-  public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request) {
+  public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request) throws ConcurrentAccessException {
 	// Get information from request
     String applicationId = request.getApplicationId();
     String cdoModelsPath = request.getCdoModelsPath();
@@ -63,7 +64,7 @@ public class MetaSolverController {
 	// Select suitable solver
 	log.info("Selecting suitable solver: ");
 	ConstraintProblemEnhancementResponse.DesignatedSolverType selectedSolver = coordinator.selectSolver(applicationId, cdoModelsPath);
-	log.info("Selecting suitable solver: "+selectedSolver);
+	log.info("Selecting suitable solver: {}", selectedSolver);
 	
 	// Set metric values in CP model
 	coordinator.setMetricValuesInCpModel(applicationId, cdoModelsPath);
@@ -82,7 +83,7 @@ public class MetaSolverController {
   }
 
   @RequestMapping(value = "/solutionEvaluation", method = POST)
-  public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request) {
+  public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request) throws ConcurrentAccessException {
 	// Get information from request
     String applicationId = request.getApplicationId();
     String cdoModelsPath = request.getCdoModelsPath();
@@ -92,7 +93,7 @@ public class MetaSolverController {
 	// Evaluate new solution
 	log.info("Evaluate current sulution: ");
 	SolutionEvaluationResponse.EvaluationResultType solutionEvaluation = coordinator.evaluateSolution(applicationId, cdoModelsPath);
-	log.info("Evaluate current sulution: "+solutionEvaluation);
+	log.info("Evaluate current sulution: {}", solutionEvaluation);
 	
 	// Prepare and return response
 	SolutionEvaluationResponseImpl response = new SolutionEvaluationResponseImpl();
@@ -104,7 +105,7 @@ public class MetaSolverController {
   }
 
   @RequestMapping(value = "/updateSolution", method = POST)
-  public UpdateSolutionResponse updateSolution(@RequestBody UpdateSolutionRequest request) {
+  public UpdateSolutionResponse updateSolution(@RequestBody UpdateSolutionRequest request) throws ConcurrentAccessException {
 	// Get information from request
     String applicationId = request.getApplicationId();
     String cdoModelsPath = request.getCdoModelsPath();
@@ -113,12 +114,10 @@ public class MetaSolverController {
     String requestUuid = request.getWatermark().getUuid();
     log.info("Received request: " +applicationId +" " + cdoModelsPath + " " + requestUuid );
 	
-	// +++ do something
-	// if SUCCESS
-	//		candidate --> deployed
-	//		candidate --> -1
-	// if ERROR
-	//		candidate --> -1
+	// Update deployed and candidate solution Ids (positions) in CP model
+	log.info("Update solution: ");
+	int[] pos = coordinator.updateSolutionIdsInCpModel(applicationId, cdoModelsPath, success);
+	log.info("Update solution: deployed={}, candidate={}", pos[0], pos[1]);
 	
 	// Prepare and return response
 	UpdateSolutionResponseImpl response = new UpdateSolutionResponseImpl();
