@@ -24,6 +24,7 @@ import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -68,9 +69,12 @@ public class SolverToDeployment {
 			CDOTransaction cdoTransaction = cdoProxy.getCdoClient().openTransaction();
 
 			EList<EObject> contentsCM = cdoTransaction.getResource(camelModelID).getContents();
-			CamelModel camelModel= (CamelModel)contentsCM.get(0);
+
+			CamelModel camelModel = CdoTool.getLastCamelModel(contentsCM)
+                .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+
 			
-			EList<EObject> contentsPC = cdoTransaction.getResource(paasageConfigurationID).getContents();;
+			EList<EObject> contentsPC = cdoTransaction.getResource(paasageConfigurationID).getContents();
 			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(1);
 
 			// Checking if there is a solution
