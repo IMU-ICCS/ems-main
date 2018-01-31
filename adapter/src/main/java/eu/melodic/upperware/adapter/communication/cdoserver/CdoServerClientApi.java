@@ -18,6 +18,7 @@ import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.requirement.*;
 import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +72,8 @@ public class CdoServerClientApi implements CdoServerApi {
   public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
-      CamelModel model = (CamelModel) contents.get(0);
+      CamelModel model = CdoTool.getLastCamelModel(contents)
+              .orElseThrow(() -> new IllegalStateException(String.format("Could not find Camel Model for resourceName=%s", resourceName)));
       if (model != null) {
         EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
         if (CollectionUtils.isNotEmpty(deploymentModels)) {
@@ -86,24 +88,27 @@ public class CdoServerClientApi implements CdoServerApi {
   @Override
   public DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
+
     if (CollectionUtils.isNotEmpty(contents)) {
-      CamelModel model = (CamelModel) contents.get(0);
+      int numberOfCamelModels = contents.size();
 
-      exportModel(model, "~/"+resourceName+".xmi");
+      for (int i = numberOfCamelModels-1; i > -1 ; i--) {
+          CamelModel model = (CamelModel) contents.get(i);
 
-      if (model != null) {
-        List<ExecutionModel> execModels = model.getExecutionModels();
-        int numberOfExecModels = execModels.size();
-        if (numberOfExecModels < 1) {
-          return null;
-        }
-        EList<ExecutionContext> execContexts = execModels.get(numberOfExecModels - 1).getExecutionContexts();
-        int numberOfExecContexts = execContexts.size();
-        if (numberOfExecContexts < 1) {
-          return null;
-        }
-        return execContexts.get(numberOfExecContexts - 1).getDeploymentModel();
+          if(model != null) {
+            EList<ExecutionModel> executionModels = model.getExecutionModels();
+            int numberOfExecModels = executionModels.size();
+
+            for (int j = numberOfExecModels - 1; j > -1; j--) {
+              EList<ExecutionContext> executionContexts = executionModels.get(j).getExecutionContexts();
+              if (!executionContexts.isEmpty()) {
+                exportModel(model, "~/"+resourceName+".xmi");
+                return executionContexts.get(executionContexts.size()-1).getDeploymentModel();
+              }
+            }
+          }
       }
+      return null;
     }
     throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
       "Check the value is valid and the model is available in CDO Server.", resourceName));

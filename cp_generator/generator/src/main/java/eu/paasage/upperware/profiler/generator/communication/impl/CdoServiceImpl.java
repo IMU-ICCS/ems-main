@@ -3,6 +3,7 @@ package eu.paasage.upperware.profiler.generator.communication.impl;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -57,11 +58,10 @@ public class CdoServiceImpl implements CdoService {
     @Override
     public CamelModel getCamelModel(String resourceName, CDOTransaction tr) {
         EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
-        if (CollectionUtils.isNotEmpty(contents)) {
-            return (CamelModel) contents.get(0);
-        }
-        throw new IllegalArgumentException(String.format("Cannot load Camel Model for resourceName=%s. " +
-                "Check the value is valid and the model is available in CDO Server.", resourceName));
+
+        return CdoTool.getLastCamelModel(contents)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Cannot load Camel Model for resourceName=%s. " +
+                "Check the value is valid and the model is available in CDO Server.", resourceName)));
     }
 
 //    public boolean exportModel(EObject model, String filePath){

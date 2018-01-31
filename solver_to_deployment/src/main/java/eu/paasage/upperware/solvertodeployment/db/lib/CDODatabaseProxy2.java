@@ -9,6 +9,7 @@ import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.provider.ProviderModel;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -42,7 +43,8 @@ public class CDODatabaseProxy2 {
 
 		public CamelAndDeploymentModelTransactionManager(String camelModelID, int dmId) {
 			this.transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
-			this.camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+			this.camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+					.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 			this.deploymentModel = camelModel.getDeploymentModels().get(dmId);
 			this.dmId = dmId;
 		}
@@ -67,7 +69,10 @@ public class CDODatabaseProxy2 {
 
 	public static int copyFirstDeploymentModel(String camelModelID) throws CommitException {
 		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
-		CamelModel camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+
+		CamelModel camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+				.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+
 		EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
 		DeploymentModel dm = deploymentModels.get(0);
 		DeploymentModel dmCopy = EcoreUtil.copy(dm);
@@ -89,7 +94,9 @@ public class CDODatabaseProxy2 {
 	}
 
 	public static Optional<DeploymentModel> getLastDeployedModel(String camelModelID, CDOTransaction transaction){
-		CamelModel camelModel = (CamelModel) transaction.getResource(camelModelID).getContents().get(0);
+		CamelModel camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+				.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+
 		ExecutionModel lastExecutionModel = getLastElement(camelModel.getExecutionModels());
 		if (lastExecutionModel != null) {
 			ExecutionContext lastExecutionContext = getLastElement(lastExecutionModel.getExecutionContexts());
