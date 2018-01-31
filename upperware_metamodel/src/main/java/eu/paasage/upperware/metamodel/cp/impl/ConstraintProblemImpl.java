@@ -34,6 +34,8 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getAuxExpressions <em>Aux Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getMetricVariables <em>Metric Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getSolution <em>Solution</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getDeployedSolutionId <em>Deployed Solution Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getCandidateSolutionId <em>Candidate Solution Id</em>}</li>
  * </ul>
  *
  * @generated
@@ -154,6 +156,42 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	@SuppressWarnings("unchecked")
 	public EList<Solution> getSolution() {
 		return (EList<Solution>)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__SOLUTION, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public int getDeployedSolutionId() {
+		return (Integer)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setDeployedSolutionId(int newDeployedSolutionId) {
+		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID, newDeployedSolutionId);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public int getCandidateSolutionId() {
+		return (Integer)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setCandidateSolutionId(int newCandidateSolutionId) {
+		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID, newCandidateSolutionId);
 	}
 
 } //ConstraintProblemImpl

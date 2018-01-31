@@ -177,13 +177,31 @@ public interface CpPackage extends EPackage {
 	int CONSTRAINT_PROBLEM__SOLUTION = 7;
 
 	/**
+	 * The feature id for the '<em><b>Deployed Solution Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID = 8;
+
+	/**
+	 * The feature id for the '<em><b>Candidate Solution Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID = 9;
+
+	/**
 	 * The number of structural features of the '<em>Constraint Problem</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONSTRAINT_PROBLEM_FEATURE_COUNT = 8;
+	int CONSTRAINT_PROBLEM_FEATURE_COUNT = 10;
 
 	/**
 	 * The number of operations of the '<em>Constraint Problem</em>' class.
@@ -1598,43 +1616,6 @@ public interface CpPackage extends EPackage {
 	int CONFIGURATION_UPPERWARE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
 
 	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.DeployedSolutionImpl <em>Deployed Solution</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.DeployedSolutionImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getDeployedSolution()
-	 * @generated
-	 */
-	int DEPLOYED_SOLUTION = 28;
-
-	/**
-	 * The feature id for the '<em><b>Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int DEPLOYED_SOLUTION__ID = 0;
-
-	/**
-	 * The number of structural features of the '<em>Deployed Solution</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int DEPLOYED_SOLUTION_FEATURE_COUNT = 1;
-
-	/**
-	 * The number of operations of the '<em>Deployed Solution</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int DEPLOYED_SOLUTION_OPERATION_COUNT = 0;
-
-	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.OperatorEnum <em>Operator Enum</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1642,7 +1623,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getOperatorEnum()
 	 * @generated
 	 */
-	int OPERATOR_ENUM = 29;
+	int OPERATOR_ENUM = 28;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.GoalOperatorEnum <em>Goal Operator Enum</em>}' enum.
@@ -1652,7 +1633,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoalOperatorEnum()
 	 * @generated
 	 */
-	int GOAL_OPERATOR_ENUM = 30;
+	int GOAL_OPERATOR_ENUM = 29;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.ComparatorEnum <em>Comparator Enum</em>}' enum.
@@ -1662,7 +1643,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparatorEnum()
 	 * @generated
 	 */
-	int COMPARATOR_ENUM = 31;
+	int COMPARATOR_ENUM = 30;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum <em>Simple Unary Operator Enum</em>}' enum.
@@ -1672,7 +1653,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryOperatorEnum()
 	 * @generated
 	 */
-	int SIMPLE_UNARY_OPERATOR_ENUM = 32;
+	int SIMPLE_UNARY_OPERATOR_ENUM = 31;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum <em>Composed Unary Operator Enum</em>}' enum.
@@ -1682,7 +1663,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryOperatorEnum()
 	 * @generated
 	 */
-	int COMPOSED_UNARY_OPERATOR_ENUM = 33;
+	int COMPOSED_UNARY_OPERATOR_ENUM = 32;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.VariableType <em>Variable Type</em>}' enum.
@@ -1692,7 +1673,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariableType()
 	 * @generated
 	 */
-	int VARIABLE_TYPE = 34;
+	int VARIABLE_TYPE = 33;
 
 
 	/**
@@ -1813,6 +1794,28 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getConstraintProblem_Solution();
+
+	/**
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeployedSolutionId <em>Deployed Solution Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Deployed Solution Id</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeployedSolutionId()
+	 * @see #getConstraintProblem()
+	 * @generated
+	 */
+	EAttribute getConstraintProblem_DeployedSolutionId();
+
+	/**
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCandidateSolutionId <em>Candidate Solution Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Candidate Solution Id</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCandidateSolutionId()
+	 * @see #getConstraintProblem()
+	 * @generated
+	 */
+	EAttribute getConstraintProblem_CandidateSolutionId();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Expression <em>Expression</em>}'.
@@ -2592,27 +2595,6 @@ public interface CpPackage extends EPackage {
 	EReference getConfigurationUpperware_Goal();
 
 	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.DeployedSolution <em>Deployed Solution</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Deployed Solution</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.DeployedSolution
-	 * @generated
-	 */
-	EClass getDeployedSolution();
-
-	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.DeployedSolution#getId <em>Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.DeployedSolution#getId()
-	 * @see #getDeployedSolution()
-	 * @generated
-	 */
-	EAttribute getDeployedSolution_Id();
-
-	/**
 	 * Returns the meta object for enum '{@link eu.paasage.upperware.metamodel.cp.OperatorEnum <em>Operator Enum</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2786,6 +2768,22 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EReference CONSTRAINT_PROBLEM__SOLUTION = eINSTANCE.getConstraintProblem_Solution();
+
+		/**
+		 * The meta object literal for the '<em><b>Deployed Solution Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID = eINSTANCE.getConstraintProblem_DeployedSolutionId();
+
+		/**
+		 * The meta object literal for the '<em><b>Candidate Solution Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID = eINSTANCE.getConstraintProblem_CandidateSolutionId();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ExpressionImpl <em>Expression</em>}' class.
@@ -3422,24 +3420,6 @@ public interface CpPackage extends EPackage {
 		 * @generated
 		 */
 		EReference CONFIGURATION_UPPERWARE__GOAL = eINSTANCE.getConfigurationUpperware_Goal();
-
-		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.DeployedSolutionImpl <em>Deployed Solution</em>}' class.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.DeployedSolutionImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getDeployedSolution()
-		 * @generated
-		 */
-		EClass DEPLOYED_SOLUTION = eINSTANCE.getDeployedSolution();
-
-		/**
-		 * The meta object literal for the '<em><b>Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute DEPLOYED_SOLUTION__ID = eINSTANCE.getDeployedSolution_Id();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.OperatorEnum <em>Operator Enum</em>}' enum.

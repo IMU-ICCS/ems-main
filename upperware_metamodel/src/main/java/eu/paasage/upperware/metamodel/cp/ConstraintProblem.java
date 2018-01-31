@@ -23,6 +23,8 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getAuxExpressions <em>Aux Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables <em>Metric Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getSolution <em>Solution</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeployedSolutionId <em>Deployed Solution Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCandidateSolutionId <em>Candidate Solution Id</em>}</li>
  * </ul>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem()
@@ -168,5 +170,59 @@ public interface ConstraintProblem extends CDOObject {
 	 * @generated
 	 */
 	EList<Solution> getSolution();
+
+	/**
+	 * Returns the value of the '<em><b>Deployed Solution Id</b></em>' attribute.
+	 * The default value is <code>"0"</code>.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Deployed Solution Id</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Deployed Solution Id</em>' attribute.
+	 * @see #setDeployedSolutionId(int)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_DeployedSolutionId()
+	 * @model default="0"
+	 * @generated
+	 */
+	int getDeployedSolutionId();
+
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeployedSolutionId <em>Deployed Solution Id</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Deployed Solution Id</em>' attribute.
+	 * @see #getDeployedSolutionId()
+	 * @generated
+	 */
+	void setDeployedSolutionId(int value);
+
+	/**
+	 * Returns the value of the '<em><b>Candidate Solution Id</b></em>' attribute.
+	 * The default value is <code>"0"</code>.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Candidate Solution Id</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Candidate Solution Id</em>' attribute.
+	 * @see #setCandidateSolutionId(int)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_CandidateSolutionId()
+	 * @model default="0"
+	 * @generated
+	 */
+	int getCandidateSolutionId();
+
+	/**
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCandidateSolutionId <em>Candidate Solution Id</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Candidate Solution Id</em>' attribute.
+	 * @see #getCandidateSolutionId()
+	 * @generated
+	 */
+	void setCandidateSolutionId(int value);
 
 } // ConstraintProblem

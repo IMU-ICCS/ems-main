@@ -31,6 +31,12 @@
                 containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="solution" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/Solution" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="deployedSolutionId"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+                defaultValueLiteral="0"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="candidateSolutionId"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+                defaultValueLiteral="0"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="Expression" abstract="true"
               eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement"/>
@@ -219,11 +225,6 @@
             <eLiterals name="cardinality" value="5" literal="cardinality"/>
             <eLiterals name="os" value="6" literal="os"/>
             <eLiterals name="location" value="7" literal="location"/>
-          </eClassifiers>
-          <eClassifiers xsi:type="ecore:EClass" name="DeployedSolution" abstract="true">
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" lowerBound="1"
-                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
-                defaultValueLiteral="0"/>
           </eClassifiers>
         </eSubpackages>
       </eSubpackages>

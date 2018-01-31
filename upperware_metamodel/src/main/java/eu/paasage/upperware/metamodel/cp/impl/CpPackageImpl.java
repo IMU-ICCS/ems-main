@@ -19,7 +19,6 @@ import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.DeployedSolution;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.Function;
@@ -268,13 +267,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EClass deployedSolutionEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	private EEnum operatorEnumEEnum = null;
 
 	/**
@@ -481,6 +473,24 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 */
 	public EReference getConstraintProblem_Solution() {
 		return (EReference)constraintProblemEClass.getEStructuralFeatures().get(7);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getConstraintProblem_DeployedSolutionId() {
+		return (EAttribute)constraintProblemEClass.getEStructuralFeatures().get(8);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getConstraintProblem_CandidateSolutionId() {
+		return (EAttribute)constraintProblemEClass.getEStructuralFeatures().get(9);
 	}
 
 	/**
@@ -1145,24 +1155,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EClass getDeployedSolution() {
-		return deployedSolutionEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getDeployedSolution_Id() {
-		return (EAttribute)deployedSolutionEClass.getEStructuralFeatures().get(0);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EEnum getOperatorEnum() {
 		return operatorEnumEEnum;
 	}
@@ -1252,6 +1244,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__AUX_EXPRESSIONS);
 		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__METRIC_VARIABLES);
 		createEReference(constraintProblemEClass, CONSTRAINT_PROBLEM__SOLUTION);
+		createEAttribute(constraintProblemEClass, CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID);
+		createEAttribute(constraintProblemEClass, CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID);
 
 		expressionEClass = createEClass(EXPRESSION);
 
@@ -1352,9 +1346,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEReference(configurationUpperwareEClass, CONFIGURATION_UPPERWARE__VALUE);
 		createEReference(configurationUpperwareEClass, CONFIGURATION_UPPERWARE__GOAL);
 
-		deployedSolutionEClass = createEClass(DEPLOYED_SOLUTION);
-		createEAttribute(deployedSolutionEClass, DEPLOYED_SOLUTION__ID);
-
 		// Create enums
 		operatorEnumEEnum = createEEnum(OPERATOR_ENUM);
 		goalOperatorEnumEEnum = createEEnum(GOAL_OPERATOR_ENUM);
@@ -1430,6 +1421,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getConstraintProblem_AuxExpressions(), this.getExpression(), null, "auxExpressions", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConstraintProblem_MetricVariables(), this.getMetricVariable(), null, "metricVariables", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConstraintProblem_Solution(), this.getSolution(), null, "solution", null, 0, -1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConstraintProblem_DeployedSolutionId(), ecorePackage.getEInt(), "deployedSolutionId", "0", 0, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConstraintProblem_CandidateSolutionId(), ecorePackage.getEInt(), "candidateSolutionId", "0", 0, 1, ConstraintProblem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(expressionEClass, Expression.class, "Expression", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -1529,9 +1522,6 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getConfigurationUpperware_Solution(), this.getParameter(), null, "solution", null, 0, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConfigurationUpperware_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 0, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getConfigurationUpperware_Goal(), this.getGoal(), null, "goal", null, 1, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-		initEClass(deployedSolutionEClass, DeployedSolution.class, "DeployedSolution", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEAttribute(getDeployedSolution_Id(), ecorePackage.getEInt(), "id", "0", 1, 1, DeployedSolution.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Initialize enums and add enum literals
 		initEEnum(operatorEnumEEnum, OperatorEnum.class, "OperatorEnum");
