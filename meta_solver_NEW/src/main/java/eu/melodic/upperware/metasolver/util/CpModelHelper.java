@@ -249,20 +249,31 @@ public class CpModelHelper {
 			EList<Solution> solutions = cpModel.getSolution();
 			int size = solutions.size();
 			
-			if (size==0) return null;	// No solutions found
-			
 			double[] retUv = new double[2];
 			
+			// No solutions in CP model
+			if (size==0) {
+				retUv[0] = retUv[1] = -2;
+				return retUv;
+			}
+			
+			// get deployed and candidate solution positions in list
+			int depPos = cpModel.getDeployedSolutionId();
+			int newPos = cpModel.getCandidateSolutionId();
+			
 			// get deployed solution's utility value, if a deployed solution exists
-			if (size>1) {
-				Solution depSol = solutions.get( size-2 );
+			if (depPos<size && depPos>=0) {
+				Solution depSol = solutions.get( depPos );
 				retUv[0] = ((DoubleValueUpperware)depSol.getUtilityValue()).getValue();
 			} else 
 				retUv[0] = -1;
 			
 			// get new solution's utility value
-			Solution newSol = solutions.get( size-1 );
-			retUv[1] = ((DoubleValueUpperware)newSol.getUtilityValue()).getValue();
+			if (newPos<size && newPos>=0) {
+				Solution newSol = solutions.get( newPos );
+				retUv[1] = ((DoubleValueUpperware)newSol.getUtilityValue()).getValue();
+			} else 
+				retUv[1] = -1;
 			
 			log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}", id);
 			return retUv;

@@ -24,6 +24,11 @@ import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationRequestImpl;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponseImpl;
 
+import eu.melodic.models.interfaces.metaSolver.UpdateSolutionRequest;
+import eu.melodic.models.interfaces.metaSolver.UpdateSolutionRequestImpl;
+import eu.melodic.models.interfaces.metaSolver.UpdateSolutionResponse;
+import eu.melodic.models.interfaces.metaSolver.UpdateSolutionResponseImpl;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +103,32 @@ public class MetaSolverController {
 	return response;
   }
 
+  @RequestMapping(value = "/updateSolution", method = POST)
+  public UpdateSolutionResponse updateSolution(@RequestBody UpdateSolutionRequest request) {
+	// Get information from request
+    String applicationId = request.getApplicationId();
+    String cdoModelsPath = request.getCdoModelsPath();
+    NotificationResult notifRes = request.getDeploymentResult();
+	boolean success = notifRes.getStatus().equals( NotificationResult.StatusType.SUCCESS );
+    String requestUuid = request.getWatermark().getUuid();
+    log.info("Received request: " +applicationId +" " + cdoModelsPath + " " + requestUuid );
+	
+	// +++ do something
+	// if SUCCESS
+	//		candidate --> deployed
+	//		candidate --> -1
+	// if ERROR
+	//		candidate --> -1
+	
+	// Prepare and return response
+	UpdateSolutionResponseImpl response = new UpdateSolutionResponseImpl();
+	response.setApplicationId( applicationId );
+	response.setUpdateResult( notifRes );
+	response.setWatermark( prepareWatermark(requestUuid) );
+	
+	return response;
+  }
+  
   @RequestMapping(value = "/health", method = GET)
   public void health() {
   }
