@@ -94,7 +94,7 @@ public class Coordinator implements ApplicationContextAware {
 	
 	// Get utility values of new and deployed solutions
 	double[] solUv = helper.getSolutionUtilities(applicationId, cpModelPath);
-    log.debug("MetaSolver.Coordinator: solUv: ()", solUv);
+    log.debug("MetaSolver.Coordinator: solUv: {}", solUv);
 	
 	// check if an error occurred
 	if (solUv==null) {

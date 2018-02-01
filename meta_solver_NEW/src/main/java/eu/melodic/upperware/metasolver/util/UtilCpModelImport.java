@@ -368,7 +368,7 @@ public class UtilCpModelImport {
 		
 		// Load CP model from XMI
 		//String xmiFile = "var/PaaSageConfiguration1ConstraintProblem.xmi";
-		String xmiFile = "var/FCR1516954427666.xmi";
+		String xmiFile = "var/FCR1516954427666_test.xmi";
 		if (args.length>1 && !args[1].trim().isEmpty()) xmiFile = args[1].trim();
 		Resource resModel = loadFile(xmiFile);
 		

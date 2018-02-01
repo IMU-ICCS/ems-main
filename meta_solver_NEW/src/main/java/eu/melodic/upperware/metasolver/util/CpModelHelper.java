@@ -258,7 +258,7 @@ public class CpModelHelper {
 			} else 
 				retUv[1] = -1;
 			
-			log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}", id);
+			log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}, solution-utilities={}", id, retUv);
 			return retUv;
 			
 		} catch (Exception ex) {
@@ -273,7 +273,7 @@ public class CpModelHelper {
 	}
 	
 	public int[] updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
-		log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+		log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}, success={}", id, applicationId, cpModelPath, success);
 		
 		// lock resource
 		lockCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
@@ -292,25 +292,32 @@ public class CpModelHelper {
 			// get current solution Ids
 			int depSolPos = cpModel.getDeployedSolutionId();
 			int canSolPos = cpModel.getCandidateSolutionId();
+			log.debug("updateSolutionIdsInCpModel(): depSolPos={}, canSolPos={}", depSolPos, canSolPos);
 			
 			// update solution Ids
 			if (success && canSolPos>=0) {
 				// set deployed solution id to candidate solution id
 				cpModel.setDeployedSolutionId( canSolPos );
+				log.trace("updateSolutionIdsInCpModel(): deployed solution id set: {}", canSolPos);
+			} else
+			if (success) {
+				log.warn("updateSolutionIdsInCpModel(): No candidate solution found");
 			}
 			// clear candidate solution id
 			cpModel.setCandidateSolutionId(-1);
+			log.trace("updateSolutionIdsInCpModel(): candidate solution id cleared: -1");
 			
 			// get new solution Ids
 			int[] retPos = new int[2];
 			retPos[0] = cpModel.getDeployedSolutionId();
 			retPos[1] = cpModel.getCandidateSolutionId();
+			log.debug("updateSolutionIdsInCpModel(): new solution id's: {}", retPos);
 			
 			// commit changes
 			transaction.commit();
 			transaction = null;
 			
-			log.debug("CpModelHelper.updateSolutionIdsInCpModel(): END: helper-id={}, solIds={}", id, retPos);
+			log.debug("CpModelHelper.updateSolutionIdsInCpModel(): END: helper-id={}, solution-id's={}", id, retPos);
 			return retPos;
 			
 		} catch (Exception ex) {
@@ -339,7 +346,7 @@ public class CpModelHelper {
 			
 			// get current candidate solution Id
 			int oldPos = cpModel.getCandidateSolutionId();
-			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, old-candidate-solution-position={}", oldPos);
+			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldPos);
 			
 			// find new candidate solution id
 			EList<Solution> solutions = cpModel.getSolution();
@@ -348,16 +355,16 @@ public class CpModelHelper {
 			
 			// update candidate solution Id
 			cpModel.setCandidateSolutionId(position);
-			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, new-candidate-solution-position={}", position);
+			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, new-candidate-solution-position={}", id, position);
 			
-			// find new candidate solution id
+			// get new candidate solution id
 			int retPos = cpModel.getCandidateSolutionId();
 			
 			// commit changes
 			transaction.commit();
 			transaction = null;
 			
-			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): END: helper-id={}, solIds={}", id, retPos);
+			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): END: helper-id={}, new-candidate-id={}", id, retPos);
 			return retPos;
 			
 		} catch (Exception ex) {

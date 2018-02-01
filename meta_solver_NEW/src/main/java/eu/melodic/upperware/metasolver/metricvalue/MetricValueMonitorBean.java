@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.jms.*;
+import javax.jms.JMSException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -83,7 +84,7 @@ public class MetricValueMonitorBean {
 	
 	protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) {
 		try {
-			log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}", url, topicName, clientId);
+			log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url, topicName, clientId, type);
 			
 			// Get ActiveMQ connection to the server 
 			log.trace("*****   SUBSCRIBE: connection factory created: url={}", url);
@@ -146,7 +147,7 @@ public class MetricValueMonitorBean {
 		}
 	}
 	
-	private MessageListener getListener(MessageConsumer consumer, Topic topic, TopicType type) {
+	private MessageListener getListener(MessageConsumer consumer, Topic topic, TopicType type) throws JMSException {
 		MessageListener listener = new MetricValueListener(consumer, topic, type, registry);
 		return listener;
 	}

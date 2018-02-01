@@ -15,6 +15,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.Map;
 import javax.jms.*;
+import javax.jms.JMSException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,13 +24,17 @@ public class MetricValueListener implements MessageListener {
 	
 	private MessageConsumer consumer;
 	private Topic topic;
+	private String topicName;
 	private TopicType type;
 	private MetricValueRegistry<Object> registry;
 	private Gson gson;
 	
-	public MetricValueListener(MessageConsumer consumer, Topic topic, TopicType type, MetricValueRegistry<Object> registry) {
+	public MetricValueListener(MessageConsumer consumer, Topic topic, TopicType type, MetricValueRegistry<Object> registry) throws JMSException {
+		log.debug("MetricValueListener.<init>: type={}", type);
 		this.consumer = consumer;
 		this.topic = topic;
+		this.topicName = topic.getTopicName();
+		this.type = type;
 		this.registry = registry;
 		gson = new Gson();
 	}
@@ -43,11 +48,12 @@ public class MetricValueListener implements MessageListener {
 				String metricName = textMessage.getStringProperty("topic_name");
 				String payload = textMessage.getText();
 				log.debug("Metric: {}", metricName);
+				log.debug("Type:   {}", type);
 				log.debug("Payload:\n{}", payload);
 				
 				switch (type) {
 					case MVV:
-						log.debug("Listener of topic {}: Got an MVV event: ", topic.getTopicName());
+						log.debug("Listener of topic {}: Got an MVV event: ", topicName);
 						if (metricName!=null && ! (metricName=metricName.trim()).isEmpty()) {
 							// Extract key-value pairs from message payload
 							// ...using MetricValueEvent
@@ -59,18 +65,20 @@ public class MetricValueListener implements MessageListener {
 							metricValueMap.forEach((x,y)-> System.out.println("\t" + x + " : " + y + " (" + y.getClass().getName() +")"));*/
 							
 							// Cache Metric Value in registry
+							log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
 							registry.setMetricValue( metricName, event.getMetric_value() );
-							log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetric_value(), topic.getTopicName());
+							log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetric_value(), topicName);
+							log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
 						} else {
 							log.warn("Missing property: 'topic_name'");
 						}
 						break;
 					case SCALE:
-						log.debug("Listener of topic {}: Got a SCALE event: ", topic.getTopicName());
+						log.debug("Listener of topic {}: Got a SCALE event: ", topicName);
 						log.error(">>>>   SCALE EVENT: **NOT YET IMPLEMENTED **");
 						break;
 					default:
-						log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topic.getTopicName());
+						log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
 				}
 			} else {
 				log.warn("Unsupported message type: {}", message.getClass().getName());

@@ -9,6 +9,8 @@
 
 package eu.melodic.upperware.metasolver.metricvalue;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +44,8 @@ public class MetricValueRegistry<T> {
 	
 	// MetricValue class definition
 	private static class MetricValue<T> {
+		private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		
 		private T value;
 		private long timestamp;
 		
@@ -52,5 +56,13 @@ public class MetricValueRegistry<T> {
 		
 		public T getMetricValue() { return value; }
 		public long getTimestamp() { return timestamp; }
+		
+		public String toString() {
+			return value+"_@_"+sdf.format(new Date(timestamp));
+		}
+	}
+	
+	public String toString() {
+		return super.toString()+" : "+registry.toString();
 	}
 }
