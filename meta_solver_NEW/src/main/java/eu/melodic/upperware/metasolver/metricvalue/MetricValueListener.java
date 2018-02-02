@@ -54,28 +54,11 @@ public class MetricValueListener implements MessageListener {
 				switch (type) {
 					case MVV:
 						log.debug("Listener of topic {}: Got an MVV event: ", topicName);
-						if (metricName!=null && ! (metricName=metricName.trim()).isEmpty()) {
-							// Extract key-value pairs from message payload
-							// ...using MetricValueEvent
-							MetricValueEvent event = gson.fromJson(payload, MetricValueEvent.class);
-							log.debug("EVENT : {}", event);
-							// ...using Map
-							/*Type type = new TypeToken<Map<String,Object>>(){}.getType();
-							Map<String,Object> metricValueMap = gson.fromJson(payload, type);
-							metricValueMap.forEach((x,y)-> System.out.println("\t" + x + " : " + y + " (" + y.getClass().getName() +")"));*/
-							
-							// Cache Metric Value in registry
-							log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
-							registry.setMetricValue( metricName, event.getMetric_value() );
-							log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetric_value(), topicName);
-							log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
-						} else {
-							log.warn("Missing property: 'topic_name'");
-						}
+						processMetricValueEvent(metricName, payload);
 						break;
 					case SCALE:
 						log.debug("Listener of topic {}: Got a SCALE event: ", topicName);
-						log.error(">>>>   SCALE EVENT: **NOT YET IMPLEMENTED **");
+						processScaleEvent(metricName, payload);
 						break;
 					default:
 						log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
@@ -89,4 +72,28 @@ public class MetricValueListener implements MessageListener {
 		} 
 	}
 
+	protected void processMetricValueEvent(String metricName, String payload) {
+		if (metricName!=null && ! (metricName=metricName.trim()).isEmpty()) {
+			// Extract key-value pairs from message payload
+			// ...using MetricValueEvent
+			MetricValueEvent event = gson.fromJson(payload, MetricValueEvent.class);
+			log.debug("EVENT : {}", event);
+			// ...using Map
+			/*Type type = new TypeToken<Map<String,Object>>(){}.getType();
+			Map<String,Object> metricValueMap = gson.fromJson(payload, type);
+			metricValueMap.forEach((x,y)-> System.out.println("\t" + x + " : " + y + " (" + y.getClass().getName() +")"));*/
+			
+			// Cache Metric Value in registry
+			log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
+			registry.setMetricValue( metricName, event.getMetric_value() );
+			log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetric_value(), topicName);
+			log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
+		} else {
+			log.warn("Missing property: 'topic_name'");
+		}
+	}
+	
+	protected void processScaleEvent(String metricName, String payload) {
+		log.error(">>>>   SCALE EVENT: **NOT YET IMPLEMENTED **");
+	}
 }

@@ -38,6 +38,19 @@ public class MetaSolverProperties {
 
 	@Valid
 	@NotNull
+	private Esb esb;
+	
+	@Getter
+	@Setter
+	public static class Esb {
+		@NotBlank
+		private String url;
+	}
+	
+	// --------------------------------------------------------------
+	
+	@Valid
+	@NotNull
 	private Pubsub pubsub;
 
 	@Getter

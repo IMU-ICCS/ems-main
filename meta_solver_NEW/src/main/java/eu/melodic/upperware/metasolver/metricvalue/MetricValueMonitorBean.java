@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.metasolver.metricvalue;
 
+import eu.melodic.upperware.metasolver.Coordinator;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 
 import java.lang.reflect.Type;
@@ -27,19 +28,30 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection; 
 import org.apache.activemq.ActiveMQConnectionFactory; 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class MetricValueMonitorBean {
+public class MetricValueMonitorBean implements ApplicationContextAware {
 	
-    @Autowired
 	private MetaSolverProperties properties;
+	private Coordinator coordinator;
     
 	//private MessageListener listener = null;
 	private HashMap<String,ConnectionConf> connectionCache = new HashMap<>();
 	
 	private MetricValueRegistry<Object> registry = new MetricValueRegistry<>();
+	
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		//this.applicationContext = applicationContext;
+		this.properties = (MetaSolverProperties) applicationContext.getBean(MetaSolverProperties.class);
+		this.coordinator = (Coordinator) applicationContext.getBean(Coordinator.class);
+		log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
+	}
 	
 	public MetricValueRegistry<Object> getMetricValuesRegistry() {
 		return registry;

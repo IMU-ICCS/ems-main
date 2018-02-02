@@ -9,13 +9,22 @@
 
 package eu.melodic.upperware.metasolver;
 
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
+import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
+import eu.melodic.models.services.metaSolver.DeploymentProcessRequestImpl;
+import eu.melodic.models.services.metaSolver.DeploymentProcessResponse;
+import eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl;
+
 import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
 
+import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 //import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-//import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -38,6 +47,7 @@ public class Coordinator implements ApplicationContextAware {
   private ApplicationContext applicationContext;
   private MetaSolverProperties properties;
   private double uvThresholdFactor;
+  private RestTemplate restTemplate;
 
   @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -159,4 +169,39 @@ public class Coordinator implements ApplicationContextAware {
 	return newPos;
   }
   
+  // --------------------------------------------------------------------------
+  
+  private void requestStartProcessForScaling(String appId, String cpModelPath) {
+    log.info("MetaSolver.Coordinator: requestStartProcessForScaling(): appId={}, model={}", appId, cpModelPath);
+    //NotificationResult result = prepareSuccessNotificationResult();
+    DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
+    sendNotification(notification);
+  }
+
+  private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath) {
+    DeploymentProcessRequest notification = new DeploymentProcessRequestImpl();
+    notification.setApplicationId(appId);
+    notification.setUseExistingCP( false );		// For scaling we need to re-use the existing CP model
+    notification.setCdoResourcePath(cpModelPath);
+	String uuid = UUID.randomUUID().toString().toLowerCase();
+    notification.setWatermark(prepareWatermark(uuid));
+    return notification;
+  }
+
+  private void sendNotification(DeploymentProcessRequest notification) {
+    String esbUrl = properties.getEsb().getUrl();
+    if (esbUrl.endsWith("/")) {
+      esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
+    }
+    restTemplate.postForEntity(esbUrl, notification, String.class);
+  }
+  
+  public Watermark prepareWatermark(String uuid) {
+    Watermark watermark = new WatermarkImpl();
+    watermark.setUser("metaSolver");
+    watermark.setSystem("metaSolver");
+    watermark.setDate(new Date());
+    watermark.setUuid(uuid);
+    return watermark;
+  }
 }

@@ -11,8 +11,6 @@ package eu.melodic.upperware.metasolver;
 
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
-import eu.melodic.models.commons.Watermark;
-import eu.melodic.models.commons.WatermarkImpl;
 
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementRequest;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementRequestImpl;
@@ -77,7 +75,7 @@ public class MetaSolverController {
 	response.setApplicationId( applicationId );
 	response.setResult( notificationResult );
 	response.setDesignatedSolver( selectedSolver );
-	response.setWatermark( prepareWatermark(requestUuid) );
+	response.setWatermark( coordinator.prepareWatermark(requestUuid) );
 	
 	return response;
   }
@@ -99,7 +97,7 @@ public class MetaSolverController {
 	SolutionEvaluationResponseImpl response = new SolutionEvaluationResponseImpl();
 	response.setApplicationId( applicationId );
 	response.setEvaluationResult( solutionEvaluation );
-	response.setWatermark( prepareWatermark(requestUuid) );
+	response.setWatermark( coordinator.prepareWatermark(requestUuid) );
 	
 	return response;
   }
@@ -123,22 +121,13 @@ public class MetaSolverController {
 	UpdateSolutionResponseImpl response = new UpdateSolutionResponseImpl();
 	response.setApplicationId( applicationId );
 	response.setUpdateResult( notifRes );
-	response.setWatermark( prepareWatermark(requestUuid) );
+	response.setWatermark( coordinator.prepareWatermark(requestUuid) );
 	
 	return response;
   }
   
   @RequestMapping(value = "/health", method = GET)
   public void health() {
-  }
-
-  private Watermark prepareWatermark(String uuid) {
-    Watermark watermark = new WatermarkImpl();
-    watermark.setUser("metaSolver");
-    watermark.setSystem("metaSolver");
-    watermark.setDate(new Date());
-    watermark.setUuid(uuid);
-    return watermark;
   }
 
   @ExceptionHandler
