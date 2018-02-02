@@ -1,10 +1,10 @@
 /* * Copyright (C) 2017 7bulls.com
-*
-* This Source Code Form is subject to the terms of the
-* Mozilla Public License, v. 2.0. If a copy of the MPL
-* was not distributed with this file, You can obtain one at
-* http://mozilla.org/MPL/2.0/.
-*/
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
 
 package eu.melodic.upperware.utilitygenerator;
 
@@ -42,14 +42,13 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
-    public void printConfigurationWithMaximumUtility(){
+    public void printConfigurationWithMaximumUtility() {
         this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
     }
 
-    public double getUtilityForCurrentDeployedSolution(){
+    public double getUtilityForCurrentDeployedSolution() {
         return this.utilityFunctionEvaluator.evaluateActualSolution();
     }
-
 
 
     private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, Map<MetricType,
@@ -70,17 +69,17 @@ public class UtilityGeneratorApplication {
 
 
 
-  /* ------------------------------ only for tests - to delete later ---------------------------------------------*/
+    /* ------------------------------ only for tests - to delete later ---------------------------------------------*/
 
     public UtilityGeneratorApplication(Map<MetricType, MetricDTO[]> metrics,
-            Collection<Component> actConfiguration, boolean isReconfig,
-            UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
+                                       Collection<Component> actConfiguration, boolean isReconfig,
+                                       UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, costUtilityFunction);
     }
 
     public UtilityGeneratorApplication(Map<MetricType, MetricDTO[]> metrics,
-            Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
+                                       Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
     }
@@ -95,7 +94,7 @@ public class UtilityGeneratorApplication {
     }
 
     private void createUtilityEvaluator(Map<MetricType, MetricDTO[]> metrics, Collection<Component> actConfiguration,
-            boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
+                                        boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         switch (useCase) {
 

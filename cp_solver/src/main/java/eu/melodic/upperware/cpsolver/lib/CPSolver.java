@@ -268,16 +268,16 @@ public class CPSolver {
 			log.info("Using Utility Generator for solution space:");
 
 			if(solver.findSolution()) {
-				log.info("Checking utility of #1 solution.");
+				log.debug("Checking utility of #1 solution.");
 
 				int i=1;
 				maxUtility = 0.0;
 				calculateUtility();
 				while(solver.nextSolution()){
-					log.info("Checking utility of: #{} solution.", i++ );
+					log.debug("Checking utility of: #{} solution.", i++ );
 					calculateUtility();
 				}
-				log.info("max Utility = {}", maxUtility);
+				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
 				utilityGenerator.printConfigurationWithMaximumUtility();
 				hasSolutions = (solver.isFeasible() == ESat.TRUE); //fixme - if utility > 0
 			}
@@ -1220,7 +1220,7 @@ public class CPSolver {
 	private double calculateUtility(){
 
 		double utility = utilityGenerator.evaluate(convertToUtilityIntVariable(solver.retrieveIntVars())); //TODO
-		log.info("Utility = {}", utility);
+		log.debug("Utility = {}", utility);
 		if (utility > maxUtility){
 			maxUtility = utility;
 			log.info("Find max utility: {}", maxUtility);

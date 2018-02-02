@@ -44,7 +44,7 @@ class EvaluatingUtils {
         return variables.stream()
                 .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Variable with type %s for component %s does not exist"))
+                .orElseThrow(() -> new IllegalStateException(format("Variable with type %s for component %s does not exist", type, componentId)))
                 .getId();
     }
 
@@ -117,7 +117,7 @@ class EvaluatingUtils {
 
             switch (type) {
                 case RAM:
-                    log.info("Creating getRamPredicate for value {}", (long) var.getValue());
+                    log.debug("Creating getRamPredicate for value {}", (long) var.getValue());
                     predicates.add(getRamPredicate((long) var.getValue()));
                     break;
                 case CARDINALITY:
@@ -127,11 +127,11 @@ class EvaluatingUtils {
                 case CPU:
                     break;
                 case CORES:
-                    log.info("Creating getCoresPredicate for value {}", var.getValue());
+                    log.debug("Creating getCoresPredicate for value {}", var.getValue());
                     predicates.add(getCoresPredicate(var.getValue()));
                     break;
                 case OS:
-                    log.info("Creating getOsPredicate for value {}", var.getValue());
+                    log.debug("Creating getOsPredicate for value {}", var.getValue());
                     predicates.add(getOsPredicate(var.getValue()));
                     break;
                 case LOCATION:
