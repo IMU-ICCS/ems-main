@@ -353,7 +353,9 @@ public class CPSolver {
 				}
 			}
 		}
-		
+		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		utilityValue.setValue(maxUtility);
+		solution.setUtilityValue(utilityValue);
 		EList<VariableValue> varValues = solution.getVariableValue();
 		try{
 			EList<Variable> vars = cp.getVariables();
