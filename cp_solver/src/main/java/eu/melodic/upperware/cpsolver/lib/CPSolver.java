@@ -279,7 +279,7 @@ public class CPSolver {
 				}
 				log.info("max Utility = {}", maxUtility);
 				utilityGenerator.printConfigurationWithMaximumUtility();
-				hasSolutions = (solver.isFeasible() == ESat.TRUE);
+				hasSolutions = (solver.isFeasible() == ESat.TRUE); //fixme - if utility > 0
 			}
 		} else {
 			if (policy != null) {
@@ -1229,12 +1229,21 @@ public class CPSolver {
 		return utility;
 	}
 
-	private eu.melodic.upperware.utilitygenerator.model.IntVar[] convertToUtilityIntVariable(IntVar[] intVars) {
-		return Arrays.stream(intVars)
-				.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
-				.toArray(eu.melodic.upperware.utilitygenerator.model.IntVar[]::new);
+	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> convertToUtilityIntVariable(IntVar[] intVars) {
+
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution = Arrays.stream(intVars)
+			.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
+			.collect(Collectors.toList());
+
+		variablesForUG.stream()
+			.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
+			.forEach(v -> solution.add(
+				new eu.melodic.upperware.utilitygenerator.model.IntVar(v.getId(), idToIntVar.get(v.getId()).getValue())));
+		return solution;
+
 	}
 
+	//todo
 	private eu.melodic.upperware.utilitygenerator.model.RealVar[] convertToUtilityRealVariable(RealVar[] realVars) {
 		return Arrays.stream(realVars)
 				.map(realVar -> new eu.melodic.upperware.utilitygenerator.model.RealVar(realVar.getName(), realVar.getUB()))

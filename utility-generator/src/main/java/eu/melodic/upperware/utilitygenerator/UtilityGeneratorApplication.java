@@ -18,6 +18,7 @@ import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorF
 import eu.melodic.upperware.utilitygenerator.model.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +37,8 @@ public class UtilityGeneratorApplication {
         this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, useCase, nodeCandidates);
     }
 
-    //todo - canonical model
-    public double evaluate(IntVar[] newConfigurationInt, RealVar[] newConfigurationReal) {
+    //todo - canonical model for real variables
+    public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
@@ -48,7 +49,6 @@ public class UtilityGeneratorApplication {
     public double getUtilityForCurrentDeployedSolution(){
         return this.utilityFunctionEvaluator.evaluateActualSolution();
     }
-
 
 
 
@@ -86,15 +86,13 @@ public class UtilityGeneratorApplication {
     }
 
     public double evaluate(int cardinality) {
-        return this.utilityFunctionEvaluator.evaluate(new IntVar[]{}, new RealVar[]{});
+        return this.utilityFunctionEvaluator.evaluate(new ArrayList<>(), new ArrayList<>());
 
     }
 
-    public double evaluate(IntVar[] newConfigurationInt) {
-        return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new RealVar[]{});
+    public double evaluate(Collection<IntVar> newConfigurationInt) {
+        return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
     }
-
-
 
     private void createUtilityEvaluator(Map<MetricType, MetricDTO[]> metrics, Collection<Component> actConfiguration,
             boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {

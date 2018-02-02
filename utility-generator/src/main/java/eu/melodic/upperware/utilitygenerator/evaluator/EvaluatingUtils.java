@@ -11,7 +11,7 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.IntVar;
 import eu.melodic.upperware.utilitygenerator.model.RealVar;
-import eu.melodic.upperware.utilitygenerator.model.SolutionVariable;
+import eu.melodic.upperware.utilitygenerator.model.Var;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,7 @@ class EvaluatingUtils {
     }
 
 
-    static Map<String, Integer> getCardinalitiesForComponent(IntVar[] newConfiguration, List<VariableDTO> variables) {
+    static Map<String, Integer> getCardinalitiesForComponent(Collection<IntVar> newConfiguration, List<VariableDTO> variables) {
 
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
@@ -57,20 +57,19 @@ class EvaluatingUtils {
                 .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
                 .collect(Collectors.toList());
 
-        Arrays.stream(newConfiguration)
-                .forEach(intVar -> cardinalities
-                        .stream()
-                        .filter(c -> intVar.getName().equals(c.getId()))
-                        .findFirst()
-                        .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), intVar.getValue())));
+        newConfiguration.forEach(intVar -> cardinalities
+                .stream()
+                .filter(c -> intVar.getName().equals(c.getId()))
+                .findFirst()
+                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), intVar.getValue())));
         return cardinalitiesForComponent;
     }
 
     //todo: better exception
-    static int getProviderValue(String componentId, List<VariableDTO> variables, IntVar[] newConfigurationInt) {
+    static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntVar> newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
-        return Arrays.stream(newConfigurationInt)
+        return newConfigurationInt.stream()
                 .filter(intVar -> provider.equals(intVar.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", provider)))
@@ -88,23 +87,25 @@ class EvaluatingUtils {
     }
 
 
-    static Collection<SolutionVariable> convertSolution(IntVar[] newConfigurationInt){
+    //todo - for real var
+    //todo saving only important variables
+    static Collection<Var> convertSolution(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal){
 
-        return Arrays.stream(newConfigurationInt)
-                .map(intVar -> new SolutionVariable(intVar.getName(), intVar.getValue()))
+        return newConfigurationInt.stream()
+                .map(intVar -> new IntVar(intVar.getName(), intVar.getValue()))
                 .collect(Collectors.toList());
     }
 
-    static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId,
-            IntVar[] newConfigurationInt, RealVar[] newConfigurationReal, List<VariableDTO> variables) {
+    static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntVar> newConfigurationInt,
+                                                                 Collection <RealVar> newConfigurationReal, List<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
-        List<IntVar> variablesIntForComponent = Arrays.stream(newConfigurationInt)
+        List<IntVar> variablesIntForComponent = newConfigurationInt.stream()
                 .filter(intVar -> variableNamesForComponent.contains(intVar.getName()))
                 .collect(Collectors.toList());
 
-        List<RealVar> variablesRealForComponent = Arrays.stream(newConfigurationReal)
+        List<RealVar> variablesRealForComponent = newConfigurationReal.stream()
                 .filter(realVar -> variableNamesForComponent.contains(realVar.getName()))
                 .collect(Collectors.toList());
 
