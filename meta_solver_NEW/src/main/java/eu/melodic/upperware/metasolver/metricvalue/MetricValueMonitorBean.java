@@ -40,9 +40,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private MetaSolverProperties properties;
 	private Coordinator coordinator;
     
-	//private MessageListener listener = null;
 	private HashMap<String,ConnectionConf> connectionCache = new HashMap<>();
-	
 	private MetricValueRegistry<Object> registry = new MetricValueRegistry<>();
 	
 	@Override
@@ -160,7 +158,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	}
 	
 	private MessageListener getListener(MessageConsumer consumer, Topic topic, TopicType type) throws JMSException {
-		MessageListener listener = new MetricValueListener(consumer, topic, type, registry);
+		MessageListener listener = new MetricValueListener(coordinator, consumer, topic, type, registry);
 		return listener;
 	}
 	

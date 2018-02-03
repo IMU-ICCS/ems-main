@@ -29,9 +29,9 @@ public class ApplicationContext {
   private MetaSolverProperties metasolverProperties;
   private CpModelHelper cpModelHelper;
 
-  @Bean
+  /*@Bean
   public RestTemplate getRestTemplate() {
     return new RestTemplate();
-  }
+  }*/
 
 }

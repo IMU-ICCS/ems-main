@@ -9,6 +9,8 @@
 
 package eu.melodic.upperware.metasolver.metricvalue;
 
+import eu.melodic.upperware.metasolver.Coordinator;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -28,9 +30,11 @@ public class MetricValueListener implements MessageListener {
 	private TopicType type;
 	private MetricValueRegistry<Object> registry;
 	private Gson gson;
+	private Coordinator coordinator;
 	
-	public MetricValueListener(MessageConsumer consumer, Topic topic, TopicType type, MetricValueRegistry<Object> registry) throws JMSException {
+	public MetricValueListener(Coordinator coordinator, MessageConsumer consumer, Topic topic, TopicType type, MetricValueRegistry<Object> registry) throws JMSException {
 		log.debug("MetricValueListener.<init>: type={}", type);
+		this.coordinator = coordinator;
 		this.consumer = consumer;
 		this.topic = topic;
 		this.topicName = topic.getTopicName();
@@ -76,8 +80,9 @@ public class MetricValueListener implements MessageListener {
 		if (metricName!=null && ! (metricName=metricName.trim()).isEmpty()) {
 			// Extract key-value pairs from message payload
 			// ...using MetricValueEvent
+			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
 			MetricValueEvent event = gson.fromJson(payload, MetricValueEvent.class);
-			log.debug("EVENT : {}", event);
+			log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
 			// ...using Map
 			/*Type type = new TypeToken<Map<String,Object>>(){}.getType();
 			Map<String,Object> metricValueMap = gson.fromJson(payload, type);
@@ -94,6 +99,7 @@ public class MetricValueListener implements MessageListener {
 	}
 	
 	protected void processScaleEvent(String metricName, String payload) {
-		log.error(">>>>   SCALE EVENT: **NOT YET IMPLEMENTED **");
+		log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
+		coordinator.requestStartProcessForScaling();
 	}
 }
