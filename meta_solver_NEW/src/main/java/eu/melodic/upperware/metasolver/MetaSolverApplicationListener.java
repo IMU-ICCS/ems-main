@@ -10,6 +10,7 @@
 package eu.melodic.upperware.metasolver;
 
 import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
+import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,12 +30,14 @@ import org.springframework.stereotype.Component;
 public class MetaSolverApplicationListener implements ApplicationListener<ApplicationEvent>, ApplicationContextAware {
  
     private MetricValueMonitorBean metricValueMonitorBean;
+    private MetaSolverProperties properties;
     private ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
 		this.metricValueMonitorBean = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
+		this.properties = (MetaSolverProperties) applicationContext.getBean(MetaSolverProperties.class);
     }
  
     /*@Autowired
@@ -49,6 +52,8 @@ public class MetaSolverApplicationListener implements ApplicationListener<Applic
 		
 		if (event instanceof org.springframework.context.event.ContextRefreshedEvent) {
 			log.debug("** Application Event Received : Context Refreshed");
+			properties.loadCdoConfig();
+			((eu.melodic.upperware.metasolver.util.CpModelHelper) applicationContext.getBean(eu.melodic.upperware.metasolver.util.CpModelHelper.class)).connect();
 			metricValueMonitorBean.subscribe();
 		} else
 		/*if (event instanceof org.springframework.boot.context.event.ApplicationReadyEvent) {

@@ -130,6 +130,7 @@ public class MetaSolverController {
 	public void health() {
 	}
 
+	//XXX: DELETE:
 	@RequestMapping(value = "/esbTest", method = POST)
 	public eu.melodic.models.services.metaSolver.DeploymentProcessResponse esbTest(@RequestBody eu.melodic.models.services.metaSolver.DeploymentProcessRequest request) {
 		log.warn(">>>> Call to /esbTest: app-id={}, use-existing-cp={}, cdo-path={}, uuid={}", 

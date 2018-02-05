@@ -70,6 +70,7 @@ public class Coordinator implements ApplicationContextAware {
 		this.cacheAppId = applicationId;
 		this.cacheCpModelPath = cpModelPath;
 		
+		//XXX: DELETE:
 		//Uncomment for testing calls to ESB without scaling events
 		//requestStartProcessForScaling();
 		

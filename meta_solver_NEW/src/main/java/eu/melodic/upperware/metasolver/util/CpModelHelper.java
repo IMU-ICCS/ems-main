@@ -140,7 +140,7 @@ public class CpModelHelper {
 	
 	public CpModelHelper() {
 		id = ++counter;
-		//log.debug("CpModelHelper.<init>():  ** NEW INSTANCE #{} **", id);
+		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
 	}
 	
 	public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String,String> metricValues) throws ConcurrentAccessException {
@@ -381,20 +381,26 @@ public class CpModelHelper {
 	// ------------------------------------------------------------------------
 	
 	@PostConstruct
-	public void connect() {
-		//log.debug("CpModelHelper.connect(): #{}", id);
+	public void registerCpPackage() {
 		CpPackage.eINSTANCE.eClass();
-		cdoSession = openCdoSession();
 	}
 	
 	@PreDestroy
+	public void cleanup() {
+		disconnect();
+	}
+	
+	public void connect() {
+		log.debug("CpModelHelper.connect(): helper #{}", id);
+		cdoSession = openCdoSession();
+	}
+	
 	public void disconnect() {
-		log.info("CpModelHelper.disconnect(): #{}", id);
+		log.debug("CpModelHelper.disconnect(): helper #{}", id);
 		cdoSession.close();
 	}
 
 	protected CDONet4jSession openCdoSession() {
-		//XXX: TODO: replace with config from 'eu.paasage.mddb.cdo.client.properties'
 		log.debug("CpModelHelper.openCdoSession: CDO configuration: {}", properties.getCdo());
 		MetaSolverProperties.CdoConfig config = properties.getCdo();
 		
@@ -402,18 +408,21 @@ public class CpModelHelper {
 		int port = config.getPort();
 		String connectionStr = host+":"+port;
 		String repoName = config.getRepositoryName();
+		boolean logging = config.isLogging();
 		boolean auth = config.isSecure();
 		String username = config.getUsername();
 		String password = config.getPassword();
 		
-		return openCdoSession(connectionStr, repoName, false, username, password);
+		return openCdoSession(connectionStr, repoName, logging, auth, username, password);
 	}
 	
 	protected CDONet4jSession openCdoSession(String connectionStr, String repoName) {
-		return openCdoSession(connectionStr, repoName, false, null, null);
+		return openCdoSession(connectionStr, repoName, false, false, null, null);
 	}
 	
-	protected CDONet4jSession openCdoSession(String connectionStr, String repoName, boolean requiresAuth, String cdoUsername, String cdoPassword) {
+	protected CDONet4jSession openCdoSession(String connectionStr, String repoName, boolean logging, boolean requiresAuth, String cdoUsername, String cdoPassword) {
+		log.debug("CpModelHelper.openCdoSession: Arguments: conn-str={}, repos={}, log={}, auth={}, username={}", connectionStr, repoName, logging, requiresAuth, cdoUsername);
+		
 		// initialize and activate a container
 		final IManagedContainer container = ContainerUtil.createContainer();
 		Net4jUtil.prepareContainer(container);
