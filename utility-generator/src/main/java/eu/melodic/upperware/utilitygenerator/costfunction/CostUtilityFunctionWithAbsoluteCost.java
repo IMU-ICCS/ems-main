@@ -33,7 +33,7 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction { /
 
         double normalized = normalize(getLowestCost(newConfiguration), getHighestCost(newConfiguration), newCost);
         double result = 1 - normalized;
-        log.info("evaluateResponseUtilityFunction: normalized result = {}", result);
+        //log.info("evaluateResponseUtilityFunction: normalized result = {}", result);
         return result;
     }
 

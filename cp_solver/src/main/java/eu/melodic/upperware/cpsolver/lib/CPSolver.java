@@ -51,12 +51,13 @@ public class CPSolver {
 	private RealVar realGoal = null;
 	private Hashtable<String,IntVar> idToIntVar = new Hashtable<>();
 	private Hashtable<String,RealVar> idToRealVar = new Hashtable<>();
-	private ConstraintProblem cp = null;
 	private static final double epsilon = 0.000001d;
 	private static final int LOW_INT_LIMIT = -10000;
 	private static final int UPPER_INT_LIMIT = 100000000;
 	private static final double LOW_REAL_LIMIT = -1000000000.0;
 	private static final double UPPER_REAL_LIMIT = 1000000000.0;
+	private static UtilityFunctionType utilityFunctionType;
+	private static String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
@@ -86,11 +87,9 @@ public class CPSolver {
 			metrics.put(MetricType.AVG_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)});
 			metrics.put(MetricType.COST_WEIGHT, new MetricDTO[]{new MetricDTO(MetricType.COST_WEIGHT, "",0.5)});
 
-			//for FCR use case
-			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metrics, UtilityFunctionType.FCR,
+			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metrics, utilityFunctionType,
 					nodeCandidates);
 		}
-
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
@@ -119,6 +118,7 @@ public class CPSolver {
 		createMetricVariables(cp.getMetricVariables());
 		createConstraints(cp.getConstraints());
 		createVariablesForUG(cp.getVariables());
+		createUtilityFunctionType(cp);
 
 		//Checking if metric-based solution exists
 		if (timestamp != 0){
@@ -220,6 +220,7 @@ public class CPSolver {
 	 * name for this model is provided as input
 	 */
 	public void readCPModel(String cdoPath, String pathName){
+		ConstraintProblem cp = null;
 		log.info("Reading CP model...");
 		CDOClient cl = new CDOClient();
 		cl.registerPackage(TypesPackage.eINSTANCE);
@@ -267,19 +268,18 @@ public class CPSolver {
 			log.info("Using Utility Generator for solution space:");
 
 			if(solver.findSolution()) {
-				log.info("Checking utility of #1 solution.");
+				log.debug("Checking utility of #1 solution.");
 
 				int i=1;
 				maxUtility = 0.0;
 				calculateUtility();
 				while(solver.nextSolution()){
-					i++;
-					log.info("Checking utility of: #" +i +" solution.");
+					log.debug("Checking utility of: #{} solution.", i++ );
 					calculateUtility();
 				}
-				log.info("max Utility = " + maxUtility);
+				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
 				utilityGenerator.printConfigurationWithMaximumUtility();
-				hasSolutions = (solver.isFeasible() == ESat.TRUE);
+				hasSolutions = (solver.isFeasible() == ESat.TRUE); //fixme - if utility > 0
 			}
 		} else {
 			if (policy != null) {
@@ -1221,14 +1221,45 @@ public class CPSolver {
 
 	private double calculateUtility(){
 
-		double utility = utilityGenerator.evaluate(solver.retrieveIntVars());
-		log.info("Utility = " + utility);
+		double utility = utilityGenerator.evaluate(convertToUtilityIntVariable(solver.retrieveIntVars())); //TODO
+		log.debug("Utility = {}", utility);
 		if (utility > maxUtility){
 			maxUtility = utility;
-			log.info("Find max utility: " + maxUtility);
+			log.info("Find max utility: {}", maxUtility);
 			saveSolution();
 		}
 		return utility;
+	}
+
+	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> convertToUtilityIntVariable(IntVar[] intVars) {
+
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution = Arrays.stream(intVars)
+			.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
+			.collect(Collectors.toList());
+
+		variablesForUG.stream()
+			.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
+			.forEach(v -> solution.add(
+				new eu.melodic.upperware.utilitygenerator.model.IntVar(v.getId(), idToIntVar.get(v.getId()).getValue())));
+		return solution;
+
+	}
+
+	//todo
+	private eu.melodic.upperware.utilitygenerator.model.RealVar[] convertToUtilityRealVariable(RealVar[] realVars) {
+		return Arrays.stream(realVars)
+				.map(realVar -> new eu.melodic.upperware.utilitygenerator.model.RealVar(realVar.getName(), realVar.getUB()))
+				.toArray(eu.melodic.upperware.utilitygenerator.model.RealVar[]::new);
+	}
+
+	private void createUtilityFunctionType(ConstraintProblem cp){
+		utilityFunctionType = cp.getConstants().stream()
+				.map(CPElement::getId)
+				.filter(s -> s.startsWith(utilityFunctionTypePrefix))
+				.map(String::toUpperCase)
+				.map(s -> s.replace(utilityFunctionTypePrefix, ""))
+				.map(UtilityFunctionType::valueOf)
+				.findFirst().orElse(null);
 	}
 
 	private BoolVar createBoolVar(){

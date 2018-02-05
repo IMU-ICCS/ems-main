@@ -1,4 +1,4 @@
-/* * Copyright (C) 2017 7bulls.com
+/* * Copyright (C) 2018 7bulls.com
  *
  * This Source Code Form is subject to the terms of the
  * Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -13,16 +13,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SolutionVariable {
+public class Var<T> {
 
     private String name;
-    private int value; //todo - value can be real,
-
-    @Override
-
-    public String toString(){
-
-        return name + " = " + value;
-
-    }
+    private T value;
 }

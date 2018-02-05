@@ -53,7 +53,7 @@ class CETrafficUseCaseTest extends Specification {
     cardinality = 1
     UtilityGeneratorApplication utilityGenerator =
       new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
 
     when:
     System.out.println("ONE MACHINE ")
@@ -74,7 +74,7 @@ class CETrafficUseCaseTest extends Specification {
     cardinality = 2
     UtilityGeneratorApplication utilityGenerator =
       new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
 
     when:
     System.out.println("LESS MACHINES ")
@@ -96,7 +96,7 @@ class CETrafficUseCaseTest extends Specification {
     cardinality = 3
     UtilityGeneratorApplication utilityGenerator =
       new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
 
     when:
     System.out.println("MORE MACHINES ")
@@ -116,7 +116,7 @@ class CETrafficUseCaseTest extends Specification {
     cardinality = 4
     UtilityGeneratorApplication utilityGenerator =
       new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
 
     when:
     System.out.println("MORE MACHINES ")
@@ -136,7 +136,7 @@ class CETrafficUseCaseTest extends Specification {
     cardinality = 6
     UtilityGeneratorApplication utilityGenerator =
       new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-        UtilityFunctionType.CE_TRAFFIC, costUtilityFunction)
+        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
 
     when:
     System.out.println("MORE MACHINES ")
