@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="ASCII"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:application="http://paasage.inria.fr/eu/paasage/upperware/metamodel/application" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types" xmlns:typesPaasage="http://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage">
+  <application:PaasageConfiguration xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#PaasageConfiguration#6" id="OpenFoamApplication1445419635068">
+    <goals xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#PaaSageGoal#6" id="minResponseTime" goal="min">
+      <function href="../cpGenerator-functionTypes#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#FunctionType#2"/>
+      <applicationComponent xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ComponentMetricRelationship#31" metricId="ResponseTimeMetric">
+        <component href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#46"/>
+      </applicationComponent>
+      <applicationComponent xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ComponentMetricRelationship#32">
+        <component href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#49"/>
+      </applicationComponent>
+    </goals>
+    <variables xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#PaaSageVariable#41" paasageType="VirtualLocation" cpVariableId="U_app_component_SlaveNode_vm_EU_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE_provider_Omistack-EU-1445419635179">
+      <relatedComponent href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#46"/>
+      <relatedProvider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      <relatedVirtualMachineProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#47"/>
+    </variables>
+    <variables xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#PaaSageVariable#42" paasageType="VirtualLocation" cpVariableId="U_app_component_SlaveNode_vm_DE_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE_provider_Omistack-EU-1445419635179">
+      <relatedComponent href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#46"/>
+      <relatedProvider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      <relatedVirtualMachineProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#48"/>
+    </variables>
+    <variables xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#PaaSageVariable#43" paasageType="VirtualLocation" cpVariableId="U_app_component_MasterNode_vm_EU_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE_provider_Omistack-EU-1445419635179">
+      <relatedComponent href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#49"/>
+      <relatedProvider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      <relatedVirtualMachineProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#50"/>
+    </variables>
+    <variables xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#PaaSageVariable#44" paasageType="VirtualLocation" cpVariableId="U_app_component_MasterNode_vm_DE_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE_provider_Omistack-EU-1445419635179">
+      <relatedComponent href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#49"/>
+      <relatedProvider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      <relatedVirtualMachineProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#51"/>
+    </variables>
+    <components xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#46" cloudMLId="SlaveNode" min="1" max="10">
+      <requiredProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#47"/>
+      <requiredProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#48"/>
+      <features>SlaveProvidedCommunication</features>
+    </components>
+    <components xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#49" cloudMLId="MasterNode" max="1">
+      <requiredProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#50"/>
+      <requiredProfile href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#51"/>
+      <features>MasterProvidedCommunication</features>
+      <requiredFeatures xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#RequiredFeature#55" feature="MasterRequiredSlaveCommunication">
+        <providedBy xsi:type="application:ApplicationComponent" href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#46"/>
+      </requiredFeatures>
+      <requiredFeatures xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#RequiredFeature#56" feature="MasterRequiredSlaveCommunication">
+        <providedBy xsi:type="application:ApplicationComponent" href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ApplicationComponent#46"/>
+      </requiredFeatures>
+    </components>
+    <providers xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105" id="Omistack-EU-1445419635179">
+      <location xsi:type="typesPaasage:ContinentUpperware" href="../cpGenerator-locations#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#ContinentUpperware#12"/>
+      <type href="../cpGenerator-providerTypes#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#ProviderType#3"/>
+    </providers>
+    <vmProfiles xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#47" cloudMLId="EU_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE" relatedCloudVMId="SmallLinux">
+      <memory xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Memory#102">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#168" value="8192"/>
+      </memory>
+      <storage xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Storage#103" unit="GB">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#169" value="10"/>
+      </storage>
+      <cpu xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#CPU#104" cores="2">
+        <value xsi:type="types:DoubleValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#DoubleValueUpperware#170"/>
+      </cpu>
+      <providerDimension xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ProviderDimension#16" value="-1.0">
+        <provider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      </providerDimension>
+      <location xsi:type="typesPaasage:ContinentUpperware" href="../cpGenerator-locations#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#ContinentUpperware#12"/>
+    </vmProfiles>
+    <vmProfiles xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#48" cloudMLId="DE_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE" relatedCloudVMId="SmallLinux">
+      <memory xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Memory#106">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#171" value="8192"/>
+      </memory>
+      <storage xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Storage#107" unit="GB">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#172" value="10"/>
+      </storage>
+      <cpu xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#CPU#108" cores="2">
+        <value xsi:type="types:DoubleValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#DoubleValueUpperware#173"/>
+      </cpu>
+      <providerDimension xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ProviderDimension#17" value="-1.0">
+        <provider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      </providerDimension>
+      <location xsi:type="typesPaasage:CountryUpperware" href="../cpGenerator-locations#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#CountryUpperware#22"/>
+    </vmProfiles>
+    <vmProfiles xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#50" cloudMLId="EU_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE" relatedCloudVMId="LargeLinux">
+      <memory xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Memory#109">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#174" value="4096"/>
+      </memory>
+      <storage xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Storage#110" unit="GB">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#175" value="30"/>
+      </storage>
+      <cpu xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#CPU#111" cores="2">
+        <value xsi:type="types:DoubleValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#DoubleValueUpperware#176"/>
+      </cpu>
+      <providerDimension xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ProviderDimension#18" value="-1.0">
+        <provider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      </providerDimension>
+      <location xsi:type="typesPaasage:ContinentUpperware" href="../cpGenerator-locations#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#ContinentUpperware#12"/>
+    </vmProfiles>
+    <vmProfiles xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#VirtualMachineProfile#51" cloudMLId="DE_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE" relatedCloudVMId="LargeLinux">
+      <memory xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Memory#112">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#177" value="4096"/>
+      </memory>
+      <storage xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Storage#113" unit="GB">
+        <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#178" value="30"/>
+      </storage>
+      <cpu xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#CPU#114" cores="2">
+        <value xsi:type="types:DoubleValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#DoubleValueUpperware#179"/>
+      </cpu>
+      <providerDimension xmi:id="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#ProviderDimension#19" value="-1.0">
+        <provider href="lhttp://paasage.inria.fr/eu/paasage/upperware/metamodel/application#Provider#105"/>
+      </providerDimension>
+      <location xsi:type="typesPaasage:CountryUpperware" href="../cpGenerator-locations#lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types/typesPaasage#CountryUpperware#22"/>
+    </vmProfiles>
+  </application:PaasageConfiguration>
+  <cp:ConstraintProblem xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ConstraintProblem#6">
+    <goals xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Goal#226" id="minResponseTime" goalType="min">
+      <expression xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#214" id="aux_expression_9">
+        <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#215"/>
+        <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#219"/>
+        <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#222"/>
+        <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#224"/>
+      </expression>
+    </goals>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#227" id="min_num_vm">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#189" value="1"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#228" id="number_vm_EU_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#190" value="1"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#229" id="number_vm_DE_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#191" value="1"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#230" id="number_vm_EU_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#192" value="1"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#231" id="number_vm_DE_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#193" value="1"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#232" id="one_constant">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#194" value="1"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#233" id="cero_constant">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#195"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#234" id="constant_0">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#196" value="10"/>
+    </constants>
+    <constants xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#216" id="minus_one">
+      <value xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#180" value="-1"/>
+    </constants>
+    <variables xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218" id="U_app_component_SlaveNode_vm_EU_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE_provider_Omistack-EU-1445419635179" providerId="Omistack-EU-1445419635179" vmId="EU_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE">
+      <domain xsi:type="cp:RangeDomain" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#RangeDomain#41">
+        <from xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#181"/>
+        <to xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#182" value="10"/>
+      </domain>
+    </variables>
+    <variables xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#221" id="U_app_component_SlaveNode_vm_DE_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE_provider_Omistack-EU-1445419635179" providerId="Omistack-EU-1445419635179" vmId="DE_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE">
+      <domain xsi:type="cp:RangeDomain" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#RangeDomain#42">
+        <from xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#183"/>
+        <to xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#184" value="10"/>
+      </domain>
+    </variables>
+    <variables xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223" id="U_app_component_MasterNode_vm_EU_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE_provider_Omistack-EU-1445419635179" providerId="Omistack-EU-1445419635179" vmId="EU_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE">
+      <domain xsi:type="cp:RangeDomain" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#RangeDomain#43">
+        <from xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#185"/>
+        <to xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#186" value="1"/>
+      </domain>
+    </variables>
+    <variables xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#225" id="U_app_component_MasterNode_vm_DE_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE_provider_Omistack-EU-1445419635179" providerId="Omistack-EU-1445419635179" vmId="DE_Omistack_LargeLinux_Ubuntu 14.04__LargeLinuxVM_PROFILE">
+      <domain xsi:type="cp:RangeDomain" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#RangeDomain#44">
+        <from xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#187"/>
+        <to xsi:type="types:IntegerValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#IntegerValueUpperware#188" value="1"/>
+      </domain>
+    </variables>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#236" id="c_0" comparator="lessOrEqualTo">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#235"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#234"/>
+    </constraints>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#237" id="c_1" comparator="greaterOrEqualTo">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#235"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#232"/>
+    </constraints>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#239" id="c_2" comparator="lessOrEqualTo">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#238"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#232"/>
+    </constraints>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#240" id="c_3" comparator="greaterOrEqualTo">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#238"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#233"/>
+    </constraints>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#244" id="c_4" comparator="equalTo">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#241"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#233"/>
+    </constraints>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#248" id="c_5" comparator="equalTo">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#245"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#233"/>
+    </constraints>
+    <constraints xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComparisonExpression#250" id="c_6">
+      <exp1 xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#249"/>
+      <exp2 xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#233"/>
+    </constraints>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#235" id="aux_expression_0">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#221"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#238" id="aux_expression_1">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#225"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#242" id="aux_expression_2" operator="minus">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#243" id="aux_expression_3" operator="minus">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#241" id="aux_expression_4">
+      <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#242"/>
+      <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#243"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#246" id="aux_expression_5" operator="minus">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#247" id="aux_expression_6" operator="minus">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#245" id="aux_expression_7">
+      <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#246"/>
+      <expressions xsi:type="cp:ComposedExpression" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#247"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#249" id="aux_expression_8">
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#221"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#225"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#215" id="aux_expression_10" operator="times">
+      <expressions xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#216"/>
+      <expressions xsi:type="cp:MetricVariable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariable#217"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#218"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#219" id="aux_expression_11" operator="times">
+      <expressions xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#216"/>
+      <expressions xsi:type="cp:MetricVariable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariable#220"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#221"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#222" id="aux_expression_12" operator="times">
+      <expressions xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#216"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#223"/>
+    </auxExpressions>
+    <auxExpressions xsi:type="cp:ComposedExpression" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#ComposedExpression#224" id="aux_expression_13" operator="times">
+      <expressions xsi:type="cp:Constant" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Constant#216"/>
+      <expressions xsi:type="cp:Variable" href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Variable#225"/>
+    </auxExpressions>
+    <metricVariables xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariable#217" id="ResponseTimeMetric_EU_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE_Omistack-EU-1445419635179" type="Double"/>
+    <metricVariables xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariable#220" id="ResponseTimeMetric_DE_Omistack_SmallLinux_Ubuntu 14.04__SmallLinuxVM_PROFILE_Omistack-EU-1445419635179" type="Double"/>
+    <solution xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#Solution#1" timestamp="1445419787075">
+      <metricVariableValue xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariableValue#1">
+        <variable href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariable#217"/>
+        <value xsi:type="types:DoubleValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#DoubleValueUpperware#197" value="1.0"/>
+      </metricVariableValue>
+      <metricVariableValue xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariableValue#2">
+        <variable href="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/cp#MetricVariable#220"/>
+        <value xsi:type="types:DoubleValueUpperware" xmi:id="lhttp://www.paasage.eu/eu/paasage/upperware/metamodel/types#DoubleValueUpperware#198" value="1.0"/>
+      </metricVariableValue>
+    </solution>
+  </cp:ConstraintProblem>
+</xmi:XMI>

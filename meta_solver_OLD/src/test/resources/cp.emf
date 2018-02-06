@@ -1,0 +1,167 @@
+@namespace(uri="http://www.paasage.eu/eu", prefix="eu")
+package eu;
+
+import "platform:/resource/upperware-metamodel/src/main/resources/metamodels/paasageTypes.ecore";
+
+@namespace(uri="http://www.paasage.eu/eu/paasage", prefix="paasage")
+package paasage {
+  @namespace(uri="http://www.paasage.eu/eu/paasage/upperware", prefix="upperware")
+  package upperware {
+    @namespace(uri="http://www.paasage.eu/eu/paasage/upperware/metamodel", prefix="metamodel")
+    package metamodel {
+      @namespace(uri="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp", prefix="cp")
+      package cp {
+        abstract class CPElement {
+          attr String[1] ~id;
+        }
+
+        class ConstraintProblem {
+          val Goal[*] goals;
+          val Constant[*] constants;
+          val Variable[*] variables;
+          val ComparisonExpression[*] constraints;
+          val Expression[*] auxExpressions;
+          val MetricVariable[*] metricVariables;
+          val Solution[*] solution;
+        }
+
+        abstract class Expression extends CPElement {
+        }
+
+        abstract class NumericExpression extends Expression {
+        }
+
+        class Variable extends NumericExpression {
+          val Domain[1] domain;
+          attr String locationId;
+          attr String providerId;
+          attr String vmId;
+          attr String OsImageId;
+          attr String hardwareId;
+        }
+
+        abstract class Domain {
+        }
+
+        class NumericDomain extends Domain {
+          attr eu.paasage.upperware.metamodel.types.BasicTypeEnum[1] type;
+          ref eu.paasage.upperware.metamodel.types.NumericValueUpperware value;
+        }
+
+        class RangeDomain extends NumericDomain {
+          val eu.paasage.upperware.metamodel.types.NumericValueUpperware[1] from;
+          val eu.paasage.upperware.metamodel.types.NumericValueUpperware[1] to;
+        }
+
+        class NumericListDomain extends NumericDomain {
+          val eu.paasage.upperware.metamodel.types.NumericValueUpperware[+] values;
+        }
+
+        class Constant extends NumericExpression {
+          attr eu.paasage.upperware.metamodel.types.BasicTypeEnum[1] type;
+          val eu.paasage.upperware.metamodel.types.NumericValueUpperware[1] value;
+        }
+
+        class ComposedExpression extends NumericExpression {
+          ref NumericExpression[2..*] expressions;
+          attr OperatorEnum operator;
+        }
+
+        enum OperatorEnum {
+          plus = 0;
+          minus = 1;
+          times = 2;
+          div = 3;
+        }
+
+        enum GoalOperatorEnum {
+          max = 0;
+          min = 1;
+        }
+
+        enum ComparatorEnum {
+          greaterThan = 0;
+          lessThan = 1;
+          greaterOrEqualTo = 2;
+          lessOrEqualTo = 3;
+          equalTo = 4;
+          different = 5;
+        }
+
+        class ComparisonExpression extends BooleanExpression {
+          ref Expression[1] exp1;
+          ref Expression[1] exp2;
+          attr ComparatorEnum[1] comparator;
+        }
+
+        class Goal extends CPElement {
+          val NumericExpression[1] expression;
+          attr GoalOperatorEnum[1] goalType;
+        }
+
+        abstract class BooleanExpression extends Expression {
+        }
+
+        class ListDomain extends Domain {
+          val eu.paasage.upperware.metamodel.types.StringValueUpperware[+] values;
+          ref eu.paasage.upperware.metamodel.types.StringValueUpperware value;
+        }
+
+        class MultiRangeDomain extends NumericDomain {
+          val RangeDomain[2..*] ranges;
+        }
+
+        abstract class UnaryExpression extends NumericExpression {
+          ref NumericExpression[1] expression;
+        }
+
+        enum SimpleUnaryOperatorEnum {
+          abstractValue = 0;
+          lnValue = 1;
+        }
+
+        enum ComposedUnaryOperatorEnum {
+          exponentialValue = 0;
+          logValue = 1;
+        }
+
+        abstract class SimpleUnaryExpression extends UnaryExpression {
+          attr SimpleUnaryOperatorEnum[1] operator;
+        }
+
+        abstract class ComposedUnaryExpression extends UnaryExpression {
+          attr ComposedUnaryOperatorEnum[1] operator;
+          attr int[1] value;
+        }
+
+        class BooleanDomain extends Domain {
+        }
+
+        class MetricVariable extends NumericExpression {
+          attr eu.paasage.upperware.metamodel.types.BasicTypeEnum[1] type;
+        }
+
+        class Solution {
+          attr long[1] timestamp;
+          val VariableValue[+] variableValue;
+          val MetricVariableValue[+] metricVariableValue;
+        }
+
+        class VariableValue {
+          ref Variable[1] variable;
+          val eu.paasage.upperware.metamodel.types.NumericValueUpperware[1] value;
+        }
+
+        class MetricVariableValue {
+          ref MetricVariable[1] variable;
+          val eu.paasage.upperware.metamodel.types.NumericValueUpperware[1] value;
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
