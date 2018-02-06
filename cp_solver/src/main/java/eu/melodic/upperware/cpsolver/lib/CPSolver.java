@@ -10,9 +10,7 @@ package eu.melodic.upperware.cpsolver.lib;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
-import eu.melodic.upperware.utilitygenerator.model.MetricDTO;
-import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.*;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
@@ -58,6 +56,7 @@ public class CPSolver {
 	private static final double UPPER_REAL_LIMIT = 1000000000.0;
 	private static UtilityFunctionType utilityFunctionType;
 	private static String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
+	private static String metricsPrefix = "METRIC_";
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
@@ -67,6 +66,7 @@ public class CPSolver {
 	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
 	private List<VariableDTO> variablesForUG = new ArrayList<>();
+	private List<MetricDTO> metricsForUG = new ArrayList<>();
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
@@ -80,15 +80,7 @@ public class CPSolver {
 		readCPModel(cdoPath,pathName);
 
 		if (this.useExternalOptimizer){
-			//FIXME metrics should be from Metric Collector
-			Map<MetricType, MetricDTO[]> metrics = new HashMap<>();
-			metrics.put(MetricType.MAX_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.MAX_RESPONSE_TIME, "", 30)});
-			metrics.put(MetricType.NOM_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.NOM_RESPONSE_TIME, "", 20)});
-			metrics.put(MetricType.AVG_RESPONSE_TIME, new MetricDTO[]{new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)});
-			metrics.put(MetricType.COST_WEIGHT, new MetricDTO[]{new MetricDTO(MetricType.COST_WEIGHT, "",0.5)});
-
-			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metrics, utilityFunctionType,
-					nodeCandidates);
+			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityFunctionType, nodeCandidates);
 		}
 	}
 	
@@ -118,6 +110,7 @@ public class CPSolver {
 		createMetricVariables(cp.getMetricVariables());
 		createConstraints(cp.getConstraints());
 		createVariablesForUG(cp.getVariables());
+		createMetricsForUG(cp.getConstants());
 		createUtilityFunctionType(cp);
 
 		//Checking if metric-based solution exists
@@ -138,11 +131,41 @@ public class CPSolver {
 
 	}
 
+	private void createMetricsForUG(EList<Constant> constants) {
+		log.info("Creating metrics for Utility Generator");
+
+        Collection<Constant> metrics = constants.stream()
+                .filter(c -> c.getId().startsWith(metricsPrefix))
+                .collect(Collectors.toList());
+
+
+        this.metricsForUG = metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.INTEGER))
+                .map(metric -> new IntMetricDTO(metric.getId(), ((IntegerValueUpperware)metric.getValue()).getValue()))
+                .collect(Collectors.toList());
+
+
+		metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.LONG))
+                .forEach(metric -> metricsForUG.add(new LongMetricDTO(metric.getId(), ((LongValueUpperware)metric.getValue()).getValue())));
+
+        metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.DOUBLE))
+                .forEach(metric -> metricsForUG.add(new DoubleMetricDTO(metric.getId(), ((DoubleValueUpperware)metric.getValue()).getValue())));
+
+        metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.FLOAT))
+                .forEach(metric -> metricsForUG.add(new FloatMetricDTO(metric.getId(), ((FloatValueUpperware)metric.getValue()).getValue())));
+
+        log.info("Creating metrics for Utility Generator is finished.");
+	}
+
 	private void createVariablesForUG(EList<Variable> variables) {
 		log.info("Creating variables for Utility Generator");
 		this.variablesForUG = variables.stream()
 				.map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
 				.collect(Collectors.toList());
+		log.info("Creating variables for Utility Generator is finished");
 	}
 
 	//Get solution mapping to the timestamp given
@@ -1243,7 +1266,7 @@ public class CPSolver {
 
 	}
 
-	//todo
+	//todo - handling RealVar
 	private eu.melodic.upperware.utilitygenerator.model.RealVar[] convertToUtilityRealVariable(RealVar[] realVars) {
 		return Arrays.stream(realVars)
 				.map(realVar -> new eu.melodic.upperware.utilitygenerator.model.RealVar(realVar.getName(), realVar.getUB()))

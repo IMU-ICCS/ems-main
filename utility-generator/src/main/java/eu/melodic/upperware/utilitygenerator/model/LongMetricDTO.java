@@ -1,4 +1,4 @@
-/* * Copyright (C) 2017 7bulls.com
+/* * Copyright (C) 2018 7bulls.com
  *
  * This Source Code Form is subject to the terms of the
  * Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -8,9 +8,9 @@
 
 package eu.melodic.upperware.utilitygenerator.model;
 
-public enum MetricType {
+public class LongMetricDTO extends MetricDTO<Long>{
 
-    AVG_RESPONSE_TIME, MAX_RESPONSE_TIME, NOM_RESPONSE_TIME, COST_WEIGHT,
-    RAM_USAGE, MAX_RAM_USAGE
-
+    public LongMetricDTO(String name, Long value) {
+        super(name, value);
+    }
 }

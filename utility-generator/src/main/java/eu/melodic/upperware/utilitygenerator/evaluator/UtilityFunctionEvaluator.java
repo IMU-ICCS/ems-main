@@ -58,6 +58,9 @@ public abstract class UtilityFunctionEvaluator {
         if (isReconfig) {
             //Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
             //this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(),getSampleNodeCandidates());
+            //this.actConfiguration = new ArrayList<>();
+            //actConfiguration.add(new Component("Component", findTheCheapestNodeCanidate(getSampleNodeCandidates()), 3));
+            //actConfiguration.add(new Component("Component_DB", getSampleNodeCandidates().get(0), 1));
         }
 
         this.maxUtility = 0.0;
@@ -85,9 +88,6 @@ public abstract class UtilityFunctionEvaluator {
         }
         return utility;
 
-        //return evaluate(Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidates), 1)));
-        //return evaluate(convertSolutionToNodeCandidatesToTest(newConfigurationInt, newConfigurationReal));
-
     }
 
     public double evaluateActualSolution() {
@@ -95,7 +95,6 @@ public abstract class UtilityFunctionEvaluator {
     }
 
     public void printConfigurationWithMaximumUtility() {
-
 
         log.info("Solution with maximum utility:");
         printSolution(solutionWithMaxUtility);

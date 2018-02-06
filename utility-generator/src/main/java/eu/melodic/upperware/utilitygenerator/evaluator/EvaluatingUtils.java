@@ -1,10 +1,10 @@
 /* * Copyright (C) 2017 7bulls.com
-*
-* This Source Code Form is subject to the terms of the
-* Mozilla Public License, v. 2.0. If a copy of the MPL
-* was not distributed with this file, You can obtain one at
-* http://mozilla.org/MPL/2.0/.
-*/
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
@@ -27,10 +27,8 @@ import static java.lang.String.format;
 class EvaluatingUtils {
 
 
-  /* mapping variables from solution and cp model */
+    /* mapping variables from solution and cp model */
 
-
-    //todo move to CPModelTool
     static Collection<String> getVariableNames(String componentId, List<VariableDTO> variables) {
 
         return variables.stream()
@@ -39,7 +37,6 @@ class EvaluatingUtils {
                 .collect(Collectors.toList());
     }
 
-    //todo better exception? move to CPModelTool
     static String getVariableName(String componentId, VariableType type, List<VariableDTO> variables) {
         return variables.stream()
                 .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
@@ -65,7 +62,6 @@ class EvaluatingUtils {
         return cardinalitiesForComponent;
     }
 
-    //todo: better exception
     static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntVar> newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
@@ -77,7 +73,6 @@ class EvaluatingUtils {
 
     }
 
-    //todo: better exception move to CPModelTool
     private static VariableType getVariableType(String name, List<VariableDTO> variables) {
         return variables.stream()
                 .filter(variable -> name.equals(variable.getId()))
@@ -89,7 +84,7 @@ class EvaluatingUtils {
 
     //todo - for real var
     //todo saving only important variables
-    static Collection<Var> convertSolution(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal){
+    static Collection<Var> convertSolution(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
 
         return newConfigurationInt.stream()
                 .map(intVar -> new IntVar(intVar.getName(), intVar.getValue()))
@@ -97,7 +92,7 @@ class EvaluatingUtils {
     }
 
     static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntVar> newConfigurationInt,
-                                                                 Collection <RealVar> newConfigurationReal, List<VariableDTO> variables) {
+            Collection<RealVar> newConfigurationReal, List<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
@@ -195,7 +190,7 @@ class EvaluatingUtils {
 //    }
 
 
-  /* ---------------------for tests -to delete later -----------------------------*/
+    /* ---------------------for tests -to delete later -----------------------------*/
 
     static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates) {
         Objects.requireNonNull(nodeCandidates);
