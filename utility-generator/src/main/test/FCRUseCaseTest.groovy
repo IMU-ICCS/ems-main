@@ -11,7 +11,7 @@ import eu.melodic.cloudiator.client.model.NodeCandidate
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*
-import eu.melodic.upperware.utilitygenerator.model.Component
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware
 import eu.paasage.upperware.metamodel.types.TypesFactory
@@ -35,9 +35,9 @@ class FCRUseCaseTest extends Specification {
     CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
 
     List<MetricDTO> metrics
-    List<Component> listInit
+    List<ConfigurationElement> listInit
 
-    Component initialDeployment
+    ConfigurationElement initialDeployment
 
     DoubleValueUpperware avgResponseTime
 
@@ -54,7 +54,7 @@ class FCRUseCaseTest extends Specification {
         NodeCandidate initNC = GroovyMock(NodeCandidate)
         initNC.getPrice() >> 2.0
 
-        initialDeployment = new Component(componentId, initNC, 3)
+        initialDeployment = new ConfigurationElement(componentId, initNC, 3)
         listInit = new ArrayList<>()
         listInit.add(initialDeployment)
     }

@@ -12,7 +12,7 @@ import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction
-import eu.melodic.upperware.utilitygenerator.model.Component
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -21,16 +21,16 @@ import spock.lang.Specification
 class CASUseCaseTest extends Specification {
 
     CostUtilityFunction costUtilityFunction
-    List<Component> initDeployment = new ArrayList<>()
+    List<ConfigurationElement> initDeployment = new ArrayList<>()
 
-    Component initialDeployment
+    ConfigurationElement initialDeployment
 
     def setup() {
 
         NodeCandidate initNC = GroovyMock(NodeCandidate)
         initNC.getPrice() >> 2.0
 
-        initialDeployment = new Component("Component", initNC, 3)
+        initialDeployment = new ConfigurationElement("Component", initNC, 3)
         initDeployment.add(initialDeployment)
         costUtilityFunction = new CostUtilityFunctionFraction()
 

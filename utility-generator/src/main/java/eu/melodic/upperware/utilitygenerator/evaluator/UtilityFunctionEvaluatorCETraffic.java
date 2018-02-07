@@ -11,7 +11,7 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
-import eu.melodic.upperware.utilitygenerator.model.Component;
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 
 import java.util.Collection;
@@ -29,13 +29,13 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
 
 
     @Override
-    public double evaluate(Collection<Component> newConfiguration) {
+    public double evaluate(Collection<ConfigurationElement> newConfiguration) {
         return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
     }
 
   /* for tests*/
 
-    public UtilityFunctionEvaluatorCETraffic(Collection<Component> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+    public UtilityFunctionEvaluatorCETraffic(Collection<ConfigurationElement> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
         super(actConfiguration, isReconfig);
         this.costUtilityFunction = costUtilityFunction;
     }

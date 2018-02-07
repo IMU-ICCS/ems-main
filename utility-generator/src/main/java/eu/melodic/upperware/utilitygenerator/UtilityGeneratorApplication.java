@@ -71,14 +71,14 @@ public class UtilityGeneratorApplication {
     /* ------------------------------ only for tests - to delete later ---------------------------------------------*/
 
     public UtilityGeneratorApplication(List<MetricDTO> metrics,
-            Collection<Component> actConfiguration, boolean isReconfig,
+            Collection<ConfigurationElement> actConfiguration, boolean isReconfig,
             UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, costUtilityFunction);
     }
 
     public UtilityGeneratorApplication(List<MetricDTO> metrics,
-            Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
+            Collection<ConfigurationElement> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
     }
@@ -93,7 +93,7 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
     }
 
-    private void createUtilityEvaluator(List<MetricDTO> metrics, Collection<Component> actConfiguration,
+    private void createUtilityEvaluator(List<MetricDTO> metrics, Collection<ConfigurationElement> actConfiguration,
             boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         switch (useCase) {

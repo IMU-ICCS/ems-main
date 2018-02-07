@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
-import eu.melodic.upperware.utilitygenerator.model.Component;
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
@@ -16,12 +16,12 @@ import java.util.Collection;
 public abstract class CostUtilityFunction {
 
 
-    public abstract double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
-            Collection<Component> newConfiguration);
+    public abstract double evaluateCostUtilityFunction(Collection<ConfigurationElement> actualConfiguration,
+            Collection<ConfigurationElement> newConfiguration);
 
-    double calculateCost(Collection<Component> vms) {
+    double calculateCost(Collection<ConfigurationElement> vms) {
 
-        return CollectionUtils.emptyIfNull(vms).stream().mapToDouble(Component::getFullPrice).sum();
+        return CollectionUtils.emptyIfNull(vms).stream().mapToDouble(ConfigurationElement::getFullPrice).sum();
 
     }
 }

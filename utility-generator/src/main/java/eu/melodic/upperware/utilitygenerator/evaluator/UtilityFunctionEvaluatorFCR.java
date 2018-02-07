@@ -53,7 +53,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
 
     @Override
-    public double evaluate(Collection<Component> newConfiguration) {
+    public double evaluate(Collection<ConfigurationElement> newConfiguration) {
         double nextAvgResponseTime = estimateNextAvgResponseTime(avgResponseTime.getValue(), newConfiguration);
         return (1 - COST_WEIGHT) * evaluateResponseUtilityFunction(nextAvgResponseTime / MAX_RESPONSE_TIME)
                 + COST_WEIGHT * costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
@@ -70,7 +70,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
     }
 
     private double estimateNextAvgResponseTime(int avgResponseTime,
-            Collection<Component> newConfig) {
+            Collection<ConfigurationElement> newConfig) {
 
         double nextAvgResponseTime;
 

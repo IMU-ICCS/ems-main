@@ -9,7 +9,7 @@ import eu.melodic.cloudiator.client.model.NodeCandidate
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*
-import eu.melodic.upperware.utilitygenerator.model.Component
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import jersey.repackaged.com.google.common.collect.Lists
 import spock.lang.Shared
@@ -31,14 +31,14 @@ class CETrafficUseCaseTest extends Specification {
 
     List<MetricDTO> metrics
     int cardinality
-    Component initialDeployment
+    ConfigurationElement initialDeployment
 
     def setup() {
 
         NodeCandidate initNC = GroovyMock(NodeCandidate)
         initNC.getPrice() >> 2.0
 
-        initialDeployment = new Component("Component", initNC, 3)
+        initialDeployment = new ConfigurationElement("Component", initNC, 3)
         metrics = Lists.newArrayList(Mock(MetricDTO))
 
     }
