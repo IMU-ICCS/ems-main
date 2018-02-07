@@ -11,23 +11,34 @@ package eu.melodic.upperware.discovery.server.coordinator;
 
 import eu.melodic.upperware.discovery.server.*;
 
+import java.util.Properties;
 import java.util.Vector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ServerCoordinatorClientsOnly implements ServerCoordinator {
+	private Properties config;
 	private Runnable callback;
 	private boolean started;
 	private int numClients;
 	private int phase;
 	private Vector<ClientShellCommand> clients;
 	private int readyClients;
-	private String brokerCfgIpAddressCmd = "SET-PARAM bin/broker.cfg.tpl BROKER_IP_ADDR localhost bin/broker.cfg";
-	private String brokerCfgPortCmd = "SET-PARAM bin/broker.cfg BROKER_PORT 61616 bin/broker.cfg";
+	private String brokerCfgIpAddressCmd;
+	private String brokerCfgPortCmd;
 	
-	public ServerCoordinatorClientsOnly(Runnable callback) {
+	public ServerCoordinatorClientsOnly(Properties config, Runnable callback) {
+		this.config = config;
 		this.callback = callback;
 		this.clients = new Vector<>();
+		
+		String addr = config.getProperty("broker.address");
+		String port = config.getProperty("broker.port", "61616");
+		if (addr==null || addr.equalsIgnoreCase("autodetect")) addr = NetUtil.getIpAddress();
+		if (addr!=null) {
+			brokerCfgIpAddressCmd = String.format("SET-PARAM bin/broker.cfg.tpl BROKER_IP_ADDR %s bin/broker.cfg", addr);
+			brokerCfgPortCmd = String.format("SET-PARAM bin/broker.cfg BROKER_PORT %s bin/broker.cfg", port);
+		}
 	}
 	
 	public void start() {
