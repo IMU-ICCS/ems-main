@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class UtilityGeneratorApplication {
@@ -30,8 +29,8 @@ public class UtilityGeneratorApplication {
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
     //todo: add last solution from ConstraintProblem
-    public UtilityGeneratorApplication(List<VariableDTO> variables, Map<MetricType, MetricDTO[]> metrics,
-                                       UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
+    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics,
+            UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
         log.info("Creating of Utility Generator");
 
         this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, useCase, nodeCandidates);
@@ -51,13 +50,13 @@ public class UtilityGeneratorApplication {
     }
 
 
-    private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, Map<MetricType,
-            MetricDTO[]> metrics, UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
+    private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, List<MetricDTO> metrics,
+            UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
 
         switch (useCase) {
             case FCR:
                 log.info("Creating utility function for FCR");
-                return new UtilityFunctionEvaluatorFCR(variables, nodeCandidates, metrics);
+                return new UtilityFunctionEvaluatorFCR(variables, metrics, nodeCandidates);
             case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
                 return new UtilityFunctionEvaluatorCETraffic(variables, nodeCandidates);
@@ -71,18 +70,19 @@ public class UtilityGeneratorApplication {
 
     /* ------------------------------ only for tests - to delete later ---------------------------------------------*/
 
-    public UtilityGeneratorApplication(Map<MetricType, MetricDTO[]> metrics,
-                                       Collection<Component> actConfiguration, boolean isReconfig,
-                                       UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
+    public UtilityGeneratorApplication(List<MetricDTO> metrics,
+            Collection<ConfigurationElement> actConfiguration, boolean isReconfig,
+            UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, costUtilityFunction);
     }
 
-    public UtilityGeneratorApplication(Map<MetricType, MetricDTO[]> metrics,
-                                       Collection<Component> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
+    public UtilityGeneratorApplication(List<MetricDTO> metrics,
+            Collection<ConfigurationElement> actConfiguration, boolean isReconfig, UtilityFunctionType useCase) {
 
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
     }
+
 
     public double evaluate(int cardinality) {
         return this.utilityFunctionEvaluator.evaluate(new ArrayList<>(), new ArrayList<>());
@@ -93,15 +93,15 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
     }
 
-    private void createUtilityEvaluator(Map<MetricType, MetricDTO[]> metrics, Collection<Component> actConfiguration,
-                                        boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
+    private void createUtilityEvaluator(List<MetricDTO> metrics, Collection<ConfigurationElement> actConfiguration,
+            boolean isReconfig, UtilityFunctionType useCase, CostUtilityFunction costUtilityFunction) {
 
         switch (useCase) {
 
-            case FCR:
-                this.utilityFunctionEvaluator =
-                        new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
-                break;
+//            case FCR:
+//                this.utilityFunctionEvaluator =
+//                new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
+//                break;
 
             case CETRAFFIC:
                 this.utilityFunctionEvaluator =
@@ -110,7 +110,7 @@ public class UtilityGeneratorApplication {
 
             case CAS:
                 this.utilityFunctionEvaluator =
-                        new UtilityFunctionEvaluatorCAS(metrics, actConfiguration, isReconfig, costUtilityFunction);
+                        new UtilityFunctionEvaluatorCAS(actConfiguration, isReconfig, costUtilityFunction);
                 break;
         }
     }

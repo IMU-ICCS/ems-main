@@ -1,14 +1,14 @@
 /* * Copyright (C) 2017 7bulls.com
-*
-* This Source Code Form is subject to the terms of the
-* Mozilla Public License, v. 2.0. If a copy of the MPL
-* was not distributed with this file, You can obtain one at
-* http://mozilla.org/MPL/2.0/.
-*/
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
 
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
-import eu.melodic.upperware.utilitygenerator.model.Component;
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +24,8 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction { /
     private final int maxNumberOfVms;
 
     @Override
-    public double evaluateCostUtilityFunction(Collection<Component> actualConfiguration,
-            Collection<Component> newConfiguration) {
+    public double evaluateCostUtilityFunction(Collection<ConfigurationElement> actualConfiguration,
+            Collection<ConfigurationElement> newConfiguration) {
 
         double newCost = calculateCost(newConfiguration);
         //int numberOfVirtualMachines = countVirtualMachines(newConfiguration);
@@ -38,7 +38,7 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction { /
     }
 
 
-    private double getLowestCost(Collection<Component> configuration) {
+    private double getLowestCost(Collection<ConfigurationElement> configuration) {
         return configuration
                 .stream()
                 .mapToDouble(c -> c.getNodeCandidate().getPrice())
@@ -46,7 +46,7 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction { /
                 .orElse(0.0);
     }
 
-    private double getHighestCost(Collection<Component> configuration) {
+    private double getHighestCost(Collection<ConfigurationElement> configuration) {
         double max = configuration
                 .stream()
                 .mapToDouble(c -> c.getNodeCandidate().getPrice())

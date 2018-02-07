@@ -7,392 +7,272 @@
 */
 
 
-import com.google.common.collect.Lists
 import eu.melodic.cloudiator.client.model.NodeCandidate
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*
-import eu.melodic.upperware.utilitygenerator.model.Component
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
-import eu.melodic.upperware.utilitygenerator.model.MetricType
+import eu.paasage.upperware.metamodel.types.DoubleValueUpperware
+import eu.paasage.upperware.metamodel.types.TypesFactory
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
-//todo to update
+//todo to update - handle metrics
 @Ignore
 class FCRUseCaseTest extends Specification {
 
-  CostUtilityFunction costUtilityFunction
+    CostUtilityFunction costUtilityFunction
 
-  @Shared
-  CostUtilityFunction costUtilityFunction_1 = new CostUtilityFunctionExample(true)
-  @Shared
-  CostUtilityFunction costUtilityFunction_2 = new CostUtilityFunctionExampleV2(true)
-  @Shared
-  CostUtilityFunction costUtilityFunctionAbs = new CostUtilityFunctionWithAbsoluteCost(10)
-  @Shared
-  CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
+    @Shared
+    CostUtilityFunction costUtilityFunction_1 = new CostUtilityFunctionExample(true)
+    @Shared
+    CostUtilityFunction costUtilityFunction_2 = new CostUtilityFunctionExampleV2(true)
+    @Shared
+    CostUtilityFunction costUtilityFunctionAbs = new CostUtilityFunctionWithAbsoluteCost(10)
+    @Shared
+    CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
 
-  Map<MetricType, MetricDTO[]> metrics
+    List<MetricDTO> metrics
+    List<ConfigurationElement> listInit
 
-  Component initialDeployment
+    ConfigurationElement initialDeployment
 
-  MetricDTO[] avgrt = new MetricDTO[1]
+    DoubleValueUpperware avgResponseTime
 
-  def setup(){
-    metrics = new HashMap<>()
 
-    NodeCandidate initNC = GroovyMock(NodeCandidate)
-    initNC.getPrice() >> 2.0
+    def setup() {
+        metrics = new ArrayList<>()
+        avgResponseTime = TypesFactory.eINSTANCE.createDoubleValueUpperware()
 
-    initialDeployment = new Component(initNC, 3)
-    metrics = new HashMap<>()
+        avgResponseTime.setValue(3.0 as double)
+        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
 
-    MetricDTO[] rt = new MetricDTO[1]
-    rt[0] = new MetricDTO(MetricType.MAX_RESPONSE_TIME, "",30)
-    metrics.put(MetricType.MAX_RESPONSE_TIME, rt)
+        String componentId = "componentId"
 
-    MetricDTO[] nrt = new MetricDTO[1]
-    nrt[0] = new MetricDTO(MetricType.NOM_RESPONSE_TIME, "",20)
-    metrics.put(MetricType.NOM_RESPONSE_TIME, nrt)
+        NodeCandidate initNC = GroovyMock(NodeCandidate)
+        initNC.getPrice() >> 2.0
 
-    MetricDTO[] cw = new MetricDTO[1]
-    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "",0.5)
-    metrics.put(MetricType.COST_WEIGHT, cw)
+        initialDeployment = new ConfigurationElement(componentId, initNC, 3)
+        listInit = new ArrayList<>()
+        listInit.add(initialDeployment)
+    }
 
-  }
+    def "avg response time=3, less machines"() {
+        setup:
 
-  def "avg response time=3, less machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 2
 
-    int cardinality = 2
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.503253
+        noExceptionThrown()
+        System.out.println("utility = " + result)
 
-    then:
-    //0.503253
-    noExceptionThrown()
-    System.out.println("utility = " + result)
+        result >= 0.45 && result <= 0.55
 
-    result >= 0.45 && result <= 0.55
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
+    def "avg response time=3, no changes"() {
+        setup:
+        avgResponseTime.getValue() >> 3.0
+        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
 
-  def "avg response time=3, no changes"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 3
 
-    int cardinality = 3
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.500068
+        noExceptionThrown()
+        System.out.println("utility = " + result)
 
-    then:
-    //0.500068
-    noExceptionThrown()
-    System.out.println("utility = " + result)
+        result >= 0.45 && result <= 0.55
 
-    result >= 0.45 && result <= 0.55
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
+    def "avg response time=3, more machines"() {
 
-  def "avg response time=3, more machines"(){
+        setup:
+        avgResponseTime.getValue() >> 3.0
+        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
 
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",3)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 4
 
-    int cardinality = 4
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        noExceptionThrown()
+        System.out.println("utility = " + result)
 
-    then:
-    noExceptionThrown()
-    System.out.println("utility = " + result)
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
+    def "avg response time=25, less machines"() {
+        setup:
+        avgResponseTime.getValue() >> 25.0
+        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
 
-  def "avg response time=25, less machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 2
 
-    int cardinality = 2
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.5
+        noExceptionThrown()
+        System.out.println("utility = " + result)
+        result >= 0.45 && result <= 0.55
 
-    then:
-    //0.5
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.45 && result <= 0.55
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-  }
+    def "avg response time=25, no changes"() {
+        setup:
 
-  def "avg response time=25, no changes"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 3
 
-    int cardinality = 3
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.837175
+        noExceptionThrown()
+        System.out.println("utility = " + result)
+        result >= 0.77 && result <= 0.87
 
-    then:
-    //0.837175
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.77 && result <= 0.87
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
 
+    def "avg response time=25, more machines"() {
+        setup:
+        int cardinality = 4
 
-
-  def "avg response time=25, more machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
-
-    int cardinality = 4
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.677073
+        noExceptionThrown()
+        System.out.println("utility = " + result)
+        result >= 0.62 && result <= 0.72
 
-    then:
-    //0.677073
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.62 && result <= 0.72
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
 
+    def "avg response time=28, less machines"() {
+        setup:
+        int cardinality = 2
 
-  def "avg response time=28, less machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",28)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    int cardinality = 2
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        then:
+        //0.5
+        noExceptionThrown()
+        System.out.println("utility = " + result)
+        result >= 0.45 && result <= 0.55
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
 
-    then:
-    //0.5
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.45 && result <= 0.55
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
+    def "avg response time=28, no changes"() {
+        setup:
 
-  }
-  def "avg response time=28, no changes"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",28)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 3
 
-    int cardinality = 3
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.567346
+        noExceptionThrown()
+        System.out.println("utility = " + result)
+        result >= 0.51 && result <= 0.61
 
-    then:
-    //0.567346
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.51 && result <= 0.61
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
+    def "avg response time=28, more machines"() {
+        setup:
 
-  def "avg response time=28, more machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",28)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
+        int cardinality = 4
 
-    int cardinality = 4
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
 
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
+        when:
+        //System.out.println("CARDINALITY = " + cardinality)
+        double result = utilityGenerator.evaluate(cardinality)
 
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
+        then:
+        //0.785278
+        noExceptionThrown()
+        System.out.println("utility = " + result)
+        result >= 0.73 && result <= 0.83
 
-    then:
-    //0.785278
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.73 && result <= 0.83
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
-
-
-
-
-  def "avg response time=25, zeta = 0.05, less machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
-
-    MetricDTO[] cw = new MetricDTO[1]
-    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "", 0.05)
-    metrics.put(MetricType.COST_WEIGHT, cw)
-
-    int cardinality = 2
-
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
-
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
-
-    then:
-    //0.05
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.0 && result <= 0.1
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-
-  }
-  def "avg response time=25, zeta = 0.05, no changes"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
-
-    MetricDTO[] cw = new MetricDTO[1]
-    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "", 0.05)
-    metrics.put(MetricType.COST_WEIGHT, cw)
-
-    int cardinality = 3
-
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
-
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
-
-    then:
-    //0.690632
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.64 && result <= 0.74
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
-
-  def "avg response time=25, zeta = 0.05, more machines"(){
-    setup:
-    avgrt[0] = new MetricDTO(MetricType.AVG_RESPONSE_TIME, "",25)
-    metrics.put(MetricType.AVG_RESPONSE_TIME, avgrt)
-
-    MetricDTO[] cw = new MetricDTO[1]
-    cw[0] = new MetricDTO(MetricType.COST_WEIGHT, "", 0.05)
-    metrics.put(MetricType.COST_WEIGHT, cw)
-
-    int cardinality = 4
-
-    UtilityGeneratorApplication utilityGenerator =
-      new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment),
-        true, UtilityFunctionType.FCR, costUtilityFunction)
-
-    when:
-    //System.out.println("CARDINALITY = " + cardinality)
-    double result = utilityGenerator.evaluate(cardinality)
-
-    then:
-    //0.686438
-    noExceptionThrown()
-    System.out.println("utility = " + result)
-    result >= 0.63 && result <= 0.73
-
-    where:
-    costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                            costUtilityFunctionAbs, costUtilityFunctionFraction]
-  }
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
+                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+    }
 
 }
