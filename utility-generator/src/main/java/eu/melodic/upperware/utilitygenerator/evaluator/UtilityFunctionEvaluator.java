@@ -124,7 +124,7 @@ public abstract class UtilityFunctionEvaluator {
                     .orElse(null);
 
             if (isNull(theCheapest)) {
-                log.warn("Node Candidates for component {} with provider {} is not found", componentId, provider);
+                log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
                 return null;
             }
 
