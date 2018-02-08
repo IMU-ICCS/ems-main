@@ -28,15 +28,17 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    //todo: add last solution from ConstraintProblem
-    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics,
-            UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
-        log.info("Creating of Utility Generator");
-
-        this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, useCase, nodeCandidates);
+    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics, UtilityFunctionType useCase,
+            NodeCandidates nodeCandidates) {
+        this(variables, metrics, null, useCase, nodeCandidates);
     }
 
-    //todo - canonical model for real variables
+    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics, List<Var> deployedSolution,
+            UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
+        log.info("Creating of Utility Generator");
+        this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, deployedSolution, useCase, nodeCandidates);
+    }
+
     public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
@@ -51,18 +53,18 @@ public class UtilityGeneratorApplication {
 
 
     private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, List<MetricDTO> metrics,
-            UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
+            List<Var> deployedSolution, UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
 
         switch (useCase) {
             case FCR:
                 log.info("Creating utility function for FCR");
-                return new UtilityFunctionEvaluatorFCR(variables, metrics, nodeCandidates);
+                return new UtilityFunctionEvaluatorFCR(variables, metrics, deployedSolution, nodeCandidates);
             case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
-                return new UtilityFunctionEvaluatorCETraffic(variables, nodeCandidates);
+                return new UtilityFunctionEvaluatorCETraffic(variables, deployedSolution, nodeCandidates);
             default: //CAS
                 log.info("Creating utility function for CAS");
-                return new UtilityFunctionEvaluatorCAS(variables, nodeCandidates);
+                return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);
         }
     }
 

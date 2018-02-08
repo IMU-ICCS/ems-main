@@ -151,45 +151,6 @@ class EvaluatingUtils {
         return predicates.toArray(new Predicate[predicates.size()]);
     }
 
-    //converting actual deployed solution to list of Node Candidates with cardinality
-    //todo
-//    static Collection<Component> convertActualDeployment(EList<VariableValue> actualSolution, List<NodeCandidate> nodeCandidates) {
-//
-//        String componentId = "";//fixme
-//
-//        //for one component only
-//        List<VariableValue> variablesForOneComponent = actualSolution
-//                .stream()
-//                .filter(vv -> componentId.equals(vv.getVariable().getComponentId()))
-//                .collect(Collectors.toList());
-//        List<NodeCandidate> nodeCandidatesForOneComponent = nodeCandidates;
-//        int cardinality = 1;
-//
-//        for (VariableValue vv : variablesForOneComponent) {
-//            Variable variable = vv.getVariable();
-//            VariableType type = variable.getVariableType();
-//
-//            switch (type) {
-//                case RAM:
-//                    nodeCandidatesForOneComponent = nodeCandidatesForOneComponent
-//                            .stream()
-//                            .filter(nc -> nc.getHardware().getRam().equals(((LongValueUpperwareImpl) vv.getValue()).getValue()))
-//                            .collect(Collectors.toList());
-//                    break;
-//                case CARDINALITY:
-//                    cardinality = ((IntegerValueUpperwareImpl) vv.getValue()).getValue();
-//                    break;
-//
-//            }
-//        }
-//        return Lists.newArrayList(new Component(findTheCheapestNodeCanidate(nodeCandidatesForOneComponent), cardinality));
-//    }
-
-//    static Solution findLastSolution(EList<Solution> solutions) {
-//        return CollectionUtils.isNotEmpty(solutions) ? solutions.get(solutions.size()-1) : null;
-//    }
-
-
     /* ---------------------for tests -to delete later -----------------------------*/
 
     static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates) {

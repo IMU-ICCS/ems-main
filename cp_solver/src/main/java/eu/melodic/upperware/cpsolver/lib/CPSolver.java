@@ -57,6 +57,7 @@ public class CPSolver {
 	private static UtilityFunctionType utilityFunctionType;
 	private static String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
 	private static String metricsPrefix = "METRIC_";
+	private static int IS_INITIAL_DEPLOYMENT = -1;
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
@@ -67,6 +68,8 @@ public class CPSolver {
 	private double maxUtility;
 	private List<VariableDTO> variablesForUG = new ArrayList<>();
 	private List<MetricDTO> metricsForUG = new ArrayList<>();
+	private List<Var> deployedSolution = new ArrayList<>();
+	private boolean isReconfig = false;
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
@@ -80,7 +83,12 @@ public class CPSolver {
 		readCPModel(cdoPath,pathName);
 
 		if (this.useExternalOptimizer){
-			this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityFunctionType, nodeCandidates);
+			if (isReconfig){
+				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, deployedSolution, utilityFunctionType, nodeCandidates);
+			}
+			else {
+				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityFunctionType, nodeCandidates);
+			}
 		}
 	}
 	
@@ -112,6 +120,7 @@ public class CPSolver {
 		createVariablesForUG(cp.getVariables());
 		createMetricsForUG(cp.getConstants());
 		createUtilityFunctionType(cp);
+		getActualConfiguration(cp);
 
 		//Checking if metric-based solution exists
 		if (timestamp != 0){
@@ -129,6 +138,42 @@ public class CPSolver {
 		}
 		//Create optimisation goal
 
+	}
+
+	private void getActualConfiguration(ConstraintProblem cp) {
+
+		int deployedSolutionId = cp.getDeployedSolutionId();
+		if (deployedSolutionId != IS_INITIAL_DEPLOYMENT){//fixme - better name?
+			isReconfig = true;
+			deployedSolution = cp.getSolution().get(deployedSolutionId).getVariableValue().stream()
+					.map(this::createVar)
+					.collect(Collectors.toList());
+		}
+		else {
+			isReconfig = false;
+		}
+	}
+
+	//todo handle RealVar
+	private Var createVar(VariableValue variableValue){
+
+		NumericValueUpperware value = variableValue.getValue();
+		Var variable;
+		if (value instanceof IntegerValueUpperware){
+			IntegerValueUpperware intVal = (IntegerValueUpperware)value;
+			variable = new eu.melodic.upperware.utilitygenerator.model.IntVar(variableValue.getVariable().getId(), intVal.getValue());
+		}
+//		else if (value instanceof DoubleValueUpperware){
+//			DoubleValueUpperware doubleVal = (DoubleValueUpperware)value;
+//		}
+//		else if (value instanceof FloatValueUpperware){
+//			FloatValueUpperware floatVal = (FloatValueUpperware)value;
+//		}
+		else { //Long
+			LongValueUpperware longVal = (LongValueUpperware)value;
+			variable =  new eu.melodic.upperware.utilitygenerator.model.IntVar(variableValue.getVariable().getId(), (int)longVal.getValue());
+		}
+		return variable;
 	}
 
 	private void createMetricsForUG(EList<Constant> constants) {
@@ -297,6 +342,7 @@ public class CPSolver {
 				calculateUtility();
 				while(solver.nextSolution()){
 					//log.debug("Checking utility of: #{} solution.", i++ );
+					i++;
 					calculateUtility();
 				}
 				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);

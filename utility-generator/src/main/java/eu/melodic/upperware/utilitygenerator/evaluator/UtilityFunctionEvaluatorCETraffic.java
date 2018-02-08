@@ -1,10 +1,10 @@
 /* * Copyright (C) 2017 7bulls.com
-*
-* This Source Code Form is subject to the terms of the
-* Mozilla Public License, v. 2.0. If a copy of the MPL
-* was not distributed with this file, You can obtain one at
-* http://mozilla.org/MPL/2.0/.
-*/
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
@@ -12,6 +12,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
+import eu.melodic.upperware.utilitygenerator.model.Var;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
 
 import java.util.Collection;
@@ -22,8 +23,8 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     private CostUtilityFunction costUtilityFunction;
 
 
-    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, NodeCandidates nodeCandidates) {
-        super(variables, nodeCandidates);
+    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+        super(variables, deployedSolution, nodeCandidates);
         this.costUtilityFunction = new CostUtilityFunctionFraction();
     }
 
@@ -33,7 +34,7 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
         return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
     }
 
-  /* for tests*/
+    /* for tests*/
 
     public UtilityFunctionEvaluatorCETraffic(Collection<ConfigurationElement> actConfiguration, boolean isReconfig, CostUtilityFunction costUtilityFunction) {
         super(actConfiguration, isReconfig);
