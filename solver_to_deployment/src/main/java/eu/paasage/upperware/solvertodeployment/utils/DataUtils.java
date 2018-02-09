@@ -155,6 +155,8 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 					NodeCandidate nodeCandidate = nodeCandidates.getCheapest(componentName, providerId, nodeCandidatePredicates)
 							.orElseThrow(() -> new S2DException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
 
+					log.info("Found Node Candidate: {}", nodeCandidate);
+
 					try {
 						EList<InternalComponentInstance> internalComponentInstanceToRegisters = SolverToDeployementHelper.createInternalComponentInstance(componentName, deploymentModel, cardinality);
 						dataHolder.getComponentInstancesToRegister().addAll(internalComponentInstanceToRegisters);
