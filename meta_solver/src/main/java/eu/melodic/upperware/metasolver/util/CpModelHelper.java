@@ -154,7 +154,8 @@ public class CpModelHelper {
 			// retrieve CP model (open transaction)
 			transaction = cdoSession.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);	//0: PaasageConfiguration, 1: ConstraintProblem  (see cp_generator, class :
+																							//  eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator)
 			
 			// check if all metric variable names in CP model exist in 'metricValues' map
 			/*EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
