@@ -227,7 +227,7 @@ public class CpModelHelper {
 			// retrieve CP model (open view)
 			view = cdoSession.openView();
 			CDOResource resource = view.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
 			
 			// get solutions list
 			EList<Solution> solutions = cpModel.getSolution();
@@ -284,7 +284,7 @@ public class CpModelHelper {
 			// retrieve CP model (open transaction)
 			transaction = cdoSession.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
 			
 			// get solutions list
 			/*EList<Solution> solutions = cpModel.getSolution();
@@ -343,7 +343,7 @@ public class CpModelHelper {
 			// retrieve CP model (open transaction)
 			transaction = cdoSession.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
 			
 			// get current candidate solution Id
 			int oldPos = cpModel.getCandidateSolutionId();
