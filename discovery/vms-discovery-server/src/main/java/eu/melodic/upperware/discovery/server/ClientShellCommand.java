@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,8 +63,15 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 	}
 	
 	public void setSession(ServerSession session) {
-		log.debug("{}--> Got session info: {}", id, session);
+		log.info("{}--> Got session : {}", id, session);
 		this.session = session;
+		
+		/*try {
+			String clientIpAddr = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getAddress().getHostAddress();
+			int clientPort = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getPort();
+			log.info("{}--> Client connection : {}:{}", id, clientIpAddr, clientPort);
+		} catch (Exception ex) {}*/
+		
 		if (session!=null) {
 			String username = session.getUsername();
 			if (username!=null && !(username=username.trim()).isEmpty()) {

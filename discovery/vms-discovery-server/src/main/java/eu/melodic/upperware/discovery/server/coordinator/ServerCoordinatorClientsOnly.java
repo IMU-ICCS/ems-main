@@ -32,12 +32,15 @@ public class ServerCoordinatorClientsOnly implements ServerCoordinator {
 		this.callback = callback;
 		this.clients = new Vector<>();
 		
-		String addr = config.getProperty("broker.address");
-		String port = config.getProperty("broker.port", "61616");
-		if (addr==null || addr.equalsIgnoreCase("autodetect")) addr = NetUtil.getIpAddress();
-		if (addr!=null) {
-			brokerCfgIpAddressCmd = String.format("SET-PARAM bin/broker.cfg.tpl BROKER_IP_ADDR %s bin/broker.cfg", addr);
-			brokerCfgPortCmd = String.format("SET-PARAM bin/broker.cfg BROKER_PORT %s bin/broker.cfg", port);
+		String addr = config.getProperty("broker.address", "").trim();
+		String port = config.getProperty("broker.port", "61616").trim();
+		String tplFile = config.getProperty("broker.config.template", "").trim();
+		String outFile = config.getProperty("broker.config.file", "").trim();
+		if (addr.equalsIgnoreCase("autodetect")) addr = NetUtil.getIpAddress();
+		if (port.isEmpty()) port = "61616";
+		if (!addr.isEmpty() && !port.isEmpty() && !tplFile.isEmpty() && !outFile.isEmpty()) {
+			brokerCfgIpAddressCmd = String.format("SET-PARAM %s BROKER_IP_ADDR %s %s", tplFile, addr, outFile);
+			brokerCfgPortCmd = String.format("SET-PARAM %s BROKER_PORT %s %s", outFile, port, outFile);
 		}
 	}
 	

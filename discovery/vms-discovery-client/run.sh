@@ -5,4 +5,3 @@ if [ ! -d "target/dependency" ]; then
 fi
 
 java -classpath "target/classes:target/dependency/*" eu.melodic.upperware.discovery.client.VmsDiscoveryClient $*
-
