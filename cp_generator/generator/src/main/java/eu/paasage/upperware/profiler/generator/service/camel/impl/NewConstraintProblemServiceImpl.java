@@ -11,6 +11,8 @@ import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.metric.Metric;
+import eu.paasage.camel.metric.MetricInstance;
 import eu.paasage.camel.metric.MetricModel;
 import eu.paasage.camel.requirement.HorizontalScaleRequirement;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
@@ -30,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -185,11 +188,16 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
     private List<Constant> createConstantsFromMetrics(CamelModel camelModel){
         List<Constant> result = new ArrayList<>();
-        MetricModel metricModel = camelModel.getMetricModels().get(0);
-        metricModel.getMetrics()
-                .forEach(metric -> result.add(constantService.createIntegerConstant(0, createConstantNameForMetric(metric.getName()))));
-        metricModel.getMetricInstances()
-                .forEach(metric -> result.add(constantService.createIntegerConstant(0, createConstantNameForMetric(metric.getName()))));
+        EList<MetricModel> metricModels = camelModel.getMetricModels();
+
+        if (CollectionUtils.isNotEmpty(metricModels)){
+            MetricModel metricModel = metricModels.get(0);
+
+            Stream.concat(
+                    metricModel.getMetrics().stream().map(Metric::getName),
+                    metricModel.getMetricInstances().stream().map(MetricInstance::getName))
+                    .forEach(name -> result.add(constantService.createIntegerConstant(0, createConstantNameForMetric(name))));
+        }
         return result;
     }
 

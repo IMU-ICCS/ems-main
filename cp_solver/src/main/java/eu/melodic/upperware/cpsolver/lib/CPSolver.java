@@ -1282,11 +1282,11 @@ public class CPSolver {
 				.map(s -> s.replace(utilityFunctionTypePrefix, ""))
 				.map(UtilityFunctionType::valueOf)
 				.findFirst().orElse(null);
-		log.info("utilityFunctionType= " + utilityFunctionType);
+		log.info("utilityFunctionType= {}", utilityFunctionType);
 
 		if (utilityFunctionType == null){
-			utilityFunctionType = UtilityFunctionType.valueOf("FCR");
-			log.info("Default utilityFunctionType= FCR");
+			utilityFunctionType = UtilityFunctionType.FCR;
+			log.info("Default utilityFunctionType= {}", utilityFunctionType);
 		}
 	}
 
