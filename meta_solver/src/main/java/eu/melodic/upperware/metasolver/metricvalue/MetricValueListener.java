@@ -49,7 +49,9 @@ public class MetricValueListener implements MessageListener {
 			if (message instanceof TextMessage) { 
 				// Extract Topic name and payload from message
 				TextMessage textMessage = (TextMessage) message; 
-				String metricName = textMessage.getStringProperty("topic_name");
+				//String metricName = textMessage.getStringProperty("topic_name");
+				//String metricName = topicName;
+				String metricName = "TR_AVG";		//XXX: Dirty hack to let hackaton continue :)
 				String payload = textMessage.getText();
 				log.debug("Metric: {}", metricName);
 				log.debug("Type:   {}", type);
@@ -90,8 +92,8 @@ public class MetricValueListener implements MessageListener {
 			
 			// Cache Metric Value in registry
 			log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
-			registry.setMetricValue( metricName, event.getMetric_value() );
-			log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetric_value(), topicName);
+			registry.setMetricValue( metricName, event.getMetricValue()/*event.getMetric_value()*/ );
+			log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetricValue(),/*event.getMetric_value(),*/ topicName);
 			log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
 		} else {
 			log.warn("Missing property: 'topic_name'");

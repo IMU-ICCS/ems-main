@@ -15,7 +15,8 @@ import lombok.ToString;
 @Getter
 @ToString(doNotUseGetters = true, exclude={"host_name", "component_name", "level"})
 public class MetricValueEvent {
-	private String metric_value;
+	private String metricValue;
+	//private String metric_value;
 	private String[] host_name;
 	private String[] component_name;
 	private int level;
