@@ -13,18 +13,24 @@ DOWNLOADURL=VMS_CLIENT_DOWNLOAD_URL
 
 echo 'downloading Active MQ broker' 
 wget -c  $DOWNLOADURL/apache-activemq-5.15.0-bin.tar.gz
+sleep 2
 
 echo 'downloading mule engine' 
 wget -c $DOWNLOADURL/mule-standalone-3.9.0.zip
+sleep 2
 
 echo 'downloading mule application for 1st level VM '
-wget -c $DOWNLOADURL/RAM_CPU_case_v44_t_1st.zip -O RAM_CPU_case_v44_t_1st.zip
+#wget -c $DOWNLOADURL/RAM_CPU_case_v44_t_1st.zip -O RAM_CPU_case_v44_t_1st.zip
+wget -c $DOWNLOADURL/1stLevelEsper_app.zip -O 1stLevelEsper_app.zip
+sleep 2
 
 echo 'downloading mule application for 2nd level VM '
-wget -c $DOWNLOADURL/RAM_CPU_case_v44_t_2nd.zip -O RAM_CPU_case_v44_t_2nd.zip
+wget -c $DOWNLOADURL/2ndLevelEsper_app.zip -O 2ndLevelEsper_app.zip
+sleep 2
 
 echo 'downloading VMS Discovery Client'
 wget -c $DOWNLOADURL/vms-discovery-client.zip
+sleep 2
 
 
 sudo mkdir /opt
@@ -41,7 +47,7 @@ sudo unzip mule-standalone-3.9.0.zip -d /opt
 
 
 echo 'putting the mule application (.zip) to the /apps folder'
-sudo cp RAM_CPU_case_v44_t_1st.zip /opt/mule-standalone-3.9.0/apps
+sudo cp 1stLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
 
 
 echo 'unzip VMD Discovery Client'
