@@ -19,12 +19,12 @@ sleep 2
 
 echo 'downloading mule application for 1st level VM '
 #wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/RAM_CPU_case_v44_t_1st.zip?at=refs%2Fheads%2Fesper-demo -O RAM_CPU_case_v44_t_1st.zip
-wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/browse/esper-demo/1stLevelEsper_app.zip?at=esper-demo -O 1stLevelEpser_app.zip
+wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/1stLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo -O 1stLevelEsper_app.zip
 sleep 2
 
 echo 'downloading mule application for 2nd level VM '
 #wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/RAM_CPU_case_v44_t_2nd.zip?at=refs%2Fheads%2Fesper-demo -O RAM_CPU_case_v44_t_2nd.zip
-wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/browse/esper-demo/2ndLevelEsper_app.zip?at=esper-demo -O 2ndLevelEsper_app.zip
+wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo -O 2ndLevelEsper_app.zip
 sleep 2
 
 echo 'downloading VMS Discovery Client'
@@ -46,7 +46,8 @@ sudo unzip mule-standalone-3.9.0.zip -d /opt
 
 
 echo 'putting the mule application (.zip) to the /apps folder'
-sudo cp RAM_CPU_case_v44_t_1st.zip /opt/mule-standalone-3.9.0/apps
+#sudo cp RAM_CPU_case_v44_t_1st.zip /opt/mule-standalone-3.9.0/apps
+sudo cp 1stLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
 
 
 echo 'unzip VMD Discovery Client'
