@@ -16,9 +16,8 @@ import lombok.ToString;
 @ToString(doNotUseGetters = true, exclude={"host_name", "component_name", "level"})
 public class MetricValueEvent {
 	private String metricValue;
-	//private String metric_value;
-	private String[] host_name;
-	private String[] component_name;
+	private String cloudName;
+	private String componentName;
 	private int level;
 	private long timestamp;
 }

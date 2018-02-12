@@ -371,6 +371,8 @@ public class UtilCpModelImport {
 		String xmiFile = "var/FCR1516954427666_test.xmi";
 		if (args.length>1 && !args[1].trim().isEmpty()) xmiFile = args[1].trim();
 		Resource resModel = loadFile(xmiFile);
+		String resourceId = UtilCpModelImport.resourceId;
+		if (args.length>2 && !args[2].trim().isEmpty()) resourceId = args[2].trim();
 		
 		// Print CP model (XMI)
 		java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();

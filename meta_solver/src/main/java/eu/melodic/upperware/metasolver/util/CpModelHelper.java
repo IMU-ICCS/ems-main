@@ -187,10 +187,10 @@ public class CpModelHelper {
 						BasicTypeEnum type = c.getType();
 						NumericValueUpperware newVal = null;
 						switch (type) {
-							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue(Integer.parseInt(mvValue)); break;
-							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue(Float.parseFloat(mvValue)); break;
-							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue(Double.parseDouble(mvValue)); break;
-							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue(Long.parseLong(mvValue)); break;
+							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue( (int)Double.parseDouble(mvValue) ); break;
+							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue( (float)Double.parseDouble(mvValue) ); break;
+							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue( Double.parseDouble(mvValue) ); break;
+							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue( (long)Double.parseDouble(mvValue) ); break;
 						}
 						c.setValue(newVal);
 					}
