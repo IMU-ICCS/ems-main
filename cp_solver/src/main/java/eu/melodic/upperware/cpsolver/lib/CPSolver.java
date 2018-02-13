@@ -57,7 +57,7 @@ public class CPSolver {
 	private static UtilityFunctionType utilityFunctionType;
 	private static String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
 	private static String metricsPrefix = "METRIC_";
-	private static int IS_INITIAL_DEPLOYMENT = -1;
+	private static int INITIAL_DEPLOYMENT_ID = -1;
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
@@ -143,7 +143,7 @@ public class CPSolver {
 	private void getActualConfiguration(ConstraintProblem cp) {
 
 		int deployedSolutionId = cp.getDeployedSolutionId();
-		if (deployedSolutionId != IS_INITIAL_DEPLOYMENT){//fixme - better name?
+		if (deployedSolutionId != INITIAL_DEPLOYMENT_ID){
 			isReconfig = true;
 			deployedSolution = cp.getSolution().get(deployedSolutionId).getVariableValue().stream()
 					.map(this::createVar)
