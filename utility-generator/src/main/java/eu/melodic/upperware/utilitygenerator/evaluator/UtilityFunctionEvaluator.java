@@ -41,7 +41,7 @@ public abstract class UtilityFunctionEvaluator {
     public abstract double evaluate(Collection<ConfigurationElement> newConfiguration);
 
 
-    UtilityFunctionEvaluator(List<VariableDTO> variables, NodeCandidates nodeCandidates) {
+    UtilityFunctionEvaluator(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
 
         this.variables = variables;
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
@@ -52,15 +52,11 @@ public abstract class UtilityFunctionEvaluator {
             log.debug("{}, type: {}", v.getId(), v.getType());
         }
 
-        //this.isReconfig = !(cp.getSolution().isEmpty());
-
-        this.isReconfig = false; //todo get actualDeployment
+        this.isReconfig = isReconfig(deployedSolution);
         if (isReconfig) {
-            //Solution actualSolution = findLastSolution(cp.getSolution()); //assumption: last solution was deployed
-            //this.actConfiguration = convertActualDeployment(actualSolution.getVariableValue(),getSampleNodeCandidates());
-            //this.actConfiguration = new ArrayList<>();
-            //actConfiguration.add(new Component("Component", findTheCheapestNodeCanidate(getSampleNodeCandidates()), 3));
-            //actConfiguration.add(new Component("Component_DB", getSampleNodeCandidates().get(0), 1));
+            log.info("Converting deployed solution:");
+            printSolution(deployedSolution);
+            this.actConfiguration = convertActualDeployment(deployedSolution);
         }
 
         this.maxUtility = 0.0;
@@ -104,7 +100,15 @@ public abstract class UtilityFunctionEvaluator {
     }
 
 
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
+    //fixme - RealVar
+    private Collection<ConfigurationElement> convertActualDeployment(Collection<Var> deployedSolution) {
+        return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntVar) s).collect(Collectors.toList()), new ArrayList<>());
+
+    }
+
+
+    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntVar> newConfigurationInt,
+            Collection<RealVar> newConfigurationReal) {
 
         log.debug("Converting solution to Node Candidates");
 
@@ -151,13 +155,18 @@ public abstract class UtilityFunctionEvaluator {
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
+    private boolean isReconfig(List<Var> deployedSolution) {
+        return deployedSolution != null;
+    }
+
 
 
 
 
     /* ------------------------------------ only for tests - to delete later  -------------------*/
 
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidatesToTest(Collection<IntVar> newConfigurationInt, RealVar[] newConfigurationReal) {
+    private Collection<ConfigurationElement> convertSolutionToNodeCandidatesToTest(Collection<IntVar> newConfigurationInt,
+            RealVar[] newConfigurationReal) {
         Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
         Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
 

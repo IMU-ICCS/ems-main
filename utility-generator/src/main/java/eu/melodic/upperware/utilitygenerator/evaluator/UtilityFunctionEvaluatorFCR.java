@@ -43,8 +43,9 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     /* constructors */
 
-    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<MetricDTO> metricDTOs, NodeCandidates nodeCandidates) {
-        super(variables, nodeCandidates);
+    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<MetricDTO> metricDTOs,
+            List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+        super(variables, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
         log.info("Utility function was created");
