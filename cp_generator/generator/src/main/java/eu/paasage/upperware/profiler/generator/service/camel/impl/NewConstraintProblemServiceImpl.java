@@ -389,10 +389,19 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
     private List<NodeCandidate> getNodeCandidates(VM vm) {
         NodeRequirements nodeRequirements = cloudiatorService.createNodeRequirements(vm);
+        log.info("NodeRequirements: {}", nodeRequirements);
+
         List<NodeCandidate> nodeCandidates;
         try {
             nodeCandidates = cloudiatorService.findNodeCandidates(nodeRequirements);
         } catch (ApiException e) {
+            log.error("Error during fetching node candidates. Code: {}, ResponseBody: {}", e.getCode(), e.getResponseBody());
+
+            Map<String, List<String>> responseHeaders = e.getResponseHeaders();
+            for (String key : responseHeaders.keySet()) {
+                log.error("ResponseHeader: Key: {}, Value: {}", key, responseHeaders.get(key));
+            }
+
             throw new GeneratorException("Problem during fetching node candidates", e);
         }
         if (CollectionUtils.isEmpty(nodeCandidates)){
