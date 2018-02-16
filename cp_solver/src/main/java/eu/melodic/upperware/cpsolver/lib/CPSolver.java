@@ -66,6 +66,7 @@ public class CPSolver {
 	private boolean useExternalOptimizer = false;
 	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
+	private double utilityOfDeployedSolution;
 	private List<VariableDTO> variablesForUG = new ArrayList<>();
 	private List<MetricDTO> metricsForUG = new ArrayList<>();
 	private List<Var> deployedSolution = new ArrayList<>();
@@ -85,6 +86,7 @@ public class CPSolver {
 		if (this.useExternalOptimizer){
 			if (isReconfig){
 				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, deployedSolution, utilityFunctionType, nodeCandidates);
+				utilityOfDeployedSolution = this.utilityGenerator.getUtilityForCurrentDeployedSolution();
 			}
 			else {
 				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityFunctionType, nodeCandidates);
@@ -408,6 +410,9 @@ public class CPSolver {
 		} else{
 			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
 		}
+		if (isReconfig) {
+			updateUtilityOfDeployedSolution(cp);
+		}
 		Solution solution = null;
 		if (timestamp == 0){
 			solution = CpFactory.eINSTANCE.createSolution();
@@ -513,7 +518,17 @@ public class CPSolver {
 		}
 		cl.closeSession();
 	}
-	
+
+	private void updateUtilityOfDeployedSolution(ConstraintProblem cp) {
+		log.debug("Updating utility of deployed solution = {}", utilityOfDeployedSolution);
+		Solution deployedSolution = cp.getSolution().get(cp.getDeployedSolutionId());
+		log.debug("Previous utility of deployed solution was {}", ((DoubleValueUpperware) deployedSolution.getUtilityValue()).getValue());
+		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		utilityValue.setValue(utilityOfDeployedSolution);
+		deployedSolution.setUtilityValue(utilityValue);
+
+	}
+
 	/* Getting resolution policy from the operator in the goal of the cp model */
 	private ResolutionPolicy getPolicy(GoalOperatorEnum type){
 		if (type.equals(GoalOperatorEnum.MAX)) return ResolutionPolicy.MAXIMIZE;
