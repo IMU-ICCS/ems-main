@@ -86,7 +86,7 @@ public class CPSolver {
 		if (this.useExternalOptimizer){
 			if (isReconfig){
 				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, deployedSolution, utilityFunctionType, nodeCandidates);
-				utilityOfDeployedSolution = this.utilityGenerator.getUtilityForCurrentDeployedSolution();
+				this.utilityOfDeployedSolution = this.utilityGenerator.getUtilityForCurrentDeployedSolution();
 			}
 			else {
 				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityFunctionType, nodeCandidates);
