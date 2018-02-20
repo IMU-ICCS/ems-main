@@ -71,6 +71,9 @@ public class CPSolver {
 	private List<MetricDTO> metricsForUG = new ArrayList<>();
 	private List<Var> deployedSolution = new ArrayList<>();
 	private boolean isReconfig = false;
+	private Map<String, Integer> solutionWithMaximumUtilityInt = new HashMap<>();
+	private Map<String, Double> solutionWithMaximumUtilityReal = new HashMap<>();
+
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
@@ -348,10 +351,11 @@ public class CPSolver {
 					calculateUtility();
 				}
 				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
+				saveBestSolutionInCDO();
 				utilityGenerator.printConfigurationWithMaximumUtility();
 				hasSolutions = (solver.isFeasible() == ESat.TRUE); //fixme - if utility > 0
 			}
-		} else {
+		} else { //todo to delete
 			if (policy != null) {
 				if (realGoal != null) {
 					solver.findOptimalSolution(policy, realGoal);
@@ -385,7 +389,112 @@ public class CPSolver {
 		}
 		return hasSolutions;
 	}
-	
+
+	private void convertAndUpdateBestSolution(double utility){
+
+		maxUtility = utility;
+		solutionWithMaximumUtilityInt.clear();
+        idToIntVar.values().stream()
+				.filter(intVar -> variablesForUG.stream().anyMatch(v-> intVar.getName().equals(v.getId())))
+				.forEach(intVar -> solutionWithMaximumUtilityInt.put(intVar.getName(), intVar.getValue()));
+        solutionWithMaximumUtilityReal.clear();
+        idToRealVar.values().stream()
+				.filter(realVar -> variablesForUG.stream().anyMatch(v-> realVar.getName().equals(v.getId())))
+				.forEach(realVar -> solutionWithMaximumUtilityReal.put(realVar.getName(), realVar.getUB()));
+
+    }
+
+    //only for IntVar
+    private void saveBestSolutionInCDO(){
+
+		log.info("Saving best solution in CDO.....");
+		CDOTransaction trans = null;
+		ConstraintProblem cp = null;
+		CDOClient cl = new CDOClient();
+		cl.registerPackage(TypesPackage.eINSTANCE);
+		cl.registerPackage(CpPackage.eINSTANCE);
+		//System.out.println("CDOMode: " + cdoMode);
+		if (cdoMode){
+			trans = cl.openTransaction();
+			CDOResource resource = trans.getResource(cdoPath);
+			EList<EObject> contents = resource.getContents();
+			for (EObject obj: contents){
+				if (obj instanceof ConstraintProblem){
+					cp = (ConstraintProblem)obj;
+					break;
+				}
+			}
+		} else{
+			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
+		}
+		if (isReconfig) {
+			updateUtilityOfDeployedSolution(cp);
+		}
+		Solution solution = CpFactory.eINSTANCE.createSolution();
+		solution.setTimestamp(new Date().getTime());
+		cp.getSolution().add(solution);
+
+		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		utilityValue.setValue(maxUtility);
+		solution.setUtilityValue(utilityValue);
+		EList<VariableValue> varValues = solution.getVariableValue();
+		try{
+			EList<Variable> vars = cp.getVariables();
+			for (Variable var: vars){
+				VariableValue varVal = CpFactory.eINSTANCE.createVariableValue();
+				varVal.setVariable(var);
+				Domain dom = var.getDomain();
+				int val = solutionWithMaximumUtilityInt.get(var.getId());
+				log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+				if (dom instanceof RangeDomain){
+					RangeDomain rd = (RangeDomain)dom;
+					NumericValueUpperware from = rd.getFrom();
+					if (from instanceof IntegerValueUpperware){
+						IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
+					}
+					else{
+						LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
+					}
+				}
+				else if (dom instanceof NumericDomain){
+					NumericDomain nd = (NumericDomain)dom;
+					BasicTypeEnum type = nd.getType();
+					if (type.equals(BasicTypeEnum.INTEGER)){
+						IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
+					}
+					else{
+						LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
+					}
+				}
+				varValues.add(varVal);
+			}
+			if (cdoMode){
+				trans.commit();
+				trans.close();
+			}
+			else{
+				cl.saveModel(cp, pathName);
+			}
+			log.info("..... Solution saved");
+		}
+		catch(Exception e){
+			log.error("Something went wrong while storing the solution",e);
+			//e.printStackTrace();
+		}
+		cl.closeSession();
+
+	}
+
+
+
 	/* Saving the solution in the cp model and storing back the model to its 
 	 * initial position, either in CDO repository or the file system
 	 */
@@ -1305,11 +1414,8 @@ public class CPSolver {
 	private double calculateUtility(){
 
 		double utility = utilityGenerator.evaluate(convertToUtilityIntVariable(solver.retrieveIntVars())); //TODO
-		//log.debug("Utility = {}", utility);
 		if (utility > maxUtility){
-			maxUtility = utility;
-			log.info("Find max utility: {}", maxUtility);
-			saveSolution();
+			convertAndUpdateBestSolution(utility);
 		}
 		return utility;
 	}

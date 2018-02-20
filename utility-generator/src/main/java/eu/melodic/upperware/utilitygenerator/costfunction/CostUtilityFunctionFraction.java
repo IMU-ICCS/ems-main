@@ -9,9 +9,11 @@
 package eu.melodic.upperware.utilitygenerator.costfunction;
 
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 
+@Slf4j
 public class CostUtilityFunctionFraction extends CostUtilityFunction {
 
     @Override
@@ -19,6 +21,9 @@ public class CostUtilityFunctionFraction extends CostUtilityFunction {
             Collection<ConfigurationElement> newConfiguration) {
 
         double cost = calculateCost(newConfiguration);
-        return 1 / cost; //todo: to change according to Geir's paper
+        double result = 1/cost;  //todo: to change according to Geir's paper
+
+        log.debug("evaluateCostUtilityFunction: result = {}", result);
+        return result;
     }
 }

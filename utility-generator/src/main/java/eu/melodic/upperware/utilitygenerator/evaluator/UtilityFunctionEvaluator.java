@@ -92,8 +92,6 @@ public abstract class UtilityFunctionEvaluator {
 
     public void printConfigurationWithMaximumUtility() {
 
-        log.info("Solution with maximum utility:");
-        printSolution(solutionWithMaxUtility);
         log.info("Configuration with maximum utility:");
         log.info(configurationWithMaxUtility.toString());
 
