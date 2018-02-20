@@ -11,9 +11,13 @@ package eu.melodic.upperware.discovery.server;
 
 import eu.melodic.upperware.discovery.server.coordinator.*;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -30,6 +34,9 @@ public class VmsDiscoveryServer
 		long registrationWindow = Long.parseLong(config.getProperty("registration-window","60000"));;
 		
 		Properties credentials = loadConfig("/credentials.properties");
+		
+		prepareVmsClientInstallationFile(config, "/install.sh.tpl", "./install.sh");
+		prepareVmsClientInstallationFile(config, "/install-local.sh.tpl", "./install-local.sh");
 		
 		//ServerCoordinator coordinator = new ServerCoordinatorWaitAll(numOfVms, 
 		//ServerCoordinator coordinator = new ServerCoordinatorTimeWin(registrationWindow,
@@ -59,5 +66,28 @@ public class VmsDiscoveryServer
 			config.load(in);
 		}
 		return config;
+	}
+	
+	protected static void prepareVmsClientInstallationFile(Properties config, String tplFile, String outFile) throws FileNotFoundException, IOException {
+		//try (Scanner scanner = new Scanner(new File(tplFile))) {
+		try (Scanner scanner = new Scanner(VmsDiscoveryServer.class.getResourceAsStream(tplFile))) {
+			// Load template file
+			String contents = scanner.useDelimiter("\\A").next();
+			
+			// Replace placeholders with real values
+			contents = contents.replace("VMS_CLIENT_DOWNLOAD_URL", config.getProperty("VMS_CLIENT_DOWNLOAD_URL", "http://localhost:8080/melodic"));
+			contents = contents.replace("VMS_SERVER_HOST", config.getProperty("VMS_SERVER_HOST", "localhost"));
+			contents = contents.replace("VMS_SERVER_PORT", config.getProperty("VMS_SERVER_PORT", "22"));
+			contents = contents.replace("VMS_SERVER_PUBKEY", config.getProperty("VMS_SERVER_PUBKEY", ""));
+			contents = contents.replace("VMS_SERVER_FINGERPRINT", config.getProperty("VMS_SERVER_FINGERPRINT", ""));
+			contents = contents.replace("VMS_SERVER_USERNAME", config.getProperty("VMS_SERVER_USERNAME", ""));
+			contents = contents.replace("VMS_SERVER_PASSWORD", config.getProperty("VMS_SERVER_PASSWORD", ""));
+			contents = contents.replace("VMS_SERVER_CREDENTIALS_FILE", config.getProperty("VMS_SERVER_CREDENTIALS_FILE", ""));
+			
+			// Save to out file
+			try (FileWriter out = new FileWriter(outFile)) {
+				out.write( contents );
+			}
+		}
 	}
 }

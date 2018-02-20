@@ -154,7 +154,8 @@ public class CpModelHelper {
 			// retrieve CP model (open transaction)
 			transaction = cdoSession.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);	//0: PaasageConfiguration, 1: ConstraintProblem  (see cp_generator, class :
+																							//  eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator)
 			
 			// check if all metric variable names in CP model exist in 'metricValues' map
 			/*EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
@@ -186,10 +187,10 @@ public class CpModelHelper {
 						BasicTypeEnum type = c.getType();
 						NumericValueUpperware newVal = null;
 						switch (type) {
-							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue(Integer.parseInt(mvValue)); break;
-							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue(Float.parseFloat(mvValue)); break;
-							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue(Double.parseDouble(mvValue)); break;
-							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue(Long.parseLong(mvValue)); break;
+							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue( (int)Double.parseDouble(mvValue) ); break;
+							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue( (float)Double.parseDouble(mvValue) ); break;
+							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue( Double.parseDouble(mvValue) ); break;
+							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue( (long)Double.parseDouble(mvValue) ); break;
 						}
 						c.setValue(newVal);
 					}
@@ -226,7 +227,7 @@ public class CpModelHelper {
 			// retrieve CP model (open view)
 			view = cdoSession.openView();
 			CDOResource resource = view.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
 			
 			// get solutions list
 			EList<Solution> solutions = cpModel.getSolution();
@@ -283,7 +284,7 @@ public class CpModelHelper {
 			// retrieve CP model (open transaction)
 			transaction = cdoSession.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
 			
 			// get solutions list
 			/*EList<Solution> solutions = cpModel.getSolution();
@@ -342,7 +343,7 @@ public class CpModelHelper {
 			// retrieve CP model (open transaction)
 			transaction = cdoSession.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
 			
 			// get current candidate solution Id
 			int oldPos = cpModel.getCandidateSolutionId();

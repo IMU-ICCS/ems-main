@@ -10,6 +10,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.provider.ProviderModel;
+import eu.paasage.camel.type.StringsValue;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
@@ -154,6 +155,8 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 
 					NodeCandidate nodeCandidate = nodeCandidates.getCheapest(componentName, providerId, nodeCandidatePredicates)
 							.orElseThrow(() -> new S2DException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
+
+					log.info("Found Node Candidate: {}", nodeCandidate);
 
 					try {
 						EList<InternalComponentInstance> internalComponentInstanceToRegisters = SolverToDeployementHelper.createInternalComponentInstance(componentName, deploymentModel, cardinality);
@@ -316,7 +319,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 
 		private static VMKey getInstance(VMInstance vmInstance) {
 			String vmName = removeSuffixFromInstance(vmInstance.getName());
-			String vmType = ((eu.paasage.camel.type.impl.EnumerateValueImpl)vmInstance.getVmTypeValue()).getName();
+			String vmType = ((StringsValue)vmInstance.getVmTypeValue()).getValue();
 			return new VMKey(vmName, vmType);
 		}
 

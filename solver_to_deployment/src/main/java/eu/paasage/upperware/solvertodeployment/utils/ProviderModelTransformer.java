@@ -1,5 +1,6 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
+import eu.melodic.cloudiator.client.model.Image;
 import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.paasage.camel.provider.*;
 import eu.paasage.camel.type.SingleValue;
@@ -48,16 +49,18 @@ public class ProviderModelTransformer {
     private static Feature createVMSubFeature(NodeCandidate nodeCandidate) {
         Feature result = PROVIDER_FACTORY.createFeature();
         result.setName("VM");
-//        result.getAttributes().add(createAttribute("VMType", createStringValue(nodeCandidate.getHardware().getName()), null, null));
-        result.getAttributes().add(createAttribute("VMType", createStringValue("t2.medium")));
-        //TODO - skad wziac VMImageId (ami)
-//        attribute VMImageId {
-//            value: string value 'eu-west-1/ami-b9b394ca'
-//            value type:  MyAmazonPM.AmazonEC2Type.VMImageIdEnum
-//        }
-        result.getAttributes().add(createAttribute("VMImageId", createStringValue("eu-west-1/ami-b9b394ca")));
+        String vmName = nodeCandidate.getHardware().getName();
+        result.getAttributes().add(createAttribute("VMType", createStringValue(vmName)));
+
+        String ami = getAmi(nodeCandidate.getImage());
+        result.getAttributes().add(createAttribute("VMImageId", createStringValue(ami)));
         result.setFeatureCardinality(createFeatureCardinality());
         return result;
+    }
+
+    private static String getAmi(Image image) {
+        String value = image.getId();
+        return value.substring(value.lastIndexOf("~") + 1);
     }
 
     private static FeatCardinality createFeatureCardinality() {
@@ -88,9 +91,8 @@ public class ProviderModelTransformer {
     }
 
     private static Attribute createLocationIdAttribute(NodeCandidate nodeCandidate) {
-//        return createAttribute("LocationId", createStringValue(nodeCandidate.getCloud().getEndpoint()), null, null);
-        //TODO - skad wziac  locationId
-        return createAttribute("LocationId", createStringValue("eu-west-1"));
+        String locationName = nodeCandidate.getHardware().getLocation().getName();
+        return createAttribute("LocationId", createStringValue(locationName));
     }
 
 //        attribute  Name {
@@ -104,8 +106,8 @@ public class ProviderModelTransformer {
 
 
     private static Attribute createDriverAttribute(NodeCandidate nodeCandidate) {
-
-        return createAttribute("Driver", createStringValue("aws-ec2"));
+        String providerName = nodeCandidate.getCloud().getApi().getProviderName();
+        return createAttribute("Driver", createStringValue(providerName));
     }
 
     private static Attribute createAttribute(String attributeName, SingleValue value) {

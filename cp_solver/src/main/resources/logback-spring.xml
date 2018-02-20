@@ -12,6 +12,7 @@
 <configuration>
   <include resource="org/springframework/boot/logging/logback/base.xml"/>
   <logger name="eu.melodic.upperware.cpsolver" level="DEBUG"/>
+  <!--<logger name="eu.melodic.upperware.utilitygenerator" level="DEBUG"/>-->
   <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
 
   <!-- choco solver begin -->
