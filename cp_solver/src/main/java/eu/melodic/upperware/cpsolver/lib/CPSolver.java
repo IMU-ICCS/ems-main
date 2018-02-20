@@ -401,9 +401,20 @@ public class CPSolver {
 		if (isReconfig) {
 			updateUtilityOfDeployedSolution(cp);
 		}
-		Solution solution = CpFactory.eINSTANCE.createSolution();
-		solution.setTimestamp(new Date().getTime());
-		cp.getSolution().add(solution);
+
+        Solution solution = null;
+        //if (timestamp == 0){
+        solution = CpFactory.eINSTANCE.createSolution();
+        solution.setTimestamp(new Date().getTime());
+        cp.getSolution().add(solution);
+//		} else {
+//			for (Solution s: cp.getSolution()){
+//				if (s.getTimestamp() == timestamp){
+//					solution = s;
+//					break;
+//				}
+//			}
+//		}
 
 		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
 		utilityValue.setValue(maxUtility);
