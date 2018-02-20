@@ -28,12 +28,11 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction { /
             Collection<ConfigurationElement> newConfiguration) {
 
         double newCost = calculateCost(newConfiguration);
-        //int numberOfVirtualMachines = countVirtualMachines(newConfiguration);
-        //double avgCost = newCost/numberOfVirtualMachines;
-
         double normalized = normalize(getLowestCost(newConfiguration), getHighestCost(newConfiguration), newCost);
         double result = 1 - normalized;
-        //log.info("evaluateResponseUtilityFunction: normalized result = {}", result);
+
+        log.debug("evaluateCostUtilityFunction: result = {}", result);
+
         return result;
     }
 

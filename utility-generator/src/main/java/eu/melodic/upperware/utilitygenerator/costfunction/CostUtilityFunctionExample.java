@@ -38,7 +38,7 @@ public class CostUtilityFunctionExample extends CostUtilityFunction { //todo: to
         double newCost = calculateCost(newConfiguration);
         double result = Math.min(1, actUtilityCost * oldCost / newCost);
 
-        //log.info("evaluateCostUtilityFunction: result = {}", result);
+        log.debug("evaluateCostUtilityFunction: result = {}", result);
         return result;
     }
 }
