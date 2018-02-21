@@ -11,4 +11,8 @@ public interface CacheService <T>{
 
     T load(String key);
 
+    void storeToFile(String key, T value) throws CacheException;
+
+    T loadFromFile(String key);
+
 }

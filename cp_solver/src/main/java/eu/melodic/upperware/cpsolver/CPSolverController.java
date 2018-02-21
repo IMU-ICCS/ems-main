@@ -46,9 +46,10 @@ public class CPSolverController {
     String applicationId = request.getApplicationId();
     String filePath = request.getFileModelsPath();
     String requestUuid = request.getWatermark().getUuid();
+    String nodeCandidatesFilePath = "/Users/mrozanska/logs/FCR_withMetrics1519221672517.txt";
     Boolean useExternalOptimizer = request.getUseExternalOptimizer();
     log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + filePath + " " +requestUuid + " " +useExternalOptimizer);
-    executor.generateCPSolutionFromFile(applicationId, filePath, requestUuid, false);
+    executor.generateCPSolutionFromFile(applicationId, filePath, nodeCandidatesFilePath, requestUuid, useExternalOptimizer);
   }
 
 

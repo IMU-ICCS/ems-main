@@ -10,7 +10,10 @@ import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.deployment.Hosting;
+import eu.paasage.camel.deployment.InternalComponent;
+import eu.paasage.camel.deployment.ProvidedHost;
+import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.metric.Metric;
 import eu.paasage.camel.metric.MetricInstance;
 import eu.paasage.camel.metric.MetricModel;
@@ -33,6 +36,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Stream;
+
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
 @Slf4j
 @Service
@@ -64,7 +69,13 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
         try {
             cacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
+            //String nodeCandidatesFilePath = "/logs/node_candidates_"+ CDO_SERVER_PATH + cp.getId() +".txt";
+            String nodeCandidatesFilePath = "/Users/mrozanska/logs/"+ CDO_SERVER_PATH + cp.getId() +".txt";
+            cacheService.storeToFile(nodeCandidatesFilePath, NodeCandidates.of(nodeCandidatesMap)); //todo
+
             log.info("Node candidates stored under key {}", cpName);
+            log.info("Node candidates saved in file {}", nodeCandidatesFilePath);
+
         } catch (CacheException cacheException) {
             throw new GeneratorException(String.format("Problem with storing data to cache under key %s", cpName), cacheException);
         }
