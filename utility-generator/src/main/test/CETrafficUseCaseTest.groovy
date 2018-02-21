@@ -52,7 +52,7 @@ class CETrafficUseCaseTest extends Specification {
         when:
         System.out.println("ONE MACHINE ")
         System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double result = utilityGenerator.evaluateToTest(cardinality)
 
         then:
         noExceptionThrown()
@@ -73,7 +73,7 @@ class CETrafficUseCaseTest extends Specification {
         when:
         System.out.println("LESS MACHINES ")
         System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double result = utilityGenerator.evaluateToTest(cardinality)
 
         then:
         noExceptionThrown()
@@ -94,7 +94,7 @@ class CETrafficUseCaseTest extends Specification {
         when:
         System.out.println("MORE MACHINES ")
         System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double result = utilityGenerator.evaluateToTest(cardinality)
 
         then:
         noExceptionThrown()
@@ -114,7 +114,7 @@ class CETrafficUseCaseTest extends Specification {
         when:
         System.out.println("MORE MACHINES ")
         System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double result = utilityGenerator.evaluateToTest(cardinality)
 
         then:
         noExceptionThrown()
@@ -134,7 +134,7 @@ class CETrafficUseCaseTest extends Specification {
         when:
         System.out.println("MORE MACHINES ")
         System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double result = utilityGenerator.evaluateToTest(cardinality)
 
         then:
         noExceptionThrown()

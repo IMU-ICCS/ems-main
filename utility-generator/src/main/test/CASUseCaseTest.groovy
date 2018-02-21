@@ -48,7 +48,7 @@ class CASUseCaseTest extends Specification {
 
         when:
         System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double result = utilityGenerator.evaluateToTest(cardinality)
 
         then:
         noExceptionThrown()

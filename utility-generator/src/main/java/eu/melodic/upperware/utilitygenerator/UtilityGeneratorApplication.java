@@ -43,6 +43,10 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
+    public double evaluate(Collection<IntVar> newConfigurationInt) {
+        return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
+    }
+
     public void printConfigurationWithMaximumUtility() {
         this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
     }
@@ -85,14 +89,8 @@ public class UtilityGeneratorApplication {
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
     }
 
-
-    public double evaluate(int cardinality) {
-        return this.utilityFunctionEvaluator.evaluate(new ArrayList<>(), new ArrayList<>());
-
-    }
-
-    public double evaluate(Collection<IntVar> newConfigurationInt) {
-        return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
+    public double evaluateToTest(Collection<ConfigurationElement> configuration) {
+        return this.utilityFunctionEvaluator.evaluate(configuration);
     }
 
     private void createUtilityEvaluator(List<MetricDTO> metrics, Collection<ConfigurationElement> actConfiguration,
@@ -100,10 +98,10 @@ public class UtilityGeneratorApplication {
 
         switch (useCase) {
 
-//            case FCR:
-//                this.utilityFunctionEvaluator =
-//                new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
-//                break;
+            case FCR:
+                this.utilityFunctionEvaluator =
+                new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
+                break;
 
             case CETRAFFIC:
                 this.utilityFunctionEvaluator =
