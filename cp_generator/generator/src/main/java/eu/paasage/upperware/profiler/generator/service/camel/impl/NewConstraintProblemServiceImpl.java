@@ -10,7 +10,10 @@ import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.*;
+import eu.paasage.camel.deployment.Hosting;
+import eu.paasage.camel.deployment.InternalComponent;
+import eu.paasage.camel.deployment.ProvidedHost;
+import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.metric.Metric;
 import eu.paasage.camel.metric.MetricInstance;
 import eu.paasage.camel.metric.MetricModel;
@@ -22,32 +25,49 @@ import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Stream;
 
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
+
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class NewConstraintProblemServiceImpl implements NewConstraintProblemService {
 
     private CpFactory cpFactory;
     private List<GeneratorService> generatorServices;
     private CloudiatorService cloudiatorService;
-    private CacheService<NodeCandidates> cacheService;
+    private CacheService<NodeCandidates> memcacheService;
+    private CacheService<NodeCandidates> filecacheService;
     private NodeCandidatesService nodeCandidatesService;
-
     private ConstantService constantService;
     private ConstraintService constraintService;
     private VariableService variableService;
+
+    @Autowired
+    public NewConstraintProblemServiceImpl(CpFactory cpFactory, List<GeneratorService> generatorServices,
+            CloudiatorService cloudiatorService, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
+            @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, NodeCandidatesService nodeCandidatesService,
+            ConstantService constantService, ConstraintService constraintService, VariableService variableService) {
+        this.cpFactory = cpFactory;
+        this.generatorServices = generatorServices;
+        this.cloudiatorService = cloudiatorService;
+        this.memcacheService = memcacheService;
+        this.filecacheService = filecacheService;
+        this.nodeCandidatesService = nodeCandidatesService;
+        this.constantService = constantService;
+        this.constraintService = constraintService;
+        this.variableService = variableService;
+    }
 
     @Override
     public ConstraintProblem createConstraintProblem(CamelModel camelModel, String cpName) {
@@ -63,8 +83,13 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
         Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
         try {
-            cacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
+            memcacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
+            String nodeCandidatesFilePath = "/logs/node_candidates_"+ CDO_SERVER_PATH + cp.getId() +".txt";
+            filecacheService.store(nodeCandidatesFilePath, NodeCandidates.of(nodeCandidatesMap));
+
             log.info("Node candidates stored under key {}", cpName);
+            log.info("Node candidates saved in file {}", nodeCandidatesFilePath);
+
         } catch (CacheException cacheException) {
             throw new GeneratorException(String.format("Problem with storing data to cache under key %s", cpName), cacheException);
         }
