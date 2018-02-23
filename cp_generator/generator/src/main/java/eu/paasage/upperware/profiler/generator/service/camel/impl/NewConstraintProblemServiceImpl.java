@@ -84,7 +84,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
         try {
             memcacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
-            String nodeCandidatesFilePath = "/logs/node_candidates_"+ CDO_SERVER_PATH + cp.getId() +".txt";
+            String nodeCandidatesFilePath = "/logs/node_candidates_"+ CDO_SERVER_PATH + cp.getId();
             filecacheService.store(nodeCandidatesFilePath, NodeCandidates.of(nodeCandidatesMap));
 
             log.info("Node candidates stored under key {}", cpName);
