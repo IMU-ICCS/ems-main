@@ -17,9 +17,9 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -33,17 +33,26 @@ import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CPSolverExecutor {
   
   private Environment env;
   private RestTemplate restTemplate;
-  private CacheService<NodeCandidates> cacheService;
+  private CacheService<NodeCandidates> memcacheService;
+  private CacheService<NodeCandidates> filecacheService;
+
+  @Autowired
+  public CPSolverExecutor(Environment env, RestTemplate restTemplate, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
+          @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService) {
+    this.env = env;
+    this.restTemplate = restTemplate;
+    this.memcacheService = memcacheService;
+    this.filecacheService = filecacheService;
+  }
 
   @Async
   public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid, Boolean useExternalOptimizer) {
     try {
-      NodeCandidates nodeCandidates = cacheService.load(createCacheKey(cdoResourcePath));
+      NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cdoResourcePath));
       CPSolver cpSolver = new CPSolver(cdoResourcePath, null, useExternalOptimizer, nodeCandidates);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
@@ -61,7 +70,7 @@ public class CPSolverExecutor {
 
   public void generateCPSolutionFromFile(String applicationId, String filePath, String nodeCandidatesFilePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
 
-    NodeCandidates nodeCandidates = cacheService.loadFromFile(nodeCandidatesFilePath);
+    NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
 
     CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer, nodeCandidates);
 
