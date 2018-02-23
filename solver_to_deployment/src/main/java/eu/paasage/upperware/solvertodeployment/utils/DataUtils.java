@@ -7,7 +7,6 @@ package eu.paasage.upperware.solvertodeployment.utils;
 import com.google.common.collect.Sets;
 import eu.melodic.cache.NodeCandidatePredicates;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.type.StringsValue;
@@ -19,7 +18,9 @@ import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
+import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +75,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 	 */
 	public static DataHolder computeDatasToRegister(DeploymentModel deploymentModel,
 													ConstraintProblem constraintProblem, Solution solution, String camelModelID,
-													NodeCandidates nodeCandidates) throws S2DException {
+													NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties) throws S2DException {
 
 		// Analyzing the model for LOCAL group, ie component connected by LOCAL communication
 		// component i => i
@@ -172,7 +173,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 
 							VM vm = findVMByName(deploymentModel.getVms(), getVmId(entry));
 
-							ProviderModel providerModel = ProviderModelTransformer.createProviderModel(nodeCandidate, componentName, constraintProblem.getId());
+							ProviderModel providerModel = ProviderModelTransformer.createProviderModel(nodeCandidate, componentName, constraintProblem.getId(), solverToDeploymentProperties.getEndpoint().getAmazon());
 							dataHolder.getProviderModel().add(providerModel);
 
 							vmInstanceToRegisters = SolverToDeployementHelper.searchAndCreateVMInstance(providerModel, vm, cardinality);
@@ -232,7 +233,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
 
 		CPModelTool.getStorage(variableValues)
-				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getFloatValue(variableValue))));
+				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getDoubleValue(variableValue))));
 
 		CPModelTool.getOs(variableValues)
 				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));

@@ -1,5 +1,4 @@
-package eu.paasage.upperware.profiler.generator.properties;
-
+package eu.paasage.upperware.solvertodeployment.properties;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +16,8 @@ import javax.validation.constraints.NotNull;
 @Validated
 @Configuration
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.generator.properties")
-public class GeneratorProperties {
+@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.solverToDeployment.properties")
+public class SolverToDeploymentProperties {
 
     @Valid
     @NotNull
@@ -26,25 +25,30 @@ public class GeneratorProperties {
 
     @Valid
     @NotNull
-    private CloudiatorV2 cloudiatorV2;
+    private Server server;
+
+    @Valid
+    @NotNull
+    private Endpoint endpoint;
 
     @Getter
     @Setter
     public static class Esb {
-
         @NotBlank
         private String url;
-
     }
 
     @Getter
     @Setter
-    public static class CloudiatorV2 {
-
+    public static class Server {
         @NotBlank
-        private String url;
+        private String port;
+    }
 
+    @Getter
+    @Setter
+    public static class Endpoint {
         @NotBlank
-        private String apiKey;
+        private String amazon;
     }
 }

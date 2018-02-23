@@ -5,7 +5,7 @@
 * was not distributed with this file, You can obtain one at
 * http://mozilla.org/MPL/2.0/.
 */
-import eu.melodic.cloudiator.client.model.NodeCandidate
+
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*

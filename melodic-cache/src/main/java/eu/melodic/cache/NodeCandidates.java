@@ -1,6 +1,6 @@
 package eu.melodic.cache;
 
-import eu.melodic.cloudiator.client.model.NodeCandidate;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;

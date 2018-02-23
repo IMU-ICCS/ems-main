@@ -11,9 +11,9 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.cloudiator.client.model.NodeCandidate;
 import eu.melodic.upperware.utilitygenerator.model.*;
 import eu.paasage.upperware.metamodel.cp.VariableType;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
