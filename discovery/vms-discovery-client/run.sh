@@ -15,7 +15,7 @@ VMSCRED=`cat target/classes/client.properties | grep username | wc -l`
 #echo $VMSCRED
 if [ $VMSCRED == '0' ]; then
   echo 'Missing VMS Discovery Server credentials...'
-  cat ../vms-server.credentials >> target/classes/client.properties
+  sudo /bin/bash -c "cat ../vms-server.credentials >> target/classes/client.properties"
   echo 'Credentials appended to target/classes/client.properties'
 fi
 
