@@ -1,6 +1,6 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
-import eu.melodic.cloudiator.client.model.NodeCandidate;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public interface NodeCandidatesService {
 
     Pair<Long, Long> getRangeForRam(List<NodeCandidate> nodeCandidates);
 
-    Pair<Float, Float> getRangeForStorage(List<NodeCandidate> nodeCandidates);
+    Pair<Double, Double> getRangeForStorage(List<NodeCandidate> nodeCandidates);
 
     Pair<Integer, Integer> getRangeForCores(List<NodeCandidate> nodeCandidates);
 
@@ -30,7 +30,7 @@ public interface NodeCandidatesService {
 
     List<Long> getValuesForRam(Map<Integer, List<NodeCandidate>> nodeCandidates);
 
-    List<Float> getValuesForStorage(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
+    List<Double> getValuesForStorage(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
 
     List<Integer> getValuesForCores(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
 
@@ -40,7 +40,7 @@ public interface NodeCandidatesService {
     List<Long> getValuesForRam(List<NodeCandidate> nodeCandidates);
 
     @Deprecated
-    List<Float> getValuesForStorage(List<NodeCandidate> nodeCandidates);
+    List<Double> getValuesForStorage(List<NodeCandidate> nodeCandidates);
 
     @Deprecated
     List<Integer> getValuesForCores(List<NodeCandidate> nodeCandidates);

@@ -101,12 +101,6 @@
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-cache</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>eu.melodic.cloudiator</groupId>
-                    <artifactId>cloudiator-client</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
 

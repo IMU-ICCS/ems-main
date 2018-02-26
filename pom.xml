@@ -298,6 +298,17 @@
             <name>PaaSage repository</name>
             <url>http://jenkins.paasage.cetic.be/repository/</url>
         </repository>
+        <repository>
+            <id>ossrh.snapshots</id>
+            <name>OSSRH snapshots repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>
@@ -305,11 +316,6 @@
             <name>Internal Releases</name>
             <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
         </repository>
-        <!--<snapshotRepository>-->
-            <!--<id>ow2.snapshot</id>-->
-            <!--<name>Internal Releases</name>-->
-            <!--<url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>-->
-        <!--</snapshotRepository>-->
         <snapshotRepository>
             <id>eu.7bulls</id>
             <name>Melodic 7bulls repository</name>

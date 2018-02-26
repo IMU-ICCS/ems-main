@@ -1,494 +1,874 @@
-[
-  {
-    "price": 5,
-    "cloud": {
-      "endpoint": "https://endpoint.example.com",
-      "cloudType": "PRIVATE",
-      "api": {
-        "providerName": "openstack-nova"
-      },
-      "credential": {
-        "user": "tenant:username",
-        "secret": "MySuperSecurePassword"
-      },
-      "cloudConfiguration": {
-        "nodeGroup": "cloudiator",
-        "properties": [
-          {
-            "key": "sword.regions",
-            "value": "RegionOne, RegionTwo"
-          }
-        ]
-      },
-      "id": "1a79a4d60de6718e8e5b326e338ae533"
+[{
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
     },
-    "image": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "Ubuntu 16.04 LTS AMD 64",
-      "providerId": "1",
-      "operatingSystem": {
-        "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "UBUNTU",
-        "operatingSystemArchitecture": "AMD64",
-        "operatingSystemVersion": "16.04 LTS"
-      },
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
     },
-    "hardware": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "t2.micro",
-      "providerId": "1",
-      "cores": 2,
-      "ram": 4096,
-      "disk": 100,
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
     },
     "location": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-      "name": "RegionOne",
-      "providerId": "RegionOne",
-      "locationScope": "ZONE",
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
       "isAssignable": true,
       "geoLocation": {
-        "city": "string",
-        "country": "string",
-        "latitude": 0,
-        "longitude": 0
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
       }
     }
   },
-  {
-    "price": 10,
-    "cloud": {
-      "endpoint": "https://endpoint.example.com",
-      "cloudType": "PRIVATE",
-      "api": {
-        "providerName": "openstack-nova"
-      },
-      "credential": {
-        "user": "tenant:username",
-        "secret": "MySuperSecurePassword"
-      },
-      "cloudConfiguration": {
-        "nodeGroup": "cloudiator",
-        "properties": [
-          {
-            "key": "sword.regions",
-            "value": "RegionOne, RegionTwo"
-          }
-        ]
-      },
-      "id": "1a79a4d60de6718e8e5b326e338ae533"
-    },
-    "image": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "Ubuntu 16.04 LTS AMD 64",
-      "providerId": "1",
-      "operatingSystem": {
-        "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "UBUNTU",
-        "operatingSystemArchitecture": "AMD64",
-        "operatingSystemVersion": "16.04 LTS"
-      },
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "hardware": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "t2.medium",
-      "providerId": "2",
-      "cores": 2,
-      "ram": 4096,
-      "disk": 100,
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c3.large",
+    "name": "c3.large",
+    "providerId": "c3.large",
+    "cores": 2,
+    "ram": 3750,
+    "disk": 10.0,
     "location": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-      "name": "RegionOne",
-      "providerId": "RegionOne",
-      "locationScope": "ZONE",
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
       "isAssignable": true,
       "geoLocation": {
-        "city": "string",
-        "country": "string",
-        "latitude": 0,
-        "longitude": 0
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
       }
     }
   },
-  {
-    "price": 15,
-    "cloud": {
-      "endpoint": "https://endpoint.example.com",
-      "cloudType": "PRIVATE",
-      "api": {
-        "providerName": "openstack-nova"
-      },
-      "credential": {
-        "user": "tenant:username",
-        "secret": "MySuperSecurePassword"
-      },
-      "cloudConfiguration": {
-        "nodeGroup": "cloudiator",
-        "properties": [
-          {
-            "key": "sword.regions",
-            "value": "RegionOne, RegionTwo"
-          }
-        ]
-      },
-      "id": "1a79a4d60de6718e8e5b326e338ae533"
-    },
-    "image": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "Ubuntu 16.04 LTS AMD 64",
-      "providerId": "1",
-      "operatingSystem": {
-        "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "UBUNTU",
-        "operatingSystemArchitecture": "AMD64",
-        "operatingSystemVersion": "16.04 LTS"
-      },
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "hardware": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "t2.large",
-      "providerId": "3",
-      "cores": 2,
-      "ram": 4096,
-      "disk": 100,
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "location": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-      "name": "RegionOne",
-      "providerId": "RegionOne",
-      "locationScope": "ZONE",
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1a",
+    "name": "eu-west-1a",
+    "providerId": "eu-west-1a",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": null,
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
       "isAssignable": true,
       "geoLocation": {
-        "city": "string",
-        "country": "string",
-        "latitude": 0,
-        "longitude": 0
-      }
-    }
-  },
-  {
-    "price": 20,
-    "cloud": {
-      "endpoint": "https://endpoint.example.com",
-      "cloudType": "PRIVATE",
-      "api": {
-        "providerName": "openstack-nova"
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
       },
-      "credential": {
-        "user": "tenant:username",
-        "secret": "MySuperSecurePassword"
-      },
-      "cloudConfiguration": {
-        "nodeGroup": "cloudiator",
-        "properties": [
-          {
-            "key": "sword.regions",
-            "value": "RegionOne, RegionTwo"
-          }
-        ]
-      },
-      "id": "1a79a4d60de6718e8e5b326e338ae533"
-    },
-    "image": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "Ubuntu 16.04 LTS AMD 64",
-      "providerId": "1",
-      "operatingSystem": {
-        "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "UBUNTU",
-        "operatingSystemArchitecture": "AMD64",
-        "operatingSystemVersion": "16.04 LTS"
-      },
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
         "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "hardware": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "t2.xlarge",
-      "providerId": "1",
-      "cores": 2,
-      "ram": 4096,
-      "disk": 100,
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "location": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-      "name": "RegionOne",
-      "providerId": "RegionOne",
-      "locationScope": "ZONE",
-      "isAssignable": true,
-      "geoLocation": {
-        "city": "string",
-        "country": "string",
-        "latitude": 0,
-        "longitude": 0
-      }
-    }
-  },
-  {
-    "price": 25,
-    "cloud": {
-      "endpoint": "https://endpoint.example.com",
-      "cloudType": "PRIVATE",
-      "api": {
-        "providerName": "openstack-nova"
-      },
-      "credential": {
-        "user": "tenant:username",
-        "secret": "MySuperSecurePassword"
-      },
-      "cloudConfiguration": {
-        "nodeGroup": "cloudiator",
-        "properties": [
-          {
-            "key": "sword.regions",
-            "value": "RegionOne, RegionTwo"
-          }
-        ]
-      },
-      "id": "1a79a4d60de6718e8e5b326e338ae533"
-    },
-    "image": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "Ubuntu 16.04 LTS AMD 64",
-      "providerId": "1",
-      "operatingSystem": {
-        "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "UBUNTU",
-        "operatingSystemArchitecture": "AMD64",
-        "operatingSystemVersion": "16.04 LTS"
-      },
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "hardware": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "m5.xlarge",
-      "providerId": "2",
-      "cores": 2,
-      "ram": 4096,
-      "disk": 100,
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "location": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-      "name": "RegionOne",
-      "providerId": "RegionOne",
-      "locationScope": "ZONE",
-      "isAssignable": true,
-      "geoLocation": {
-        "city": "string",
-        "country": "string",
-        "latitude": 0,
-        "longitude": 0
-      }
-    }
-  },
-  {
-    "price": 30,
-    "cloud": {
-      "endpoint": "https://endpoint.example.com",
-      "cloudType": "PRIVATE",
-      "api": {
-        "providerName": "openstack-nova"
-      },
-      "credential": {
-        "user": "tenant:username",
-        "secret": "MySuperSecurePassword"
-      },
-      "cloudConfiguration": {
-        "nodeGroup": "cloudiator",
-        "properties": [
-          {
-            "key": "sword.regions",
-            "value": "RegionOne, RegionTwo"
-          }
-        ]
-      },
-      "id": "1a79a4d60de6718e8e5b326e338ae533"
-    },
-    "image": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "Ubuntu 16.04 LTS AMD 64",
-      "providerId": "1",
-      "operatingSystem": {
-        "operatingSystemType": "LINUX",
-        "operatingSystemFamily": "UBUNTU",
-        "operatingSystemArchitecture": "AMD64",
-        "operatingSystemVersion": "16.04 LTS"
-      },
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "hardware": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne/1",
-      "name": "m4.large",
-      "providerId": "3",
-      "cores": 2,
-      "ram": 4096,
-      "disk": 100,
-      "location": {
-        "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-        "name": "RegionOne",
-        "providerId": "RegionOne",
-        "locationScope": "ZONE",
-        "isAssignable": true,
-        "geoLocation": {
-          "city": "string",
-          "country": "string",
-          "latitude": 0,
-          "longitude": 0
-        }
-      }
-    },
-    "location": {
-      "id": "1a79a4d60de6718e8e5b326e338ae533/RegionOne",
-      "name": "RegionOne",
-      "providerId": "RegionOne",
-      "locationScope": "ZONE",
-      "isAssignable": true,
-      "geoLocation": {
-        "city": "string",
-        "country": "string",
-        "latitude": 0,
-        "longitude": 0
+        "geoLocation": null,
+        "parent": null
       }
     }
   }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c3.large",
+    "name": "c3.large",
+    "providerId": "c3.large",
+    "cores": 2,
+    "ram": 3750,
+    "disk": 10.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+    "name": "eu-west-1",
+    "providerId": "eu-west-1",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": {
+      "city": "Dublin",
+      "country": "IE",
+      "latitude": 53.33,
+      "longitude": -6.25
+    },
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+      "name": "aws-ec2",
+      "providerId": "aws-ec2",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": null,
+      "parent": null
+    }
+  }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c4.large",
+    "name": "c4.large",
+    "providerId": "c4.large",
+    "cores": 2,
+    "ram": 3840,
+    "disk": 0.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1b",
+    "name": "eu-west-1b",
+    "providerId": "eu-west-1b",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": null,
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c4.large",
+    "name": "c4.large",
+    "providerId": "c4.large",
+    "cores": 2,
+    "ram": 3840,
+    "disk": 0.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1c",
+    "name": "eu-west-1c",
+    "providerId": "eu-west-1c",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": null,
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c3.large",
+    "name": "c3.large",
+    "providerId": "c3.large",
+    "cores": 2,
+    "ram": 3750,
+    "disk": 10.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1c",
+    "name": "eu-west-1c",
+    "providerId": "eu-west-1c",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": null,
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c4.large",
+    "name": "c4.large",
+    "providerId": "c4.large",
+    "cores": 2,
+    "ram": 3840,
+    "disk": 0.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1a",
+    "name": "eu-west-1a",
+    "providerId": "eu-west-1a",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": null,
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c4.large",
+    "name": "c4.large",
+    "providerId": "c4.large",
+    "cores": 2,
+    "ram": 3840,
+    "disk": 0.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+    "name": "eu-west-1",
+    "providerId": "eu-west-1",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": {
+      "city": "Dublin",
+      "country": "IE",
+      "latitude": 53.33,
+      "longitude": -6.25
+    },
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+      "name": "aws-ec2",
+      "providerId": "aws-ec2",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": null,
+      "parent": null
+    }
+  }
+}, {
+  "price": 5.0,
+  "cloud": {
+    "endpoint": "",
+    "cloudType": "PUBLIC",
+    "api": {
+      "providerName": "aws-ec2"
+    },
+    "credential": {
+      "user": "AKIAJT6OA2Q7OEFY2NWQ",
+      "secret": "AKIAJT6OA2Q7OEFY2NWQ"
+    },
+    "cloudConfiguration": {
+      "nodeGroup": "",
+      "properties": null
+    },
+    "id": "7697dce7103d5926a4027d17ad975446"
+  },
+  "image": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1/ami-b9b394ca",
+    "name": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20161213",
+    "providerId": "ami-b9b394ca",
+    "operatingSystem": {
+      "operatingSystemType": "UNKOWN",
+      "operatingSystemFamily": "UBUNTU",
+      "operatingSystemArchitecture": "AMD64",
+      "operatingSystemVersion": "-1"
+    },
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "hardware": {
+    "id": "7697dce7103d5926a4027d17ad975446~c3.large",
+    "name": "c3.large",
+    "providerId": "c3.large",
+    "cores": 2,
+    "ram": 3750,
+    "disk": 10.0,
+    "location": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  },
+  "location": {
+    "id": "7697dce7103d5926a4027d17ad975446~eu-west-1b",
+    "name": "eu-west-1b",
+    "providerId": "eu-west-1b",
+    "locationScope": "PROVIDER",
+    "isAssignable": true,
+    "geoLocation": null,
+    "parent": {
+      "id": "7697dce7103d5926a4027d17ad975446~eu-west-1",
+      "name": "eu-west-1",
+      "providerId": "eu-west-1",
+      "locationScope": "PROVIDER",
+      "isAssignable": true,
+      "geoLocation": {
+        "city": "Dublin",
+        "country": "IE",
+        "latitude": 53.33,
+        "longitude": -6.25
+      },
+      "parent": {
+        "id": "7697dce7103d5926a4027d17ad975446~aws-ec2",
+        "name": "aws-ec2",
+        "providerId": "aws-ec2",
+        "locationScope": "PROVIDER",
+        "isAssignable": true,
+        "geoLocation": null,
+        "parent": null
+      }
+    }
+  }
+}
 ]

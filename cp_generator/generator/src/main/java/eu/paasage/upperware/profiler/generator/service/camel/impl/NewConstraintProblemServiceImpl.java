@@ -5,10 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
-import eu.melodic.cloudiator.client.ApiException;
-import eu.melodic.cloudiator.client.model.NodeCandidate;
-import eu.melodic.cloudiator.client.model.NodeRequirements;
-import eu.melodic.cloudiator.client.model.Requirement;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.Hosting;
 import eu.paasage.camel.deployment.InternalComponent;
@@ -25,6 +21,10 @@ import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.model.NodeCandidate;
+import io.github.cloudiator.rest.model.NodeRequirements;
+import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -137,8 +137,8 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
             Variable storageVariable = null;
             if (shouldAddStorage(hardwareRequirements)){
-                List<Float> valuesForCores = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
-                storageVariable = createFloatVariable(cp, VariableType.STORAGE, componentName, vmName, valuesForCores);
+                List<Double> valuesForStorage = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
+                storageVariable = createDoubleVariable(cp, VariableType.STORAGE, componentName, vmName, valuesForStorage);
             }
 
             OSOrImageRequirement osOrImageRequirements = NewCamelModelTools.getOsOrImageRequirements(vm);
@@ -181,11 +181,11 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
                 }
 
                 if (storageVariable != null) {
-                    Pair<Float, Float> rangeForStorage = nodeCandidatesService.getRangeForStorage(nodeCandidatesForProvider);
-                    Constant min = constantService.createFloatConstant(rangeForStorage.getLeft(), constantService.getConstantName(VariableType.STORAGE, componentName, "min", "p", String.valueOf(providerIndex)));
+                    Pair<Double, Double> rangeForStorage = nodeCandidatesService.getRangeForStorage(nodeCandidatesForProvider);
+                    Constant min = constantService.createDoubleConstant(rangeForStorage.getLeft(), constantService.getConstantName(VariableType.STORAGE, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createFloatConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, componentName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createDoubleConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, storageVariable, cardinalityVariable, min, max, providerFunction);
@@ -355,6 +355,34 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         cp.getConstraints().add(minCompariton);
 
         Constant maxConstant = constantService.createFloatConstant(maxPossibleValue, constantService.getConstantName(variableType, componentId, "max"));
+        cp.getConstants().add(maxConstant);
+
+        ComparisonExpression maxComparition = constraintService.createComparisonExpression(variable, ComparatorEnum.LESS_OR_EQUAL_TO, maxConstant);
+        cp.getConstraints().add(maxComparition);
+
+        return variable;
+    }
+
+
+    private Variable createDoubleVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Double> values) {
+        if (CollectionUtils.isEmpty(values)){
+            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
+            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
+        }
+
+        double minPossibleValue = values.get(0);
+        double maxPossibleValue = values.get(values.size()-1);
+
+        Variable variable = variableService.createDoubleVariable(variableType, componentId, vmName, variableService.createDoubleListDomain(values));
+        cp.getVariables().add(variable);
+
+        Constant minConstant = constantService.createDoubleConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));
+        cp.getConstants().add(minConstant);
+
+        ComparisonExpression minCompariton = constraintService.createComparisonExpression(variable, ComparatorEnum.GREATER_OR_EQUAL_TO, minConstant);
+        cp.getConstraints().add(minCompariton);
+
+        Constant maxConstant = constantService.createDoubleConstant(maxPossibleValue, constantService.getConstantName(variableType, componentId, "max"));
         cp.getConstants().add(maxConstant);
 
         ComparisonExpression maxComparition = constraintService.createComparisonExpression(variable, ComparatorEnum.LESS_OR_EQUAL_TO, maxConstant);

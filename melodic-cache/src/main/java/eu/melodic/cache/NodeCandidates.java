@@ -1,6 +1,7 @@
 package eu.melodic.cache;
 
-import eu.melodic.cloudiator.client.model.NodeCandidate;
+import io.github.cloudiator.rest.model.NodeCandidate;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -16,13 +17,13 @@ import java.util.stream.Collectors;
 /**
  * Created by pszkup on 04.01.18.
  */
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NodeCandidates implements Serializable {
 
     //Map<VMName, Map<ProviderIndex, List<NodeCandidate>>>
     private Map<String, Map<Integer, List<NodeCandidate>>> candidates;
 
-    public static NodeCandidates of (Map<String, Map<Integer, List<NodeCandidate>>> candidates){
+    public static NodeCandidates of(Map<String, Map<Integer, List<NodeCandidate>>> candidates){
         return new NodeCandidates(candidates);
     }
 

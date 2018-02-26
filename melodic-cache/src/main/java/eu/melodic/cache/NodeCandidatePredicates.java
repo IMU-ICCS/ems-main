@@ -1,7 +1,7 @@
 package eu.melodic.cache;
 
-import eu.melodic.cloudiator.client.model.NodeCandidate;
-import eu.melodic.cloudiator.client.model.OperatingSystemFamily;
+import io.github.cloudiator.rest.model.NodeCandidate;
+import io.github.cloudiator.rest.model.OperatingSystemFamily;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -42,7 +42,7 @@ public final class NodeCandidatePredicates {
         };
     }
 
-    public static Predicate<NodeCandidate> getStoragePredicate(Float value) {
+    public static Predicate<NodeCandidate> getStoragePredicate(Double value) {
         Objects.requireNonNull(value);
         return new Predicate<NodeCandidate>() {
             @Override
