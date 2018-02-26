@@ -7,6 +7,7 @@
 */
 
 
+import io.github.cloudiator.rest.model.NodeCandidate
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction

@@ -27,10 +27,6 @@ public class NodeCandidates implements Serializable {
         return new NodeCandidates(candidates);
     }
 
-    public static NodeCandidates empty(){
-        return new NodeCandidates(null);
-    }
-
     public Map<String, Map<Integer, List<NodeCandidate>>> get(){
         return MapUtils.emptyIfNull(candidates);
     }
