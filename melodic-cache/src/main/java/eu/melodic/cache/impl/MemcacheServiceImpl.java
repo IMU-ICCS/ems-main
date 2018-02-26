@@ -8,8 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.internal.OperationFuture;
-import net.spy.memcached.transcoders.SerializingTranscoder;
-import net.spy.memcached.transcoders.Transcoder;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutionException;
@@ -21,6 +21,8 @@ import static java.lang.Boolean.TRUE;
  */
 
 @Slf4j
+@Primary
+@Qualifier("memcacheService")
 @Service
 @AllArgsConstructor
 public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
@@ -53,4 +55,5 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
     public NodeCandidates load(String key) {
         return (NodeCandidates) memcachedClient.get(key);
     }
+
 }

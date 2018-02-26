@@ -1,63 +1,53 @@
 #!/bin/bash
 
-#created by Stefanidis 05.02.2018
-
-# we are at location : /home/ubuntu
-# for all Virtual Machines the IP of Upperware should be inititialized at: http://{PUBLIC_MELODIC_IP}:8095 (admin:admin)
-
-mkdir -p ~/melodic/downloads
-cd ~/melodic/downloads
+mkdir -p /tmp/metrics-downloads
+cd /tmp/metrics-downloads
 sleep 2
 
-echo 'downloading Active MQ broker' 
+echo 'Downloading Active MQ broker' 
 wget -c  https://archive.apache.org/dist/activemq/5.15.0/apache-activemq-5.15.0-bin.tar.gz
 sleep 2
 
-echo 'downloading mule engine' 
+echo 'Downloading Mule engine' 
 wget -c https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/3.9.0/mule-standalone-3.9.0.zip
 sleep 2
 
-echo 'downloading mule application for 1st level VM '
-#wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/RAM_CPU_case_v44_t_1st.zip?at=refs%2Fheads%2Fesper-demo -O RAM_CPU_case_v44_t_1st.zip
+echo 'Downloading Mule application for 1st level VM '
 wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/1stLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo -O 1stLevelEsper_app.zip
 sleep 2
 
-echo 'downloading mule application for 2nd level VM '
-#wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/RAM_CPU_case_v44_t_2nd.zip?at=refs%2Fheads%2Fesper-demo -O RAM_CPU_case_v44_t_2nd.zip
-wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo -O 2ndLevelEsper_app.zip
-sleep 2
+#echo 'Downloading mule application for 2nd level VM '
+#wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo -O 2ndLevelEsper_app.zip
+#sleep 2
 
-echo 'downloading VMS Discovery Client'
-wget -c VMS_CLIENT_DOWNLOAD_URL/vms-discovery-client.zip
+echo 'Downloading VMS Discovery Client'
+wget -c https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/vms-discovery-client.zip?at=refs%2Fheads%2Fesper-demo -O vms-discovery-client.zip
 sleep 2
 
 
 sudo mkdir /opt
 
-echo 'unzip the file of active mq broker to the /opt folder' 
+echo 'Unzip Active MQ broker into /opt' 
 sudo tar xvzf apache-activemq-5.15.0-bin.tar.gz -C /opt 
 
-echo 'making a symbolic link for AMQ broker'
+echo 'Creating a symbolic link for Active MQ broker'
 sudo ln -s /opt/apache-activemq-5.15.0 /opt/activemq
-#sudo ln -s /opt/apache-activemq-5.15.0 activemq
 
-echo 'unzip the file of mule engine to the /opt folder' 
+echo 'Unzip Mule engine into /opt' 
 sudo unzip mule-standalone-3.9.0.zip -d /opt
 
-
-echo 'putting the mule application (.zip) to the /apps folder'
-#sudo cp RAM_CPU_case_v44_t_1st.zip /opt/mule-standalone-3.9.0/apps
+echo 'Copying the 1st level application (.zip) into MULE_HOME/apps folder'
 sudo cp 1stLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
 
 
-echo 'unzip VMD Discovery Client'
-unzip vms-discovery-client.zip -d ../
+echo 'Unzip VMD Discovery Client'
+sudo unzip vms-discovery-client.zip -d /opt
 
-cd ../sshc
-chmod +x run.sh bin/client.sh
+cd /opt/vms-discovery-client
+sudo chmod +x run.sh bin/client.sh
 
 
-echo "Installed"
+echo "1st Level Installed on VM"
 
 
 echo "
@@ -69,11 +59,9 @@ fingerprint = VMS_SERVER_FINGERPRINT
 
 username = VMS_SERVER_USERNAME
 password = VMS_SERVER_PASSWORD
-" > ~/melodic/vms-server.credentials
+" | sudo tee -a /opt/vms-server.credentials > /dev/null
 
+sudo chmod 700 /opt/vms-server.credentials
 
-echo "Starting VMS Discovery Client..."
-cd ../sshc
-./run.sh
 
 exit

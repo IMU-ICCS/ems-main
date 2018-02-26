@@ -15,10 +15,10 @@ VMSCRED=`cat target/classes/client.properties | grep username | wc -l`
 #echo $VMSCRED
 if [ $VMSCRED == '0' ]; then
   echo 'Missing VMS Discovery Server credentials...'
-  cat ../vms-server.credentials >> target/classes/client.properties
+  sudo /bin/bash -c "cat ../vms-server.credentials >> target/classes/client.properties"
   echo 'Credentials appended to target/classes/client.properties'
 fi
 
 # Run VMS client
-java -classpath "target/classes:target/dependency/*" eu.melodic.upperware.discovery.client.VmsDiscoveryClient $*
+java -classpath "target/classes:target/dependency/*:conf:jars/*" eu.melodic.upperware.discovery.client.VmsDiscoveryClient $*
 cd $PWD

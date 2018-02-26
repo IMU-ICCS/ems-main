@@ -37,7 +37,7 @@ public class CostUtilityFunctionExampleV2 extends CostUtilityFunction { //todo: 
         double result = Math.min(1, prevUtilityCost * oldCost / newCost);
 
         prevUtilityCost = result;
-        //log.info("evaluateCostUtilityFunction: result = {}", result);
+        log.debug("evaluateCostUtilityFunction: result = {}", result);
         return result;
     }
 }

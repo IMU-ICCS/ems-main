@@ -67,7 +67,10 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
         double max = responseUtilityFunction.density((ALPHA - 1) / (ALPHA + beta - 2));
 
-        return normalize(0, max, result);
+        double normalizedResult = normalize(0, max, result);
+
+        log.debug("Response Utility Function value = {}", normalizedResult);
+        return normalizedResult;
     }
 
     private double estimateNextAvgResponseTime(int avgResponseTime,
@@ -101,6 +104,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
             log.warn("Metric needed for FCR utility function: {} does not exist, setting value to 0", METRIC_AVG_RESPONSE_TIME);
         }
         this.avgResponseTime = new IntMetric(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, valueRT);
+
         this.beta = ALPHA * (MAX_RESPONSE_TIME / NOM_RESPONSE_TIME - 1);
         this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
 
