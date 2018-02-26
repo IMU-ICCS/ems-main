@@ -19,6 +19,7 @@ public class ProviderModelTransformer {
 
     private static final ProviderFactory PROVIDER_FACTORY = ProviderFactory.eINSTANCE;
     private static final TypeFactory TYPE_FACTORY = TypeFactory.eINSTANCE;
+    private static final String AWS_EC2 = "aws-ec2";
 
     public static ProviderModel createProviderModel(NodeCandidate nodeCandidate, String componentName, String constraintProblemId, String amazonEndpoint) {
         ProviderModel providerModel = PROVIDER_FACTORY.createProviderModel();
@@ -91,7 +92,7 @@ public class ProviderModelTransformer {
         CloudType cloudType = nodeCandidate.getCloud().getCloudType();
         String providerName = nodeCandidate.getCloud().getApi().getProviderName();
         if (CloudType.PUBLIC.equals(cloudType)){
-            if ("aws-ec2".equalsIgnoreCase(providerName)){
+            if (AWS_EC2.equalsIgnoreCase(providerName)){
                 return createAttribute("Endpoint", createStringValue(amazonEndpoint));
             } else {
                 throw new  RuntimeException( String.format("Cloud %s is PUBLIC, but only Amazon EC2 is supported", providerName));
