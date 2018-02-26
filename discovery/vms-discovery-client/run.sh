@@ -20,5 +20,5 @@ if [ $VMSCRED == '0' ]; then
 fi
 
 # Run VMS client
-java -classpath "target/classes:target/dependency/*" eu.melodic.upperware.discovery.client.VmsDiscoveryClient $*
+java -classpath "target/classes:target/dependency/*:conf:jars/*" eu.melodic.upperware.discovery.client.VmsDiscoveryClient $*
 cd $PWD
