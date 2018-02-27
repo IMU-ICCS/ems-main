@@ -33,7 +33,7 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     public Pair<Long, Long> getRangeForRam(List<NodeCandidate> nodeCandidates) {
         Optional<Long> minValue = getHardwareMinValue(nodeCandidates, Hardware::getRam);
         Optional<Long> maxValue = getHardwareMaxValue(nodeCandidates, Hardware::getRam);
-        return ImmutablePair.of(minValue.orElse(0l), maxValue.orElse(0l));
+        return ImmutablePair.of(minValue.orElse(0L), maxValue.orElse(0L));
     }
 
     @Override

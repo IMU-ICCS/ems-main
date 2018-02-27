@@ -102,7 +102,7 @@ public class ProviderModelTransformer {
     }
 
     private static Attribute createLocationIdAttribute(NodeCandidate nodeCandidate) {
-        String locationName = nodeCandidate.getHardware().getLocation().getName();
+        String locationName = nodeCandidate.getLocation().getName();
         return createAttribute("LocationId", createStringValue(locationName));
     }
 
