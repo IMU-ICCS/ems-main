@@ -11,7 +11,8 @@ if [[ -f 'target/classes/client.properties' ]]; then
 	#echo $VMSCRED
 	if [ $VMSCRED == '0' ]; then
 	  echo 'Missing VMS Discovery Server credentials...'
-	  sudo /bin/bash -c "cat ../vms-server.credentials >> target/classes/client.properties"
+	  #sudo 
+	  /bin/bash -c "cat target/classes/vms-server.credentials >> target/classes/client.properties"
 	  echo 'Credentials appended to target/classes/client.properties'
 	fi
 fi
@@ -20,7 +21,8 @@ if [[ -f 'conf/client.properties' ]]; then
 	#echo $VMSCRED
 	if [ $VMSCRED == '0' ]; then
 	  echo 'Missing VMS Discovery Server credentials...'
-	  sudo /bin/bash -c "cat ../vms-server.credentials >> conf/client.properties"
+	  #sudo 
+	  /bin/bash -c "cat conf/vms-server.credentials >> conf/client.properties"
 	  echo 'Credentials appended to conf/client.properties'
 	fi
 fi
