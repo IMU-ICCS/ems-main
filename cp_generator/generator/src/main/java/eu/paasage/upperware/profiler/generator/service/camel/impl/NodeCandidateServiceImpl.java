@@ -26,7 +26,7 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     @Override
     public Map<String, List<NodeCandidate>> groupByProviders(List<NodeCandidate> nodeCandidates) {
         return nodeCandidates.stream()
-                .collect(sortedGroupingBy(nodeCandidate -> nodeCandidate.getHardware().getProviderId()));
+                .collect(sortedGroupingBy(nodeCandidate -> nodeCandidate.getCloud().getId()));
     }
 
     @Override
