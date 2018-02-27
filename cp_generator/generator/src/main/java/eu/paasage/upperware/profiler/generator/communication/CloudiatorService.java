@@ -1,9 +1,9 @@
 package eu.paasage.upperware.profiler.generator.communication;
 
-import eu.melodic.cloudiator.client.ApiException;
-import eu.melodic.cloudiator.client.model.NodeCandidate;
-import eu.melodic.cloudiator.client.model.NodeRequirements;
 import eu.paasage.camel.deployment.VM;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.model.NodeCandidate;
+import io.github.cloudiator.rest.model.NodeRequirements;
 
 import java.util.List;
 

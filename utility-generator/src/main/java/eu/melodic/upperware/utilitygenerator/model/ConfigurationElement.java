@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.model;
 
-import eu.melodic.cloudiator.client.model.NodeCandidate;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -124,6 +124,11 @@ public class CPModelTool {
         return ((FloatValueUpperware) variableValue.getValue()).getValue();
     }
 
+    public static double getDoubleValue(VariableValue variableValue){
+        Objects.requireNonNull(variableValue.getValue());
+        return ((DoubleValueUpperware) variableValue.getValue()).getValue();
+    }
+
     public static void printCpModel(ConstraintProblem cp){
         log.info("ConstraintProblem: {}", cp.getId());
 

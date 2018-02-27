@@ -2,9 +2,6 @@ package eu.paasage.upperware.profiler.generator.communication.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.melodic.cloudiator.client.ApiException;
-import eu.melodic.cloudiator.client.api.CloudApi;
-import eu.melodic.cloudiator.client.model.*;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
@@ -12,6 +9,9 @@ import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
 import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.NewCamelModelTools;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.api.MatchmakingApi;
+import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -30,18 +30,17 @@ public class CloudiatorServiceImpl implements CloudiatorService {
     private static final String HARDWARE_CLASS = "hardware";
     private static final String IMAGE_CLASS = "image";
 
-    private CloudApi cloudApi;
+    private MatchmakingApi matchmakingApi;
 
     public CloudiatorServiceImpl(GeneratorProperties generatorProperties) {
-        this.cloudApi = new CloudApi();
-        cloudApi.getApiClient().setBasePath(generatorProperties.getCloudiatorV2().getUrl());
+        this.matchmakingApi = new MatchmakingApi();
+        this.matchmakingApi.getApiClient().setBasePath(generatorProperties.getCloudiatorV2().getUrl());
+        this.matchmakingApi.getApiClient().setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
     }
 
     @Override
     public List<NodeCandidate> findNodeCandidates(NodeRequirements nodeRequirements) throws ApiException {
-
-     //   return getSampleNodeCandidates(); //for tests only
-        return cloudApi.findNodeCandidates(nodeRequirements);
+        return matchmakingApi.findNodeCandidates(nodeRequirements);
     }
 
     @Override
@@ -64,11 +63,15 @@ public class CloudiatorServiceImpl implements CloudiatorService {
     private Collection<? extends Requirement> createOsOrImageRequirement(OSOrImageRequirement osOrImageRequirement) {
         List<Requirement> requirements = new ArrayList<>();
         if (osOrImageRequirement != null && StringUtils.isNotBlank(osOrImageRequirement.getName())) {
-            requirements.add(createRequirement(IMAGE_CLASS, "operatingSystem.operatingSystemFamily", RequirementOperator.EQ, StringUtils.upperCase(osOrImageRequirement.getName())));
+            requirements.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.EQ, prepareOSFamilyValue(osOrImageRequirement.getName())));
         } else {
             log.warn("OSOrImageRequirement is missing - aborting generating os requirement");
         }
         return requirements;
+    }
+
+    private String prepareOSFamilyValue(String osName) {
+        return "OSFamily::" + StringUtils.upperCase(osName);
     }
 
     private Collection<? extends Requirement> createLocationRequirement(VMRequirementSet vmRequirementSet, VMRequirementSet globalVMRequirements) {

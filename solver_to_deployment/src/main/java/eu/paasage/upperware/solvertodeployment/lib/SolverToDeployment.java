@@ -21,6 +21,7 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
+import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
@@ -53,6 +54,7 @@ public class SolverToDeployment {
 	private RestTemplate restTemplate;
 	private Environment env;
 	private CacheService<NodeCandidates> cacheService;
+	private SolverToDeploymentProperties solverToDeploymentProperties;
 		
 	@Async
 	public void doWorkTS(String camelModelID, String paasageConfigurationID, String notificationUri,  String requestUuid)
@@ -96,7 +98,8 @@ public class SolverToDeployment {
 				DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(dmId);
 
 				// Generate new instances into this new DM of camel
-				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution, camelModelID, nodeCandidates);
+				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution,
+						camelModelID, nodeCandidates, solverToDeploymentProperties);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;
