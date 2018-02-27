@@ -6,6 +6,7 @@ import eu.melodic.cache.exception.CacheException;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class FilecacheService implements CacheService<NodeCandidates> {
     @Override
     public void store(String key, NodeCandidates nc) throws CacheException {
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(key)))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(FileUtils.openOutputStream(new File (key)))) {
             oos.writeObject(nc.get());
         } catch (IOException e) {
             log.error("Problem during saving value in: {} ", key);
