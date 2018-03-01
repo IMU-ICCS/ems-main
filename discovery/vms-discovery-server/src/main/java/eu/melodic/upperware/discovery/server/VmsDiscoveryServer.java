@@ -54,9 +54,14 @@ public class VmsDiscoveryServer
 		Sshd server = new Sshd();
 		server.start(config, coordinator, credentials);
 		
-		// Wait here until ENTER is hit in server console
-		System.out.println( "\nPress enter to exit" );
-		try { System.in.read(); } catch (Exception ex) {}
+		// check if interactive flag is present
+		if (args.length>0 && args[0].trim().equalsIgnoreCase("-i")) {
+			// Wait here until ENTER is hit in server console
+			System.out.println( "\nPress enter to exit" );
+			try { System.in.read(); } catch (Exception ex) {}
+		} else {
+			try { Object noexit = new Object(); synchronized (noexit) { noexit.wait(); } log.info("Server notified to exit"); } catch (InterruptedException ex) { log.info("Server interrupted and exits"); }
+		}
 		
 		server.stop();
 	}
