@@ -1,6 +1,6 @@
 FROM java:8
 
-RUN apt-get update  &&  apt-get --yes --force-yes install vim
+# RUN apt-get update  &&  apt-get --yes --force-yes install vim
 
 WORKDIR /tmp
 ADD https://archive.apache.org/dist/activemq/5.15.0/apache-activemq-5.15.0-bin.tar.gz /tmp
