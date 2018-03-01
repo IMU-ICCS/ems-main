@@ -36,8 +36,8 @@ public class VmsDiscoveryServer
 		Properties credentials = loadConfig("/credentials.properties");
 		
 		prepareVmsClientInstallationFile(config, "/vms-server.credentials.tpl", "./conf/vms-server.credentials");
-		//prepareVmsClientInstallationFile(config, "/install.sh.tpl", "./install.sh");
-		//prepareVmsClientInstallationFile(config, "/install-local.sh.tpl", "./install-local.sh");
+		prepareVmsClientInstallationFile(config, "/install.sh.tpl", "./conf/install.sh");
+		prepareVmsClientInstallationFile(config, "/install-local.sh.tpl", "./conf/install-local.sh");
 		
 		//ServerCoordinator coordinator = new ServerCoordinatorWaitAll(numOfVms, 
 		//ServerCoordinator coordinator = new ServerCoordinatorTimeWin(registrationWindow,

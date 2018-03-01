@@ -38,6 +38,8 @@
 	    <include>credentials.properties</include>
 	    <include>log4j.properties</include>
 	    <include>server.properties</include>
+	    <include>install.sh.tpl</include>
+	    <include>install-local.sh.tpl</include>
 	    <include>vms-server.credentials.tpl</include>
 	  </includes>
       <lineEnding>unix</lineEnding>

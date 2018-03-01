@@ -146,7 +146,7 @@
 						</goals>
 						<configuration>
 							<sourceFile>target/vms-discovery-client.zip</sourceFile>
-							<destinationFile>../../../test-melodic/esper-demo/vms-discovery-client.zip</destinationFile>
+							<destinationFile>../../../tests-melodic/esper-demo/vms-discovery-client.zip</destinationFile>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
 						</configuration>
 					</execution>
