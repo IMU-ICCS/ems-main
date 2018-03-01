@@ -15,7 +15,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/3rd-level-esper</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/3rd-level-esper-release1.5</docker.imageName>
     </properties>
 
     <build>
