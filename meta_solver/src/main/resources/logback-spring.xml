@@ -11,6 +11,6 @@
 
 <configuration>
   <include resource="org/springframework/boot/logging/logback/base.xml"/>
-  <logger name="eu.melodic.upperware.metasolver" level="DEBUG"/>
+  <logger name="eu.melodic.upperware.metasolver" level="INFO"/>
   <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
 </configuration>
