@@ -26,6 +26,11 @@ RUN unzip vms-discovery-server.zip -d /opt
 # RUN rm -f apache-activemq-5.15.0-bin.tar.gz mule-standalone-3.9.0.zip 2ndLevelEsper_app.zip vms-discovery-server.zip
 RUN rm -f apache-activemq-5.15.0-bin.tar.gz mule-standalone-3.9.0.zip 2ndLevelEsper2outs_app.zip vms-discovery-server.zip
 
+
+COPY ./scripts/run.sh /opt/vms-discovery-server/run.sh
+COPY ./scripts/start-level-3.sh /opt/vms-discovery-server/start-level-3.sh
+COPY ./scripts/stop-level-3.sh /opt/vms-discovery-server/stop-level-3.sh
+
 WORKDIR /opt/vms-discovery-server
 RUN chmod +x *.sh
 
