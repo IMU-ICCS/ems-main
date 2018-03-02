@@ -121,7 +121,12 @@ public class ProviderModelTransformer {
     }
 
     private static Attribute createAttribute(String attributeName, SingleValue value) {
-        log.info("Creating attribute: {} with value: {}", attributeName, value);
+        if (value instanceof  StringsValue) {
+            log.info("Creating attribute: {} with value: {}", attributeName, ((StringsValue) value).getValue());
+        } else {
+            log.info("Creating attribute: {} for class: {}", attributeName, value.getClass().getCanonicalName());
+        }
+
         Attribute result = PROVIDER_FACTORY.createAttribute();
         result.setName(attributeName);
         result.setValue(value);
