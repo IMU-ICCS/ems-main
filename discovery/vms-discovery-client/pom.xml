@@ -101,6 +101,58 @@
 					</archive>
 				</configuration>
 			</plugin>-->
+			
+			<!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptor>src/assembly/docker.xml</descriptor>
+					<finalName>vms-discovery-client</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>rename-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>rename</goal>
+						</goals>
+						<configuration>
+							<sourceFile>target/vms-discovery-client-docker.zip</sourceFile>
+							<destinationFile>target/vms-discovery-client.zip</destinationFile>
+							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<sourceFile>target/vms-discovery-client.zip</sourceFile>
+							<destinationFile>../../../tests-melodic/esper-demo/vms-discovery-client.zip</destinationFile>
+							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 		</plugins>
 	</build>
 	

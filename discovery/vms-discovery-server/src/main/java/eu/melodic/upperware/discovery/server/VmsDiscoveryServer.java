@@ -35,8 +35,9 @@ public class VmsDiscoveryServer
 		
 		Properties credentials = loadConfig("/credentials.properties");
 		
-		prepareVmsClientInstallationFile(config, "/install.sh.tpl", "./install.sh");
-		prepareVmsClientInstallationFile(config, "/install-local.sh.tpl", "./install-local.sh");
+		prepareVmsClientInstallationFile(config, "/vms-server.credentials.tpl", "./conf/vms-server.credentials");
+		prepareVmsClientInstallationFile(config, "/install.sh.tpl", "./conf/install.sh");
+		prepareVmsClientInstallationFile(config, "/install-local.sh.tpl", "./conf/install-local.sh");
 		
 		//ServerCoordinator coordinator = new ServerCoordinatorWaitAll(numOfVms, 
 		//ServerCoordinator coordinator = new ServerCoordinatorTimeWin(registrationWindow,
@@ -53,9 +54,14 @@ public class VmsDiscoveryServer
 		Sshd server = new Sshd();
 		server.start(config, coordinator, credentials);
 		
-		// Wait here until ENTER is hit in server console
-		System.out.println( "\nPress enter to exit" );
-		try { System.in.read(); } catch (Exception ex) {}
+		// check if interactive flag is present
+		if (args.length>0 && args[0].trim().equalsIgnoreCase("-i")) {
+			// Wait here until ENTER is hit in server console
+			System.out.println( "\nPress enter to exit" );
+			try { System.in.read(); } catch (Exception ex) {}
+		} else {
+			try { Object noexit = new Object(); synchronized (noexit) { noexit.wait(); } log.info("Server notified to exit"); } catch (InterruptedException ex) { log.info("Server interrupted and exits"); }
+		}
 		
 		server.stop();
 	}

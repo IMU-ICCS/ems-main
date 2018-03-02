@@ -59,9 +59,9 @@ fingerprint = VMS_SERVER_FINGERPRINT
 
 username = VMS_SERVER_USERNAME
 password = VMS_SERVER_PASSWORD
-" | sudo tee -a /opt/vms-server.credentials > /dev/null
+" | sudo tee -a VMS_SERVER_CREDENTIALS_FILE > /dev/null
 
-sudo chmod 700 /opt/vms-server.credentials
+sudo chmod 700 VMS_SERVER_CREDENTIALS_FILE
 
 
 exit

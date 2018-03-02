@@ -1,7 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
+	<parent>
+		<groupId>org.ow2.paasage</groupId>
+		<artifactId>upperware</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
+	</parent>
+
 	<groupId>eu.melodic.upperware.discovery</groupId>
 	<artifactId>vms-discovery-server</artifactId>
 	<version>1.0-SNAPSHOT</version>
@@ -11,6 +17,8 @@
 	<properties>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
+		<docker.imageName>${docker.repository}melodic/vms-discovery-server-release1.5</docker.imageName>
+		<docker.jarToInclude>vms-discovery-server-docker.zip</docker.jarToInclude>
 	</properties>
 	
 	<dependencies>
@@ -111,6 +119,63 @@
 					</archive>
 				</configuration>
 			</plugin>-->
+			
+			<!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptor>src/assembly/docker.xml</descriptor>
+					<finalName>vms-discovery-server</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<!--<execution>-->
+						<!--<id>rename-zip</id>-->
+						<!--<phase>package</phase>-->
+						<!--<goals>-->
+							<!--<goal>rename</goal>-->
+						<!--</goals>-->
+						<!--<configuration>-->
+							<!--<sourceFile>target/vms-discovery-server-docker.zip</sourceFile>-->
+							<!--<destinationFile>target/vms-discovery-server.zip</destinationFile>-->
+							<!--<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>-->
+						<!--</configuration>-->
+					<!--</execution>-->
+					<execution>
+						<id>copy-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<sourceFile>target/vms-discovery-server-docker.zip</sourceFile>
+							<destinationFile>../../../tests-melodic/esper-demo/vms-discovery-server.zip</destinationFile>
+							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+			</plugin>
+			
 		</plugins>
 	</build>
 	

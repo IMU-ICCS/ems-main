@@ -59,10 +59,8 @@ fingerprint = VMS_SERVER_FINGERPRINT
 
 username = VMS_SERVER_USERNAME
 password = VMS_SERVER_PASSWORD
-" > ./vms-server.credentials
-sudo cp vms-server.credentials /opt
-chmod 700 /opt/vms-server.credentials
-rm vms-server.credentials
+" > VMS_SERVER_CREDENTIALS_FILE
+chmod 700 VMS_SERVER_CREDENTIALS_FILE
 
 
 exit

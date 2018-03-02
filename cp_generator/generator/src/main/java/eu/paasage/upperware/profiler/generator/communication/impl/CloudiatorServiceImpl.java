@@ -154,7 +154,8 @@ public class CloudiatorServiceImpl implements CloudiatorService {
                 .requirementClass(requirementClass)
                 .requirementAttribute(requirementAttribute)
                 .requirementOperator(requirementOperator)
-                .value(value);
+                .value(value)
+                .type("AttributeRequirement");
     }
 
 
