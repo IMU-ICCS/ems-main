@@ -12,7 +12,7 @@
   </formats>
   <fileSets>
     <fileSet>
-      <outputDirectory>${project.basedir}</outputDirectory>
+      <outputDirectory>/</outputDirectory>
       <directory>${project.basedir}</directory>
 	  <includes>
 	    <include>README*</include>
@@ -21,7 +21,7 @@
 	  </includes>
     </fileSet>
     <fileSet>
-      <outputDirectory>${project.basedir}</outputDirectory>
+      <outputDirectory>/</outputDirectory>
       <directory>${project.basedir}</directory>
 	  <includes>
 	    <include>run.sh</include>
