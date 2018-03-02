@@ -12,8 +12,8 @@
   </formats>
   <fileSets>
     <fileSet>
-      <outputDirectory>/</outputDirectory>
-      <directory>/</directory>
+      <outputDirectory>${project.basedir}</outputDirectory>
+      <directory>${project.basedir}</directory>
 	  <includes>
 	    <include>README*</include>
 	    <include>LICENSE*</include>
@@ -21,8 +21,8 @@
 	  </includes>
     </fileSet>
     <fileSet>
-      <outputDirectory>/</outputDirectory>
-      <directory>/</directory>
+      <outputDirectory>${project.basedir}</outputDirectory>
+      <directory>${project.basedir}</directory>
 	  <includes>
 	    <include>run.sh</include>
 	    <include>start-level-3.sh</include>
