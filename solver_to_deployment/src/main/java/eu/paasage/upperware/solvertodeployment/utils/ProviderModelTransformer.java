@@ -7,6 +7,7 @@ import eu.paasage.camel.type.TypeFactory;
 import io.github.cloudiator.rest.model.CloudType;
 import io.github.cloudiator.rest.model.Image;
 import io.github.cloudiator.rest.model.NodeCandidate;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * Created by pszkup on 11.01.18.
  */
+@Slf4j
 public class ProviderModelTransformer {
 
     private static final ProviderFactory PROVIDER_FACTORY = ProviderFactory.eINSTANCE;
@@ -22,6 +24,8 @@ public class ProviderModelTransformer {
     private static final String AWS_EC2 = "aws-ec2";
 
     public static ProviderModel createProviderModel(NodeCandidate nodeCandidate, String componentName, String constraintProblemId, String amazonEndpoint) {
+        log.info("Creating ProviderModel for componentName {} and constraintProblemId {} node candidate: {}", componentName, constraintProblemId, nodeCandidate.toString());
+
         ProviderModel providerModel = PROVIDER_FACTORY.createProviderModel();
         providerModel.setName(createProviderName(nodeCandidate, componentName, constraintProblemId));
         providerModel.setRootFeature(createRootFeature(nodeCandidate, amazonEndpoint));
@@ -107,8 +111,7 @@ public class ProviderModelTransformer {
     }
 
     private static Attribute createNameAttribute(NodeCandidate nodeCandidate) {
-        return createAttribute("Name", createStringValue("EC2"));
-//        return createAttribute("Name", createStringValue(nodeCandidate.getCloud().getId()));
+        return createAttribute("Name", createStringValue(nodeCandidate.getCloud().getId()));
     }
 
 
@@ -118,6 +121,7 @@ public class ProviderModelTransformer {
     }
 
     private static Attribute createAttribute(String attributeName, SingleValue value) {
+        log.info("Creating attribute: {} with value: {}", attributeName, value);
         Attribute result = PROVIDER_FACTORY.createAttribute();
         result.setName(attributeName);
         result.setValue(value);
