@@ -111,7 +111,7 @@ public class ProviderModelTransformer {
     }
 
     private static Attribute createNameAttribute(NodeCandidate nodeCandidate) {
-        return createAttribute("Name", createStringValue(nodeCandidate.getCloud().getId()));
+        return createAttribute("Name", createStringValue(nodeCandidate.getCloud().getApi().getProviderName()));
     }
 
 
