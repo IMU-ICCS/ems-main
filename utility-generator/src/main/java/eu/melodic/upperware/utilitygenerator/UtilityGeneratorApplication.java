@@ -41,7 +41,7 @@ public class UtilityGeneratorApplication {
     }
 
     public double evaluate(Collection<IntVar> newConfigurationInt) {
-        return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
+        return evaluate(newConfigurationInt, new ArrayList<>());
     }
 
     public void printConfigurationWithMaximumUtility() {
@@ -66,7 +66,7 @@ public class UtilityGeneratorApplication {
             case CAS:
                 log.info("Creating utility function for CAS");
                 return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);
-            case MINCORES:
+            case MIN_CORES:
                 log.info("Creating utility function which minimise total number of cores");
                 return new UtilityFunctionEvaluatorMinCores(variables, deployedSolution, nodeCandidates);
             default:
@@ -116,7 +116,7 @@ public class UtilityGeneratorApplication {
                         new UtilityFunctionEvaluatorCAS(actConfiguration, isReconfig, costUtilityFunction);
                 break;
 
-            case MINCORES:
+            case MIN_CORES:
                 this.utilityFunctionEvaluator =
                         new UtilityFunctionEvaluatorMinCores(actConfiguration, isReconfig);
                 break;

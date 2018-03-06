@@ -38,6 +38,6 @@ public class UtilityFunctionEvaluatorMinCores extends UtilityFunctionEvaluator{
 
     private double countTotalNumberOfCores(Collection<ConfigurationElement> newConfiguration){
         return newConfiguration.stream()
-                .mapToInt(c -> c.getCardinality()* c.getNodeCandidate().getHardware().getCores()).sum();
+                .mapToDouble(ConfigurationElement::getTotalNumberOfCores).sum();
     }
 }

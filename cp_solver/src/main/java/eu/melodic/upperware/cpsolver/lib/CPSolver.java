@@ -1275,13 +1275,9 @@ public class CPSolver {
 				.map(String::toUpperCase)
 				.map(s -> s.replace(utilityFunctionTypePrefix, ""))
 				.map(UtilityFunctionType::valueOf)
-				.findFirst().orElse(null);
+				.findFirst().orElse(UtilityFunctionType.DEFAULT);
 		log.info("utilityFunctionType= {}", utilityFunctionType);
-
-		if (utilityFunctionType == null){
-			utilityFunctionType = UtilityFunctionType.DEFAULT;
-			log.info("Default utilityFunctionType= {}", utilityFunctionType);
-		}
+		
 	}
 
 	private BoolVar createBoolVar(){
