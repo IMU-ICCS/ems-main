@@ -69,9 +69,13 @@ public class UtilityGeneratorApplication {
             case MIN_CORES:
                 log.info("Creating utility function which minimise total number of cores");
                 return new UtilityFunctionEvaluatorMinCores(variables, deployedSolution, nodeCandidates);
+            case GENOM:
+                log.warn("Utility function for GENOM use case is not supported");
+            case COST:
+            case DEFAULT:
             default:
                 log.info("Creating default utility function which minimise total cost");
-                return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorCost(variables, deployedSolution, nodeCandidates);
         }
     }
 
