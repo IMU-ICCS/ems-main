@@ -464,15 +464,15 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
     }
 
     private boolean shouldAddCores(QuantitativeHardwareRequirement quantitativeHardwareRequirement){
-        return quantitativeHardwareRequirement.getMinCores() > 0 && quantitativeHardwareRequirement.getMaxCores() > 0;
+        return quantitativeHardwareRequirement != null && quantitativeHardwareRequirement.getMinCores() > 0 && quantitativeHardwareRequirement.getMaxCores() > 0;
     }
 
     private boolean shouldAddRam(QuantitativeHardwareRequirement quantitativeHardwareRequirement){
-        return quantitativeHardwareRequirement.getMinRAM()> 0 && quantitativeHardwareRequirement.getMaxRAM() > 0;
+        return quantitativeHardwareRequirement != null && quantitativeHardwareRequirement.getMinRAM()> 0 && quantitativeHardwareRequirement.getMaxRAM() > 0;
     }
 
     private boolean shouldAddStorage(QuantitativeHardwareRequirement quantitativeHardwareRequirement){
-        return quantitativeHardwareRequirement.getMinStorage()> 0 && quantitativeHardwareRequirement.getMaxStorage() > 0;
+        return quantitativeHardwareRequirement != null && quantitativeHardwareRequirement.getMinStorage()> 0 && quantitativeHardwareRequirement.getMaxStorage() > 0;
     }
 
     private boolean shouldAddOs(OSOrImageRequirement osOrImageRequirement){
