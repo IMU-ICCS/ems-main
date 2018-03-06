@@ -10,5 +10,5 @@ package eu.melodic.upperware.utilitygenerator;
 
 public enum UtilityFunctionType {
 
-    FCR, CETRAFFIC, CAS
+    FCR, CETRAFFIC, CAS, GENOM, MINCORES, COST, DEFAULT
 }

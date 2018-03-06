@@ -6,16 +6,15 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-import io.github.cloudiator.rest.model.NodeCandidate
+
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.*
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
-import jersey.repackaged.com.google.common.collect.Lists
+import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Shared
 import spock.lang.Specification
-
 
 class CETrafficUseCaseTest extends Specification {
 

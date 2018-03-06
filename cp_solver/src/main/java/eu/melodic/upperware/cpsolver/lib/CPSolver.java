@@ -347,9 +347,11 @@ public class CPSolver {
 					calculateUtility();
 				}
 				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
-				saveBestSolutionInCDO();
-				utilityGenerator.printConfigurationWithMaximumUtility();
-				hasSolutions = (solver.isFeasible() == ESat.TRUE); //fixme - if utility > 0
+				hasSolutions = (solver.isFeasible() == ESat.TRUE) && maxUtility > 0;
+				if (hasSolutions) {
+					saveBestSolutionInCDO();
+					utilityGenerator.printConfigurationWithMaximumUtility();
+				}
 			}
 		}
 		else {
@@ -1277,7 +1279,7 @@ public class CPSolver {
 		log.info("utilityFunctionType= {}", utilityFunctionType);
 
 		if (utilityFunctionType == null){
-			utilityFunctionType = UtilityFunctionType.FCR;
+			utilityFunctionType = UtilityFunctionType.DEFAULT;
 			log.info("Default utilityFunctionType= {}", utilityFunctionType);
 		}
 	}

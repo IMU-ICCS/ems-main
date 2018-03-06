@@ -82,6 +82,7 @@ public abstract class UtilityFunctionEvaluator {
             solutionWithMaxUtility = convertSolution(newConfigurationInt, newConfigurationReal);
             log.debug("Actualized configuration with Max Utility");
         }
+        log.debug("Utility = {} ", utility);
         return utility;
 
     }
