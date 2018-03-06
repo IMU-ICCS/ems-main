@@ -9,6 +9,7 @@ sleep 2
 
 echo 'Starting Mule engine and 3rd level CEP service'
 cd /opt/mule-standalone-3.9.0/bin
+JAVA_OPTS="-Xms256m -Xmx1024m -XX:PermSize=512m -XX:MaxPermSize=512m"
 #sudo 
 ./mule start "-M-Dhost.rule=select\ avg\(metricValue\)\ as\ metricValue,\ window\(vmName\)\ as\ vmName,\ cloudName\ as\ cloudName,\ window\(componentName\)\ as\ componentName,\ 2\ as\ level,\ current_timestamp\ as\ timestamp\ from\ Visor_event_second.win:time\(60\ sec\)\ where\(\ level=1\)\ output\ last\ every\ 60\ sec"  "-M-Dhost.rulealert=select\ metricValue\ as\ metricValue,\ vmName\ as\ vmName,\ cloudName\ as\ cloudName,\ componentName\ as\ componentName,\ 2\ as\ level,\ current_timestamp\ as\ timestamp\ from\ Visor_event_second.win:time\(60\ sec\)\ having\ metricValue\>\10\ output\ last\ every\ 60\ sec"
 sleep 2
