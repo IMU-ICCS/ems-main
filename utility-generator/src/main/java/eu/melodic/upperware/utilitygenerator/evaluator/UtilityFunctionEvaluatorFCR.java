@@ -71,7 +71,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
         double normalizedResult = normalize(0, max, result);
 
-        log.info("Response Utility Function value = {}", normalizedResult);
+        log.debug("Response Utility Function value = {}", normalizedResult);
         return normalizedResult;
     }
 
