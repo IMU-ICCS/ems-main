@@ -36,7 +36,7 @@ public class CostUtilityFunctionWithAbsoluteCost extends CostUtilityFunction { /
         return result;
     }
 
-
+//fixme - select the cheapest Node Candidate from cache
     private double getLowestCost(Collection<ConfigurationElement> configuration) {
         return configuration
                 .stream()

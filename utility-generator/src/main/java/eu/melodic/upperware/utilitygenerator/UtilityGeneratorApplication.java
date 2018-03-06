@@ -11,10 +11,7 @@ package eu.melodic.upperware.utilitygenerator;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
-import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
-import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCAS;
-import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorCETraffic;
-import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluatorFCR;
+import eu.melodic.upperware.utilitygenerator.evaluator.*;
 import eu.melodic.upperware.utilitygenerator.model.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +40,10 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
+    public double evaluate(Collection<IntVar> newConfigurationInt) {
+        return evaluate(newConfigurationInt, new ArrayList<>());
+    }
+
     public void printConfigurationWithMaximumUtility() {
         this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
     }
@@ -62,9 +63,19 @@ public class UtilityGeneratorApplication {
             case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
                 return new UtilityFunctionEvaluatorCETraffic(variables, deployedSolution, nodeCandidates);
-            default: //CAS
+            case CAS:
                 log.info("Creating utility function for CAS");
                 return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);
+            case MIN_CORES:
+                log.info("Creating utility function which minimise total number of cores");
+                return new UtilityFunctionEvaluatorMinCores(variables, deployedSolution, nodeCandidates);
+            case GENOM:
+                log.warn("Utility function for GENOM use case is not supported");
+            case COST:
+            case DEFAULT:
+            default:
+                log.info("Creating default utility function which minimise total cost");
+                return new UtilityFunctionEvaluatorCost(variables, deployedSolution, nodeCandidates);
         }
     }
 
@@ -85,14 +96,8 @@ public class UtilityGeneratorApplication {
         createUtilityEvaluator(metrics, actConfiguration, isReconfig, useCase, new CostUtilityFunctionExample(isReconfig));
     }
 
-
-    public double evaluate(int cardinality) {
-        return this.utilityFunctionEvaluator.evaluate(new ArrayList<>(), new ArrayList<>());
-
-    }
-
-    public double evaluate(Collection<IntVar> newConfigurationInt) {
-        return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, new ArrayList<>());
+    public double evaluateToTest(Collection<ConfigurationElement> configuration) {
+        return this.utilityFunctionEvaluator.evaluate(configuration);
     }
 
     private void createUtilityEvaluator(List<MetricDTO> metrics, Collection<ConfigurationElement> actConfiguration,
@@ -100,10 +105,10 @@ public class UtilityGeneratorApplication {
 
         switch (useCase) {
 
-//            case FCR:
-//                this.utilityFunctionEvaluator =
-//                new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
-//                break;
+            case FCR:
+                this.utilityFunctionEvaluator =
+                new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
+                break;
 
             case CETRAFFIC:
                 this.utilityFunctionEvaluator =
@@ -113,6 +118,16 @@ public class UtilityGeneratorApplication {
             case CAS:
                 this.utilityFunctionEvaluator =
                         new UtilityFunctionEvaluatorCAS(actConfiguration, isReconfig, costUtilityFunction);
+                break;
+
+            case MIN_CORES:
+                this.utilityFunctionEvaluator =
+                        new UtilityFunctionEvaluatorMinCores(actConfiguration, isReconfig);
+                break;
+
+            default:
+                this.utilityFunctionEvaluator =
+                        new UtilityFunctionEvaluatorCost(actConfiguration, isReconfig);
                 break;
         }
     }

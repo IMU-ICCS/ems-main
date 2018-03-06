@@ -28,6 +28,10 @@ public class ConfigurationElement {
         return nodeCandidate.getHardware().getRam() * cardinality;
     }
 
+    public double getTotalNumberOfCores(){
+        return cardinality * nodeCandidate.getHardware().getCores();
+    }
+
     @Override
     public String toString(){
         return String.format("Component: %s ( cardinality = %d,  %s)", id, cardinality, nodeCandidate.toString());

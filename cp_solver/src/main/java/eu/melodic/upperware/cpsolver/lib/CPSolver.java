@@ -347,9 +347,11 @@ public class CPSolver {
 					calculateUtility();
 				}
 				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
-				saveBestSolutionInCDO();
-				utilityGenerator.printConfigurationWithMaximumUtility();
-				hasSolutions = (solver.isFeasible() == ESat.TRUE); //fixme - if utility > 0
+				hasSolutions = (solver.isFeasible() == ESat.TRUE) && maxUtility > 0;
+				if (hasSolutions) {
+					saveBestSolutionInCDO();
+					utilityGenerator.printConfigurationWithMaximumUtility();
+				}
 			}
 		}
 		else {
@@ -1273,13 +1275,9 @@ public class CPSolver {
 				.map(String::toUpperCase)
 				.map(s -> s.replace(utilityFunctionTypePrefix, ""))
 				.map(UtilityFunctionType::valueOf)
-				.findFirst().orElse(null);
+				.findFirst().orElse(UtilityFunctionType.DEFAULT);
 		log.info("utilityFunctionType= {}", utilityFunctionType);
-
-		if (utilityFunctionType == null){
-			utilityFunctionType = UtilityFunctionType.FCR;
-			log.info("Default utilityFunctionType= {}", utilityFunctionType);
-		}
+		
 	}
 
 	private BoolVar createBoolVar(){

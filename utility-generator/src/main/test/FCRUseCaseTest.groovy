@@ -9,18 +9,21 @@
 import io.github.cloudiator.rest.model.NodeCandidate
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
-import eu.melodic.upperware.utilitygenerator.costfunction.*
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExampleV2
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
+import eu.melodic.upperware.utilitygenerator.model.IntMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware
-import eu.paasage.upperware.metamodel.types.TypesFactory
-import spock.lang.Ignore
+import lombok.extern.slf4j.Slf4j
 import spock.lang.Shared
 import spock.lang.Specification
 
-//todo to update - handle metrics
-@Ignore
+@Slf4j
 class FCRUseCaseTest extends Specification {
+
+    String AVG_RT = "METRIC_TR_AVG"
 
     CostUtilityFunction costUtilityFunction
 
@@ -29,249 +32,155 @@ class FCRUseCaseTest extends Specification {
     @Shared
     CostUtilityFunction costUtilityFunction_2 = new CostUtilityFunctionExampleV2(true)
     @Shared
-    CostUtilityFunction costUtilityFunctionAbs = new CostUtilityFunctionWithAbsoluteCost(10)
-    @Shared
     CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
 
     List<MetricDTO> metrics
-    List<ConfigurationElement> listInit
+    List<ConfigurationElement> actualConfiguration
+    List<ConfigurationElement> newBiggerConfiguration
+    List<ConfigurationElement> newSmallerConfiguration
 
-    ConfigurationElement initialDeployment
+    List<ConfigurationElement> newCheaperConfiguration
+    List<ConfigurationElement> newMoreExpensiveConfiguration
+    List<ConfigurationElement> newCheaperBiggerConfiguration
+    List<ConfigurationElement> newMoreExpensiveBiggerConfiguration
 
-    DoubleValueUpperware avgResponseTime
-
+    MetricDTO metric
 
     def setup() {
         metrics = new ArrayList<>()
-        avgResponseTime = TypesFactory.eINSTANCE.createDoubleValueUpperware()
 
-        avgResponseTime.setValue(3.0 as double)
-        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
+        metric = Mock(IntMetricDTO)
+        metric.getName() >> AVG_RT
+        metrics.add(metric)
 
         String componentId = "componentId"
 
+        NodeCandidate cheapNC = GroovyMock(NodeCandidate)
+        cheapNC.getPrice() >> 1.0
+
         NodeCandidate initNC = GroovyMock(NodeCandidate)
-        initNC.getPrice() >> 2.0
+        initNC.getPrice() >> 4.0
 
-        initialDeployment = new ConfigurationElement(componentId, initNC, 3)
-        listInit = new ArrayList<>()
-        listInit.add(initialDeployment)
+        NodeCandidate expNC = GroovyMock(NodeCandidate)
+        expNC.getPrice() >> 6.0
+
+        actualConfiguration = new ArrayList<>()
+        actualConfiguration.add(new ConfigurationElement(componentId, initNC, 3))
+
+        newCheaperConfiguration = new ArrayList<>()
+        newCheaperConfiguration.add(new ConfigurationElement(componentId, cheapNC, 3))
+
+        newMoreExpensiveConfiguration = new ArrayList<>()
+        newMoreExpensiveConfiguration.add(new ConfigurationElement(componentId, expNC, 3))
+
+        newSmallerConfiguration = new ArrayList<>()
+        newSmallerConfiguration.add(new ConfigurationElement(componentId, initNC, 1))
+
+        newBiggerConfiguration = new ArrayList<>()
+        newBiggerConfiguration.add(new ConfigurationElement(componentId, initNC, 8))
+
+        newCheaperBiggerConfiguration = new ArrayList<>()
+        newCheaperBiggerConfiguration.add(new ConfigurationElement(componentId, cheapNC, 5))
+
+        newMoreExpensiveBiggerConfiguration = new ArrayList<>()
+        newMoreExpensiveBiggerConfiguration.add(new ConfigurationElement(componentId, expNC, 5))
     }
 
-    def "avg response time=3, less machines"() {
-        setup:
-
-        int cardinality = 2
-
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
-
-        when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
-
-        then:
-        //0.503253
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-
-        result >= 0.45 && result <= 0.55
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-
-    def "avg response time=3, no changes"() {
-        setup:
-        avgResponseTime.getValue() >> 3.0
-        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
-
-        int cardinality = 3
-
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
-
-        when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
-
-        then:
-        //0.500068
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-
-        result >= 0.45 && result <= 0.55
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-
-    def "avg response time=3, more machines"() {
+    def "RT_AVG is good, configurations with different prices"(){
 
         setup:
-        avgResponseTime.getValue() >> 3.0
-        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
 
-        int cardinality = 4
+        metric.getValue() >> 500
 
         UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
 
         when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double cheap = utilityGenerator.evaluateToTest(newCheaperConfiguration)
+        double exp = utilityGenerator.evaluateToTest(newMoreExpensiveConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+
 
         then:
         noExceptionThrown()
-        System.out.println("utility = " + result)
+        cheap >= exp
+        cheap >= init
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+        costUtilityFunction << [costUtilityFunction_1]
     }
 
-    def "avg response time=25, less machines"() {
-        setup:
-        avgResponseTime.getValue() >> 25.0
-        metrics.add(new MetricDTO("METRIC_RT_AVG", avgResponseTime))
 
-        int cardinality = 2
+    def "RT_AVG is good, configurations with different cardinalities"(){
 
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
-
-        when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
-
-        then:
-        //0.5
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-        result >= 0.45 && result <= 0.55
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-
-    }
-
-    def "avg response time=25, no changes"() {
         setup:
 
-        int cardinality = 3
+        metric.getValue() >> 500
 
         UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
 
         when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double cheap = utilityGenerator.evaluateToTest(newCheaperBiggerConfiguration)
+        double exp = utilityGenerator.evaluateToTest(newMoreExpensiveBiggerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+
 
         then:
-        //0.837175
         noExceptionThrown()
-        System.out.println("utility = " + result)
-        result >= 0.77 && result <= 0.87
+        init > cheap
+        init > exp
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+        costUtilityFunction << [costUtilityFunction_1]
     }
 
 
-    def "avg response time=25, more machines"() {
-        setup:
-        int cardinality = 4
+    def "RT_AVG is too high, configurations with different cardinalities and prices"(){
 
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
-
-        when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
-
-        then:
-        //0.677073
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-        result >= 0.62 && result <= 0.72
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-
-
-    def "avg response time=28, less machines"() {
-        setup:
-        int cardinality = 2
-
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
-
-        when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
-
-        then:
-        //0.5
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-        result >= 0.45 && result <= 0.55
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-
-    }
-
-    def "avg response time=28, no changes"() {
         setup:
 
-        int cardinality = 3
+        metric.getValue() >> 1500
 
         UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
 
         when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double cheap = utilityGenerator.evaluateToTest(newCheaperBiggerConfiguration)
+        double exp = utilityGenerator.evaluateToTest(newMoreExpensiveBiggerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+
 
         then:
-        //0.567346
         noExceptionThrown()
-        System.out.println("utility = " + result)
-        result >= 0.51 && result <= 0.61
+        cheap >= exp
+        cheap >= init
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
     }
 
-    def "avg response time=28, more machines"() {
+    def "RT_AVG is too high, configurations with different cardinalities"(){
+
         setup:
 
-        int cardinality = 4
+        metric.getValue() >> 1500
 
         UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, listInit, true, UtilityFunctionType.FCR, costUtilityFunction)
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
 
         when:
-        //System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluate(cardinality)
+        double smaller = utilityGenerator.evaluateToTest(newSmallerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
 
         then:
-        //0.785278
         noExceptionThrown()
-        System.out.println("utility = " + result)
-        result >= 0.73 && result <= 0.83
+        bigger > smaller
+        bigger > init
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
 
+    }
 }

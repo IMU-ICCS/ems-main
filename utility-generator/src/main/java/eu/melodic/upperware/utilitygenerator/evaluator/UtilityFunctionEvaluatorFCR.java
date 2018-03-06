@@ -53,6 +53,8 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
     }
 
 
+
+
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
         double nextAvgResponseTime = estimateNextAvgResponseTime(avgResponseTime.getValue(), newConfiguration);
@@ -109,5 +111,16 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
         this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
 
     }
+
+    /* for tests */
+
+    public UtilityFunctionEvaluatorFCR(List<MetricDTO> metricDTOs, Collection<ConfigurationElement> actConfiguration,
+            boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+        super(actConfiguration, isReconfig);
+        getAndAssignMetrics(metricDTOs);
+        this.costUtilityFunction = costUtilityFunction;
+        log.info("Utility function was created");
+    }
+
 
 }
