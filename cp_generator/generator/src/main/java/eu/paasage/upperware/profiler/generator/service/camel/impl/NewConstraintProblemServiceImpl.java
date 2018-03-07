@@ -27,6 +27,7 @@ import io.github.cloudiator.rest.model.NodeRequirements;
 import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
@@ -449,12 +450,12 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
             nodeCandidates = cloudiatorService.findNodeCandidates(nodeRequirements);
         } catch (ApiException e) {
             log.error("Error during fetching node candidates. Code: {}, ResponseBody: {}", e.getCode(), e.getResponseBody());
+            log.error("ApiException: ", e);
 
-            Map<String, List<String>> responseHeaders = e.getResponseHeaders();
+            Map<String, List<String>> responseHeaders = MapUtils.emptyIfNull(e.getResponseHeaders());
             for (String key : responseHeaders.keySet()) {
                 log.error("ResponseHeader: Key: {}, Value: {}", key, responseHeaders.get(key));
             }
-
             throw new GeneratorException("Problem during fetching node candidates", e);
         }
         if (CollectionUtils.isEmpty(nodeCandidates)){
