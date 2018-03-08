@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
@@ -152,12 +153,12 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
 
             //F(P,x)
-            Map<Integer, ComposedExpression> providerFunctions = new HashMap<>();
+            Map<Integer, Supplier<ComposedExpression>> providerFunctions = new HashMap<>();
 
             for (Integer providerIndex: nodeCandidatesByComponentName.keySet()) {
                 //F(P,1)
                 List<NodeCandidate> nodeCandidatesForProvider = nodeCandidatesByComponentName.get(providerIndex);
-                ComposedExpression providerFunction = providerFunctions.computeIfAbsent(providerIndex, index -> getProviderExpression(cp, providerVariable, index));
+                Supplier<ComposedExpression> providerFunctionSupplier = providerFunctions.computeIfAbsent(providerIndex, index -> getProviderExpression(cp, providerVariable, componentName, index));
 
                 if (coresVariable != null) {
                     Pair<Integer, Integer> rangeForCores = nodeCandidatesService.getRangeForCores(nodeCandidatesForProvider);
@@ -167,7 +168,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
                     Constant max = constantService.createIntegerConstant(rangeForCores.getRight(), constantService.getConstantName(VariableType.CORES, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
-                    createConstraints(cp, coresVariable, cardinalityVariable, min, max, providerFunction);
+                    createConstraints(cp, coresVariable, cardinalityVariable, min, max, providerFunctionSupplier);
                 }
 
                 if (ramVariable != null) {
@@ -178,7 +179,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
                     Constant max = constantService.createLongConstant(rangeForRam.getRight(), constantService.getConstantName(VariableType.RAM, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
-                    createConstraints(cp, ramVariable, cardinalityVariable, min, max, providerFunction);
+                    createConstraints(cp, ramVariable, cardinalityVariable, min, max, providerFunctionSupplier);
                 }
 
                 if (storageVariable != null) {
@@ -189,7 +190,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
                     Constant max = constantService.createDoubleConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
-                    createConstraints(cp, storageVariable, cardinalityVariable, min, max, providerFunction);
+                    createConstraints(cp, storageVariable, cardinalityVariable, min, max, providerFunctionSupplier);
                 }
 
                 if (osVariable != null) {
@@ -200,7 +201,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
                     Constant max = constantService.createIntegerConstant(rangeForOs.getRight(), constantService.getConstantName(VariableType.OS, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
-                    createConstraints(cp, osVariable, cardinalityVariable, min, max, providerFunction);
+                    createConstraints(cp, osVariable, cardinalityVariable, min, max, providerFunctionSupplier);
                 }
             }
         }
@@ -256,14 +257,14 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         return Optional.empty();
     }
 
-    private void createConstraints(ConstraintProblem cp, Variable variable, Variable cardinalityVariable, Constant min, Constant max, ComposedExpression providerFunction) {
+    private void createConstraints(ConstraintProblem cp, Variable variable, Variable cardinalityVariable, Constant min, Constant max, Supplier<ComposedExpression> composedExpressionSupplier) {
 
         Constant zeroConstant = findConstantByName(cp.getConstants(), "0");
 
         ComposedExpression composedMinExpression = constraintService.createComposedExpression(OperatorEnum.MINUS, variable, min);
         cp.getAuxExpressions().add(composedMinExpression);
 
-        ComposedExpression multiplyMinComposedExpression = constraintService.createComposedExpression(OperatorEnum.TIMES, cardinalityVariable, providerFunction, composedMinExpression);
+        ComposedExpression multiplyMinComposedExpression = constraintService.createComposedExpression(OperatorEnum.TIMES, cardinalityVariable, composedExpressionSupplier.get(), composedMinExpression);
         cp.getAuxExpressions().add(multiplyMinComposedExpression);
 
         cp.getConstraints().add(constraintService.createComparisonExpression(multiplyMinComposedExpression, ComparatorEnum.GREATER_OR_EQUAL_TO, zeroConstant));
@@ -272,7 +273,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         ComposedExpression composedMaxExpression = constraintService.createComposedExpression(OperatorEnum.MINUS, max, variable);
         cp.getAuxExpressions().add(composedMaxExpression);
 
-        ComposedExpression multiplyMaxComposedExpression = constraintService.createComposedExpression(OperatorEnum.TIMES, cardinalityVariable, providerFunction, composedMaxExpression);
+        ComposedExpression multiplyMaxComposedExpression = constraintService.createComposedExpression(OperatorEnum.TIMES, cardinalityVariable, composedExpressionSupplier.get(), composedMaxExpression);
         cp.getAuxExpressions().add(multiplyMaxComposedExpression);
 
         cp.getConstraints().add(constraintService.createComparisonExpression(multiplyMaxComposedExpression, ComparatorEnum.GREATER_OR_EQUAL_TO, zeroConstant));
@@ -393,12 +394,10 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
     }
 
 
-    private ComposedExpression getProviderExpression(ConstraintProblem cp, Variable providerVariable, Integer providerValue) {
-        Constant providerIndexConstant = constantService.createIntegerConstant(providerValue, "provider_" + providerValue);
+    private Supplier<ComposedExpression> getProviderExpression(ConstraintProblem cp, Variable providerVariable, String componentName, Integer providerValue) {
+        Constant providerIndexConstant = constantService.createIntegerConstant(providerValue, "provider_" + componentName  + "_" + providerValue);
         cp.getConstants().add(providerIndexConstant);
-        ComposedExpression providerFunction = createProviderFunction(providerVariable, providerIndexConstant);
-        cp.getAuxExpressions().add(providerFunction);
-        return providerFunction;
+        return createProviderFunction(cp, providerVariable, providerIndexConstant);
     }
 
     private Map<String, Map<Integer, List<NodeCandidate>>> loadProviders(CamelModel camelModel) {
@@ -437,8 +436,12 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
      * @param providerConstant
      * @return
      */
-    private ComposedExpression createProviderFunction(Variable providerVariable, Constant providerConstant){
-        return constraintService.createComposedExpression(OperatorEnum.EQ, providerVariable, providerConstant);
+    private Supplier<ComposedExpression> createProviderFunction(ConstraintProblem cp, Variable providerVariable, Constant providerConstant){
+        return new SingletonSupplier<>(() -> {
+            ComposedExpression composedExpression = constraintService.createComposedExpression(OperatorEnum.EQ, providerVariable, providerConstant);
+            cp.getAuxExpressions().add(composedExpression);
+            return composedExpression;
+        });
     }
 
     private List<NodeCandidate> getNodeCandidates(VM vm) {
@@ -488,6 +491,24 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
         for (GeneratorService generatorService : generatorServices) {
             generatorService.reset();
             log.debug("Reseting service {}", generatorService.getClass().getName());
+        }
+    }
+
+    private static class SingletonSupplier<T> implements Supplier<T> {
+
+        private Supplier<T> supplier;
+        private T instance;
+
+        private SingletonSupplier(Supplier<T> supplier) {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public T get() {
+            if (instance != null) {
+                instance = supplier.get();
+            }
+            return instance;
         }
     }
 
