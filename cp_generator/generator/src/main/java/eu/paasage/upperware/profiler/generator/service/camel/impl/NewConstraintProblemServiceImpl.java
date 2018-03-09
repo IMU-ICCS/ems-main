@@ -505,7 +505,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
         @Override
         public T get() {
-            if (instance != null) {
+            if (instance == null) {
                 instance = supplier.get();
             }
             return instance;
