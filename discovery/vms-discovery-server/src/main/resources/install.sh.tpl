@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ $( dpkg -s unzip |grep "ok installed" |wc -l ) == 0 ]; then
+	sudo apt-get update ;
+	sudo apt-get --yes --force-yes install unzip ;
+	sleep 2
+fi
+
 mkdir -p /tmp/metrics-downloads
 cd /tmp/metrics-downloads
 sleep 2
