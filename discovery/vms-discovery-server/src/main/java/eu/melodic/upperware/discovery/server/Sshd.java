@@ -199,7 +199,7 @@ public class Sshd
 	
 	protected void broadcastToClients(String msg) {
 		for (ClientShellCommand csc : ClientShellCommand.getActive()) {
-			System.out.println("Sending to "+csc.getId()+" : "+msg);
+			log.info("Sending to {} : {}", csc.getId(), msg);
 			csc.sendToClient(msg);
 		}
 	}
