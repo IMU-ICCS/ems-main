@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMRequirementSet;
+import eu.paasage.camel.location.impl.GeographicalRegionImpl;
+import eu.paasage.camel.requirement.LocationRequirement;
 import eu.paasage.camel.requirement.OSOrImageRequirement;
 import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
@@ -13,6 +15,7 @@ import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -29,6 +33,7 @@ public class CloudiatorServiceImpl implements CloudiatorService {
 
     private static final String HARDWARE_CLASS = "hardware";
     private static final String IMAGE_CLASS = "image";
+    private static final String LOCATION_CLASS = "location";
 
     private MatchmakingApi matchmakingApi;
 
@@ -49,7 +54,7 @@ public class CloudiatorServiceImpl implements CloudiatorService {
 
         QuantitativeHardwareRequirement quantitativeHardwareRequirement = NewCamelModelTools.getHardwareRequirements(vm);
         requirements.addAll(createQuantitativeHardwareRequirements(quantitativeHardwareRequirement));
-//        requirements.addAll(createLocationRequirement(vmRequirementSet, globalVMRequirements));
+        requirements.addAll(createLocationRequirement(NewCamelModelTools.getLocationRequirements(vm)));
         requirements.addAll(createOsOrImageRequirement(NewCamelModelTools.getOsOrImageRequirements(vm)));
 //        requirements.addAll(createProviderRequirement(vmRequirementSet, globalVMRequirements));
         return new NodeRequirements().requirements(requirements);
@@ -74,9 +79,14 @@ public class CloudiatorServiceImpl implements CloudiatorService {
         return "OSFamily::" + StringUtils.upperCase(osName);
     }
 
-    private Collection<? extends Requirement> createLocationRequirement(VMRequirementSet vmRequirementSet, VMRequirementSet globalVMRequirements) {
-        log.warn("Location Requirements are not supported in cloudiator");
-        return Collections.emptyList();
+    private Collection<? extends Requirement> createLocationRequirement(LocationRequirement locationRequirement) {
+            return  CollectionUtils.emptyIfNull(locationRequirement != null ? locationRequirement.getLocations() : Collections.emptyList())
+                    .stream()
+                    .filter(location -> location instanceof GeographicalRegionImpl)
+                    .map(location -> ((GeographicalRegionImpl) location).getName())
+                    .map(name -> name.replace('_', '-'))
+                    .map(name -> createRequirement(LOCATION_CLASS, "name", RequirementOperator.EQ, name))
+                    .collect(Collectors.toList());
     }
 
     private Collection<? extends Requirement> createQuantitativeHardwareRequirements(QuantitativeHardwareRequirement quantitativeHardwareRequirement) {
