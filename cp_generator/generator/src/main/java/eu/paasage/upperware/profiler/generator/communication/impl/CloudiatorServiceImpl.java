@@ -5,15 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.paasage.camel.deployment.VM;
 import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.location.impl.GeographicalRegionImpl;
-import eu.paasage.camel.requirement.LocationRequirement;
-import eu.paasage.camel.requirement.OSOrImageRequirement;
-import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
+import eu.paasage.camel.requirement.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
 import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.NewCamelModelTools;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -67,8 +66,15 @@ public class CloudiatorServiceImpl implements CloudiatorService {
 
     private Collection<? extends Requirement> createOsOrImageRequirement(OSOrImageRequirement osOrImageRequirement) {
         List<Requirement> requirements = new ArrayList<>();
-        if (osOrImageRequirement != null && StringUtils.isNotBlank(osOrImageRequirement.getName())) {
-            requirements.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.EQ, prepareOSFamilyValue(osOrImageRequirement.getName())));
+
+        if (osOrImageRequirement != null) {
+            if (osOrImageRequirement instanceof ImageRequirement) {
+                String imageId = ((ImageRequirement) osOrImageRequirement).getImageId();
+                requirements.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.EQ, prepareOSFamilyValue(imageId)));
+            } else if (osOrImageRequirement instanceof OSRequirement) {
+                String os = ((OSRequirement) osOrImageRequirement).getOs();
+                requirements.add(createRequirement(IMAGE_CLASS, "name", RequirementOperator.EQ, os));
+            }
         } else {
             log.warn("OSOrImageRequirement is missing - aborting generating os requirement");
         }
@@ -84,7 +90,6 @@ public class CloudiatorServiceImpl implements CloudiatorService {
                     .stream()
                     .filter(location -> location instanceof GeographicalRegionImpl)
                     .map(location -> ((GeographicalRegionImpl) location).getName())
-                    .map(name -> name.replace('_', '-'))
                     .map(name -> createRequirement(LOCATION_CLASS, "name", RequirementOperator.EQ, name))
                     .collect(Collectors.toList());
     }
