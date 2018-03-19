@@ -10,6 +10,7 @@
 package eu.melodic.upperware.discovery.server.coordinator;
 
 import eu.melodic.upperware.discovery.server.*;
+import eu.melodic.upperware.discovery.server.util.NetUtil;
 
 import java.util.Properties;
 import java.util.Vector;

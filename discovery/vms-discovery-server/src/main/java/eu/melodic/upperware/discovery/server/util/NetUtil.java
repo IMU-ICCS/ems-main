@@ -7,7 +7,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.discovery.server;
+package eu.melodic.upperware.discovery.server.util;
 
 import java.net.*;
 import java.util.*;
