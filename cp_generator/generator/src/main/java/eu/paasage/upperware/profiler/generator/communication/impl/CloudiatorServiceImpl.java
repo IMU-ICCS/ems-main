@@ -7,6 +7,7 @@ import eu.paasage.camel.deployment.VMRequirementSet;
 import eu.paasage.camel.location.impl.GeographicalRegionImpl;
 import eu.paasage.camel.requirement.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
+import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.NewCamelModelTools;
 import io.github.cloudiator.rest.ApiException;
@@ -15,15 +16,13 @@ import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -70,10 +69,10 @@ public class CloudiatorServiceImpl implements CloudiatorService {
         if (osOrImageRequirement != null) {
             if (osOrImageRequirement instanceof ImageRequirement) {
                 String imageId = ((ImageRequirement) osOrImageRequirement).getImageId();
-                requirements.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.EQ, prepareOSFamilyValue(imageId)));
+                requirements.add(createRequirement(IMAGE_CLASS, "name", RequirementOperator.EQ, imageId));
             } else if (osOrImageRequirement instanceof OSRequirement) {
                 String os = ((OSRequirement) osOrImageRequirement).getOs();
-                requirements.add(createRequirement(IMAGE_CLASS, "name", RequirementOperator.EQ, os));
+                requirements.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.EQ, prepareOSFamilyValue(os)));
             }
         } else {
             log.warn("OSOrImageRequirement is missing - aborting generating os requirement");
@@ -82,7 +81,11 @@ public class CloudiatorServiceImpl implements CloudiatorService {
     }
 
     private String prepareOSFamilyValue(String osName) {
-        return "OSFamily::" + StringUtils.upperCase(osName);
+        String enumName = StringUtils.upperCase(osName);
+        if (EnumUtils.isValidEnum(OperatingSystemFamily.class, enumName)) {
+            return "OSFamily::" + enumName;
+        }
+        throw new GeneratorException(String.format("Could not parse %s as a OperatingSystemFamily. Possible values are: %s", enumName, Arrays.toString(OperatingSystemFamily.values())));
     }
 
     private Collection<? extends Requirement> createLocationRequirement(LocationRequirement locationRequirement) {
