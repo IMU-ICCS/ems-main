@@ -41,7 +41,8 @@ public class VmsDiscoveryServer
 		
 		//ServerCoordinator coordinator = new ServerCoordinatorWaitAll(numOfVms, 
 		//ServerCoordinator coordinator = new ServerCoordinatorTimeWin(registrationWindow,
-		ServerCoordinator coordinator = new ServerCoordinatorClientsOnly(config, 
+		//ServerCoordinator coordinator = new ServerCoordinatorClientsOnly(config, 
+		ServerCoordinator coordinator = new ServerCoordinatorPerCloud(config, 
 			new Runnable() {
 				public void run() {
 					log.info("*****************************");

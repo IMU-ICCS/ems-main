@@ -69,7 +69,7 @@ public class CloudiatorUtil
 	}
 	
 	
-	public void findVmInfoUsingIpAddress(String searchIpAddress, boolean searchIpAddressIsPublic) {
+	public VmCloudInfo findVmInfoUsingIpAddress(String searchIpAddress, boolean searchIpAddressIsPublic) {
 		System.out.printf("Looking up VM info using IP address:\n\t %s %s\n", searchIpAddress, searchIpAddressIsPublic ? "/ PUBLIC" : "/ PUBLIC-or-PRIVATE" );
 		
 		// Find VM instance using IP address
@@ -85,18 +85,22 @@ public class CloudiatorUtil
 		
 		if (foundVm<0) {
 			System.err.println("** Could not find IP address: "+searchIpAddress);
-			return;
+			return null;
 		}
 		
 		// Retrieve VM instance info
 		VirtualMachine vm = client.controller(VirtualMachine.class).get(foundVm);
 		if (vm==null) {
 			System.err.println("** Could not find VM with IP address: "+searchIpAddress);
-			return;
+			return null;
 		} else {
 			System.out.printf("VM:\n\t id=%d,\n\t name=%s,\n\t remote-state=%s,\n\t location=%d,\n\t cloud=%d,\n\t provider-id=%s\n",
 					vm.getId(), vm.getName(), vm.getRemoteState(), vm.getLocation(), vm.getCloud(), vm.getProviderId());
 		}
+		
+		VmCloudInfo response = new VmCloudInfo();
+		response.ipAddress = searchIpAddress;
+		response.vm = vm;
 		
 		// Retrieve Location info
 		if (vm.getLocation()>=0) {
@@ -106,6 +110,7 @@ public class CloudiatorUtil
 			} else {
 				System.out.printf("Location:\n\t id=%d,\n\t name=%s,\n\t parent-id=%d\n",
 						loc.getId(), loc.getName(), loc.getParent());
+				response.location = loc;
 			}
 		} else {
 			System.err.println("** No Location info in VM with IP address: "+searchIpAddress);
@@ -120,14 +125,26 @@ public class CloudiatorUtil
 				System.out.printf("Cloud:\n\t id=%d,\n\t name=%s,\n\t endpoint=%s\n",
 						cloud.getId(), cloud.getName(), cloud.getEndpoint());
 				System.out.printf("Cloud Provider:\n\t %s\n", getCloudProviderByEndpoint(cloud.getEndpoint()));
+				response.cloud = cloud;
+				response.providerName = getCloudProviderByEndpoint(cloud.getEndpoint());
 			}
 		} else {
 			System.err.println("** No Cloud info in VM with IP address: "+searchIpAddress);
 		}
+		
+		return response;
     }
 	
 	protected static String getCloudProviderByEndpoint(String endpoint) {
 		if (endpoint.endsWith("amazonaws.com")) return "AWS";
-		return null;
+		return endpoint;
+	}
+	
+	public static class VmCloudInfo {
+		public String ipAddress;
+		public VirtualMachine vm;
+		public Location location;
+		public Cloud cloud;
+		public String providerName;
 	}
 }

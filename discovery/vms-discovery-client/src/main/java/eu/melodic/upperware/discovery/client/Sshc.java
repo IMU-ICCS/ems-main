@@ -100,7 +100,7 @@ public class Sshc
 		String serverPubKey = config.getProperty("pubkey");
 		String serverFingerprint = config.getProperty("fingerprint");
 		String username = config.getProperty("username");
-		String password = config.getProperty("password");;
+		String password = config.getProperty("password");
 		long authTimeout = Long.parseLong(config.getProperty("auth.timeout","60000"));
 		
 		// Starting client and connecting to server
