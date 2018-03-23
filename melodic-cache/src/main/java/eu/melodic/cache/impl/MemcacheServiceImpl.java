@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Boolean.TRUE;
@@ -53,7 +54,29 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
 
     @Override
     public NodeCandidates load(String key) {
-        return (NodeCandidates) memcachedClient.get(key);
+        int currentTryCount = 1;
+        int maxTryCount = 4;
+        int timeToWatit=2000;
+
+        NodeCandidates nodeCandidates = null;
+        while (currentTryCount < maxTryCount) {
+            try {
+                nodeCandidates = (NodeCandidates) memcachedClient.get(key);
+                currentTryCount = maxTryCount;
+            } catch(CancellationException e){
+                log.warn("Attempt {} of {} failed. Next attempt after {} second", currentTryCount, maxTryCount-1, timeToWatit, e);
+                currentTryCount++;
+                if (currentTryCount == maxTryCount) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(timeToWatit);
+                } catch (InterruptedException ie) {
+                    //nothing to do
+                }
+            }
+        }
+        return nodeCandidates;
     }
 
 }
