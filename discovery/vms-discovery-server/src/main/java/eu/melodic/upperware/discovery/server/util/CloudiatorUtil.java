@@ -12,11 +12,15 @@ package eu.melodic.upperware.discovery.server.util;
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Vector;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +37,13 @@ public class CloudiatorUtil
 	static { try { java.util.logging.LogManager.getLogManager().readConfiguration( CloudiatorUtil.class.getResourceAsStream("/logging.properties") ); } catch (IOException ex) { throw new RuntimeException(ex); } }
 	
 	public static final String DEFAULT_CLOUDIATOR_PROPERTIES = "/cloudiator.properties";
+	public static final String DEFAULT_PROVIDER_ENDPOINT_PATTERNS = "/provider-endpoint-patterns.txt";
+	public static final String DEFAULT_PROVIDER_LOCATION_PATTERNS = "/provider-location-patterns.txt";
+	
+	private static Object _CLASS_LOCK = new Object();
 	private static CloudiatorUtil instance = null;
+	protected static Vector<PatternPair> providerEndpointPatterns;
+	protected static Vector<PatternPair> providerLocationPatterns;
 	
 	private Client client = null;
 	
@@ -51,6 +61,12 @@ public class CloudiatorUtil
 			}
 		} catch (IOException ex) {
 			log.error("EXCEPTION when reading properties from file: {}", DEFAULT_CLOUDIATOR_PROPERTIES, ex);
+		}
+		
+		synchronized (_CLASS_LOCK) {
+			if (providerEndpointPatterns!=null) {
+				loadPatterns();
+			}
 		}
 	}
 	
@@ -102,20 +118,6 @@ public class CloudiatorUtil
 		response.ipAddress = searchIpAddress;
 		response.vm = vm;
 		
-		// Retrieve Location info
-		if (vm.getLocation()>=0) {
-			Location loc = client.controller(Location.class).get(vm.getLocation());
-			if (loc==null) {
-				System.err.println("** Could not find Location with id: "+vm.getLocation()+"  -->  VM with IP address: "+searchIpAddress);
-			} else {
-				System.out.printf("Location:\n\t id=%d,\n\t name=%s,\n\t parent-id=%d\n",
-						loc.getId(), loc.getName(), loc.getParent());
-				response.location = loc;
-			}
-		} else {
-			System.err.println("** No Location info in VM with IP address: "+searchIpAddress);
-		}
-		
 		// Retrieve Cloud info
 		if (vm.getCloud()>=0) {
 			Cloud cloud = client.controller(Cloud.class).get(vm.getCloud());
@@ -127,17 +129,104 @@ public class CloudiatorUtil
 				System.out.printf("Cloud Provider:\n\t %s\n", getCloudProviderByEndpoint(cloud.getEndpoint()));
 				response.cloud = cloud;
 				response.providerName = getCloudProviderByEndpoint(cloud.getEndpoint());
+				System.out.printf("\t provider-name=%s\n", response.providerName);
 			}
 		} else {
 			System.err.println("** No Cloud info in VM with IP address: "+searchIpAddress);
 		}
 		
+		// Retrieve Location info
+		if (vm.getLocation()>=0) {
+			Location loc = client.controller(Location.class).get(vm.getLocation());
+			if (loc==null) {
+				System.err.println("** Could not find Location with id: "+vm.getLocation()+"  -->  VM with IP address: "+searchIpAddress);
+			} else {
+				System.out.printf("Location:\n\t id=%d,\n\t name=%s,\n\t parent-id=%d\n",
+						loc.getId(), loc.getName(), loc.getParent());
+				response.location = loc;
+				if (loc.getName()!=null) {
+					response.locationName = getCloudLocationByName(loc.getName());
+					System.out.printf("\t location-name=%s\n", response.locationName);
+				}
+			}
+		} else {
+			System.err.println("** No Location info in VM with IP address: "+searchIpAddress);
+		}
+		
 		return response;
     }
 	
+	// Methods for translating Endpoints to Human readable strings (using patterns from config files)
+	protected static void loadPatternsFromFile(String file, Vector<PatternPair> config) {
+		try {
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(CloudiatorUtil.class.getResourceAsStream(file)))) {
+				config.clear();
+				String line;
+				int ln = 0;
+				while ((line = in.readLine()) != null) {
+					ln++;
+					log.debug("loadPatterns: File={}: Line={}. {}", file, ln, line);
+					line = line.trim();
+					if (!line.isEmpty() && line.charAt(0)!='#') {
+						int p1 = line.lastIndexOf(" ");
+						int p2 = line.lastIndexOf("\t");
+						int p = (p1>p2) ? p1 : p2;
+						if (p>0) {
+							String patStr = line.substring(0,p).trim();
+							String patName= line.substring(p).trim();
+							log.debug("loadPatterns: File={}: Pattern={}: Provider={}", file, patStr, patName);
+							PatternPair pp = new PatternPair( Pattern.compile(patStr), patName);
+							config.add(pp);
+						}
+					}
+				}
+			}
+		} catch (IOException ex) {
+			log.error("EXCEPTION when reading patterns from file: {}", file, ex);
+		}
+	}
+	
+	protected static void loadPatterns() {
+		providerEndpointPatterns = new Vector<PatternPair>();
+		providerLocationPatterns = new Vector<PatternPair>();
+		loadPatternsFromFile(DEFAULT_PROVIDER_ENDPOINT_PATTERNS, providerEndpointPatterns);
+		loadPatternsFromFile(DEFAULT_PROVIDER_LOCATION_PATTERNS, providerLocationPatterns);
+	}
+	
 	protected static String getCloudProviderByEndpoint(String endpoint) {
-		if (endpoint.endsWith("amazonaws.com")) return "AWS";
-		return endpoint;
+		_checkIfCloudPatternsAreLoaded();
+		return _getCloudPatternByString(endpoint, providerEndpointPatterns);
+	}
+	
+	protected static String getCloudLocationByName(String name) {
+		_checkIfCloudPatternsAreLoaded();
+		return _getCloudPatternByString(name, providerLocationPatterns);
+	}
+	
+	protected static void _checkIfCloudPatternsAreLoaded() {
+		synchronized (_CLASS_LOCK) {
+			if (providerEndpointPatterns==null) {
+				loadPatterns();
+			}
+		}
+	}
+	
+	protected static String _getCloudPatternByString(String endpoint, Vector<PatternPair> config) {
+		Vector<PatternPair> copy = (Vector<PatternPair>)config.clone();
+		for (PatternPair pp : copy) {
+			if (pp.pattern.matcher(endpoint).matches()) return pp.name;
+		}
+		return null;
+	}
+	
+	// Member classes
+	protected static class PatternPair {
+		public Pattern pattern;
+		public String name;
+		public PatternPair(Pattern pat, String name) {
+			this.pattern = pat;
+			this.name = name;
+		}
 	}
 	
 	public static class VmCloudInfo {
@@ -146,5 +235,6 @@ public class CloudiatorUtil
 		public Location location;
 		public Cloud cloud;
 		public String providerName;
+		public String locationName;
 	}
 }

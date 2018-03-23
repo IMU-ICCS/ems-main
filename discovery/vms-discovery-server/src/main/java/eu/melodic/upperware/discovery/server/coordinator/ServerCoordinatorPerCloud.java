@@ -71,8 +71,18 @@ public class ServerCoordinatorPerCloud implements ServerCoordinator {
 		String vmGroup;
 		try {
 			CloudiatorUtil.VmCloudInfo vmInfo = CloudiatorUtil.getInstance().findVmInfoUsingIpAddress(clientIpAddr, true);
-			if (vmInfo.location!=null) vmGroup = vmInfo.cloud.getId()+"/"+vmInfo.providerName+" @ "+vmInfo.location.getId()+"/"+vmInfo.location.getName();
-			else vmGroup = vmInfo.cloud.getId()+"/"+vmInfo.providerName;
+			
+			String vmGroupPart1;
+			if (vmInfo.cloud!=null && vmInfo.providerName!=null) vmGroupPart1 = vmInfo.cloud.getId()+"/"+vmInfo.providerName;
+			else if (vmInfo.cloud!=null) vmGroupPart1 = vmInfo.cloud.getId()+"/"+vmInfo.cloud.getEndpoint();
+			else vmGroupPart1 = "";
+			
+			String vmGroupPart2;
+			if (vmInfo.location!=null && vmInfo.locationName!=null) vmGroupPart2 = vmInfo.location.getId()+"/"+vmInfo.locationName;
+			else if (vmInfo.location!=null) vmGroupPart2 = vmInfo.location.getId()+"/"+vmInfo.location.getName();
+			else vmGroupPart2 = "";
+			
+			vmGroup = (!vmGroupPart2.isEmpty()) ? vmGroupPart1 + " @ " + vmGroupPart2 : vmGroupPart1;
 			log.info("{}--> Client VM group : {}", c.getId(), vmGroup);
 		} catch (Exception ex) {
 			log.error("{}--> Could not retrieve VM info from Cloudiator: {}", c.getId(), ex);
