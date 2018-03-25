@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-//import java.net.InetSocketAddress;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,8 +61,6 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 		}
 		this.coordinator = coordinator;
 	}
-	
-	public String getId() { return id; }
 	
 	public void setSession(ServerSession session) {
 		log.info("{}--> Got session : {}", id, session);
