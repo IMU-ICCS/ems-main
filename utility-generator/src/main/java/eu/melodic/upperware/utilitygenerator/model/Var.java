@@ -17,4 +17,12 @@ public class Var<T> {
 
     private String name;
     private T value;
+
+    @Override
+    public String toString() {
+        return "Var{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                '}';
+    }
 }

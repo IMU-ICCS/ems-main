@@ -1241,22 +1241,28 @@ public class CPSolver {
 
 	private void calculateUtility(){
 
-		double utility = utilityGenerator.evaluate(convertToUtilityIntVariable(solver.retrieveIntVars())); //TODO
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution = Arrays.stream(solver.retrieveIntVars())
+				.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
+				.collect(Collectors.toList());
+		log.info("First step: {}", solution);
+
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> intVars = convertToUtilityIntVariable(solution);
+		log.info("Second step: {}", solution);
+
+		double utility = utilityGenerator.evaluate(intVars); //TODO
 		if (utility > maxUtility){
+			log.info("New utility value {} is greater than {}", utility, maxUtility);
 			convertAndUpdateBestSolution(utility);
+		} else {
+			log.info("New utility value {} is NOT greater than {}", utility, maxUtility);
 		}
 	}
 
-	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> convertToUtilityIntVariable(IntVar[] intVars) {
-
-		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution = Arrays.stream(intVars)
-			.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
-			.collect(Collectors.toList());
+	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> convertToUtilityIntVariable(Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution) {
 
 		variablesForUG.stream()
 			.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
-			.forEach(v -> solution.add(
-				new eu.melodic.upperware.utilitygenerator.model.IntVar(v.getId(), idToIntVar.get(v.getId()).getValue())));
+			.forEach(v -> solution.add(new eu.melodic.upperware.utilitygenerator.model.IntVar(v.getId(), idToIntVar.get(v.getId()).getValue())));
 		return solution;
 
 	}
