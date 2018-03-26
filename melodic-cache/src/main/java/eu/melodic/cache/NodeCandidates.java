@@ -1,8 +1,10 @@
 package eu.melodic.cache;
 
+import com.google.gson.Gson;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Created by pszkup on 04.01.18.
  */
+@Slf4j
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NodeCandidates implements Serializable {
 
@@ -44,7 +47,16 @@ public class NodeCandidates implements Serializable {
     }
 
     public Optional<NodeCandidate> getCheapest(String vmName, int providerIndex, Predicate<NodeCandidate>... predicates) {
-        return get(vmName, providerIndex, predicates).stream().reduce((a, b) -> a.getPrice() < b.getPrice() ? a : b);
+        log.info("Looking for cheapest nodeCandidates - vmName: {}, providerIndex: {}, predicates: {}", vmName, providerIndex, predicates);
+        Optional<NodeCandidate> cheapest = get(vmName, providerIndex, predicates).stream().reduce((a, b) -> a.getPrice() < b.getPrice() ? a : b);
+
+        if (cheapest.isPresent()) {
+            NodeCandidate nodeCandidate = cheapest.get();
+            log.info("Cheapest NodeCandidate found!!! {}", new Gson().toJson(nodeCandidate));
+        } else {
+            log.info("Cheapest nodeCandidate not found!!!");
+        }
+        return cheapest;
     }
 
     private Predicate<NodeCandidate> createComposedPredicate(Predicate<NodeCandidate>... predicates) {
