@@ -25,5 +25,9 @@ public class CacheProperties {
         private String host;
         private Integer port;
         private Integer ttl;
+
+        private Integer timeBetweenLoadAttempts;
+        private Integer numberOfLoadAttempts;
+
     }
 }
