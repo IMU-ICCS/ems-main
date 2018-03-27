@@ -102,6 +102,10 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
         if (optionalMetric.isPresent()) {
             valueRT = ((IntMetricDTO) optionalMetric.get()).getValue();
             log.info("Get metric: AVG Response Time = {}", valueRT);
+            if (valueRT > MAX_RESPONSE_TIME){
+                valueRT = (int) MAX_RESPONSE_TIME;
+                log.info("Setting AVG Response Time to MAX_RESPONSE_TIME=1000");
+            }
         } else {
             log.warn("Metric needed for FCR utility function: {} does not exist, setting value to 0", METRIC_AVG_RESPONSE_TIME);
         }
