@@ -56,7 +56,7 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
     public NodeCandidates load(String key) {
         int currentTryCount = 1;
         int maxTryCount = 4;
-        int timeToWatit=2000;
+        int timeToWait=2;
 
         NodeCandidates nodeCandidates = null;
         while (currentTryCount < maxTryCount) {
@@ -64,13 +64,13 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
                 nodeCandidates = (NodeCandidates) memcachedClient.get(key);
                 currentTryCount = maxTryCount;
             } catch(CancellationException e){
-                log.warn("Attempt {} of {} failed. Next attempt after {} second", currentTryCount, maxTryCount-1, timeToWatit, e);
+                log.warn("Attempt {} of {} failed. Next attempt after {} second", currentTryCount, maxTryCount-1, timeToWait, e);
                 currentTryCount++;
                 if (currentTryCount == maxTryCount) {
                     throw e;
                 }
                 try {
-                    Thread.sleep(timeToWatit);
+                    Thread.sleep(timeToWait);
                 } catch (InterruptedException ie) {
                     //nothing to do
                 }
