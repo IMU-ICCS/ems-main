@@ -363,15 +363,14 @@ public class CPSolver {
 	private void convertAndUpdateBestSolution(double utility){
 
 		maxUtility = utility;
-		solutionWithMaximumUtilityInt.clear();
-        idToIntVar.values().stream()
-				.filter(intVar -> variablesForUG.stream().anyMatch(v-> intVar.getName().equals(v.getId())))
-				.forEach(intVar -> solutionWithMaximumUtilityInt.put(intVar.getName(), intVar.getValue()));
-        solutionWithMaximumUtilityReal.clear();
-        idToRealVar.values().stream()
-				.filter(realVar -> variablesForUG.stream().anyMatch(v-> realVar.getName().equals(v.getId())))
-				.forEach(realVar -> solutionWithMaximumUtilityReal.put(realVar.getName(), realVar.getUB()));
 
+		solutionWithMaximumUtilityInt = idToIntVar.values().stream()
+				.filter(intVar -> variablesForUG.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
+				.collect(Collectors.toMap(IntVar::getName, IntVar::getValue));
+
+		solutionWithMaximumUtilityReal = idToRealVar.values().stream()
+				.filter(realVar -> variablesForUG.stream().anyMatch(v-> realVar.getName().equals(v.getId())))
+				.collect(Collectors.toMap(RealVar::getName, RealVar::getUB));
     }
 
 	/* Saving the solution in the cp model and storing back the model to its
@@ -1244,21 +1243,21 @@ public class CPSolver {
 		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution = Arrays.stream(solver.retrieveIntVars())
 				.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
 				.collect(Collectors.toList());
-		log.info("First step: {}", solution);
+		log.debug("First step: {}", solution);
 
-		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> intVars = convertToUtilityIntVariable(solution);
-		log.info("Second step: {}", solution);
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> intVars = addSingleValueVariables(solution);
+		log.debug("Second step: {}", solution);
 
 		double utility = utilityGenerator.evaluate(intVars); //TODO
 		if (utility > maxUtility){
 			log.info("New utility value {} is greater than {}", utility, maxUtility);
 			convertAndUpdateBestSolution(utility);
 		} else {
-			log.info("New utility value {} is NOT greater than {}", utility, maxUtility);
+			log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);
 		}
 	}
 
-	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> convertToUtilityIntVariable(Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution) {
+	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> addSingleValueVariables(Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution) {
 
 		variablesForUG.stream()
 			.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))

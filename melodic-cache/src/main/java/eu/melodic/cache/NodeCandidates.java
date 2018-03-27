@@ -47,14 +47,14 @@ public class NodeCandidates implements Serializable {
     }
 
     public Optional<NodeCandidate> getCheapest(String vmName, int providerIndex, Predicate<NodeCandidate>... predicates) {
-        log.info("Looking for cheapest nodeCandidates - vmName: {}, providerIndex: {}, predicates: {}", vmName, providerIndex, predicates);
+        log.debug("Looking for cheapest nodeCandidates - vmName: {}, providerIndex: {}, predicates: {}", vmName, providerIndex, predicates);
         Optional<NodeCandidate> cheapest = get(vmName, providerIndex, predicates).stream().reduce((a, b) -> a.getPrice() < b.getPrice() ? a : b);
 
         if (cheapest.isPresent()) {
             NodeCandidate nodeCandidate = cheapest.get();
-            log.info("Cheapest NodeCandidate found!!! {}", new Gson().toJson(nodeCandidate));
+            log.debug("Cheapest NodeCandidate found!!! {}", new Gson().toJson(nodeCandidate));
         } else {
-            log.info("Cheapest nodeCandidate not found!!!");
+            log.debug("Cheapest nodeCandidate not found!!!");
         }
         return cheapest;
     }

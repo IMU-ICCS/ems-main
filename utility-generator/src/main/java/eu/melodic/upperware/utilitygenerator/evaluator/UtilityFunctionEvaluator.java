@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
 import static java.util.Objects.isNull;
@@ -38,13 +39,12 @@ public abstract class UtilityFunctionEvaluator {
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
 
-    public abstract double evaluate(Collection<ConfigurationElement> newConfiguration);
+    private final Predicate<Var> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
 
 
     UtilityFunctionEvaluator(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
-
-        this.variables = variables;
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
+        this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
 
         log.debug("Creating Utility Function Evaluator from Constraint Problem");
         log.debug("Variables from Constraint Problem:");
@@ -54,7 +54,6 @@ public abstract class UtilityFunctionEvaluator {
 
         this.isReconfig = isReconfig(deployedSolution);
         if (isReconfig) {
-            log.info("Converting deployed solution:");
             printSolution(deployedSolution);
             this.actConfiguration = convertActualDeployment(deployedSolution);
         }
@@ -62,9 +61,9 @@ public abstract class UtilityFunctionEvaluator {
         this.maxUtility = 0.0;
     }
 
-    public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
+    public abstract double evaluate(Collection<ConfigurationElement> newConfiguration);
 
-        log.debug("Evaluating solution:");
+    public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
         printSolutionForDebug(newConfigurationInt, newConfigurationReal);
 
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
@@ -76,7 +75,7 @@ public abstract class UtilityFunctionEvaluator {
 
         double utility = evaluate(newConfiguration);
 
-        if (utility >= maxUtility) {
+        if (utility > maxUtility) {
             maxUtility = utility;
             configurationWithMaxUtility = newConfiguration;
             solutionWithMaxUtility = convertSolution(newConfigurationInt, newConfigurationReal);
@@ -92,22 +91,18 @@ public abstract class UtilityFunctionEvaluator {
     }
 
     public void printConfigurationWithMaximumUtility() {
-
         log.info("Configuration with maximum utility:");
         log.info(configurationWithMaxUtility.toString());
-
     }
 
 
     //fixme - RealVar
     private Collection<ConfigurationElement> convertActualDeployment(Collection<Var> deployedSolution) {
         return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntVar) s).collect(Collectors.toList()), new ArrayList<>());
-
     }
 
 
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntVar> newConfigurationInt,
-            Collection<RealVar> newConfigurationReal) {
+    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
 
         log.debug("Converting solution to Node Candidates");
 
@@ -115,16 +110,13 @@ public abstract class UtilityFunctionEvaluator {
         Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
 
         for (String componentId : cardinalitiesForComponent.keySet()) {
-
             log.debug("Converting solution for component {}", componentId);
-
-            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId,
-                    newConfigurationInt, newConfigurationReal, variables);
 
             int provider = getProviderValue(componentId, variables, newConfigurationInt);
 
-            NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent)
-                    .orElse(null);
+            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, newConfigurationInt, newConfigurationReal, variables);
+
+            NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
 
             if (isNull(theCheapest)) {
                 log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
@@ -141,16 +133,16 @@ public abstract class UtilityFunctionEvaluator {
 
 
     private void printSolution(Collection<Var> solution) {
+        log.info("Converting deployed solution:");
         solution.stream()
-                .filter(var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName())))
+                .filter(varPredicate)
                 .forEach(filteredVar -> log.info("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
     private void printSolutionForDebug(Collection<IntVar> solutionInt, Collection<RealVar> solutionReal) {
-        Collection<Var> c = new ArrayList<>(solutionInt);
-        c.addAll(solutionReal);
-        c.stream()
-                .filter(var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName())))
+        log.debug("Evaluating solution:");
+        Stream.concat(solutionInt.stream(), solutionReal.stream())
+                .filter(varPredicate)
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
