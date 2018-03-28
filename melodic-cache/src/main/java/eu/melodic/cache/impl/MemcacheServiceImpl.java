@@ -12,8 +12,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Boolean.TRUE;
 
@@ -35,48 +36,50 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
     public void store(String key, NodeCandidates value) throws CacheException {
         Integer storeExp = cacheProperties.getCache().getTtl();
         // adding a new key
-        OperationFuture<Boolean> result = memcachedClient.add(key, storeExp, value);
+        OperationFuture<Boolean> result = memcachedClient.set(key, storeExp, value);
 
-        Boolean boolResult;
-        try {
-            boolResult = result.get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Problem during storing value under key: {} ", key);
-            throw new CacheException(String.format("Problem during storing value under key: %s ", key), e);
+        while (!result.isDone()){
+            log.info("Waiting for result of storing value under key: {} ", key);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
-        if (!TRUE.equals(boolResult)){
+        try {
+            Boolean boolResult = result.get();
+            if (TRUE.equals(boolResult)) {
+                log.info("Successfully stored value under key: {} ", key);
+            } else {
+                log.error("Problem during storing value under key: {} ", key);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
             log.error("Problem during storing value under key: {} ", key);
-        } else {
-            log.info("Successfully stored value under key: {} ", key);
+            throw new CacheException(String.format("Problem during storing value under key: %s ", key), e);
         }
     }
 
     @Override
     public NodeCandidates load(String key) {
-        int currentTryCount = 0;
-        int maxTryCount = cacheProperties.getCache().getNumberOfLoadAttempts();
-        int timeToWait = cacheProperties.getCache().getTimeBetweenLoadAttempts();
+        // Try to get a value, for up to 5 seconds, and cancel if it
+        // doesn't return
+        NodeCandidates myObj = null;
+        Future<Object> f = memcachedClient.asyncGet(key);
+        try {
+            myObj = (NodeCandidates) f.get(5, TimeUnit.SECONDS);
+            // throws expecting InterruptedException, ExecutionException
+            // or TimeoutException
+        } catch (Exception e) {
+            log.error("Problem during loading value for key {}", key, e);
+          // Since we don't need this, go ahead and cancel the operation.
+          // This is not strictly necessary, but it'll save some work on
+          // the server.  It is okay to cancel it if running.
+          f.cancel(true);
+         }
 
-        NodeCandidates nodeCandidates = null;
-        while (currentTryCount < maxTryCount) {
-            try {
-                nodeCandidates = (NodeCandidates) memcachedClient.get(key);
-                currentTryCount = maxTryCount;
-            } catch(CancellationException e){
-                log.warn("Attempt {} of {} failed. Next attempt after {} seconds", currentTryCount+1, maxTryCount, timeToWait, e);
-                currentTryCount++;
-                if (currentTryCount == maxTryCount) {
-                    throw e;
-                }
-                try {
-                    Thread.sleep(timeToWait * 1000);
-                } catch (InterruptedException ie) {
-                    //nothing to do
-                }
-            }
-        }
-        return nodeCandidates;
+        return myObj;
     }
 
 }

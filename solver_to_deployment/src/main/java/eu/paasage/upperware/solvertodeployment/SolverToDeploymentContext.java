@@ -11,6 +11,7 @@ package eu.paasage.upperware.solvertodeployment;
 
 import eu.melodic.cache.properties.CacheProperties;
 import lombok.AllArgsConstructor;
+import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -40,7 +42,7 @@ public class SolverToDeploymentContext {
   public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
     String host = cacheProperties.getCache().getHost();
     Integer port = cacheProperties.getCache().getPort();
-    return new MemcachedClient(new InetSocketAddress(host, port));
+    return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
   }
 
 }
