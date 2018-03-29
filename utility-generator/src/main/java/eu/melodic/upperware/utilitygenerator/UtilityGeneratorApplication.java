@@ -62,7 +62,7 @@ public class UtilityGeneratorApplication {
                 return new UtilityFunctionEvaluatorFCR(variables, metrics, deployedSolution, nodeCandidates);
             case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
-                return new UtilityFunctionEvaluatorCETraffic(variables, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorCETraffic(variables, metrics, deployedSolution, nodeCandidates);
             case CAS:
                 log.info("Creating utility function for CAS");
                 return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);

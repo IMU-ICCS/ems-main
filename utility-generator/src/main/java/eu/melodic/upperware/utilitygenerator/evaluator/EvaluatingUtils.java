@@ -8,10 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import eu.melodic.upperware.utilitygenerator.model.IntVar;
-import eu.melodic.upperware.utilitygenerator.model.RealVar;
-import eu.melodic.upperware.utilitygenerator.model.Var;
-import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.*;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -149,6 +146,43 @@ class EvaluatingUtils {
         }
 
         return predicates.toArray(new Predicate[predicates.size()]);
+    }
+
+
+    static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue){
+
+        Optional<MetricDTO> optionalMetric = metricDTOS.stream()
+                .filter(metric -> metric.getName().equals(name))
+                .findAny();
+
+        Integer value = defaultValue;
+
+        if (optionalMetric.isPresent()) {
+            value = ((IntMetricDTO) optionalMetric.get()).getValue();
+            log.info("Get metric: {} = {}", type, value);
+        }
+        else {
+            log.warn("Metric {} does not exist, setting value to {}", name, defaultValue);
+        }
+        return new IntMetric(type, name, value);
+    }
+
+    static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue){
+
+        Optional<MetricDTO> optionalMetric = metricDTOS.stream()
+                .filter(metric -> metric.getName().equals(name))
+                .findAny();
+
+        Double value = defaultValue;
+
+        if (optionalMetric.isPresent()) {
+            value = ((DoubleMetricDTO) optionalMetric.get()).getValue();
+            log.info("Get metric: {} = {}", type, value);
+        }
+        else {
+            log.warn("Metric {} does not exist, setting value to {}", name, defaultValue);
+        }
+        return new DoubleMetric(type, name, value);
     }
 
     /* ---------------------for tests -to delete later -----------------------------*/
