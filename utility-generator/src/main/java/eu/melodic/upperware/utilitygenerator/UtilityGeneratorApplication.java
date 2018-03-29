@@ -59,10 +59,10 @@ public class UtilityGeneratorApplication {
         switch (useCase) {
             case FCR:
                 log.info("Creating utility function for FCR");
-                return new UtilityFunctionEvaluatorFCR(variables, metrics, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorFCR(variables, deployedSolution, nodeCandidates, metrics);
             case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
-                return new UtilityFunctionEvaluatorCETraffic(variables, metrics, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorCETraffic(variables, deployedSolution, nodeCandidates, metrics);
             case CAS:
                 log.info("Creating utility function for CAS");
                 return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);
@@ -107,12 +107,12 @@ public class UtilityGeneratorApplication {
 
             case FCR:
                 this.utilityFunctionEvaluator =
-                new UtilityFunctionEvaluatorFCR(metrics, actConfiguration, isReconfig, costUtilityFunction);
+                        new UtilityFunctionEvaluatorFCR(actConfiguration, isReconfig, costUtilityFunction, metrics);
                 break;
 
             case CETRAFFIC:
                 this.utilityFunctionEvaluator =
-                        new UtilityFunctionEvaluatorCETraffic(metrics, actConfiguration, isReconfig, costUtilityFunction);
+                        new UtilityFunctionEvaluatorCETraffic(actConfiguration, isReconfig, costUtilityFunction, metrics);
                 break;
 
             case CAS:

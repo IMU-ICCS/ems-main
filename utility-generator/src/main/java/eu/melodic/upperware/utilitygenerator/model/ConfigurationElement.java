@@ -28,7 +28,7 @@ public class ConfigurationElement {
         return nodeCandidate.getHardware().getRam() * cardinality;
     }
 
-    public double getTotalNumberOfCores(){
+    public int getTotalNumberOfCores(){
         return cardinality * nodeCandidate.getHardware().getCores();
     }
 

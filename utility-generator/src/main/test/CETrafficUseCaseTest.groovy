@@ -91,9 +91,9 @@ class CETrafficUseCaseTest extends Specification {
 
     def "less machines - one machine"() {
 
-        metric.getValue() >> 2
+        metric.getValue() >> 3
         metricPercentile.getValue() >> 2.3
-        metricRemainingSimTime.getValue() >> 3
+        metricRemainingSimTime.getValue() >> 4
 
         cardinality = 1
         costUtilityFunction = costUtilityFunctionFraction

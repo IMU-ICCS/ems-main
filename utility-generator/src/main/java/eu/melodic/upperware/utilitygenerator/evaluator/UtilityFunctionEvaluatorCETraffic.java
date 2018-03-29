@@ -36,7 +36,8 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     private IntMetric remainingSimulationTime;
 
 
-    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, List<MetricDTO> metricDTOs, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates,
+            List<MetricDTO> metricDTOs) {
         super(variables, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionFraction();
@@ -63,15 +64,15 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
 
 
     private double estimateTimeToComplete(Collection<ConfigurationElement> newConfiguration) {
-        double result = simulationLeftNumber.getValue() / countNumberOfCores(newConfiguration) * ETPercentile.getValue();
-        log.debug("Estimated time to complete all tasks is {}", result);
+        double result = simulationLeftNumber.getValue() / (double) countNumberOfCores(newConfiguration) * ETPercentile.getValue();
+        log.info("Estimated time to complete all tasks is {}", result);
         return result;
     }
 
     /* for tests*/
 
-    public UtilityFunctionEvaluatorCETraffic(List<MetricDTO> metricDTOs, Collection<ConfigurationElement> actConfiguration, boolean isReconfig,
-            CostUtilityFunction costUtilityFunction) {
+    public UtilityFunctionEvaluatorCETraffic(Collection<ConfigurationElement> actConfiguration, boolean isReconfig,
+            CostUtilityFunction costUtilityFunction, List<MetricDTO> metricDTOs) {
         super(actConfiguration, isReconfig);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = costUtilityFunction;

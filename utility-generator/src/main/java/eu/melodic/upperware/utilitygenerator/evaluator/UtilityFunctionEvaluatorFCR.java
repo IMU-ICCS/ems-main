@@ -43,8 +43,8 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     /* constructors */
 
-    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<MetricDTO> metricDTOs,
-            List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<Var> deployedSolution,
+            NodeCandidates nodeCandidates, List<MetricDTO> metricDTOs) {
         super(variables, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
@@ -94,7 +94,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
         this.avgResponseTime = convertToIntMetric(metricDTOS, METRIC_AVG_RESPONSE_TIME, MetricType.AVG_RESPONSE_TIME, 0);
 
         if (this.avgResponseTime.getValue() > MAX_RESPONSE_TIME) {
-            log.info("Setting AVG Response Time to MAX_RESPONSE_TIME=1000");
+            log.info("Setting AVG Response Time to MAX_RESPONSE_TIME={}", MAX_RESPONSE_TIME);
             this.avgResponseTime = new IntMetric(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, (int) MAX_RESPONSE_TIME);
         }
         this.beta = ALPHA * (MAX_RESPONSE_TIME / NOM_RESPONSE_TIME - 1);
@@ -104,8 +104,8 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     /* for tests */
 
-    public UtilityFunctionEvaluatorFCR(List<MetricDTO> metricDTOs, Collection<ConfigurationElement> actConfiguration,
-            boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+    public UtilityFunctionEvaluatorFCR(Collection<ConfigurationElement> actConfiguration,
+            boolean isReconfig, CostUtilityFunction costUtilityFunction, List<MetricDTO> metricDTOs) {
         super(actConfiguration, isReconfig);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = costUtilityFunction;

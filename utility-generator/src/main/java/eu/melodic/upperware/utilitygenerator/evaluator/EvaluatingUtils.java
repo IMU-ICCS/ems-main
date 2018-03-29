@@ -151,9 +151,7 @@ class EvaluatingUtils {
 
     static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue){
 
-        Optional<MetricDTO> optionalMetric = metricDTOS.stream()
-                .filter(metric -> metric.getName().equals(name))
-                .findAny();
+        Optional<MetricDTO> optionalMetric = findOptionalMetric(metricDTOS, name);
 
         Integer value = defaultValue;
 
@@ -169,9 +167,7 @@ class EvaluatingUtils {
 
     static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue){
 
-        Optional<MetricDTO> optionalMetric = metricDTOS.stream()
-                .filter(metric -> metric.getName().equals(name))
-                .findAny();
+        Optional<MetricDTO> optionalMetric = findOptionalMetric(metricDTOS, name);
 
         Double value = defaultValue;
 
@@ -183,6 +179,13 @@ class EvaluatingUtils {
             log.warn("Metric {} does not exist, setting value to {}", name, defaultValue);
         }
         return new DoubleMetric(type, name, value);
+    }
+
+    private static Optional<MetricDTO> findOptionalMetric(List<MetricDTO> metricDTOS, String name){
+        return metricDTOS.stream()
+                .filter(metric -> metric.getName().equals(name))
+                .findAny();
+
     }
 
     /* ---------------------for tests -to delete later -----------------------------*/
