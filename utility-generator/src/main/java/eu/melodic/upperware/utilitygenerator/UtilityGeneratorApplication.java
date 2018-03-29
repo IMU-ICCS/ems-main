@@ -112,7 +112,7 @@ public class UtilityGeneratorApplication {
 
             case CETRAFFIC:
                 this.utilityFunctionEvaluator =
-                        new UtilityFunctionEvaluatorCETraffic(actConfiguration, isReconfig, costUtilityFunction);
+                        new UtilityFunctionEvaluatorCETraffic(metrics, actConfiguration, isReconfig, costUtilityFunction);
                 break;
 
             case CAS:

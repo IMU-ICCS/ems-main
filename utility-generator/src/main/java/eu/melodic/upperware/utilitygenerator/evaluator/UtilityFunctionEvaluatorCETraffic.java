@@ -28,7 +28,7 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
 
     /* hardcoded for release 1.5 */
     private static final String METRIC_SIMULATIONS_LEFT = "METRIC_SimulationLeftNumber";
-    private static final String METRIC_ET_PERCENTILE = "METRIC_ETPercentile,";
+    private static final String METRIC_ET_PERCENTILE = "METRIC_ETPercentile";
     private static final String METRIC_REMAINING_SIMULATION_TIME = "METRIC_RemainingSimulationTimeMetric";
 
     private IntMetric simulationLeftNumber;
@@ -70,9 +70,10 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
 
     /* for tests*/
 
-    public UtilityFunctionEvaluatorCETraffic(Collection<ConfigurationElement> actConfiguration, boolean isReconfig,
+    public UtilityFunctionEvaluatorCETraffic(List<MetricDTO> metricDTOs, Collection<ConfigurationElement> actConfiguration, boolean isReconfig,
             CostUtilityFunction costUtilityFunction) {
         super(actConfiguration, isReconfig);
+        getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = costUtilityFunction;
     }
 }
