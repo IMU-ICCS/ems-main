@@ -46,11 +46,11 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
 
-        if (isReconfig && (estimateTimeToComplete(newConfiguration) <= remainingSimulationTime.getValue())) {
-            return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
-        } else {
+        if (isReconfig && (!(estimateTimeToComplete(newConfiguration) <= remainingSimulationTime.getValue()))) {
             log.warn("Solution does not allow to complete all simulations by the deadline");
             return 0.0;
+        } else {
+            return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
         }
     }
 
