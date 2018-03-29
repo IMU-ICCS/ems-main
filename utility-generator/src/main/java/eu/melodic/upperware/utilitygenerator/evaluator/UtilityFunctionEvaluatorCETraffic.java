@@ -46,10 +46,9 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
 
-        if (estimateTimeToComplete(newConfiguration)<= remainingSimulationTime.getValue()){
+        if (isReconfig && (estimateTimeToComplete(newConfiguration) <= remainingSimulationTime.getValue())) {
             return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
-        }
-        else {
+        } else {
             log.warn("Solution does not allow to complete all simulations by the deadline");
             return 0.0;
         }
@@ -63,8 +62,8 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     }
 
 
-    private double estimateTimeToComplete(Collection<ConfigurationElement> newConfiguration){
-        double result = simulationLeftNumber.getValue()/countNumberOfCores(newConfiguration) * ETPercentile.getValue();
+    private double estimateTimeToComplete(Collection<ConfigurationElement> newConfiguration) {
+        double result = simulationLeftNumber.getValue() / countNumberOfCores(newConfiguration) * ETPercentile.getValue();
         log.debug("Estimated time to complete all tasks is {}", result);
         return result;
     }
