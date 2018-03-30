@@ -74,7 +74,7 @@ public abstract class UtilityFunctionEvaluator {
             return 0;
         }
 
-        if (!checkIfNotReconfigurableComponentsAreNotChanged(newConfiguration)){
+        if (isReconfig && (!checkIfNotReconfigurableComponentsAreNotChanged(newConfiguration))) {
             log.info("This solution changes not reconfigurable components, returning 0");
             return 0;
         }
@@ -157,14 +157,14 @@ public abstract class UtilityFunctionEvaluator {
     }
 
 
-    private boolean checkIfNotReconfigurableComponentsAreNotChanged(Collection<ConfigurationElement> newConfiguration){
+    private boolean checkIfNotReconfigurableComponentsAreNotChanged(Collection<ConfigurationElement> newConfiguration) {
 
         return this.actConfiguration.stream()
                 .filter(component -> component.getId().endsWith(NOT_RECONFIGURABLE_SUFIX))
                 .allMatch(component -> newConfiguration.stream()
                         .anyMatch(newComponent ->
                                 newComponent.getId().equals(component.getId())
-                                && newComponent.getNodeCandidate().equals(component.getNodeCandidate()
+                                        && newComponent.getNodeCandidate().equals(component.getNodeCandidate()
                                 )
                         )
                 );

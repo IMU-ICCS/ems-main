@@ -58,18 +58,17 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
         double nextAvgResponseTime = estimateNextAvgResponseTime(avgResponseTime.getValue(), newConfiguration);
         double resultResponseUtilityFunction = evaluateResponseUtilityFunction(nextAvgResponseTime / MAX_RESPONSE_TIME);
 
-        if (resultResponseUtilityFunction > 0 ){
+        if (resultResponseUtilityFunction > 0) {
             return (1 - COST_WEIGHT) * resultResponseUtilityFunction
                     + COST_WEIGHT * costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
-        }
-        else {
-           //hardcoded - to have maximum available number of machines even if it is not enough to achieve expected ResponseTime
+        } else {
+            //hardcoded - to have maximum available number of machines even if it is not enough to achieve expected ResponseTime
             int actualNumberOfMachines = countVirtualMachines(actConfiguration);
             int newNumberOfMachines = countVirtualMachines(newConfiguration);
             int difNumberOfMachines = newNumberOfMachines - actualNumberOfMachines;
-            if (difNumberOfMachines > 0 ){
+            if (difNumberOfMachines > 0) {
                 log.debug("Number of machines is not enough to achieve expected response time");
-                return difNumberOfMachines/100000.0;
+                return difNumberOfMachines / 100000.0;
             }
             return 0.0;
         }
