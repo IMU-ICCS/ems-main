@@ -6,7 +6,7 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-import io.github.cloudiator.rest.model.NodeCandidate
+
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
@@ -16,6 +16,7 @@ import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFra
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.IntMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
+import io.github.cloudiator.rest.model.NodeCandidate
 import lombok.extern.slf4j.Slf4j
 import spock.lang.Shared
 import spock.lang.Specification
@@ -38,6 +39,8 @@ class FCRUseCaseTest extends Specification {
     List<ConfigurationElement> actualConfiguration
     List<ConfigurationElement> newBiggerConfiguration
     List<ConfigurationElement> newSmallerConfiguration
+    List<ConfigurationElement> newBiggestConfiguration
+
 
     List<ConfigurationElement> newCheaperConfiguration
     List<ConfigurationElement> newMoreExpensiveConfiguration
@@ -78,6 +81,10 @@ class FCRUseCaseTest extends Specification {
 
         newBiggerConfiguration = new ArrayList<>()
         newBiggerConfiguration.add(new ConfigurationElement(componentId, initNC, 8))
+
+        newBiggestConfiguration = new ArrayList<>()
+        newBiggestConfiguration.add(new ConfigurationElement(componentId, initNC, 16))
+
 
         newCheaperBiggerConfiguration = new ArrayList<>()
         newCheaperBiggerConfiguration.add(new ConfigurationElement(componentId, cheapNC, 5))
@@ -158,6 +165,7 @@ class FCRUseCaseTest extends Specification {
 
         where:
         costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
+
     }
 
     def "RT_AVG is too high, configurations with different cardinalities"(){
@@ -178,6 +186,35 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         bigger > smaller
         bigger > init
+        System.out.println("bigger = " + bigger + " \nsmaller = "+ smaller + "\n init = " + init)
+
+
+        where:
+        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
+
+    }
+
+
+    def "RT_AVG is really high, configurations with different cardinalities"(){
+
+        setup:
+
+        metric.getValue() >> 3000
+
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
+
+        when:
+        double smaller = utilityGenerator.evaluateToTest(newSmallerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
+        double biggest = utilityGenerator.evaluateToTest(newBiggestConfiguration)
+
+        then:
+        noExceptionThrown()
+        bigger > smaller
+        bigger > init
+        System.out.println("biggest = " + biggest + " \nbigger = " + bigger + " \nsmaller = "+ smaller + "\n init = " + init)
 
         where:
         costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
