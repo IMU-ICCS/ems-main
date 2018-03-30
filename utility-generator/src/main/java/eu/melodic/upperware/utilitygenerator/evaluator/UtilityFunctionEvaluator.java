@@ -172,9 +172,6 @@ public abstract class UtilityFunctionEvaluator {
     }
 
 
-
-
-
     /* ------------------------------------ only for tests - to delete later  -------------------*/
 
     private Collection<ConfigurationElement> convertSolutionToNodeCandidatesToTest(Collection<IntVar> newConfigurationInt,
