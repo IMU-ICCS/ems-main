@@ -150,42 +150,22 @@ class EvaluatingUtils {
 
 
     static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue){
+        return findOptionalMetric(metricDTOS, name)
+                .map(metricDTO -> IntMetric.of((IntMetricDTO) metricDTO, type))
+                .orElseGet(() -> IntMetric.of(type, name, defaultValue));
 
-        Optional<MetricDTO> optionalMetric = findOptionalMetric(metricDTOS, name);
-
-        Integer value = defaultValue;
-
-        if (optionalMetric.isPresent()) {
-            value = ((IntMetricDTO) optionalMetric.get()).getValue();
-            log.info("Get metric: {} = {}", type, value);
-        }
-        else {
-            log.warn("Metric {} does not exist, setting value to {}", name, defaultValue);
-        }
-        return new IntMetric(type, name, value);
     }
 
-    static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue){
-
-        Optional<MetricDTO> optionalMetric = findOptionalMetric(metricDTOS, name);
-
-        Double value = defaultValue;
-
-        if (optionalMetric.isPresent()) {
-            value = ((DoubleMetricDTO) optionalMetric.get()).getValue();
-            log.info("Get metric: {} = {}", type, value);
-        }
-        else {
-            log.warn("Metric {} does not exist, setting value to {}", name, defaultValue);
-        }
-        return new DoubleMetric(type, name, value);
+    static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue) {
+        return findOptionalMetric(metricDTOS, name)
+                .map(metricDTO -> DoubleMetric.of((DoubleMetricDTO) metricDTO, type))
+                .orElseGet(() -> DoubleMetric.of(type, name, defaultValue));
     }
 
     private static Optional<MetricDTO> findOptionalMetric(List<MetricDTO> metricDTOS, String name){
         return metricDTOS.stream()
                 .filter(metric -> metric.getName().equals(name))
                 .findAny();
-
     }
 
     /* ---------------------for tests -to delete later -----------------------------*/

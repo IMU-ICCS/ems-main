@@ -10,7 +10,16 @@ package eu.melodic.upperware.utilitygenerator.model;
 
 public class DoubleMetric extends Metric<Double> {
 
-    public DoubleMetric(MetricType type, String id, Double value) {
+    private DoubleMetric(MetricType type, String id, Double value) {
         super(type, id, value);
     }
+
+    public static DoubleMetric of(DoubleMetricDTO metricDTO, MetricType type) {
+        return new DoubleMetric(type, metricDTO.getName(), metricDTO.getValue());
+    }
+
+    public static DoubleMetric of(MetricType type, String id, Double value) {
+        return new DoubleMetric(type, id, value);
+    }
+
 }
