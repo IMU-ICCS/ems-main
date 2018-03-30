@@ -24,4 +24,8 @@ public class UtilityFunctionUtils { //todo: to move elsewhere
 
     }
 
+    public static int countNumberOfCores(Collection<ConfigurationElement> configuration) {
+        return configuration.stream().mapToInt(ConfigurationElement::getTotalNumberOfCores).sum();
+    }
+
 }

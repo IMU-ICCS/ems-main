@@ -10,7 +10,15 @@ package eu.melodic.upperware.utilitygenerator.model;
 
 public class IntMetric extends Metric<Integer> {
 
-    public IntMetric(MetricType type, String id, Integer value) {
+    private IntMetric(MetricType type, String id, Integer value) {
         super(type, id, value);
+    }
+
+    public static IntMetric of(IntMetricDTO metricDTO, MetricType type) {
+        return new IntMetric(type, metricDTO.getName(), metricDTO.getValue());
+    }
+
+    public static IntMetric of(MetricType type, String id, Integer value) {
+        return new IntMetric(type, id, value);
     }
 }

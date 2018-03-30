@@ -8,10 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import eu.melodic.upperware.utilitygenerator.model.IntVar;
-import eu.melodic.upperware.utilitygenerator.model.RealVar;
-import eu.melodic.upperware.utilitygenerator.model.Var;
-import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.*;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -149,6 +146,42 @@ class EvaluatingUtils {
         }
 
         return predicates.toArray(new Predicate[predicates.size()]);
+    }
+
+
+    static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue){
+        return findOptionalMetric(metricDTOS, name)
+                .map(metricDTO -> {
+                    IntMetric intMetric = IntMetric.of((IntMetricDTO) metricDTO, type);
+                    log.info("Get metric: {} = {}", intMetric.getType(), intMetric.getValue());
+                    return intMetric;
+                })
+                .orElseGet(() -> {
+                    IntMetric intMetric = IntMetric.of(type, name, defaultValue);
+                    log.warn("Metric {} does not exist, setting value to {}", intMetric.getId(), intMetric.getValue());
+                    return intMetric;
+                });
+
+    }
+
+    static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue) {
+        return findOptionalMetric(metricDTOS, name)
+                .map(metricDTO -> {
+                    DoubleMetric doubleMetric = DoubleMetric.of((DoubleMetricDTO) metricDTO, type);
+                    log.info("Get metric: {} = {}", doubleMetric.getType(), doubleMetric.getValue());
+                    return doubleMetric;
+                })
+                .orElseGet(() -> {
+                    DoubleMetric doubleMetric = DoubleMetric.of(type, name, defaultValue);
+                    log.warn("Metric {} does not exist, setting value to {}", doubleMetric.getId(), doubleMetric.getValue());
+                    return doubleMetric;
+                });
+    }
+
+    private static Optional<MetricDTO> findOptionalMetric(List<MetricDTO> metricDTOS, String name){
+        return metricDTOS.stream()
+                .filter(metric -> metric.getName().equals(name))
+                .findAny();
     }
 
     /* ---------------------for tests -to delete later -----------------------------*/

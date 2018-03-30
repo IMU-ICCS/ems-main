@@ -17,10 +17,10 @@ import org.apache.commons.math3.distribution.BetaDistribution;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countVirtualMachines;
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.normalize;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertToIntMetric;
 
 
 @Slf4j
@@ -43,16 +43,14 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     /* constructors */
 
-    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<MetricDTO> metricDTOs,
-            List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<Var> deployedSolution,
+            NodeCandidates nodeCandidates, List<MetricDTO> metricDTOs) {
         super(variables, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
         log.info("Utility function was created");
 
     }
-
-
 
 
     @Override
@@ -93,24 +91,12 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     private void getAndAssignMetrics(List<MetricDTO> metricDTOS) {
 
-        Optional<MetricDTO> optionalMetric = metricDTOS.stream()
-                .filter(metric -> metric.getName().equals(METRIC_AVG_RESPONSE_TIME))
-                .findAny();
+        this.avgResponseTime = convertToIntMetric(metricDTOS, METRIC_AVG_RESPONSE_TIME, MetricType.AVG_RESPONSE_TIME, 0);
 
-        Integer valueRT = 0;
-
-        if (optionalMetric.isPresent()) {
-            valueRT = ((IntMetricDTO) optionalMetric.get()).getValue();
-            log.info("Get metric: AVG Response Time = {}", valueRT);
-            if (valueRT > MAX_RESPONSE_TIME){
-                valueRT = (int) MAX_RESPONSE_TIME;
-                log.info("Setting AVG Response Time to MAX_RESPONSE_TIME=1000");
-            }
-        } else {
-            log.warn("Metric needed for FCR utility function: {} does not exist, setting value to 0", METRIC_AVG_RESPONSE_TIME);
+        if (this.avgResponseTime.getValue() > MAX_RESPONSE_TIME) {
+            log.info("Setting AVG Response Time to MAX_RESPONSE_TIME={}", MAX_RESPONSE_TIME);
+            this.avgResponseTime = IntMetric.of(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, (int) MAX_RESPONSE_TIME);
         }
-        this.avgResponseTime = new IntMetric(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, valueRT);
-
         this.beta = ALPHA * (MAX_RESPONSE_TIME / NOM_RESPONSE_TIME - 1);
         this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
 
@@ -118,8 +104,8 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     /* for tests */
 
-    public UtilityFunctionEvaluatorFCR(List<MetricDTO> metricDTOs, Collection<ConfigurationElement> actConfiguration,
-            boolean isReconfig, CostUtilityFunction costUtilityFunction) {
+    public UtilityFunctionEvaluatorFCR(Collection<ConfigurationElement> actConfiguration,
+            boolean isReconfig, CostUtilityFunction costUtilityFunction, List<MetricDTO> metricDTOs) {
         super(actConfiguration, isReconfig);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = costUtilityFunction;
