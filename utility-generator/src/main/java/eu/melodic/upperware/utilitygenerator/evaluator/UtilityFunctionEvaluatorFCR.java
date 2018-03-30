@@ -68,7 +68,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
                 int newNumberOfMachines = countVirtualMachines(newConfiguration);
                 int difNumberOfMachines = newNumberOfMachines - actualNumberOfMachines;
                 if (difNumberOfMachines > 0) {
-                    log.warn("Number of machines is not enough to achieve expected response time");
+                    log.debug("Number of machines is not enough to achieve expected response time");
                     return difNumberOfMachines / 100000.0;
                 }
                 return 0.0;
