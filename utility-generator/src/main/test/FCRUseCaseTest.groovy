@@ -93,7 +93,7 @@ class FCRUseCaseTest extends Specification {
         newMoreExpensiveBiggerConfiguration.add(new ConfigurationElement(componentId, expNC, 5))
     }
 
-    def "RT_AVG is good, configurations with different prices"(){
+    def "RT_AVG is good, configurations with different prices"() {
 
         setup:
 
@@ -118,7 +118,7 @@ class FCRUseCaseTest extends Specification {
     }
 
 
-    def "RT_AVG is good, configurations with different cardinalities"(){
+    def "RT_AVG is good, configurations with different cardinalities"() {
 
         setup:
 
@@ -143,7 +143,7 @@ class FCRUseCaseTest extends Specification {
     }
 
 
-    def "RT_AVG is too high, configurations with different cardinalities and prices"(){
+    def "RT_AVG is too high, configurations with different cardinalities and prices"() {
 
         setup:
 
@@ -162,13 +162,14 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         cheap >= exp
         cheap >= init
+        init == 0
 
         where:
         costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
 
     }
 
-    def "RT_AVG is too high, configurations with different cardinalities"(){
+    def "RT_AVG is too high, configurations with different cardinalities"() {
 
         setup:
 
@@ -186,16 +187,18 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         bigger > smaller
         bigger > init
-        System.out.println("bigger = " + bigger + " \nsmaller = "+ smaller + "\n init = " + init)
+        init == 0
+        smaller == 0
+        System.out.println("bigger = " + bigger + " \nsmaller = " + smaller + "\n init = " + init)
 
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
+        costUtilityFunction << [costUtilityFunction_1]
 
     }
 
 
-    def "RT_AVG is really high, configurations with different cardinalities"(){
+    def "RT_AVG is really high, configurations with different cardinalities"() {
 
         setup:
 
@@ -214,10 +217,36 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         bigger > smaller
         bigger > init
-        System.out.println("biggest = " + biggest + " \nbigger = " + bigger + " \nsmaller = "+ smaller + "\n init = " + init)
+        init == 0
+        smaller == 0
+        System.out.println("biggest = " + biggest + " \nbigger = " + bigger + " \nsmaller = " + smaller + "\n init = " + init)
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
+        costUtilityFunction << [costUtilityFunction_1]
+
+    }
+
+    def "test configuration"() {
+
+        setup:
+        metric.getValue() >> 0
+
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, GroovyMock(List), false, UtilityFunctionType.FCR)
+
+        when:
+        double smaller = utilityGenerator.evaluateToTest(newSmallerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
+        double biggest = utilityGenerator.evaluateToTest(newBiggestConfiguration)
+
+        then:
+        noExceptionThrown()
+        bigger < smaller
+        bigger < init
+
+        where:
+        costUtilityFunction << [costUtilityFunction_1]
 
     }
 }
