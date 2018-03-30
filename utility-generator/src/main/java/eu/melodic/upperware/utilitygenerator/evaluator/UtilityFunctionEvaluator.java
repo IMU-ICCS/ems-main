@@ -74,7 +74,7 @@ public abstract class UtilityFunctionEvaluator {
             return 0;
         }
 
-        if (checkIfNotReconfigurableComponentsAreNotChanged(newConfiguration)){
+        if (!checkIfNotReconfigurableComponentsAreNotChanged(newConfiguration)){
             log.info("This solution changes not reconfigurable components, returning 0");
             return 0;
         }
