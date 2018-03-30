@@ -95,7 +95,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
         if (this.avgResponseTime.getValue() > MAX_RESPONSE_TIME) {
             log.info("Setting AVG Response Time to MAX_RESPONSE_TIME={}", MAX_RESPONSE_TIME);
-            this.avgResponseTime = new IntMetric(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, (int) MAX_RESPONSE_TIME);
+            this.avgResponseTime = IntMetric.of(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, (int) MAX_RESPONSE_TIME);
         }
         this.beta = ALPHA * (MAX_RESPONSE_TIME / NOM_RESPONSE_TIME - 1);
         this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
