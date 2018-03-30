@@ -29,6 +29,7 @@ import static java.util.Objects.isNull;
 @Slf4j
 public abstract class UtilityFunctionEvaluator {
 
+    private static final String NOT_RECONFIGURABLE_SUFIX = "_CTITRRR";
     boolean isReconfig;
     Collection<ConfigurationElement> actConfiguration;
 
@@ -70,6 +71,11 @@ public abstract class UtilityFunctionEvaluator {
 
         if (isNull(newConfiguration)) {
             log.debug("Returning utility value = 0");
+            return 0;
+        }
+
+        if (checkIfNotReconfigurableComponentsAreNotChanged(newConfiguration)){
+            log.info("This solution changes not reconfigurable components, returning 0");
             return 0;
         }
 
@@ -148,6 +154,21 @@ public abstract class UtilityFunctionEvaluator {
 
     private boolean isReconfig(List<Var> deployedSolution) {
         return deployedSolution != null;
+    }
+
+
+    private boolean checkIfNotReconfigurableComponentsAreNotChanged(Collection<ConfigurationElement> newConfiguration){
+
+        return this.actConfiguration.stream()
+                .filter(component -> component.getId().endsWith(NOT_RECONFIGURABLE_SUFIX))
+                .allMatch(component -> newConfiguration.stream()
+                        .anyMatch(newComponent ->
+                                newComponent.getId().equals(component.getId())
+                                && newComponent.getNodeCandidate().equals(component.getNodeCandidate()
+                                )
+                        )
+                );
+
     }
 
 
