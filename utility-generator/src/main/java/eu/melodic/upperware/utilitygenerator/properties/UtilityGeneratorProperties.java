@@ -15,7 +15,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 
-
 @Getter
 @Setter
 @Validated
@@ -28,7 +27,7 @@ public class UtilityGeneratorProperties {
     @Getter
     @Setter
     public static class UtilityGenerator {
-        private String sufixNotReconfigurableFlag;
+        private String suffixNotReconfigurableComponent;
 
     }
 }

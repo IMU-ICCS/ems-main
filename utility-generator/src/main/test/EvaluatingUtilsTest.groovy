@@ -7,18 +7,20 @@
 */
 
 
-import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator
+import eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import io.github.cloudiator.rest.model.NodeCandidate
 import lombok.extern.slf4j.Slf4j
 import spock.lang.Specification
 
 @Slf4j
-class SmallTest extends Specification {
+class EvaluatingUtilsTest extends Specification {
 
     List<ConfigurationElement> actualConfiguration
     List<ConfigurationElement> newCheaperConfiguration
     List<ConfigurationElement> newSmallerConfiguration
+
+    String notReconfigurableComponentSuffix = "CTITRRR"
 
 
     def setup() {
@@ -44,21 +46,21 @@ class SmallTest extends Specification {
         newSmallerConfiguration.add(new ConfigurationElement(componentId, initNC, 1))
     }
 
-    def "small test for check if not reconfigurable component are not changed"() {
+    def "small test for check if not reconfigurable component are changed"() {
 
         when:
-        boolean first = UtilityFunctionEvaluator.checkIfNotReconfigurableComponentsAreNotChanged(actualConfiguration, newCheaperConfiguration)
-        boolean same = UtilityFunctionEvaluator.checkIfNotReconfigurableComponentsAreNotChanged(actualConfiguration, actualConfiguration)
-        boolean smaller_same = UtilityFunctionEvaluator.checkIfNotReconfigurableComponentsAreNotChanged(actualConfiguration, newSmallerConfiguration)
+        boolean first = EvaluatingUtils.checkIfNotReconfigurableComponentsAreChanged(notReconfigurableComponentSuffix, actualConfiguration, newCheaperConfiguration)
+        boolean same = EvaluatingUtils.checkIfNotReconfigurableComponentsAreChanged(notReconfigurableComponentSuffix, actualConfiguration, actualConfiguration)
+        boolean smaller_same = EvaluatingUtils.checkIfNotReconfigurableComponentsAreChanged(notReconfigurableComponentSuffix, actualConfiguration, newSmallerConfiguration)
 
         then:
         noExceptionThrown()
-        System.out.println("first = " + first)
-        !first
-        System.out.println("same = " + same)
-        same
-        smaller_same
-        System.out.println("smaller_same = " + smaller_same)
+        System.out.println("different returns " + first)
+        first
+        System.out.println("the same returns " + same)
+        !same
+        !smaller_same
+        System.out.println("smaller_same returns " + smaller_same)
 
     }
 

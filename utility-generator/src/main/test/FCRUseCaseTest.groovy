@@ -244,9 +244,11 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         bigger < smaller
         bigger < init
+        biggest < bigger
 
         where:
         costUtilityFunction << [costUtilityFunction_1]
 
     }
+
 }
