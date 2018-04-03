@@ -57,8 +57,26 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
         double nextAvgResponseTime = estimateNextAvgResponseTime(avgResponseTime.getValue(), newConfiguration);
-        return (1 - COST_WEIGHT) * evaluateResponseUtilityFunction(nextAvgResponseTime / MAX_RESPONSE_TIME)
-                + COST_WEIGHT * costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+        double resultResponseUtilityFunction = evaluateResponseUtilityFunction(nextAvgResponseTime / MAX_RESPONSE_TIME);
+        double resultCostUtilityFunction = costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
+
+        if (isReconfig) {
+            if (resultResponseUtilityFunction > 0) {
+                return (1 - COST_WEIGHT) * resultResponseUtilityFunction + COST_WEIGHT * resultCostUtilityFunction;
+            } else {
+                //hardcoded - to have maximum available number of machines even if it is not enough to achieve expected ResponseTime
+                int actualNumberOfMachines = countVirtualMachines(actConfiguration);
+                int newNumberOfMachines = countVirtualMachines(newConfiguration);
+                int difNumberOfMachines = newNumberOfMachines - actualNumberOfMachines;
+                if (difNumberOfMachines > 0) {
+                    log.debug("Number of machines is not enough to achieve expected response time");
+                    return difNumberOfMachines / 100000.0;
+                }
+                return 0.0;
+            }
+        } else {
+            return resultCostUtilityFunction;
+        }
     }
 
 
@@ -93,11 +111,6 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
     private void getAndAssignMetrics(List<MetricDTO> metricDTOS) {
 
         this.avgResponseTime = convertToIntMetric(metricDTOS, METRIC_AVG_RESPONSE_TIME, MetricType.AVG_RESPONSE_TIME, 0);
-
-        if (this.avgResponseTime.getValue() > MAX_RESPONSE_TIME) {
-            log.info("Setting AVG Response Time to MAX_RESPONSE_TIME={}", MAX_RESPONSE_TIME);
-            this.avgResponseTime = IntMetric.of(MetricType.AVG_RESPONSE_TIME, METRIC_AVG_RESPONSE_TIME, (int) MAX_RESPONSE_TIME);
-        }
         this.beta = ALPHA * (MAX_RESPONSE_TIME / NOM_RESPONSE_TIME - 1);
         this.responseUtilityFunction = new BetaDistribution(ALPHA, beta);
 

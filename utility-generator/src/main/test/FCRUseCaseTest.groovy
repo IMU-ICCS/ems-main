@@ -6,7 +6,7 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
-import io.github.cloudiator.rest.model.NodeCandidate
+
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
@@ -16,6 +16,7 @@ import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFra
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.IntMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
+import io.github.cloudiator.rest.model.NodeCandidate
 import lombok.extern.slf4j.Slf4j
 import spock.lang.Shared
 import spock.lang.Specification
@@ -38,6 +39,8 @@ class FCRUseCaseTest extends Specification {
     List<ConfigurationElement> actualConfiguration
     List<ConfigurationElement> newBiggerConfiguration
     List<ConfigurationElement> newSmallerConfiguration
+    List<ConfigurationElement> newBiggestConfiguration
+
 
     List<ConfigurationElement> newCheaperConfiguration
     List<ConfigurationElement> newMoreExpensiveConfiguration
@@ -79,6 +82,10 @@ class FCRUseCaseTest extends Specification {
         newBiggerConfiguration = new ArrayList<>()
         newBiggerConfiguration.add(new ConfigurationElement(componentId, initNC, 8))
 
+        newBiggestConfiguration = new ArrayList<>()
+        newBiggestConfiguration.add(new ConfigurationElement(componentId, initNC, 16))
+
+
         newCheaperBiggerConfiguration = new ArrayList<>()
         newCheaperBiggerConfiguration.add(new ConfigurationElement(componentId, cheapNC, 5))
 
@@ -86,7 +93,7 @@ class FCRUseCaseTest extends Specification {
         newMoreExpensiveBiggerConfiguration.add(new ConfigurationElement(componentId, expNC, 5))
     }
 
-    def "RT_AVG is good, configurations with different prices"(){
+    def "RT_AVG is good, configurations with different prices"() {
 
         setup:
 
@@ -111,7 +118,7 @@ class FCRUseCaseTest extends Specification {
     }
 
 
-    def "RT_AVG is good, configurations with different cardinalities"(){
+    def "RT_AVG is good, configurations with different cardinalities"() {
 
         setup:
 
@@ -136,7 +143,7 @@ class FCRUseCaseTest extends Specification {
     }
 
 
-    def "RT_AVG is too high, configurations with different cardinalities and prices"(){
+    def "RT_AVG is too high, configurations with different cardinalities and prices"() {
 
         setup:
 
@@ -155,12 +162,14 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         cheap >= exp
         cheap >= init
+        init == 0
 
         where:
         costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
+
     }
 
-    def "RT_AVG is too high, configurations with different cardinalities"(){
+    def "RT_AVG is too high, configurations with different cardinalities"() {
 
         setup:
 
@@ -178,9 +187,66 @@ class FCRUseCaseTest extends Specification {
         noExceptionThrown()
         bigger > smaller
         bigger > init
+        init == 0
+        smaller == 0
+        System.out.println("bigger = " + bigger + " \nsmaller = " + smaller + "\n init = " + init)
+
 
         where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2, costUtilityFunctionFraction]
+        costUtilityFunction << [costUtilityFunction_1]
+
+    }
+
+
+    def "RT_AVG is really high, configurations with different cardinalities"() {
+
+        setup:
+
+        metric.getValue() >> 3000
+
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
+
+        when:
+        double smaller = utilityGenerator.evaluateToTest(newSmallerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
+        double biggest = utilityGenerator.evaluateToTest(newBiggestConfiguration)
+
+        then:
+        noExceptionThrown()
+        bigger > smaller
+        bigger > init
+        init == 0
+        smaller == 0
+        System.out.println("biggest = " + biggest + " \nbigger = " + bigger + " \nsmaller = " + smaller + "\n init = " + init)
+
+        where:
+        costUtilityFunction << [costUtilityFunction_1]
+
+    }
+
+    def "test configuration"() {
+
+        setup:
+        metric.getValue() >> 0
+
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, GroovyMock(List), false, UtilityFunctionType.FCR)
+
+        when:
+        double smaller = utilityGenerator.evaluateToTest(newSmallerConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
+        double biggest = utilityGenerator.evaluateToTest(newBiggestConfiguration)
+
+        then:
+        noExceptionThrown()
+        bigger < smaller
+        bigger < init
+
+        where:
+        costUtilityFunction << [costUtilityFunction_1]
 
     }
 }
