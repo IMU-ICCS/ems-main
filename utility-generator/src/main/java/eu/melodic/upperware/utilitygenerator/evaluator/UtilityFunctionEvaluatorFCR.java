@@ -61,7 +61,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
         double resultCostUtilityFunction = costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
 
         if (isReconfig) {
-            if (resultResponseUtilityFunction > 0) {
+            if (resultResponseUtilityFunction > 0 || avgResponseTime.getValue() == 0) {
                 return (1 - COST_WEIGHT) * resultResponseUtilityFunction + COST_WEIGHT * resultCostUtilityFunction;
             } else {
                 //hardcoded - to have maximum available number of machines even if it is not enough to achieve expected ResponseTime

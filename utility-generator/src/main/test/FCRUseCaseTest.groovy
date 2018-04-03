@@ -93,6 +93,34 @@ class FCRUseCaseTest extends Specification {
         newMoreExpensiveBiggerConfiguration.add(new ConfigurationElement(componentId, expNC, 5))
     }
 
+    def "RT_AVG is 0, configurations with different prices"() {
+
+        setup:
+
+        metric.getValue() >> 500
+
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
+
+        when:
+        double cheap = utilityGenerator.evaluateToTest(newCheaperConfiguration)
+        double exp = utilityGenerator.evaluateToTest(newMoreExpensiveConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+
+
+        then:
+        noExceptionThrown()
+        cheap >= exp
+        cheap >= init
+        init != 0
+        cheap != 0
+        exp != 0
+        System.out.println("cheap = " + cheap + "init = " + init + "exp - " + exp)
+
+        where:
+        costUtilityFunction << [costUtilityFunction_1]
+    }
+
     def "RT_AVG is good, configurations with different prices"() {
 
         setup:

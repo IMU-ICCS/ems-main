@@ -47,6 +47,7 @@ public abstract class UtilityFunctionEvaluator {
         this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
 
         this.notReconfigurableComponentSuffix = properties.getUtilityGenerator().getSuffixNotReconfigurableComponent();
+        log.debug("Suffix for not reconfigurable component: {}", this.notReconfigurableComponentSuffix);
 
         log.debug("Creating Utility Function Evaluator from Constraint Problem");
         log.debug("Variables from Constraint Problem:");
