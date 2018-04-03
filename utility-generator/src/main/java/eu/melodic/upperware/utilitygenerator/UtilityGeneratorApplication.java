@@ -13,6 +13,7 @@ import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.evaluator.*;
 import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -25,15 +26,15 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics, UtilityFunctionType useCase,
+    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics, UtilityGeneratorProperties properties, UtilityFunctionType useCase,
             NodeCandidates nodeCandidates) {
-        this(variables, metrics, null, useCase, nodeCandidates);
+        this(variables, metrics, properties, null, useCase, nodeCandidates);
     }
 
-    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics, List<Var> deployedSolution,
+    public UtilityGeneratorApplication(List<VariableDTO> variables, List<MetricDTO> metrics, UtilityGeneratorProperties properties, List<Var> deployedSolution,
             UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
         log.info("Creating of Utility Generator");
-        this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, deployedSolution, useCase, nodeCandidates);
+        this.utilityFunctionEvaluator = createUtilityEvaluator(variables, metrics, properties, deployedSolution, useCase, nodeCandidates);
     }
 
     public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
@@ -54,28 +55,28 @@ public class UtilityGeneratorApplication {
 
 
     private UtilityFunctionEvaluator createUtilityEvaluator(List<VariableDTO> variables, List<MetricDTO> metrics,
-            List<Var> deployedSolution, UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
+            UtilityGeneratorProperties properties, List<Var> deployedSolution, UtilityFunctionType useCase, NodeCandidates nodeCandidates) {
 
         switch (useCase) {
             case FCR:
                 log.info("Creating utility function for FCR");
-                return new UtilityFunctionEvaluatorFCR(variables, deployedSolution, nodeCandidates, metrics);
+                return new UtilityFunctionEvaluatorFCR(variables, properties, deployedSolution, nodeCandidates, metrics);
             case CETRAFFIC:
                 log.info("Creating utility function for CETraffic");
-                return new UtilityFunctionEvaluatorCETraffic(variables, deployedSolution, nodeCandidates, metrics);
+                return new UtilityFunctionEvaluatorCETraffic(variables, properties, deployedSolution, nodeCandidates, metrics);
             case CAS:
                 log.info("Creating utility function for CAS");
-                return new UtilityFunctionEvaluatorCAS(variables, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorCAS(variables, properties, deployedSolution, nodeCandidates);
             case MIN_CORES:
                 log.info("Creating utility function which minimise total number of cores");
-                return new UtilityFunctionEvaluatorMinCores(variables, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorMinCores(variables, properties, deployedSolution, nodeCandidates);
             case GENOM:
                 log.warn("Utility function for GENOM use case is not supported");
             case COST:
             case DEFAULT:
             default:
                 log.info("Creating default utility function which minimise total cost");
-                return new UtilityFunctionEvaluatorCost(variables, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorCost(variables, properties, deployedSolution, nodeCandidates);
         }
     }
 

@@ -23,11 +23,11 @@ import org.springframework.validation.annotation.Validated;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.utilityGenerator.properties")
 public class UtilityGeneratorProperties {
 
-    private eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties.Properties properties;
+    private UtilityGenerator utilityGenerator;
 
     @Getter
     @Setter
-    public static class Properties {
+    public static class UtilityGenerator {
         private String sufixNotReconfigurableFlag;
 
     }

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import static java.util.Objects.isNull;
 public abstract class UtilityFunctionEvaluator {
 
     private static final String NOT_RECONFIGURABLE_SUFIX = "_CTITRRR";
+
     boolean isReconfig;
     Collection<ConfigurationElement> actConfiguration;
 
@@ -40,12 +42,16 @@ public abstract class UtilityFunctionEvaluator {
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
 
+    private final String notReconfigurableSufix;
+
     private final Predicate<Var> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
 
 
-    UtilityFunctionEvaluator(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    UtilityFunctionEvaluator(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
+
+        this.notReconfigurableSufix = properties.getUtilityGenerator().getSufixNotReconfigurableFlag();
 
         log.debug("Creating Utility Function Evaluator from Constraint Problem");
         log.debug("Variables from Constraint Problem:");
@@ -160,7 +166,7 @@ public abstract class UtilityFunctionEvaluator {
     private boolean checkIfNotReconfigurableComponentsAreNotChanged(Collection<ConfigurationElement> newConfiguration){
 
         return this.actConfiguration.stream()
-                .filter(component -> component.getId().endsWith(NOT_RECONFIGURABLE_SUFIX))
+                .filter(component -> component.getId().endsWith(this.notReconfigurableSufix))
                 .allMatch(component -> newConfiguration.stream()
                         .anyMatch(newComponent ->
                                 newComponent.getId().equals(component.getId())
@@ -170,6 +176,8 @@ public abstract class UtilityFunctionEvaluator {
                 );
 
     }
+
+
 
 
     /* ------------------------------------ only for tests - to delete later  -------------------*/
@@ -200,6 +208,7 @@ public abstract class UtilityFunctionEvaluator {
         if (isReconfig) {
             this.actConfiguration = actConfiguration;
         }
+        notReconfigurableSufix = NOT_RECONFIGURABLE_SUFIX;
     }
 
     private List<NodeCandidate> getSampleNodeCandidates() {
@@ -211,6 +220,20 @@ public abstract class UtilityFunctionEvaluator {
             System.out.println(e);
         }
         return Collections.emptyList();
+    }
+
+    public static boolean checkIfNotReconfigurableComponentsAreNotChanged(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration){
+
+        return actConfiguration.stream()
+                .filter(component -> component.getId().endsWith(NOT_RECONFIGURABLE_SUFIX))
+                .allMatch(component -> newConfiguration.stream()
+                        .anyMatch(newComponent ->
+                                newComponent.getId().equals(component.getId())
+                                        && newComponent.getNodeCandidate().equals(component.getNodeCandidate()
+                                )
+                        )
+                );
+
     }
 
 }
