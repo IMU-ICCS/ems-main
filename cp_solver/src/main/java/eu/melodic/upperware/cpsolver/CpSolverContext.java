@@ -10,6 +10,7 @@
 package eu.melodic.upperware.cpsolver;
 
 import eu.melodic.cache.properties.CacheProperties;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -37,6 +38,11 @@ public class CpSolverContext {
   public CacheProperties cacheProperties(){
     return new CacheProperties();
   }
+
+  @Bean
+  @ConfigurationProperties
+  public UtilityGeneratorProperties utilityGeneratorProperties() {return new UtilityGeneratorProperties();}
+
 
   @Bean
   public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {

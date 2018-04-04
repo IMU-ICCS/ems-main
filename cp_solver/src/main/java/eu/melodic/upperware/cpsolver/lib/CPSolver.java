@@ -11,6 +11,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
@@ -74,7 +75,7 @@ public class CPSolver {
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer, NodeCandidates nodeCandidates){
+	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer, NodeCandidates nodeCandidates, UtilityGeneratorProperties utilityGeneratorProperties){
 		this();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
@@ -84,11 +85,11 @@ public class CPSolver {
 
 		if (this.useExternalOptimizer){
 			if (isReconfig){
-				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, deployedSolution, utilityFunctionType, nodeCandidates);
+				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityGeneratorProperties, deployedSolution, utilityFunctionType, nodeCandidates);
 				this.utilityOfDeployedSolution = this.utilityGenerator.getUtilityForCurrentDeployedSolution();
 			}
 			else {
-				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityFunctionType, nodeCandidates);
+				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityGeneratorProperties, utilityFunctionType, nodeCandidates);
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.Var;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -20,8 +21,8 @@ import java.util.List;
 @Slf4j
 public class UtilityFunctionEvaluatorMinCores extends UtilityFunctionEvaluator{
 
-    public UtilityFunctionEvaluatorMinCores(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
-        super(variables, deployedSolution, nodeCandidates);
+    public UtilityFunctionEvaluatorMinCores(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+        super(variables, properties, deployedSolution, nodeCandidates);
     }
 
     public UtilityFunctionEvaluatorMinCores(Collection<ConfigurationElement> actConfiguration, boolean isReconfig) {

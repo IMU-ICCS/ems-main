@@ -8,16 +8,12 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.model.*;
-import eu.paasage.upperware.metamodel.cp.VariableType;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,7 +25,6 @@ import static java.util.Objects.isNull;
 @Slf4j
 public abstract class UtilityFunctionEvaluator {
 
-    private static final String NOT_RECONFIGURABLE_SUFIX = "_CTITRRR";
     boolean isReconfig;
     Collection<ConfigurationElement> actConfiguration;
 
@@ -40,12 +35,19 @@ public abstract class UtilityFunctionEvaluator {
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
 
+    private final String notReconfigurableComponentSuffix;
+
+    private final static String NOT_RECONFIGURABLE_COMPONENT_SUFFIX = "_CTITRRR"; //only for tests
+
     private final Predicate<Var> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
 
 
-    UtilityFunctionEvaluator(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    UtilityFunctionEvaluator(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
+
+        this.notReconfigurableComponentSuffix = properties.getUtilityGenerator().getSuffixNotReconfigurableComponent();
+        log.debug("Suffix for not reconfigurable component: {}", this.notReconfigurableComponentSuffix);
 
         log.debug("Creating Utility Function Evaluator from Constraint Problem");
         log.debug("Variables from Constraint Problem:");
@@ -74,7 +76,7 @@ public abstract class UtilityFunctionEvaluator {
             return 0;
         }
 
-        if (isReconfig && (!checkIfNotReconfigurableComponentsAreNotChanged(newConfiguration))) {
+        if (notReconfigurableComponentsAreChanged(newConfiguration)) {
             log.debug("This solution changes not reconfigurable components, returning 0");
             return 0;
         }
@@ -117,20 +119,15 @@ public abstract class UtilityFunctionEvaluator {
 
         for (String componentId : cardinalitiesForComponent.keySet()) {
             log.debug("Converting solution for component {}", componentId);
-
             int provider = getProviderValue(componentId, variables, newConfigurationInt);
-
             Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, newConfigurationInt, newConfigurationReal, variables);
-
             NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
 
             if (isNull(theCheapest)) {
                 log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
                 return null;
             }
-
             log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
-
             newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
 
         }
@@ -157,45 +154,14 @@ public abstract class UtilityFunctionEvaluator {
     }
 
 
-    private boolean checkIfNotReconfigurableComponentsAreNotChanged(Collection<ConfigurationElement> newConfiguration) {
+    private boolean notReconfigurableComponentsAreChanged(Collection<ConfigurationElement> newConfiguration) {
 
-        return this.actConfiguration.stream()
-                .filter(component -> component.getId().endsWith(NOT_RECONFIGURABLE_SUFIX))
-                .allMatch(component -> newConfiguration.stream()
-                        .anyMatch(newComponent ->
-                                newComponent.getId().equals(component.getId())
-                                        && newComponent.getNodeCandidate().equals(component.getNodeCandidate()
-                                )
-                        )
-                );
+        return isReconfig && checkIfNotReconfigurableComponentsAreChanged(notReconfigurableComponentSuffix, actConfiguration, newConfiguration);
 
     }
-
-
-
 
 
     /* ------------------------------------ only for tests - to delete later  -------------------*/
-
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidatesToTest(Collection<IntVar> newConfigurationInt,
-            RealVar[] newConfigurationReal) {
-        Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
-        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
-
-        List<NodeCandidate> nodeCandidates = getSampleNodeCandidates();
-
-        for (String componentId : cardinalitiesForComponent.keySet()) {
-            log.debug("Filtering NC for component: {}", componentId);
-            String providerId = getVariableName(componentId, VariableType.PROVIDER, variables);
-            Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
-            Collection<IntVar> filteredIntVar = newConfigurationInt.stream()
-                    .filter(v -> variableNamesForComponent.contains(v.getName())).collect(Collectors.toList());
-
-            NodeCandidate theCheapest = findTheCheapestNodeCanidate(nodeCandidates);
-            newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
-        }
-        return newConfiguration;
-    }
 
     UtilityFunctionEvaluator(Collection<ConfigurationElement> actConfiguration, boolean isReconfig) {
 
@@ -203,17 +169,7 @@ public abstract class UtilityFunctionEvaluator {
         if (isReconfig) {
             this.actConfiguration = actConfiguration;
         }
-    }
-
-    private List<NodeCandidate> getSampleNodeCandidates() {
-        File file = new File(getClass().getClassLoader().getResource("test/nodeCandidates.json").getFile());
-        try {
-            return new ObjectMapper().readValue(file, new TypeReference<List<NodeCandidate>>() {
-            });
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-        return Collections.emptyList();
+        this.notReconfigurableComponentSuffix = NOT_RECONFIGURABLE_COMPONENT_SUFFIX;
     }
 
 }

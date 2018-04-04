@@ -14,6 +14,7 @@ import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFra
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.Var;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,8 +23,8 @@ public class UtilityFunctionEvaluatorCost extends UtilityFunctionEvaluator{
 
     private CostUtilityFunction costUtilityFunction;
 
-    public UtilityFunctionEvaluatorCost(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
-        super(variables, deployedSolution, nodeCandidates);
+    public UtilityFunctionEvaluatorCost(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+        super(variables, properties, deployedSolution, nodeCandidates);
         this.costUtilityFunction = new CostUtilityFunctionFraction();
     }
 

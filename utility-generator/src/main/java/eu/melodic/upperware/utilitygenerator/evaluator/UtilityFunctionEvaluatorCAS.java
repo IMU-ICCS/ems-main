@@ -14,6 +14,7 @@ import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFra
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.Var;
 import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +24,12 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
     private CostUtilityFunction costUtilityFunction;
 
 
-    public UtilityFunctionEvaluatorCAS(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
-        this(variables, deployedSolution, nodeCandidates, new CostUtilityFunctionFraction());
+    public UtilityFunctionEvaluatorCAS(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+        this(variables, properties, deployedSolution, nodeCandidates, new CostUtilityFunctionFraction());
     }
 
-    public UtilityFunctionEvaluatorCAS(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates, CostUtilityFunction costUtilityFunction) {
-        super(variables, deployedSolution, nodeCandidates);
+    public UtilityFunctionEvaluatorCAS(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates, CostUtilityFunction costUtilityFunction) {
+        super(variables, properties, deployedSolution, nodeCandidates);
         this.costUtilityFunction = costUtilityFunction;
     }
 

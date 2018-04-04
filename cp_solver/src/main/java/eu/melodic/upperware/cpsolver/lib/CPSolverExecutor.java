@@ -17,6 +17,7 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,20 +41,23 @@ public class CPSolverExecutor {
   private CacheService<NodeCandidates> memcacheService;
   private CacheService<NodeCandidates> filecacheService;
 
+  private UtilityGeneratorProperties utilityGeneratorProperties;
+
   @Autowired
   public CPSolverExecutor(Environment env, RestTemplate restTemplate, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
-          @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService) {
+          @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, UtilityGeneratorProperties utilityGeneratorProperties) {
     this.env = env;
     this.restTemplate = restTemplate;
     this.memcacheService = memcacheService;
     this.filecacheService = filecacheService;
+    this.utilityGeneratorProperties = utilityGeneratorProperties;
   }
 
   @Async
   public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid, Boolean useExternalOptimizer) {
     try {
       NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cdoResourcePath));
-      CPSolver cpSolver = new CPSolver(cdoResourcePath, null, useExternalOptimizer, nodeCandidates);
+      CPSolver cpSolver = new CPSolver(cdoResourcePath, null, useExternalOptimizer, nodeCandidates, utilityGeneratorProperties);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -71,8 +75,7 @@ public class CPSolverExecutor {
   public void generateCPSolutionFromFile(String applicationId, String filePath, String nodeCandidatesFilePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
 
     NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
-
-    CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer, nodeCandidates);
+    CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer, nodeCandidates, utilityGeneratorProperties);
 
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {

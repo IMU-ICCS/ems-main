@@ -12,6 +12,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionExample;
 import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.BetaDistribution;
 
@@ -43,9 +44,9 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
 
     /* constructors */
 
-    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, List<Var> deployedSolution,
+    public UtilityFunctionEvaluatorFCR(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution,
             NodeCandidates nodeCandidates, List<MetricDTO> metricDTOs) {
-        super(variables, deployedSolution, nodeCandidates);
+        super(variables, properties, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionExample(isReconfig);
         log.info("Utility function was created");
@@ -60,7 +61,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
         double resultCostUtilityFunction = costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
 
         if (isReconfig) {
-            if (resultResponseUtilityFunction > 0) {
+            if (resultResponseUtilityFunction > 0 || avgResponseTime.getValue() == 0) {
                 return (1 - COST_WEIGHT) * resultResponseUtilityFunction + COST_WEIGHT * resultCostUtilityFunction;
             } else {
                 //hardcoded - to have maximum available number of machines even if it is not enough to achieve expected ResponseTime

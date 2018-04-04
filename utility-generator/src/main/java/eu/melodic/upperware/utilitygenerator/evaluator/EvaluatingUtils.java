@@ -26,22 +26,6 @@ class EvaluatingUtils {
 
     /* mapping variables from solution and cp model */
 
-    static Collection<String> getVariableNames(String componentId, List<VariableDTO> variables) {
-
-        return variables.stream()
-                .filter(variable -> componentId.equals(variable.getComponentId()))
-                .map(VariableDTO::getId)
-                .collect(Collectors.toList());
-    }
-
-    static String getVariableName(String componentId, VariableType type, List<VariableDTO> variables) {
-        return variables.stream()
-                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(format("Variable with type %s for component %s does not exist", type, componentId)))
-                .getId();
-    }
-
 
     static Map<String, Integer> getCardinalitiesForComponent(Collection<IntVar> newConfiguration, List<VariableDTO> variables) {
 
@@ -76,6 +60,22 @@ class EvaluatingUtils {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", name)))
                 .getType();
+    }
+
+    private static Collection<String> getVariableNames(String componentId, List<VariableDTO> variables) {
+
+        return variables.stream()
+                .filter(variable -> componentId.equals(variable.getComponentId()))
+                .map(VariableDTO::getId)
+                .collect(Collectors.toList());
+    }
+
+    private static String getVariableName(String componentId, VariableType type, List<VariableDTO> variables) {
+        return variables.stream()
+                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(format("Variable with type %s for component %s does not exist", type, componentId)))
+                .getId();
     }
 
 
@@ -148,8 +148,23 @@ class EvaluatingUtils {
         return predicates.toArray(new Predicate[predicates.size()]);
     }
 
+    static boolean checkIfNotReconfigurableComponentsAreChanged(String notReconfigurableComponentSuffix, Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
 
-    static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue){
+
+        return actConfiguration.stream()
+                .filter(component -> component.getId().endsWith(notReconfigurableComponentSuffix))
+                .anyMatch(component -> newConfiguration.stream()
+                        .filter(newComponent -> component.getId().equals(newComponent.getId()))
+                        .noneMatch(newComponent -> newComponent.getId().equals(component.getId())
+                                && newComponent.getNodeCandidate().equals(component.getNodeCandidate()))
+
+                );
+
+
+    }
+
+
+    static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue) {
         return findOptionalMetric(metricDTOS, name)
                 .map(metricDTO -> {
                     IntMetric intMetric = IntMetric.of((IntMetricDTO) metricDTO, type);
@@ -178,24 +193,9 @@ class EvaluatingUtils {
                 });
     }
 
-    private static Optional<MetricDTO> findOptionalMetric(List<MetricDTO> metricDTOS, String name){
+    private static Optional<MetricDTO> findOptionalMetric(List<MetricDTO> metricDTOS, String name) {
         return metricDTOS.stream()
                 .filter(metric -> metric.getName().equals(name))
                 .findAny();
     }
-
-    /* ---------------------for tests -to delete later -----------------------------*/
-
-    static NodeCandidate findTheCheapestNodeCanidate(List<NodeCandidate> nodeCandidates) {
-        Objects.requireNonNull(nodeCandidates);
-        NodeCandidate theCheapest = nodeCandidates.get(0);
-        for (NodeCandidate nc : nodeCandidates) {
-            if (theCheapest.getPrice() > nc.getPrice()) {
-                theCheapest = nc;
-            }
-        }
-        return theCheapest;
-    }
-
-
 }

@@ -12,6 +12,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction;
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction;
 import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -36,9 +37,9 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     private IntMetric remainingSimulationTime;
 
 
-    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, List<Var> deployedSolution, NodeCandidates nodeCandidates,
+    public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates,
             List<MetricDTO> metricDTOs) {
-        super(variables, deployedSolution, nodeCandidates);
+        super(variables, properties, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionFraction();
     }
