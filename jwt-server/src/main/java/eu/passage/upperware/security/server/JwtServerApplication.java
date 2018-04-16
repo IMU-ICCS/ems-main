@@ -16,7 +16,7 @@ This provides application with the properties (in that way can be provided exter
 */
 
 
-package eu.melodic.upperware.cpsolver;
+package eu.passage.upperware.security.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,11 +27,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableAsync
 @Configuration
-@ComponentScan(basePackages = {"eu.melodic.upperware.cpsolver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator",
-        "eu.passage.upperware.security.authapi.properties"})
-public class CPSolverApplication {
+@ComponentScan(basePackages = {"eu.passage.upperware.security.server", "eu.passage.upperware.security.authapi.properties"})
+public class JwtServerApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(CPSolverApplication.class, args);
+    SpringApplication.run(JwtServerApplication.class, args);
   }
 }

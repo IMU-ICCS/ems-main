@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -8,52 +10,27 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
+    <artifactId>jwt-server</artifactId>
+
+    <name>Upperware - JWT Server</name>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/s2d</docker.imageName>
-
+        <docker.imageName>${docker.repository}melodic/jwtserver</docker.imageName>
     </properties>
 
-
-    <groupId>eu.melodic</groupId>
-    <artifactId>solver-to-deployment</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-    <name>Upperware - Solver To Deployment</name>
-
     <dependencies>
+
+        <dependency>
+            <groupId>eu.melodic</groupId>
+            <artifactId>interfaces</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>melodic-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.paasage.mddb.cdo</groupId>
-            <artifactId>client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>melodic-cache</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-collections4</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.javatuples</groupId>
-            <artifactId>javatuples</artifactId>
-            <version>1.2</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -73,12 +50,7 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.melodic</groupId>
-            <artifactId>interfaces</artifactId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
         <dependency>
@@ -87,20 +59,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>jwt-commons</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.github.cloudiator.client</groupId>
-            <artifactId>java-rest</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.4.0</version>
         </dependency>
 
     </dependencies>
@@ -117,4 +83,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

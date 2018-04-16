@@ -10,6 +10,9 @@
 package eu.paasage.upperware.solvertodeployment;
 
 import eu.melodic.cache.properties.CacheProperties;
+import eu.passage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.passage.upperware.security.authapi.token.JWTService;
+import eu.passage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -44,5 +47,17 @@ public class SolverToDeploymentContext {
     Integer port = cacheProperties.getCache().getPort();
     return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
   }
+
+  @Bean
+  @ConfigurationProperties
+  public MelodicSecurityProperties melodicSecurityProperties(){
+    return new MelodicSecurityProperties();
+  }
+
+  @Bean
+  public JWTService getJWTService(){
+    return new JWTServiceImpl(melodicSecurityProperties());
+  }
+
 
 }
