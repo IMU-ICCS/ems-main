@@ -9,36 +9,55 @@
 
 package eu.melodic.upperware.cpsolver.lib;
 
-import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
-import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import eu.melodic.cache.CacheService;
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
-import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
-import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
+import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.Date;
-import org.springframework.core.env.Environment;
+
+import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
+import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CPSolverExecutor {
   
   private Environment env;
   private RestTemplate restTemplate;
+  private CacheService<NodeCandidates> memcacheService;
+  private CacheService<NodeCandidates> filecacheService;
+
+  private UtilityGeneratorProperties utilityGeneratorProperties;
+
+  @Autowired
+  public CPSolverExecutor(Environment env, RestTemplate restTemplate, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
+          @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, UtilityGeneratorProperties utilityGeneratorProperties) {
+    this.env = env;
+    this.restTemplate = restTemplate;
+    this.memcacheService = memcacheService;
+    this.filecacheService = filecacheService;
+    this.utilityGeneratorProperties = utilityGeneratorProperties;
+  }
 
   @Async
   public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid, Boolean useExternalOptimizer) {
     try {
-      CPSolver cpSolver = new CPSolver(cdoResourcePath,null,useExternalOptimizer);
+      NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cdoResourcePath));
+      CPSolver cpSolver = new CPSolver(cdoResourcePath, null, useExternalOptimizer, nodeCandidates, utilityGeneratorProperties);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -53,8 +72,11 @@ public class CPSolverExecutor {
     }
   }
 
-  public void generateCPSolutionFromFile(String applicationId, String filePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
-      CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer);
+  public void generateCPSolutionFromFile(String applicationId, String filePath, String nodeCandidatesFilePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
+
+    NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
+    CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer, nodeCandidates, utilityGeneratorProperties);
+
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -63,6 +85,10 @@ public class CPSolverExecutor {
       }
   }
 
+
+  private String createCacheKey(String cdoResourcePath){
+    return cdoResourcePath.substring(cdoResourcePath.indexOf("/") + 1);
+  }
 
   private void notifySolutionProduced(String camelModelID, String notificationUri, String uuid) {
     log.info("Sending solution available notification");

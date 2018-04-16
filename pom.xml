@@ -27,6 +27,7 @@
     <modules>
         <module>upperware_metamodel</module>
         <module>melodic-commons</module>
+        <module>melodic-cache</module>
         <module>cdo_client</module>
         <module>cdo_server</module>
         <module>adapter</module>
@@ -34,12 +35,11 @@
         <module>meta_solver</module>
         <module>solver_to_deployment</module>
         <module>srl-adapter</module>
+        <module>utility-generator</module>
         <module>cp_solver</module>
         <module>la_converter</module>
         <module>dlms</module>
-        <module>utility-generator</module>
         <module>metrics_collector</module>
-        <!--<module>rule_processor</module>-->
     </modules>
 
     <properties>
@@ -55,6 +55,8 @@
         <jeromq.version>0.3.5</jeromq.version>
         <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
+        <commons-lang3.version>3.6</commons-lang3.version>
+        <commons-collections4.version>4.1</commons-collections4.version>
 
         <!-- Versions for common plugins -->
         <source-plugin.version>2.4</source-plugin.version>
@@ -65,7 +67,7 @@
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository/>
-        <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/${project.name}-release1.5</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
 
@@ -79,7 +81,7 @@
                 <version>${interfaces.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.raml</groupId>
+                        <groupId>eu.melodic</groupId>
                         <artifactId>jaxrs-code-generator-7bulls</artifactId>
                     </exclusion>
                 </exclusions>
@@ -106,6 +108,21 @@
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
                 <version>${parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -214,7 +231,7 @@
                     <version>0.4.10</version>
                     <configuration>
                         <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.imageName}</imageName>
+                        <imageName>${docker.imageName}-release1.5</imageName>
                         <pushImage>${docker.push}</pushImage>
                         <resources>
                             <resource>
@@ -233,10 +250,33 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.1</version>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
     <repositories>
+        <repository>
+            <id>eu.7bulls.snapshot</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+        </repository>
+        <repository>
+            <id>eu.7bulls.release</id>
+            <name>Melodic 7bulls repository - RELEASES</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+        </repository>
         <repository>
             <id>ow2.release</id>
             <name>OW2 repository</name>
@@ -247,6 +287,7 @@
             <name>OW2 repository</name>
             <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <!--TODO to remove-->
         <repository>
             <id>gforge.inria.fr-release</id>
             <name>Maven Repository for Saloon</name>
@@ -257,6 +298,17 @@
             <name>PaaSage repository</name>
             <url>http://jenkins.paasage.cetic.be/repository/</url>
         </repository>
+        <repository>
+            <id>ossrh.snapshots</id>
+            <name>OSSRH snapshots repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>
@@ -265,9 +317,9 @@
             <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>ow2.snapshot</id>
-            <name>Internal Releases</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 

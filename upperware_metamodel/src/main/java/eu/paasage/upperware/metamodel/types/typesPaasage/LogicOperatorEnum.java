@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.typesPaasage;
 
@@ -22,8 +14,8 @@ import org.eclipse.emf.common.util.Enumerator;
  * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage#getLogicOperatorEnum()
- * 
- * 
+ * @model
+ * @generated
  */
 public enum LogicOperatorEnum implements Enumerator {
 	/**
@@ -31,8 +23,8 @@ public enum LogicOperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #AND_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	AND(0, "And", "And"),
 
@@ -41,8 +33,8 @@ public enum LogicOperatorEnum implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #OR_VALUE
-	 * 
-	 * 
+	 * @generated
+	 * @ordered
 	 */
 	OR(1, "Or", "Or");
 
@@ -55,9 +47,9 @@ public enum LogicOperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #AND
-	 *  name="And"
-	 * 
-	 * 
+	 * @model name="And"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int AND_VALUE = 0;
 
@@ -70,9 +62,9 @@ public enum LogicOperatorEnum implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #OR
-	 *  name="Or"
-	 * 
-	 * 
+	 * @model name="Or"
+	 * @generated
+	 * @ordered
 	 */
 	public static final int OR_VALUE = 1;
 
@@ -80,7 +72,7 @@ public enum LogicOperatorEnum implements Enumerator {
 	 * An array of all the '<em><b>Logic Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private static final LogicOperatorEnum[] VALUES_ARRAY =
 		new LogicOperatorEnum[] {
@@ -92,10 +84,18 @@ public enum LogicOperatorEnum implements Enumerator {
 	 * A public read-only list of all the '<em><b>Logic Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public static final List<LogicOperatorEnum> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
+	/**
+	 * Returns the '<em><b>Logic Operator Enum</b></em>' literal with the specified literal value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static LogicOperatorEnum get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			LogicOperatorEnum result = VALUES_ARRAY[i];
@@ -106,6 +106,14 @@ public enum LogicOperatorEnum implements Enumerator {
 		return null;
 	}
 
+	/**
+	 * Returns the '<em><b>Logic Operator Enum</b></em>' literal with the specified name.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static LogicOperatorEnum getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
 			LogicOperatorEnum result = VALUES_ARRAY[i];
@@ -116,7 +124,14 @@ public enum LogicOperatorEnum implements Enumerator {
 		return null;
 	}
 
-
+	/**
+	 * Returns the '<em><b>Logic Operator Enum</b></em>' literal with the specified integer value.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
+	 * @generated
+	 */
 	public static LogicOperatorEnum get(int value) {
 		switch (value) {
 			case AND_VALUE: return AND;
@@ -128,47 +143,69 @@ public enum LogicOperatorEnum implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	private final String literal;
 
-
+	/**
+	 * Only this class can construct instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private LogicOperatorEnum(int value, String name, String literal) {
 		this.value = value;
 		this.name = name;
 		this.literal = literal;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public int getValue() {
 	  return value;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getName() {
 	  return name;
 	}
 
-
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getLiteral() {
 	  return literal;
 	}
 
-
+	/**
+	 * Returns the literal value of the enumerator, which is its string representation.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public String toString() {
 		return literal;

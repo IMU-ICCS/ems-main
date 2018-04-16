@@ -132,7 +132,7 @@ public class AdapterProperties {
         return null;
       }
       Optional<String> endpointKey = endpoints.keySet().stream()
-        .filter(key -> cloud.toLowerCase().equals(key.toLowerCase())).findAny();
+        .filter(cloud::equalsIgnoreCase).findAny();
       return endpointKey.map(s -> endpoints.get(s)).orElse(null);
     }
 
@@ -141,7 +141,7 @@ public class AdapterProperties {
         return null;
       }
       Optional<String> loginKey = logins.keySet().stream()
-        .filter(key -> cloud.toLowerCase().equals(key.toLowerCase())).findAny();
+              .filter(cloud::equalsIgnoreCase).findAny();
       return loginKey.map(s -> logins.get(s)).orElse(null);
     }
 
@@ -150,7 +150,7 @@ public class AdapterProperties {
         return null;
       }
       Optional<String> passwordKey = passwords.keySet().stream()
-        .filter(key -> cloud.toLowerCase().equals(key.toLowerCase())).findAny();
+              .filter(cloud::equalsIgnoreCase).findAny();
       return passwordKey.map(s -> passwords.get(s)).orElse(null);
     }
 

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,15 +11,15 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ImageUpperware#getId <em>Id</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getImageUpperware()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface ImageUpperware extends CDOObject {
 	/**
@@ -41,8 +33,8 @@ public interface ImageUpperware extends CDOObject {
 	 * @return the value of the '<em>Id</em>' attribute.
 	 * @see #setId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getImageUpperware_Id()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getId();
 
@@ -52,7 +44,7 @@ public interface ImageUpperware extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Id</em>' attribute.
 	 * @see #getId()
-	 * 
+	 * @generated
 	 */
 	void setId(String value);
 

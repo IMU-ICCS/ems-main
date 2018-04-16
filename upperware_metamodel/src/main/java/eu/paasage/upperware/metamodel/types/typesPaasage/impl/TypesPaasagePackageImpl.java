@@ -3,11 +3,17 @@
 package eu.paasage.upperware.metamodel.types.typesPaasage.impl;
 
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
+
 import eu.paasage.upperware.metamodel.application.impl.ApplicationPackageImpl;
+
 import eu.paasage.upperware.metamodel.cp.CpPackage;
+
 import eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl;
+
 import eu.paasage.upperware.metamodel.types.TypesPackage;
+
 import eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl;
+
 import eu.paasage.upperware.metamodel.types.typesPaasage.ActionType;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ActionTypes;
 import eu.paasage.upperware.metamodel.types.typesPaasage.ApplicationComponentProfile;
@@ -39,11 +45,13 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.VMSizeEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.VariableElementTypeEnum;
 import eu.paasage.upperware.metamodel.types.typesPaasage.WarProfile;
 import eu.paasage.upperware.metamodel.types.typesPaasage.WebServerProfile;
+
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
+
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
@@ -310,20 +318,20 @@ public class TypesPaasagePackageImpl extends EPackageImpl implements TypesPaasag
 		isInited = true;
 
 		// Obtain or create and register interdependencies
-		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
 		CpPackageImpl theCpPackage = (CpPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) instanceof CpPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) : CpPackage.eINSTANCE);
+		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
 		TypesPackageImpl theTypesPackage = (TypesPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) instanceof TypesPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPackage.eNS_URI) : TypesPackage.eINSTANCE);
 
 		// Create package meta-data objects
 		theTypesPaasagePackage.createPackageContents();
-		theApplicationPackage.createPackageContents();
 		theCpPackage.createPackageContents();
+		theApplicationPackage.createPackageContents();
 		theTypesPackage.createPackageContents();
 
 		// Initialize created meta-data
 		theTypesPaasagePackage.initializePackageContents();
-		theApplicationPackage.initializePackageContents();
 		theCpPackage.initializePackageContents();
+		theApplicationPackage.initializePackageContents();
 		theTypesPackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed

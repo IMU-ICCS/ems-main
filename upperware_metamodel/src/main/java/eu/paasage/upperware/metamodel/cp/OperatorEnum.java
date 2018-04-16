@@ -86,7 +86,17 @@ public enum OperatorEnum implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MAX(6, "max", "max");
+	MAX(6, "max", "max"),
+
+	/**
+	 * The '<em><b>Eq</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #EQ_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	EQ(7, "eq", "eq");
 
 	/**
 	 * The '<em><b>Plus</b></em>' literal value.
@@ -194,6 +204,21 @@ public enum OperatorEnum implements Enumerator {
 	public static final int MAX_VALUE = 6;
 
 	/**
+	 * The '<em><b>Eq</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>Eq</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #EQ
+	 * @model name="eq"
+	 * @generated
+	 * @ordered
+	 */
+	public static final int EQ_VALUE = 7;
+
+	/**
 	 * An array of all the '<em><b>Operator Enum</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -208,6 +233,7 @@ public enum OperatorEnum implements Enumerator {
 			MEAN,
 			MIN,
 			MAX,
+			EQ,
 		};
 
 	/**
@@ -222,6 +248,8 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Operator Enum</b></em>' literal with the specified literal value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static OperatorEnum get(String literal) {
@@ -238,6 +266,8 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Operator Enum</b></em>' literal with the specified name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static OperatorEnum getByName(String name) {
@@ -254,6 +284,8 @@ public enum OperatorEnum implements Enumerator {
 	 * Returns the '<em><b>Operator Enum</b></em>' literal with the specified integer value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static OperatorEnum get(int value) {
@@ -265,6 +297,7 @@ public enum OperatorEnum implements Enumerator {
 			case MEAN_VALUE: return MEAN;
 			case MIN_VALUE: return MIN;
 			case MAX_VALUE: return MAX;
+			case EQ_VALUE: return EQ;
 		}
 		return null;
 	}

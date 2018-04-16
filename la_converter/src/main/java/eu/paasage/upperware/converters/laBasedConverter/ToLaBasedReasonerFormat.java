@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.ModelTool;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -820,17 +821,10 @@ public class ToLaBasedReasonerFormat
 	 * @param variables The variables defined in the cp model. 
 	 * @param sol The solution
 	 */
-	public void buildMetricVariables(EList<MetricVariable> variables, Solution sol)
-	{
-		 
-		int varsId= 0; 
-		
-		for(MetricVariable var: variables)
-		{
-			MetricVariableValue metricValue= CPModelTool.searchMetricVariableValue(sol, var);
-			buildMetricDeclaration(var, metricValue); 
-			
-			varsId++; 
+	public void buildMetricVariables(EList<MetricVariable> variables, Solution sol) {
+		for(MetricVariable var: variables) {
+			MetricVariableValue metricValue= CPModelTool.searchMetricValue(sol, var);
+			buildMetricDeclaration(var, metricValue);
 		}
 	}
 	
@@ -851,8 +845,8 @@ public class ToLaBasedReasonerFormat
 		
 		if(varValue!=null && varValue.getValue()!=null)
 		{
-			List<String> vals= CPModelTool.getValueFromNumericValue(varValue.getValue()); 
-			laVar.setInitialValue(vals.get(0));
+			Pair<String, String> valueFromNumericValue = CPModelTool.getValueFromNumericValue(varValue.getValue());
+			laVar.setInitialValue(valueFromNumericValue.getLeft());
 			laVar.setHasInitValue(true);
 		}
 		
@@ -869,7 +863,7 @@ public class ToLaBasedReasonerFormat
 			{
 				RangeDomain rangeDomain= (RangeDomain) numDomain; 
 				laVar.setDomainType(buildDomainTypeString(RANGE_DOMAIN_TYPE, type));
-				laVar.setDomainInit("{"+getStringValueFromNumericValue(rangeDomain.getFrom())+","+getStringValueFromNumericValue(rangeDomain.getTo())+"}");
+				laVar.setDomainInit("{"+CPModelTool.getValueFromNumericValue(rangeDomain.getFrom()).getLeft()+","+CPModelTool.getValueFromNumericValue(rangeDomain.getTo()).getLeft()+"}");
 				
 				varsWithDomainInt.add(laVar); 
 			}
@@ -883,7 +877,7 @@ public class ToLaBasedReasonerFormat
 				
 				for(NumericValueUpperware val: listDomain.getValues())
 				{
-					String valString= getStringValueFromNumericValue(val); 
+					String valString= CPModelTool.getValueFromNumericValue(val).getLeft();
 					
 					if(!domainInit.equals("{"))
 						domainInit+=", ";
@@ -916,7 +910,7 @@ public class ToLaBasedReasonerFormat
 					if(!domainInit.equals(domainTypeDef+" "+domainName+"({"))
 						domainInit+=","; 
 					
-					domainInit+=buildDomainTypeString(RANGE_DOMAIN_TYPE, rangeType)+"("+getStringValueFromNumericValue(range.getFrom())+","+getStringValueFromNumericValue(range.getTo())+")"; 
+					domainInit+=buildDomainTypeString(RANGE_DOMAIN_TYPE, rangeType)+"("+CPModelTool.getValueFromNumericValue(range.getFrom()).getLeft()+","+CPModelTool.getValueFromNumericValue(range.getTo()).getLeft()+")";
 				}
 				
 				domainInit+="})"; 
@@ -985,21 +979,14 @@ public class ToLaBasedReasonerFormat
 		
 		metricVar.setDomainType(type);
 		
-		if(metricValue!=null && metricValue.getValue()!=null)
-		{
-			List<String> infos= CPModelTool.getValueFromNumericValue(metricValue.getValue()); 
-			
-			double val= Double.parseDouble(infos.get(0)); 
-			
-			if(val!=-1)
-			{
-				metricVar.setInitialValue(infos.get(0));
-			}
-			else
-			{
+		if(metricValue!=null && metricValue.getValue()!=null) {
+			Pair<String, String> valueFromNumericValue = CPModelTool.getValueFromNumericValue(metricValue.getValue());
+			double val= Double.parseDouble(valueFromNumericValue.getLeft());
+			if(val!=-1) {
+				metricVar.setInitialValue(valueFromNumericValue.getLeft());
+			} else {
 				//TODO Call the database to get an initial value
 			}
-			
 		}
 		else
 		{
@@ -1052,8 +1039,11 @@ public class ToLaBasedReasonerFormat
 	 * @param val The numericValue
 	 * @return The value of the numeric value as a string
 	 */
-	protected String getStringValueFromNumericValue(NumericValueUpperware val)
-	{
+	@Deprecated
+	protected String getStringValueFromNumericValue(NumericValueUpperware val) {
+
+
+
 		String valString=""; 
 		
 		
@@ -1284,9 +1274,8 @@ public class ToLaBasedReasonerFormat
 	 * @param constant The constant
 	 * @return the string representing the constant
 	 */
-	protected String buildConstantValue(Constant constant)
-	{
-		return getStringValueFromNumericValue(constant.getValue()); 
+	protected String buildConstantValue(Constant constant) {
+		return CPModelTool.getValueFromNumericValue(constant.getValue()).getLeft();
 	}
 	
 	

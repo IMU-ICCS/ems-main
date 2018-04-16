@@ -26,7 +26,7 @@ public class GeneratorProperties {
 
     @Valid
     @NotNull
-    private Memcache memcache;
+    private CloudiatorV2 cloudiatorV2;
 
     @Getter
     @Setter
@@ -39,13 +39,12 @@ public class GeneratorProperties {
 
     @Getter
     @Setter
-    public static class Memcache {
+    public static class CloudiatorV2 {
 
-        private String host;
+        @NotBlank
+        private String url;
 
-        private Integer port;
-
-        private Integer ttl;
-
+        @NotBlank
+        private String apiKey;
     }
 }

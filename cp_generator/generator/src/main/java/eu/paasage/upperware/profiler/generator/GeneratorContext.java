@@ -1,28 +1,37 @@
 package eu.paasage.upperware.profiler.generator;
 
+import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.camel.CamelFactory;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
-import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
-import eu.paasage.upperware.profiler.generator.db.CCDODatabaseProxy;
+import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
-import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
+import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
+import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
-import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
+import lombok.extern.slf4j.Slf4j;
+import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Collections;
+
+@Slf4j
 @Configuration
 public class GeneratorContext {
 
@@ -78,26 +87,34 @@ public class GeneratorContext {
         return new RestTemplate();
     }
 
-   /* @Bean
-    @Scope("prototype")
-    public CCDODatabaseProxy cDODatabaseProxy() {
-        CDOClientExtended cDOClientExtended = applicationContext.getBean(CDOClientExtended.class);
-        return new CCDODatabaseProxy(cDOClientExtended);
-    }*/
-
     @Bean
     @Scope("prototype")
     protected GenerationOrchestrator generationOrchestrator() throws Exception {
 
         IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
         PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
-        ConstraintProblemService constraintProblemService = applicationContext.getBean(ConstraintProblemService.class);
         NotificationService notificationService = applicationContext.getBean(NotificationService.class);
         SloService sloService = applicationContext.getBean(SloService.class);
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
 
+        CdoService cdoService = applicationContext.getBean(CdoService.class);
+        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
+
         return new GenerationOrchestrator(database, paaSageConfigurationService,
-                constraintProblemService, notificationService, sloService, requestSynchronizer);
+                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
+    }
+
+    @Bean
+    @ConfigurationProperties
+    public CacheProperties cacheProperties(){
+        return new CacheProperties();
+    }
+
+    @Bean
+    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+        String host = cacheProperties.getCache().getHost();
+        Integer port = cacheProperties.getCache().getPort();
+        return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
     }
 
 }

@@ -10,12 +10,12 @@ package eu.paasage.upperware.metamodel.cp;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ComparisonExpression#getExp1 <em>Exp1</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ComparisonExpression#getExp2 <em>Exp2</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ComparisonExpression#getComparator <em>Comparator</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComparisonExpression()
  * @model

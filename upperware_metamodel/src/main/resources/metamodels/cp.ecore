@@ -13,6 +13,8 @@
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="ConstraintProblem">
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" lowerBound="1"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="goals" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/Goal" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="constants" upperBound="-1"
@@ -29,8 +31,12 @@
                 containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="solution" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/Solution" containment="true"/>
-            <eStructuralFeatures xsi:type="ecore:EReference" name="deltaUtility" lowerBound="1"
-                eType="#//paasage/upperware/metamodel/cp/DeltaUtility" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="deployedSolutionId"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+                defaultValueLiteral="-1"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="candidateSolutionId"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+                defaultValueLiteral="-1"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="Expression" abstract="true"
               eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement"/>
@@ -44,6 +50,10 @@
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="vmId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="OsImageId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="hardwareId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="variableType" lowerBound="1"
+                eType="#//paasage/upperware/metamodel/cp/VariableType"/>
+            <eStructuralFeatures xsi:type="ecore:EAttribute" name="componentId" lowerBound="1"
+                eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="Domain" abstract="true"/>
           <eClassifiers xsi:type="ecore:EClass" name="NumericDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/Domain">
@@ -84,6 +94,7 @@
             <eLiterals name="mean" value="4" literal="mean"/>
             <eLiterals name="min" value="5"/>
             <eLiterals name="max" value="6"/>
+            <eLiterals name="eq" value="7"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EEnum" name="GoalOperatorEnum">
             <eLiterals name="max" literal="max"/>
@@ -164,6 +175,9 @@
             <eStructuralFeatures xsi:type="ecore:EReference" name="metricVariableValue"
                 upperBound="-1" eType="#//paasage/upperware/metamodel/cp/MetricVariableValue"
                 containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="utilityValue" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="VariableValue">
             <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
@@ -202,11 +216,15 @@
             <eStructuralFeatures xsi:type="ecore:EReference" name="goal" lowerBound="1"
                 eType="#//paasage/upperware/metamodel/cp/Goal"/>
           </eClassifiers>
-          <eClassifiers xsi:type="ecore:EClass" name="DeltaUtility" eSuperTypes="#//paasage/upperware/metamodel/cp/Function">
-            <eStructuralFeatures xsi:type="ecore:EReference" name="solutions" upperBound="2"
-                eType="#//paasage/upperware/metamodel/cp/Parameter" containment="true"/>
-            <eStructuralFeatures xsi:type="ecore:EReference" name="selectedSolution"
-                eType="#//paasage/upperware/metamodel/cp/Parameter"/>
+          <eClassifiers xsi:type="ecore:EEnum" name="VariableType">
+            <eLiterals name="cpu" literal="cpu"/>
+            <eLiterals name="cores" value="1" literal="cores"/>
+            <eLiterals name="ram" value="2" literal="ram"/>
+            <eLiterals name="storage" value="3" literal="storage"/>
+            <eLiterals name="provider" value="4" literal="provider"/>
+            <eLiterals name="cardinality" value="5" literal="cardinality"/>
+            <eLiterals name="os" value="6" literal="os"/>
+            <eLiterals name="location" value="7" literal="location"/>
           </eClassifiers>
         </eSubpackages>
       </eSubpackages>

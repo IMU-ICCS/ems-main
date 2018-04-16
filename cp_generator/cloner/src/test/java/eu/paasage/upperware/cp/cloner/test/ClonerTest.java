@@ -10,34 +10,22 @@
  */
 package eu.paasage.upperware.cp.cloner.test;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.Assert;
-
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.junit.Before;
-import org.junit.Test;
-
 import eu.paasage.camel.CamelModel;
 import eu.paasage.upperware.cp.cloner.CDOClientExtended;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
-import eu.paasage.upperware.metamodel.cp.BooleanDomain;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.tool.UpperwareModelTool;
+import junit.framework.Assert;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.junit.Before;
+import org.junit.Test;
 
-import static eu.passage.upperware.commons.MelodicConstants.FUNCTION_TYPES_FILE;
-import static eu.passage.upperware.commons.MelodicConstants.OPERATING_SYSTEMS_FILE;
-import static eu.passage.upperware.commons.MelodicConstants.PROVIDER_TYPES_FILE;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static eu.passage.upperware.commons.MelodicConstants.*;
 
 public class ClonerTest 
 {
@@ -66,13 +54,7 @@ public class ClonerTest
 	protected static String CAMEL_MODEL_COPY_ID=  CPCloner.CDO_SERVER_PATH+"camelTestCopy";
 	
 	protected static String MODEL_PATH=  "."+File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"models"+File.separator; 
-	
-	protected static String FUNCTION_MODEL_PATH=MODEL_PATH + FUNCTION_TYPES_FILE;
-	
-	protected static String OS_MODEL_PATH=MODEL_PATH + OPERATING_SYSTEMS_FILE;
-	
-	protected static String PROVIDER_TYPES_MODEL_PATH=MODEL_PATH + PROVIDER_TYPES_FILE;
-	
+
 	protected static String PROVIDER_TYPES_ID="providerTypesCloner"; 
 	
 	protected static String OS_ID="osCloner"; 
@@ -86,44 +68,44 @@ public class ClonerTest
 	@Before
 	public void storeModels()
 	{
-		File cpModelFile= new File(CP_MODEL_FILE_PATH);
-		
-		if(!cpModelFile.exists())
-		{
-			cpModelFile= new File(getClass().getClassLoader().getResource(CP_MODEL_FILE_JAR_PATH).getPath()); 
-		}
-		
-		File configModelFile= new File(CONFIG_MODEL_FILE_PATH);
-		
-		if(!configModelFile.exists())
-		{
-			configModelFile= new File(getClass().getClassLoader().getResource(CONFIG_MODEL_FILE_JAR_PATH).getPath()); 
-		}
-		
-		File camelModelFile= new File(CAMEL_MODEL_FILE_PATH); 
-		
-		if(!camelModelFile.exists())
-		{
-			camelModelFile= new File(getClass().getClassLoader().getResource(CAMEL_MODEL_FILE_JAR_PATH).getPath()); 
-		}
-		
-		
-		Resource resCP= UpperwareModelTool.loadModel(cpModelFile);
-		
-		System.out.println("***************************************Resources "+resCP.getContents().size());
-		
-
-		List<EObject> objects= new ArrayList<EObject>(); 
-				
-		objects.add(resCP.getContents().get(0)); 
-		
-		extended.storeModelOverwritten(objects, CP_MODEL_ID);
-	
-		
-		Resource resCamel= UpperwareModelTool.loadModel(camelModelFile); 
-	
-		extended.storeModelOverwritten(resCamel.getContents().get(0), CAMEL_MODEL_ID);
-		
+//		File cpModelFile= new File(CP_MODEL_FILE_PATH);
+//
+//		if(!cpModelFile.exists())
+//		{
+//			cpModelFile= new File(getClass().getClassLoader().getResource(CP_MODEL_FILE_JAR_PATH).getPath());
+//		}
+//
+//		File configModelFile= new File(CONFIG_MODEL_FILE_PATH);
+//
+//		if(!configModelFile.exists())
+//		{
+//			configModelFile= new File(getClass().getClassLoader().getResource(CONFIG_MODEL_FILE_JAR_PATH).getPath());
+//		}
+//
+//		File camelModelFile= new File(CAMEL_MODEL_FILE_PATH);
+//
+//		if(!camelModelFile.exists())
+//		{
+//			camelModelFile= new File(getClass().getClassLoader().getResource(CAMEL_MODEL_FILE_JAR_PATH).getPath());
+//		}
+//
+//
+//		Resource resCP= UpperwareModelTool.loadModel(cpModelFile);
+//
+//		System.out.println("***************************************Resources "+resCP.getContents().size());
+//
+//
+//		List<EObject> objects= new ArrayList<EObject>();
+//
+//		objects.add(resCP.getContents().get(0));
+//
+//		extended.storeModelOverwritten(objects, CP_MODEL_ID);
+//
+//
+//		Resource resCamel= UpperwareModelTool.loadModel(camelModelFile);
+//
+//		extended.storeModelOverwritten(resCamel.getContents().get(0), CAMEL_MODEL_ID);
+//
 		
 	}
 	

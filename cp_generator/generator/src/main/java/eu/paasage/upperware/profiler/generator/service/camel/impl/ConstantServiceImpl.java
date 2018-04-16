@@ -2,6 +2,7 @@ package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -24,6 +27,11 @@ public class ConstantServiceImpl implements ConstantService {
     private CpFactory cpFactory;
     private TypesFactoryService typesFactoryService;
     private IdGenerator constantIdGenerator;
+
+    @Override
+    public String getConstantName(VariableType variableType, String vmName, String... suffixes) {
+        return Stream.concat(Stream.of(variableType.getLiteral(), vmName), Stream.of(suffixes)).collect(Collectors.joining("_"));
+    }
 
     @Override
     public Constant createIntegerConstant(int value) {
@@ -55,6 +63,10 @@ public class ConstantServiceImpl implements ConstantService {
         return createConstant(name, BasicTypeEnum.FLOAT, typesFactoryService.getFloatValueUpperware(value));
     }
 
+    @Override
+    public Constant createLongConstant(long value, String name) {
+        return createConstant(name, BasicTypeEnum.LONG, typesFactoryService.getLongValueUpperware(value));
+    }
 
     private Constant createConstant(String name, BasicTypeEnum basicTypeEnum, NumericValueUpperware numericValueUpperware){
         Constant constant= cpFactory.createConstant();
@@ -107,6 +119,28 @@ public class ConstantServiceImpl implements ConstantService {
 
         return constant.orElseGet(() -> {
             Constant newConstant = createDoubleConstant(value, name);
+            constants.add(newConstant);
+            return newConstant;
+        });
+    }
+
+    @Override
+    public Constant searchOrCreateConstantByValue(EList<Constant> constants, float value, String name) {
+        Optional<Constant> constant = searchConstantByValue(constants, value);
+
+        return constant.orElseGet(() -> {
+            Constant newConstant = createFloatConstant(value, name);
+            constants.add(newConstant);
+            return newConstant;
+        });
+    }
+
+    @Override
+    public Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name) {
+        Optional<Constant> constant = searchConstantByValue(constants, value);
+
+        return constant.orElseGet(() -> {
+            Constant newConstant = createLongConstant(value, name);
             constants.add(newConstant);
             return newConstant;
         });

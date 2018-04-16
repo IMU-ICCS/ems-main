@@ -1203,6 +1203,7 @@ public interface TypesPaasagePackage extends EPackage {
 	 */
 	int COMMUNICATION_TYPE_UPPERWARE = 29;
 
+
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.types.typesPaasage.PaaSageCPElement <em>Paa Sage CP Element</em>}'.
 	 * <!-- begin-user-doc -->

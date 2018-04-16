@@ -13,11 +13,11 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.MetricVariableValue#getVariable <em>Variable</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.MetricVariableValue#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getMetricVariableValue()
  * @model

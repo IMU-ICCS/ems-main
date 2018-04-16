@@ -10,12 +10,12 @@ package eu.paasage.upperware.metamodel.cp;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Goal#getExpression <em>Expression</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Goal#getGoalType <em>Goal Type</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Goal#getPriority <em>Priority</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getGoal()
  * @model

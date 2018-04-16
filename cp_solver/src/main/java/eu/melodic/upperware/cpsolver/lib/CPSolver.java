@@ -7,54 +7,21 @@ package eu.melodic.upperware.cpsolver.lib;
  * file, You can obtain one at http://mozilla.org/MPL/2.0/ 
  */
 
-import java.util.*;
-
-import com.google.common.collect.Lists;
-import eu.melodic.upperware.utilitygenerator.model.Metric;
-import eu.melodic.upperware.utilitygenerator.model.MetricType;
-import eu.melodic.upperware.utilitygenerator.model.VirtualMachine;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.UtilityFunctionType;
+import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
+import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-
-import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Domain;
-import eu.paasage.upperware.metamodel.cp.Expression;
-import eu.paasage.upperware.metamodel.cp.Goal;
-import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
-import eu.paasage.upperware.metamodel.cp.NumericDomain;
-import eu.paasage.upperware.metamodel.cp.NumericExpression;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.RangeDomain;
-import eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression;
-import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.UnaryExpression;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
-import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
-import eu.paasage.upperware.metamodel.types.LongValueUpperware;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
-import eu.paasage.upperware.metamodel.types.TypesFactory;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
-import solver.ResolutionPolicy;
 import solver.Solver;
 import solver.constraints.Constraint;
 import solver.constraints.IntConstraintFactory;
@@ -67,7 +34,9 @@ import solver.variables.VariableFactory;
 import util.ESat;
 import util.tools.ArrayUtils;
 
-import eu.melodic.upperware.utilitygenerator.*;
+import java.util.*;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CPSolver {
@@ -75,33 +44,39 @@ public class CPSolver {
 	private Solver solver = null;
 	private String cdoPath = null;
 	private String pathName = null;
-	private ResolutionPolicy policy = null;
-	private IntVar intGoal = null;
-	private RealVar realGoal = null;
-	private Hashtable<String,IntVar> idToIntVar;
-	private Hashtable<String,RealVar> idToRealVar;
-	private Hashtable<String,BoolVar> idToBoolVar;
-	private List<Constraint> constraints;
-	private ConstraintProblem cp = null;
+	private Hashtable<String,IntVar> idToIntVar = new Hashtable<>();
+	private Hashtable<String,RealVar> idToRealVar = new Hashtable<>();
 	private static final double epsilon = 0.000001d;
-	private static final int LOW_INT_LIMIT = -10000000;
-	private static final int UPPER_INT_LIMIT = 10000000;
+	private static final int LOW_INT_LIMIT = -10000;
+	private static final int UPPER_INT_LIMIT = 100000000;
 	private static final double LOW_REAL_LIMIT = -1000000000.0;
 	private static final double UPPER_REAL_LIMIT = 1000000000.0;
+	private static UtilityFunctionType utilityFunctionType;
+	private static String utilityFunctionTypePrefix = "METRIC_UTILITYTYPE_";
+	private static String metricsPrefix = "METRIC_";
+	private static int INITIAL_DEPLOYMENT_ID = -1;
 	private int intVarNum = 0;
 	private int realVarNum = 0;
 	private int constNum = 0;
 	private boolean cdoMode = false;
 	private long timestamp = 0;
 	private boolean useExternalOptimizer = false;
-	private UtilityFunctionEvaluator utilityFunctionEvaluator;
+	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
+	private double utilityOfDeployedSolution;
+	private List<VariableDTO> variablesForUG = new ArrayList<>();
+	private List<MetricDTO> metricsForUG = new ArrayList<>();
+	private List<Var> deployedSolution = new ArrayList<>();
+	private boolean isReconfig = false;
+	private Map<String, Integer> solutionWithMaximumUtilityInt = new HashMap<>();
+	private Map<String, Double> solutionWithMaximumUtilityReal = new HashMap<>();
+
 
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer){
-		solver = new Solver();
+	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer, NodeCandidates nodeCandidates, UtilityGeneratorProperties utilityGeneratorProperties){
+		this();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		this.useExternalOptimizer = useExternalOptimizer != null && useExternalOptimizer;
@@ -109,24 +84,21 @@ public class CPSolver {
 		readCPModel(cdoPath,pathName);
 
 		if (this.useExternalOptimizer){
-			//FIXME metrics should be from Metric Collector
-			Map<MetricType, Metric> metrics = new HashMap<>();
-			metrics.put(MetricType.MAX_RESPONSE_TIME, new Metric(MetricType.MAX_RESPONSE_TIME, 30));
-			metrics.put(MetricType.NOM_RESPONSE_TIME, new Metric(MetricType.NOM_RESPONSE_TIME, 20));
-			metrics.put(MetricType.AVG_RESPONSE_TIME, new Metric(MetricType.AVG_RESPONSE_TIME, 3));
-			metrics.put(MetricType.COST_WEIGHT, new Metric(MetricType.COST_WEIGHT, 0.5));
-
-			//simple cost function - first example
-			this.utilityFunctionEvaluator = new UtilityFunctionEvaluatorExample(metrics, false, null);
+			if (isReconfig){
+				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityGeneratorProperties, deployedSolution, utilityFunctionType, nodeCandidates);
+				this.utilityOfDeployedSolution = this.utilityGenerator.getUtilityForCurrentDeployedSolution();
+			}
+			else {
+				this.utilityGenerator = new UtilityGeneratorApplication(variablesForUG, metricsForUG, utilityGeneratorProperties, utilityFunctionType, nodeCandidates);
+			}
 		}
-
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
 	 * a CDO path given as String or from file system via a String path 
 	 */
 	public CPSolver(String cdoPath, String pathName, long timestamp){
-		solver = new Solver();
+		this();
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		this.timestamp = timestamp;
@@ -143,20 +115,22 @@ public class CPSolver {
 	
 	/* Processing the model fetched to inform the private variables of this class */
 	private void readModel(ConstraintProblem cp){
-		EList<Constant> constants = cp.getConstants();
-		createConstants(constants);
-		EList<Variable> vars = cp.getVariables();
-		createVariables(vars);
-		EList<MetricVariable> metricVars = cp.getMetricVariables();
-		createMetricVariables(metricVars);
-		EList<ComparisonExpression> constraints = cp.getConstraints();
-		createConstraints(constraints);
+		createConstants(cp.getConstants());
+		createVariables(cp.getVariables());
+		createMetricVariables(cp.getMetricVariables());
+		createConstraints(cp.getConstraints());
+		createVariablesForUG(cp.getVariables());
+		createMetricsForUG(cp.getConstants());
+		createUtilityFunctionType(cp);
+		getActualConfiguration(cp);
+
 		//Checking if metric-based solution exists
 		if (timestamp != 0){
 			EList<Solution> sols = cp.getSolution();
-			if (sols != null && !sols.isEmpty()) checkSolution(sols);
-		}
-		else{
+			if (sols != null && !sols.isEmpty()){
+				checkSolution(sols);
+			}
+		} else{
 			EList<Solution> sols = cp.getSolution();
 			//Initial solution maps to default values for the metric variables 
 			if (sols != null && sols.size() == 1){
@@ -165,10 +139,82 @@ public class CPSolver {
 			}
 		}
 		//Create optimisation goal
-		EList<Goal> goals = cp.getGoals();
-		createGoals(goals);
+
 	}
-	
+
+	private void getActualConfiguration(ConstraintProblem cp) {
+
+		int deployedSolutionId = cp.getDeployedSolutionId();
+		if (deployedSolutionId != INITIAL_DEPLOYMENT_ID){
+			isReconfig = true;
+			deployedSolution = cp.getSolution().get(deployedSolutionId).getVariableValue().stream()
+					.map(this::createVar)
+					.collect(Collectors.toList());
+		}
+		else {
+			isReconfig = false;
+		}
+	}
+
+	//todo handle RealVar
+	private Var createVar(VariableValue variableValue){
+
+		NumericValueUpperware value = variableValue.getValue();
+		Var variable;
+		if (value instanceof IntegerValueUpperware){
+			IntegerValueUpperware intVal = (IntegerValueUpperware)value;
+			variable = new eu.melodic.upperware.utilitygenerator.model.IntVar(variableValue.getVariable().getId(), intVal.getValue());
+		}
+//		else if (value instanceof DoubleValueUpperware){
+//			DoubleValueUpperware doubleVal = (DoubleValueUpperware)value;
+//		}
+//		else if (value instanceof FloatValueUpperware){
+//			FloatValueUpperware floatVal = (FloatValueUpperware)value;
+//		}
+		else { //Long
+			LongValueUpperware longVal = (LongValueUpperware)value;
+			variable =  new eu.melodic.upperware.utilitygenerator.model.IntVar(variableValue.getVariable().getId(), (int)longVal.getValue());
+		}
+		return variable;
+	}
+
+	private void createMetricsForUG(EList<Constant> constants) {
+		log.info("Creating metrics for Utility Generator");
+
+        Collection<Constant> metrics = constants.stream()
+                .filter(c -> c.getId().startsWith(metricsPrefix))
+                .collect(Collectors.toList());
+
+
+        this.metricsForUG = metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.INTEGER))
+                .map(metric -> new IntMetricDTO(metric.getId(), ((IntegerValueUpperware)metric.getValue()).getValue()))
+                .collect(Collectors.toList());
+
+
+		metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.LONG))
+                .forEach(metric -> metricsForUG.add(new LongMetricDTO(metric.getId(), ((LongValueUpperware)metric.getValue()).getValue())));
+
+        metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.DOUBLE))
+                .forEach(metric -> metricsForUG.add(new DoubleMetricDTO(metric.getId(), ((DoubleValueUpperware)metric.getValue()).getValue())));
+
+        metrics.stream()
+                .filter(metric -> metric.getType().equals(BasicTypeEnum.FLOAT))
+                .forEach(metric -> metricsForUG.add(new FloatMetricDTO(metric.getId(), ((FloatValueUpperware)metric.getValue()).getValue())));
+
+        log.info("Creating metrics for Utility Generator is finished.");
+	}
+
+	private void createVariablesForUG(EList<Variable> variables) {
+		log.info("Creating variables for Utility Generator");
+		this.variablesForUG = variables.stream()
+				.map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+				.collect(Collectors.toList());
+		log.info("Creating variables for Utility Generator is finished");
+	}
+
 	//Get solution mapping to the timestamp given
 	private void checkSolution(EList<Solution> sols){
 			Solution sol = null;
@@ -244,6 +290,7 @@ public class CPSolver {
 	 * name for this model is provided as input
 	 */
 	public void readCPModel(String cdoPath, String pathName){
+		ConstraintProblem cp = null;
 		log.info("Reading CP model...");
 		CDOClient cl = new CDOClient();
 		cl.registerPackage(TypesPackage.eINSTANCE);
@@ -281,12 +328,8 @@ public class CPSolver {
 	public boolean solve() throws Exception{
 		boolean hasSolutions = false;
 		if (idToIntVar != null){
-			IntVar[] vars = new IntVar[idToIntVar.size()];
-			int i = 0;
-			for (Object o: idToIntVar.values().toArray()){
-				IntVar var = (IntVar)o;
-				vars[i++] = var;
-			}
+			Collection<IntVar> values = idToIntVar.values();
+			IntVar[] vars = values.stream().toArray(value -> new IntVar[values.size()]);
 			solver.set(IntStrategyFactory.random(vars, System.currentTimeMillis()));
 		}
 
@@ -294,61 +337,50 @@ public class CPSolver {
 		if(useExternalOptimizer){
 			log.info("Using Utility Generator for solution space:");
 
-//			utilityFunctionEvaluator.setActualConfiguration(null);
 			if(solver.findSolution()) {
-				log.info("Checking utility of #1 solution.");
 
-				Integer i=1;
+				int i=1;
 				maxUtility = 0.0;
 				calculateUtility();
 				while(solver.nextSolution()){
+					//log.debug("Checking utility of: #{} solution.", i++ );
 					i++;
-					log.info("Checking utility of: #" +i +" solution.");
 					calculateUtility();
 				}
-				log.info("max Utility = " + maxUtility);
-				hasSolutions = (solver.isFeasible() == ESat.TRUE);
-			}
-		} else {
-			if (policy != null) {
-				if (realGoal != null) {
-					solver.findOptimalSolution(policy, realGoal);
-					log.info("1. Optimal value is: " + realGoal.getUB());
-				} else {
-					solver.findOptimalSolution(policy, intGoal);
-					log.info("2. Optimal value is: " + intGoal.getValue());
-				}
-				log.info("1. Checking if solver has solutions");
-				hasSolutions = (solver.isFeasible() == ESat.TRUE);
-				log.info("1. Does solver has solutions? " + hasSolutions);
-				if (hasSolutions) saveSolution();
-				try {
-					dispose();
-					solver.getIbex().release();
-				} catch (Exception e) {
-					log.error("1. Something went wrong while disposing the solver", e);
-				}
-			} else {
-				log.info("2. Checking if solver has solutions");
-				hasSolutions = solver.findSolution();
-				log.info("2. Does solver has solutions? " + hasSolutions);
-				if (hasSolutions) saveSolution();
-				try {
-					dispose();
-					solver.getIbex().release();
-				} catch (Exception e) {
-					log.error("2. Something went wrong while disposing the solver", e);
+				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
+				hasSolutions = (solver.isFeasible() == ESat.TRUE) && maxUtility > 0;
+				if (hasSolutions) {
+					saveBestSolutionInCDO();
+					utilityGenerator.printConfigurationWithMaximumUtility();
 				}
 			}
 		}
+		else {
+			log.warn("Using Utility Generator is obligatory");
+		}
 		return hasSolutions;
 	}
-	
-	/* Saving the solution in the cp model and storing back the model to its 
+
+	private void convertAndUpdateBestSolution(double utility){
+
+		maxUtility = utility;
+
+		solutionWithMaximumUtilityInt = idToIntVar.values().stream()
+				.filter(intVar -> variablesForUG.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
+				.collect(Collectors.toMap(IntVar::getName, IntVar::getValue));
+
+		solutionWithMaximumUtilityReal = idToRealVar.values().stream()
+				.filter(realVar -> variablesForUG.stream().anyMatch(v-> realVar.getName().equals(v.getId())))
+				.collect(Collectors.toMap(RealVar::getName, RealVar::getUB));
+    }
+
+	/* Saving the solution in the cp model and storing back the model to its
 	 * initial position, either in CDO repository or the file system
 	 */
-	private void saveSolution(){
-		log.info("Saving solution .....");
+    //only for IntVar
+    private void saveBestSolutionInCDO(){
+
+		log.info("Saving best solution in CDO.....");
 		CDOTransaction trans = null;
 		ConstraintProblem cp = null;
 		CDOClient cl = new CDOClient();
@@ -365,25 +397,30 @@ public class CPSolver {
 					break;
 				}
 			}
+		} else{
+			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
 		}
-		else{
-			cp = (ConstraintProblem)cl.loadModel(pathName);
+		if (isReconfig) {
+			updateUtilityOfDeployedSolution(cp);
 		}
-		Solution solution = null;
-		if (timestamp == 0){
-			solution = CpFactory.eINSTANCE.createSolution();
-			solution.setTimestamp(new Date().getTime());
-			cp.getSolution().add(solution);
-		}
-		else{
-			for (Solution s: cp.getSolution()){
-				if (s.getTimestamp() == timestamp){
-					solution = s;
-					break;
-				}
-			}
-		}
-		
+
+        Solution solution = null;
+        //if (timestamp == 0){
+        solution = CpFactory.eINSTANCE.createSolution();
+        solution.setTimestamp(new Date().getTime());
+        cp.getSolution().add(solution);
+//		} else {
+//			for (Solution s: cp.getSolution()){
+//				if (s.getTimestamp() == timestamp){
+//					solution = s;
+//					break;
+//				}
+//			}
+//		}
+
+		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		utilityValue.setValue(maxUtility);
+		solution.setUtilityValue(utilityValue);
 		EList<VariableValue> varValues = solution.getVariableValue();
 		try{
 			EList<Variable> vars = cp.getVariables();
@@ -391,72 +428,34 @@ public class CPSolver {
 				VariableValue varVal = CpFactory.eINSTANCE.createVariableValue();
 				varVal.setVariable(var);
 				Domain dom = var.getDomain();
-				IntVar iv = idToIntVar.get(var.getId());
-				if (iv != null){
-					int val = iv.getValue();
-					log.info("Discovered value for variable :" + var.getId() + " is: " + val);
-					if (dom instanceof NumericDomain){
-						NumericDomain nd = (NumericDomain)dom;
-						BasicTypeEnum type = nd.getType();
-						if (type.equals(BasicTypeEnum.INTEGER)){
-							IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
-							value.setValue(val);
-							varVal.setValue(value);
-						}
-						else{
-							LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
-							value.setValue(val);
-							varVal.setValue(value);
-						}
+				int val = solutionWithMaximumUtilityInt.get(var.getId());
+				log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+				if (dom instanceof RangeDomain){
+					RangeDomain rd = (RangeDomain)dom;
+					NumericValueUpperware from = rd.getFrom();
+					if (from instanceof IntegerValueUpperware){
+						IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
 					}
-					else if (dom instanceof RangeDomain){
-						RangeDomain rd = (RangeDomain)dom;
-						NumericValueUpperware from = rd.getFrom();
-						if (from instanceof IntegerValueUpperware){
-							IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
-							value.setValue(val);
-							varVal.setValue(value);
-						}
-						else{
-							LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
-							value.setValue(val);
-							varVal.setValue(value);
-						}
+					else{
+						LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
 					}
 				}
-				else{
-					RealVar rv = idToRealVar.get(var.getId());
-					if (rv != null){
-						double val = rv.getUB();
-						log.info("Discovered value for variable :" + var.getId() + " is: " + val);
-						if (dom instanceof NumericDomain){
-							NumericDomain nd = (NumericDomain)dom;
-							BasicTypeEnum type = nd.getType();
-							if (type.equals(BasicTypeEnum.DOUBLE)){
-								DoubleValueUpperware value = TypesFactory.eINSTANCE.createDoubleValueUpperware();
-								value.setValue(val);
-								varVal.setValue(value);
-							}
-							else{
-								FloatValueUpperware value = TypesFactory.eINSTANCE.createFloatValueUpperware();
-								value.setValue((float)val);
-								varVal.setValue(value);
-							}
-						}
-						else if (dom instanceof RangeDomain){
-							RangeDomain rd = (RangeDomain)dom;
-							NumericValueUpperware from = rd.getFrom();
-							if (from instanceof DoubleValueUpperware){
-								DoubleValueUpperware value = TypesFactory.eINSTANCE.createDoubleValueUpperware();
-								value.setValue(val);
-								varVal.setValue(value);
-							}
-							else{
-								FloatValueUpperware value = TypesFactory.eINSTANCE.createFloatValueUpperware();
-								value.setValue((float)val);
-								varVal.setValue(value);
-							}
-						}
+				else if (dom instanceof NumericDomain){
+					NumericDomain nd = (NumericDomain)dom;
+					BasicTypeEnum type = nd.getType();
+					if (type.equals(BasicTypeEnum.INTEGER)){
+						IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
+					}
+					else{
+						LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+						value.setValue(val);
+						varVal.setValue(value);
 					}
 				}
 				varValues.add(varVal);
@@ -475,105 +474,19 @@ public class CPSolver {
 			//e.printStackTrace();
 		}
 		cl.closeSession();
+
 	}
-	
-	/* Getting resolution policy from the operator in the goal of the cp model */
-	private ResolutionPolicy getPolicy(GoalOperatorEnum type){
-		if (type.equals(GoalOperatorEnum.MAX)) return ResolutionPolicy.MAXIMIZE;
-		else if (type.equals(GoalOperatorEnum.MIN)) return ResolutionPolicy.MINIMIZE;
-		return ResolutionPolicy.MAXIMIZE;
+
+	private void updateUtilityOfDeployedSolution(ConstraintProblem cp) {
+		log.debug("Updating utility of deployed solution = {}", utilityOfDeployedSolution);
+		Solution deployedSolution = cp.getSolution().get(cp.getDeployedSolutionId());
+		log.debug("Previous utility of deployed solution was {}", ((DoubleValueUpperware) deployedSolution.getUtilityValue()).getValue());
+		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+		utilityValue.setValue(utilityOfDeployedSolution);
+		deployedSolution.setUtilityValue(utilityValue);
+
 	}
-	
-	/* Checking if cp's goal operator is MAX or MIN */
-	private int isMax(GoalOperatorEnum type){
-		if (type.equals(GoalOperatorEnum.MAX)) return 1;
-		else if (type.equals(GoalOperatorEnum.MIN)) return 0;
-		return 0;
-	}
-	
-	/* Checking if cp's goal operator is MAX or MIN */
-	private int optToInt(GoalOperatorEnum type){
-		if (type.equals(GoalOperatorEnum.MAX)) return 1;
-		else if (type.equals(GoalOperatorEnum.MIN)) return -1;
-		return 0;
-	}
-	
-	/* Creating the optimisation objective from the list of goals contained in the cp model */
-	private void createGoals(EList<Goal> goals){
-		log.info("--------------- Goals ---------------");
-		int size = goals.size();
-		if (size == 1){
-			Goal goal = goals.get(0);
-			NumericExpression expr = goal.getExpression();
-			boolean isInt = involvesOnlyInt(expr);
-			if (isInt){
-				intGoal = parseExpression(expr);
-				log.info("Optimization Variable: " + intGoal.getName());
-			}
-			else{
-				RealConstraint rc = new RealConstraint(solver);
-				realGoal = parseRealExpression(expr,rc);
-				log.info("Optimization Variable: " + realGoal.getName());
-				solver.post(rc);
-			}
-			GoalOperatorEnum type = goal.getGoalType();
-			policy = getPolicy(type);
-		}
-		else if (size > 1){
-			boolean isInt = true;
-			for (Goal goal: goals){
-				NumericExpression expr = goal.getExpression();
-				if (!involvesOnlyInt(expr)){
-					isInt = false;
-					break;
-				}
-			}
-			if (isInt){
-				IntVar[] vars = new IntVar[size];
-				int[] dirs = new int[size];
-				for (int i = 0; i < size; i++){
-					Goal goal = goals.get(i);
-					vars[i] = parseExpression(goal.getExpression());
-					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
-				}
-				intGoal = VariableFactory.bounded("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-				log.info("Optimization Variable: " + intGoal.getName());
-				solver.post(IntConstraintFactory.scalar(vars, dirs, intGoal));
-				policy = ResolutionPolicy.MAXIMIZE;
-			}
-			else{
-				//RealConstraint rc = new RealConstraint(solver);
-				RealVar[] vars = new RealVar[size];
-				int[] dirs = new int[size];
-				for (int i = 0; i < size; i++){
-					RealConstraint rc = new RealConstraint(solver);
-					Goal goal = goals.get(i);
-					log.info("Processing goal: " + goal.getId());
-					vars[i] = parseRealExpression(goal.getExpression(),rc);
-					log.info("var created was: " + vars[i]);
-					dirs[i] = optToInt(goal.getGoalType()) * (int)goal.getPriority();
-					solver.post(rc);
-				}
-				log.info("Optimisation goals created successfully");
-				RealConstraint rc = new RealConstraint(solver);
-				realGoal = VariableFactory.real("maximize", LOW_INT_LIMIT, UPPER_INT_LIMIT, epsilon, solver);
-				StringBuilder function = new StringBuilder("(");
-				function.append(dirs[0] + " * {0} ");
-				for (int i = 1; i < size; i++){
-					function.append(" + " + dirs[i] + " * {" + i + "} ");
-				}
-				function.append(") = { " + size + "}");
-				log.info("Optimisation formula is: " + function.toString());
-				RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{realGoal});
-				rc.addFunction(function.toString(), finalVars);
-				solver.post(rc);
-				policy = ResolutionPolicy.MAXIMIZE;
-				log.info("Optimization Variable: " + realGoal.getName());
-			}
-		}
-		log.info("------------------------------------------");
-	}
-	
+
 	/* Checking whether an expression contains only integer variables */
 	private boolean involvesOnlyInt(Expression expr){
 		boolean onlyInt = false;
@@ -599,18 +512,18 @@ public class CPSolver {
 			boolean res = false;
 			for (NumericExpression ne: cep.getExpressions()){
 				res = involvesOnlyInt(ne);
-				if (res == false) break;
+				if (!res) break;
 			}
-			if (res == true) onlyInt = true;
+			if (res) onlyInt = true;
 		}
 		else if (expr instanceof ComparisonExpression){
 			ComparisonExpression cep = (ComparisonExpression)expr;
 			Expression expr1 = cep.getExp1();
 			Expression expr2 = cep.getExp2();
 			boolean res = involvesOnlyInt(expr1);
-			if (res == true){
+			if (res){
 				res = involvesOnlyInt(expr2);
-				if (res == true) onlyInt = true;
+				if (res) onlyInt = true;
 			}
 		}
 		else if (expr instanceof UnaryExpression){
@@ -644,74 +557,83 @@ public class CPSolver {
 	/* Creating an integer variable out of an expression possibly comprising other integer variables */
 	private IntVar parseExpression(Expression expr){
 		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
-			if (expr instanceof Variable) return idToIntVar.get(((Variable)expr).getId());
-			else if (expr instanceof MetricVariable) return idToIntVar.get(((MetricVariable)expr).getId());
-			else{
+			if (expr instanceof Variable || expr instanceof MetricVariable) {
+				return idToIntVar.get(expr.getId());
+			} else {
 				Constant constant = (Constant)expr;
 				BasicTypeEnum type = constant.getType();
 				if (type.equals(BasicTypeEnum.INTEGER)){
 					IntegerValueUpperware intVal = (IntegerValueUpperware)constant.getValue();
-					IntVar v = VariableFactory.bounded("Constant" + (constNum++), intVal.getValue(), intVal.getValue(), solver);
+					IntVar v = createIntVar("Constant" + (constNum++), intVal.getValue(), intVal.getValue());
 					log.info("Constant: " + v.getName() + ": " + v);
 					return v;
 				}
 				else if (type.equals(BasicTypeEnum.LONG)){
 					LongValueUpperware longVal = (LongValueUpperware)constant.getValue();
-					IntVar v = VariableFactory.bounded("Constant" + (constNum++), (int)longVal.getValue(), (int)longVal.getValue(), solver);
+					IntVar v = createIntVar("Constant" + (constNum++), (int)longVal.getValue(), (int)longVal.getValue());
 					log.info("Constant: " + v.getName() + ": " + v);
 					return v;
 				}
 			}
-		}
-		else{
+		} else {
 			if (expr instanceof ComposedExpression){
 				ComposedExpression cep = (ComposedExpression)expr;
 				EList<NumericExpression> exprs = cep.getExpressions();
-				IntVar[] vars = new IntVar[exprs.size()];
-				int i = 0;
-				for (NumericExpression ne: exprs){
-					vars[i++] = parseExpression(ne);
-				}
+
+				IntVar[] vars = exprs.stream()
+						.map(this::parseExpression)
+						.toArray(value -> new IntVar[exprs.size()]);
+
 				OperatorEnum op = cep.getOperator();
 				if (op.equals(OperatorEnum.PLUS)){
-					IntVar var = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					IntVar var = createIntVar(getBounds(vars, OperatorEnum.PLUS));
 					log.info("IntVar: " + var);
 					solver.post(IntConstraintFactory.sum(vars,var));
 					log.info("IntConstraint: SUM with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
 					return var;
 				}
 				else if (op.equals(OperatorEnum.MINUS)){
-					IntVar var = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
-					log.info("IntVar: " + var);
+					IntVar var = createIntVar(getBounds(vars, OperatorEnum.MINUS));
 					int[] coeff = new int[exprs.size()];
 					Arrays.fill(coeff, -1);
 					coeff[0] = 1;
+					log.info("IntVar: " + var);
+
 					solver.post(IntConstraintFactory.scalar(vars, coeff, var));
 					log.info("IntConstraint: NARY_MINUS with int vars:" + printVarArray(vars) + " being equal to int var: " + var);
 					return var;
 				}
 				else if (op.equals(OperatorEnum.TIMES)){
-					IntVar prev = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					IntVar prev = createIntVar(getBounds(new IntVar[]{vars[0], vars[1]}, OperatorEnum.TIMES));
 					solver.post(IntConstraintFactory.times(vars[0], vars[1], prev));
 					for (int j = 2; j < exprs.size(); j++){
-						IntVar v = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						IntVar v = createIntVar(getBounds(new IntVar[]{vars[j], prev}, OperatorEnum.TIMES));
 						solver.post(IntConstraintFactory.times(vars[j], prev, v));
 						prev = v;
 					}
 					log.info("IntVar: " + prev);
 					log.info("IntConstraint: TIMES with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
 					return prev;
+
 				}
 				else if (op.equals(OperatorEnum.DIV)){
-					IntVar prev = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+
+					IntVar prev = createIntVar(getBounds(new IntVar[]{vars[0], vars[1]}, OperatorEnum.DIV));
 					solver.post(IntConstraintFactory.eucl_div(vars[0], vars[1], prev));
 					for (int j = 2; j < exprs.size(); j++){
-						IntVar v = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						IntVar v = createIntVar(getBounds(new IntVar[]{vars[j], prev}, OperatorEnum.DIV));
 						solver.post(IntConstraintFactory.eucl_div(vars[j], prev, v));
 						prev = v;
 					}
 					log.info("IntVar: " + prev);
 					log.info("IntConstraint: DIV with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
+					return prev;
+				}
+				else if (op.equals(OperatorEnum.EQ)){
+					BoolVar prev = createBoolVar();
+					solver.post(IntConstraintFactory.among(prev, new IntVar[]{vars[0]}, new int[]{vars[1].getValue()}));
+					log.info("IntVar: " + prev);
+					log.info("IntConstraint: EQ with int vars:" + printVarArray(vars) + " being equal to int var: " + prev);
 					return prev;
 				}
 			}
@@ -722,7 +644,7 @@ public class CPSolver {
 					SimpleUnaryExpression sue = (SimpleUnaryExpression)ue;
 					SimpleUnaryOperatorEnum op = sue.getOperator();
 					if (op.equals(SimpleUnaryOperatorEnum.ABSTRACT_VALUE)){
-						IntVar newVar = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						IntVar newVar = createIntVar();
 						log.info("IntVar: " + newVar);
 						solver.post(IntConstraintFactory.absolute(newVar, var2));
 						log.info("IntConstraint: ABS with var: " + newVar);
@@ -734,7 +656,7 @@ public class CPSolver {
 					int val = cue.getValue();
 					ComposedUnaryOperatorEnum op = cue.getOperator();
 					if (op.equals(ComposedUnaryOperatorEnum.EXPONENTIAL_VALUE)){
-						IntVar prevVar = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+						IntVar prevVar = createIntVar();
 						if (val == 1){
 							log.info("IntConstraint: EXP with x: " + var2 + " and y: " + val);
 							return var2;
@@ -748,7 +670,7 @@ public class CPSolver {
 						else{
 							solver.post(IntConstraintFactory.times(var2,var2,prevVar));
 							for (int i = 3; i <= val; i++){
-								IntVar varN = VariableFactory.bounded("IntVar" + (intVarNum++), LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+								IntVar varN = createIntVar();
 								solver.post(IntConstraintFactory.times(prevVar,var2,varN));
 								prevVar = varN;
 								if (i == val){
@@ -764,17 +686,33 @@ public class CPSolver {
 		}
 		return null;
 	}
-	
+
+	//TODO - bounds should be prepared for all operations
+	private Pair<Integer, Integer> getBounds(IntVar[] vars, OperatorEnum operatorEnum){
+		switch (operatorEnum) {
+			case MINUS:
+				int minMinus = vars[0].getLB();
+				int maxMinus = vars[0].getUB();
+
+				for (int i = 1; i < vars.length; i++) {
+					minMinus = minMinus - vars[i].getUB();
+					maxMinus = maxMinus - vars[i].getLB();
+				}
+				return Pair.of(minMinus, maxMinus);
+			case TIMES:
+				int minTimes = vars[0].getLB() * vars[1].getLB();
+				int maxTimes = vars[0].getUB() * vars[1].getUB();
+				return Pair.of(minTimes, maxTimes);
+			default:
+				return Pair.of(LOW_INT_LIMIT, UPPER_INT_LIMIT);
+		}
+	}
+
 	/* Printing the array of variables */
 	private String printVarArray(solver.variables.Variable[] vars){
-		String toRet = "[";
-		if (vars.length > 0){
-			toRet += vars[0].getName();
-			for (int i = 1; i < vars.length; i++)
-				toRet += " , " + vars[i].getName();
-		}
-		toRet += "]";
-		return toRet;
+		return Arrays.stream(vars)
+				.map(variable -> variable.getName())
+				.collect(Collectors.joining(" , ", "[", "]"));
 	}
 	
 	/* Creating a real variable out of an expression */
@@ -782,9 +720,9 @@ public class CPSolver {
 		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
 			if (expr instanceof Variable){
 				RealVar v = null;
-				v = idToRealVar.get(((Variable)expr).getId());
+				v = idToRealVar.get(expr.getId());
 				if (v == null){
-					IntVar iv = idToIntVar.get(((Variable)expr).getId());
+					IntVar iv = idToIntVar.get(expr.getId());
 					if (iv != null){
 						v = VariableFactory.real(iv,epsilon);
 						log.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
@@ -794,16 +732,13 @@ public class CPSolver {
 			}
 			else if (expr instanceof MetricVariable){
 				RealVar v = null;
-				v = idToRealVar.get(((MetricVariable)expr).getId());
+				v = idToRealVar.get(expr.getId());
 				if (v == null){
-					IntVar iv = idToIntVar.get(((MetricVariable)expr).getId());
+					IntVar iv = idToIntVar.get(expr.getId());
 					if (iv != null){
 						v = VariableFactory.real(iv,epsilon);
 						log.info("RealVar: " + v + " on top of IntVar: " + iv.getName());
-					}
-					else{
-						MetricVariable mv = (MetricVariable)expr;
-						BasicTypeEnum type = mv.getType();
+					} else{
 						RealVar var = VariableFactory.real("RealVar" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
 						log.info("RealVar: " + var);
 						idToRealVar.put(var.getName(), var);
@@ -852,51 +787,35 @@ public class CPSolver {
 			if (expr instanceof ComposedExpression){
 				ComposedExpression cep = (ComposedExpression)expr;
 				EList<NumericExpression> exprs = cep.getExpressions();
+
 				int size = exprs.size();
-				RealVar[] vars = new RealVar[size];
-				int i = 0;
-				for (NumericExpression ne: exprs){
-					vars[i++] = parseRealExpression(ne,rc);
-				}
+
+				RealVar[] vars = exprs.stream()
+						.map(ne -> parseRealExpression(ne, rc))
+						.toArray(value -> new RealVar[size]);
+
 				OperatorEnum op = cep.getOperator();
-				StringBuilder function = new StringBuilder("(");
 				if (op.equals(OperatorEnum.PLUS)){
-					function.append(" {0} ");
-					for (int j = 1; j < size; j++)
-						function.append("+ {" + j + "} ");
-					function.append(") = {" + size + "}");
+					String func = getFunctionPattern("+", size);
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
-					String func = function.toString();
 					rc.addFunction(func, finalVars);
 					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				else if (op.equals(OperatorEnum.MINUS)){
-					function.append(" {0} ");
-					for (int j = 1; j < size; j++)
-						function.append("- {" + j + "} ");
-					function.append(") = {" + size + "} ");
+					String func = getFunctionPattern("-", size);
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
-					String func = function.toString();
 					rc.addFunction(func, finalVars);
 					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				else if (op.equals(OperatorEnum.TIMES)){
-					function.append(" {0} ");
-					for (int j = 1; j < size; j++)
-						function.append("* {" + j + "} ");
-					function.append(") = {" + size + "} ");
+					String func = getFunctionPattern("*", size);
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
-					String func = function.toString();
 					rc.addFunction(func, finalVars);
 					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
 				else if (op.equals(OperatorEnum.DIV)){
-					function.append(" {0} ");
-					for (int j = 1; j < size; j++)
-						function.append("/ {" + j + "} ");
-					function.append(") = {" + size + "} ");
+					String func = getFunctionPattern("/", size);
 					RealVar[] finalVars = ArrayUtils.append(vars,new RealVar[]{var});
-					String func = function.toString();
 					rc.addFunction(func, finalVars);
 					log.info("RealConstraint: " + func + " with real vars:" + printVarArray(finalVars));
 				}
@@ -966,7 +885,15 @@ public class CPSolver {
 		}
 		return null;
 	}
-	
+
+	private String getFunctionPattern(String operator, int size) {
+		StringBuilder function = new StringBuilder("( {0} ");
+		for (int j = 1; j < size; j++)
+            function.append(operator).append(" {").append(j).append("} ");
+		function.append(") = {").append(size).append("}");
+		return function.toString();
+	}
+
 	/* Creating the constraints of the problem to solve */
 	private void createConstraints(EList<ComparisonExpression> constraints){
 		RealConstraint rc = null;
@@ -979,8 +906,7 @@ public class CPSolver {
 			if (isInt){
 				isInt = involvesOnlyInt(expr2);
 				log.info("Constraint only involves integer variables");
-			}
-			else{
+			} else{
 				log.info("Constraint involves real variables");
 			}
 			
@@ -1141,16 +1067,14 @@ public class CPSolver {
 			BasicTypeEnum type = var.getType();
 			if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
 				String id = var.getId();
-				IntVar v = VariableFactory.bounded(id, LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+				IntVar v = createIntVar(id);
 				log.info("IntVar: " + v);
-				if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 				idToIntVar.put(id,v);
 			}
 			else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
 				String id = var.getId();
 				RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
 				log.info("RealVar: " + v);
-				if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 				idToRealVar.put(id,v);
 			}
 		}
@@ -1162,74 +1086,110 @@ public class CPSolver {
 		log.info("--------------- Variables ---------------");
 		for (Variable var: vars){
 			Domain dom = var.getDomain();
-			if (dom instanceof NumericDomain && ! (dom instanceof RangeDomain)){
+			if (dom instanceof RangeDomain){
+				RangeDomain rd = (RangeDomain)dom;
+				BasicTypeEnum type = rd.getType();
+
+				NumericValueUpperware from = rd.getFrom();
+				NumericValueUpperware to = rd.getTo();
+
+				if (type.equals(BasicTypeEnum.INTEGER)){
+					IntegerValueUpperware int1 = (IntegerValueUpperware)from;
+					IntegerValueUpperware int2 = (IntegerValueUpperware)to;
+					String id = var.getId();
+					IntVar v = createIntVar(id, int1.getValue(), int2.getValue());
+					log.info("IntVar: " + v);
+					idToIntVar.put(id,v);
+				}
+				else if(type.equals(BasicTypeEnum.LONG)){
+					LongValueUpperware long1 = (LongValueUpperware)from;
+					LongValueUpperware long2 = (LongValueUpperware)to;
+					String id = var.getId();
+					IntVar v = createIntVar(id, (int)long1.getValue(), (int)long2.getValue());
+					log.info("IntVar: " + v);
+					idToIntVar.put(id,v);
+				}
+				else if (type.equals(BasicTypeEnum.DOUBLE)){
+					DoubleValueUpperware real1 = (DoubleValueUpperware)from;
+					DoubleValueUpperware real2 = (DoubleValueUpperware)to;
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, real1.getValue(), real2.getValue(), epsilon, solver);
+					log.info("RealVar: " + v);
+					idToRealVar.put(id,v);
+				}
+				else if (type.equals(BasicTypeEnum.FLOAT)){
+					FloatValueUpperware float1 = (FloatValueUpperware)from;
+					FloatValueUpperware float2 = (FloatValueUpperware)to;
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, float1.getValue(), float2.getValue(), epsilon, solver);
+					log.info("RealVar: " + v);
+					idToRealVar.put(id,v);
+				}
+			} else if (dom instanceof NumericListDomain) {
+				NumericListDomain nld = (NumericListDomain) dom;
+				BasicTypeEnum type = nld.getType();
+
+				if (type.equals(BasicTypeEnum.INTEGER)){
+					createEnumeratedDomain(var, nld, IntegerValueUpperware.class, IntegerValueUpperware::getValue);
+				} else if(type.equals(BasicTypeEnum.LONG)){
+					createEnumeratedDomain(var, nld, LongValueUpperware.class, value -> (int)value.getValue());
+				}
+				else if (type.equals(BasicTypeEnum.DOUBLE)){
+
+					double min = nld.getValues().stream().mapToDouble(value -> ((DoubleValueUpperware) value).getValue()).min().orElse(0d);
+					double max = nld.getValues().stream().mapToDouble(value -> ((DoubleValueUpperware) value).getValue()).max().orElse(Double.MAX_VALUE);
+
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, min, max, epsilon, solver);
+					log.info("RealVar: " + v);
+					idToRealVar.put(id,v);
+				}
+				else if (type.equals(BasicTypeEnum.FLOAT)){
+
+					double min = nld.getValues().stream().mapToDouble(value -> ((FloatValueUpperware) value).getValue()).min().orElse(0d);
+					double max = nld.getValues().stream().mapToDouble(value -> ((FloatValueUpperware) value).getValue()).max().orElse(Double.MAX_VALUE);
+
+					String id = var.getId();
+					RealVar v = VariableFactory.real(id, min, max, epsilon, solver);
+					log.info("RealVar: " + v);
+					idToRealVar.put(id,v);
+				}
+
+			} else if (dom instanceof NumericDomain){
 				//System.out.println("Got numeric domain for variable:" + var.getId());
 				NumericDomain nd = (NumericDomain)dom;
 				BasicTypeEnum type = nd.getType();
 				if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
 					String id = var.getId();
-					IntVar v = VariableFactory.bounded(id, LOW_INT_LIMIT, UPPER_INT_LIMIT, solver);
+					IntVar v = createIntVar(id);
 					log.info("IntVar: " + v);
-					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(id,v);
 				}
 				else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)){
 					String id = var.getId();
 					RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
 					log.info("RealVar: " + v);
-					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
-					idToRealVar.put(id,v);
-				}
-			}
-			else if (dom instanceof RangeDomain){
-				RangeDomain rd = (RangeDomain)dom;
-				//System.out.println("Got range domain for variable:" + var.getId());
-				BasicTypeEnum type = rd.getType();
-				//System.out.println("Type of variable: " + var.getId() + " is: " + type);
-				NumericValueUpperware val1 = rd.getFrom();
-				NumericValueUpperware val2 = rd.getTo();
-				if (type.equals(BasicTypeEnum.INTEGER)){
-					IntegerValueUpperware int1 = (IntegerValueUpperware)val1;
-					IntegerValueUpperware int2 = (IntegerValueUpperware)val2;
-					String id = var.getId();
-					//System.out.println("Integer variable has the values: " + int1.getValue() + " " + int2.getValue());
-					IntVar v = VariableFactory.bounded(id, int1.getValue(), int2.getValue(), solver);
-					log.info("IntVar: " + v);
-					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
-					idToIntVar.put(id,v);
-				}
-				else if(type.equals(BasicTypeEnum.LONG)){
-					LongValueUpperware long1 = (LongValueUpperware)val1;
-					LongValueUpperware long2 = (LongValueUpperware)val2;
-					String id = var.getId();
-					IntVar v = VariableFactory.bounded(id, (int)long1.getValue(), (int)long2.getValue(), solver);
-					log.info("IntVar: " + v);
-					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
-					idToIntVar.put(id,v);
-				}
-				else if (type.equals(BasicTypeEnum.DOUBLE)){
-					DoubleValueUpperware real1 = (DoubleValueUpperware)val1;
-					DoubleValueUpperware real2 = (DoubleValueUpperware)val2;
-					String id = var.getId();
-					RealVar v = VariableFactory.real(id, real1.getValue(), real2.getValue(), epsilon, solver);
-					log.info("RealVar: " + v);
-					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
-					idToRealVar.put(id,v);
-				}
-				else if (type.equals(BasicTypeEnum.FLOAT)){
-					FloatValueUpperware float1 = (FloatValueUpperware)val1;
-					FloatValueUpperware float2 = (FloatValueUpperware)val2;
-					String id = var.getId();
-					RealVar v = VariableFactory.real(id, float1.getValue(), float2.getValue(), epsilon, solver);
-					log.info("RealVar: " + v);
-					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(id,v);
 				}
 			}
 		}
 		log.info("------------------------------------------");
 	}
-	
+
+	private <T> void createEnumeratedDomain(Variable var, NumericListDomain nld, Class<T> type, ToIntFunction<? super T> mapper) {
+		int[] ints = nld.getValues()
+                .stream()
+                .filter(type::isInstance)
+				.map(type::cast)
+                .mapToInt(mapper)
+                .toArray();
+
+		String id = var.getId();
+		IntVar v = createIntVar(id, ints);
+		log.info("IntVar: " + v);
+		idToIntVar.put(id,v);
+	}
+
 	/* Creating the constants of the cp problem */
 	private void createConstants(EList<Constant> constants){
 		log.info("--------------- Constants ---------------");
@@ -1241,7 +1201,6 @@ public class CPSolver {
 					double val = ((DoubleValueUpperware)value).getValue();
 					RealVar var = VariableFactory.real(constant.getId(), val, val, epsilon, solver);
 					log.info("Constant " + constant.getId() + ": " + var);
-					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(constant.getId(),var);
 				} 
 			}
@@ -1250,16 +1209,14 @@ public class CPSolver {
 					int val = ((IntegerValueUpperware)value).getValue();
 					IntVar var = VariableFactory.fixed(val, solver);
 					log.info("Constant: " + constant.getId() + ": " + var);
-					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(constant.getId(),var);
 				}
 			}
 			else if (constant.getType().equals(BasicTypeEnum.LONG)){
 				if (value instanceof LongValueUpperware){
-					long val = ((IntegerValueUpperware)value).getValue();
+					long val = ((LongValueUpperware)value).getValue();
 					IntVar var = VariableFactory.fixed((int)val, solver);
 					log.info("Constant " + constant.getId() + ": " + var);
-					if (idToIntVar == null) idToIntVar = new Hashtable<String,IntVar>();
 					idToIntVar.put(constant.getId(),var);
 				}
 			}
@@ -1268,14 +1225,13 @@ public class CPSolver {
 					double val = ((FloatValueUpperware)value).getValue();
 					RealVar var = VariableFactory.real(constant.getId(), val, val, epsilon, solver);
 					log.info("Constant " + constant.getId() + ": " + var);
-					if (idToRealVar == null) idToRealVar = new Hashtable<String,RealVar>();
 					idToRealVar.put(constant.getId(),var);
 				}
 			}
 		}
 		log.info("------------------------------------------");
 	}
-	
+
 	/* Re-initializing the main configuration variables of the solver*/
 	private void dispose(){
 		intVarNum = 0;
@@ -1283,18 +1239,84 @@ public class CPSolver {
 		constNum = 0;
 	}
 
-	private double calculateUtility(){
+	private void calculateUtility(){
 
-		double utility = utilityFunctionEvaluator.evaluate(solver.retrieveIntVars());
-		log.info("Utility = " + utility);
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution = Arrays.stream(solver.retrieveIntVars())
+				.map(intVar -> new eu.melodic.upperware.utilitygenerator.model.IntVar(intVar.getName(), intVar.getValue()))
+				.collect(Collectors.toList());
+		log.debug("First step: {}", solution);
+
+		Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> intVars = addSingleValueVariables(solution);
+		log.debug("Second step: {}", solution);
+
+		double utility = utilityGenerator.evaluate(intVars); //TODO
 		if (utility > maxUtility){
-			maxUtility = utility;
-			log.info("Find max utility: " + maxUtility);
-			saveSolution();
+			log.info("New utility value {} is greater than {}", utility, maxUtility);
+			convertAndUpdateBestSolution(utility);
+		} else {
+			log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);
 		}
-		return utility;
 	}
 
-	
+	private Collection <eu.melodic.upperware.utilitygenerator.model.IntVar> addSingleValueVariables(Collection<eu.melodic.upperware.utilitygenerator.model.IntVar> solution) {
+
+		variablesForUG.stream()
+			.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
+			.forEach(v -> solution.add(new eu.melodic.upperware.utilitygenerator.model.IntVar(v.getId(), idToIntVar.get(v.getId()).getValue())));
+		return solution;
+
+	}
+
+	//todo - handling RealVar
+	private eu.melodic.upperware.utilitygenerator.model.RealVar[] convertToUtilityRealVariable(RealVar[] realVars) {
+		return Arrays.stream(realVars)
+				.map(realVar -> new eu.melodic.upperware.utilitygenerator.model.RealVar(realVar.getName(), realVar.getUB()))
+				.toArray(eu.melodic.upperware.utilitygenerator.model.RealVar[]::new);
+	}
+
+	private void createUtilityFunctionType(ConstraintProblem cp){
+		utilityFunctionType = cp.getConstants().stream()
+				.map(CPElement::getId)
+				.filter(s -> s.startsWith(utilityFunctionTypePrefix))
+				.map(String::toUpperCase)
+				.map(s -> s.replace(utilityFunctionTypePrefix, ""))
+				.map(UtilityFunctionType::valueOf)
+				.findFirst().orElse(UtilityFunctionType.DEFAULT);
+		log.info("utilityFunctionType= {}", utilityFunctionType);
+		
+	}
+
+	private BoolVar createBoolVar(){
+		return VariableFactory.bool(getBoolVarName(), solver);
+	}
+
+	private IntVar createIntVar() {
+		return createIntVar(getIntVarName());
+	}
+
+	private IntVar createIntVar(String name) {
+		return createIntVar(name, LOW_INT_LIMIT, UPPER_INT_LIMIT);
+	}
+
+	private IntVar createIntVar(Pair<Integer, Integer> range) {
+		return createIntVar(getIntVarName(), range.getLeft(), range.getRight());
+	}
+
+	private IntVar createIntVar(String name, int min, int max) {
+		return VariableFactory.bounded(name, min, max, solver);
+	}
+
+	private IntVar createIntVar(String name, int[] values) {
+		return VariableFactory.enumerated(name, values, solver);
+	}
+
+	private String getIntVarName(){
+		return "IntVar" + (intVarNum++);
+	}
+
+	private String getBoolVarName(){
+		return "BoolVar" + (intVarNum++);
+	}
+
 }
 

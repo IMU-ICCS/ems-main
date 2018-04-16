@@ -12,11 +12,11 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.NumericDomain#getType <em>Type</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.NumericDomain#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getNumericDomain()
  * @model

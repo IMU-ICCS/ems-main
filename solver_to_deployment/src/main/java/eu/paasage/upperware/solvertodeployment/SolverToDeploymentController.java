@@ -32,10 +32,10 @@ public class SolverToDeploymentController {
     String cdoResourcePath = request.getCdoModelsPath();
     String notificationUri = request.getNotificationURI();
     String requestUuid = request.getWatermark().getUuid();
-    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
+    log.info("Received request: {} {} {} {}", applicationId, cdoResourcePath, notificationUri, requestUuid);
 
     try {
-      solverToDeployment.doWorkTS(applicationId,cdoResourcePath , notificationUri, requestUuid);
+      solverToDeployment.doWorkTS(applicationId, cdoResourcePath, notificationUri, requestUuid);
     } catch (Exception e) {
       log.error("doWorkTS returned exception.", e);
     }

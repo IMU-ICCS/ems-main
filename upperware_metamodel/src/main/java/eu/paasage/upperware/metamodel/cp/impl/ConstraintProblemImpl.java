@@ -6,7 +6,6 @@ import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.DeltaUtility;
 import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.MetricVariable;
@@ -25,7 +24,9 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getGoals <em>Goals</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getConstants <em>Constants</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getVariables <em>Variables</em>}</li>
@@ -33,9 +34,9 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getAuxExpressions <em>Aux Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getMetricVariables <em>Metric Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getSolution <em>Solution</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getDeltaUtility <em>Delta Utility</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getDeployedSolutionId <em>Deployed Solution Id</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getCandidateSolutionId <em>Candidate Solution Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -67,6 +68,24 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	@Override
 	protected int eStaticFeatureCount() {
 		return 0;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getId() {
+		return (String)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__ID, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setId(String newId) {
+		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__ID, newId);
 	}
 
 	/**
@@ -144,8 +163,8 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public DeltaUtility getDeltaUtility() {
-		return (DeltaUtility)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__DELTA_UTILITY, true);
+	public int getDeployedSolutionId() {
+		return (Integer)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID, true);
 	}
 
 	/**
@@ -153,8 +172,26 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setDeltaUtility(DeltaUtility newDeltaUtility) {
-		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__DELTA_UTILITY, newDeltaUtility);
+	public void setDeployedSolutionId(int newDeployedSolutionId) {
+		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__DEPLOYED_SOLUTION_ID, newDeployedSolutionId);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public int getCandidateSolutionId() {
+		return (Integer)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setCandidateSolutionId(int newCandidateSolutionId) {
+		eSet(CpPackage.Literals.CONSTRAINT_PROBLEM__CANDIDATE_SOLUTION_ID, newCandidateSolutionId);
 	}
 
 } //ConstraintProblemImpl

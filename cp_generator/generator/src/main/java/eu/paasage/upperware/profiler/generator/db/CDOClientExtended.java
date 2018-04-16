@@ -80,32 +80,6 @@ public class CDOClientExtended extends CDOClient {
         storeModelsWithCrossReferences(collect, resourceName);
     }
 
-    public void storeModels(String resourceName) {
-        CDOTransaction trans = openTransaction();
-        CDOResource cdo = trans.getResource(resourceName);
-        EList<EObject> list = cdo.getContents();
-
-        ResourceSet rs = new ResourceSetImpl();
-
-        try {
-            File pcFile = new File("/temp/appModel.xmi");
-            Resource pcResource = rs.createResource(URI.createFileURI(pcFile.getCanonicalPath()));
-            pcResource.getContents().add(list.get(0));
-            modelService.saveModel(pcResource, pcFile.getCanonicalPath());
-
-
-            File cpFile = new File("/temp/cpModel.xmi");
-            Resource cpResource = rs.createResource(URI.createFileURI(cpFile.getCanonicalPath()));
-            cpResource.getContents().add(list.get(1));
-            modelService.saveModel(cpResource, cpFile.getCanonicalPath());
-
-            trans.close();
-
-        } catch (IOException e) {
-            log.error("Problem during saving models under path: " + resourceName, e);
-        }
-    }
-
     /* This method is used to obtain the content of a CDOResource with a
      * particular path/name. You should open a view before using this method
      * and then close it. Input parameter: the name/path of the CDOResource.
@@ -150,28 +124,4 @@ public class CDOClientExtended extends CDOClient {
         }
         return false;
     }
-
-    public List<EObject> getResourceContents(String path, CDOView view) {
-
-        CDOResource resource = view.getResource(path);
-        EList<EObject> content = resource.getContents();
-
-        List<EObject> qr = new ArrayList<EObject>();
-        log.debug("CDOClientExtended - getResourceContents - Retrieved Resource " + resource + " path " + path);
-
-        if (!content.isEmpty()) {
-            log.debug("CDOClientExtended - getResourceContents - Resource path " + path + " size " + content.size());
-
-            for (EObject o : content) {
-                log.debug("CDOClientExtended - getResourceContents - Content " + o);
-                qr.add(o);
-            }
-
-        } else {
-            log.warn("CDOClientExtended - getResourceContents - Resource path " + path + " is empty ");
-        }
-
-        return qr;
-    }
-
 }

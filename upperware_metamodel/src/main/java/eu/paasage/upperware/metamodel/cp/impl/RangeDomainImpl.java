@@ -15,11 +15,11 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl#getFrom <em>From</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.RangeDomainImpl#getTo <em>To</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

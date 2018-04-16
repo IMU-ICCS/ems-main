@@ -13,9 +13,9 @@
 
         <!--DOCKER plugin properties-->
         <docker.imageName>${docker.repository}melodic/s2d</docker.imageName>
-        <commons-collections.version>4.1</commons-collections.version>
 
     </properties>
+
 
     <groupId>eu.melodic</groupId>
     <artifactId>solver-to-deployment</artifactId>
@@ -35,6 +35,18 @@
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
             <artifactId>client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-cache</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-collections4</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -72,14 +84,23 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>${commons-collections.version}</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>eu.melodic.cloudiator</groupId>-->
+            <!--<artifactId>cloudiator-client</artifactId>-->
+            <!--<version>1.0.0-SNAPSHOT</version>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>io.github.cloudiator.client</groupId>
+            <artifactId>java-rest</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

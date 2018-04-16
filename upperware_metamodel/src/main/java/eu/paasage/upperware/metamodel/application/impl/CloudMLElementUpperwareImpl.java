@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -23,18 +15,18 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.CloudMLElementUpperwareImpl#getCloudMLId <em>Cloud ML Id</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public abstract class CloudMLElementUpperwareImpl extends CDOObjectImpl implements CloudMLElementUpperware {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected CloudMLElementUpperwareImpl() {
 		super();
@@ -43,7 +35,7 @@ public abstract class CloudMLElementUpperwareImpl extends CDOObjectImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -53,7 +45,7 @@ public abstract class CloudMLElementUpperwareImpl extends CDOObjectImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -63,7 +55,7 @@ public abstract class CloudMLElementUpperwareImpl extends CDOObjectImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getCloudMLId() {
 		return (String)eGet(ApplicationPackage.Literals.CLOUD_ML_ELEMENT_UPPERWARE__CLOUD_ML_ID, true);
@@ -72,7 +64,7 @@ public abstract class CloudMLElementUpperwareImpl extends CDOObjectImpl implemen
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setCloudMLId(String newCloudMLId) {
 		eSet(ApplicationPackage.Literals.CLOUD_ML_ELEMENT_UPPERWARE__CLOUD_ML_ID, newCloudMLId);

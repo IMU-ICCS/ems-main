@@ -11,11 +11,11 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ComposedExpression#getExpressions <em>Expressions</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ComposedExpression#getOperator <em>Operator</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getComposedExpression()
  * @model

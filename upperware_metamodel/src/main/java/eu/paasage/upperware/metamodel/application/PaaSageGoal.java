@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -25,6 +17,7 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageGoal#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageGoal#getGoal <em>Goal</em>}</li>
@@ -32,12 +25,11 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageGoal#getApplicationComponent <em>Application Component</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaaSageGoal#getApplicationMetric <em>Application Metric</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageGoal()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface PaaSageGoal extends CDOObject {
 	/**
@@ -51,8 +43,8 @@ public interface PaaSageGoal extends CDOObject {
 	 * @return the value of the '<em>Id</em>' attribute.
 	 * @see #setId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageGoal_Id()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getId();
 
@@ -62,7 +54,7 @@ public interface PaaSageGoal extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Id</em>' attribute.
 	 * @see #getId()
-	 * 
+	 * @generated
 	 */
 	void setId(String value);
 
@@ -79,8 +71,8 @@ public interface PaaSageGoal extends CDOObject {
 	 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
 	 * @see #setGoal(GoalOperatorEnum)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageGoal_Goal()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	GoalOperatorEnum getGoal();
 
@@ -91,7 +83,7 @@ public interface PaaSageGoal extends CDOObject {
 	 * @param value the new value of the '<em>Goal</em>' attribute.
 	 * @see eu.paasage.upperware.metamodel.cp.GoalOperatorEnum
 	 * @see #getGoal()
-	 * 
+	 * @generated
 	 */
 	void setGoal(GoalOperatorEnum value);
 
@@ -106,8 +98,8 @@ public interface PaaSageGoal extends CDOObject {
 	 * @return the value of the '<em>Function</em>' reference.
 	 * @see #setFunction(FunctionType)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageGoal_Function()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	FunctionType getFunction();
 
@@ -117,7 +109,7 @@ public interface PaaSageGoal extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Function</em>' reference.
 	 * @see #getFunction()
-	 * 
+	 * @generated
 	 */
 	void setFunction(FunctionType value);
 
@@ -132,8 +124,8 @@ public interface PaaSageGoal extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Application Component</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageGoal_ApplicationComponent()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<ComponentMetricRelationship> getApplicationComponent();
 
@@ -148,8 +140,8 @@ public interface PaaSageGoal extends CDOObject {
 	 * @return the value of the '<em>Application Metric</em>' attribute.
 	 * @see #setApplicationMetric(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaaSageGoal_ApplicationMetric()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getApplicationMetric();
 
@@ -159,12 +151,8 @@ public interface PaaSageGoal extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Application Metric</em>' attribute.
 	 * @see #getApplicationMetric()
-	 * 
+	 * @generated
 	 */
 	void setApplicationMetric(String value);
-
-	void setOptimisationAttribute(String value);
-
-	String getOptimisationAttribute();
 
 } // PaaSageGoal

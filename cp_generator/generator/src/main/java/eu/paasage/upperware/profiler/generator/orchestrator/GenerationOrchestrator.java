@@ -11,28 +11,27 @@
 
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
+import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
-import eu.paasage.upperware.metamodel.application.CloudMLElementUpperware;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.profiler.cp.generator.model.lib.PaaSageConfigurationWrapper;
+import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
-import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
-import eu.paasage.upperware.profiler.generator.service.camel.ConstraintProblemService;
+import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
-
 
 @Service
 @Slf4j
@@ -41,10 +40,12 @@ public class GenerationOrchestrator {
 
     private IDatabaseProxy database;
     private PaasageConfigurationService paaSageConfigurationService;
-    private ConstraintProblemService constraintProblemService;
     private NotificationService notificationService;
     private SloService sloService;
     private RequestSynchronizer requestSynchronizer;
+
+    private CdoService cdoService;
+    private NewConstraintProblemService newConstraintProblemService;
 
     /**
      * Generates the CP model by using the provided model path
@@ -56,7 +57,6 @@ public class GenerationOrchestrator {
     @Async
     public void generateCPModelAndSendNotification(String resourceName, String notificationUri, String requestUuid){
 
-
         try {
             requestSynchronizer.acquireLock(resourceName);
         } catch (Exception e) {
@@ -64,13 +64,20 @@ public class GenerationOrchestrator {
         }
 
         CpGenerationResult cpGenerationResult;
+        CDOTransaction cdoTransaction = null;
         try {
-            cpGenerationResult = generateCPModel(resourceName);
+            cdoTransaction = cdoService.openTransaction();
+            cpGenerationResult = generateCPModel(resourceName, cdoTransaction);
         } catch (Exception e) {
             log.error("Error during generating CpModel.", e);
             notificationService.notifyError(resourceName, notificationUri, requestUuid, e.getMessage());
             return;
         } finally {
+            if (cdoTransaction != null){
+                if (cdoTransaction.isClosed()){
+                    cdoTransaction.close();
+                }
+            }
             requestSynchronizer.releaseLock(resourceName);
         }
         sendNotification(cpGenerationResult, resourceName, notificationUri, requestUuid);
@@ -94,85 +101,45 @@ public class GenerationOrchestrator {
         }
     }
 
-    private CpGenerationResult generateCPModel(String resourceName) {
+    private CpGenerationResult generateCPModel(String resourceName, CDOTransaction cdoTransaction) {
         log.info("************************************CP Generator Model To Solver************************************");
-
-        CpGenerationResult result = null;
-
         log.info("Loading camel model {}", resourceName);
-        CamelModel camelModel = createCamelModel(resourceName);
 
-//        cdoClientExtended.exportModel(camelModel, "/home/pszkup/logs/"+resourceName+".xmi");
+        CamelModel camelModel;
+        try {
+            camelModel = cdoService.getCamelModel(resourceName, cdoTransaction);
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage(), e);
+            return CpGenerationResult.error("There is not Processor for Camel Models. The input model can not be processed");
+        }
 
         log.info("Camel model {} loaded", resourceName);
-        if (camelModel != null) {
 
-            PaaSageConfigurationWrapper pcw = paaSageConfigurationService.createPaasageConfigurationWrapper(camelModel);
-            PaasageConfiguration pc = pcw.getPaasageConfiguration();
+        String cpName = getCpName(camelModel);
 
-            if(!pcw.hasUserSolution() && CollectionUtils.isNotEmpty(pc.getProviders()) && CollectionUtils.isEmpty(pcw.getComponentsWithoutVM()) && pcw.isHasCorrectHostingRelationships()) {
-                log.info("** Calling CPModelDerivator");
+        //TODO - ten wrapper moze nie byc potrzebny.
+        PaasageConfiguration pc = paaSageConfigurationService.createPaasageConfiguration(camelModel, cpName);
 
-                ConstraintProblem cp = constraintProblemService.derivateConstraintProblem(camelModel, pc);
-                sloService.update(camelModel, cp);
+        log.info("** Calling CPModelDerivator");
 
-                String cpId = CDO_SERVER_PATH + pc.getId();
-                log.debug("** Calling DatabseProxy ");
-                database.saveModels(pc, cp);
-                log.info("** CP Model Id: "+ cpId);
+        ConstraintProblem cp = newConstraintProblemService.createConstraintProblem(camelModel, cpName);
+        sloService.update(camelModel, cp);
 
-                result = CpGenerationResult.succes(cpId);
-            } else if(pcw.hasUserSolution() && pcw.isValidUserSolution()) {
-                result = CpGenerationResult.info("The user already provided a solution for the deployment. The CP Model will be not generated!");
-            } else if(CollectionUtils.isEmpty(pc.getProviders())) {
-                result = CpGenerationResult.info("There is not a suitable provider. The CP Model will be not generated!");
-            } else if(!pcw.isHasCorrectHostingRelationships()) {
-                result = CpGenerationResult.info("There are missing hosting relationships in the deployment model. The CP Model will be not generated!");
-            } else if(CollectionUtils.isNotEmpty(pcw.getComponentsWithoutVM())) {
-                String msg = pcw.getComponentsWithoutVM()
-                        .stream()
-                        .map(CloudMLElementUpperware::getCloudMLId)
-                        .collect(Collectors.joining(", ", "There are not suitable providers for the following components: ", " The CP Model will be not generated!"));
+        String cpId = CDO_SERVER_PATH + cpName;
+        log.debug("** Calling DatabseProxy ");
+        database.saveModels(pc, cp);
+        log.info("** CP Model Id: {}", cpId);
 
-                result = CpGenerationResult.info(msg);
-            } else {
-                result = CpGenerationResult.info("The user already provided a solution for the deployment but it is not valid. The CP Model will be not generated!");
-            }
-        } else {
-            result =  CpGenerationResult.error("There is not Processor for Camel Models. The input model can not be processed");
-        }
-        return result;
+        return CpGenerationResult.succes(cpId);
     }
 
-//    private InternalComponent getInternalComponent(String vmProvidedHostName, EList<InternalComponent> internalComponents, EList<Hosting> hostings) {
-//        InternalComponent result = null;
-//
-//        String requiredHostName = null;
-//        for (Hosting hosting : hostings) {
-//            ProvidedHost providedHost = hosting.getProvidedHost();
-//            if (providedHost != null) {
-//                String name = providedHost.getName();
-//                if (vmProvidedHostName.equals(name)) {
-//                    RequiredHost requiredHost = hosting.getRequiredHost();
-//                    if (requiredHost != null) {
-//                        requiredHostName = requiredHost.getName();
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (requiredHostName != null) {
-//            for (InternalComponent internalComponent : internalComponents) {
-//                if (requiredHostName.equals(internalComponent.getRequiredHost().getName())) {
-//                    result = internalComponent;
-//                }
-//            }
-//        }
-//
-//        return result;
-//    }
+    private String getCpName(CamelModel camelModel) {
+        String appId = getAppId(camelModel);
+        return appId + System.currentTimeMillis();
+    }
 
-    private CamelModel createCamelModel(String resourceName) {
-        return database.getCamelModel(resourceName);
+    private String getAppId(CamelModel camelModel) {
+        EList<Application> applications = camelModel.getApplications();
+        return CollectionUtils.isNotEmpty(applications) ? applications.get(0).getName() : camelModel.getName();
     }
 }

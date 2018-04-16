@@ -11,10 +11,10 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.Function#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getFunction()
  * @model

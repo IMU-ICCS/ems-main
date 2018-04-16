@@ -4,29 +4,34 @@
 
 package eu.paasage.upperware.solvertodeployment.lib;
 
+import eu.melodic.cache.CacheService;
+import eu.melodic.cache.CacheUtils;
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequest;
 import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequestImpl;
-import eu.paasage.camel.deployment.*;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
-
 import eu.paasage.camel.CamelModel;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
+import eu.paasage.camel.deployment.DeploymentElement;
+import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
+import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
+import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
@@ -35,6 +40,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
@@ -47,24 +53,30 @@ public class SolverToDeployment {
 
 	private RestTemplate restTemplate;
 	private Environment env;
+	private CacheService<NodeCandidates> cacheService;
+	private SolverToDeploymentProperties solverToDeploymentProperties;
 		
 	@Async
 	public void doWorkTS(String camelModelID, String paasageConfigurationID, String notificationUri,  String requestUuid)
 					throws S2DException {
-		log.info("Application ID: "+camelModelID);
-		log.info("CDO models path: "+paasageConfigurationID);
-		log.info("Notification URI: "+notificationUri);
-		log.info("UID: "+requestUuid);
+		log.info("Application ID: {}", camelModelID);
+		log.info("CDO models path: {}", paasageConfigurationID);
+		log.info("Notification URI: {}", notificationUri);
+		log.info("UUID: {}", requestUuid);
 
 		try {
-			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
-			CDOView cdoView = cdoProxy.getCdoClient().openView();
+			NodeCandidates nodeCandidates = Objects.requireNonNull(cacheService.load(CacheUtils.createCacheKey(paasageConfigurationID)));
 
-			EList<EObject> contentsCM = cdoView.getResource(camelModelID).getContents();
-			CamelModel camelModel= (CamelModel)contentsCM.get(0);
+			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
+			CDOTransaction cdoTransaction = cdoProxy.getCdoClient().openTransaction();
+
+			EList<EObject> contentsCM = cdoTransaction.getResource(camelModelID).getContents();
+
+			CamelModel camelModel = CdoTool.getLastCamelModel(contentsCM)
+                .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+
 			
-			EList<EObject> contentsPC = cdoView.getResource(paasageConfigurationID).getContents();
-			PaasageConfiguration paasageConfiguration = (PaasageConfiguration) contentsPC.get(0);
+			EList<EObject> contentsPC = cdoTransaction.getResource(paasageConfigurationID).getContents();
 			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(1);
 
 			// Checking if there is a solution
@@ -73,49 +85,27 @@ public class SolverToDeployment {
 				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 				return;
 			}
-			
-			// Computing solutionId from solutionTS
-			int solutionId=-1;
-			long maxTS= -1L;
 
-			for(int i =0; i<constraintProblem.getSolution().size(); i++) {
-				Solution sol = constraintProblem.getSolution().get(i);
-				long timestamp = sol.getTimestamp();
-				if (timestamp == 0) {
-					solutionId = i;
-					break;
-				} else if (timestamp > maxTS) {
-					maxTS = timestamp;
-					solutionId=i;
-				}
-			}
-
-			log.info("Using the solution with highest TS: "+maxTS);
-			log.info("Using entry: "+solutionId);
-			
+			Solution solution = CPModelTool.searchLastSolution(constraintProblem.getSolution());
 
 			// Do Work
 			try {
-				// copy provider to source camel doc
-				String results[] = paasageConfigurationID.split("/");
-				String fmsId = results[1];
-				DataUtils.copyCloudProviders(camelModel, camelModelID, fmsId, paasageConfiguration, constraintProblem, solutionId);
+				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(camelModelID);
 
-				// Create a new DM to store the instances from solution
-				int newDmId = CDODatabaseProxy2.copyDeploymentModel(camelModelID, 0, false, 0);
-				DeploymentModel newDm = camelModel.getDeploymentModels().get(newDmId);
-
-				CloudMLHelper.setGlobalDMIdx(newDmId);
+				CloudMLHelper.setGlobalDMIdx(dmId);
 				CloudMLHelper.resetGlobalCount();
 
+				DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(dmId);
+
 				// Generate new instances into this new DM of camel
-				DataHolder dataholder  = DataUtils.computeDatasToRegister(paasageConfiguration, newDm, constraintProblem, solutionId, camelModelID);
+				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution,
+						camelModelID, nodeCandidates, solverToDeploymentProperties);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;
 				}
 
-				dataholder.setDmId(camelModel.getDeploymentModels().size()-1);
+				dataholder.setDmId(dmId);
 				DataUtils.registerDataHolderToCDO(camelModelID, dataholder); // COPY TO CDO
 
 			} catch (S2DException | CommitException e) {

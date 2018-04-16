@@ -5,8 +5,11 @@ package eu.paasage.upperware.metamodel.application.impl;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.CloudMLElementUpperware;
 import eu.paasage.upperware.metamodel.application.RequiredFeature;
+
 import eu.paasage.upperware.metamodel.types.typesPaasage.CommunicationTypeUpperware;
+
 import org.eclipse.emf.ecore.EClass;
+
 import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
 /**
@@ -15,6 +18,7 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#getFeature <em>Feature</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#getProvidedBy <em>Provided By</em>}</li>
@@ -22,7 +26,6 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#isOptional <em>Optional</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.RequiredFeatureImpl#isContaiment <em>Contaiment</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application.impl;
 
@@ -24,19 +16,19 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ComponentMetricRelationshipImpl#getComponent <em>Component</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.impl.ComponentMetricRelationshipImpl#getMetricId <em>Metric Id</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements ComponentMetricRelationship {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected ComponentMetricRelationshipImpl() {
 		super();
@@ -45,7 +37,7 @@ public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements Co
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -55,7 +47,7 @@ public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements Co
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected int eStaticFeatureCount() {
@@ -65,7 +57,7 @@ public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements Co
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public ApplicationComponent getComponent() {
 		return (ApplicationComponent)eGet(ApplicationPackage.Literals.COMPONENT_METRIC_RELATIONSHIP__COMPONENT, true);
@@ -74,7 +66,7 @@ public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements Co
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setComponent(ApplicationComponent newComponent) {
 		eSet(ApplicationPackage.Literals.COMPONENT_METRIC_RELATIONSHIP__COMPONENT, newComponent);
@@ -83,7 +75,7 @@ public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements Co
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public String getMetricId() {
 		return (String)eGet(ApplicationPackage.Literals.COMPONENT_METRIC_RELATIONSHIP__METRIC_ID, true);
@@ -92,7 +84,7 @@ public class ComponentMetricRelationshipImpl extends CDOObjectImpl implements Co
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setMetricId(String newMetricId) {
 		eSet(ApplicationPackage.Literals.COMPONENT_METRIC_RELATIONSHIP__METRIC_ID, newMetricId);

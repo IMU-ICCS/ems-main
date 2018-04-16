@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.types.impl;
 
@@ -21,18 +13,18 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.types.impl.LongValueUpperwareImpl#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
- * 
+ * @generated
  */
 public class LongValueUpperwareImpl extends NumericValueUpperwareImpl implements LongValueUpperware {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	protected LongValueUpperwareImpl() {
 		super();
@@ -41,7 +33,7 @@ public class LongValueUpperwareImpl extends NumericValueUpperwareImpl implements
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	@Override
 	protected EClass eStaticClass() {
@@ -51,7 +43,7 @@ public class LongValueUpperwareImpl extends NumericValueUpperwareImpl implements
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public long getValue() {
 		return (Long)eGet(TypesPackage.Literals.LONG_VALUE_UPPERWARE__VALUE, true);
@@ -60,7 +52,7 @@ public class LongValueUpperwareImpl extends NumericValueUpperwareImpl implements
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * 
+	 * @generated
 	 */
 	public void setValue(long newValue) {
 		eSet(TypesPackage.Literals.LONG_VALUE_UPPERWARE__VALUE, newValue);

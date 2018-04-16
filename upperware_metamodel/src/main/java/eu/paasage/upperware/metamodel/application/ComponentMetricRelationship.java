@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -19,16 +11,16 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ComponentMetricRelationship#getComponent <em>Component</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.ComponentMetricRelationship#getMetricId <em>Metric Id</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getComponentMetricRelationship()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface ComponentMetricRelationship extends CDOObject {
 	/**
@@ -42,8 +34,8 @@ public interface ComponentMetricRelationship extends CDOObject {
 	 * @return the value of the '<em>Component</em>' reference.
 	 * @see #setComponent(ApplicationComponent)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getComponentMetricRelationship_Component()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	ApplicationComponent getComponent();
 
@@ -53,7 +45,7 @@ public interface ComponentMetricRelationship extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Component</em>' reference.
 	 * @see #getComponent()
-	 * 
+	 * @generated
 	 */
 	void setComponent(ApplicationComponent value);
 
@@ -68,8 +60,8 @@ public interface ComponentMetricRelationship extends CDOObject {
 	 * @return the value of the '<em>Metric Id</em>' attribute.
 	 * @see #setMetricId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getComponentMetricRelationship_MetricId()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	String getMetricId();
 
@@ -79,7 +71,7 @@ public interface ComponentMetricRelationship extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Metric Id</em>' attribute.
 	 * @see #getMetricId()
-	 * 
+	 * @generated
 	 */
 	void setMetricId(String value);
 

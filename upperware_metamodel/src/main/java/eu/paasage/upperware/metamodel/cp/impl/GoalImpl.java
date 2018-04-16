@@ -15,12 +15,12 @@ import org.eclipse.emf.ecore.EClass;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.GoalImpl#getExpression <em>Expression</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.GoalImpl#getGoalType <em>Goal Type</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.GoalImpl#getPriority <em>Priority</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

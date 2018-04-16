@@ -13,11 +13,11 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ListDomain#getValues <em>Values</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ListDomain#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getListDomain()
  * @model

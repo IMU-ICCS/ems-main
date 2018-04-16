@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -23,6 +15,7 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaasageConfiguration#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaasageConfiguration#getGoals <em>Goals</em>}</li>
@@ -35,12 +28,11 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaasageConfiguration#getVms <em>Vms</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.PaasageConfiguration#getMonitoredDimensions <em>Monitored Dimensions</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration()
- * 
+ * @model
  * @extends CDOObject
- * 
+ * @generated
  */
 public interface PaasageConfiguration extends CDOObject {
 	/**
@@ -54,8 +46,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * @return the value of the '<em>Id</em>' attribute.
 	 * @see #setId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Id()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getId();
 
@@ -65,7 +57,7 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Id</em>' attribute.
 	 * @see #getId()
-	 * 
+	 * @generated
 	 */
 	void setId(String value);
 
@@ -80,8 +72,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Goals</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Goals()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<PaaSageGoal> getGoals();
 
@@ -96,8 +88,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Variables</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Variables()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<PaaSageVariable> getVariables();
 
@@ -112,8 +104,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Rules</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Rules()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<ElasticityRule> getRules();
 
@@ -128,8 +120,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Components</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Components()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<ApplicationComponent> getComponents();
 
@@ -144,8 +136,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Providers</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Providers()
-	 *  containment="true" required="true"
-	 * 
+	 * @model containment="true" required="true"
+	 * @generated
 	 */
 	EList<Provider> getProviders();
 
@@ -160,8 +152,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Vm Profiles</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_VmProfiles()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<VirtualMachineProfile> getVmProfiles();
 
@@ -176,8 +168,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Aux Expressions</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_AuxExpressions()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<Expression> getAuxExpressions();
 
@@ -192,8 +184,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Vms</em>' containment reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_Vms()
-	 *  containment="true"
-	 * 
+	 * @model containment="true"
+	 * @generated
 	 */
 	EList<VirtualMachine> getVms();
 
@@ -208,8 +200,8 @@ public interface PaasageConfiguration extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Monitored Dimensions</em>' reference list.
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getPaasageConfiguration_MonitoredDimensions()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	EList<Dimension> getMonitoredDimensions();
 

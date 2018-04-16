@@ -4,15 +4,10 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.requirement.OptimisationRequirement;
 import eu.paasage.upperware.metamodel.application.*;
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.types.typesPaasage.FunctionType;
-import eu.paasage.upperware.profiler.cp.generator.model.tools.CPModelTool;
-import eu.paasage.upperware.profiler.generator.function.creators.impl.CostFunctionCreator;
-import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
-import eu.paasage.upperware.profiler.generator.function.creators.FunctionCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
+import eu.passage.upperware.commons.model.tools.CPModelTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,23 +24,17 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
 
     public static final String ONE_CONSTANT ="one_constant";
     public static final String CERO_CONSTANT ="cero_constant";
-    private static final String COST = "Cost";
 
     private CpFactory cpFactory;
-    private ApplicationFactory applicationFactory;
 
     private ConstantService constantService;
     private ConstraintService constraintService;
     private VariableService variableService;
-    private IDatabaseProxy databaseProxy;
     private PaasageConfigurationServiceImpl paasageConfigurationService;
     private PaasageConfigurationUtilsService paasageConfigurationUtilsService;
     private DimensionDerivatorService dimensionDerivatorService;
-    private DeltaFunctionService deltaFunctionService;
 
     private List<GeneratorService> generatorServices;
-    private List<FunctionCreator> functionCreators;
-
 
     @Override
     public ConstraintProblem derivateConstraintProblem(CamelModel camel, PaasageConfiguration configuration) {
@@ -72,73 +61,11 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
         log.info("** 		Creating User objective functions ");
         dimensionDerivatorService.createDimensions(camel, cp, complexOptRequirements);
 
-
-//        log.info("** 		Creating User constraints ");
-//        dimensionsDerivator.createConstraints(camel, cp);
-
-        log.info("** 		Creating Delta Utility Function ");
-        deltaFunctionService.createDeltaFunction(cp);
-
-        log.info("** 		Creating functions");
-        createFunction(cp, configuration);
-
         log.debug("** 		CP Creation ended");
         log.debug(cp.toString());
         printCpModel(cp);
         log.debug("** 		CP Creation ended2");
         return cp;
-    }
-
-    private void createFunction(ConstraintProblem cp, PaasageConfiguration configuration) {
-        if(CollectionUtils.isNotEmpty(configuration.getGoals())) {
-            log.debug("Creating function! ");
-            for(PaaSageGoal goal:configuration.getGoals()) {
-                log.debug("Retrieving FunctionCreator for {}", goal.getFunction().getId());
-                Optional<FunctionCreator> functionCreator = getFunctionCreator(goal.getFunction().getId());
-
-                if (functionCreator.isPresent()){
-                    functionCreator.get().createFunction(cp, goal);
-                    log.debug("FunctionCreator created for {}!", goal.getFunction().getId());
-                } else {
-                    log.error("FunctionCreator for {} not found");
-                }
-            }
-        } else {
-            createDefaultFunction(cp, configuration);
-        }
-    }
-
-    private void createDefaultFunction(ConstraintProblem cp, PaasageConfiguration configuration) {
-        //By default a function the price is created
-
-        log.debug("CPModelDerivator - derivateConstraintProblem - Cost! ");
-
-        PaaSageGoal goal = applicationFactory.createPaaSageGoal();
-
-        GoalOperatorEnum defaultGoalType = GoalOperatorEnum.MIN;
-
-        FunctionType defaultFunctionType = getFunctionTypeByName(COST, databaseProxy);
-        goal.setFunction(defaultFunctionType);
-        goal.setGoal(defaultGoalType);
-        goal.setId(defaultGoalType.getName() + defaultFunctionType.getId());
-
-        configuration.getGoals().add(goal);
-
-        //Create the Cost creator
-
-        Optional<FunctionCreator> costCreatorOpt = getFunctionCreator(CostFunctionCreator.NAME);
-        costCreatorOpt.ifPresent(functionCreator -> functionCreator.createFunction(cp, goal));
-        log.debug("CPModelDerivator - derivateConstraintProblem - Cost function created! ");
-    }
-
-
-    public FunctionType getFunctionTypeByName(String name, IDatabaseProxy proxy) {
-        for (FunctionType ft : proxy.loadFunctionTypes().getTypes()) {
-            if (name.toLowerCase().contains(ft.getId().toLowerCase())) //TODO It should be not like this. How to identify the type of a raw metric ??
-                return ft;
-        }
-
-        return null;
     }
 
     private void resetServices() {
@@ -328,21 +255,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
             log.info("Solution: " + sol.getClass());
         }
 
-        log.info("GOAL");
-        for(Goal goal : cp.getGoals()){
-            log.info(CPModelTool.toString(goal));
-        }
-
-        log.info("DELTA UTILITY");
-        DeltaUtility deltaUtility = cp.getDeltaUtility();
-        log.info(CPModelTool.toString(deltaUtility));
-
-    }
-
-    private Optional<FunctionCreator> getFunctionCreator(String name) {
-        return functionCreators.stream()
-                .filter(functionCreator -> functionCreator.getName().equals(name))
-                .findFirst();
     }
 
 }

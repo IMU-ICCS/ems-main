@@ -1,12 +1,4 @@
 /**
- * Copyright (C) 2015 INRIA, Université Lille 1
- *
- * Contacts: daniel.romero@inria.fr laurence.duchien@inria.fr & lionel.seinturier@inria.fr
- * Date: 09/2015
- 
- * This Source Code Form is subject to the terms of the Mozilla Public 
- * License, v. 2.0. If a copy of the MPL was not distributed with this 
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 package eu.paasage.upperware.metamodel.application;
 
@@ -21,16 +13,16 @@ import eu.paasage.upperware.metamodel.types.typesPaasage.ProviderType;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.application.Provider#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.Provider#getLocation <em>Location</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.application.Provider#getType <em>Type</em>}</li>
  * </ul>
- * </p>
  *
  * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProvider()
- * 
- * 
+ * @model
+ * @generated
  */
 public interface Provider extends PaaSageCPElement {
 	/**
@@ -44,8 +36,8 @@ public interface Provider extends PaaSageCPElement {
 	 * @return the value of the '<em>Id</em>' attribute.
 	 * @see #setId(String)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProvider_Id()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	String getId();
 
@@ -55,7 +47,7 @@ public interface Provider extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Id</em>' attribute.
 	 * @see #getId()
-	 * 
+	 * @generated
 	 */
 	void setId(String value);
 
@@ -70,8 +62,8 @@ public interface Provider extends PaaSageCPElement {
 	 * @return the value of the '<em>Location</em>' reference.
 	 * @see #setLocation(LocationUpperware)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProvider_Location()
-	 * 
-	 * 
+	 * @model
+	 * @generated
 	 */
 	LocationUpperware getLocation();
 
@@ -81,7 +73,7 @@ public interface Provider extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Location</em>' reference.
 	 * @see #getLocation()
-	 * 
+	 * @generated
 	 */
 	void setLocation(LocationUpperware value);
 
@@ -96,8 +88,8 @@ public interface Provider extends PaaSageCPElement {
 	 * @return the value of the '<em>Type</em>' reference.
 	 * @see #setType(ProviderType)
 	 * @see eu.paasage.upperware.metamodel.application.ApplicationPackage#getProvider_Type()
-	 *  required="true"
-	 * 
+	 * @model required="true"
+	 * @generated
 	 */
 	ProviderType getType();
 
@@ -107,7 +99,7 @@ public interface Provider extends PaaSageCPElement {
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Type</em>' reference.
 	 * @see #getType()
-	 * 
+	 * @generated
 	 */
 	void setType(ProviderType value);
 
