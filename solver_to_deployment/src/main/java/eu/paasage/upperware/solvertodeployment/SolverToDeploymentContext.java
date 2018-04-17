@@ -10,9 +10,9 @@
 package eu.paasage.upperware.solvertodeployment;
 
 import eu.melodic.cache.properties.CacheProperties;
-import eu.passage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.passage.upperware.security.authapi.token.JWTService;
-import eu.passage.upperware.security.authapi.token.JWTServiceImpl;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;

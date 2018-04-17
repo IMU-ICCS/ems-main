@@ -1,8 +1,8 @@
-package eu.passage.upperware.security.server;
+package eu.paasage.upperware.security.server;
 
 import eu.melodic.models.interfaces.security.UserRequest;
-import eu.passage.upperware.security.server.user.ApplicationUser;
-import eu.passage.upperware.security.server.user.ApplicationUserRepository;
+import eu.paasage.upperware.security.server.user.ApplicationUser;
+import eu.paasage.upperware.security.server.user.ApplicationUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

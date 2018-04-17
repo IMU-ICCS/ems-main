@@ -1,4 +1,4 @@
-package eu.passage.upperware.security.authapi.properties;
+package eu.paasage.upperware.security.authapi.properties;
 
 import lombok.Getter;
 import lombok.Setter;

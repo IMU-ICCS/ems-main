@@ -1,4 +1,4 @@
-package eu.passage.upperware.security.server.user;
+package eu.paasage.upperware.security.server.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.User;

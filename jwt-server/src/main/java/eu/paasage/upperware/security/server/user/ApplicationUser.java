@@ -1,4 +1,4 @@
-package eu.passage.upperware.security.server.user;
+package eu.paasage.upperware.security.server.user;
 
 import eu.melodic.models.interfaces.security.UserRequest;
 import lombok.Getter;

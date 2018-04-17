@@ -1,7 +1,7 @@
-package eu.passage.upperware.security.authapi.token;
+package eu.paasage.upperware.security.authapi.token;
 
-import eu.passage.upperware.security.authapi.SecurityConstants;
-import eu.passage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.SecurityConstants;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

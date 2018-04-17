@@ -1,4 +1,4 @@
-package eu.passage.upperware.security.authapi.token;
+package eu.paasage.upperware.security.authapi.token;
 
 import io.jsonwebtoken.Claims;
 

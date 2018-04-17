@@ -7,11 +7,11 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.passage.upperware.security.server;
+package eu.paasage.upperware.security.server;
 
-import eu.passage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.passage.upperware.security.authapi.token.JWTService;
-import eu.passage.upperware.security.authapi.token.JWTServiceImpl;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;

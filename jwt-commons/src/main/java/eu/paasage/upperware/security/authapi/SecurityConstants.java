@@ -1,4 +1,4 @@
-package eu.passage.upperware.security.authapi;
+package eu.paasage.upperware.security.authapi;
 
 public class SecurityConstants {
 	public static final String TOKEN_PREFIX = "Bearer ";

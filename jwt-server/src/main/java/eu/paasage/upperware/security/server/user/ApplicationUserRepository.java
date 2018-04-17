@@ -1,4 +1,4 @@
-package eu.passage.upperware.security.server.user;
+package eu.paasage.upperware.security.server.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;

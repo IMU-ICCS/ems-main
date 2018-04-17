@@ -1,6 +1,6 @@
-package eu.passage.upperware.security.authapi;
+package eu.paasage.upperware.security.authapi;
 
-import eu.passage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;

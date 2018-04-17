@@ -1,7 +1,7 @@
-package eu.passage.upperware.security.server;
+package eu.paasage.upperware.security.server;
 
-import eu.passage.upperware.security.authapi.JWTAuthenticationFilter;
-import eu.passage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.JWTAuthenticationFilter;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;

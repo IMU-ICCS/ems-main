@@ -1,7 +1,7 @@
 package eu.paasage.upperware.profiler.generator;
 
-import eu.passage.upperware.security.authapi.JWTAuthorizationFilter;
-import eu.passage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

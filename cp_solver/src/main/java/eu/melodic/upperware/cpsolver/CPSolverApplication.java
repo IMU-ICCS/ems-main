@@ -28,7 +28,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @Configuration
 @ComponentScan(basePackages = {"eu.melodic.upperware.cpsolver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator",
-        "eu.passage.upperware.security.authapi.properties"})
+        "eu.paasage.upperware.security.authapi.properties"})
 public class CPSolverApplication {
 
   public static void main(String[] args) {

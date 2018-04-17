@@ -28,7 +28,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @Configuration
 @ComponentScan(basePackages = {"eu.paasage.upperware.solvertodeployment", "eu.melodic.cache",
-        "eu.passage.upperware.security.authapi.properties"})
+        "eu.paasage.upperware.security.authapi.properties"})
 public class SolverToDeploymentApplication {
 
   public static void main(String[] args) {

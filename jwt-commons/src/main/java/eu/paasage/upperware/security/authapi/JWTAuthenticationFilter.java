@@ -1,9 +1,9 @@
-package eu.passage.upperware.security.authapi;
+package eu.paasage.upperware.security.authapi;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.models.interfaces.security.UserRequest;
-import eu.passage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

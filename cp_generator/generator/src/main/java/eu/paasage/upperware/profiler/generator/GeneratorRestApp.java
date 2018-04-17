@@ -13,7 +13,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @Slf4j
 @EnableAsync
-@ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache", "eu.passage.upperware.security.authapi.properties"})
+@ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache", "eu.paasage.upperware.security.authapi.properties"})
 public class GeneratorRestApp {
 
 

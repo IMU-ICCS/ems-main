@@ -16,7 +16,7 @@ This provides application with the properties (in that way can be provided exter
 */
 
 
-package eu.passage.upperware.security.server;
+package eu.paasage.upperware.security.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,7 +27,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableAsync
 @Configuration
-@ComponentScan(basePackages = {"eu.passage.upperware.security.server", "eu.passage.upperware.security.authapi.properties"})
+@ComponentScan(basePackages = {"eu.paasage.upperware.security.server", "eu.paasage.upperware.security.authapi.properties"})
 public class JwtServerApplication {
 
   public static void main(String[] args) {
