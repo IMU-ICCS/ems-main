@@ -17,7 +17,7 @@
 	<properties>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
-		<docker.imageName>${docker.repository}melodic/vms-discovery-server-release1.5</docker.imageName>
+		<docker.imageName>${docker.repository}melodic/vms-discovery-server</docker.imageName>
 		<docker.jarToInclude>vms-discovery-server-docker.zip</docker.jarToInclude>
 	</properties>
 	
