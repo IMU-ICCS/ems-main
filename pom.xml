@@ -268,30 +268,26 @@
     </build>
     <repositories>
         <repository>
-            <id>eu.7bulls.snapshot</id>
+            <id>eu.7bulls</id>
             <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
-            <id>eu.7bulls.release</id>
-            <name>Melodic 7bulls repository - RELEASES</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
-        </repository>
-        <repository>
-            <id>ow2.release</id>
+            <id>ow2</id>
             <name>OW2 repository</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
-        </repository>
-        <repository>
-            <id>ow2.snapshot</id>
-            <name>OW2 repository</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <!--TODO to remove-->
-        <repository>
-            <id>gforge.inria.fr-release</id>
-            <name>Maven Repository for Saloon</name>
-            <url>http://saloon.gforge.inria.fr/repositories/releases/</url>
+            <url>http://repository.ow2.org/nexus/content/repositories/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>paasage.repo</id>
@@ -309,12 +305,16 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>choco.repos</id>
+            <url>http://www.emn.fr/z-info/choco-repo/mvn/repository/</url>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>
-            <id>ow2.release</id>
-            <name>Internal Releases</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
             <id>eu.7bulls</id>
@@ -324,8 +324,8 @@
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:https://mprzesmycki@bitbucket.7bulls.eu/scm/mel/upperware.git</connection>
-        <developerConnection>scm:git:https://mprzesmycki@bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
+        <connection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</connection>
+        <developerConnection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
     </scm>
 
 </project>
