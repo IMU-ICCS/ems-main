@@ -20,7 +20,6 @@ import java.util.List;
 
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countNumberOfCores;
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertToDoubleMetric;
-import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertToIntMetric;
 
 @Slf4j
 public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator {
@@ -28,13 +27,8 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     private CostUtilityFunction costUtilityFunction;
 
     /* hardcoded for release 1.5 */
-    private static final String METRIC_SIMULATIONS_LEFT = "METRIC_SimulationLeftNumber";
-    private static final String METRIC_ET_PERCENTILE = "METRIC_ETPercentile";
-    private static final String METRIC_REMAINING_SIMULATION_TIME = "METRIC_RemainingSimulationTimeMetric";
-
-    private IntMetric simulationLeftNumber;
-    private DoubleMetric ETPercentile;
-    private IntMetric remainingSimulationTime;
+    private static final String METRIC_MINIMUM_CORES = "METRIC_MinimumCores";
+    private DoubleMetric minimumCores;
 
 
     public UtilityFunctionEvaluatorCETraffic(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates,
@@ -48,7 +42,7 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
 
-        if (isReconfig && (!(estimateTimeToComplete(newConfiguration) <= remainingSimulationTime.getValue()))) {
+        if (isReconfig && minimumCores.getValue() > (double) countNumberOfCores(newConfiguration)){
             log.warn("Solution does not allow to complete all simulations by the deadline");
             return 0.0;
         } else {
@@ -58,16 +52,7 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
 
     private void getAndAssignMetrics(List<MetricDTO> metricDTOS) {
 
-        this.remainingSimulationTime = convertToIntMetric(metricDTOS, METRIC_REMAINING_SIMULATION_TIME, MetricType.REMAINING_SIMULATION_TIME, 0);
-        this.simulationLeftNumber = convertToIntMetric(metricDTOS, METRIC_SIMULATIONS_LEFT, MetricType.SIMULATIONS_LEFT, 0);
-        this.ETPercentile = convertToDoubleMetric(metricDTOS, METRIC_ET_PERCENTILE, MetricType.ET_PERCENTILE, 0.0);
-    }
-
-
-    private double estimateTimeToComplete(Collection<ConfigurationElement> newConfiguration) {
-        double result = simulationLeftNumber.getValue() / (double) countNumberOfCores(newConfiguration) * ETPercentile.getValue();
-        log.info("Estimated time to complete all tasks is {}", result);
-        return result;
+        this.minimumCores = convertToDoubleMetric(metricDTOS, METRIC_MINIMUM_CORES, MetricType.MINIMUM_CORES, 0.0);
     }
 
     /* for tests*/

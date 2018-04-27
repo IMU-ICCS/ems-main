@@ -10,8 +10,6 @@ package eu.melodic.upperware.utilitygenerator.model;
 
 public enum MetricType {
 
-    AVG_RESPONSE_TIME,
-    RAM_USAGE, MAX_RAM_USAGE,
-    SIMULATIONS_LEFT, ET_PERCENTILE, REMAINING_SIMULATION_TIME
+    AVG_RESPONSE_TIME, MINIMUM_CORES
 
 }
