@@ -71,7 +71,8 @@ public class UtilityGeneratorApplication {
                 log.info("Creating utility function which minimise total number of cores");
                 return new UtilityFunctionEvaluatorMinCores(variables, properties, deployedSolution, nodeCandidates);
             case GENOM:
-                log.warn("Utility function for GENOM use case is not supported");
+                log.info("Creating utility function for Genom - the same as for CETraffic");
+                return new UtilityFunctionEvaluatorCETraffic(variables, properties, deployedSolution, nodeCandidates, metrics);
             case COST:
             case DEFAULT:
             default:

@@ -9,195 +9,91 @@
 
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
-import eu.melodic.upperware.utilitygenerator.costfunction.*
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
+import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.model.DoubleMetricDTO
-import eu.melodic.upperware.utilitygenerator.model.IntMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import io.github.cloudiator.rest.model.Hardware
 import io.github.cloudiator.rest.model.NodeCandidate
-import org.junit.Ignore
-import spock.lang.Shared
 import spock.lang.Specification
 
 class CETrafficUseCaseTest extends Specification {
 
     CostUtilityFunction costUtilityFunction
-    @Shared
-    CostUtilityFunction costUtilityFunction_1 = new CostUtilityFunctionExample(true)
-    @Shared
-    CostUtilityFunction costUtilityFunction_2 = new CostUtilityFunctionExampleV2(true)
-    @Shared
-    CostUtilityFunction costUtilityFunctionAbs = new CostUtilityFunctionWithAbsoluteCost(10)
-    @Shared
     CostUtilityFunction costUtilityFunctionFraction = new CostUtilityFunctionFraction()
 
-    String SIMULATIONS_LEFT = "METRIC_SimulationLeftNumber"
-    String  ET_PERCENTILE = "METRIC_ETPercentile"
-    String REMAINING_SIMULATION_TIME = "METRIC_RemainingSimulationTimeMetric"
+    String METRIC_MINIMUM_CORES = "METRIC_MinimumCores"
 
 
     List<ConfigurationElement> actualConfiguration
-    List<ConfigurationElement> newCheaperConfiguration
+    List<ConfigurationElement> newMoreCoresConfiguration
+    List<ConfigurationElement> newBiggerConfiguration
 
 
     List<MetricDTO> metrics
     int cardinality
-    ConfigurationElement initialDeployment
 
     MetricDTO metric
-    MetricDTO metricPercentile
-    MetricDTO metricRemainingSimTime
 
 
     def setup() {
 
         String componentId = "componentId"
 
+        Hardware mockHardware = GroovyMock(Hardware)
+        Hardware mockBiggerHardware = GroovyMock(Hardware)
 
         NodeCandidate initNC = GroovyMock(NodeCandidate)
         initNC.getPrice() >> 2.0
-        Hardware mockHardware = GroovyMock(Hardware)
-
         initNC.getHardware() >> mockHardware
         mockHardware.getCores() >> 1
 
-        NodeCandidate cheapNC = GroovyMock(NodeCandidate)
-        cheapNC.getPrice() >> 1.0
-        cheapNC.getHardware() >> mockHardware
+        NodeCandidate moreCoresNC = GroovyMock(NodeCandidate)
+        moreCoresNC.getPrice() >> 2.0
+        moreCoresNC.getHardware() >> mockBiggerHardware
+        mockBiggerHardware.getCores() >> 3
 
         actualConfiguration = new ArrayList<>()
         actualConfiguration.add(new ConfigurationElement(componentId, initNC, 1))
 
-        newCheaperConfiguration = new ArrayList<>()
-        newCheaperConfiguration.add(new ConfigurationElement(componentId, cheapNC, 2))
+        newMoreCoresConfiguration = new ArrayList<>()
+        newMoreCoresConfiguration.add(new ConfigurationElement(componentId, moreCoresNC, 1))
+
+        newBiggerConfiguration = new ArrayList<>()
+        newBiggerConfiguration.add(new ConfigurationElement(componentId, initNC, 3))
 
         metrics = new ArrayList<>()
 
-        metric = Mock(IntMetricDTO)
-        metric.getName() >> SIMULATIONS_LEFT
+        metric = Mock(DoubleMetricDTO)
+        metric.getName() >> METRIC_MINIMUM_CORES
         metrics.add(metric)
-
-        metricPercentile = Mock(DoubleMetricDTO)
-        metricPercentile.getName() >> ET_PERCENTILE
-        metrics.add(metricPercentile)
-
-        metricRemainingSimTime = Mock(IntMetricDTO)
-        metricRemainingSimTime.getName() >> REMAINING_SIMULATION_TIME
-        metrics.add(metricRemainingSimTime)
-
 
     }
 
     def "less machines - one machine"() {
 
         metric.getValue() >> 3
-        metricPercentile.getValue() >> 2.3
-        metricRemainingSimTime.getValue() >> 4
 
         cardinality = 1
         costUtilityFunction = costUtilityFunctionFraction
 
         UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, actualConfiguration, true,
-                        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
+                new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.CETRAFFIC,
+                        costUtilityFunction)
 
         when:
-        double result = utilityGenerator.evaluateToTest(newCheaperConfiguration)
+        double moreCores = utilityGenerator.evaluateToTest(newMoreCoresConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
 
         then:
         noExceptionThrown()
-        System.out.println("utility = " + result)
-
-//        where:
-//        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-//                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-
+        init == 0
+        moreCores != 0
+        bigger != 0
+        bigger < moreCores
+        System.out.println("moreCores = " + moreCores + "\ninit = " + init + "\nbigger = " + bigger)
 
     }
-
-    @Ignore
-    def "less machines"() {
-        setup:
-        cardinality = 2
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-                        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
-
-        when:
-        System.out.println("LESS MACHINES ")
-        System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluateToTest(cardinality)
-
-        then:
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-
-    @Ignore
-    def "no changes"() {
-        cardinality = 3
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-                        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
-
-        when:
-        System.out.println("MORE MACHINES ")
-        System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluateToTest(cardinality)
-
-        then:
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-    @Ignore
-    def "more machines"() {
-        cardinality = 4
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-                        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
-
-        when:
-        System.out.println("MORE MACHINES ")
-        System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluateToTest(cardinality)
-
-        then:
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-
-    @Ignore
-    def "more machines - 6 machines"() {
-        cardinality = 6
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(metrics, Lists.newArrayList(initialDeployment), true,
-                        UtilityFunctionType.CETRAFFIC, costUtilityFunction)
-
-        when:
-        System.out.println("MORE MACHINES ")
-        System.out.println("CARDINALITY = " + cardinality)
-        double result = utilityGenerator.evaluateToTest(cardinality)
-
-        then:
-        noExceptionThrown()
-        System.out.println("utility = " + result)
-
-        where:
-        costUtilityFunction << [costUtilityFunction_1, costUtilityFunction_2,
-                                costUtilityFunctionAbs, costUtilityFunctionFraction]
-    }
-
 }
