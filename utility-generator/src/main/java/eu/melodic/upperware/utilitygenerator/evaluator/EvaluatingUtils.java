@@ -182,7 +182,8 @@ class EvaluatingUtils {
     static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue) {
         return findOptionalMetric(metricDTOS, name)
                 .map(metricDTO -> {
-                    DoubleMetric doubleMetric = DoubleMetric.of((DoubleMetricDTO) metricDTO, type);
+                    DoubleMetric doubleMetric = DoubleMetric.of(type, metricDTO.getName(), Double.valueOf((double)((Integer)metricDTO.getValue()).intValue()));
+//                  DoubleMetric doubleMetric = DoubleMetric.of((DoubleMetricDTO) metricDTO, type);
                     log.info("Get metric: {} = {}", doubleMetric.getType(), doubleMetric.getValue());
                     return doubleMetric;
                 })
