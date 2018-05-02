@@ -12,6 +12,8 @@ package eu.melodic.upperware.dlms.store;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+
+// It is created to store the data needed for DLMS logix to run on
 @Entity
 public class DataCostHistory {
 

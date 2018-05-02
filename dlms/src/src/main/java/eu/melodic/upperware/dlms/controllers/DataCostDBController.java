@@ -25,7 +25,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-// TODO: I will save the hardcoded daat into the mysql as history of the related to the daat moveemnt
+// TODO: I will save the hardcoded data into the mysql as history of the related to the daat moveemnt
 
 @RestController
 public class DataCostDBController {
@@ -35,7 +35,7 @@ public class DataCostDBController {
 
 	@RequestMapping(value = "/dataPool/transferCost", method = GET, produces = APPLICATION_JSON_VALUE)
 	public DataPoolTransferCostResponse transferCost() {
-		//TODO: do the logic and build reponse object
+		// TODO: do the logic and build reponse object
 		DataPoolTransferCostResponseImpl response = new DataPoolTransferCostResponseImpl();
 		response.setDataPoolId("somePoolId");
 		response.setCost("500");
@@ -46,20 +46,20 @@ public class DataCostDBController {
 
 	@RequestMapping(value = "/dataPool", method = POST, produces = APPLICATION_JSON_VALUE)
 	public void transferCost(@RequestBody DataPoolRequestImpl request) {
-		//retrieve field's values and do some logic
+		// retrieve field's values and do some logic
 
-		System.out.println("Received POST dataPool request with data: " +request.getDataPoolId() +":" +request.getVolume());
-		//TODO: do the logic
+		System.out.println(
+				"Received POST dataPool request with data: " + request.getDataPoolId() + ":" + request.getVolume());
+		// TODO: do the logic
 	}
 
 	@RequestMapping(value = "/update", method = POST, produces = APPLICATION_JSON_VALUE)
 	public void transferCost(@RequestBody DataPoolUpdateRequestImpl request) {
-		//retrieve field's values and do some logic
-		System.out.println("Received POST dataPool UPDATE request with data: " +request.getDataPoolId() +":" +request.getVolume());
-		//TODO: do the logic
+		// retrieve field's values and do some logic
+		System.out.println("Received POST dataPool UPDATE request with data: " + request.getDataPoolId() + ":"
+				+ request.getVolume());
+		// TODO: do the logic
 	}
-
-
 
 	@RequestMapping("/cost")
 	public List<DataCostHistory> getAllCosts() {
