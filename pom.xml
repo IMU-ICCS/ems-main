@@ -267,17 +267,34 @@
         </pluginManagement>
     </build>
     <repositories>
+        <!--<repository>-->
+            <!--<id>eu.7bulls</id>-->
+            <!--<name>Melodic 7bulls repository</name>-->
+            <!--<url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>-->
+            <!--<releases>-->
+                <!--<enabled>true</enabled>-->
+            <!--</releases>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+        <!--</repository>-->
+
         <repository>
             <id>eu.7bulls</id>
             <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
         </repository>
+        <repository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository - RELEASES</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+        </repository>
+
+        <repository>
+            <id>maven-central</id>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+
         <repository>
             <id>ow2</id>
             <name>OW2 repository</name>
@@ -309,10 +326,10 @@
             <id>choco.repos</id>
             <url>http://www.emn.fr/z-info/choco-repo/mvn/repository/</url>
         </repository>
-        <repository>
-            <id>maven-central</id>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
+        <!--<repository>-->
+            <!--<id>maven-central</id>-->
+            <!--<url>https://repo1.maven.org/maven2/</url>-->
+        <!--</repository>-->
     </repositories>
     <distributionManagement>
         <repository>
