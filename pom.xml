@@ -278,6 +278,12 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>maven-central</id>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+
         <repository>
             <id>ow2</id>
             <name>OW2 repository</name>
