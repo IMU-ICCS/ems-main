@@ -71,8 +71,8 @@ public class UtilityGeneratorApplication {
                 log.info("Creating utility function which minimise total number of cores");
                 return new UtilityFunctionEvaluatorMinCores(variables, properties, deployedSolution, nodeCandidates);
             case GENOM:
-                log.info("Creating utility function for Genom - the same as for CETraffic");
-                return new UtilityFunctionEvaluatorCETraffic(variables, properties, deployedSolution, nodeCandidates, metrics);
+                log.info("Creating utility function for Genom");
+                return new UtilityFunctionEvaluatorGenom(variables, properties, deployedSolution, nodeCandidates, metrics);
             case COST:
             case DEFAULT:
             default:
@@ -127,6 +127,10 @@ public class UtilityGeneratorApplication {
                         new UtilityFunctionEvaluatorMinCores(actConfiguration, isReconfig);
                 break;
 
+            case GENOM:
+                this.utilityFunctionEvaluator =
+                        new UtilityFunctionEvaluatorGenom(actConfiguration,isReconfig, costUtilityFunction, metrics);
+                break;
             default:
                 this.utilityFunctionEvaluator =
                         new UtilityFunctionEvaluatorCost(actConfiguration, isReconfig);
