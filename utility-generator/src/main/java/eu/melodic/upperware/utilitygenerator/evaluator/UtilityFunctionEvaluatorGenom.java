@@ -46,7 +46,7 @@ public class UtilityFunctionEvaluatorGenom extends UtilityFunctionEvaluator {
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
 
-        if (isReconfig && minimumCores.getValue() > (double) countNumberOfWorkerCores(newConfiguration, WORKER_INFIX)) {
+        if (isReconfig && minimumCores.getValue() > countNumberOfWorkerCores(newConfiguration, WORKER_INFIX)) {
             log.warn("Solution does not allow to complete all simulations by the deadline");
             return 0.0;
         } else {
