@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countNumberOfCores;
-import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertToDoubleMetric;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertToIntMetric;
 
 @Slf4j
 public class UtilityFunctionEvaluatorGenom extends UtilityFunctionEvaluator {
@@ -32,11 +32,11 @@ public class UtilityFunctionEvaluatorGenom extends UtilityFunctionEvaluator {
     private static final String METRIC_MINIMUM_CORES = "METRIC_MinimumCores";
     private static final String WORKER_INFIX = "Worker";
 
-    private DoubleMetric minimumCores;
+    private IntMetric minimumCores;
 
 
-    public UtilityFunctionEvaluatorGenom(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates,
-            List<MetricDTO> metricDTOs) {
+    public UtilityFunctionEvaluatorGenom(List<VariableDTO> variables, UtilityGeneratorProperties properties,
+            List<Var> deployedSolution, NodeCandidates nodeCandidates, List<MetricDTO> metricDTOs) {
         super(variables, properties, deployedSolution, nodeCandidates);
         getAndAssignMetrics(metricDTOs);
         this.costUtilityFunction = new CostUtilityFunctionFraction();
@@ -56,7 +56,7 @@ public class UtilityFunctionEvaluatorGenom extends UtilityFunctionEvaluator {
 
     private void getAndAssignMetrics(List<MetricDTO> metricDTOS) {
 
-        this.minimumCores = convertToDoubleMetric(metricDTOS, METRIC_MINIMUM_CORES, MetricType.MINIMUM_CORES, 0.0);
+        this.minimumCores = convertToIntMetric(metricDTOS, METRIC_MINIMUM_CORES, MetricType.MINIMUM_CORES, 0);
     }
 
     private int countNumberOfWorkerCores(Collection<ConfigurationElement> newConfiguration, String infix) {

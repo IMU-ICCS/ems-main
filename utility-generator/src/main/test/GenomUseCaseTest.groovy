@@ -6,12 +6,13 @@
 * http://mozilla.org/MPL/2.0/.
 */
 
+
 import eu.melodic.upperware.utilitygenerator.UtilityFunctionType
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
-import eu.melodic.upperware.utilitygenerator.model.DoubleMetricDTO
+import eu.melodic.upperware.utilitygenerator.model.IntMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import io.github.cloudiator.rest.model.Hardware
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -72,7 +73,7 @@ class GenomUseCaseTest extends Specification {
 
         metrics = new ArrayList<>()
 
-        metric = Mock(DoubleMetricDTO)
+        metric = Mock(IntMetricDTO)
         metric.getName() >> METRIC_MINIMUM_CORES
         metrics.add(metric)
 
