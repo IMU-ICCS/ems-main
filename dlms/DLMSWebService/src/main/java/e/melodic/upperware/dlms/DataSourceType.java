@@ -7,6 +7,9 @@
 
 package e.melodic.upperware.dlms;
 
+/**
+ * Represents a type of datasource.
+ */
 public enum DataSourceType {
 		HDFS,S3
 }

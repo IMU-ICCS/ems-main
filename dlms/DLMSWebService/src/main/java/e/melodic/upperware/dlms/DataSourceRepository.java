@@ -13,6 +13,9 @@ import org.springframework.stereotype.Repository;
 
 import e.melodic.upperware.dlms.DataSource;
 
+/**
+ * JPA repository provided and managed by Spring.
+ */
 @Repository("dataSourceRepository")
 public interface DataSourceRepository extends JpaRepository<DataSource, Long> {
 

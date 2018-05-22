@@ -12,8 +12,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import e.melodic.upperware.dlms.DataSourceType;
-
+/**
+ * Entity representing one datasource.
+ */
 @Entity
 public class DataSource {
 	
