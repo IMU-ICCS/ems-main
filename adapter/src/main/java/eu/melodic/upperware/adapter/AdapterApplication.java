@@ -11,10 +11,12 @@ package eu.melodic.upperware.adapter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableAsync
+@ComponentScan(basePackages = {"eu.paasage.upperware.security.authapi.properties"})
 public class AdapterApplication {
 
   public static void main(String[] args) {

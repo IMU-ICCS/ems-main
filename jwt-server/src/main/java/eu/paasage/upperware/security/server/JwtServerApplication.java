@@ -16,7 +16,7 @@ This provides application with the properties (in that way can be provided exter
 */
 
 
-package eu.paasage.upperware.solvertodeployment;
+package eu.paasage.upperware.security.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,11 +27,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableAsync
 @Configuration
-@ComponentScan(basePackages = {"eu.paasage.upperware.solvertodeployment", "eu.melodic.cache",
-        "eu.paasage.upperware.security.authapi.properties"})
-public class SolverToDeploymentApplication {
+@ComponentScan(basePackages = {"eu.paasage.upperware.security.server", "eu.paasage.upperware.security.authapi.properties"})
+public class JwtServerApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(SolverToDeploymentApplication.class, args);
+    SpringApplication.run(JwtServerApplication.class, args);
   }
 }

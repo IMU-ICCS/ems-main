@@ -16,6 +16,9 @@ import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProble
 import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
 import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -115,6 +118,17 @@ public class GeneratorContext {
         String host = cacheProperties.getCache().getHost();
         Integer port = cacheProperties.getCache().getPort();
         return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
+    }
+
+    @Bean
+    @ConfigurationProperties
+    public MelodicSecurityProperties melodicSecurityProperties(){
+        return new MelodicSecurityProperties();
+    }
+
+    @Bean
+    public JWTService getJWTService(){
+        return new JWTServiceImpl(melodicSecurityProperties());
     }
 
 }

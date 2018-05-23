@@ -26,6 +26,8 @@
 
     <modules>
         <module>upperware_metamodel</module>
+        <module>jwt-commons</module>
+        <module>jwt-server</module>
         <module>melodic-commons</module>
         <module>melodic-cache</module>
         <module>cdo_client</module>
@@ -100,6 +102,11 @@
                 <groupId>org.ow2.paasage</groupId>
                 <artifactId>camel</artifactId>
                 <version>${paasage.version.old}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>jwt-commons</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.paasage.mddb.cdo</groupId>
