@@ -28,43 +28,44 @@ import static java.util.stream.Collectors.toSet;
 @Service
 public class PortRequiredConverter implements ModelConverter<DeploymentModel, Collection<PortRequired>> {
 
-  @Override
-  public Collection<PortRequired> toComparableModel(DeploymentModel model) {
-    log.info("Building port required models (based on communications)");
-    EList<Communication> comms = model.getCommunications();
-    if (CollectionUtils.isEmpty(comms)) {
-      log.info("There are no communications defined - no ports required will be created");
-      return Sets.newHashSet();
+    @Override
+    public Collection<PortRequired> toComparableModel(DeploymentModel model) {
+        log.info("Building port required models (based on communications)");
+        EList<Communication> comms = model.getCommunications();
+        if (CollectionUtils.isEmpty(comms)) {
+            log.info("There are no communications defined - no ports required will be created");
+            return Sets.newHashSet();
+        }
+        return comms.stream().map(this::toPortRequired).collect(toSet());
     }
-    return comms.stream().map(this::toPortRequired).collect(toSet());
-  }
 
-  private PortRequired toPortRequired(Communication comm) {
-    log.info("Processing of {}", comm.getName());
+    private PortRequired toPortRequired(Communication comm) {
+        log.info("Processing of {}", comm.getName());
 
-    Application app = ConverterUtils.extractApplication((CamelModel) comm.eContainer().eContainer());
-    RequiredCommunication reqComm = comm.getRequiredCommunication();
-    InternalComponent ic = (InternalComponent) reqComm.eContainer();
+        Application app = ConverterUtils.extractApplication((CamelModel) comm.eContainer().eContainer());
+        RequiredCommunication reqComm = comm.getRequiredCommunication();
+        InternalComponent ic = (InternalComponent) reqComm.eContainer();
 
-    VM vm = ConverterUtils.findAssociatedVm(ic);
-    VMInstance vmInst = ConverterUtils.findAssociatedVmInstance(vm);
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
+        VM vm = ConverterUtils.findAssociatedVm(ic);
+        VMInstance vmInst = ConverterUtils.findAssociatedVmInstance(vm);
+        Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
 
-    PortRequired portRequired = PortRequired.builder()
-      .name(reqComm.getName())
-      .acName(ic.getName())
-      .mandatory(reqComm.isIsMandatory())
-      .cloudName(ConverterUtils.extractCloudName(rootFeature))
-      .appName(app.getName())
-      .lcName(ConverterUtils.extractConfiguration(ic).getName())
-      .vmName(vm.getName())
-      .location(ConverterUtils.extractLocation(rootFeature))
-      .hardware(ConverterUtils.convertToString(vmInst.getVmTypeValue()))
-      .image(ConverterUtils.extractImage(rootFeature))
-      .build();
+        PortRequired portRequired = PortRequired.builder()
+                .name(reqComm.getName())
+                .acName(ic.getName())
+                .mandatory(reqComm.isIsMandatory())
+                .cloudName(ConverterUtils.extractCloudName(rootFeature))
+                .appName(app.getName())
+                .lcName(ConverterUtils.extractConfiguration(ic).getName())
+                .vmName(vm.getName())
+                .location(ConverterUtils.extractLocation(rootFeature))
+                .hardware(ConverterUtils.convertToString(vmInst.getVmTypeValue()))
+                .image(ConverterUtils.extractImage(rootFeature))
+                .startCmd(comm.getRequiredPortConfiguration() != null ? comm.getRequiredPortConfiguration().getStartCommand() : null)
+                .build();
 
-    log.info("Built port: {}", portRequired);
+        log.info("Built port: {}", portRequired);
 
-    return portRequired;
-  }
+        return portRequired;
+    }
 }
