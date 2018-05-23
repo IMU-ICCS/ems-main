@@ -50,11 +50,6 @@ public class PortRequiredConverter implements ModelConverter<DeploymentModel, Co
         VMInstance vmInst = ConverterUtils.findAssociatedVmInstance(vm);
         Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
 
-        String startConfigurationCommand = null;
-        if (comm.getRequiredPortConfiguration() != null){
-            startConfigurationCommand = comm.getRequiredPortConfiguration().getStartCommand();
-        }
-
         PortRequired portRequired = PortRequired.builder()
                 .name(reqComm.getName())
                 .acName(ic.getName())
@@ -66,7 +61,7 @@ public class PortRequiredConverter implements ModelConverter<DeploymentModel, Co
                 .location(ConverterUtils.extractLocation(rootFeature))
                 .hardware(ConverterUtils.convertToString(vmInst.getVmTypeValue()))
                 .image(ConverterUtils.extractImage(rootFeature))
-                .startCmd(startConfigurationCommand)
+                .startCmd(comm.getRequiredPortConfiguration() != null ? comm.getRequiredPortConfiguration().getStartCommand() : null)
                 .build();
 
         log.info("Built port: {}", portRequired);
