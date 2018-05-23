@@ -12,11 +12,11 @@
 	<artifactId>vms-discovery-server</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>VM Sensor Discovery Server</name>
+	<name>Upperware - VM Sensor Discovery Server</name>
 	
 	<properties>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<docker.imageName>${docker.repository}melodic/vms-discovery-server-rc2.0</docker.imageName>
 		<docker.jarToInclude>vms-discovery-server-docker.zip</docker.jarToInclude>
 	</properties>
@@ -35,32 +35,20 @@
 				</exclusion>
 			</exclusions> 
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.16.20</version>
 			<scope>provided</scope>
 		</dependency>
-		
-		<!-- Slf4j with Log4j -->
-		<!--<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.25</version>
-		</dependency>-->
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.25</version>
 		</dependency>
-		<!--<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>-->
-		
+
 		<!-- Cloudiator -->
 		<dependency>
 			<groupId>io.github.cloudiator</groupId>
@@ -75,22 +63,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
-	<repositories>
-		<!-- Cloudiator -->
-		<repository>
-			<id>ossrh.snapshots</id>
-			<name>OSSRH snapshots repository</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	
+
 	<build>
 		<plugins>
 			<plugin>

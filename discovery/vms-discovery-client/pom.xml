@@ -6,7 +6,7 @@
 	<artifactId>vms-discovery-client</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>VM Sensor Discovery Client</name>
+	<name>Upperware - VM Sensor Discovery Client</name>
 	
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
