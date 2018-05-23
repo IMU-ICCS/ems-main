@@ -67,7 +67,7 @@
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository/>
-        <docker.imageName>${docker.repository}melodic/${project.name}-release2.0</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/${project.name}-rc2.0</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
 
@@ -231,7 +231,7 @@
                     <version>0.4.10</version>
                     <configuration>
                         <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.imageName}-release2.0</imageName>
+                        <imageName>${docker.imageName}-rc2.0</imageName>
                         <pushImage>${docker.push}</pushImage>
                         <resources>
                             <resource>
