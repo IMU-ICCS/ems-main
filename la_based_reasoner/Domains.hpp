@@ -458,7 +458,7 @@ public:
 	// function
 	
 	inline ValueType operator[] ( const Index & idx ) const
-	{ return at( idx ); }
+	{ return this->at( idx ); }
 	
  	//
 	// CONSTRUCTORS

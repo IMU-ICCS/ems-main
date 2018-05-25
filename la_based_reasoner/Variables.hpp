@@ -28,6 +28,7 @@ License: LGPL 3.0
 #include <unordered_map>                      // For looking up types of Any
 #include <functional>                         // To convert the any 
 #include <sstream>                            // For error messages
+#include <stdexcept>                          // For standard exceptions
 #include <limits>                             // For numeric limits on types
 #include <memory>                             // For smart pointers
 #include <boost/numeric/conversion/cast.hpp>  // Safe numeric casts
@@ -331,7 +332,7 @@ public:
 
 
 // -----------------------------------------------------------------------------
-// Registry
+// Variable registry
 // -----------------------------------------------------------------------------
 //
 // All variables are recorded depending on whether they are continuous or 
@@ -341,7 +342,7 @@ public:
 // the variables. It is therefore a pure virtual interface describing the 
 // fundamental operations for registering and removing variables.
 
-class Registry
+class VariableRegistry
 {
 protected:
 	
@@ -349,41 +350,115 @@ protected:
 	// constructor and destructor calling the following functions.
 	
 	virtual void NewVariable( ValueElement * TheVariable ) = 0;
-	
 	virtual void RemoveVariable( ValueElement * TheVariable ) = 0;
+	
+	// There is also a boolean function to check if the registry has any 
+	// variables.
+	
+	virtual bool empty( void ) = 0;
 	
 	// Only the variable class is allowed to access these functions directly
 	
 	template< class DomainType, class Enable >
 	friend class LASolver::Variable;
 
-public:
-		
-	// It is necessary to provide a virtual destructor because there are virtual 
-	// variables.
+private:
 	
-	virtual ~Registry()
+	// There are two global instance of this registry for the variables to use when 
+	// a variable is defined to allow each variable to register in the appropriate 
+	// class: Continuous or discrete. 
+	//
+	// However, all the problem variables will be defined as global variable 
+	// class, and there is no way to ensure that a global registry object will 
+	// be initialised before the variable instances. In order to ensure that 
+	// variables can register, the registries are held in a smart pointers that are 
+	// initialised by the first Variable Value class that is instantiated.
+
+	static std::shared_ptr< VariableRegistry > Discrete, Continuous;
+	
+public:
+	
+  // The idea is that the registry can set up ways to handle variables based
+	// on the algorithm used to solve the problem. For instance, the LA solver 
+	// will set up a probability vector for each discrete variable. This registry
+	// class must therefore be overloaded. There are functions to set the 
+	// registry that are template functions on the actual registry class and 
+	// can be directly called if the derived class is not instantiated directly.
+	// The templates are thus public.
+	//
+	// IMPORTANT: Both registries must be instantiated before the first variables
+	// are created as the variable otherwise would throw an exception
+
+	template< class RegistryType, class... RegistryArguments >
+	static bool CreateDiscrete( RegistryArguments &&... TheArguments  )
+	{
+		static_assert( std::is_base_of< VariableRegistry, RegistryType >::value,
+			"Discrete variable registry must be derived from class Variable Registry"
+		);
+		
+		Discrete = std::make_shared< RegistryType >( 
+							 std::forward< RegistryArguments >( TheArguments )... );
+		
+		if ( Discrete )
+			return true;
+		else 
+			return false;
+	}
+	
+	// There is a very similar definition for the continuous variable registry
+	
+	template< class RegistryType, class... RegistryArguments >
+	static bool CreateContinuous( RegistryArguments &&... TheArguments  )
+	{
+		static_assert( std::is_base_of< VariableRegistry, RegistryType >::value,
+			"Discrete variable registry must be derived from class Variable Registry"
+		);
+		
+		Continuous = std::make_shared< RegistryType >( 
+								 std::forward< RegistryArguments >( TheArguments )... );
+		
+		if ( Continuous )
+			return true;
+		else 
+			return false;
+	}	 
+	
+	// There is a utility function to delete the registries if they are empty. 
+	// It should be noted that it is assumed that the model variables are declared
+	// as variables in main or in a global scope, and therefore they will exist 
+	// until the termination of the solver. In that case the smart pointers will 
+	// delete the registries when the application closes. Thus it is probably 
+	// safer for derived classes not directly to call the delete registries 
+	// function when the last variable signs out as it most likely is equivalent 
+	// with "delete this" and could have unwanted consequences.
+	
+	static bool DeleteVariableRegistries( void )
+	{
+		if ( Discrete )
+		{
+			if ( Discrete->empty() )
+				Discrete.reset();
+			else
+				return false;
+		}
+		
+		if ( Continuous )
+		{
+			if ( Continuous->empty() )
+				Continuous.reset();
+			else
+				return false;
+		}
+		
+		return true;
+	}
+	
+	// The virtual destructor will call the delete operation to ensure 
+	// that the static registries are cleared.
+	
+	virtual ~VariableRegistry()
 	{ }
 };
-
-// There are two global instance of this registry for the variables to use when 
-// a variable is defined to allow each variable to register in the appropriate 
-// class: Continuous or discrete. 
-//
-// However, all the problem variables will be defined as global variable 
-// class, and there is no way to ensure that a global registry object will 
-// be initialised before the variable instances. In order to ensure that 
-// variables can register, the registries are held in a smart pointers that are 
-// initialised by the first Variable Value class that is instantiated.
-
-extern std::shared_ptr< Registry > DiscreteVariables, ContinuousVariables;
-
-// The create registries function must be defined to create the instances.
-// The idea is that when some other class implements the registry class by 
-// inheriting it, a pointer to the derived object can be created instead of 
-// just a registry pointer.
-
-extern void CreateRegistries( void );
 
 // -----------------------------------------------------------------------------
 // Variable Value
@@ -453,14 +528,7 @@ public:
 	
 	inline VariableValue( const std::string & TheName, ValueType InitialValue )
 	: ValueElement( TheName ), TheValue( InitialValue )
-	{
-		if ( ! DiscreteVariables ) 
-		{
-			CreateRegistries();
-			Constraints::Inequality = std::make_shared< Constraints::Registry >();
-			Constraints::Equality   = std::make_shared< Constraints::Registry >();
-		}
-	}
+	{	}
 	
 	// ...and therefore there should not be a default constructor and a 
 	// virtual destructor doing nothing.
@@ -591,7 +659,7 @@ public:
 	{}	
 };
 
-} // Name space Configuration	
+} // END Name space Configuration	
 
 /*==============================================================================
 
@@ -683,7 +751,19 @@ public:
 	  TheDomain( GivenDomain )
 	{
 		this->operator()( InitialValue );
-		Configuration::ContinuousVariables->NewVariable( this );
+		
+		if ( Configuration::VariableRegistry::Continuous )
+			Configuration::VariableRegistry::Continuous->NewVariable( this );
+		else
+		{
+			std::ostringstream ErrorMessage;
+			
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+			             << "The variable " << TheName << " is constructed before "
+									 << "the continuous variable registry has been created";
+									 
+		  throw std::logic_error( ErrorMessage.str() );
+		}
 	}
 	
 	// It is also possible to define the variable without the initial value, and
@@ -706,7 +786,7 @@ public:
 	// The destructor is virtual to allow correct destruction of base classes
 	
 	virtual ~Variable()
-	{ Configuration::ContinuousVariables->RemoveVariable( this ); }
+	{ Configuration::VariableRegistry::Continuous->RemoveVariable( this ); }
 };
 
 // -----------------------------------------------------------------------------
@@ -769,7 +849,20 @@ public:
 	  TheDomain( GivenDomain )
 	{
 		this->operator()( InitialValue );
-		Configuration::DiscreteVariables->NewVariable( this );
+
+		if ( Configuration::VariableRegistry::Discrete )
+			Configuration::VariableRegistry::Discrete->NewVariable( this );
+		else
+		{
+			std::ostringstream ErrorMessage;
+			
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+			             << "The variable " << TheName << " is constructed before "
+									 << "the discrete variable registry has been created";
+									 
+		  throw std::logic_error( ErrorMessage.str() );
+		}
+
 	}
 	
 	// If the initial value is not given it is drawn as a random element of the 
@@ -793,7 +886,7 @@ public:
 	// The destructor is virtual to allow correct destruction of base classes
 	
 	virtual ~Variable()
-	{ Configuration::DiscreteVariables->RemoveVariable( this ); }
+	{ Configuration::VariableRegistry::Discrete->RemoveVariable( this ); }
 };
 
 // -----------------------------------------------------------------------------
@@ -813,7 +906,7 @@ public:
 template< class ValueType >
 class Variable< Domain::Set< Domain::Interval< ValueType > > >
 : public Configuration::Variable< 
-				  typename Domain::Set< Domain::Interval< ValueType > >::Index > 
+				 typename Domain::Set< Domain::Interval< ValueType > >::Index > 
 {
 private:
 						
@@ -929,7 +1022,18 @@ public:
 		// This discrete set index variable can the be registered with the 
 		// configuration master
 		
-		Configuration::DiscreteVariables->NewVariable( this );
+		if ( Configuration::VariableRegistry::Discrete )
+			Configuration::VariableRegistry::Discrete->NewVariable( this );
+		else
+		{
+			std::ostringstream ErrorMessage;
+			
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+			             << "The variable " << TheName << " is constructed before "
+									 << "the discrete variable registry has been created";
+									 
+		  throw std::logic_error( ErrorMessage.str() );
+		}
 	}
 	
 	// In the case a random initialisation is desired in the first place, a 
@@ -956,7 +1060,7 @@ public:
 	// and it checks out with the manager. 
 	
 	virtual ~Variable()
-	{ Configuration::DiscreteVariables->RemoveVariable( this ); }
+	{ Configuration::VariableRegistry::Discrete->RemoveVariable( this ); }
 };
 
 

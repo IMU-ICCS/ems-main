@@ -15,6 +15,8 @@ License: LGPL 3.0
 #include <list>             // A list to hold the metric references
 #include <memory>           // Smart pointer to the metric registry
 #include <string>           // Storing the name of the metric
+#include <sstream>          // For error messages
+#include <stdexcept>        // For standard exceptions
 
 #include "Variables.hpp"    // The definition of the variables
 
@@ -31,36 +33,60 @@ namespace LASolver
 // that only classes that is a Metric, i.e. inheriting the Metric class, are 
 // allowed to register.
 
-class MetricRegistry : public Configuration::Registry
+class MetricRegistry : public virtual Configuration::VariableRegistry
 {
 protected:
+
+  // Metric variables are registered using the same functions as defined for 
+	// the variable registry, and they will eventually be defined by the class
+	// implementing the metric handling. 
 	
-	using Configuration::Registry::NewVariable;
-	using Configuration::Registry::RemoveVariable;
+	using Configuration::VariableRegistry::NewVariable;
+	using Configuration::VariableRegistry::RemoveVariable;
 	
 	template< class ValueType >
 	friend class Metric;
+
+private:
 	
+	// The idea is that the metric registry is to be inherited by some other 
+	// class that is able to receive metric updates on the data plane 
+	// communication protocol used for a given application of the LA Solver. 
+	// The metric registry is therefore stored as a pointer to this base class,
+	// and then it is assumed that the derived class is assigned using the 
+	// public creator function. This behaviour is identical to the one used for 
+	// the variable registry.
+	
+	static std::shared_ptr< MetricRegistry > Metrics;
+		
 public:
+	
+	// The function to create the metric registry takes the registry type as 
+	// a template parameter, and the arguments for the registry constructor as 
+	// parameters. It checks that the given class is really derived from this 
+	// registry at compile time. 
+	
+	template< class RegistryType, class... RegistryArguments >
+	static bool Create( RegistryArguments &&... TheArguments  )
+	{
+		static_assert( std::is_base_of< MetricRegistry, RegistryType >::value,
+			"Discrete variable registry must be derived from class Variable Registry"
+		);
+		
+		Metrics = std::make_shared< RegistryType >( 
+					    std::forward< RegistryArguments >( TheArguments )... );
+		
+		if ( Metrics )
+			return true;
+		else 
+			return false;
+	}
 	
 	// Only the virtual destructor must be defined.
 	
 	virtual ~MetricRegistry()
 	{ }
 };
-
-// and it is also held by a global smart pointer because it is not known 
-// when an object would be instantiated by the compiler. It could be before the
-// first metric definition, but the consequences can be grave if the metric 
-// registry does not exists when the first metric is created.
-
-extern std::shared_ptr< MetricRegistry > Metrics;
-
-// There is a global function to initialise this pointer and create the 
-// registry object. It is done this way to allow derived classes to define 
-// a different creation function for a derived metrics registry class.
-
-extern void CreateMetricsRegistry( void );
 
 /*==============================================================================
 
@@ -70,7 +96,7 @@ extern void CreateMetricsRegistry( void );
 //
 // A metric is a configuration variable because it has no domain, and it simply
 // registers with the global metric registry. If the registry has not been 
-// instantiated, it will be created.
+// instantiated, a logic error will be thrown.
 
 template< class ValueType >
 class Metric : public Configuration::Variable< ValueType >
@@ -80,19 +106,28 @@ public:
 	Metric( const std::string TheTopicName, ValueType InitialValue )
 	: Configuration::Variable< ValueType >( TheTopicName, InitialValue )
 	{
-		if ( ! Metrics ) CreateMetricsRegistry();
-		
-		Metrics->NewVariable( this );
+		if ( MetricRegistry::Metrics )
+			MetricRegistry::Metrics->NewVariable( this );
+		else
+		{
+			std::ostringstream ErrorMessage;
+			
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+			             << "The metric " << TheTopicName << " is created before "
+									 << "the metric registry has been instantiated";
+									 
+		  throw std::logic_error( ErrorMessage.str() );
+		}
 	}
 	
 	// The default constructor is deleted
 	
 	Metric( void ) = delete;
 	
-	// The destructor is virtual because the variable is polymorphic 
+	// The destructor is virtual because the metric variable is polymorphic 
 	
 	virtual ~Metric()
-	{	Metrics->RemoveVariable( this ); }
+	{	MetricRegistry::Metrics->RemoveVariable( this ); }
 };
 
 
