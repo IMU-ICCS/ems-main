@@ -16,6 +16,8 @@ License: LGPL 3.0
 #include <vector>            // To evaluate all constraints at once
 #include <memory>            // For shared pointers
 
+#include "Variables.hpp"     // To set values before evaluating constraints
+
 // -----------------------------------------------------------------------------
 // Kronecker's Delta function
 // -----------------------------------------------------------------------------
@@ -55,31 +57,97 @@ namespace LASolver
 // A constraint is a function over the variables that provides an evaluation 
 // function that must be defined. The idea is that the functional expression is 
 // stored as a lambda expression in a standard function. 
-
-namespace Constraints
-{
-	extern std::list< std::function< double(void) > > Equality, Inequality;	
-}
-
-/*==============================================================================
-
- Vector view
-
-==============================================================================*/
 //
-// Some solvers will take the values of the constraints in a single vector and
-// there is a function to return this vector
+// However, in order to correctly evaluate the constraints the variables must 
+// be set first as the global variable values are used in the constraints. To 
+// ensure that this is correctly done, the constraints and the evaluation of 
+// constraints are encapsulated in a class controlling the access to the actual
+// constraint functions.
 
-std::vector< double > ConstraintValues( 
-	std::list< std::function< double(void) > > & TheConstraints )
+class Constraints
 {
-	std::vector< double > Result;
+private:
+
+  // The functional expressions of the constraints are kept in two simple lists
+	// of standard functions.
 	
-	for ( auto & aConstraint : TheConstraints )
-		Result.push_back( aConstraint() );
+	static std::list< std::function< double(void) > > EqFunctions, InEqFunctions;	
 	
-	return Result;	
-}
+public:
+	
+	// The two types of constraints are defined as accessible types used when 
+	// defining or accessing the interface functions
+	
+	enum class Type
+	{
+		Equality,
+		Inequality
+	};
+	
+	// There is a function to add a constraint to the right function list. This 
+	// will only be used in the pre-processor macros defined below.
+	
+	template< Type TheConstraintClass, class LambdaFunction >
+	static void Register( LambdaFunction && TheExpression )
+	{
+		if constexpr ( TheConstraintClass == Type::Equality )
+	    EqFunctions.emplace_back( TheExpression );
+		else if constexpr ( TheConstraintClass == Type::Inequality )
+			InEqFunctions.emplace_back( TheExpression );
+	}
+	
+	// A similar function is used to evaluate the constraints given a set of 
+	// variable value assignments. The function will use the variable registry 
+	// to set the values before the right set of constraint functions are 
+	// evaluated.
+	
+	template< Type TheConstraintClass >
+	static std::vector< double > Evaluate( 
+  Configuration::VariableRegistry::DiscreteVariableValues   & DiscreteValues,
+	Configuration::VariableRegistry::ContinuousVariableValues & ContinuousValues	)
+	{
+		std::vector< double > Result;
+		
+		Configuration::VariableRegistry::Discrete->SetValues(   DiscreteValues   );
+		Configuration::VariableRegistry::Continuous->SetValues( ContinuousValues );
+
+		if constexpr ( TheConstraintClass == Type::Equality )
+			for ( auto & aConstraint : EqFunctions )
+				Result.push_back( aConstraint() );
+		else if constexpr ( TheConstraintClass == Type::Inequality )
+			for ( auto & aConstraint : InEqFunctions )
+				Result.push_back( aConstraint() );
+			
+		return Result;
+	}
+	
+	// A typical scenario is to keep the discrete variables fixed when solving
+	// the problem for the the continuous variables. An overloaded version of 
+	// this function supports this scenario. However, care must be taken since 
+	// if there are parallel optimisers running within for the same problem,
+	// they may have different discrete variables to look after and then the 
+	// full form of the function is the only way to ensure that the right 
+	// discrete variable values are used in the constraint calculation.
+	
+	template< Type TheConstraintClass >
+	static std::vector< double > Evaluate( 
+	Configuration::VariableRegistry::ContinuousVariableValues & ContinuousValues	)
+	{
+		std::vector< double > Result;
+		
+		Configuration::VariableRegistry::Continuous->SetValues( ContinuousValues );
+
+		if constexpr ( TheConstraintClass == Type::Equality )
+			for ( auto & aConstraint : EqFunctions )
+				Result.push_back( aConstraint() );
+		else if constexpr ( TheConstraintClass == Type::Inequality )
+			for ( auto & aConstraint : InEqFunctions )
+				Result.push_back( aConstraint() );
+			
+		return Result;
+	}
+	
+};
 
 }  // Name space LA Solver
 
@@ -95,7 +163,7 @@ std::vector< double > ConstraintValues(
 // A drawback with the macro approach is that it has to be defined on a single 
 // line
 
-#define Eq_Constraint( FunctionalForm )   ( LASolver::Constraints::Equality.emplace_back( [&](void)->double{ return FunctionalForm; } ) )
-#define InEq_Constraint( FunctionalForm ) ( LASolver::Constraints::Inequality.emplace_back( [&](void)->double{ return FunctionalForm; } ) )
+#define Eq_Constraint( FunctionalForm )   ( LASolver::Constraints::Register< LASolver::Constraints::Type::Equality   >( [&](void)->double{ return FunctionalForm; } ) )
+#define InEq_Constraint( FunctionalForm ) ( LASolver::Constraints::Register< LASolver::Constraints::Type::Inequality >( [&](void)->double{ return FunctionalForm; } ) )
 
 #endif // LA_SOLVER_CONSTRAINTS

@@ -34,7 +34,6 @@ License: LGPL 3.0
 #include <boost/numeric/conversion/cast.hpp>  // Safe numeric casts
 
 #include "Domains.hpp"            // The domain types of the variables
-#include "Constraints.hpp"        // To initialise the constraint registries
 #include "RandomGenerator.hpp"    // To select random numbers over domains
 
 // -----------------------------------------------------------------------------
@@ -68,7 +67,12 @@ namespace LASolver
 	
 template< class DomainType, class Enable = void >
 class Variable;
-	
+
+// The Constraint registry must also be defined in order to be allowed the 
+// access to set the variable values prior to evaluating the constraints
+
+class Constraints;
+
 /*==============================================================================
 
  Configuration
@@ -100,7 +104,7 @@ namespace Configuration
 // therefore be able to read it back correctly. However, in the "value based"
 // system created here, type may depend on what the compiler assigns. For 
 // instance a value of 10 may fit in all kind of integral types, and even if 
-// the value class is defined for an unsigned it, it may be stored in the Any 
+// the value class is defined as an unsigned int, it may be stored in the Any 
 // variable as an unsigned short, or even char, type. The value element class 
 // must ensure safe conversions between the different types depending on their 
 // genetic class (integral, real, or text strings).
@@ -376,6 +380,11 @@ private:
 
 	static std::shared_ptr< VariableRegistry > Discrete, Continuous;
 	
+	// The Constraints registry is allowed to access these in order to set the 
+	// variable values prior to evaluating the constraints.
+	
+	friend class LASolver::Constraints;
+	
 public:
 	
   // The idea is that the registry can set up ways to handle variables based
@@ -452,7 +461,33 @@ public:
 		
 		return true;
 	}
+		
+	// There are two functions to set the values of the variable classes by 
+	// giving a vector of values. These must be implemented by the derived class
+	// being able to access the variables. Furthermore, for the discrete variables
+	// the value must be able to hold the largest integral values, and for 
+	// continuous variables a double is assumed to have sufficient precision as 
+	// the storage class.
 	
+	using DiscreteVariableValues   = std::vector< signed long long int >;
+	using ContinuousVariableValues = std::vector< double >;
+	
+	virtual	void SetValues( DiscreteVariableValues   & Values ) = 0;
+	virtual	void SetValues( ContinuousVariableValues & Values ) = 0;
+	
+	// There are two helper functions to return the number of variables in each 
+	// of the two classes. How these are implemented depends on how the variables
+	// are stored by a specific implementation. However, from the above functions 
+	// it is clear that there cannot be more variables than can be stored in a 
+	// standard vector, and so the size type for the vector is used as return 
+	// type.
+	
+	virtual DiscreteVariableValues::size_type	
+	NumberOfDescreteVariables( void ) = 0;
+	
+	virtual ContinuousVariableValues::size_type
+	NumberOfContinuousVariables( void ) = 0;
+
 	// The virtual destructor will call the delete operation to ensure 
 	// that the static registries are cleared.
 	

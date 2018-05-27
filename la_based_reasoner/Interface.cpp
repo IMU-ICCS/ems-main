@@ -27,5 +27,5 @@ std::shared_ptr< LASolver::MetricRegistry >
 // The static variables to store the functional expressions for the constraints
 	
 std::list< std::function< double(void) > >
-	LASolver::Constraints::Equality,
-	LASolver::Constraints::Inequality;
+	LASolver::Constraints::EqFunctions,
+	LASolver::Constraints::InEqFunctions;
