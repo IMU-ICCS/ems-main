@@ -24,7 +24,7 @@ import spock.lang.Specification
 @Slf4j
 class FCRUseCaseTest extends Specification {
 
-    String AVG_RT = "METRIC_TR_AVG"
+    String AVG_RT = "METRIC_AverageResponseTime"
 
     CostUtilityFunction costUtilityFunction
 
