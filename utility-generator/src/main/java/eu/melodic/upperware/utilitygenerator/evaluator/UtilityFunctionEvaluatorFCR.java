@@ -34,7 +34,7 @@ public class UtilityFunctionEvaluatorFCR extends UtilityFunctionEvaluator {
     private static final double NOM_RESPONSE_TIME = 700;
     private static final double MAX_RESPONSE_TIME = 1000;
 
-    private static final String METRIC_AVG_RESPONSE_TIME = "METRIC_TR_AVG";
+    private static final String METRIC_AVG_RESPONSE_TIME = "METRIC_AverageResponseTime";
 
     private double beta;
     private IntMetric avgResponseTime;
