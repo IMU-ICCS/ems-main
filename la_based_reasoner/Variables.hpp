@@ -340,11 +340,25 @@ public:
 // -----------------------------------------------------------------------------
 //
 // All variables are recorded depending on whether they are continuous or 
-// discrete, and these two lists are maintained by the registry class. Since 
-// instances of this class will know the variables, this class will typically 
-// be the base class for solver classes that assign values in various ways to 
-// the variables. It is therefore a pure virtual interface describing the 
-// fundamental operations for registering and removing variables.
+// discrete, and these two types are defined as enumerations
+
+enum class VariableType
+{
+	Discrete,
+	Continuous
+};
+
+// The variables are stored depending on their type in classes defining the 
+// type specific interface and the underlying storage and other features of 
+// the variable registry. This is just a forward declaration that will be 
+// further defined after the common variable registry.
+
+template< VariableType RegistryType >
+class Variables;
+
+// The variable registry implements the common functionality of the two types 
+// of variable storage, and provides a common interface to be used by the 
+// variables and the constraints.
 
 class VariableRegistry
 {
@@ -370,130 +384,178 @@ private:
 	
 	// There are two global instance of this registry for the variables to use when 
 	// a variable is defined to allow each variable to register in the appropriate 
-	// class: Continuous or discrete. 
+	// class: Continuous or discrete. However, all the problem variables will be 
+	// defined as global instances, and the registries must be created before 
+	// any variable is defined, otherwise the variable constructor will throw a
+	// standard logic error exception. 
 	//
-	// However, all the problem variables will be defined as global variable 
-	// class, and there is no way to ensure that a global registry object will 
-	// be initialised before the variable instances. In order to ensure that 
-	// variables can register, the registries are held in a smart pointers that are 
-	// initialised by the first Variable Value class that is instantiated.
+	// It is also assumed that the actual variable stores may do more than just 
+	// storing the variables, and they will typically be implemented by classes 
+	// derived from the variable stores. For this reason the variable store is 
+	// a the base class and it is only possible to store pointers to the right 
+	// derived class. The two stores are defined as static as they should be 
+	// shared among all variables.
 
-	static std::shared_ptr< VariableRegistry > Discrete, Continuous;
+	static std::shared_ptr< Variables< VariableType::Discrete > >   Discrete; 
+	static std::shared_ptr< Variables< VariableType::Continuous > > Continuous;
 	
 	// The Constraints registry is allowed to access these in order to set the 
 	// variable values prior to evaluating the constraints.
 	
 	friend class LASolver::Constraints;
-	
+		
 public:
 	
   // The idea is that the registry can set up ways to handle variables based
 	// on the algorithm used to solve the problem. For instance, the LA solver 
-	// will set up a probability vector for each discrete variable. This registry
-	// class must therefore be overloaded. There are functions to set the 
+	// will set up a probability vector for each discrete variable. This variable
+	// store must therefore be overloaded. There are functions to set the 
 	// registry that are template functions on the actual registry class and 
 	// can be directly called if the derived class is not instantiated directly.
-	// The templates are thus public.
+	// The templates are thus public, and using the SFINAE technique to decide 
+	// which kind of registry store to create by testing if the given registry 
+	// type is derived from the relevant variable store.
 	//
 	// IMPORTANT: Both registries must be instantiated before the first variables
-	// are created as the variable otherwise would throw an exception
+	// are created as the variable otherwise would throw an exception!
 
 	template< class RegistryType, class... RegistryArguments >
-	static bool CreateDiscrete( RegistryArguments &&... TheArguments  )
+	static typename std::enable_if< 
+									std::is_base_of< Variables< VariableType::Discrete >, 
+																	 RegistryType >::value, bool >::type
+	Create( RegistryArguments &&... TheArguments  )
 	{
-		static_assert( std::is_base_of< VariableRegistry, RegistryType >::value,
-			"Discrete variable registry must be derived from class Variable Registry"
-		);
-		
 		Discrete = std::make_shared< RegistryType >( 
 							 std::forward< RegistryArguments >( TheArguments )... );
 		
-		if ( Discrete )
-			return true;
-		else 
-			return false;
+		if ( Discrete ) return true;
+		else return false;
 	}
 	
 	// There is a very similar definition for the continuous variable registry
 	
 	template< class RegistryType, class... RegistryArguments >
-	static bool CreateContinuous( RegistryArguments &&... TheArguments  )
+	static typename std::enable_if< 
+									std::is_base_of< Variables< VariableType::Continuous >, 
+																	 RegistryType >::value, bool >::type
+	Create( RegistryArguments &&... TheArguments  )
 	{
-		static_assert( std::is_base_of< VariableRegistry, RegistryType >::value,
-			"Discrete variable registry must be derived from class Variable Registry"
-		);
-		
 		Continuous = std::make_shared< RegistryType >( 
 								 std::forward< RegistryArguments >( TheArguments )... );
 		
-		if ( Continuous )
-			return true;
-		else 
-			return false;
+		if ( Continuous )	return true;
+		else return false;
 	}	 
 	
 	// There is a utility function to delete the registries if they are empty. 
-	// It should be noted that it is assumed that the model variables are declared
-	// as variables in main or in a global scope, and therefore they will exist 
-	// until the termination of the solver. In that case the smart pointers will 
-	// delete the registries when the application closes. Thus it is probably 
-	// safer for derived classes not directly to call the delete registries 
-	// function when the last variable signs out as it most likely is equivalent 
-	// with "delete this" and could have unwanted consequences.
+	// Since the variable stores are not yet defined, then the compiler will 
+	// not be able to know that the store inherits this registry class and has 
+	// an empty() function that can be called. It is therefore defined at the end
+	// of this section.
 	
-	static bool DeleteVariableRegistries( void )
-	{
-		if ( Discrete )
-		{
-			if ( Discrete->empty() )
-				Discrete.reset();
-			else
-				return false;
-		}
+	static bool DeleteVariableRegistries( void );
 		
-		if ( Continuous )
-		{
-			if ( Continuous->empty() )
-				Continuous.reset();
-			else
-				return false;
-		}
-		
-		return true;
-	}
-		
-	// There are two functions to set the values of the variable classes by 
-	// giving a vector of values. These must be implemented by the derived class
-	// being able to access the variables. Furthermore, for the discrete variables
-	// the value must be able to hold the largest integral values, and for 
-	// continuous variables a double is assumed to have sufficient precision as 
-	// the storage class.
-	
-	using DiscreteVariableValues   = std::vector< signed long long int >;
-	using ContinuousVariableValues = std::vector< double >;
-	
-	virtual	void SetValues( DiscreteVariableValues   & Values ) = 0;
-	virtual	void SetValues( ContinuousVariableValues & Values ) = 0;
-	
-	// There are two helper functions to return the number of variables in each 
-	// of the two classes. How these are implemented depends on how the variables
-	// are stored by a specific implementation. However, from the above functions 
-	// it is clear that there cannot be more variables than can be stored in a 
-	// standard vector, and so the size type for the vector is used as return 
-	// type.
-	
-	virtual DiscreteVariableValues::size_type	
-	NumberOfDescreteVariables( void ) = 0;
-	
-	virtual ContinuousVariableValues::size_type
-	NumberOfContinuousVariables( void ) = 0;
-
 	// The virtual destructor will call the delete operation to ensure 
 	// that the static registries are cleared.
 	
 	virtual ~VariableRegistry()
 	{ }
 };
+
+// The two specialisations for the variable stores can now be defined derived 
+// from the variable registry and implementing the methods that are different 
+// depending on the class of the stored variables.
+
+template<>
+class Variables< VariableType::Discrete > : virtual public VariableRegistry
+{
+public:
+	
+	// The variables stored can be assigned values one by one, but normally they 
+	// will all be assigned values in one go by providing a vector of values. 
+	// Discrete variables may have many different storage classes like 
+	// int, short, long,... and it is therefore necessary to ensure that the 
+	// storage class provided when assigning the values is large enough to hold 
+	// the largest possible variable value. The variable itself will verify that 
+	// the assigned value is within the domain.
+	
+	using DiscreteVariableValues = std::vector< signed long long int >;
+	
+	// Then there is a function to set the variables given a vector of values, 
+	// and this must be provided by the derived classes knowing how the variables
+	// are stored.
+
+	virtual	void SetValues( DiscreteVariableValues & Values ) = 0;
+	
+	// In the same way there is a function to return the number of variables, and 
+	// since this number must correspond to the number of values given, its type
+	// can be derived from the variable values vector.
+	
+	virtual DiscreteVariableValues::size_type	NumberOfVariables( void ) = 0;
+	
+	// Finally, the variable store provides a virtual destructor to ensure 
+	// correct removal of all classes.
+	
+	virtual ~Variables( void )
+	{ }
+};
+
+// A very similar set of definitions are given for the continuous variables 
+// where the variable values are given as a vector of doubles.
+
+template<>
+class Variables< VariableType::Continuous > : virtual public VariableRegistry
+{
+public:
+	
+	// The variable values can be given as a vector of doubles since long double 
+	// only gives more precision in the mantissa. 
+
+	using ContinuousVariableValues = std::vector< double >;
+	
+	// There is a function to set the values for the variables based on the 
+	// provided vector. This depends on the implementation of the variable store,
+	// and therefore its implementation is left for the derived storage class.
+	
+	virtual	void SetValues( ContinuousVariableValues & Values ) = 0;
+	
+	// The number of variables stored is reported with the purpose that the 
+	// range can be used as an index in the variable values vector
+	
+	virtual ContinuousVariableValues::size_type	NumberOfVariables( void ) = 0;
+
+	// The destructor is virtual to allow the correct invocation of the derived 
+	// class destructor. Currently there is nothing to do for this class.
+	
+	virtual ~Variables( void )
+	{ }
+};
+
+// The function to delete the registries needs to check that the registry does 
+// not hold any variables, and therefore it is necessary for the compiler to 
+// know that the variable stores are derived from the variable registry in 
+// order to call the empty() function. 
+
+bool VariableRegistry::DeleteVariableRegistries( void )
+{
+	if ( Discrete )
+	{
+		if ( Discrete->empty() )
+			Discrete.reset();
+		else
+			return false;
+	}
+	
+	if ( Continuous )
+	{
+		if ( Continuous->empty() )
+			Continuous.reset();
+		else
+			return false;
+	}
+	
+	return true;
+}
 
 // -----------------------------------------------------------------------------
 // Variable Value

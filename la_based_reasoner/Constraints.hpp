@@ -103,8 +103,12 @@ public:
 	
 	template< Type TheConstraintClass >
 	static std::vector< double > Evaluate( 
-  Configuration::VariableRegistry::DiscreteVariableValues   & DiscreteValues,
-	Configuration::VariableRegistry::ContinuousVariableValues & ContinuousValues	)
+			   Configuration::Variables< 
+				 Configuration::VariableType::Discrete >::DiscreteVariableValues &
+						  DiscreteValues,
+				 Configuration::Variables< 
+				 Configuration::VariableType::Continuous >::ContinuousVariableValues & 
+							ContinuousValues	)
 	{
 		std::vector< double > Result;
 		
@@ -131,7 +135,9 @@ public:
 	
 	template< Type TheConstraintClass >
 	static std::vector< double > Evaluate( 
-	Configuration::VariableRegistry::ContinuousVariableValues & ContinuousValues	)
+				 Configuration::Variables< 
+				 Configuration::VariableType::Continuous >::ContinuousVariableValues & 
+						 ContinuousValues	)
 	{
 		std::vector< double > Result;
 		

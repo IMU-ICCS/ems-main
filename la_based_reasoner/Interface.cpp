@@ -15,8 +15,14 @@ License: LGPL 3.0
 
 // The static variables used to register the variable definitions
 
-std::shared_ptr< LASolver::Configuration::VariableRegistry > 
-	LASolver::Configuration::VariableRegistry::Discrete,
+std::shared_ptr< 
+	LASolver::Configuration::Variables< 
+	LASolver::Configuration::VariableType::Discrete > > 
+	LASolver::Configuration::VariableRegistry::Discrete;
+	
+std::shared_ptr< 
+	LASolver::Configuration::Variables< 
+	LASolver::Configuration::VariableType::Continuous > >	
 	LASolver::Configuration::VariableRegistry::Continuous;
 	
 // A similar variable is used to store the metrics
