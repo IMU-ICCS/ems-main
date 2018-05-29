@@ -416,20 +416,24 @@ public:
 	// which kind of registry store to create by testing if the given registry 
 	// type is derived from the relevant variable store.
 	//
+	// A pointer to the created registry is returned to the caller since it may 
+	// be needed for the caller to access the registries, or at least check that 
+	// the variable registry was properly created.
+	//
 	// IMPORTANT: Both registries must be instantiated before the first variables
 	// are created as the variable otherwise would throw an exception!
 
 	template< class RegistryType, class... RegistryArguments >
 	static typename std::enable_if< 
 									std::is_base_of< Variables< VariableType::Discrete >, 
-																	 RegistryType >::value, bool >::type
+																	 RegistryType >::value, 
+								  std::shared_ptr< Variables< VariableType::Discrete > > >::type
 	Create( RegistryArguments &&... TheArguments  )
 	{
 		Discrete = std::make_shared< RegistryType >( 
 							 std::forward< RegistryArguments >( TheArguments )... );
 		
-		if ( Discrete ) return true;
-		else return false;
+		return Discrete;
 	}
 	
 	// There is a very similar definition for the continuous variable registry
@@ -437,14 +441,15 @@ public:
 	template< class RegistryType, class... RegistryArguments >
 	static typename std::enable_if< 
 									std::is_base_of< Variables< VariableType::Continuous >, 
-																	 RegistryType >::value, bool >::type
+																	 RegistryType >::value, 
+								  std::shared_ptr< Variables< VariableType::Continuous > 
+															   > >::type
 	Create( RegistryArguments &&... TheArguments  )
 	{
 		Continuous = std::make_shared< RegistryType >( 
 								 std::forward< RegistryArguments >( TheArguments )... );
 		
-		if ( Continuous )	return true;
-		else return false;
+		return Continuous;
 	}	 
 	
 	// There is a utility function to delete the registries if they are empty. 
