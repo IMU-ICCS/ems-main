@@ -32,6 +32,7 @@ License: LGPL 3.0
 #include <limits>                             // For numeric limits on types
 #include <memory>                             // For smart pointers
 #include <boost/numeric/conversion/cast.hpp>  // Safe numeric casts
+#include <algorithm>                          // For min and max
 
 #include "Domains.hpp"            // The domain types of the variables
 #include "RandomGenerator.hpp"    // To select random numbers over domains
@@ -218,6 +219,14 @@ protected:
 	
 	virtual std::any GetValue( void ) = 0;
 	
+	// In the same way there are functions returning the lower and upper bound 
+	// of the variable. For continuous variables this is straight forward, 
+	// and for discrete variables it corresponds to the maximal or minimal value
+	// of the set.
+	
+	virtual std::any GetUpperBound( void ) = 0;
+	virtual std::any GetLowerBound( void ) = 0;
+	
 	// Finally, the actual conversion from a standard Any type to a given 
 	// destination type is managed by a conversion template function that 
 	// basically has to test every standard type and do the any cast on the 
@@ -317,10 +326,24 @@ public:
 	// value, and then call the convert function to cast the value to the 
 	// requested return type
 	
-	template< class ReturnType >
-	inline ReturnType Value ( void )
+	template< typename ReturnType >
+	inline ReturnType Value( void )
 	{
 		return Convert< ReturnType >( GetValue() );
+	}
+	
+	// In the same way there are templates to return the bounds of the variable
+	
+	template< typename ReturnType >
+	inline ReturnType LowerBound( void )
+	{
+		return Convert< ReturnType>( GetLowerBound() );
+	}
+	
+	template< typename ReturnType >
+	inline ReturnType UpperBound( void )
+	{
+		return Convert< ReturnType >( GetUpperBound() );
 	}
 	
 	// The default constructor is disallowed
@@ -791,18 +814,33 @@ class Variable< Domain::Interval< ValueType >,
 								std::enable_if_t< std::is_arithmetic< ValueType >::value > >
 : public Configuration::Variable< ValueType >
 {
-private:
-	
-	Domain::Interval< ValueType > TheDomain;
-	
 public:
-	
+
 	// The variable attributes are similar to the ones for the interval domains
 	
 	static constexpr bool Countable  = Domain::Interval< ValueType >::Countable;
 	static constexpr bool Continuous = true;
 	
 	using value_type = ValueType;
+	
+		
+private:
+	
+	Domain::Interval< ValueType > TheDomain;
+	
+protected:
+	
+	// The generic functions for obtaining the range of the domain should be 
+	// protected as they are not supposed to be used directly, but through the 
+	// conversion functions of the Value Element.
+
+	virtual std::any GetUpperBound( void ) override
+	{ return TheDomain.upper(); }
+	
+	virtual std::any GetLowerBound( void ) override
+	{ return TheDomain.lower(); }
+		
+public:
 	
 	// The value return function is directly re-used
 	
@@ -831,14 +869,16 @@ public:
 	}
 	
 	// A continuous variable must be able to report the upper and lower bound
-	// of the interval.
+	// of the interval. The lower case forms can be used directly if one knows
+	// the return type. Otherwise, one has to resort to the standard any type 
+	// conversion supported by the Value Element class.
 	
-	inline ValueType LowerBound( void )
-	{ return TheDomain.lower(); }
-	
-	inline ValueType UpperBound( void )
+	inline ValueType upper( void )
 	{ return TheDomain.upper(); }
 	
+	inline ValueType lower( void )
+	{ return TheDomain.lower(); }
+		
 	// The main constructor takes the name of the variable, an instance of the 
 	// domain (typically temporary), and an initial value of the variable. The 
 	// configuration variable will just store the initial value, and so it has 
@@ -903,10 +943,6 @@ template< class ValueType >
 class Variable< Domain::Set< ValueType > >
 : public Configuration::Variable< ValueType >
 {
-private:
-	
-	Domain::Set< ValueType > TheDomain;
-	
 public:
 	
 	// The variable attributes are defined as for sets
@@ -916,6 +952,26 @@ public:
 	
 	using value_type = ValueType;
 	
+private:
+	
+	Domain::Set< ValueType > TheDomain;
+	
+protected:
+	
+	// Set domains are not stored as sets but as vectors, and it is therefore 
+	// more complicated to find the upper and lower bound of the set since it 
+	// must be looked up in each case. However, the domain stores its maximum 
+	// and minimum value, and so it is just to report these.
+	
+	virtual std::any GetUpperBound( void ) override
+	{ return TheDomain.upper(); }
+	
+	virtual std::any GetLowerBound( void ) override
+	{ return TheDomain.lower(); }
+
+	
+public:
+		
 	// The value return function is directly re-used
 	
 	using Configuration::Variable< ValueType >::operator();
@@ -1010,6 +1066,17 @@ class Variable< Domain::Set< Domain::Interval< ValueType > > >
 : public Configuration::Variable< 
 				 typename Domain::Set< Domain::Interval< ValueType > >::Index > 
 {
+public:
+
+	// The variable attributes are defined as for sets, but where the value type
+	// is the index of the sub-interval containing the real value.
+	
+	static constexpr bool Countable  = true;
+	static constexpr bool Continuous = true;
+	
+	using Index = typename Domain::Set< Domain::Interval< ValueType > >::Index;
+	using value_type = ValueType;
+
 private:
 						
 	Domain::Set< Domain::Interval< ValueType > > TheDomain;
@@ -1021,18 +1088,21 @@ private:
 	
 	using IntervalVariableType = Variable< Domain::Interval< ValueType > >;
 	
-	std::shared_ptr< IntervalVariableType >	IntervalVariable; 
-		
+	std::shared_ptr< IntervalVariableType >	IntervalVariable;
+	
+protected:
+	
+	// The upper and lower bounds are directly returned from the domain and 
+	// correspond to the supremum of the upper bounds of all intervals and the 
+	// infimum of all intervals respectively.
+	
+	virtual std::any GetUpperBound( void ) override
+	{ return TheDomain.upper(); }
+	
+	virtual std::any GetLowerBound( void ) override
+	{ return TheDomain.lower(); }
+			
 public:
-
-	// The variable attributes are defined as for sets, but where the value type
-	// is the index of the sub-interval containing the real value.
-	
-	static constexpr bool Countable  = true;
-	static constexpr bool Continuous = true;
-	
-	using Index = typename Domain::Set< Domain::Interval< ValueType > >::Index;
-	using value_type = ValueType;
 	
 	// Since the value in the configuration is only reported by the continuous 
 	// sub-variable, the export function will do nothing.
@@ -1069,7 +1139,9 @@ public:
   
 	virtual void operator() ( Index GivenValue ) override
 	{
-		if ( GivenValue < TheDomain.NumberOfValues() )
+		if ( Configuration::Variable< Index >::operator()() == GivenValue )
+			return;
+		else if ( GivenValue < TheDomain.NumberOfValues() )
 		{
 			Configuration::Variable< Index >::operator()( GivenValue );
 			IntervalVariable = std::make_shared< IntervalVariableType >(
@@ -1094,12 +1166,18 @@ public:
 	// The initial value is a value in one of the subintervals of the domain, 
 	// and the interval variable is then created for this subinterval. If the 
 	// given value does not correspond to a legal value of the domain, a random
-	// will be chosen instead. 
+	// will be chosen instead.
+	//
+	// Note that the default value of the discrete variable is set to the number 
+	// of subintervals since this is not a legal index (one after the end of the 
+	// legal index range 0..n-1). This ensures that the continuous variable will 
+	// be correctly created by as the initial interval index should never match 
+	// this number.
 	
 	Variable( const std::string & TheName, 
 						const Domain::Set< Domain::Interval< ValueType > > & GivenDomain, 
 					  const ValueType InitialValue )
-	: Configuration::Variable< Index >( TheName, Index(0) ),
+	: Configuration::Variable< Index >( TheName, GivenDomain.NumberOfValues() ),
 	  TheDomain( GivenDomain )
 	{
 		try

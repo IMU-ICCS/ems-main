@@ -17,6 +17,7 @@ License: LGPL 3.0
 #include <string>           // Storing the name of the metric
 #include <sstream>          // For error messages
 #include <stdexcept>        // For standard exceptions
+#include <limits>           // For numeric limits of types
 
 #include "Variables.hpp"    // The definition of the variables
 
@@ -101,6 +102,21 @@ public:
 template< class ValueType >
 class Metric : public Configuration::Variable< ValueType >
 {
+protected:
+	
+	// Defining the upper and lower bound of a metric makes no sense since the 
+	// metric has no bounds. However, the bounds can be defined to correspond 
+	// with the ranges for the metric value type, i.e. the range from the smallest
+	// number that can be stored in the metric to the largest number the type 
+	// can hold.
+	
+	virtual std::any GetUpperBound( void ) override
+	{ return std::numeric_limits< ValueType >::max(); }
+	
+	virtual std::any GetLowerBound( void ) override
+	{ return std::numeric_limits< ValueType >::min(); }
+	
+	
 public:
 	
 	Metric( const std::string TheTopicName, ValueType InitialValue )
