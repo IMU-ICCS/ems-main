@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableAsync
-@ComponentScan(basePackages = {"eu.paasage.upperware.security.authapi.properties"})
+@ComponentScan(basePackages = {"eu.melodic.upperware.adapter", "eu.paasage.upperware.security.authapi.properties"})
 public class AdapterApplication {
 
   public static void main(String[] args) {
