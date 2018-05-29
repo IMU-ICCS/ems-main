@@ -16,7 +16,7 @@ JAVA_OPTS="-Xms256m -Xmx1024m -XX:PermSize=512m -XX:MaxPermSize=512m"
     echo 'Copying Mule App for FCR...'
     cp /opt/2ndLevelEsper2outs_app.zip /opt/mule-standalone-3.9.0/apps
     echo 'Copying Mule App for FCR completed. Starting Mule...'
-    ./mule start "-M-Dhost.rule=select\ avg\(metricValue\)\ as\ metricValue,\ window\(vmName\)\ as\ vmName,\ cloudName\ as\ cloudName,\ window\(componentName\)\ as\ componentName,\ 2\ as\ level,\ current_timestamp\ as\ timestamp\ from\ Visor_event_second.win:time\(60\ sec\)\ where\(\ level=1\)\ output\ last\ every\ 60\ sec"  "-M-Dhost.rulealert=select\ metricValue\ as\ metricValue,\ vmName\ as\ vmName,\ cloudName\ as\ cloudName,\ componentName\ as\ componentName,\ 2\ as\ level,\ current_timestamp\ as\ timestamp\ from\ Visor_event_second.win:time\(60\ sec\)\ having\ metricValue\>\10\ output\ last\ every\ 60\ sec"
+    ./mule start "-M-Dhost.rule=select\ avg\(metricValue\)\ as\ metricValue,\ window\(vmName\)\ as\ vmName,\ cloudName\ as\ cloudName,\ window\(componentName\)\ as\ componentName,\ 2\ as\ level,\ current_timestamp\ as\ timestamp\ from\ Visor_event_second.win:time\(60\ sec\)\ where\(\ level=1\)\ output\ last\ every\ 60\ sec"  "-M-Dhost.rulealert=select\ metricValue\ as\ metricValue,\ vmName\ as\ vmName,\ cloudName\ as\ cloudName,\ componentName\ as\ componentName,\ 2\ as\ level,\ current_timestamp\ as\ timestamp\ from\ Visor_event_second.win:time\(60\ sec\)\ having\ metricValue\>\100\ output\ last\ every\ 60\ sec"
     echo 'Mule started.'
   elif [ "$USECASE" == "GENOM" ]
   then
