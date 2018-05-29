@@ -484,19 +484,19 @@ public:
 	// the largest possible variable value. The variable itself will verify that 
 	// the assigned value is within the domain.
 	
-	using DiscreteVariableValues = std::vector< signed long long int >;
+	using ValueVector = std::vector< signed long long int >;
 	
 	// Then there is a function to set the variables given a vector of values, 
 	// and this must be provided by the derived classes knowing how the variables
 	// are stored.
 
-	virtual	void SetValues( DiscreteVariableValues & Values ) = 0;
+	virtual	void SetValues( ValueVector & Values ) = 0;
 	
 	// In the same way there is a function to return the number of variables, and 
 	// since this number must correspond to the number of values given, its type
 	// can be derived from the variable values vector.
 	
-	virtual DiscreteVariableValues::size_type	NumberOfVariables( void ) = 0;
+	virtual ValueVector::size_type	NumberOfVariables( void ) = 0;
 	
 	// Finally, the variable store provides a virtual destructor to ensure 
 	// correct removal of all classes.
@@ -516,18 +516,18 @@ public:
 	// The variable values can be given as a vector of doubles since long double 
 	// only gives more precision in the mantissa. 
 
-	using ContinuousVariableValues = std::vector< double >;
+	using ValueVector = std::vector< double >;
 	
 	// There is a function to set the values for the variables based on the 
 	// provided vector. This depends on the implementation of the variable store,
 	// and therefore its implementation is left for the derived storage class.
 	
-	virtual	void SetValues( ContinuousVariableValues & Values ) = 0;
+	virtual	void SetValues( ValueVector & Values ) = 0;
 	
 	// The number of variables stored is reported with the purpose that the 
 	// range can be used as an index in the variable values vector
 	
-	virtual ContinuousVariableValues::size_type	NumberOfVariables( void ) = 0;
+	virtual ValueVector::size_type	NumberOfVariables( void ) = 0;
 
 	// The destructor is virtual to allow the correct invocation of the derived 
 	// class destructor. Currently there is nothing to do for this class.
