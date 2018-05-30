@@ -10,6 +10,7 @@ ADD https://repository-master.mulesoft.org/nexus/content/repositories/releases/o
 # ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper2outs_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper2outs_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CEtrafficmodifiedApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CEtrafficmodifiedApp.zip
+ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CASMuleEsperApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CAS_app.zip
 
 
 
