@@ -31,6 +31,7 @@ RUN unzip mule-standalone-3.9.0.zip -d /opt
 # RUN cp 2ndLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
 RUN cp 2ndLevelEsper2outs_app.zip /opt
 RUN cp CEtrafficmodifiedApp.zip /opt
+RUN cp CAS_app.zip /opt
 RUN unzip vms-discovery-server.zip -d /opt
 
 # ======== Remove archives ========
