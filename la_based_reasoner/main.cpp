@@ -1,18 +1,82 @@
 /*=============================================================================
-  MAIN
+  LA Solver
  
-  The main file will synchronise the Learning Automata (LA) based solver. The 
-  LA is intrinsic discrete, so if there are continuous variables, these 
-  will be solved by a non-linear solver holding the discrete variables and 
-  the metrics fixed while this sub-problem is solved.
+  The LA Solver implements a stochastic combinatorial optimiser following the 
+  strategy outlined in [1]. It is a complete re-implementation of the PaaSage
+  LA Solver released in 2014. The fundamental idea is that the execution context
+  of a deployed application is constantly changing, and the measurements from 
+  the running application will indicate if an adaptation is necessary. The 
+  LA Solver aims to find an optimised configuration for the current context 
+  considering that the measurements can be frequently changing, e.g. the number
+  of users of an application. The goal is therefore to find the deployment that
+  behaves best on average.
   
-  The variables and the utility function of the problem are defined in the 
-  file "variables.model" and the constraints are defined in the separate file
-  "constraints.model". Both files are included into the "Interface.cpp" file
-  and compiled to executable code.
+  The problem is solved in a two-stage process and the basic algorithm
   
-  Copyright (c) 2014 Geir Horn, Geir.Horn@mn.uio.no
+  do
+	{
+		Assign discrete variables
+		do
+		{
+			Assign continuous variables
+			Evaluate the utility of the configuration (all variables)
+			Update the values of the continuous variables
+		} 
+		until ( converged )
+		Update the discrete variables
+	} 
+	until ( converged )
+	
+	A network of Learning Automata (LA) [2] is used for the assignment of the 
+	discrete variables, and the BOBYQA algorithm [3] implemented in NLOpt [4] is 
+	used for solving the continuous problem remaining after assigning the 
+	discrete variables.
+	
+	The LA solver is implemented as an actor system using Theron++ [5] by the 
+	following core actor classes:
+	
+	A. Application: This actor takes care of the variables, constraints and 
+	   metric values of the application model. It is responsible for evaluating
+	   the constraints for a given variable assignment (the configuration), 
+	   and to report the configuration to the utility generator.
+  B. Utility Generator: Receives the configuration from the application actor,
+	   and calculates the objective function value for this configuration, i.e. 
+	   the utility. In MELODIC the utility is computed by an external component 
+	   and this actor is the interface to the external component.
+  C. Metric manager: receives the events that the value of a metric has changed
+     and updates the corresponding internal metric value upon request from the 
+     LA Assigner.
+  D. LA Assigner: Updates the probabilities for the various discrete values 
+     and selects the value of the discrete variables. Once the variables have 
+     been selected, it sends the assignment to the solver actor. It also 
+     receives the metric values and caches these until a solution is found 
+     for the current metric values to avoid confusing the continuous variable 
+	   solver with new metric values.
+  D. Solver: The actor responsible for finding the optimal continuous variable
+     values given a received assignment from the LA Assigner. It calls the 
+     Application actor to evaluate constraints and the utility function, and 
+     receives its value from the Utility Generator. It sends each utility value
+     back to the LA Assigner. Once a solution is found it is sent back to the 
+     LA Assigner as an optimal configuration for the current context.
+   
+  Copyright (c) 2018 Geir Horn, Geir.Horn@mn.uio.no
   University of Oslo
+  
+  References:
+  
+  [1] Geir Horn: "A vision for a stochastic reasoner for autonomic cloud 
+      deployment", Proceedings of the Second Nordic Symposium on Cloud 
+      Computing & Internet Technologies (NordiCloud 2013), pp. 46–53, 
+      Conference Location: Oslo, Norway, 2-3 September 2013
+  [2] Mandayam A. L. Thathachar and P. S. Sastry: "Networks of Learning 
+      Automata: Techniques for Online Stochastic Optimization", Kluwer Academic
+      2004, ISBN 1-4020-7691-6
+  [3] M. J. D. Powell: "The BOBYQA algorithm for bound constrained 
+      optimization without derivatives", Report DAMTP 2009/NA06, Department of 
+      Applied Mathematics and Theoretical Physics, Centre for Mathematical 
+      Sciences, Cambridge University, England, UK, August 2009
+  [4] https://nlopt.readthedocs.io/en/latest/
+  [5] https://github.com/GeirHo/TheronPlusPlus
   
   Licence:
   This Source Code Form is subject to the terms of the Mozilla Public License, 
@@ -22,16 +86,8 @@
 
 // Standard library includes
 
-#include <iostream>
 
 // The project related includes - in the order of appearance
-
-#include "Interface.hpp"
-#include "Theron/Theron.h"
-#include "CommandParser.hpp"
-#include "EvaluationActor.hpp"
-#include "ContinuousOptimiser.hpp"
-#include "PrintResults.hpp"
 
 // The main file has three rather separate parts:
 // 1) Initialisation of all main objects involved in the concurrent 
@@ -45,101 +101,10 @@ int main(int argc, char **argv)
   // Initialisation
   //----------------------------------------------------------------------------
 
-  // First the command line arguments are verified, and or default values are
-  // loaded if they have any
-  
-  Solver::CommandParser Parameters( argc, argv );
-  
-  // Then the Theron execution infrastructure is established. The framework
-  // is to be replaced by an LA environment derivative.
-  
-  Theron::EndPoint  TheComputer("Localhost","127.0.0.1");
-  Theron::Framework TheFramework( TheComputer, "Solver",
-    Theron::Framework::Parameters( Parameters.NumberOfThreads() )
-  );
-  
-  // The evaluation of the objective function and the constraints are protected
-  // by an evaluation actor. 
-  
-  Solver::EvaluationActor TheProblem( TheFramework );
-  
-  // Results will be printed by a dedicated print actor. It takes the output 
-  // destination as argument, a flag whether to return the outcome of the 
-  // print operation, and potentially a sting for an external command to be 
-  // executed after the printing if the results should be picked up by other 
-  // applications. The outcome flag is here set so that we can wait for the 
-  // message that the printing is done before we terminate main.
-  
-  Solver::PrintResults Output( TheFramework, std::cout, true );
-  
-  // This test will use only one solver
-  
-  Solver::ContinuousOptimiser Optimiser( TheFramework );
-  
-  // The results will be sent back from the optimiser to a caller address and 
-  // here it will be returned to a receiver since main is not an actor. The 
-  // actual message will be caught by a catcher object whose enqueue function 
-  // is registered as the callback function.
-  
-  Theron::Receiver Solution;
-  Theron::Catcher< std::vector<Solver::EvaluationActor::VariableValue> > Result;
-  
-  Solution.RegisterHandler( &Result, 
-    &Theron::Catcher< 
-	  std::vector< Solver::EvaluationActor::VariableValue > >::Push );
-
-  // There is another catcher and handler for the results of the printing of
-  // the results.
-  
-  Theron::Catcher< Solver::PrintResults::Status > PrintOutcome;
-  
-  Solution.RegisterHandler( &PrintOutcome, 
-    &Theron::Catcher< Solver::PrintResults::Status >::Push
-  );
-
-  // Setting up the vector of initial values with the continuous variables 
-  // in the first positions and the later variables are the discrete variables.
-  
-  std::vector< Solver::EvaluationActor::VariableValue > ContinuousVariables, 
-							DiscreteVariables;
-  
-  for ( const auto & aVariable : Solver::Variables )
-    if ( aVariable.second->GetCategory() 
-				     == Solver::Domain::Categories::Continuous )
-      ContinuousVariables.push_back( 
-	  Solver::EvaluationActor::VariableValue(
-	      aVariable.second, aVariable.second->GetValue())
-      );
-    else
-      DiscreteVariables.push_back(
-	  Solver::EvaluationActor::VariableValue(
-	    aVariable.second, aVariable.second->GetValue())
-      );
   
   //----------------------------------------------------------------------------
   // Starting optimisation
   //----------------------------------------------------------------------------
-  // As of here it is possible to assign value to the discrete variables and 
-  // then solve for the continuous variables. 
-  
-  // In the present version only the initially given discrete values will be 
-  // used, so optimisation can be started right away. The starting point is 
-  // the unified vector of initial values for the continuous variables and 
-  // assigned discrete values.
-    
-  std::vector< Solver::EvaluationActor::VariableValue > 
-	FeasibleSolution( ContinuousVariables );
-  
-  FeasibleSolution.insert( FeasibleSolution.end(), 
-			   DiscreteVariables.begin(), DiscreteVariables.end() );
-  
-  // This is sent to the optimiser with the receiver as the sender address, 
-  // and then it is just to wait for the solution to appear.
-  
-  TheFramework.Send( FeasibleSolution, 
-		     Solution.GetAddress(), Optimiser.GetAddress()  );
-  
-  Solution.Wait();
 
   //----------------------------------------------------------------------------
   // Receiving and printing the results
@@ -148,14 +113,6 @@ int main(int argc, char **argv)
   // vector and then printed to the console before the application happily 
   // terminates.
  
-  Theron::Address From; // dummy
-  
-  Result.Pop( FeasibleSolution, From );
-
-  TheFramework.Send( FeasibleSolution, Solution.GetAddress(), 
-		     Theron::Address("PrintResults") 		);
-
-  Solution.Wait(); // Printing is done, but we do not care about the outcome.
   
   return 0;
 }
