@@ -5,12 +5,14 @@ FROM java:8
 
 # ======== Download necessary software components ========
 WORKDIR /tmp
+RUN mkdir -p /opt
 ADD https://archive.apache.org/dist/activemq/5.15.0/apache-activemq-5.15.0-bin.tar.gz /tmp
 ADD https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/3.9.0/mule-standalone-3.9.0.zip /tmp
 # ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper2outs_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper2outs_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CEtrafficmodifiedApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CEtrafficmodifiedApp.zip
-ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CASMuleEsperApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CAS_app.zip
+#ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CASMuleEsperApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CAS_app.zip
+ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CASMuleEsperApp.zip?at=refs%2Fheads%2Fesper-demo /opt/CAS_app.zip
 
 
 
@@ -25,13 +27,13 @@ ADD vms-discovery-server-docker.zip /tmp/vms-discovery-server.zip
 # COPY vms-discovery-server.zip /tmp
 
 # ======== Install necessary software components ========
-RUN mkdir -p /opt
+
 RUN tar xvzf apache-activemq-5.15.0-bin.tar.gz -C /opt 
 RUN unzip mule-standalone-3.9.0.zip -d /opt
 # RUN cp 2ndLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
 RUN cp 2ndLevelEsper2outs_app.zip /opt
 RUN cp CEtrafficmodifiedApp.zip /opt
-RUN cp CAS_app.zip /opt
+#RUN cp CAS_app.zip /opt
 RUN unzip vms-discovery-server.zip -d /opt
 
 # ======== Remove archives ========
