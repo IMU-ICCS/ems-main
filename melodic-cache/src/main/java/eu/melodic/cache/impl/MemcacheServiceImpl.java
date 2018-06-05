@@ -81,8 +81,8 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
                 // throws expecting InterruptedException, ExecutionException
                 // or TimeoutException
             } catch (Exception e) {
-                log.warn("Attempt {} of {} failed for loading value for key {}", currentTryCount, maxTryCount, key);
                 currentTryCount++;
+                log.warn("Attempt {} of {} failed for loading value for key {}", currentTryCount, maxTryCount, key);
                 if(currentTryCount == maxTryCount){
                     throw new CancellationException();
                 }
