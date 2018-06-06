@@ -334,6 +334,10 @@ public class CDOClient
 	    
 	    // Open session
 	    session = configuration.openNet4jSession();
+
+	    session.options().setCommitTimeout(1000);
+	    session.options().getNet4jProtocol().setTimeout(1000000000000L);
+
 	    registerCamelPackages();
 	}
 	
