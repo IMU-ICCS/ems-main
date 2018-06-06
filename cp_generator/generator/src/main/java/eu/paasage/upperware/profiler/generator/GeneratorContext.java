@@ -2,11 +2,13 @@ package eu.paasage.upperware.profiler.generator;
 
 import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.camel.CamelFactory;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
+import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
 import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
@@ -87,22 +89,24 @@ public class GeneratorContext {
         return new RestTemplate();
     }
 
-    @Bean
-    @Scope("prototype")
-    protected GenerationOrchestrator generationOrchestrator() throws Exception {
-
-        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
-        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
-        NotificationService notificationService = applicationContext.getBean(NotificationService.class);
-        SloService sloService = applicationContext.getBean(SloService.class);
-        RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
-
-        CdoService cdoService = applicationContext.getBean(CdoService.class);
-        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
-
-        return new GenerationOrchestrator(database, paaSageConfigurationService,
-                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
-    }
+//    @Bean
+//    @Scope("prototype")
+//    protected GenerationOrchestrator generationOrchestrator() throws Exception {
+//
+//        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
+//        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
+//        NotificationService notificationService = applicationContext.getBean(NotificationService.class);
+//        SloService sloService = applicationContext.getBean(SloService.class);
+//        RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
+//
+//        CdoService cdoService = applicationContext.getBean(CdoService.class);
+//
+//
+//        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
+//
+//        return new GenerationOrchestrator(database, paaSageConfigurationService,
+//                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
+//    }
 
     @Bean
     @ConfigurationProperties
@@ -115,6 +119,12 @@ public class GeneratorContext {
         String host = cacheProperties.getCache().getHost();
         Integer port = cacheProperties.getCache().getPort();
         return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
+    }
+
+    @Bean
+    @Scope("prototype")
+    public CDOClient cdoClient() {
+        return new CDOClientExtended();
     }
 
 }
