@@ -66,17 +66,28 @@ public class GenerationOrchestrator {
         CpGenerationResult cpGenerationResult;
         CDOTransaction cdoTransaction = null;
         try {
+            log.info("Opening transaction...");
             cdoTransaction = cdoService.openTransaction();
+            log.info("Transaction successfully opened!");
             cpGenerationResult = generateCPModel(resourceName, cdoTransaction);
+            log.info("Transaction has been commited!");
         } catch (Exception e) {
             log.error("Error during generating CpModel.", e);
             notificationService.notifyError(resourceName, notificationUri, requestUuid, e.getMessage());
             return;
         } finally {
+            log.info("Going to close transaction");
             if (cdoTransaction != null){
+                log.info("Transaction is not null");
                 if (cdoTransaction.isClosed()){
+                    log.info("Closing transaction");
                     cdoTransaction.close();
+                    log.info("Transaction has been closed!");
+                } else {
+                    log.info("Transaction is already closed");
                 }
+            } else {
+                log.info("Transaction is null");
             }
             requestSynchronizer.releaseLock(resourceName);
         }
