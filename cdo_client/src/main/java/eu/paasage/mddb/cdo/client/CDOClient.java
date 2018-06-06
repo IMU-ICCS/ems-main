@@ -28,6 +28,9 @@ import org.eclipse.net4j.FactoriesProtocolProvider;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.buffer.IBufferProvider;
 import org.eclipse.net4j.protocol.IProtocolProvider;
+import org.eclipse.net4j.tcp.TCPUtil;
+import org.eclipse.net4j.util.container.IManagedContainer;
+import org.eclipse.net4j.util.container.IPluginContainer;
 import org.eclipse.net4j.util.event.IListener;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.OMPlatform;
@@ -321,9 +324,17 @@ public class CDOClient
 	    //connector.activate();
 
 	    // Create configuration
-	    CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
-	    configuration.setConnector(connector);
-	    configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
+//	    CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
+//	    configuration.setConnector(connector);
+//	    configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
+
+        IManagedContainer container = IPluginContainer.INSTANCE;
+        Net4jUtil.prepareContainer(container);
+        TCPUtil.prepareContainer(container);
+        CDONet4jUtil.prepareContainer(container);
+        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
+        configuration.setConnector(connector);
+        configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
 	    //Provide security information, if supplied by user
 	    //authentication, if succeeds last for the whole session - lifetime of CDOClient object
