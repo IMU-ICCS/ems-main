@@ -16,6 +16,7 @@ import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.organisation.OrganisationPackage;
 import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.type.TypePackage;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.cp.cloner.CPCloner;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
@@ -28,6 +29,7 @@ import eu.passage.upperware.commons.model.tools.ModelTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -47,8 +49,8 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 	private CDOClientExtended cdoClient;
 
 	@Autowired
-	public CDODatabaseProxy(CDOClientExtended cdoClient) {
-		this.cdoClient = cdoClient;
+	public CDODatabaseProxy(ApplicationContext applicationContext) {
+		this.cdoClient = (CDOClientExtended) applicationContext.getBean(CDOClient.class);
 		cloner = new CPCloner();
 
 		registerPackages();

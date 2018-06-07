@@ -25,12 +25,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+//@Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class CDOClientExtended extends CDOClient {
 
-    private ModelService modelService;
+//    private ModelService modelService;
 
     public void storeModel(EObject model, String resourceName) {
         storeModels(Collections.singletonList(model), resourceName);
