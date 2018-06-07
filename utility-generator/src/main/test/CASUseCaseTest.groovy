@@ -79,6 +79,27 @@ class CASUseCaseTest extends Specification {
     //VAR_cardinality * VAR_ram * METRIC_maxRamUsage >= METRIC_currentRamUsage
 
 
+    def "simple test for configuration"() {
+
+        UtilityGeneratorApplication utilityGenerator =
+                new UtilityGeneratorApplication(metrics, actualConfiguration, false, UtilityFunctionType.CAS,
+                        costUtilityFunction)
+
+        when:
+        double moreRam = utilityGenerator.evaluateToTest(newMoreRamConfiguration)
+        double init = utilityGenerator.evaluateToTest(actualConfiguration)
+        double bigger = utilityGenerator.evaluateToTest(newBiggerConfiguration)
+
+        then:
+        noExceptionThrown()
+        init != 0
+        moreRam != 0
+        bigger != 0
+        System.out.println("moreCores = " + moreRam + "\ninit = " + init + "\nbigger = " + bigger)
+
+    }
+
+
     def "simple test add more ram"() {
 
         metric.getValue() >> 90

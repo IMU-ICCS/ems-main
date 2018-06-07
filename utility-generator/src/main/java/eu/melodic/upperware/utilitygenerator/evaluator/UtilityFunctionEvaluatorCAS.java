@@ -47,19 +47,18 @@ public class UtilityFunctionEvaluatorCAS extends UtilityFunctionEvaluator {
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
 
-        long totalRamAct = actConfiguration.stream().mapToLong(ConfigurationElement::getFullRam).sum();
-        long totalRamNew = newConfiguration.stream().mapToLong(ConfigurationElement::getFullRam).sum();
-        long totalRamUsage = totalRamAct * ramUsage.getValue()/100;
+        if (isReconfig){
+            long totalRamAct = actConfiguration.stream().mapToLong(ConfigurationElement::getFullRam).sum();
+            long totalRamNew = newConfiguration.stream().mapToLong(ConfigurationElement::getFullRam).sum();
+            long totalRamUsage = totalRamAct * ramUsage.getValue()/100;
 
-        if (isReconfig && (totalRamUsage/(double)totalRamNew) > MAX_RAM_USAGE){
-            log.warn("Solution does not allow to keep required percent of ram usage");
-            return 0.0;
+            if (totalRamUsage/(double)totalRamNew > MAX_RAM_USAGE){
+                log.warn("Solution does not allow to keep required percent of ram usage");
+                return 0.0;
+            }
         }
         //if ((totalRamNew > ramUsage.getValue()) && (ramUsage.getValue()/(double)totalRamNew < MAX_RAM_USAGE)){
-        else {
-            return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
-        }
-
+        return costUtilityFunction.evaluateCostUtilityFunction(actConfiguration, newConfiguration);
 
     }
 
