@@ -14,31 +14,30 @@ import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CDODatabaseProxy {
 
 	private static CDODatabaseProxy proxy = new CDODatabaseProxy();
-
-	private CDOClient cdoClient;
-
-	/**
-	 * Default constructor
-	 */
-	private CDODatabaseProxy() {
-		cdoClient = new CDOClient();
-		registerPackages();
-	}
 
 	public static CDODatabaseProxy getInstance() {
 		return proxy;
 	}
 
+	public CDOClient getCdoClient() {
+		CDOClient cdoClient = new CDOClient();
+		registerPackages(cdoClient);
+		return cdoClient;
+	}
+
 	/**
 	 * Registers the package of the used models in the database
 	 */
-	private void registerPackages() {
+	private void registerPackages(CDOClient cdoClient) {
 		cdoClient.registerPackage(ApplicationPackage.eINSTANCE);
 		cdoClient.registerPackage(CpPackage.eINSTANCE);
 		cdoClient.registerPackage(TypesPackage.eINSTANCE);
@@ -50,9 +49,5 @@ public class CDODatabaseProxy {
 
 		cdoClient.registerPackage(OrganisationPackage.eINSTANCE);
 		cdoClient.registerPackage(DeploymentPackage.eINSTANCE);
-	}
-
-	public CDOClient getCdoClient() {
-		return cdoClient;
 	}
 }

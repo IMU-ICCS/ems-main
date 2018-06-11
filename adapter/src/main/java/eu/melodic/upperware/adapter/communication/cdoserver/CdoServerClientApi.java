@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
+import eu.melodic.upperware.adapter.ApplicationContext;
 import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.CamelPackage;
@@ -16,8 +17,8 @@ import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionFactory;
 import eu.paasage.camel.execution.ExecutionModel;
-import eu.paasage.camel.requirement.*;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.camel.requirement.RequirementGroup;
+import eu.paasage.camel.requirement.RequirementModel;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -36,7 +37,10 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.String.format;
 
@@ -45,8 +49,7 @@ import static java.lang.String.format;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CdoServerClientApi implements CdoServerApi {
 
-  private CDOClient cdoClient;
-
+  private ApplicationContext applicationContext;
 
   private static Map<String, Object> opts = new HashMap<>();
 
@@ -167,7 +170,7 @@ public class CdoServerClientApi implements CdoServerApi {
 
   @Override
   public CDOTransaction openTransaction() {
-    return cdoClient.openTransaction();
+    return applicationContext.getCdoClient().openTransaction();
   }
 
   @Override

@@ -89,25 +89,6 @@ public class GeneratorContext {
         return new RestTemplate();
     }
 
-//    @Bean
-//    @Scope("prototype")
-//    protected GenerationOrchestrator generationOrchestrator() throws Exception {
-//
-//        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
-//        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
-//        NotificationService notificationService = applicationContext.getBean(NotificationService.class);
-//        SloService sloService = applicationContext.getBean(SloService.class);
-//        RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
-//
-//        CdoService cdoService = applicationContext.getBean(CdoService.class);
-//
-//
-//        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
-//
-//        return new GenerationOrchestrator(database, paaSageConfigurationService,
-//                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
-//    }
-
     @Bean
     @ConfigurationProperties
     public CacheProperties cacheProperties(){
