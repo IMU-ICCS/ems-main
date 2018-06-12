@@ -28,10 +28,14 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GeneratorController {
 
+//    private GeneratorContext generatorContext;
+
+//    @Autowired
     private ApplicationContext applicationContext;
 
     @RequestMapping(value = "/constraintProblem", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public void generateConstraintProblem(@RequestBody ConstraintProblemRequestImpl request) throws Exception {
+//        validator.validate(request);
 
         String resourceName = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
@@ -45,6 +49,8 @@ public class GeneratorController {
         SloService sloService = applicationContext.getBean(SloService.class);
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
 
+//        CdoService cdoService = applicationContext.getBean(CdoService.class);
+
         CDOClient cdoClient = applicationContext.getBean(CDOClient.class);
         log.info("Getting cdoClient {}", cdoClient);
 
@@ -55,6 +61,7 @@ public class GeneratorController {
         GenerationOrchestrator generationOrchestrator = new GenerationOrchestrator(database, paaSageConfigurationService,
                 notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
 
+//        GenerationOrchestrator generationOrchestrator = generatorContext.generationOrchestrator();
         generationOrchestrator.generateCPModelAndSendNotification(resourceName, notificationUri, requestUuid);
     }
 

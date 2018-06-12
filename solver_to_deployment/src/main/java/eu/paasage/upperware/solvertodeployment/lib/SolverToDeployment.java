@@ -67,7 +67,8 @@ public class SolverToDeployment {
 		try {
 			NodeCandidates nodeCandidates = Objects.requireNonNull(cacheService.load(CacheUtils.createCacheKey(paasageConfigurationID)));
 
-			CDOTransaction cdoTransaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
+			CDOTransaction cdoTransaction = cdoProxy.getCdoClient().openTransaction();
 
 			EList<EObject> contentsCM = cdoTransaction.getResource(camelModelID).getContents();
 
@@ -142,6 +143,7 @@ public class SolverToDeployment {
 					log.info("CommIntances: "+getAsString(dm.getCommunicationInstances()));
 				}
 			}
+
 	}
 
 	private static <T extends DeploymentElement> String getAsString(EList<T> deploymentElements){
@@ -179,7 +181,6 @@ public class SolverToDeployment {
 		}
 		log.info("Notification sent.");
 	}
-
 	private Watermark prepareWatermark(String uuid) {
 		Watermark watermark = new WatermarkImpl();
 		watermark.setUser("SolverToDeployment");

@@ -292,35 +292,36 @@ public class CPSolver {
 	public void readCPModel(String cdoPath, String pathName){
 		ConstraintProblem cp = null;
 		log.info("Reading CP model...");
-		CDOClient cl = createCDOClient();
+		CDOClient cl = new CDOClient();
+		cl.registerPackage(TypesPackage.eINSTANCE);
+		cl.registerPackage(CpPackage.eINSTANCE);
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		if (cdoPath != null){
 			log.info("Loading resource from CDO: " +cdoPath);
 			cdoMode = true;
 			CDOView view = cl.openView();
-			cp = getConstraintProblem(view.getResource(cdoPath));
+			CDOResource res = view.getResource(cdoPath);
+			EList<EObject> objs = res.getContents();
+			for (EObject obj: objs){
+				if (obj instanceof ConstraintProblem){
+					cp = (ConstraintProblem)obj;
+					break;
+				}
+			}
 			readModel(cp);
 			view.close();
 		}
 		else if (pathName != null){
 			log.info("Loading resource from file: " +pathName);
 			cdoMode = false;
-			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
+			cp = (ConstraintProblem)cl.loadModel(pathName);
 			readModel(cp);
 		}
 		log.info("CDO Mode: " + cdoMode);
 		cl.closeSession();
 	}
-
-	private ConstraintProblem getConstraintProblem(CDOResource res) {
-		return res.getContents()
-				.stream()
-				.filter(eObject -> eObject instanceof ConstraintProblem)
-				.map(eObject -> (ConstraintProblem)eObject)
-				.findFirst().orElse(null);
-	}
-
+	
 	/* Solves the CPModel previously read, updates the model if a solution was found 
 	 * and returns a boolean value indicating whether a solution has been found or not
 	 */
@@ -382,11 +383,20 @@ public class CPSolver {
 		log.info("Saving best solution in CDO.....");
 		CDOTransaction trans = null;
 		ConstraintProblem cp = null;
-		CDOClient cl = createCDOClient();
+		CDOClient cl = new CDOClient();
+		cl.registerPackage(TypesPackage.eINSTANCE);
+		cl.registerPackage(CpPackage.eINSTANCE);
 		//System.out.println("CDOMode: " + cdoMode);
 		if (cdoMode){
 			trans = cl.openTransaction();
-			cp = getConstraintProblem(trans.getResource(cdoPath));
+			CDOResource resource = trans.getResource(cdoPath);
+			EList<EObject> contents = resource.getContents();
+			for (EObject obj: contents){
+				if (obj instanceof ConstraintProblem){
+					cp = (ConstraintProblem)obj;
+					break;
+				}
+			}
 		} else{
 			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
 		}
@@ -1306,13 +1316,6 @@ public class CPSolver {
 
 	private String getBoolVarName(){
 		return "BoolVar" + (intVarNum++);
-	}
-
-	private CDOClient createCDOClient(){
-		CDOClient client = new CDOClient();
-		client.registerPackage(TypesPackage.eINSTANCE);
-		client.registerPackage(CpPackage.eINSTANCE);
-		return client;
 	}
 
 }
