@@ -19,8 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CDODatabaseProxy {
 
-	private static CDODatabaseProxy proxy = new CDODatabaseProxy();
-
 	private CDOClient cdoClient;
 
 	/**
@@ -32,7 +30,7 @@ public class CDODatabaseProxy {
 	}
 
 	public static CDODatabaseProxy getInstance() {
-		return proxy;
+		return new CDODatabaseProxy();
 	}
 
 	/**
