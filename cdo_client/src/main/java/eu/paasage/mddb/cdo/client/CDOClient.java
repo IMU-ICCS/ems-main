@@ -268,6 +268,8 @@ public class CDOClient
 	/*This method is used for initiating a CDO Session starting by obtaining
 	connection information from a property file*/
 	private void initSession(){
+		log.warn("Creating new client {}", this);
+
 		getConnectionInformation();
 
 		OMPlatform.INSTANCE.setDebugging(logging);
@@ -328,11 +330,14 @@ public class CDOClient
 //	    configuration.setConnector(connector);
 //	    configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
-        IManagedContainer container = IPluginContainer.INSTANCE;
-        Net4jUtil.prepareContainer(container);
-        TCPUtil.prepareContainer(container);
-        CDONet4jUtil.prepareContainer(container);
-        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
+//        IManagedContainer container = IPluginContainer.INSTANCE;
+//        Net4jUtil.prepareContainer(container);
+//        TCPUtil.prepareContainer(container);
+//        CDONet4jUtil.prepareContainer(container);
+//        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
+
+		CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
+
         configuration.setConnector(connector);
         configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
@@ -342,7 +347,7 @@ public class CDOClient
 		    IPasswordCredentialsProvider credentialsProvider = new PasswordCredentialsProvider(userName, password);
 		    configuration.setCredentialsProvider(credentialsProvider);
 	    }
-	    
+
 	    // Open session
 	    session = configuration.openNet4jSession();
 
