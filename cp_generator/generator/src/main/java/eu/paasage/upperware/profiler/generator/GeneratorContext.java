@@ -7,7 +7,6 @@ import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.organisation.OrganisationPackage;
 import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.type.TypePackage;
-import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
@@ -19,8 +18,6 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
-import eu.paasage.upperware.profiler.generator.db.CDOClientExtended;
-import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
@@ -103,16 +100,16 @@ public class GeneratorContext {
 
     @Bean
     @Scope("prototype")
-    protected GenerationOrchestrator generationOrchestrator() throws Exception {
+    protected GenerationOrchestrator generationOrchestrator() {
 
-//        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
+        //TODO - repleace this with spring initialization ??
+
         PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
         NotificationService notificationService = applicationContext.getBean(NotificationService.class);
         SloService sloService = applicationContext.getBean(SloService.class);
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
 
         CdoService cdoService = applicationContext.getBean(CdoService.class);
-
 
         NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
 
@@ -132,13 +129,6 @@ public class GeneratorContext {
         Integer port = cacheProperties.getCache().getPort();
         return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
     }
-
-//    @Bean
-//    @Scope("prototype")
-//    public CDOClient cdoClient() {
-//        return new CDOClientExtended();
-//    }
-
 
     @Bean
     public CDOClientX cdoClientX() {

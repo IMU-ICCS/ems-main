@@ -28,16 +28,10 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CdoServiceImpl implements CdoService {
 
-//    private CDOClient cdoClient;
-
     private CDOClientX cdoClientX;
-
-
-//    private static Map<String, Object> opts = new HashMap<>();
 
     static {
         XMIResToResFact();
-//        opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
     }
 
     private static void XMIResToResFact(){

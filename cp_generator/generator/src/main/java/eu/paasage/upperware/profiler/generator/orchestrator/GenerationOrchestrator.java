@@ -17,7 +17,6 @@ import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
-import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
@@ -39,7 +38,6 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GenerationOrchestrator {
 
-//    private IDatabaseProxy database;
     private PaasageConfigurationService paaSageConfigurationService;
     private NotificationService notificationService;
     private SloService sloService;
