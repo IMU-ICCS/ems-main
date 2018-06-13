@@ -22,7 +22,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/generator</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/generator-pszkup</docker.imageName>
     </properties>
 
     <dependencies>
