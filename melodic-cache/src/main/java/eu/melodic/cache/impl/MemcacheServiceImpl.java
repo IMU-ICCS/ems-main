@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -65,20 +66,36 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
     public NodeCandidates load(String key) {
         // Try to get a value, for up to 5 seconds, and cancel if it
         // doesn't return
-        NodeCandidates myObj = null;
-        Future<Object> f = memcachedClient.asyncGet(key);
-        try {
-            myObj = (NodeCandidates) f.get(5, TimeUnit.SECONDS);
-            // throws expecting InterruptedException, ExecutionException
-            // or TimeoutException
-        } catch (Exception e) {
-            log.error("Problem during loading value for key {}", key, e);
-          // Since we don't need this, go ahead and cancel the operation.
-          // This is not strictly necessary, but it'll save some work on
-          // the server.  It is okay to cancel it if running.
-          f.cancel(true);
-         }
+        int currentTryCount = 0;
+        int maxTryCount = cacheProperties.getCache().getNumberOfLoadAttempts();
+        int timeToWait = cacheProperties.getCache().getTimeBetweenLoadAttempts();
 
+        NodeCandidates myObj = null;
+        while(currentTryCount < maxTryCount) {
+            try {
+                Future<Object> f = memcachedClient.asyncGet(key);
+                myObj = (NodeCandidates) f.get(5, TimeUnit.SECONDS);
+                currentTryCount = maxTryCount;
+                f.cancel(true);
+
+                // throws expecting InterruptedException, ExecutionException
+                // or TimeoutException
+            } catch (Exception e) {
+                currentTryCount++;
+                log.warn("Attempt {} of {} failed for loading value for key {}", currentTryCount, maxTryCount, key);
+                if(currentTryCount == maxTryCount){
+                    throw new CancellationException();
+                }
+                try{
+                    Thread.sleep(timeToWait * 1000);
+                }catch (InterruptedException ex){
+                    //nothing to do
+                }
+                // Since we don't need this, go ahead and cancel the operation.
+                // This is not strictly necessary, but it'll save some work on
+                // the server.  It is okay to cancel it if running.
+            }
+        }
         return myObj;
     }
 
