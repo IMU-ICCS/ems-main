@@ -42,16 +42,16 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
  * Database proxy for CDO
  */
 @Slf4j
-@Service
+//@Service
 public class CDODatabaseProxy implements IDatabaseProxy {
 
-	private CPCloner cloner;
+//	private CPCloner cloner;
 	private CDOClientExtended cdoClient;
 
 	@Autowired
 	public CDODatabaseProxy(ApplicationContext applicationContext) {
 		this.cdoClient = (CDOClientExtended) applicationContext.getBean(CDOClient.class);
-		cloner = new CPCloner();
+//		cloner = new CPCloner();
 
 		registerPackages();
 	}
@@ -83,15 +83,15 @@ public class CDODatabaseProxy implements IDatabaseProxy {
 		cdoClient.storeModels(Arrays.asList(pc, cp), cpPath);
 		log.debug("CDODatabaseProxy - saveModels - Models stored! ");
 
-		File configurationDir= ModelTool.getGenerationDirForPaasageAppConfiguration(pcId);
+//		File configurationDir= ModelTool.getGenerationDirForPaasageAppConfiguration(pcId);
 
-		File paasageConfigModel= new File(configurationDir, MelodicConstants.PAASAGE_CONFIGURATION_MODEL_FILE_NAME);
-		File cpModel= new File(configurationDir, MelodicConstants.CP_MODEL_FILE_NAME);
+//		File paasageConfigModel= new File(configurationDir, MelodicConstants.PAASAGE_CONFIGURATION_MODEL_FILE_NAME);
+//		File cpModel= new File(configurationDir, MelodicConstants.CP_MODEL_FILE_NAME);
 
-		List<EObject> content = cloner.cloneModel(cpPath);
-		log.debug("CDODatabaseProxy - saveModels - Saving file {0}", paasageConfigModel.getAbsolutePath());
-		cdoClient.exportModel(content.get(0), paasageConfigModel.getAbsolutePath());
-		cdoClient.exportModel(content.get(1), cpModel.getAbsolutePath());
+//		List<EObject> content = cloner.cloneModel(cpPath);
+//		log.debug("CDODatabaseProxy - saveModels - Saving file {0}", paasageConfigModel.getAbsolutePath());
+//		cdoClient.exportModel(content.get(0), paasageConfigModel.getAbsolutePath());
+//		cdoClient.exportModel(content.get(1), cpModel.getAbsolutePath());
 	}
 
 }

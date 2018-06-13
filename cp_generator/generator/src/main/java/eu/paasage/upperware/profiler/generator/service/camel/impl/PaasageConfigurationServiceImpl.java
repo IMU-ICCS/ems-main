@@ -57,7 +57,7 @@ public class PaasageConfigurationServiceImpl implements PaasageConfigurationServ
 
     private final TypesFactoryService typesFactoryService;
     private final CamelModelService camelModelService;
-    private final IDatabaseProxy database;
+//    private final IDatabaseProxy database;
     private final PaasageConfigurationUtilsService paasageConfigurationUtilsService;
 
     private Map<String, List<VirtualMachineProfile>> vmProfiles;

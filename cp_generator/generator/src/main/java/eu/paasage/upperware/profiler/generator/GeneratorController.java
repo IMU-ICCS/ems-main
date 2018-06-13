@@ -28,10 +28,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GeneratorController {
 
-//    private GeneratorContext generatorContext;
+    private GeneratorContext generatorContext;
 
-//    @Autowired
-    private ApplicationContext applicationContext;
+////    @Autowired
+//    private ApplicationContext applicationContext;
 
     @RequestMapping(value = "/constraintProblem", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public void generateConstraintProblem(@RequestBody ConstraintProblemRequestImpl request) throws Exception {
@@ -43,25 +43,25 @@ public class GeneratorController {
 
       log.info("resourceName: " + resourceName + ", notificationUri: " + notificationUri + ", requestUuid: " + requestUuid);
 
-        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
-        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
-        NotificationService notificationService = applicationContext.getBean(NotificationService.class);
-        SloService sloService = applicationContext.getBean(SloService.class);
-        RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
+//        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
+//        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
+//        NotificationService notificationService = applicationContext.getBean(NotificationService.class);
+//        SloService sloService = applicationContext.getBean(SloService.class);
+//        RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
+//
+////        CdoService cdoService = applicationContext.getBean(CdoService.class);
+//
+//        CDOClient cdoClient = applicationContext.getBean(CDOClient.class);
+//        log.info("Getting cdoClient {}", cdoClient);
+//
+//        CdoService cdoService = new CdoServiceImpl(cdoClient);
+//
+//        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
+//
+//        GenerationOrchestrator generationOrchestrator = new GenerationOrchestrator(database, paaSageConfigurationService,
+//                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
 
-//        CdoService cdoService = applicationContext.getBean(CdoService.class);
-
-        CDOClient cdoClient = applicationContext.getBean(CDOClient.class);
-        log.info("Getting cdoClient {}", cdoClient);
-
-        CdoService cdoService = new CdoServiceImpl(cdoClient);
-
-        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
-
-        GenerationOrchestrator generationOrchestrator = new GenerationOrchestrator(database, paaSageConfigurationService,
-                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
-
-//        GenerationOrchestrator generationOrchestrator = generatorContext.generationOrchestrator();
+        GenerationOrchestrator generationOrchestrator = generatorContext.generationOrchestrator();
         generationOrchestrator.generateCPModelAndSendNotification(resourceName, notificationUri, requestUuid);
     }
 
