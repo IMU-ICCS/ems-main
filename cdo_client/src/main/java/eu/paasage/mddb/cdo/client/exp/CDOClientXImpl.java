@@ -13,13 +13,11 @@ import eu.paasage.camel.security.SecurityPackage;
 import eu.paasage.camel.type.TypePackage;
 import eu.paasage.camel.unit.UnitPackage;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.EresourcePackage;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.session.CDOSession;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -44,6 +42,7 @@ import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
 import org.eclipse.net4j.util.security.IPasswordCredentialsProvider;
 import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -255,6 +254,55 @@ public class CDOClientXImpl implements CDOClientX {
         }
         catch(Exception e){
             log.error("Something went wrong while exporting model: {} at path: {}", model, filePath, e);
+        }
+        return false;
+    }
+
+    /* This method is used to load a model from a particular xmi resource. The model
+     * can then be stored to the CDO Server/Repository. The method takes as input
+     * the path (as a String) where the XML file resides.
+     */
+    @Override
+    public EObject loadModel(String pathName){
+        final ResourceSet rs = new ResourceSetImpl();
+        rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+        Resource res = rs.getResource(URI.createFileURI(pathName), true);
+        log.info("Got resource: {}", res);
+        EList<EObject> contents = res.getContents();
+        log.info("Contents are: {}", contents);
+
+        return contents.get(0);
+    }
+
+    /* This method is used to save a model into the file system in a specific path given as input
+     * The input parameters are: the model to store and the file path to store it in the file system.
+     * The output indicates whether the model saving was successful or not. The log file must be
+     * inspected in the latter negative case.
+     */
+    //TODO - is this metod necessary?
+    @Override
+    public boolean saveModel(EObject model, String pathName) {
+        final ResourceSet rs = new ResourceSetImpl();
+        rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+        Resource res = null;
+        File f = new File(pathName);
+        EList<EObject> contents = null;
+        if (f.exists()) {
+            res = rs.getResource(URI.createFileURI(pathName), true);
+            contents = res.getContents();
+            contents.clear();
+        } else {
+            res = rs.createResource(URI.createFileURI(pathName));
+            contents = res.getContents();
+        }
+        if (logging) log.info("Got resource: " + res);
+        contents.add(model);
+        try {
+            res.save(null);
+            return true;
+        } catch (Exception e) {
+            log.error("Something went wrong while storing model: " + model + " at path: " + pathName, e);
+            //e.printStackTrace();
         }
         return false;
     }
