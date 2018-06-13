@@ -9,6 +9,8 @@ import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionModel;
 import eu.paasage.camel.provider.ProviderModel;
+import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,40 +30,13 @@ public class CDODatabaseProxy2 {
 	// Class member variables
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private static CDODatabaseProxy2 cdoDatabaseProxy2 = new CDODatabaseProxy2();
+//	private static CDODatabaseProxy2 cdoDatabaseProxy2 = new CDODatabaseProxy2();
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Helper class for transactions
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	class CamelAndDeploymentModelTransactionManager {
 
-		DeploymentModel deploymentModel;
-		CamelModel camelModel;
-		CDOTransaction transaction;
-		int dmId;
-
-		public CamelAndDeploymentModelTransactionManager(String camelModelID, int dmId) {
-			this.transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
-			this.camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
-					.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
-			this.deploymentModel = camelModel.getDeploymentModels().get(dmId);
-			this.dmId = dmId;
-		}
-
-		public void commitAndClose() {
-			camelModel.getDeploymentModels().set(dmId, deploymentModel);
-			try {
-				transaction.commit();
-			} catch (CommitException e) {
-				log.error("Problem with commit", e);
-			} finally {
-				if (transaction != null && !transaction.isClosed()) {
-					transaction.close();
-				}
-			}
-		}
-	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Helper function
@@ -115,34 +90,86 @@ public class CDODatabaseProxy2 {
 	// Registering stuff into CDO
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static void registerProviderModel(ProviderModel providerModel, String camelModelID, int dmId) {
-		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
-		((CamelModel)transactionManager.deploymentModel.eContainer()).getProviderModels().add(providerModel);
-		transactionManager.commitAndClose();
+	public static class Xxxx {
+
+		private final CDOClient cdoClient;
+
+		public Xxxx() {
+			cdoClient = CDODatabaseProxy.getInstance().getCdoClient();
+		}
+
+		public void registerElements(DataHolder dataHolder, String camelModelID) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(cdoClient.openTransaction(), camelModelID, dataHolder.getDmId());
+
+			((CamelModel)transactionManager.deploymentModel.eContainer()).getProviderModels().addAll(dataHolder.getProviderModel());
+			transactionManager.deploymentModel.getInternalComponentInstances().addAll(dataHolder.getComponentInstancesToRegister());
+			transactionManager.deploymentModel.getVmInstances().addAll(dataHolder.getVmInstancesToRegister());
+			transactionManager.deploymentModel.getHostingInstances().addAll(dataHolder.getHostingInstancesToRegister());
+			transactionManager.deploymentModel.getCommunicationInstances().addAll(dataHolder.getCommunicationInstances());
+
+			transactionManager.commitAndClose();
+		}
+
+		public void registerProviderModel(List<ProviderModel> providerModels, String camelModelID, int dmId) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(cdoClient.openTransaction(), camelModelID, dmId);
+			((CamelModel)transactionManager.deploymentModel.eContainer()).getProviderModels().addAll(providerModels);
+			transactionManager.commitAndClose();
+		}
+
+		public void registerInternalComponentInstance(List<InternalComponentInstance> internalComponentInstances, String camelModelID, int dmId) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(cdoClient.openTransaction(), camelModelID, dmId);
+			transactionManager.deploymentModel.getInternalComponentInstances().addAll(internalComponentInstances);
+			transactionManager.commitAndClose();
+		}
+
+		public void registerVMInstance(List<VMInstance> vmInstances, String camelModelID, int dmId) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(cdoClient.openTransaction(), camelModelID,dmId);
+			transactionManager.deploymentModel.getVmInstances().addAll(vmInstances);
+			transactionManager.commitAndClose();
+		}
+
+		public void registerHostingInstance(List<HostingInstance> hostingInstances, String camelModelID, int dmId) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(cdoClient.openTransaction(), camelModelID, dmId);
+			transactionManager.deploymentModel.getHostingInstances().addAll(hostingInstances);
+			transactionManager.commitAndClose();
+		}
+
+		public void registerCommunicationInstance(List<CommunicationInstance> communicationInstances, String camelModelID, int dmId) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(cdoClient.openTransaction(), camelModelID, dmId);
+			transactionManager.deploymentModel.getCommunicationInstances().addAll(communicationInstances);
+			transactionManager.commitAndClose();
+		}
+
+		class CamelAndDeploymentModelTransactionManager {
+
+			DeploymentModel deploymentModel;
+			CamelModel camelModel;
+			CDOTransaction transaction;
+			int dmId;
+
+			public CamelAndDeploymentModelTransactionManager(CDOTransaction transaction, String camelModelID, int dmId) {
+				this.transaction = cdoClient.openTransaction();
+				this.camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+						.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+				this.deploymentModel = camelModel.getDeploymentModels().get(dmId);
+				this.dmId = dmId;
+			}
+
+			public void commitAndClose() {
+				camelModel.getDeploymentModels().set(dmId, deploymentModel);
+				try {
+					transaction.commit();
+				} catch (CommitException e) {
+					log.error("Problem with commit", e);
+				} finally {
+					if (transaction != null && !transaction.isClosed()) {
+						transaction.close();
+					}
+				}
+			}
+		}
+
 	}
 
-	public static void registerInternalComponentInstance(InternalComponentInstance internalComponentInstance, String camelModelID, int dmId) {
-		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
-		transactionManager.deploymentModel.getInternalComponentInstances().add(internalComponentInstance);
-		transactionManager.commitAndClose();
-	}
-
-	public static void registerVMInstance(VMInstance vmInstance, String camelModelID, int dmId) {
-		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID,dmId);
-		transactionManager.deploymentModel.getVmInstances().add(vmInstance);
-		transactionManager.commitAndClose();
-	}
-
-	public static void registerHostingInstance(HostingInstance hostingInstance, String camelModelID, int dmId) {
-		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
-		transactionManager.deploymentModel.getHostingInstances().add(hostingInstance);
-		transactionManager.commitAndClose();
-	}
-
-	public static void registerCommunicationInstance(CommunicationInstance communicationInstance, String camelModelID, int dmId) {
-		CamelAndDeploymentModelTransactionManager transactionManager = cdoDatabaseProxy2.new CamelAndDeploymentModelTransactionManager(camelModelID, dmId);
-		transactionManager.deploymentModel.getCommunicationInstances().add(communicationInstance);
-		transactionManager.commitAndClose();
-	}
 
 }

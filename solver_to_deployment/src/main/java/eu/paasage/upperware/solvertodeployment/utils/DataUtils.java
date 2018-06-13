@@ -290,25 +290,36 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 
 	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
 
-		for (ProviderModel providerModel: dataholder.getProviderModel()) {
-			CDODatabaseProxy2.registerProviderModel(providerModel,camelModelID, dataholder.getDmId());
-		}
+		CDODatabaseProxy2.Xxxx xxx = new CDODatabaseProxy2.Xxxx();
 
-		for (VMInstance vmInstance : dataholder.getVmInstancesToRegister()) {
-			CDODatabaseProxy2.registerVMInstance(vmInstance,camelModelID, dataholder.getDmId());
-		}
+		xxx.registerElements(dataholder, camelModelID);
 
-		for (InternalComponentInstance internalComponentInstance : dataholder.getComponentInstancesToRegister()) {
-			CDODatabaseProxy2.registerInternalComponentInstance(internalComponentInstance ,camelModelID, dataholder.getDmId());
-		}
+//		xxx.registerProviderModel(dataholder.getProviderModel(), camelModelID, dataholder.getDmId());
+//		xxx.registerVMInstance(dataholder.getVmInstancesToRegister(), camelModelID, dataholder.getDmId());
+//		xxx.registerInternalComponentInstance(dataholder.getComponentInstancesToRegister(), camelModelID, dataholder.getDmId());
+//		xxx.registerHostingInstance(dataholder.getHostingInstancesToRegister(), camelModelID, dataholder.getDmId());
+//		xxx.registerCommunicationInstance(dataholder.getCommunicationInstances(), camelModelID, dataholder.getDmId());
 
-		for (HostingInstance hostingInstance : dataholder.getHostingInstancesToRegister()) {
-			CDODatabaseProxy2.registerHostingInstance(hostingInstance ,camelModelID, dataholder.getDmId());
-		}
-
-		for (CommunicationInstance communicationInstance : dataholder.getCommunicationInstances()) {
-			CDODatabaseProxy2.registerCommunicationInstance(communicationInstance,camelModelID, dataholder.getDmId());
-		}
+//
+//		for (ProviderModel providerModel: dataholder.getProviderModel()) {
+//			xxx.registerProviderModel(providerModel,camelModelID, dataholder.getDmId());
+//		}
+//
+//		for (VMInstance vmInstance : dataholder.getVmInstancesToRegister()) {
+//			xxx.registerVMInstance(vmInstance,camelModelID, dataholder.getDmId());
+//		}
+//
+//		for (InternalComponentInstance internalComponentInstance : dataholder.getComponentInstancesToRegister()) {
+//			xxx.registerInternalComponentInstance(internalComponentInstance ,camelModelID, dataholder.getDmId());
+//		}
+//
+//		for (HostingInstance hostingInstance : dataholder.getHostingInstancesToRegister()) {
+//			xxx.registerHostingInstance(hostingInstance ,camelModelID, dataholder.getDmId());
+//		}
+//
+//		for (CommunicationInstance communicationInstance : dataholder.getCommunicationInstances()) {
+//			xxx.registerCommunicationInstance(communicationInstance,camelModelID, dataholder.getDmId());
+//		}
 	}
 
 	@Getter
