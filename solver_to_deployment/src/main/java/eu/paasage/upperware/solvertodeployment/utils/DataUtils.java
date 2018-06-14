@@ -10,6 +10,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.type.StringsValue;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.cp.VariableValue;
@@ -242,7 +243,9 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 	}
 
 	private static void changeNames(DataHolder result, String camelModelID) {
-		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
+		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
+		CDOTransaction transaction = session.openTransaction();
+
 		try {
 			CDODatabaseProxy2.getLastDeployedModel(camelModelID, transaction).ifPresent(deployedModel -> {
 				//1. VMInstances
@@ -253,8 +256,9 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 					});
 		} finally {
 			if (transaction != null && !transaction.isClosed()) {
-				CDODatabaseProxy.getInstance().getCdoClient().closeTransaction(transaction);
+				session.closeTransaction(transaction);
 			}
+			session.closeSession();
 		}
 	}
 
@@ -289,37 +293,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 	}
 
 	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
-
-		CDODatabaseProxy2.Xxxx xxx = new CDODatabaseProxy2.Xxxx();
-
-		xxx.registerElements(dataholder, camelModelID);
-
-//		xxx.registerProviderModel(dataholder.getProviderModel(), camelModelID, dataholder.getDmId());
-//		xxx.registerVMInstance(dataholder.getVmInstancesToRegister(), camelModelID, dataholder.getDmId());
-//		xxx.registerInternalComponentInstance(dataholder.getComponentInstancesToRegister(), camelModelID, dataholder.getDmId());
-//		xxx.registerHostingInstance(dataholder.getHostingInstancesToRegister(), camelModelID, dataholder.getDmId());
-//		xxx.registerCommunicationInstance(dataholder.getCommunicationInstances(), camelModelID, dataholder.getDmId());
-
-//
-//		for (ProviderModel providerModel: dataholder.getProviderModel()) {
-//			xxx.registerProviderModel(providerModel,camelModelID, dataholder.getDmId());
-//		}
-//
-//		for (VMInstance vmInstance : dataholder.getVmInstancesToRegister()) {
-//			xxx.registerVMInstance(vmInstance,camelModelID, dataholder.getDmId());
-//		}
-//
-//		for (InternalComponentInstance internalComponentInstance : dataholder.getComponentInstancesToRegister()) {
-//			xxx.registerInternalComponentInstance(internalComponentInstance ,camelModelID, dataholder.getDmId());
-//		}
-//
-//		for (HostingInstance hostingInstance : dataholder.getHostingInstancesToRegister()) {
-//			xxx.registerHostingInstance(hostingInstance ,camelModelID, dataholder.getDmId());
-//		}
-//
-//		for (CommunicationInstance communicationInstance : dataholder.getCommunicationInstances()) {
-//			xxx.registerCommunicationInstance(communicationInstance,camelModelID, dataholder.getDmId());
-//		}
+		new CDODatabaseProxy2.DataUpdater().registerElements(dataholder, camelModelID);
 	}
 
 	@Getter

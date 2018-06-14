@@ -284,9 +284,9 @@ public class CDOClientXImpl implements CDOClientX {
     public boolean saveModel(EObject model, String pathName) {
         final ResourceSet rs = new ResourceSetImpl();
         rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
-        Resource res = null;
+        Resource res;
         File f = new File(pathName);
-        EList<EObject> contents = null;
+        EList<EObject> contents;
         if (f.exists()) {
             res = rs.getResource(URI.createFileURI(pathName), true);
             contents = res.getContents();
@@ -301,8 +301,7 @@ public class CDOClientXImpl implements CDOClientX {
             res.save(null);
             return true;
         } catch (Exception e) {
-            log.error("Something went wrong while storing model: " + model + " at path: " + pathName, e);
-            //e.printStackTrace();
+            log.error("Something went wrong while storing model: {} at path: {}", model, pathName, e);
         }
         return false;
     }
