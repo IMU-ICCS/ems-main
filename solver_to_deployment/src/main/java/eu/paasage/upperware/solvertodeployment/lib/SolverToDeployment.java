@@ -94,15 +94,15 @@ public class SolverToDeployment {
 			try {
 			    log.warn("Starting...");
 
-				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(camelModelID);
+				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(transaction, camelModelID);
 
 				CloudMLHelper.setGlobalDMIdx(dmId);
 				CloudMLHelper.resetGlobalCount();
 
 				CDOSession s = session.getSession();
 
-				log.warn("Session isNull={}, isClosed={}, isEmpty={}", s==null, s.isClosed(), s.isEmpty());
-				log.warn("Transaction isNull={}, isClosed={}, isDirty={}, isEmpty={}", transaction==null, transaction.isClosed(), transaction.isDirty(), transaction.isEmpty());
+//				log.warn("Session isNull={}, isClosed={}, isEmpty={}", s==null, s.isClosed(), s.isEmpty());
+//				log.warn("Transaction isNull={}, isClosed={}, isDirty={}, isEmpty={}", transaction==null, transaction.isClosed(), transaction.isDirty(), transaction.isEmpty());
 
 				DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(dmId);
 

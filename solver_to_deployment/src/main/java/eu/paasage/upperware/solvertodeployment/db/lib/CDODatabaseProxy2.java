@@ -27,11 +27,7 @@ import java.util.Optional;
 @Slf4j
 public class CDODatabaseProxy2 {
 
-	public static int copyFirstDeploymentModel(String camelModelID) throws CommitException {
-
-		CDOClientX cdoClient = CDODatabaseProxy.getInstance().getCdoClient();
-		CDOSessionX session = cdoClient.getSession();
-		CDOTransaction transaction = session.openTransaction();
+	public static int copyFirstDeploymentModel(CDOTransaction transaction, String camelModelID) throws CommitException {
 
 		CamelModel camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
 				.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
@@ -43,27 +39,28 @@ public class CDODatabaseProxy2 {
 		deploymentModels.add(dmCopy);
 		int dmId = deploymentModels.size() - 1;
 
-		try {
-			transaction.commit();
-		} catch (CommitException e) {
-			log.error("Error during commit transaction", e);
-			throw e;
-		} finally {
-			if (!transaction.isClosed()) {
-				session.closeTransaction(transaction);
-			}
-			session.closeSession();
-		}
+//		try {
+//			transaction.commit();
+//		} catch (CommitException e) {
+//			log.error("Error during commit transaction", e);
+//			throw e;
+//		}
+//		finally {
+//			if (!transaction.isClosed()) {
+//				session.closeTransaction(transaction);
+//			}
+//			session.closeSession();
+//		}
 
-		CDOSession s = session.getSession();
-		try {log.warn("Session isNull={}", s==null); } catch (Exception e) {log.error("Error1", e);}
-        try {log.warn("Session isClosed={}", s.isClosed());} catch (Exception e) {log.error("Error2", e);}
-        try {log.warn("Session isEmpty={}", s.isEmpty());} catch (Exception e) {log.error("Error3", e);}
-
-        try {log.warn("Transaction isNull={}", transaction==null);} catch (Exception e) {log.error("Error4", e);}
-        try {log.warn("Transaction isClosed={}", transaction.isClosed());} catch (Exception e) {log.error("Error5", e);}
-        try {log.warn("Transaction isDirty={}", transaction.isDirty());} catch (Exception e) {log.error("Error6", e);}
-        try {log.warn("Transaction isEmpty={}", transaction.isEmpty());} catch (Exception e) {log.error("Error7", e);}
+//		CDOSession s = session.getSession();
+//		try {log.warn("Session isNull={}", s==null); } catch (Exception e) {log.error("Error1", e);}
+//        try {log.warn("Session isClosed={}", s.isClosed());} catch (Exception e) {log.error("Error2", e);}
+//        try {log.warn("Session isEmpty={}", s.isEmpty());} catch (Exception e) {log.error("Error3", e);}
+//
+//        try {log.warn("Transaction isNull={}", transaction==null);} catch (Exception e) {log.error("Error4", e);}
+//        try {log.warn("Transaction isClosed={}", transaction.isClosed());} catch (Exception e) {log.error("Error5", e);}
+//        try {log.warn("Transaction isDirty={}", transaction.isDirty());} catch (Exception e) {log.error("Error6", e);}
+//        try {log.warn("Transaction isEmpty={}", transaction.isEmpty());} catch (Exception e) {log.error("Error7", e);}
 
 		return dmId;
 	}
