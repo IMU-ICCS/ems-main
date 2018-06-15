@@ -74,7 +74,7 @@ public class CDOSessionXImpl implements CDOSessionX {
 
     @Override
     public void closeSession(){
-        if (session != null && !session.isEmpty()){
+        if (session != null && !session.isClosed()){
             session.close();
         }
     }
