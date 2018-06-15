@@ -56,8 +56,14 @@ public class CDODatabaseProxy2 {
 		}
 
 		CDOSession s = session.getSession();
-		log.warn("Session isNull={}, isClosed={}, isEmpty={}", s==null, s.isClosed(), s.isEmpty());
-		log.warn("Transaction isNull={}, isClosed={}, isDirty={}, isEmpty={}", transaction==null, transaction.isClosed(), transaction.isDirty(), transaction.isEmpty());
+		try {log.warn("Session isNull={}", s==null); } catch (Exception e) {log.error("Error1", e);}
+        try {log.warn("Session isClosed={}", s.isClosed());} catch (Exception e) {log.error("Error2", e);}
+        try {log.warn("Session isEmpty={}", s.isEmpty());} catch (Exception e) {log.error("Error3", e);}
+
+        try {log.warn("Transaction isNull={}", transaction==null);} catch (Exception e) {log.error("Error4", e);}
+        try {log.warn("Transaction isClosed={}", transaction.isClosed());} catch (Exception e) {log.error("Error5", e);}
+        try {log.warn("Transaction isDirty={}", transaction.isDirty());} catch (Exception e) {log.error("Error6", e);}
+        try {log.warn("Transaction isEmpty={}", transaction.isEmpty());} catch (Exception e) {log.error("Error7", e);}
 
 		return dmId;
 	}
