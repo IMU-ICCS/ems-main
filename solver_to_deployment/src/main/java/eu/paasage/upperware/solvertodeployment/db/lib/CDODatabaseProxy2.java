@@ -8,8 +8,6 @@ import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.camel.execution.ExecutionModel;
-import eu.paasage.mddb.cdo.client.exp.CDOClientX;
-import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +79,7 @@ public class CDODatabaseProxy2 {
 			transactionManager.deploymentModel.getHostingInstances().addAll(dataHolder.getHostingInstancesToRegister());
 			transactionManager.deploymentModel.getCommunicationInstances().addAll(dataHolder.getCommunicationInstances());
 
-			transactionManager.commitAndClose();
+			transactionManager.commit();
 		}
 
 		class CamelAndDeploymentModelTransactionManager {
@@ -104,13 +102,14 @@ public class CDODatabaseProxy2 {
 				this.dmId = dmId;
 			}
 
-			void commitAndClose() {
+			void commit() {
 				camelModel.getDeploymentModels().set(dmId, deploymentModel);
-//				try {
-//					transaction.commit();
-//				} catch (CommitException e) {
-//					log.error("Problem with commit", e);
-//				} finally {
+				try {
+					transaction.commit();
+				} catch (CommitException e) {
+					log.error("Problem with commit", e);
+				}
+//				finally {
 //					if (transaction != null && !transaction.isClosed()) {
 //						session.closeTransaction(transaction);
 //					}
