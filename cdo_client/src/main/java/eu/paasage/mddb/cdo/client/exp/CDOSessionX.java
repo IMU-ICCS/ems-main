@@ -1,5 +1,6 @@
 package eu.paasage.mddb.cdo.client.exp;
 
+import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
@@ -24,4 +25,6 @@ public interface CDOSessionX {
     void storeModels(List<EObject> models, String resourceName);
 
     void closeSession();
+
+    CDOSession getSession();
 }

@@ -14,6 +14,7 @@ import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
@@ -53,6 +54,11 @@ public class CDODatabaseProxy2 {
 			}
 			session.closeSession();
 		}
+
+		CDOSession s = session.getSession();
+		log.warn("Session isNull={}, isClosed={}, isEmpty={}", s==null, s.isClosed(), s.isEmpty());
+		log.warn("Transaction isNull={}, isClosed={}, isDirty={}, isEmpty={}", transaction==null, transaction.isClosed(), transaction.isDirty(), transaction.isEmpty());
+
 		return dmId;
 	}
 

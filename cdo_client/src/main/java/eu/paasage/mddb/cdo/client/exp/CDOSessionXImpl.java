@@ -79,4 +79,9 @@ public class CDOSessionXImpl implements CDOSessionX {
         }
     }
 
+    @Override
+    public CDOSession getSession(){
+        return session;
+    }
+
 }

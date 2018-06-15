@@ -29,6 +29,7 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
@@ -95,6 +96,11 @@ public class SolverToDeployment {
 
 				CloudMLHelper.setGlobalDMIdx(dmId);
 				CloudMLHelper.resetGlobalCount();
+
+				CDOSession s = session.getSession();
+
+				log.warn("Session isNull={}, isClosed={}, isEmpty={}", s==null, s.isClosed(), s.isEmpty());
+				log.warn("Transaction isNull={}, isClosed={}, isDirty={}, isEmpty={}", transaction==null, transaction.isClosed(), transaction.isDirty(), transaction.isEmpty());
 
 				DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(dmId);
 
