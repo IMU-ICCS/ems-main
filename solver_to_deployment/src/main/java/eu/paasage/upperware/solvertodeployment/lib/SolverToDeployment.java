@@ -102,7 +102,7 @@ public class SolverToDeployment {
 
 				// Generate new instances into this new DM of camel
 				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution,
-						camelModelID, nodeCandidates, solverToDeploymentProperties);
+						camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;

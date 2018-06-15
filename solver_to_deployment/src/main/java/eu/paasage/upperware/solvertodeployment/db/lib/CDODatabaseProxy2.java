@@ -105,7 +105,7 @@ public class CDODatabaseProxy2 {
 			}
 
 			void commitAndClose() {
-//				camelModel.getDeploymentModels().set(dmId, deploymentModel);
+				camelModel.getDeploymentModels().set(dmId, deploymentModel);
 //				try {
 //					transaction.commit();
 //				} catch (CommitException e) {

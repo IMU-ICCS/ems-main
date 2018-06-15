@@ -76,7 +76,9 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 	 */
 	public static DataHolder computeDatasToRegister(DeploymentModel deploymentModel,
 													ConstraintProblem constraintProblem, Solution solution, String camelModelID,
-													NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties) throws S2DException {
+													NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
+													CDOTransaction transaction
+	) throws S2DException {
 
 		// Analyzing the model for LOCAL group, ie component connected by LOCAL communication
 		// component i => i
@@ -204,7 +206,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				dataHolder.getCommunicationInstances().addAll(communicationInstances);
 			}
 			log.debug("3. Changing names.");
-			changeNames(dataHolder, camelModelID);
+			changeNames(dataHolder, camelModelID, transaction);
 			log.debug("4. Done.");
 			return dataHolder;
 
@@ -242,11 +244,11 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		return result.toArray(new Predicate[result.size()]);
 	}
 
-	private static void changeNames(DataHolder result, String camelModelID) {
-		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
-		CDOTransaction transaction = session.openTransaction();
-
-		try {
+	private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
+//		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
+//		CDOTransaction transaction = session.openTransaction();
+//
+//		try {
 			CDODatabaseProxy2.getLastDeployedModel(camelModelID, transaction).ifPresent(deployedModel -> {
 				//1. VMInstances
 				changeNames(result.getVmInstancesToRegister(), deployedModel.getVmInstances(), VMKey::getInstance);
@@ -254,12 +256,12 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				//2. Component
 				changeNames(result.getComponentInstancesToRegister(), deployedModel.getInternalComponentInstances(), VMKey::getInstance);
 					});
-		} finally {
-			if (transaction != null && !transaction.isClosed()) {
-				session.closeTransaction(transaction);
-			}
-			session.closeSession();
-		}
+//		} finally {
+//			if (transaction != null && !transaction.isClosed()) {
+//				session.closeTransaction(transaction);
+//			}
+//			session.closeSession();
+//		}
 	}
 
 	private static <T extends DeploymentElement> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, VMKey> function) {
