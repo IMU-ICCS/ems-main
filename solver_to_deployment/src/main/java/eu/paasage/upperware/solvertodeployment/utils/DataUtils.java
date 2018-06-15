@@ -292,8 +292,8 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		return result;
 	}
 
-	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
-		new CDODatabaseProxy2.DataUpdater().registerElements(dataholder, camelModelID);
+	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder, CDOTransaction transaction) {
+		new CDODatabaseProxy2.DataUpdater().registerElements(dataholder, camelModelID, transaction);
 	}
 
 	@Getter

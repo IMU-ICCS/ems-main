@@ -72,8 +72,8 @@ public class CDODatabaseProxy2 {
 
 	public static class DataUpdater {
 
-		public void registerElements(DataHolder dataHolder, String camelModelID) {
-			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId());
+		public void registerElements(DataHolder dataHolder, String camelModelID, CDOTransaction transaction) {
+			CamelAndDeploymentModelTransactionManager transactionManager = new CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId(), transaction);
 
 			((CamelModel)transactionManager.deploymentModel.eContainer()).getProviderModels().addAll(dataHolder.getProviderModel());
 			transactionManager.deploymentModel.getInternalComponentInstances().addAll(dataHolder.getComponentInstancesToRegister());
@@ -88,15 +88,15 @@ public class CDODatabaseProxy2 {
 
 			DeploymentModel deploymentModel;
 			CamelModel camelModel;
-			CDOSessionX session;
+//			CDOSessionX session;
 			CDOTransaction transaction;
 			int dmId;
 
-			CamelAndDeploymentModelTransactionManager(String camelModelID, int dmId) {
+			CamelAndDeploymentModelTransactionManager(String camelModelID, int dmId, CDOTransaction transaction) {
 
-				CDOClientX cdoClient = CDODatabaseProxy.getInstance().getCdoClient();
-				this.session = cdoClient.getSession();
-				this.transaction = session.openTransaction();
+//				CDOClientX cdoClient = CDODatabaseProxy.getInstance().getCdoClient();
+//				this.session = cdoClient.getSession();
+//				this.transaction = session.openTransaction();
 
 				this.camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
 						.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
@@ -105,17 +105,17 @@ public class CDODatabaseProxy2 {
 			}
 
 			void commitAndClose() {
-				camelModel.getDeploymentModels().set(dmId, deploymentModel);
-				try {
-					transaction.commit();
-				} catch (CommitException e) {
-					log.error("Problem with commit", e);
-				} finally {
-					if (transaction != null && !transaction.isClosed()) {
-						session.closeTransaction(transaction);
-					}
-					session.closeSession();
-				}
+//				camelModel.getDeploymentModels().set(dmId, deploymentModel);
+//				try {
+//					transaction.commit();
+//				} catch (CommitException e) {
+//					log.error("Problem with commit", e);
+//				} finally {
+//					if (transaction != null && !transaction.isClosed()) {
+//						session.closeTransaction(transaction);
+//					}
+//					session.closeSession();
+//				}
 			}
 		}
 

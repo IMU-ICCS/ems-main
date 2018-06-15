@@ -109,7 +109,7 @@ public class SolverToDeployment {
 				}
 
 				dataholder.setDmId(dmId);
-				DataUtils.registerDataHolderToCDO(camelModelID, dataholder); // COPY TO CDO
+				DataUtils.registerDataHolderToCDO(camelModelID, dataholder, transaction); // COPY TO CDO
 
 			} catch (S2DException | CommitException e) {
 				log.error("Unable to complete data model instances registration", e);
