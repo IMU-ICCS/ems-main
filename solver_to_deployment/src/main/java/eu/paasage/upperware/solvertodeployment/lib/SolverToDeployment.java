@@ -92,6 +92,8 @@ public class SolverToDeployment {
 
 			// Do Work
 			try {
+			    log.warn("Starting...");
+
 				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(camelModelID);
 
 				CloudMLHelper.setGlobalDMIdx(dmId);
