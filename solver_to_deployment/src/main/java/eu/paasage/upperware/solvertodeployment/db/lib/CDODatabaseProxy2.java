@@ -14,7 +14,6 @@ import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
@@ -39,28 +38,12 @@ public class CDODatabaseProxy2 {
 		deploymentModels.add(dmCopy);
 		int dmId = deploymentModels.size() - 1;
 
-//		try {
-//			transaction.commit();
-//		} catch (CommitException e) {
-//			log.error("Error during commit transaction", e);
-//			throw e;
-//		}
-//		finally {
-//			if (!transaction.isClosed()) {
-//				session.closeTransaction(transaction);
-//			}
-//			session.closeSession();
-//		}
-
-//		CDOSession s = session.getSession();
-//		try {log.warn("Session isNull={}", s==null); } catch (Exception e) {log.error("Error1", e);}
-//        try {log.warn("Session isClosed={}", s.isClosed());} catch (Exception e) {log.error("Error2", e);}
-//        try {log.warn("Session isEmpty={}", s.isEmpty());} catch (Exception e) {log.error("Error3", e);}
-//
-//        try {log.warn("Transaction isNull={}", transaction==null);} catch (Exception e) {log.error("Error4", e);}
-//        try {log.warn("Transaction isClosed={}", transaction.isClosed());} catch (Exception e) {log.error("Error5", e);}
-//        try {log.warn("Transaction isDirty={}", transaction.isDirty());} catch (Exception e) {log.error("Error6", e);}
-//        try {log.warn("Transaction isEmpty={}", transaction.isEmpty());} catch (Exception e) {log.error("Error7", e);}
+		try {
+			transaction.commit();
+		} catch (CommitException e) {
+			log.error("Error during commit transaction", e);
+			throw e;
+		}
 
 		return dmId;
 	}
