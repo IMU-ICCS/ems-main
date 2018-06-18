@@ -218,7 +218,7 @@ public class CDOClientXImpl implements CDOClientX {
         Net4jUtil.prepareContainer(container);
         TCPUtil.prepareContainer(container);
         CDONet4jUtil.prepareContainer(container);
-        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
+        configuration = CDONet4jUtil.createNet4jSessionConfiguration();
 //        configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
         configuration.setConnector(connector);
         configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
