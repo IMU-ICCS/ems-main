@@ -218,15 +218,15 @@ public class CDOClientXImpl implements CDOClientX {
         Net4jUtil.prepareContainer(container);
         TCPUtil.prepareContainer(container);
         CDONet4jUtil.prepareContainer(container);
-        configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
+        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
+//        configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
         configuration.setConnector(connector);
         configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
         //Provide security information, if supplied by user
         //authentication, if succeeds last for the whole session - lifetime of CDOClient object
         if (userName != null && password != null) {
-            IPasswordCredentialsProvider credentialsProvider = new PasswordCredentialsProvider(userName, password);
-            configuration.setCredentialsProvider(credentialsProvider);
+            configuration.setCredentialsProvider(new PasswordCredentialsProvider(userName, password));
         }
 
     }
