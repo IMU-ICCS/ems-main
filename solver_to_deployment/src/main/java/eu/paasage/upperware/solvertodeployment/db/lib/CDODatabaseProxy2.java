@@ -95,7 +95,7 @@ public class CDODatabaseProxy2 {
 //				CDOClientX cdoClient = CDODatabaseProxy.getInstance().getCdoClient();
 //				this.session = cdoClient.getSession();
 //				this.transaction = session.openTransaction();
-
+                this.transaction = transaction;
 				this.camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
 						.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 				this.deploymentModel = camelModel.getDeploymentModels().get(dmId);
