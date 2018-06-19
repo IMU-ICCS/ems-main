@@ -22,7 +22,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/generator</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/generator-pszkup</docker.imageName>
     </properties>
 
     <dependencies>
@@ -60,12 +60,6 @@
                     <artifactId>commons-collections4</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>cloner</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

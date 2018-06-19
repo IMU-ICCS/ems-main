@@ -26,6 +26,7 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.PlanValidator;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -88,7 +89,9 @@ public class Coordinator {
 
   private void run(String resourceName, String notificationUri, String uuid) {
     Plan plan;
-    CDOTransaction tr = cdoServerApi.openTransaction();
+    CDOSessionX cdoSessionX = cdoServerApi.openSession();
+    CDOTransaction tr = cdoSessionX.openTransaction();
+
     try {
       DeploymentModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr);
       DeploymentModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr);
@@ -102,12 +105,12 @@ public class Coordinator {
         }
       }
     } finally {
-      cdoServerApi.closeTransaction(tr);
+      cdoSessionX.closeTransaction(tr);
+      cdoSessionX.closeSession();
     }
     if (!context.isLoaded()) {
       context.refreshContext();
     }
-//    String jsonGraph = new Gson().toJson(plan.getTaskGraph());
 
     toLogGraphLogger.logGraph(plan.getTaskGraph());
 

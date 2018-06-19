@@ -16,7 +16,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/cpsolver</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/cpsolver-pszkup</docker.imageName>
     </properties>
 
     <repositories>

@@ -35,6 +35,8 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
 
     @Override
     public void store(String key, NodeCandidates value) throws CacheException {
+        getStats();
+
         Integer storeExp = cacheProperties.getCache().getTtl();
         // adding a new key
         OperationFuture<Boolean> result = memcachedClient.set(key, storeExp, value);
@@ -64,6 +66,7 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
 
     @Override
     public NodeCandidates load(String key) {
+        getStats();
         // Try to get a value, for up to 5 seconds, and cancel if it
         // doesn't return
         int currentTryCount = 0;
@@ -97,6 +100,14 @@ public class MemcacheServiceImpl implements CacheService<NodeCandidates> {
             }
         }
         return myObj;
+    }
+
+    private void getStats() {
+        try {
+            memcachedClient.getStats();
+        } catch (Exception e) {
+            log.warn("Could not get memcache stats");
+        }
     }
 
 }

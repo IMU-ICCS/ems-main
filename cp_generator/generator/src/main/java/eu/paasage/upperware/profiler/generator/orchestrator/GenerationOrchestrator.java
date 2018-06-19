@@ -13,10 +13,10 @@ package eu.paasage.upperware.profiler.generator.orchestrator;
 
 import eu.paasage.camel.Application;
 import eu.paasage.camel.CamelModel;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
-import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
@@ -38,7 +38,6 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GenerationOrchestrator {
 
-    private IDatabaseProxy database;
     private PaasageConfigurationService paaSageConfigurationService;
     private NotificationService notificationService;
     private SloService sloService;
@@ -64,12 +63,14 @@ public class GenerationOrchestrator {
         }
 
         CpGenerationResult cpGenerationResult;
+        CDOSessionX cdoSessionX = null;
         CDOTransaction cdoTransaction = null;
         try {
             log.info("Opening transaction...");
-            cdoTransaction = cdoService.openTransaction();
+            cdoSessionX = cdoService.openSession();
+            cdoTransaction = cdoSessionX.openTransaction();
             log.info("Transaction successfully opened!");
-            cpGenerationResult = generateCPModel(resourceName, cdoTransaction);
+            cpGenerationResult = generateCPModel(resourceName, cdoTransaction, cdoSessionX);
             log.info("Transaction has been commited!");
         } catch (Exception e) {
             log.error("Error during generating CpModel.", e);
@@ -77,17 +78,9 @@ public class GenerationOrchestrator {
             return;
         } finally {
             log.info("Going to close transaction");
-            if (cdoTransaction != null){
-                log.info("Transaction is not null");
-                if (cdoTransaction.isClosed()){
-                    log.info("Closing transaction");
-                    cdoTransaction.close();
-                    log.info("Transaction has been closed!");
-                } else {
-                    log.info("Transaction is already closed");
-                }
-            } else {
-                log.info("Transaction is null");
+            if (cdoSessionX != null) {
+                cdoSessionX.closeTransaction(cdoTransaction);
+                cdoSessionX.closeSession();
             }
             requestSynchronizer.releaseLock(resourceName);
         }
@@ -112,7 +105,7 @@ public class GenerationOrchestrator {
         }
     }
 
-    private CpGenerationResult generateCPModel(String resourceName, CDOTransaction cdoTransaction) {
+    private CpGenerationResult generateCPModel(String resourceName, CDOTransaction cdoTransaction, CDOSessionX cdoSessionX) {
         log.info("************************************CP Generator Model To Solver************************************");
         log.info("Loading camel model {}", resourceName);
 
@@ -138,7 +131,9 @@ public class GenerationOrchestrator {
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
-        database.saveModels(pc, cp);
+
+        cdoService.saveModels(pc, cp, cdoSessionX);
+
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);
