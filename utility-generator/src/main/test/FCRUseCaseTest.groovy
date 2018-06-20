@@ -97,7 +97,7 @@ class FCRUseCaseTest extends Specification {
 
         setup:
 
-        metric.getValue() >> 500
+        metric.getValue() >> 50
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
@@ -125,7 +125,7 @@ class FCRUseCaseTest extends Specification {
 
         setup:
 
-        metric.getValue() >> 500
+        metric.getValue() >> 50
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
@@ -150,7 +150,7 @@ class FCRUseCaseTest extends Specification {
 
         setup:
 
-        metric.getValue() >> 500
+        metric.getValue() >> 50
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
@@ -175,7 +175,7 @@ class FCRUseCaseTest extends Specification {
 
         setup:
 
-        metric.getValue() >> 1500
+        metric.getValue() >> 150
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
@@ -201,7 +201,7 @@ class FCRUseCaseTest extends Specification {
 
         setup:
 
-        metric.getValue() >> 1500
+        metric.getValue() >> 150
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)
@@ -230,7 +230,7 @@ class FCRUseCaseTest extends Specification {
 
         setup:
 
-        metric.getValue() >> 3000
+        metric.getValue() >> 300
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(metrics, actualConfiguration, true, UtilityFunctionType.FCR, costUtilityFunction)

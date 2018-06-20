@@ -112,7 +112,8 @@
                 <!-- This may be strange but is necessary -
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
-                <version>${parent.version}</version>
+                <!--<version>${parent.version}</version>-->
+                <version>1.9.9-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>

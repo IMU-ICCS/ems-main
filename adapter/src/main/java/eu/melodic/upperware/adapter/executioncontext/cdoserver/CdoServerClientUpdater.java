@@ -11,6 +11,7 @@ package eu.melodic.upperware.adapter.executioncontext.cdoserver;
 
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -34,7 +35,9 @@ public class CdoServerClientUpdater implements CdoServerUpdater {
   }
 
   private void setExecutionContext(String resourceName) {
-    CDOTransaction tr = cdoServerApi.openTransaction();
+    CDOSessionX cdoSessionX = cdoServerApi.openSession();
+    CDOTransaction tr = cdoSessionX.openTransaction();
+
     try {
       DeploymentModel camelModel = cdoServerApi.getModelToDeploy(resourceName, tr);
       String executionContextName = getRandomExecutionContextName();
@@ -44,7 +47,8 @@ public class CdoServerClientUpdater implements CdoServerUpdater {
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
-      cdoServerApi.closeTransaction(tr);
+      cdoSessionX.closeTransaction(tr);
+      cdoSessionX.closeSession();
     }
   }
 

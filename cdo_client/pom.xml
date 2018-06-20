@@ -10,6 +10,7 @@
 
     <groupId>org.ow2.paasage.mddb.cdo</groupId>
     <artifactId>client</artifactId>
+    <version>1.9.9-SNAPSHOT</version>
 
     <name>Upperware - Cdo Client</name>
 

@@ -66,7 +66,7 @@ public class UtilityGeneratorApplication {
                 return new UtilityFunctionEvaluatorCETraffic(variables, properties, deployedSolution, nodeCandidates, metrics);
             case CAS:
                 log.info("Creating utility function for CAS");
-                return new UtilityFunctionEvaluatorCAS(variables, properties, deployedSolution, nodeCandidates);
+                return new UtilityFunctionEvaluatorCAS(variables, properties, deployedSolution, nodeCandidates, metrics);
             case MIN_CORES:
                 log.info("Creating utility function which minimise total number of cores");
                 return new UtilityFunctionEvaluatorMinCores(variables, properties, deployedSolution, nodeCandidates);
@@ -119,7 +119,7 @@ public class UtilityGeneratorApplication {
 
             case CAS:
                 this.utilityFunctionEvaluator =
-                        new UtilityFunctionEvaluatorCAS(actConfiguration, isReconfig, costUtilityFunction);
+                        new UtilityFunctionEvaluatorCAS(actConfiguration, isReconfig, costUtilityFunction, metrics);
                 break;
 
             case MIN_CORES:

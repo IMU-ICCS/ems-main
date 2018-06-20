@@ -10,12 +10,14 @@ package eu.paasage.mddb.cdo.server;
 import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import com.mysql.cj.jdbc.MysqlDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.server.CDOServerUtil;
@@ -53,7 +55,6 @@ import org.eclipse.net4j.util.om.OMPlatform;
 import org.eclipse.net4j.util.om.log.PrintLogHandler;
 import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -207,7 +208,7 @@ public class MyCDOServer implements Runnable {
 //IManagedContainer container = ContainerUtil.createContainer();
         IManagedContainer container = IPluginContainer.INSTANCE;
         OCLQueryHandler.prepareContainer(container);
-        OCLQueryHandler.prepareContainer(IPluginContainer.INSTANCE);
+//        OCLQueryHandler.prepareContainer(IPluginContainer.INSTANCE);
         Net4jUtil.prepareContainer(container); // Register Net4j factories
         TCPUtil.prepareContainer(container); // Register TCP factories
         JVMUtil.prepareContainer(container);
@@ -297,7 +298,11 @@ public class MyCDOServer implements Runnable {
                 MysqlDataSource ds = new MysqlDataSource();
                 ds.setUser(username);
                 ds.setPassword(password);
-                ds.setAutoReconnect(true);
+                try {
+                    ds.setAutoReconnect(true);
+                } catch (SQLException e) {
+                    log.error("Could not set autoRecconect option", e);
+                }
                 ds.setURL(dbURL);
                 source = ds;
             } else {

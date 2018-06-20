@@ -2,12 +2,22 @@ package eu.paasage.upperware.profiler.generator;
 
 import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.camel.CamelFactory;
+import eu.paasage.camel.CamelPackage;
+import eu.paasage.camel.deployment.DeploymentPackage;
+import eu.paasage.camel.organisation.OrganisationPackage;
+import eu.paasage.camel.provider.ProviderPackage;
+import eu.paasage.camel.type.TypePackage;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.upperware.metamodel.application.ApplicationFactory;
+import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
+import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
-import eu.paasage.upperware.profiler.generator.db.IDatabaseProxy;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
@@ -32,6 +42,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.Collections;
 
 @Slf4j
@@ -92,9 +103,10 @@ public class GeneratorContext {
 
     @Bean
     @Scope("prototype")
-    protected GenerationOrchestrator generationOrchestrator() throws Exception {
+    protected GenerationOrchestrator generationOrchestrator() {
 
-        IDatabaseProxy database = applicationContext.getBean(IDatabaseProxy.class);
+        //TODO - repleace this with spring initialization ??
+
         PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
         NotificationService notificationService = applicationContext.getBean(NotificationService.class);
         SloService sloService = applicationContext.getBean(SloService.class);
@@ -103,7 +115,7 @@ public class GeneratorContext {
         CdoService cdoService = applicationContext.getBean(CdoService.class);
         NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
 
-        return new GenerationOrchestrator(database, paaSageConfigurationService,
+        return new GenerationOrchestrator(paaSageConfigurationService,
                 notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
     }
 
@@ -129,6 +141,13 @@ public class GeneratorContext {
     @Bean
     public JWTService getJWTService(){
         return new JWTServiceImpl(melodicSecurityProperties());
+    }
+
+    @Bean
+    public CDOClientX cdoClientX() {
+        return new CDOClientXImpl(Arrays.asList(ApplicationPackage.eINSTANCE, CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
+                TypesPaasagePackage.eINSTANCE, TypePackage.eINSTANCE, CamelPackage.eINSTANCE, ProviderPackage.eINSTANCE,
+                OrganisationPackage.eINSTANCE, DeploymentPackage.eINSTANCE));
     }
 
 }

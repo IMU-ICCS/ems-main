@@ -19,8 +19,5 @@ public class MelodicConstants {
     public static final String TOMCAT_GENERATION_DIR= TOMCAT_TEM_DIR+"paasage"+File.separator+"configurations"+File.separator;
     public static final String TOMCAT_ALT_GENERATION_TEMP_DIR= TOMCAT_ALT_TEM_DIR+"paasage"+File.separator+"configurations"+File.separator;
 
-    public static final String PAASAGE_CONFIGURATION_MODEL_FILE_NAME= "paasageConfigurationModel.xmi";
-    public static final String CP_MODEL_FILE_NAME= "cpModel.xmi";
-
     private MelodicConstants() {}
 }

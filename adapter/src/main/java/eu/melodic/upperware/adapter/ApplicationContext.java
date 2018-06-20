@@ -16,6 +16,8 @@ import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -50,8 +52,8 @@ public class ApplicationContext {
   }
 
   @Bean
-  public CDOClient getCdoClient() {
-    return new CDOClient();
+  public CDOClientX getCdoClient() {
+    return new CDOClientXImpl();
   }
 
   @Bean
