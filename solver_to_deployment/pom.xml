@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>upperware</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.1.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -19,8 +19,8 @@
 
     <groupId>eu.melodic</groupId>
     <artifactId>solver-to-deployment</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <version>2.1.0-SNAPSHOT</version>
+
     <name>Upperware - Solver To Deployment</name>
 
     <dependencies>
