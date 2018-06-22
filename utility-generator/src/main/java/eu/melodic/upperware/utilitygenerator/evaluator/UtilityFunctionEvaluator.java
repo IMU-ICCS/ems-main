@@ -9,10 +9,12 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.connection.CamelModelTransformer;
 import eu.melodic.upperware.utilitygenerator.model.*;
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -23,65 +25,57 @@ import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
 import static java.util.Objects.isNull;
 
 @Slf4j
-public abstract class UtilityFunctionEvaluator {
+public class UtilityFunctionEvaluator {
 
-    boolean isReconfig;
     Collection<ConfigurationElement> actConfiguration;
+    private Collection<ConfigurationElement> configurationWithMaxUtility;
 
     private double maxUtility;
-    private Collection<ConfigurationElement> configurationWithMaxUtility;
     private Collection<Var> solutionWithMaxUtility;
 
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
-
-    private final String notReconfigurableComponentSuffix;
-
-    private final static String NOT_RECONFIGURABLE_COMPONENT_SUFFIX = "_CTITRRR"; //only for tests
-
+    private Collection<MetricDTO> metrics;
     private final Predicate<Var> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
 
 
-    UtilityFunctionEvaluator(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    private Collection<Argument> arguments;
+    private Expression utilityFunction;
+
+    private CamelModelTransformer camelModelTransformer;
+
+    public UtilityFunctionEvaluator(String path, List<VariableDTO> variables, List<MetricDTO> metricsDTOs, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
+        this.metrics = Objects.requireNonNull(metricsDTOs, "List of Metrics could not be null");
 
-        this.notReconfigurableComponentSuffix = properties.getUtilityGenerator().getSuffixNotReconfigurableComponent();
-        log.debug("Suffix for not reconfigurable component: {}", this.notReconfigurableComponentSuffix);
 
-        log.debug("Creating Utility Function Evaluator from Constraint Problem");
+        this.camelModelTransformer = new CamelModelTransformer(path);
+
+        arguments = camelModelTransformer.getArgumentsFromCamelModel();
+
         log.debug("Variables from Constraint Problem:");
         for (VariableDTO v : variables) {
+            arguments.add(new Argument(v.getId()));
             log.debug("{}, type: {}", v.getId(), v.getType());
         }
 
-        this.isReconfig = isReconfig(deployedSolution);
-        if (isReconfig) {
-            printSolution(deployedSolution);
-            this.actConfiguration = convertActualDeployment(deployedSolution);
-        }
+
+
+        utilityFunction = new Expression(camelModelTransformer.getFormula(), arguments.toArray(new Argument[arguments.size()]));
 
         this.maxUtility = 0.0;
     }
-
-    public abstract double evaluate(Collection<ConfigurationElement> newConfiguration);
 
     public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
         printSolutionForDebug(newConfigurationInt, newConfigurationReal);
 
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
 
-        if (isNull(newConfiguration)) {
-            log.debug("Returning utility value = 0");
-            return 0;
-        }
 
-        if (notReconfigurableComponentsAreChanged(newConfiguration)) {
-            log.debug("This solution changes not reconfigurable components, returning 0");
-            return 0;
-        }
-
-        double utility = evaluate(newConfiguration);
+        //evaluate
+        double utility = 0;
 
         if (utility > maxUtility) {
             maxUtility = utility;
@@ -95,7 +89,8 @@ public abstract class UtilityFunctionEvaluator {
     }
 
     public double evaluateActualSolution() {
-        return evaluate(actConfiguration);
+        //todo
+        return 0.0;
     }
 
     public void printConfigurationWithMaximumUtility() {
@@ -104,7 +99,6 @@ public abstract class UtilityFunctionEvaluator {
     }
 
 
-    //fixme - RealVar
     private Collection<ConfigurationElement> convertActualDeployment(Collection<Var> deployedSolution) {
         return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntVar) s).collect(Collectors.toList()), new ArrayList<>());
     }
@@ -128,6 +122,8 @@ public abstract class UtilityFunctionEvaluator {
                 return null;
             }
             log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
+
+
             newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
 
         }
@@ -149,27 +145,8 @@ public abstract class UtilityFunctionEvaluator {
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
-    private boolean isReconfig(List<Var> deployedSolution) {
-        return deployedSolution != null;
-    }
 
 
-    private boolean notReconfigurableComponentsAreChanged(Collection<ConfigurationElement> newConfiguration) {
 
-        return isReconfig && checkIfNotReconfigurableComponentsAreChanged(notReconfigurableComponentSuffix, actConfiguration, newConfiguration);
-
-    }
-
-
-    /* ------------------------------------ only for tests - to delete later  -------------------*/
-
-    UtilityFunctionEvaluator(Collection<ConfigurationElement> actConfiguration, boolean isReconfig) {
-
-        this.isReconfig = isReconfig;
-        if (isReconfig) {
-            this.actConfiguration = actConfiguration;
-        }
-        this.notReconfigurableComponentSuffix = NOT_RECONFIGURABLE_COMPONENT_SUFFIX;
-    }
 
 }
