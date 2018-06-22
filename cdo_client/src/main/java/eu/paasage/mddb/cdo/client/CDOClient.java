@@ -268,6 +268,8 @@ public class CDOClient
 	/*This method is used for initiating a CDO Session starting by obtaining
 	connection information from a property file*/
 	private void initSession(){
+		log.warn("Creating new client {}", this);
+
 		getConnectionInformation();
 
 		OMPlatform.INSTANCE.setDebugging(logging);
@@ -328,11 +330,14 @@ public class CDOClient
 //	    configuration.setConnector(connector);
 //	    configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
-        IManagedContainer container = IPluginContainer.INSTANCE;
-        Net4jUtil.prepareContainer(container);
-        TCPUtil.prepareContainer(container);
-        CDONet4jUtil.prepareContainer(container);
-        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
+//        IManagedContainer container = IPluginContainer.INSTANCE;
+//        Net4jUtil.prepareContainer(container);
+//        TCPUtil.prepareContainer(container);
+//        CDONet4jUtil.prepareContainer(container);
+//        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createReconnectingSessionConfiguration(host + ":" + port, repositoryName, container);
+
+		CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
+
         configuration.setConnector(connector);
         configuration.setRepositoryName(repositoryName); //$NON-NLS-1$
 
@@ -342,12 +347,12 @@ public class CDOClient
 		    IPasswordCredentialsProvider credentialsProvider = new PasswordCredentialsProvider(userName, password);
 		    configuration.setCredentialsProvider(credentialsProvider);
 	    }
-	    
+
 	    // Open session
 	    session = configuration.openNet4jSession();
 
 	    session.options().setCommitTimeout(1000);
-	    session.options().getNet4jProtocol().setTimeout(1000000000000L);
+//	    session.options().getNet4jProtocol().setTimeout(1000000000000L);
 
 	    registerCamelPackages();
 	}
@@ -369,7 +374,7 @@ public class CDOClient
 		registerPackage(UnitPackage.eINSTANCE);
 		registerPackage(LocationPackage.eINSTANCE);
 	}
-	
+
 	/* This method is used for registering an EPackage mapping to the domain
 	 * model that will be exploited for creating or manipulating the respective
 	 * domain objects. Input parameter: the EPackage to register
@@ -377,9 +382,9 @@ public class CDOClient
 	public void registerPackage(EPackage pack){
 		session.getPackageRegistry().putEPackage(pack);
 	}
-	
+
 	/* This method can be used to open a CDO transaction and return it to
-	 * the developer/user. The developer/user should not forget to close 
+	 * the developer/user. The developer/user should not forget to close
 	 * the respective cdo transaction in the end.
 	 */
 	public CDOTransaction openTransaction(){
@@ -387,11 +392,11 @@ public class CDOClient
 	    	if (logging) log.info("Opened transaction!");
 	    	return trans;
 	}
-	
+
 	/* This method can be used to open a CDO transaction and return it to
 	 * the developer/user. If the user/developer desires a validation of the
-	 * models/objects updated, then he/she must set the respective boolean input 
-	 * parameter with the value of true. The user should not forget to close 
+	 * models/objects updated, then he/she must set the respective boolean input
+	 * parameter with the value of true. The user should not forget to close
 	 * the respective cdo transaction in the end.
 	 */
 	public CDOTransaction openTransaction(boolean validate){
@@ -400,9 +405,9 @@ public class CDOClient
 	    	if (validate) trans.addTransactionHandler(new MyCDOTransactionHandler());
 	    	return trans;
 	}
-	
+
 	/* This method can be used to open a CDO view and return it to
-	 * the developer/user. The developer/user should not forget to close 
+	 * the developer/user. The developer/user should not forget to close
 	 * the respective cdo view in the end.
 	 */
 	public CDOView openView(){
@@ -410,7 +415,7 @@ public class CDOClient
 	    	if (logging) log.info("Opened view!");
 	    	return view;
 	}
-	
+
 	/* This method can be used to delete an object provided that its cdoID is given
 	 * as input parameter. A return of false will indicate that something went wrong with the deletion
 	 * of the object. Then the respective log file must be checked to see the error message

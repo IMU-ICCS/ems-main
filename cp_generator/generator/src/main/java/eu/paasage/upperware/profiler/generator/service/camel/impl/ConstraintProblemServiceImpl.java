@@ -32,7 +32,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
     private VariableService variableService;
     private PaasageConfigurationServiceImpl paasageConfigurationService;
     private PaasageConfigurationUtilsService paasageConfigurationUtilsService;
-    private DimensionDerivatorService dimensionDerivatorService;
 
     private List<GeneratorService> generatorServices;
 
@@ -43,8 +42,6 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
 
         log.debug("CPModelDerivator - derivateConstraintProblem - Deriving CP " + configuration.getGoals().size());
         log.info("** 	Derivating Constraint Problem Model");
-
-        List<OptimisationRequirement> complexOptRequirements = new ArrayList<>();
 
         //CP creation
         ConstraintProblem cp = cpFactory.createConstraintProblem();
@@ -59,13 +56,20 @@ public class ConstraintProblemServiceImpl implements ConstraintProblemService {
         createConstraints(cp, configuration);
 
         log.info("** 		Creating User objective functions ");
-        dimensionDerivatorService.createDimensions(camel, cp, complexOptRequirements);
+
+        cp.getSolution().add(createSolution());
 
         log.debug("** 		CP Creation ended");
         log.debug(cp.toString());
         printCpModel(cp);
         log.debug("** 		CP Creation ended2");
         return cp;
+    }
+
+    private Solution createSolution() {
+        Solution sol = cpFactory.createSolution();
+        sol.setTimestamp(System.currentTimeMillis());
+        return sol;
     }
 
     private void resetServices() {

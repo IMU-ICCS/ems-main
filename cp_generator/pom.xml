@@ -17,7 +17,7 @@
     <description>The cp generator component</description>
 
     <modules>
-        <module>cloner</module>
+        <!--<module>cloner</module>-->
         <module>generator</module>
     </modules>
 

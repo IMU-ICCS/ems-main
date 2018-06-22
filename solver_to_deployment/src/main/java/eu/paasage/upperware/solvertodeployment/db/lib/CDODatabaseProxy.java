@@ -9,50 +9,33 @@ import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.organisation.OrganisationPackage;
 import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.type.TypePackage;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Arrays;
 
 @Slf4j
 public class CDODatabaseProxy {
 
-	private static CDODatabaseProxy proxy = new CDODatabaseProxy();
+	private static CDODatabaseProxy INSTANCE = new CDODatabaseProxy();
 
-	private CDOClient cdoClient;
+	@Getter
+	private CDOClientX cdoClient;
 
-	/**
-	 * Default constructor
-	 */
 	private CDODatabaseProxy() {
-		cdoClient = new CDOClient();
-		registerPackages();
+		cdoClient = new CDOClientXImpl(Arrays.asList(ApplicationPackage.eINSTANCE, CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
+				TypesPaasagePackage.eINSTANCE, TypePackage.eINSTANCE, CamelPackage.eINSTANCE, ProviderPackage.eINSTANCE,
+				OrganisationPackage.eINSTANCE, DeploymentPackage.eINSTANCE));
 	}
 
 	public static CDODatabaseProxy getInstance() {
-		return proxy;
+		return INSTANCE;
 	}
 
-	/**
-	 * Registers the package of the used models in the database
-	 */
-	private void registerPackages() {
-		cdoClient.registerPackage(ApplicationPackage.eINSTANCE);
-		cdoClient.registerPackage(CpPackage.eINSTANCE);
-		cdoClient.registerPackage(TypesPackage.eINSTANCE);
-		cdoClient.registerPackage(TypesPaasagePackage.eINSTANCE);
-		cdoClient.registerPackage(TypePackage.eINSTANCE);
-
-		cdoClient.registerPackage(CamelPackage.eINSTANCE);
-		cdoClient.registerPackage(ProviderPackage.eINSTANCE);
-
-		cdoClient.registerPackage(OrganisationPackage.eINSTANCE);
-		cdoClient.registerPackage(DeploymentPackage.eINSTANCE);
-	}
-
-	public CDOClient getCdoClient() {
-		return cdoClient;
-	}
 }

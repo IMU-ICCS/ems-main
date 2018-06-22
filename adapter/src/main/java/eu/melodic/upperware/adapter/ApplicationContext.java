@@ -12,7 +12,8 @@ package eu.melodic.upperware.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -46,8 +47,8 @@ public class ApplicationContext {
   }
 
   @Bean
-  public CDOClient getCdoClient() {
-    return new CDOClient();
+  public CDOClientX getCdoClient() {
+    return new CDOClientXImpl();
   }
 
   @Bean
