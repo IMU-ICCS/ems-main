@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.emf.cdo.server,
  org.eclipse.emf.cdo.common,
  org.eclipse.emf.ecore,
  org.eclipse.net4j.util,
- camel;bundle-version="2018.6.0"
+ camel;bundle-version="2018.6.1"
 Import-Package: com.mysql.jdbc,
  javax.persistence,
  org.apache.commons.logging,
