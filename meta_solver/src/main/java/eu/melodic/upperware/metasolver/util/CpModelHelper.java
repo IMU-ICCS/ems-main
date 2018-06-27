@@ -9,19 +9,8 @@
 
 package eu.melodic.upperware.metasolver.util;
 
-import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
-import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.deployment.DeploymentPackage;
-import eu.paasage.camel.execution.ExecutionPackage;
-import eu.paasage.camel.location.LocationPackage;
-import eu.paasage.camel.metric.MetricPackage;
-import eu.paasage.camel.organisation.OrganisationPackage;
-import eu.paasage.camel.provider.ProviderPackage;
-import eu.paasage.camel.requirement.RequirementPackage;
-import eu.paasage.camel.scalability.ScalabilityPackage;
-import eu.paasage.camel.security.SecurityPackage;
-import eu.paasage.camel.type.TypePackage;
-import eu.paasage.camel.unit.UnitPackage;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
@@ -29,33 +18,19 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
-import org.eclipse.emf.cdo.eresource.EresourcePackage;
-import org.eclipse.emf.cdo.net4j.CDONet4jSession;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.net4j.Net4jUtil;
-import org.eclipse.net4j.connector.IConnector;
-import org.eclipse.net4j.tcp.TCPUtil;
-import org.eclipse.net4j.util.container.ContainerUtil;
-import org.eclipse.net4j.util.container.IManagedContainer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
-//import eu.paasage.upperware.metamodel.cp.DeltaUtility;
-//import eu.paasage.upperware.metamodel.cp.*;
-//import eu.paasage.upperware.metamodel.types.*;
-// From: eu.paasage.mddb.cdo.client.CDOClient
-//import eu.paasage.camel.dsl.CamelDslStandaloneSetup;
-//import eu.paasage.camel.deployment.Component;
+//import eu.paasage.upperware.metamodel.cp.MetricVariable;
+//import eu.paasage.upperware.metamodel.cp.Variable;
+
 
 @Component
 @Slf4j
@@ -64,15 +39,13 @@ public class CpModelHelper {
 	protected HashSet<String> LOCKS = new HashSet<>();
 	
 	protected static int counter = 0;
-	
-    @Autowired
-	private MetaSolverProperties properties;
-	
+
 	private int id;
-	private CDONet4jSession cdoSession;
+    private CDOClientXImpl cdoClient;
 	
 	public CpModelHelper() {
 		id = ++counter;
+        this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
 		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
 	}
 	
@@ -81,11 +54,13 @@ public class CpModelHelper {
 		
 		// lock resource
 		lockCpModel(cpModelPath, "updateCpModelWithMetricValues()");
-		
+
+        CDOSessionX session = null;
 		CDOTransaction transaction = null;
 		try {
 			// retrieve CP model (open transaction)
-			transaction = cdoSession.openTransaction();
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
             ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);    // one element in list - 0: ConstraintProblem  (see cp_generator, class :
 																							//  eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator)
@@ -139,6 +114,10 @@ public class CpModelHelper {
 			return false;
 		} finally {
 			if (transaction!=null) { transaction.rollback(); transaction.close(); }
+            if (session != null) {
+                session.closeSession();
+                session = null;
+            }
 			
 			// release resource
 			releaseCpModel(cpModelPath, "updateCpModelWithMetricValues()");
@@ -154,11 +133,13 @@ public class CpModelHelper {
 		
 		// lock resource
 		lockCpModel(cpModelPath, "getSolutionUtilities()");
-		
+
+        CDOSessionX session = null;
 		CDOView view = null;
 		try {
 			// retrieve CP model (open view)
-			view = cdoSession.openView();
+            session = cdoClient.getSession();
+            view = session.openView();
 			CDOResource resource = view.getResource(cpModelPath);
             ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
 			
@@ -200,6 +181,10 @@ public class CpModelHelper {
 			return null;
 		} finally {
 			if (view!=null) view.close();
+            if (session != null) {
+                session.closeSession();
+                session = null;
+            }
 			
 			// release resource
 			releaseCpModel(cpModelPath, "getSolutionUtilities()");
@@ -211,11 +196,13 @@ public class CpModelHelper {
 		
 		// lock resource
 		lockCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
-		
+
+        CDOSessionX session = null;
 		CDOTransaction transaction = null;
 		try {
 			// retrieve CP model (open transaction)
-			transaction = cdoSession.openTransaction();
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
             ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
 			
@@ -259,6 +246,10 @@ public class CpModelHelper {
 			return null;
 		} finally {
 			if (transaction!=null) { transaction.rollback(); transaction.close(); }
+            if (session != null) {
+                session.closeSession();
+                session = null;
+            }
 			
 			// release resource
 			releaseCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
@@ -270,11 +261,13 @@ public class CpModelHelper {
 		
 		// lock resource
 		lockCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
-		
+
+        CDOSessionX session = null;
 		CDOTransaction transaction = null;
 		try {
 			// retrieve CP model (open transaction)
-			transaction = cdoSession.openTransaction();
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
 			CDOResource resource = transaction.getResource(cpModelPath);
             ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
 			
@@ -306,6 +299,10 @@ public class CpModelHelper {
 			return -2;
 		} finally {
 			if (transaction!=null) { transaction.rollback(); transaction.close(); }
+            if (session != null) {
+                session.closeSession();
+                session = null;
+            }
 			
 			// release resource
 			releaseCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
@@ -313,93 +310,15 @@ public class CpModelHelper {
 	}
 	
 	// ------------------------------------------------------------------------
-	
-	@PostConstruct
-	public void registerCpPackage() {
-		CpPackage.eINSTANCE.eClass();
-	}
-	
-	@PreDestroy
-	public void cleanup() {
-		disconnect();
-	}
-	
+
 	public void connect() {
-		log.debug("CpModelHelper.connect(): helper #{}", id);
-		cdoSession = openCdoSession();
+        //log.debug("CpModelHelper.connect(): helper #{}", id);
 	}
 	
 	public void disconnect() {
-		log.debug("CpModelHelper.disconnect(): helper #{}", id);
-		cdoSession.close();
-	}
+        //log.debug("CpModelHelper.disconnect(): helper #{}", id);
+    }
 
-	protected CDONet4jSession openCdoSession() {
-		log.debug("CpModelHelper.openCdoSession: CDO configuration: {}", properties.getCdo());
-		MetaSolverProperties.CdoConfig config = properties.getCdo();
-		
-		String host = config.getHost().trim();
-		int port = config.getPort();
-		String connectionStr = host+":"+port;
-		String repoName = config.getRepositoryName();
-		boolean logging = config.isLogging();
-		boolean auth = config.isSecure();
-		String username = config.getUsername();
-		String password = config.getPassword();
-		
-		return openCdoSession(connectionStr, repoName, logging, auth, username, password);
-	}
-	
-	protected CDONet4jSession openCdoSession(String connectionStr, String repoName) {
-		return openCdoSession(connectionStr, repoName, false, false, null, null);
-	}
-	
-	protected CDONet4jSession openCdoSession(String connectionStr, String repoName, boolean logging, boolean requiresAuth, String cdoUsername, String cdoPassword) {
-		log.debug("CpModelHelper.openCdoSession: Arguments: conn-str={}, repos={}, log={}, auth={}, username={}", connectionStr, repoName, logging, requiresAuth, cdoUsername);
-		
-		// initialize and activate a container
-		final IManagedContainer container = ContainerUtil.createContainer();
-		Net4jUtil.prepareContainer(container);
-		TCPUtil.prepareContainer(container);
-		// CDONet4jUtil.prepareContainer(container);
-		container.activate();
-
-		// create a Net4j TCP connector
-		final IConnector connector = (IConnector) TCPUtil.getConnector(container, connectionStr);
-
-		// create the session configuration
-		CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
-		config.setConnector(connector);
-		config.setRepositoryName(repoName);
-
-		// setup authentication
-		if (requiresAuth) {
-			log.info("** CDO server requires authentication - Username: %s\n", cdoUsername);
-			org.eclipse.net4j.util.security.PasswordCredentialsProvider credentialsProvider = new org.eclipse.net4j.util.security.PasswordCredentialsProvider(cdoUsername, cdoPassword);
-			config.setCredentialsProvider(credentialsProvider);
-		}
-
-		// create the actual session with the repository
-		CDONet4jSession cdoSession = config.openNet4jSession();
-
-		// register CAMEL packages
-		cdoSession.getPackageRegistry().putEPackage(EresourcePackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(CamelPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(ScalabilityPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(DeploymentPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(OrganisationPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(ProviderPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(SecurityPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(ExecutionPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(TypePackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(RequirementPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(MetricPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(UnitPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(LocationPackage.eINSTANCE);
-
-		return cdoSession;
-	}
-	
 	protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
 		synchronized (LOCKS) {
 			if (! LOCKS.contains(cpModelPath)) {
