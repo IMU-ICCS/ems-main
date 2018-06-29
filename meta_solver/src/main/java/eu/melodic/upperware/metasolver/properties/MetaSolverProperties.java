@@ -10,24 +10,19 @@
 package eu.melodic.upperware.metasolver.properties;
 
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -92,7 +87,7 @@ public class MetaSolverProperties {
 	
 	// --------------------------------------------------------------
 	
-	@Valid
+	/*@Valid
 	@NotNull
 	private CdoConfig cdo;
 
@@ -107,7 +102,7 @@ public class MetaSolverProperties {
 		private boolean secure = false;
 		private String username;
 		private String password;
-	}
+	}*/
 	
 	public static boolean parseBoolean(String s, boolean def) {
 		if (s==null || s.trim().isEmpty()) return def;
@@ -115,7 +110,7 @@ public class MetaSolverProperties {
 		return (s.equals("true") || s.equals("on") || s.equals("yes") || s.equals("enabled"));
 	}
 	
-	protected static String getCdoConfigFile() {
+	/*protected static String getCdoConfigFile() {
 		String configPath = System.getProperty("eu.paasage.configdir", System.getenv("PAASAGE_CONFIG_DIR"));
 		if (configPath==null || configPath.trim().isEmpty()) configPath = "/";
 		if (!configPath.endsWith("/")) configPath += "/";
@@ -150,7 +145,7 @@ public class MetaSolverProperties {
 		cdo.setUsername( cdoCfg.getProperty("username") );
 		cdo.setPassword( cdoCfg.getProperty("password") );
 		log.debug("MetaSolverProperties: CDO config updated: {}", cdo);
-	}
+	}*/
 			
 	// --------------------------------------------------------------
 	

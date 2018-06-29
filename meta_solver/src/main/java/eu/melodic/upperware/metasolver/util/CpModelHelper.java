@@ -311,13 +311,13 @@ public class CpModelHelper {
 	
 	// ------------------------------------------------------------------------
 
-	public void connect() {
+	/*public void connect() {
         //log.debug("CpModelHelper.connect(): helper #{}", id);
 	}
 	
 	public void disconnect() {
         //log.debug("CpModelHelper.disconnect(): helper #{}", id);
-    }
+    }*/
 
 	protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
 		synchronized (LOCKS) {
