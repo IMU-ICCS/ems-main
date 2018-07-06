@@ -7,6 +7,7 @@
 
 package eu.paasage.mddb.cdo.client;
 
+import camel.core.CorePackage;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
@@ -750,6 +751,7 @@ public class CDOClient
 	public static EObject loadModel(String pathName){
 		  final ResourceSet rs = new ResourceSetImpl();
 		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
+		  rs.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
 		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
 		  log.info("Got resource: " + res);
 		  EList<EObject> contents = res.getContents();
@@ -1729,152 +1731,157 @@ public class CDOClient
 	  }
 	  return false;
   }
-  
+
+//	public static void main(String[] args) {
+//		camel.core.CamelModel camelModel = (camel.core.CamelModel) CDOClient.loadModel("C:\\Users\\Paweł Szkup\\runtime-EclipseXtext\\camel-oxygen\\src-gen\\CRMCamelModel.xmi");
+//	}
+
+
   /* Main method which demonstrates the functionality of the CDOClient through
    * the usage of the various methods offered by it, when no arguments are given 
    * to it. Otherwise, it takes as input the name of the method plus any additional
    * parameter required by it and executes it. The latter exploitation is useful for
    * a command line usage of the CDOClient API. */
-  public static void main(String[] args){
-	  //Create the CDOClient
-	  CDOClient cl = new CDOClient("Administrator","0000");
-	  if (args.length == 0){
-		  //Creating & adding a listener to the session
-		  MyListener listener = new MyListener();
-		  cl.addListener(listener);
-		  //Create a particular model (CERIF)
-		  EObject model = cl.createCerifModel();
-		  //Store the model under a CDOResource with a particular name
-		  cl.storeModel(model,"cerif",true);
-		  //Create a particular model (SensApp)
-		  model = SensAppCDO.getSensAppCamelModel();
-		  //Store the model under a CDOResource with a particular name
-		  cl.storeModel(model,"sensAppResource1",true);
-		  //Load a model from a XMI resource situated inside jar file
-		  URL url = cl.getClass().getResource("/Scalarm.xmi");
-		  model = cl.loadModel(url);
-		  //Store the model under a CDOResource with a particular name
-		  cl.storeModel(model,"scalarmResource1",true);
-		  
-		  //Create transaction and use this to delete object
-		  CDOTransaction trans = cl.openTransaction(true);
-		  User user = trans.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
-		  cl.deleteObject(user.getPaasageCredentials(),trans,false);
-		  cl.deleteObject(user,trans,true);
-		  //Create view, get cdoID and then delete object by using this id as input
-		  CDOView view = cl.openView();
-		  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.identifier='ID2'").getResult(ExternalIdentifier.class).get(0);
-		  CDOID cdoID1 = id1.cdoID();
-		  view.close();
-		  cl.deleteObject(cdoID1);
-		  
-		  //Check that the objects have been deleted
-		  view = cl.openView();
-		  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.identifier='ID2' or id.identifier='ID3')").getResult(ExternalIdentifier.class);
-		  log.info("Did we get the ids requested?: " + !(types.isEmpty()));
-		  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
-		  log.info("Did we get the users requested?: " + !(users.isEmpty()));
-		  view.close();
-		  
-		  /*Run a query - three ways are shown here: (i) ocl query, 
-		   * (ii) hql query and (iii) get all contents of a CDO Resource
-		   * and process them to e.g. find the one you are looking for. Please
-		   * notice that for the third way, the user/developer has to first create
-		   * a view, get the contents of the CDOResource and process them and 
-		   * finally close the view. If the contents have to be modified, then
-		   * a transaction should be opened instead (and finally closed when
-		   * processing has been ended). 
-		   */
-		  //OCL query plus exporting of first result
-		  List<EObject> results = cl.runQuery("ocl","camel::organisation::User.allInstances()","queryResult.xmi");
-		  log.info("The results of the query are:" + results);
-		  //HQL query with no exporting
-		  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
-		  log.info("The results of the query are:" + results);
-		  //Obtaining all contents of a CDOResource
-		  view = cl.openView();
-		  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
-		  log.info("The objs stored are: " + objs);
-		  cl.closeView(view);
-		  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
-		  cl.exportModel("sensAppResource1", DeploymentModel.class, "output/SensApp_DepModel.xmi");
-		  //Remove listener as no longer needed
-		  cl.removeListener(listener);
-	  }
-	  else{
-		  String method = args[0];
-		  boolean ok = false;
-		  if (method.equals("importModel") || method.equals("importTextualModel")){
-			  if (args.length >= 3){
-				  String filePath = args[1];
-				  String resourcePath = args[2];
-				  boolean validate = true;
-				  if (args.length == 4){
-					  validate = Boolean.parseBoolean(args[3]);
-				  }
-				  else log.warn("3 or 4 arguments were expected. At most the 4 first arguments are taken into account");
-				  if (method.equals("importModel"))
-					  ok = cl.importModel(filePath, resourcePath, validate);
-				  else if (method.equals("importTextualModel"))
-					  ok = cl.importTextualModel(filePath, resourcePath, validate);
-			  }
-			  else{
-				  log.error(method + " was called with a wrong number of arguments");
-			  }
-		  }
-		  else if (method.equals("xmiToCAMEL")){
-			  if (args.length >= 3){
-				  String xmiPath = args[1];
-				  String camelPath = args[2];
-				  if (args.length > 3)
-					  log.warn("3 arguments were expected. At most the 4 first arguments are taken into account");
-					  ok = xmiToCAMEL(xmiPath, camelPath);
-			  }
-			  else{
-				  log.error(method + " was called with a wrong number of arguments");
-			  }
-		  }
-		  else if (method.equals("exportModel") || method.equals("exportTextualModel")){
-			  if (args.length == 3){
-				  String resourcePath = args[1];
-				  String filePath = args[2];
-				  if (method.equals("exportModel"))
-					  ok = cl.exportModel(resourcePath, filePath);
-				  else if (method.equals("exportTextualModel"))
-					  ok = cl.exportTextualModel(resourcePath, filePath);
-			  }
-			  else log.error(method + " was called with a wrong number of arguments");
-		  }
-		  else if (method.equals("exportModelWithRefRec") || method.equals("exportModelWithRef")){
-			  if (args.length == 4){
-				  String resourcePath = args[1];
-				  String dirPath = args[2];
-				  String arg3 = args[3];
-				  if (method.equals("exportModelWithRef"))
-					  ok = cl.exportModelWithRef(resourcePath, dirPath, arg3);
-				  else if (method.equals("exportModelWithRefRec")){
-					  boolean xtext = Boolean.parseBoolean(arg3);
-					  ok = cl.exportModelWithRefRec(resourcePath, dirPath, xtext);
-				  }
-			  }
-			  else log.error(method + " was called with a wrong number of arguments");
-		  }
-		  else if (method.equals("exportCDOContent") || method.equals("loadCDOContent")){
-			  if (args.length == 3){
-				  String arg1 = args[1];
-				  boolean xtext = Boolean.parseBoolean(args[2]);
-				  if (method.equals("exportCDOContent"))
-					  ok = cl.exportCDOContent(arg1,xtext);
-				  else if (method.equals("loadCDOContent"))
-					  ok = cl.loadCDOContent(arg1,xtext);
-			  }
-			  else log.error(method + " was called with a wrong number of arguments");
-		  }
-		  else log.error(method + " does not exist or cannot be executed in a command line manner");
-		  if (ok) log.info(method + " was successfully performed");
-	  }
-	  //Close the CDOSession once you are done
-	  cl.closeSession();
-	  System.exit(1);
-  }
+//  public static void main(String[] args){
+//	  //Create the CDOClient
+//	  CDOClient cl = new CDOClient("Administrator","0000");
+//	  if (args.length == 0){
+//		  //Creating & adding a listener to the session
+//		  MyListener listener = new MyListener();
+//		  cl.addListener(listener);
+//		  //Create a particular model (CERIF)
+//		  EObject model = cl.createCerifModel();
+//		  //Store the model under a CDOResource with a particular name
+//		  cl.storeModel(model,"cerif",true);
+//		  //Create a particular model (SensApp)
+//		  model = SensAppCDO.getSensAppCamelModel();
+//		  //Store the model under a CDOResource with a particular name
+//		  cl.storeModel(model,"sensAppResource1",true);
+//		  //Load a model from a XMI resource situated inside jar file
+//		  URL url = cl.getClass().getResource("/Scalarm.xmi");
+//		  model = cl.loadModel(url);
+//		  //Store the model under a CDOResource with a particular name
+//		  cl.storeModel(model,"scalarmResource1",true);
+//
+//		  //Create transaction and use this to delete object
+//		  CDOTransaction trans = cl.openTransaction(true);
+//		  User user = trans.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
+//		  cl.deleteObject(user.getPaasageCredentials(),trans,false);
+//		  cl.deleteObject(user,trans,true);
+//		  //Create view, get cdoID and then delete object by using this id as input
+//		  CDOView view = cl.openView();
+//		  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.identifier='ID2'").getResult(ExternalIdentifier.class).get(0);
+//		  CDOID cdoID1 = id1.cdoID();
+//		  view.close();
+//		  cl.deleteObject(cdoID1);
+//
+//		  //Check that the objects have been deleted
+//		  view = cl.openView();
+//		  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.identifier='ID2' or id.identifier='ID3')").getResult(ExternalIdentifier.class);
+//		  log.info("Did we get the ids requested?: " + !(types.isEmpty()));
+//		  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
+//		  log.info("Did we get the users requested?: " + !(users.isEmpty()));
+//		  view.close();
+//
+//		  /*Run a query - three ways are shown here: (i) ocl query,
+//		   * (ii) hql query and (iii) get all contents of a CDO Resource
+//		   * and process them to e.g. find the one you are looking for. Please
+//		   * notice that for the third way, the user/developer has to first create
+//		   * a view, get the contents of the CDOResource and process them and
+//		   * finally close the view. If the contents have to be modified, then
+//		   * a transaction should be opened instead (and finally closed when
+//		   * processing has been ended).
+//		   */
+//		  //OCL query plus exporting of first result
+//		  List<EObject> results = cl.runQuery("ocl","camel::organisation::User.allInstances()","queryResult.xmi");
+//		  log.info("The results of the query are:" + results);
+//		  //HQL query with no exporting
+//		  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
+//		  log.info("The results of the query are:" + results);
+//		  //Obtaining all contents of a CDOResource
+//		  view = cl.openView();
+//		  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
+//		  log.info("The objs stored are: " + objs);
+//		  cl.closeView(view);
+//		  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
+//		  cl.exportModel("sensAppResource1", DeploymentModel.class, "output/SensApp_DepModel.xmi");
+//		  //Remove listener as no longer needed
+//		  cl.removeListener(listener);
+//	  }
+//	  else{
+//		  String method = args[0];
+//		  boolean ok = false;
+//		  if (method.equals("importModel") || method.equals("importTextualModel")){
+//			  if (args.length >= 3){
+//				  String filePath = args[1];
+//				  String resourcePath = args[2];
+//				  boolean validate = true;
+//				  if (args.length == 4){
+//					  validate = Boolean.parseBoolean(args[3]);
+//				  }
+//				  else log.warn("3 or 4 arguments were expected. At most the 4 first arguments are taken into account");
+//				  if (method.equals("importModel"))
+//					  ok = cl.importModel(filePath, resourcePath, validate);
+//				  else if (method.equals("importTextualModel"))
+//					  ok = cl.importTextualModel(filePath, resourcePath, validate);
+//			  }
+//			  else{
+//				  log.error(method + " was called with a wrong number of arguments");
+//			  }
+//		  }
+//		  else if (method.equals("xmiToCAMEL")){
+//			  if (args.length >= 3){
+//				  String xmiPath = args[1];
+//				  String camelPath = args[2];
+//				  if (args.length > 3)
+//					  log.warn("3 arguments were expected. At most the 4 first arguments are taken into account");
+//					  ok = xmiToCAMEL(xmiPath, camelPath);
+//			  }
+//			  else{
+//				  log.error(method + " was called with a wrong number of arguments");
+//			  }
+//		  }
+//		  else if (method.equals("exportModel") || method.equals("exportTextualModel")){
+//			  if (args.length == 3){
+//				  String resourcePath = args[1];
+//				  String filePath = args[2];
+//				  if (method.equals("exportModel"))
+//					  ok = cl.exportModel(resourcePath, filePath);
+//				  else if (method.equals("exportTextualModel"))
+//					  ok = cl.exportTextualModel(resourcePath, filePath);
+//			  }
+//			  else log.error(method + " was called with a wrong number of arguments");
+//		  }
+//		  else if (method.equals("exportModelWithRefRec") || method.equals("exportModelWithRef")){
+//			  if (args.length == 4){
+//				  String resourcePath = args[1];
+//				  String dirPath = args[2];
+//				  String arg3 = args[3];
+//				  if (method.equals("exportModelWithRef"))
+//					  ok = cl.exportModelWithRef(resourcePath, dirPath, arg3);
+//				  else if (method.equals("exportModelWithRefRec")){
+//					  boolean xtext = Boolean.parseBoolean(arg3);
+//					  ok = cl.exportModelWithRefRec(resourcePath, dirPath, xtext);
+//				  }
+//			  }
+//			  else log.error(method + " was called with a wrong number of arguments");
+//		  }
+//		  else if (method.equals("exportCDOContent") || method.equals("loadCDOContent")){
+//			  if (args.length == 3){
+//				  String arg1 = args[1];
+//				  boolean xtext = Boolean.parseBoolean(args[2]);
+//				  if (method.equals("exportCDOContent"))
+//					  ok = cl.exportCDOContent(arg1,xtext);
+//				  else if (method.equals("loadCDOContent"))
+//					  ok = cl.loadCDOContent(arg1,xtext);
+//			  }
+//			  else log.error(method + " was called with a wrong number of arguments");
+//		  }
+//		  else log.error(method + " does not exist or cannot be executed in a command line manner");
+//		  if (ok) log.info(method + " was successfully performed");
+//	  }
+//	  //Close the CDOSession once you are done
+//	  cl.closeSession();
+//	  System.exit(1);
+//  }
 }

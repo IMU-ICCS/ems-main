@@ -21,10 +21,7 @@ import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
-import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
-import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
-import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
-import eu.paasage.upperware.profiler.generator.service.camel.SloService;
+import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -113,10 +110,10 @@ public class GeneratorContext {
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
 
         CdoService cdoService = applicationContext.getBean(CdoService.class);
-        NewConstraintProblemService newConstraintProblemService = applicationContext.getBean(NewConstraintProblemService.class);
+        NewConstraintProblemServiceX newConstraintProblemServiceX = applicationContext.getBean(NewConstraintProblemServiceX.class);
 
         return new GenerationOrchestrator(paaSageConfigurationService,
-                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemService);
+                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemServiceX);
     }
 
     @Bean
