@@ -8,10 +8,10 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import eu.melodic.upperware.utilitygenerator.model.IntVar;
-import eu.melodic.upperware.utilitygenerator.model.RealVar;
-import eu.melodic.upperware.utilitygenerator.model.Var;
-import eu.melodic.upperware.utilitygenerator.model.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ class EvaluatingUtils {
     /* mapping variables from solution and cp model */
 
 
-    static Map<String, Integer> getCardinalitiesForComponent(Collection<IntVar> newConfiguration, List<VariableDTO> variables) {
+    static Map<String, Integer> getCardinalitiesForComponent(Collection<IntElement> newConfiguration, List<VariableDTO> variables) {
 
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
@@ -46,7 +46,7 @@ class EvaluatingUtils {
         return cardinalitiesForComponent;
     }
 
-    static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntVar> newConfigurationInt) {
+    static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntElement> newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return newConfigurationInt.stream()
@@ -84,30 +84,30 @@ class EvaluatingUtils {
 
     //todo - for real var
     //todo saving only important variables
-    static Collection<Var> convertSolution(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
+    static Collection<Element> convertSolution(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
 
         return newConfigurationInt.stream()
-                .map(intVar -> new IntVar(intVar.getName(), intVar.getValue()))
+                .map(intVar -> new IntElement(intVar.getName(), intVar.getValue()))
                 .collect(Collectors.toList());
     }
 
-    static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntVar> newConfigurationInt,
-            Collection<RealVar> newConfigurationReal, List<VariableDTO> variables) {
+    static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntElement> newConfigurationInt,
+            Collection<RealElement> newConfigurationReal, List<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
-        List<IntVar> variablesIntForComponent = newConfigurationInt.stream()
+        List<IntElement> variablesIntForComponent = newConfigurationInt.stream()
                 .filter(intVar -> variableNamesForComponent.contains(intVar.getName()))
                 .collect(Collectors.toList());
 
-        List<RealVar> variablesRealForComponent = newConfigurationReal.stream()
+        List<RealElement> variablesRealForComponent = newConfigurationReal.stream()
                 .filter(realVar -> variableNamesForComponent.contains(realVar.getName()))
                 .collect(Collectors.toList());
 
         List<Predicate<NodeCandidate>> predicates = new ArrayList<>();
 
 
-        for (IntVar var : variablesIntForComponent) {
+        for (IntElement var : variablesIntForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
 
             switch (type) {
@@ -135,7 +135,7 @@ class EvaluatingUtils {
             }
         }
 
-        for (RealVar var : variablesRealForComponent) {
+        for (RealElement var : variablesRealForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
             switch (type) {
                 case CPU:

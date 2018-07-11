@@ -6,11 +6,11 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.utilitygenerator.model;
+package eu.melodic.upperware.utilitygenerator.model.DTO;
 
-public class IntVar extends Var<Integer> {
+public class FloatMetricDTO extends MetricDTO<Float>{
 
-    public IntVar(String name, Integer value) {
+    public FloatMetricDTO(String name, Float value) {
         super(name, value);
     }
 }

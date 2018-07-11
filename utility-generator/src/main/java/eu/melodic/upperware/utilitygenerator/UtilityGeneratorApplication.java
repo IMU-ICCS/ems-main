@@ -10,8 +10,11 @@ package eu.melodic.upperware.utilitygenerator;
 
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
-import eu.melodic.upperware.utilitygenerator.model.*;
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -24,21 +27,20 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String path, List<VariableDTO> variables, List<MetricDTO> metrics, UtilityGeneratorProperties properties, UtilityFunctionType useCase,
-            NodeCandidates nodeCandidates) {
-        this(path, variables, metrics, null, nodeCandidates);
+    public UtilityGeneratorApplication(String cdoPath, String path, List<VariableDTO> variables, List<MetricDTO> metrics, NodeCandidates nodeCandidates) {
+        this(cdoPath, path, variables, metrics, null, nodeCandidates);
     }
 
-    private UtilityGeneratorApplication(String path, List<VariableDTO> variables, List<MetricDTO> metrics, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityGeneratorApplication(String cdoPath, String path, List<VariableDTO> variables, List<MetricDTO> metrics, List<Element> deployedSolution, NodeCandidates nodeCandidates) {
         log.info("Creating of Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(path, variables, metrics, deployedSolution, nodeCandidates);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(cdoPath, path, variables, metrics, deployedSolution, nodeCandidates);
     }
 
-    public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
+    public double evaluate(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
-    public double evaluate(Collection<IntVar> newConfigurationInt) {
+    public double evaluate(Collection<IntElement> newConfigurationInt) {
         return evaluate(newConfigurationInt, new ArrayList<>());
     }
 

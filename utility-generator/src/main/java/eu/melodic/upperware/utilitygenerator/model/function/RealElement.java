@@ -6,11 +6,11 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.utilitygenerator.model;
+package eu.melodic.upperware.utilitygenerator.model.function;
 
-public class RealVar extends Var<Double> {
+public class RealElement extends Element<Double> {
 
-    public RealVar(String name, Double value) {
+    public RealElement(String name, Double value) {
         super(name, value);
     }
 }

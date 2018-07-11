@@ -6,11 +6,11 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.utilitygenerator.model;
+package eu.melodic.upperware.utilitygenerator.model.function;
 
-public class DoubleMetricDTO extends MetricDTO<Double>{
+public class IntElement extends Element<Integer> {
 
-    public DoubleMetricDTO(String name, Double value) {
+    public IntElement(String name, Integer value) {
         super(name, value);
     }
 }

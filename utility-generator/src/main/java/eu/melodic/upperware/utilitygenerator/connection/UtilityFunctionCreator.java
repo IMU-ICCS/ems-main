@@ -2,15 +2,11 @@ package eu.melodic.upperware.utilitygenerator.connection;
 
 
 import camel.core.CamelModel;
-import camel.core.MeasurableAttribute;
-import camel.core.impl.CamelModelImpl;
 import camel.metric.Metric;
 import camel.metric.MetricModel;
-import camel.metric.MetricTemplate;
 import camel.metric.RawMetric;
+import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
-import camel.mms.MmsObject;
-import camel.type.ValueType;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import org.eclipse.emf.common.util.EList;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -27,7 +23,7 @@ public class UtilityFunctionCreator {
         CamelModel model = (CamelModel) CDOClient.loadModel(path);
 
         MetricModel metricModel = model.getMetricModels().get(0);//can I assume that it will be always only 1 metric model?
-        EList<Metric> metrics = metricModel.getMetrics();
+        EList<Metric> metrics = ((MetricTypeModelImpl) metricModel).getMetrics();
 
 
         for (Metric m: metrics){
@@ -62,26 +58,26 @@ public class UtilityFunctionCreator {
 
 
 
-
-    public void loadModelTest(){
-        CamelModel model = (CamelModel) CDOClient.loadModel("/Users/mrozanska/CRM.xmi");
-        MetricModel metricModel = model.getMetricModels().get(0);
-        MetricVariableImpl metricVariable = (MetricVariableImpl) model.getMetricModels().get(0).getMetrics().get(3);
-        MetricTemplate metricTemplate = metricVariable.getMetricTemplate();
-        String formula = metricVariable.getFormula();
-        //formula.
-        MeasurableAttribute attribute = metricTemplate.getAttribute();
-        ValueType valueType = attribute.getValueType();
-        model.getUnitModels();
-
-        MmsObject mmsObject = ((CamelModelImpl) model).getRequirementModels().get(0).getRequirements().get(0).getSubFeatures().get(0).getAttributes().get(0).getAnnotations().get(0);
-
-        ((CamelModelImpl)model).getRequirementModels().get(0).getRequirements().get(0).getSubFeatures().get(0).getAnnotations().get(0).getDescription(); //daje CPU z duzych liter - czyli oznacza, że to wymaganie będzie dotyczyło CPU
-
-
-        //model.getRequirementModels().get
-        System.out.println("kkaaa");
-    }
+//
+//    public void loadModelTest(){
+//        CamelModel model = (CamelModel) CDOClient.loadModel("/Users/mrozanska/CRM.xmi");
+//        MetricModel metricModel = model.getMetricModels().get(0);
+//        MetricVariableImpl metricVariable = (MetricVariableImpl) model.getMetricModels().get(0).getMetrics().get(3);
+//        MetricTemplate metricTemplate = metricVariable.getMetricTemplate();
+//        String formula = metricVariable.getUtilityFormula();
+//        //formula.
+//        MeasurableAttribute attribute = metricTemplate.getAttribute();
+//        ValueType valueType = attribute.getValueType();
+//        model.getUnitModels();
+//
+//        MmsObject mmsObject = ((CamelModelImpl) model).getRequirementModels().get(0).getRequirements().get(0).getSubFeatures().get(0).getAttributes().get(0).getAnnotations().get(0);
+//
+//        ((CamelModelImpl)model).getRequirementModels().get(0).getRequirements().get(0).getSubFeatures().get(0).getAnnotations().get(0).getDescription(); //daje CPU z duzych liter - czyli oznacza, że to wymaganie będzie dotyczyło CPU
+//
+//
+//        //model.getRequirementModels().get
+//        System.out.println("kkaaa");
+//    }
 
 
 

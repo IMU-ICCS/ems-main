@@ -1,4 +1,4 @@
-/* * Copyright (C) 2018 7bulls.com
+/* * Copyright (C) 2017 7bulls.com
  *
  * This Source Code Form is subject to the terms of the
  * Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -6,23 +6,15 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.utilitygenerator.model;
+package eu.melodic.upperware.utilitygenerator.model.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Var<T> {
+public class MetricDTO<T> {
 
     private String name;
     private T value;
-
-    @Override
-    public String toString() {
-        return "Var{" +
-                "name='" + name + '\'' +
-                ", value=" + value +
-                '}';
-    }
 }

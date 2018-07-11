@@ -10,7 +10,15 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.connection.CamelModelTransformer;
-import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.converter.CurrentConfigConverter;
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
+import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
+import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
+import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -31,51 +39,60 @@ public class UtilityFunctionEvaluator {
     private Collection<ConfigurationElement> configurationWithMaxUtility;
 
     private double maxUtility;
-    private Collection<Var> solutionWithMaxUtility;
+    private Collection<Element> solutionWithMaxUtility;
 
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
     private Collection<MetricDTO> metrics;
-    private final Predicate<Var> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
+    private final Predicate<Element> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
 
 
-    private Collection<Argument> arguments;
-    private Expression utilityFunction;
+    private UtilityFunction function;
 
-    private CamelModelTransformer camelModelTransformer;
-
-    public UtilityFunctionEvaluator(String path, List<VariableDTO> variables, List<MetricDTO> metricsDTOs, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityFunctionEvaluator(String cdoPath, String path, List<VariableDTO> variables, List<MetricDTO> metricsDTOs,
+            List<Element> deployedSolution, NodeCandidates nodeCandidates) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
         this.metrics = Objects.requireNonNull(metricsDTOs, "List of Metrics could not be null");
 
 
-        this.camelModelTransformer = new CamelModelTransformer(path);
+        CamelModelTransformer camelModelTransformer = new CamelModelTransformer(path);
 
-        arguments = camelModelTransformer.getArgumentsFromCamelModel();
+        Collection<Argument> arguments = camelModelTransformer.getArgumentsFromCamelModel();
+
+        Collection<Element> currentConfigArguments = CurrentConfigConverter.convertCurrentConfig(variables, camelModelTransformer.getMetricVariables(), deployedSolution);
+
+
+        log.info(currentConfigArguments.toString());
+
+        Collection<NodeCandidateAttribute> attributesOfNodeCandidates = camelModelTransformer.getAttributesOfNodeCandidates();
+
+
+        //pobierz akt node candidates (?)
+        String formula = camelModelTransformer.getUtilityFormula();
 
         log.debug("Variables from Constraint Problem:");
         for (VariableDTO v : variables) {
             arguments.add(new Argument(v.getId()));
             log.debug("{}, type: {}", v.getId(), v.getType());
         }
-
-
-
-        utilityFunction = new Expression(camelModelTransformer.getFormula(), arguments.toArray(new Argument[arguments.size()]));
+        function = new UtilityFunction(new Expression(formula, arguments.toArray(new Argument[arguments.size()])),
+                arguments.toArray(new Argument[arguments.size()]));
+//        function.setAttributesOfNodeCandidates(attributesOfNodeCandidates);
+//        function.setCurrentConfigs(currentConfigArguments);
 
         this.maxUtility = 0.0;
     }
 
-    public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
-        printSolutionForDebug(newConfigurationInt, newConfigurationReal);
+    public double evaluate(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
+        //printSolutionForDebug(newConfigurationInt, newConfigurationReal);
 
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
 
 
         //evaluate
-        double utility = 0;
+        double utility = function.evaluateFunction();
 
         if (utility > maxUtility) {
             maxUtility = utility;
@@ -99,12 +116,12 @@ public class UtilityFunctionEvaluator {
     }
 
 
-    private Collection<ConfigurationElement> convertActualDeployment(Collection<Var> deployedSolution) {
-        return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntVar) s).collect(Collectors.toList()), new ArrayList<>());
+    private Collection<ConfigurationElement> convertActualDeployment(Collection<Element> deployedSolution) {
+        return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntElement) s).collect(Collectors.toList()), new ArrayList<>());
     }
 
 
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
+    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
 
         log.debug("Converting solution to Node Candidates");
 
@@ -131,14 +148,14 @@ public class UtilityFunctionEvaluator {
     }
 
 
-    private void printSolution(Collection<Var> solution) {
+    private void printSolution(Collection<Element> solution) {
         log.info("Converting deployed solution:");
         solution.stream()
                 .filter(varPredicate)
                 .forEach(filteredVar -> log.info("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
-    private void printSolutionForDebug(Collection<IntVar> solutionInt, Collection<RealVar> solutionReal) {
+    private void printSolutionForDebug(Collection<IntElement> solutionInt, Collection<RealElement> solutionReal) {
         log.debug("Evaluating solution:");
         Stream.concat(solutionInt.stream(), solutionReal.stream())
                 .filter(varPredicate)
