@@ -1243,7 +1243,7 @@ public class CPSolver {
 		Collection<IntElement> intVars = addSingleValueVariables(solution);
 		log.debug("Second step: {}", solution);
 
-		double utility = utilityGenerator.evaluate(intVars); //TODO
+		double utility = utilityGenerator.evaluate(intVars, new ArrayList<>()); //fixme
 		if (utility > maxUtility){
 			log.info("New utility value {} is greater than {}", utility, maxUtility);
 			convertAndUpdateBestSolution(utility);

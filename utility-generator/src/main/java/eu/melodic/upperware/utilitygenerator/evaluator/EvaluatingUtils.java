@@ -24,13 +24,13 @@ import static eu.melodic.cache.NodeCandidatePredicates.*;
 import static java.lang.String.format;
 
 @Slf4j
-class EvaluatingUtils {
+public class EvaluatingUtils {
 
 
     /* mapping variables from solution and cp model */
 
 
-    static Map<String, Integer> getCardinalitiesForComponent(Collection<IntElement> newConfiguration, List<VariableDTO> variables) {
+    public static Map<String, Integer> getCardinalitiesForComponent(Collection<IntElement> newConfiguration, List<VariableDTO> variables) {
 
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
@@ -46,7 +46,7 @@ class EvaluatingUtils {
         return cardinalitiesForComponent;
     }
 
-    static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntElement> newConfigurationInt) {
+    public static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntElement> newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return newConfigurationInt.stream()
@@ -91,7 +91,7 @@ class EvaluatingUtils {
                 .collect(Collectors.toList());
     }
 
-    static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntElement> newConfigurationInt,
+    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntElement> newConfigurationInt,
             Collection<RealElement> newConfigurationReal, List<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);

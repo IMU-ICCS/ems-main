@@ -9,8 +9,9 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.connection.CamelModelTransformer;
+import eu.melodic.upperware.utilitygenerator.converter.CamelModelConverter;
 import eu.melodic.upperware.utilitygenerator.converter.CurrentConfigConverter;
+import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
@@ -19,18 +20,22 @@ import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
-import org.mariuszgromada.math.mxparser.Argument;
-import org.mariuszgromada.math.mxparser.Expression;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
-import static java.util.Objects.isNull;
+import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToArgument;
+import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToConstants;
+import static eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter.convertAttributesOfNodeCandidates;
+import static eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter.convertSolutionToNodeCandidates;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolution;
+import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
 
 @Slf4j
 public class UtilityFunctionEvaluator {
@@ -43,56 +48,51 @@ public class UtilityFunctionEvaluator {
 
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
-    private Collection<MetricDTO> metrics;
     private final Predicate<Element> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
 
-
+    private Collection<NodeCandidateAttribute> attributesOfNodeCandidates;
     private UtilityFunction function;
 
     public UtilityFunctionEvaluator(String cdoPath, String path, List<VariableDTO> variables, List<MetricDTO> metricsDTOs,
             List<Element> deployedSolution, NodeCandidates nodeCandidates) {
 
+        this.maxUtility = 0.0;
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
-        this.metrics = Objects.requireNonNull(metricsDTOs, "List of Metrics could not be null");
+        Objects.requireNonNull(metricsDTOs, "List of Metrics could not be null");
 
 
-        CamelModelTransformer camelModelTransformer = new CamelModelTransformer(path);
+        CamelModelConverter camelModelConverter = new CamelModelConverter(path);
 
-        Collection<Argument> arguments = camelModelTransformer.getArgumentsFromCamelModel();
+        String formula = camelModelConverter.getUtilityFormula();
+        log.info("Formula of utility function: {}", formula);
 
-        Collection<Element> currentConfigArguments = CurrentConfigConverter.convertCurrentConfig(variables, camelModelTransformer.getMetricVariables(), deployedSolution);
+        Collection<Element> currentConfigArguments = CurrentConfigConverter.convertCurrentConfig(variables, camelModelConverter.getCurrentConfigMetricVariables(), deployedSolution, formula);
+        Collection<Element> metrics = MetricsConverter.convertMetrics(metricsDTOs, camelModelConverter.getRawMetric(), formula);
+        log.info("currentConfig {}", currentConfigArguments.toString());
+        log.info("metrics {}", metrics);
+
+        this.attributesOfNodeCandidates = camelModelConverter.getAttributesOfNodeCandidates();
+        this.function = new UtilityFunction(formula, convertToConstants(Stream.concat(metrics.stream(), currentConfigArguments.stream()).collect(Collectors.toList())));
 
 
-        log.info(currentConfigArguments.toString());
-
-        Collection<NodeCandidateAttribute> attributesOfNodeCandidates = camelModelTransformer.getAttributesOfNodeCandidates();
-
-
-        //pobierz akt node candidates (?)
-        String formula = camelModelTransformer.getUtilityFormula();
-
-        log.debug("Variables from Constraint Problem:");
-        for (VariableDTO v : variables) {
-            arguments.add(new Argument(v.getId()));
-            log.debug("{}, type: {}", v.getId(), v.getType());
-        }
-        function = new UtilityFunction(new Expression(formula, arguments.toArray(new Argument[arguments.size()])),
-                arguments.toArray(new Argument[arguments.size()]));
-//        function.setAttributesOfNodeCandidates(attributesOfNodeCandidates);
-//        function.setCurrentConfigs(currentConfigArguments);
-
-        this.maxUtility = 0.0;
+        printVariablesFromConstraintProblem();
     }
 
     public double evaluate(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
         //printSolutionForDebug(newConfigurationInt, newConfigurationReal);
 
-        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
+        //that two methods can be one
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(variables, newConfigurationInt, newConfigurationReal, nodeCandidates);
+        Collection<Element> attributeNodeCandidates = convertAttributesOfNodeCandidates(attributesOfNodeCandidates, newConfiguration, function.getFormula());
 
+        Collection<Element> variablesForFunction = newConfigurationInt.stream()
+                .filter(element -> isInFormula(function.getFormula(), element.getName()))
+                .map(element -> new IntElement(element.getName(), element.getValue()))
+                .collect(Collectors.toList());
 
         //evaluate
-        double utility = function.evaluateFunction();
+        double utility = function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList())); //todo - variables from solution
 
         if (utility > maxUtility) {
             maxUtility = utility;
@@ -117,34 +117,7 @@ public class UtilityFunctionEvaluator {
 
 
     private Collection<ConfigurationElement> convertActualDeployment(Collection<Element> deployedSolution) {
-        return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntElement) s).collect(Collectors.toList()), new ArrayList<>());
-    }
-
-
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
-
-        log.debug("Converting solution to Node Candidates");
-
-        Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
-        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
-
-        for (String componentId : cardinalitiesForComponent.keySet()) {
-            log.debug("Converting solution for component {}", componentId);
-            int provider = getProviderValue(componentId, variables, newConfigurationInt);
-            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, newConfigurationInt, newConfigurationReal, variables);
-            NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
-
-            if (isNull(theCheapest)) {
-                log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
-                return null;
-            }
-            log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
-
-
-            newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
-
-        }
-        return newConfiguration;
+        return convertSolutionToNodeCandidates(variables, deployedSolution.stream().map(s -> (IntElement) s).collect(Collectors.toList()), new ArrayList<>(), nodeCandidates);
     }
 
 
@@ -160,6 +133,15 @@ public class UtilityFunctionEvaluator {
         Stream.concat(solutionInt.stream(), solutionReal.stream())
                 .filter(varPredicate)
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
+    }
+
+    private void printVariablesFromConstraintProblem(){
+
+        log.debug("Variables from Constraint Problem:");
+        for (VariableDTO v : variables) {
+            log.debug("{}, type: {}", v.getId(), v.getType());
+        }
+
     }
 
 

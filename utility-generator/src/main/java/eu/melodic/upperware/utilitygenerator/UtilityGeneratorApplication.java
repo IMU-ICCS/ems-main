@@ -17,7 +17,6 @@ import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -40,9 +39,6 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(newConfigurationInt, newConfigurationReal);
     }
 
-    public double evaluate(Collection<IntElement> newConfigurationInt) {
-        return evaluate(newConfigurationInt, new ArrayList<>());
-    }
 
     public void printConfigurationWithMaximumUtility() {
         this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();

@@ -1,7 +1,16 @@
-package eu.melodic.upperware.utilitygenerator.connection;
+/* * Copyright (C) 2018 7bulls.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.upperware.utilitygenerator.converter;
 
 import camel.core.CamelModel;
 import camel.metric.MetricVariable;
+import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
@@ -11,7 +20,6 @@ import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribu
 import eu.paasage.mddb.cdo.client.CDOClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,20 +27,20 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
-public class CamelModelTransformer {
+public class CamelModelConverter {
 
     private CamelModel model;
     private MetricTypeModelImpl metricModel;
     private Collection<MetricVariableImpl> metricVariables;
 
-    public CamelModelTransformer(String path){
+    public CamelModelConverter(String path){
         this.model = (CamelModel) CDOClient.loadModel(path);
-
         this.metricModel = (MetricTypeModelImpl) model.getMetricModels().get(0);
-        this.metricVariables = new ArrayList<>();
 
-        metricModel.getMetrics().stream().filter(m -> m instanceof MetricVariable).forEach(m-> metricVariables.add((MetricVariableImpl) m));
-        log.info("size of metric variable = " + metricVariables.size());
+        this.metricVariables = new ArrayList<>();
+        metricModel.getMetrics().stream()
+                .filter(m -> m instanceof MetricVariable)
+                .forEach(m-> metricVariables.add((MetricVariableImpl) m));
     }
 
     public String getUtilityFormula(){
@@ -51,23 +59,17 @@ public class CamelModelTransformer {
      //on node candidates
     public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates(){
         Collection<NodeCandidateAttribute> at = new ArrayList<>();
-        metricVariables.stream().filter(MetricVariableImpl::isOnNodeCandidates).forEach(a-> at.add(new NodeCandidateAttribute(a.getName())));
+        metricVariables.stream().filter(MetricVariableImpl::isOnNodeCandidates).forEach(a-> at.add(new NodeCandidateAttribute(a.getName(), a.getComponent().getName())));
         return at;
     }
 
-
-    //fixme - not every argument is needed in function
-    public Collection<Argument> getArgumentsFromCamelModel(){
-
-        return metricModel
-                .getMetrics()
-                .stream()
-                .map(m -> new Argument(m.getName()))
-                .collect(Collectors.toList());
+    public Collection<RawMetric> getRawMetric(){
+        Collection<RawMetric> metrics = new ArrayList<>();
+        metricModel.getMetrics().stream().filter(m -> m instanceof RawMetric).forEach(m-> metrics.add((RawMetric) m));
+        return metrics;
     }
 
-
-
-
-
+    public Collection<MetricVariableImpl> getCurrentConfigMetricVariables(){
+        return metricVariables.stream().filter(MetricVariableImpl::isCurrentConfiguration).collect(Collectors.toList());
+    }
 }
