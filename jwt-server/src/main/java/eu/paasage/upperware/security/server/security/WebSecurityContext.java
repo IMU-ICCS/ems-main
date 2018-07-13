@@ -7,7 +7,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.paasage.upperware.security.server;
+package eu.paasage.upperware.security.server.security;
 
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -17,14 +17,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.encoding.LdapShaPasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class WebSecurityContext {
 
+//    @Bean
+//    public BCryptPasswordEncoder getBCryptPasswordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
+
     @Bean
-    public BCryptPasswordEncoder getBCryptPasswordEncoder() {
+    public PasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -34,9 +43,10 @@ public class WebSecurityContext {
         return new MelodicSecurityProperties();
     }
 
-    @Bean
-    public JWTService getJWTService() {
-        return new JWTServiceImpl(melodicSecurityProperties());
-    }
+
+//    @Bean
+//    public JWTService getJWTService() {
+//        return new JWTServiceImpl(melodicSecurityProperties());
+//    }
 
 }
