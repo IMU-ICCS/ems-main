@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
-public class CamelModelConverter {
+public class FromCamelModelConverter {
 
     private CamelModel model;
     private MetricTypeModelImpl metricModel;
     private Collection<MetricVariableImpl> metricVariables;
 
-    public CamelModelConverter(String path){
+    public FromCamelModelConverter(String path){
         this.model = (CamelModel) CDOClient.loadModel(path);
         this.metricModel = (MetricTypeModelImpl) model.getMetricModels().get(0);
 

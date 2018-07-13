@@ -12,29 +12,34 @@ import camel.metric.RawMetric;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
 
 @Slf4j
+@AllArgsConstructor
 public class MetricsConverter {
 
-    public static Collection<Element> convertMetrics(Collection<MetricDTO> metricsFromConstraintProblem, Collection<RawMetric> metricsFromCamel, String function){
+    private List<MetricDTO> metricsFromConstraintProblem;
+
+    public Collection<Element> convertMetrics(Collection<RawMetric> metricsFromCamel, String function){
 
         Collection<Element> metricsForUtilityFunction = new ArrayList<>();
 
         //todo - add not only IntElements make a function for adding
         metricsFromCamel.stream()
                 .filter(m -> isInFormula(function, m.getName()))
-                .forEach(metric -> metricsForUtilityFunction.add(new IntElement(metric.getName(), getMetricValue(metric, metricsFromConstraintProblem))));
+                .forEach(metric -> metricsForUtilityFunction.add(new IntElement(metric.getName(), getMetricValue(metric))));
 
         return metricsForUtilityFunction;
     }
 
-    private static int getMetricValue(RawMetric metricFromCamel, Collection<MetricDTO> metricsFromConstraintProblem){
+    private int getMetricValue(RawMetric metricFromCamel){
         return (int) metricsFromConstraintProblem.stream()
                 .filter(m-> m.getName().equals(metricFromCamel.getName()))
                 .findAny()

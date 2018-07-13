@@ -16,6 +16,8 @@ import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import io.github.cloudiator.rest.model.NodeCandidate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -29,22 +31,27 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 import static java.util.Objects.isNull;
 
 @Slf4j
+@AllArgsConstructor
+@Getter
 public class NodeCandidatesConverter {
 
 
-    public static Collection<Element> convertAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
-            Collection<ConfigurationElement> newConfiguration, String formula){
+    private Collection<NodeCandidateAttribute> attributes;
+    private NodeCandidates nodeCandidates;
+    private List<VariableDTO> variables;
+    
+    public Collection<Element> convertAttributesOfNodeCandidates(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal, String formula){
 
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
         Collection<Element> arguments = new ArrayList<>();
 
-        nodeCandidateAttributes.stream()
+        attributes.stream()
                 .filter(a -> isInFormula(formula, a.getName()))
                 .forEach(a -> arguments.add(new IntElement(a.getName(), getNodeCandidate(newConfiguration, a.getComponentId()).getPrice().intValue())));
         return arguments;
     }
 
-    public static Collection<ConfigurationElement> convertSolutionToNodeCandidates(List<VariableDTO> variables,
-            Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal, NodeCandidates nodeCandidates) {
+    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
 
         log.debug("Converting solution to Node Candidates");
 
@@ -69,8 +76,6 @@ public class NodeCandidatesConverter {
         }
         return newConfiguration;
     }
-
-
 
     private static NodeCandidate getNodeCandidate(Collection<ConfigurationElement> newConfiguration, String componentId){
         return newConfiguration.stream()

@@ -12,6 +12,7 @@ import camel.metric.impl.MetricVariableImpl;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -21,17 +22,18 @@ import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.ge
 import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
 
 @Slf4j
+@AllArgsConstructor
 public class CurrentConfigConverter {
 
+    private Collection<VariableDTO> variablesFromConstraintProblem;
 
-    public static Collection<Element> convertCurrentConfig(Collection<VariableDTO> variablesFromConstraintProblem,
-            Collection<MetricVariableImpl> variablesFromCamel, Collection<Element> deployedSolution, String formula){
+    public Collection<Element> convertCurrentConfig(Collection<MetricVariableImpl> variablesFromCamel, Collection<Element> deployedSolution, String formula){
         return variablesFromCamel.stream()
                 .filter(m -> isInFormula(formula, m.getName()))
                 .map(actVar -> new IntElement(actVar.getName(), getVariableValue(actVar, deployedSolution, variablesFromConstraintProblem))).collect(Collectors.toList());
     }
 
-    private static int getVariableValue(camel.metric.impl.MetricVariableImpl metric, Collection<Element> deployedSolution, Collection<VariableDTO> variables){
+    private int getVariableValue(camel.metric.impl.MetricVariableImpl metric, Collection<Element> deployedSolution, Collection<VariableDTO> variables){
 
         log.info("getVariableValue: for = {} , component {}, annotations: {}", metric.getName(), metric.getComponent().getName(), metric.getMetricTemplate().getAttribute().getAnnotations().get(0).getId());
 
