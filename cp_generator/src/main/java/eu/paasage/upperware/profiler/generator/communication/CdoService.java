@@ -8,13 +8,9 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 public interface CdoService {
 
-//    CDOTransaction openTransaction();
-//
-//    void closeTransaction(CDOTransaction tr);
-
     CamelModel getCamelModel(String name, CDOTransaction tr);
 
     CDOSessionX openSession();
 
-    void saveModels(PaasageConfiguration pc, ConstraintProblem cp, CDOSessionX cdoSessionX);
+    void saveModels(ConstraintProblem cp, CDOSessionX cdoSessionX);
 }

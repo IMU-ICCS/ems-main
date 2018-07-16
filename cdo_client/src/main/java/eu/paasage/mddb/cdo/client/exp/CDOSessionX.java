@@ -22,7 +22,7 @@ public interface CDOSessionX {
      */
     CDOView openView();
 
-    void storeModels(List<EObject> models, String resourceName);
+    void storeModels(EObject model, String resourceName);
 
     void closeSession();
 

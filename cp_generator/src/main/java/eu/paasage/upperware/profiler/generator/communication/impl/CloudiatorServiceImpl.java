@@ -52,7 +52,7 @@ public class CloudiatorServiceImpl implements CloudiatorService {
 
         QuantitativeHardwareRequirement quantitativeHardwareRequirement = NewCamelModelTools.getHardwareRequirements(vm);
         requirements.addAll(createQuantitativeHardwareRequirements(quantitativeHardwareRequirement));
-        requirements.addAll(createLocationRequirement(NewCamelModelTools.getLocationRequirements(vm)));
+//        requirements.addAll(createLocationRequirement(NewCamelModelTools.getLocationRequirements(vm)));
         requirements.addAll(createOsOrImageRequirement(NewCamelModelTools.getOsOrImageRequirements(vm)));
 //        requirements.addAll(createProviderRequirement(vmRequirementSet, globalVMRequirements));
         return new NodeRequirements().requirements(requirements);

@@ -6,10 +6,7 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-
-import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
@@ -57,18 +54,16 @@ public class CDOSessionXImpl implements CDOSessionX {
     }
 
     @Override
-    public void storeModels(List<EObject> models, String resourceName) {
+    public void storeModels(EObject model, String resourceName) {
         CDOTransaction trans = openTransaction();
         CDOResource cdo = trans.getOrCreateResource(resourceName);
-        EList<EObject> list = cdo.getContents();
-
-        list.addAll(models);
+        cdo.getContents().add(model);
 
         try {
             trans.commit();
             trans.close();
         } catch (Exception e) {
-            log.error("Problem during saving {} models under path: {}", models.size(), resourceName, e);
+            log.error("Problem during saving model under path: {}", resourceName, e);
         }
     }
 

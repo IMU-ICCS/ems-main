@@ -59,16 +59,15 @@ public class CdoServiceImpl implements CdoService {
     }
 
     @Override
-    public void saveModels(PaasageConfiguration pc, ConstraintProblem cp, CDOSessionX cdoSessionX) {
+    public void saveModels(ConstraintProblem cp, CDOSessionX cdoSessionX) {
         String pcId= cp.getId();
 
         log.debug("CDODatabaseProxy - saveModels - Storing Models ");
         String cpPath = CDO_SERVER_PATH + pcId;
 
-        cdoClientX.exportModel(pc, "/logs/pc_model_"+cpPath+".xmi");
         cdoClientX.exportModel(cp, "/logs/cp_model_"+cpPath+".xmi");
 
-        cdoSessionX.storeModels(Arrays.asList(pc, cp), cpPath);
+        cdoSessionX.storeModels(cp, cpPath);
         log.debug("CDODatabaseProxy - saveModels - Models stored! ");
     }
 

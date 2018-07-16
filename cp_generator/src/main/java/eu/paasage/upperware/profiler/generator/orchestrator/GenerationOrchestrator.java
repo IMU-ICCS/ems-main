@@ -12,29 +12,27 @@
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
 import camel.core.CamelModel;
-import camel.core.impl.CamelModelImpl;
-//import eu.paasage.camel.Application;
-//import eu.paasage.camel.CamelModel;
+import camel.metric.MetricModel;
+import camel.metric.impl.MetricVariableImpl;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
-import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
-import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
-import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -43,9 +41,7 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GenerationOrchestrator {
 
-    private PaasageConfigurationService paaSageConfigurationService;
     private NotificationService notificationService;
-    private SloService sloService;
     private RequestSynchronizer requestSynchronizer;
 
     private CdoService cdoService;
@@ -118,7 +114,7 @@ public class GenerationOrchestrator {
         try {
             //TODO - loadCamelModel
 //            camelModel = cdoService.getCamelModel(resourceName, cdoTransaction);
-//            camelModel = loadModel();
+            camelModel = loadModel();
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage(), e);
             return CpGenerationResult.error("There is not Processor for Camel Models. The input model can not be processed");
@@ -128,10 +124,6 @@ public class GenerationOrchestrator {
 
         String cpName = getCpName(camelModel);
 
-        //TODO - ten wrapper moze nie byc potrzebny.
-        PaasageConfiguration pc = null;
-//        PaasageConfiguration pc = paaSageConfigurationService.createPaasageConfiguration(camelModel, cpName);
-
         log.info("** Calling CPModelDerivator");
 
         ConstraintProblem cp = newConstraintProblemServiceX.createConstraintProblem(camelModel, cpName);
@@ -140,16 +132,17 @@ public class GenerationOrchestrator {
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
 
-        cdoService.saveModels(pc, cp, cdoSessionX);
+        cdoService.saveModels( cp, cdoSessionX);
 
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);
     }
 
-//    private camel.core.CamelModel loadModel(){
-//        return (camel.core.CamelModel) CDOClient.loadModel("C:\\Users\\Paweł Szkup\\runtime-EclipseXtext\\camel-oxygen\\src-gen\\CRMCamelModel.xmi");
-//    }
+    private camel.core.CamelModel loadModel(){
+//        return (camel.core.CamelModel) CDOClient.loadModel("C:\\Users\\Paweł Szkup\\runtime-EclipseXtext\\camel-oxygen\\src-gen\\FCRnew.xmi");
+        return (camel.core.CamelModel) CDOClient.loadModel("C:\\Users\\Paweł Szkup\\runtime-EclipseXtext\\camel-oxygen\\src-gen\\CRMCamelModel.xmi");
+    }
 
     private String getCpName(CamelModel camelModel) {
         String appId = getAppId(camelModel);

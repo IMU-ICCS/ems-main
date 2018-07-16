@@ -21,15 +21,16 @@ import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
-import eu.paasage.upperware.profiler.generator.service.camel.*;
+import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
+import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -44,9 +45,9 @@ import java.util.Collections;
 
 @Slf4j
 @Configuration
+@AllArgsConstructor
 public class GeneratorContext {
 
-    @Autowired
     private ApplicationContext applicationContext;
 
     private static final String CONSTRAINT_PREFIX= "c_";
@@ -101,19 +102,14 @@ public class GeneratorContext {
     @Bean
     @Scope("prototype")
     protected GenerationOrchestrator generationOrchestrator() {
-
         //TODO - repleace this with spring initialization ??
-
-        PaasageConfigurationService paaSageConfigurationService = applicationContext.getBean(PaasageConfigurationService.class);
         NotificationService notificationService = applicationContext.getBean(NotificationService.class);
-        SloService sloService = applicationContext.getBean(SloService.class);
         RequestSynchronizer requestSynchronizer = applicationContext.getBean(RequestSynchronizer.class);
 
         CdoService cdoService = applicationContext.getBean(CdoService.class);
         NewConstraintProblemServiceX newConstraintProblemServiceX = applicationContext.getBean(NewConstraintProblemServiceX.class);
 
-        return new GenerationOrchestrator(paaSageConfigurationService,
-                notificationService, sloService, requestSynchronizer, cdoService, newConstraintProblemServiceX);
+        return new GenerationOrchestrator(notificationService, requestSynchronizer, cdoService, newConstraintProblemServiceX);
     }
 
     @Bean
