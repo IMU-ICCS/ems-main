@@ -19,7 +19,13 @@
       <fileSet>
         <directory>${project.build.directory}/dependency/</directory>
         <outputDirectory>/</outputDirectory>
-        <useDefaultExcludes>true</useDefaultExcludes>
+          <useDefaultExcludes>false</useDefaultExcludes>
+          <excludes>
+              <exclude>META-INF/*.SF</exclude>
+              <exclude>META-INF/*.DSA</exclude>
+              <exclude>META-INF/*.RSA</exclude>
+              <exclude>/org/apache/commons/cli/**</exclude>
+          </excludes>
       </fileSet>
       <fileSet>
         <directory>${project.build.directory}/classes/</directory>
