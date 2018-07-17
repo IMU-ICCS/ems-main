@@ -19,10 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class UserService {
+public class UserService {//} implements UserDetailsService{
 
     private UserLdapRepository userLdapRepository;
     private PasswordEncoder passwordEncoder;
