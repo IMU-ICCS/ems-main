@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.net4j,
  org.eclipse.emf.cdo,
  org.eclipse.emf.ecore,
  org.eclipse.net4j.tcp,
- camel;bundle-version="2018.6.0",
+ camel;bundle-version="2018.6.1",
  org.eclipse.xtext,
  org.eclipse.ocl,
  org.eclipse.ocl.uml,
@@ -21,7 +21,7 @@ Require-Bundle: org.eclipse.net4j,
  org.eclipse.ocl.xtext.oclinecore,
  org.eclipse.ocl.xtext.oclstdlib,
  org.eclipse.ocl.xtext.completeocl,
- camel.dsl;bundle-version="2018.6.0"
+ camel.dsl;bundle-version="2018.6.1"
 Bundle-ActivationPolicy: lazy
 Import-Package: 
  org.apache.log4j,
