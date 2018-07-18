@@ -19,8 +19,6 @@ import javax.naming.AuthenticationException;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class UserController {
 
-	//private ApplicationUserRepository applicationUserRepository;
-	//private BCryptPasswordEncoder bCryptPasswordEncoder;
 	private UserService userService;
 	private JWTService jwtService;
 

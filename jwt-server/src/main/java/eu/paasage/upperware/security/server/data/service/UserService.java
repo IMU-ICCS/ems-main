@@ -2,13 +2,13 @@ package eu.paasage.upperware.security.server.data.service;
 
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
+import eu.paasage.upperware.security.server.exception.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.support.LdapNameBuilder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Name;
@@ -23,16 +23,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class UserService {//} implements UserDetailsService{
+public class UserService {
 
     private UserLdapRepository userLdapRepository;
-    private PasswordEncoder passwordEncoder;
     private LdapTemplate ldapTemplate;
 
-
     public Boolean authenticate(final String username, final String password) {
-        User user = userLdapRepository.findByUsernameAndPassword(username, password);
-        return user != null;
+        log.info("Login request: l: {}, password: {}", username, password);
+        User userWithPassword = userLdapRepository.findByUsernameAndPassword(username, digestSHA(password)).orElseThrow(UserNotFoundException::new);
+        return true;
     }
 
     public List<String> search(final String username) {
@@ -47,7 +46,6 @@ public class UserService {//} implements UserDetailsService{
     }
 
     public void create(final String username, final String password) {
-        //User newUser = new User(username, passwordEncoder.encode(password));
         User newUser = new User(username, digestSHA(password));
 
         Name dn = LdapNameBuilder
@@ -62,13 +60,11 @@ public class UserService {//} implements UserDetailsService{
         context.setAttributeValue("userPassword", newUser.getPassword());
 
         ldapTemplate.bind(context);
-        //newUser.setId(LdapUtils.emptyLdapName());
         log.info("Saving new user with credential: login={}, id={}", username, newUser.getId());
-        //userRepository.save(newUser);
     }
 
     public void modify(final String username, final String password) {
-        User user = userLdapRepository.findByUsername(username);
+        User user = userLdapRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.setPassword(password);
         userLdapRepository.save(user);
     }
@@ -83,6 +79,6 @@ public class UserService {//} implements UserDetailsService{
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        return "{SHA}" + base64;
+        return "{sha}" + base64;
     }
 }

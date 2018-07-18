@@ -32,8 +32,4 @@ public class MelodicLdapProperties {
         return new LdapTemplate(contextSource());
     }
 
-//    @Bean
-//    public LdapClient ldapClient() {
-//        return new LdapClient();
-//    }
 }

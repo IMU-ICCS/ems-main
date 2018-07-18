@@ -4,12 +4,13 @@ import org.springframework.data.ldap.repository.LdapRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public interface UserLdapRepository extends LdapRepository<User> {
-    User findByUsername(String username);
+    Optional<User> findByUsername(String username);
 
-    User findByUsernameAndPassword(String username, String password);
+    Optional<User> findByUsernameAndPassword(String username, String password);
 
     List<User> findByUsernameLikeIgnoreCase(String username);
 
