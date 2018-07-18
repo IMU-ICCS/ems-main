@@ -14,8 +14,6 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
-import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import eu.melodic.upperware.utilitygenerator.utils.Printer;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -41,8 +39,8 @@ public class UtilityFunctionEvaluator {
 
     private Printer printer;
 
-    public UtilityFunctionEvaluator(String cdoPath, String path, List<VariableDTO> variables, List<MetricDTO> metricsDTOs,
-            List<Element> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityFunctionEvaluator(String cdoPath, String path, List<VariableDTO> variables, Collection<MetricDTO> metricsDTOs,
+            Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
 
         Objects.requireNonNull(variables, "List of Variables could not be null");
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
@@ -54,12 +52,12 @@ public class UtilityFunctionEvaluator {
         CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variables);
         MetricsConverter metricsConverter = new MetricsConverter(metricsDTOs);
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(path);
-
         String formula = fromCamelModelConverter.getUtilityFormula();
         log.info("Formula of utility function: {}", formula);
 
+        //todo - maybe current config may be a part of metrics?
         Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariables(), deployedSolution, formula);
-        Collection<Element> metrics = metricsConverter.convertMetrics(fromCamelModelConverter.getRawMetric(), formula);
+        Collection<Element> metrics = metricsConverter.convertMetrics(formula);
 
         this.function = new UtilityFunction(formula, convertToConstants(Stream.concat(metrics.stream(), currentConfigArguments.stream()).collect(Collectors.toList())));
         this.nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelConverter.getAttributesOfNodeCandidates(), nodeCandidates, variables);
@@ -68,11 +66,10 @@ public class UtilityFunctionEvaluator {
         printer.printVariablesFromConstraintProblem();
     }
 
-    public double evaluate(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
-        //printSolutionForDebug(newConfigurationInt, newConfigurationReal);
+    public double evaluate(Collection<Element> solution) {
 
-        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(newConfigurationInt, newConfigurationReal, function.getFormula());
-        Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(newConfigurationInt, function);
+        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(solution, function.getFormula());
+        Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 
         double utility = function.evaluateFunction(concatLists(attributeNodeCandidates, variablesForFunction));
 

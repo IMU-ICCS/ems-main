@@ -8,7 +8,6 @@
 
 package eu.melodic.upperware.utilitygenerator.model.DTO;
 
-
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -8,9 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.converter;
 
-import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,10 +22,10 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 public class VariableConverter {
 
 
-    public Collection<Element> convertVariablesForFunction(Collection<IntElement> newConfigurationInt, UtilityFunction function){
-        return newConfigurationInt.stream()
-                .filter(element -> isInFormula(function.getFormula(), element.getName()))
-                .map(element -> new IntElement(element.getName(), element.getValue()))
+    public Collection<Element> convertVariablesForFunction(Collection<Element> solution, String formula){
+
+        return solution.stream()
+                .filter(element -> isInFormula(formula, element.getName()))
                 .collect(Collectors.toList());
     }
 }

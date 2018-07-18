@@ -8,16 +8,14 @@
 
 package eu.melodic.upperware.utilitygenerator.converter;
 
-import camel.metric.RawMetric;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
 
@@ -25,25 +23,14 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 @AllArgsConstructor
 public class MetricsConverter {
 
-    private List<MetricDTO> metricsFromConstraintProblem;
+    private Collection<MetricDTO> metricsFromConstraintProblem;
 
-    public Collection<Element> convertMetrics(Collection<RawMetric> metricsFromCamel, String function){
+    public Collection<Element> convertMetrics(String function){
 
-        Collection<Element> metricsForUtilityFunction = new ArrayList<>();
-
-        //todo - add not only IntElements make a function for adding
-        metricsFromCamel.stream()
+        return metricsFromConstraintProblem.stream()
                 .filter(m -> isInFormula(function, m.getName()))
-                .forEach(metric -> metricsForUtilityFunction.add(new IntElement(metric.getName(), getMetricValue(metric))));
+                .map(ElementFactory::createElement)
+                .collect(Collectors.toList());
 
-        return metricsForUtilityFunction;
     }
-
-    private int getMetricValue(RawMetric metricFromCamel){
-        return (int) metricsFromConstraintProblem.stream()
-                .filter(m-> m.getName().equals(metricFromCamel.getName()))
-                .findAny()
-                .orElseThrow(()-> new IllegalStateException("Metric with name: " + metricFromCamel.getName() + "does not match with any metric from Constraint Problem")).getValue();
-    }
-
 }

@@ -11,7 +11,7 @@ package eu.melodic.upperware.utilitygenerator.converter;
 import camel.metric.impl.MetricVariableImpl;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.getVariableType;
-import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
 
 @Slf4j
 @AllArgsConstructor
@@ -28,27 +27,40 @@ public class CurrentConfigConverter {
     private Collection<VariableDTO> variablesFromConstraintProblem;
 
     public Collection<Element> convertCurrentConfig(Collection<MetricVariableImpl> variablesFromCamel, Collection<Element> deployedSolution, String formula){
-        return variablesFromCamel.stream()
-                .filter(m -> isInFormula(formula, m.getName()))
-                .map(actVar -> new IntElement(actVar.getName(), getVariableValue(actVar, deployedSolution, variablesFromConstraintProblem))).collect(Collectors.toList());
+        return deployedSolution.stream()
+                .filter(var -> isActualValueOfVariableUsedInFormula(getMatchingVariable(var.getName()), variablesFromCamel))
+                .map(actVar -> ElementFactory.createElementWithNewName(getVariableName(actVar, variablesFromCamel, variablesFromConstraintProblem), actVar))
+                .collect(Collectors.toList());
     }
 
-    private int getVariableValue(camel.metric.impl.MetricVariableImpl metric, Collection<Element> deployedSolution, Collection<VariableDTO> variables){
-
-        log.info("getVariableValue: for = {} , component {}, annotations: {}", metric.getName(), metric.getComponent().getName(), metric.getMetricTemplate().getAttribute().getAnnotations().get(0).getId());
-
+    private String getVariableName(Element variable, Collection<MetricVariableImpl> variablesFromCamel, Collection<VariableDTO> variables){
 
         VariableDTO matchingVariable = variables.stream()
-                .filter(variable -> variable.getType().equals(getVariableType(metric)) && variable.getComponentId().equals(metric.getComponent().getName()))
+                .filter(variableDTO -> variableDTO.getId().equals(variable.getName()))
                 .findAny()
-                .orElseThrow(() -> new IllegalStateException("Variable with name " + metric.getName() + " does not match with variable from Constraint Problem"));
+                .orElseThrow(() -> new IllegalStateException("Variable from solution " + variable.getName()+ " does not match with variable from Constraint Problem"));
 
-        return (int) deployedSolution.stream()
-                .filter(solutionElement -> solutionElement.getName().equals(matchingVariable.getId()))
-                .findAny()
-                .orElseThrow(()-> new IllegalStateException("Variable with name " + matchingVariable.getId() + "does not match with deployed solution")).getValue();
+        return variablesFromCamel.stream()
+                .filter(variableFromCamel -> (variableFromCamel.getComponent().getName().equals(matchingVariable.getComponentId()) && (matchingVariable.getType().equals(getVariableType(variableFromCamel)))))
+                .findAny().orElseThrow(()-> new IllegalStateException("Variable with name " + matchingVariable.getId() + " does not match with variable from Camel")).getName();
+
     }
 
+
+    private boolean isActualValueOfVariableUsedInFormula(VariableDTO variableFromConstraintProblem, Collection<MetricVariableImpl> variablesFromCamel){
+        return variablesFromCamel.stream()
+                .anyMatch(variableFromCamel ->
+                        variableFromCamel.getComponent().getName().equals(variableFromConstraintProblem.getComponentId())
+                                && (variableFromConstraintProblem.getType().equals(getVariableType(variableFromCamel))));
+    }
+
+
+    private VariableDTO getMatchingVariable(String name){
+        return variablesFromConstraintProblem.stream()
+                .filter(variable -> variable.getId().equals(name))
+                .findAny()
+                .orElseThrow(()-> new IllegalStateException("Variable with name " + name + "does not match with variables from Constraint Problem"));
+    }
 
 }
 

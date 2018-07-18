@@ -30,7 +30,7 @@ public class EvaluatingUtils {
     /* mapping variables from solution and cp model */
 
 
-    public static Map<String, Integer> getCardinalitiesForComponent(Collection<IntElement> newConfiguration, List<VariableDTO> variables) {
+    public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, List<VariableDTO> variables) {
 
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
@@ -42,14 +42,15 @@ public class EvaluatingUtils {
                 .stream()
                 .filter(c -> intVar.getName().equals(c.getId()))
                 .findFirst()
-                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), intVar.getValue())));
+                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), (int)intVar.getValue()))); //cardinality is always int
         return cardinalitiesForComponent;
     }
 
-    public static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntElement> newConfigurationInt) {
+    //provider value is always int
+    public static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<Element> newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
-        return newConfigurationInt.stream()
+        return (int) newConfigurationInt.stream()
                 .filter(intVar -> provider.equals(intVar.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", provider)))
@@ -91,26 +92,22 @@ public class EvaluatingUtils {
                 .collect(Collectors.toList());
     }
 
-    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntElement> newConfigurationInt,
-            Collection<RealElement> newConfigurationReal, List<VariableDTO> variables) {
+    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, List<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
-        List<IntElement> variablesIntForComponent = newConfigurationInt.stream()
-                .filter(intVar -> variableNamesForComponent.contains(intVar.getName()))
-                .collect(Collectors.toList());
-
-        List<RealElement> variablesRealForComponent = newConfigurationReal.stream()
-                .filter(realVar -> variableNamesForComponent.contains(realVar.getName()))
+        List<Element> variablesForComponent = solution.stream()
+                .filter(var -> variableNamesForComponent.contains(var.getName()))
                 .collect(Collectors.toList());
 
         List<Predicate<NodeCandidate>> predicates = new ArrayList<>();
 
 
-        for (IntElement var : variablesIntForComponent) {
+        for (Element var : variablesForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
 
             switch (type) {
+                //int
                 case RAM:
                     log.debug("Creating getRamPredicate for value {}", (long) var.getValue());
                     predicates.add(getRamPredicate((long) var.getValue()));
@@ -123,30 +120,23 @@ public class EvaluatingUtils {
                     break;
                 case CORES:
                     log.debug("Creating getCoresPredicate for value {}", var.getValue());
-                    predicates.add(getCoresPredicate(var.getValue()));
+                    predicates.add(getCoresPredicate((int) var.getValue()));
                     break;
                 case OS:
                     log.debug("Creating getOsPredicate for value {}", var.getValue());
-                    predicates.add(getOsPredicate(var.getValue()));
-                    break;
-                case LOCATION:
+                    predicates.add(getOsPredicate((int) var.getValue()));
                     break;
 
-            }
-        }
-
-        for (RealElement var : variablesRealForComponent) {
-            VariableType type = getVariableType(var.getName(), variables);
-            switch (type) {
-                case CPU:
-                    break;
+                    //real
                 case STORAGE:
-                    //predicates.add(getStoragePredicate(var.)) todo
+                    predicates.add(getStoragePredicate((double) var.getValue())); //fixme - to check
                     break;
                 case LOCATION:
                     break;
+
             }
         }
+
 
         return predicates.toArray(new Predicate[predicates.size()]);
     }

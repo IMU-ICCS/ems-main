@@ -9,6 +9,8 @@
 package eu.melodic.upperware.utilitygenerator.converter;
 
 import camel.core.CamelModel;
+import camel.metric.CompositeMetric;
+import camel.metric.Metric;
 import camel.metric.MetricVariable;
 import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
@@ -63,10 +65,8 @@ public class FromCamelModelConverter {
         return at;
     }
 
-    public Collection<RawMetric> getRawMetric(){
-        Collection<RawMetric> metrics = new ArrayList<>();
-        metricModel.getMetrics().stream().filter(m -> m instanceof RawMetric).forEach(m-> metrics.add((RawMetric) m));
-        return metrics;
+    public Collection<Metric> getMetrics(){
+        return metricModel.getMetrics().stream().filter(m -> m instanceof RawMetric || m instanceof CompositeMetric).collect(Collectors.toList());
     }
 
     public Collection<MetricVariableImpl> getCurrentConfigMetricVariables(){

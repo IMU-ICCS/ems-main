@@ -9,8 +9,11 @@ package eu.melodic.upperware.cpsolver.lib;
 
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
-import eu.melodic.upperware.utilitygenerator.model.DTO.*;
+import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTOFactory;
+import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
@@ -39,6 +42,7 @@ import util.tools.ArrayUtils;
 import java.util.*;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 public class CPSolver {
@@ -65,8 +69,8 @@ public class CPSolver {
 	private double maxUtility;
 	private double utilityOfDeployedSolution;
 	private List<VariableDTO> variablesForUG = new ArrayList<>();
-	private List<MetricDTO> metricsForUG = new ArrayList<>();
-	private List<Element> deployedSolution = new ArrayList<>();
+	private Collection<Element> deployedSolution;
+	private Collection<MetricDTO> metricsForUG;
 	private boolean isReconfig = false;
 	private Map<String, Integer> solutionWithMaximumUtilityInt = new HashMap<>();
 	private Map<String, Double> solutionWithMaximumUtilityReal = new HashMap<>();
@@ -146,16 +150,18 @@ public class CPSolver {
 		int deployedSolutionId = cp.getDeployedSolutionId();
 		if (deployedSolutionId != INITIAL_DEPLOYMENT_ID){
 			isReconfig = true;
-			deployedSolution = cp.getSolution().get(deployedSolutionId).getVariableValue().stream()
-					.map(this::createVar)
+
+			deployedSolution = cp.getSolution().get(deployedSolutionId)
+					.getVariableValue().stream()
+					.map(ElementFactory::createElement)
 					.collect(Collectors.toList());
+
 		}
 		else {
 			isReconfig = false;
 		}
 	}
 
-	//todo handle RealElement
 	private Element createVar(VariableValue variableValue){
 
 		NumericValueUpperware value = variableValue.getValue();
@@ -164,12 +170,14 @@ public class CPSolver {
 			IntegerValueUpperware intVal = (IntegerValueUpperware)value;
 			variable = new IntElement(variableValue.getVariable().getId(), intVal.getValue());
 		}
-//		else if (value instanceof DoubleValueUpperware){
-//			DoubleValueUpperware doubleVal = (DoubleValueUpperware)value;
-//		}
-//		else if (value instanceof FloatValueUpperware){
-//			FloatValueUpperware floatVal = (FloatValueUpperware)value;
-//		}
+		else if (value instanceof DoubleValueUpperware){
+			DoubleValueUpperware doubleVal = (DoubleValueUpperware)value;
+			variable = new RealElement(variableValue.getVariable().getId(), doubleVal.getValue());
+		}
+		else if (value instanceof FloatValueUpperware){
+			FloatValueUpperware floatVal = (FloatValueUpperware)value;
+			variable = new RealElement(variableValue.getVariable().getId(), (double)floatVal.getValue());
+		}
 		else { //Long
 			LongValueUpperware longVal = (LongValueUpperware)value;
 			variable =  new IntElement(variableValue.getVariable().getId(), (int)longVal.getValue());
@@ -180,23 +188,11 @@ public class CPSolver {
 	private void createMetricsForUG(EList<Constant> constants) {
 		log.info("Creating metrics for Utility Generator");
 
-        Collection<Constant> metrics = constants.stream()
-                .filter(c -> c.getId().startsWith(metricsPrefix))
-                .collect(Collectors.toList());
+		this.metricsForUG = new ArrayList<>();
 
-
-        this.metricsForUG = metrics.stream()
-                .filter(metric -> metric.getType().equals(BasicTypeEnum.INTEGER))
-                .map(metric -> new IntMetricDTO(metric.getId(), ((IntegerValueUpperware)metric.getValue()).getValue()))
-                .collect(Collectors.toList());
-
-        metrics.stream()
-                .filter(metric -> metric.getType().equals(BasicTypeEnum.DOUBLE))
-                .forEach(metric -> metricsForUG.add(new DoubleMetricDTO(metric.getId(), ((DoubleValueUpperware)metric.getValue()).getValue())));
-
-        metrics.stream()
-                .filter(metric -> metric.getType().equals(BasicTypeEnum.FLOAT))
-                .forEach(metric -> metricsForUG.add(new FloatMetricDTO(metric.getId(), ((FloatValueUpperware)metric.getValue()).getValue())));
+		constants.stream()
+				.filter(c -> c.getId().startsWith(metricsPrefix))
+				.forEach(c-> metricsForUG.add(MetricDTOFactory.createMetricDTO(c)));
 
         log.info("Creating metrics for Utility Generator is finished.");
 	}
@@ -1235,15 +1231,24 @@ public class CPSolver {
 
 	private void calculateUtility(){
 
-		Collection<IntElement> solution = Arrays.stream(solver.retrieveIntVars())
-				.map(intVar -> new IntElement(intVar.getName(), intVar.getValue()))
+		Collection<Element> intSolution = Arrays.stream(solver.retrieveIntVars())
+				.map(var -> ElementFactory.createElement(var.getName(), var.getValue()))
 				.collect(Collectors.toList());
-		log.debug("First step: {}", solution);
 
-		Collection<IntElement> intVars = addSingleValueVariables(solution);
-		log.debug("Second step: {}", solution);
+		log.debug("First step: {}", intSolution);
 
-		double utility = utilityGenerator.evaluate(intVars, new ArrayList<>()); //fixme
+		intSolution = addSingleValueIntVariables(intSolution);
+		log.debug("Second step: {}", intSolution);
+
+		Collection<Element> realSolution = Arrays.stream(solver.retrieveRealVars())
+				.map(var -> ElementFactory.createElement(var.getName(), var.getUB()))
+				.collect(Collectors.toList());
+
+		realSolution = addSingleValueRealVariables(realSolution);
+
+		log.debug("Second step real:{}", realSolution);
+
+		double utility = utilityGenerator.evaluate(Stream.concat(intSolution.stream(), realSolution.stream()).collect(Collectors.toList()));
 		if (utility > maxUtility){
 			log.info("New utility value {} is greater than {}", utility, maxUtility);
 			convertAndUpdateBestSolution(utility);
@@ -1252,21 +1257,25 @@ public class CPSolver {
 		}
 	}
 
-	private Collection <IntElement> addSingleValueVariables(Collection<IntElement> solution) {
+	//fixme: tutaj trzeba przejść po elementach i zrobić metodę, która będzie albo w intowych albo w realowych znajdować odpowiednią wartość i ją pakować
+	private Collection<Element> addSingleValueIntVariables(Collection<Element> solution) {
 
 		variablesForUG.stream()
 			.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
-			.forEach(v -> solution.add(new IntElement(v.getId(), idToIntVar.get(v.getId()).getValue())));
+			.forEach(v -> solution.add(ElementFactory.createElement(v.getId(), idToIntVar.get(v.getId()).getValue())));
+
 		return solution;
 
 	}
 
-	//todo - handling RealElement
-	private RealElement[] convertToUtilityRealVariable(RealVar[] realVars) {
-		return Arrays.stream(realVars)
-				.map(realVar -> new RealElement(realVar.getName(), realVar.getUB()))
-				.toArray(RealElement[]::new);
+	private Collection<Element> addSingleValueRealVariables(Collection<Element> solution){
+		variablesForUG.stream()
+				.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
+				.forEach(v -> solution.add(new RealElement(v.getId(), idToRealVar.get(v.getId()).getUB())));
+
+		return solution;
 	}
+
 
 	private BoolVar createBoolVar(){
 		return VariableFactory.bool(getBoolVarName(), solver);

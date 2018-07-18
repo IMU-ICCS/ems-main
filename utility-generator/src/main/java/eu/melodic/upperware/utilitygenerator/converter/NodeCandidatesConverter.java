@@ -14,7 +14,6 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
-import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,9 +39,9 @@ public class NodeCandidatesConverter {
     private NodeCandidates nodeCandidates;
     private List<VariableDTO> variables;
     
-    public Collection<Element> convertAttributesOfNodeCandidates(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal, String formula){
+    public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution, String formula){
 
-        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(solution);
         Collection<Element> arguments = new ArrayList<>();
 
         attributes.stream()
@@ -51,17 +50,17 @@ public class NodeCandidatesConverter {
         return arguments;
     }
 
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
+    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
 
         log.debug("Converting solution to Node Candidates");
 
         Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
-        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
+        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(solution, variables);
 
         for (String componentId : cardinalitiesForComponent.keySet()) {
             log.debug("Converting solution for component {}", componentId);
-            int provider = getProviderValue(componentId, variables, newConfigurationInt);
-            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, newConfigurationInt, newConfigurationReal, variables);
+            int provider = getProviderValue(componentId, variables, solution);
+            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, solution, variables);
             NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
 
             if (isNull(theCheapest)) {
