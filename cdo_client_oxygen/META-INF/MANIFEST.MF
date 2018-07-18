@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-SymbolicName: client-oxygen;singleton:=true
+Bundle-Version: 2.1.0.qualifier
+Bundle-ClassPath: .
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.net4j,
+ org.eclipse.net4j.util,
+ org.eclipse.core.runtime,
+ org.eclipse.emf.cdo,
+ org.eclipse.emf.ecore,
+ org.eclipse.net4j.tcp,
+ camel;bundle-version="2018.6.0",
+ org.eclipse.xtext,
+ org.eclipse.ocl,
+ org.eclipse.ocl.uml,
+ org.eclipse.ocl.ecore,
+ org.eclipse.ocl.pivot,
+ org.eclipse.ocl.xtext.oclinecore,
+ org.eclipse.ocl.xtext.oclstdlib,
+ org.eclipse.ocl.xtext.completeocl,
+ camel.dsl;bundle-version="2018.6.0"
+Bundle-ActivationPolicy: lazy
+Import-Package: 
+ org.apache.log4j,
+ org.slf4j,
+ org.eclipse.emf.cdo.expressions,
+ org.eclipse.emf.cdo.internal.net4j.protocol,
+ org.eclipse.emf.cdo.net4j,
+ org.eclipse.emf.cdo.security,
+ org.eclipse.emf.cdo.view,
+ org.eclipse.net4j.internal.tcp
+Export-Package: eu.paasage.mddb.cdo.client
+
