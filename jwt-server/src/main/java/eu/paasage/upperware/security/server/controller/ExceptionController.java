@@ -16,14 +16,14 @@ public class ExceptionController extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleSecurityException(
             Exception ex, WebRequest request) {
         return new ResponseEntity<Object>(
-                "Invalid credentials", new HttpHeaders(), HttpStatus.FORBIDDEN);
+                "Invalid credentials", new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler({UserNotFoundException.class})
     public ResponseEntity<Object> handleUserNotFoundException(
             Exception ex, WebRequest request) {
         return new ResponseEntity<Object>(
-                "Invalid credentials", new HttpHeaders(), HttpStatus.FORBIDDEN);
+                "Invalid credentials", new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
 
 }

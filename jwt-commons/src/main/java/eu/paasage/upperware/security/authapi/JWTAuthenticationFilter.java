@@ -4,7 +4,6 @@ package eu.paasage.upperware.security.authapi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,11 +18,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
-@AllArgsConstructor
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
     private JWTService jwtService;
+
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, JWTService jwtService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        setFilterProcessesUrl("/user/login");
+    }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req,
