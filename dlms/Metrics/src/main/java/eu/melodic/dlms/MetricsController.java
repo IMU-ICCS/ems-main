@@ -1,0 +1,149 @@
+package eu.melodic.dlms;
+
+import eu.melodic.dlms.data.Metrics;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.Topic;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Combined collector and store of metrics, controller for the webservice to query metrics and sender to JMS.
+ */
+@RestController
+public class MetricsController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricsController.class);
+
+    private Metrics metrics = null;
+
+    private final String jmsUrl;
+
+    public MetricsController() {
+        jmsUrl = initializeJmsServerUrl();
+    }
+
+    /**
+     * Collects metrics for the given url and stores them.
+     */
+    public void collectMetrics(String url) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            ClientHttpResponse response = execution.execute(request,body);
+            response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+            return response;
+        });
+
+        metrics = restTemplate.getForObject(url, Metrics.class);
+    }
+
+    /**
+     * Webservice method to query for the value of the metric with the given name.
+     * Uses MetricsFinder.findMetric() to get the value and will pass the result of that search (see there for information on how non-existing metrics are
+     * handled).
+     * Will return an error if no metrics have yet been collected or if the parameter was not set.
+     * @see MetricsFinder#findMetric(Metrics, String)
+     */
+    @RequestMapping("/metric")
+    public Object findMetric(String metricName) {
+        if(metrics == null) {
+            throw new NoMetricsException();
+        }
+        if(metricName == null || metricName.trim().isEmpty()) {
+            throw new IllegalArgumentException("metricName must not be empty");
+        }
+
+        return MetricsFinder.findMetric(metrics, metricName);
+    }
+
+    /**
+     * Connects to the JMS/ActiveMQ-URL declared as system property 'jmsUrl' and sends every collected metric found as a message to that server
+     * (with the metric's name as topic).
+     */
+    public void sendMetrics() {
+        Connection connection = null;
+        try {
+            connection = initializeConnection();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            Map<String, Object> gaugesMap = metrics.getGauges().getProperties();
+            Map<String, Object> countersMap = metrics.getCounters().getProperties();
+
+            extractAndSendMetrics(gaugesMap, "value", session);
+            extractAndSendMetrics(countersMap, "count", session);
+        }
+        catch(JMSException e) {
+            LOGGER.error("JMS sending failed: {}", e.getMessage(), e);
+        }
+        finally {
+            closeConnection(connection);
+        }
+    }
+
+    private void extractAndSendMetrics(Map<String, Object> map, String propertyName, Session session) throws JMSException {
+        Date now = new Date();
+
+        Set<Map.Entry<String, Object>> entries = map.entrySet();
+        for(Map.Entry<String, Object> entry : entries) {
+            String message = createMessage(entry, propertyName, now);
+            LOGGER.info(message);
+
+            sendMessage(entry.getKey(), message, session);
+            LOGGER.info("Message sent");
+        }
+    }
+
+    private String createMessage(Map.Entry<String, Object> entry, String propertyName, Date now) {
+        String metric = entry.getKey();
+        Object value = entry.getValue() == null ? null : ((Map)entry.getValue()).get(propertyName);
+        return metric + ' ' + value + ' ' + now.getTime();
+    }
+
+    private void sendMessage(String metricName, String message, Session session) throws JMSException {
+        Message msg = session.createTextMessage(message);
+        Topic topic = session.createTopic(metricName);
+        MessageProducer producer = session.createProducer(topic);
+        producer.send(msg);
+    }
+
+    private Connection initializeConnection() throws JMSException {
+        ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl);
+        Connection connection = activeMQConnectionFactory.createConnection();
+        connection.start();
+        return connection;
+    }
+
+    private void closeConnection(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.close();
+            }
+            catch(JMSException e) {
+                LOGGER.error("Closing JMS connection failed: {}", e.getMessage(), e);
+            }
+        }
+    }
+
+    private String initializeJmsServerUrl() {
+        String jmsUrl = System.getProperties().getProperty("jmsUrl");
+        if(jmsUrl == null || jmsUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("No URL for JMS server set.");
+        }
+        return jmsUrl;
+    }
+
+}
