@@ -1,5 +1,7 @@
 package eu.paasage.upperware.security.server.data.service;
 
+import eu.paasage.upperware.security.authapi.SecurityConstants;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
@@ -19,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -27,11 +28,11 @@ public class UserService {
 
     private UserLdapRepository userLdapRepository;
     private LdapTemplate ldapTemplate;
+    private JWTService jwtService;
 
-    public Boolean authenticate(final String username, final String password) throws UserNotFoundException {
+    public void authenticate(final String username, final String password) throws UserNotFoundException {
         log.info("Login request: l: {}, password: {}", username, password);
         User userWithPassword = userLdapRepository.findByUsernameAndPassword(username, digestSHA(password)).orElseThrow(UserNotFoundException::new);
-        return true;
     }
 
     public List<String> search(final String username) {
@@ -63,12 +64,6 @@ public class UserService {
         log.info("Saving new user with credential: login={}, id={}", username, newUser.getId());
     }
 
-    public void modify(final String username, final String password) {
-        User user = userLdapRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-        user.setPassword(password);
-        userLdapRepository.save(user);
-    }
-
     private String digestSHA(final String password) {
         String base64;
         try {
@@ -80,5 +75,9 @@ public class UserService {
             throw new RuntimeException(e);
         }
         return "{sha}" + base64;
+    }
+
+    public String createToken(String username) {
+        return SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
     }
 }
