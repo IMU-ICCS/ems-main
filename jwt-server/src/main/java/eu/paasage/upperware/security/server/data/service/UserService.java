@@ -11,7 +11,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.naming.AuthenticationException;
 import javax.naming.Name;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,7 +28,7 @@ public class UserService {
     private UserLdapRepository userLdapRepository;
     private LdapTemplate ldapTemplate;
 
-    public Boolean authenticate(final String username, final String password) throws AuthenticationException {
+    public Boolean authenticate(final String username, final String password) throws UserNotFoundException {
         log.info("Login request: l: {}, password: {}", username, password);
         User userWithPassword = userLdapRepository.findByUsernameAndPassword(username, digestSHA(password)).orElseThrow(UserNotFoundException::new);
         return true;

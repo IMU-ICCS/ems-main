@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,9 +24,8 @@ public class UserController {
 	private UserService userService;
 	private JWTService jwtService;
 
-    public static final String HEADER_STRING = "Authorization";
-    public static final String TOKEN_PREFIX = "Bearer ";
-
+    private static final String HEADER_STRING = "Authorization";
+    private static final String TOKEN_PREFIX = "Bearer ";
 
     @PostMapping("/login")
     public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response
@@ -41,7 +39,6 @@ public class UserController {
             response.setHeader(HEADER_STRING, token);
             return new UserLoginResponse(userRequest.getUsername());
         }
-        //throw new SecurityException("Invalid credentials");
         throw new AuthenticationException();
     }
 
@@ -54,11 +51,4 @@ public class UserController {
 		userService.create(userRequest.getUsername(), userRequest.getPassword());
 		return ResponseEntity.status(HttpStatus.CREATED).body("User created");
 	}
-
-    @GetMapping("/users")
-    public ResponseEntity<Object> getUsersList() {
-        log.info("Request for users list");
-        return ResponseEntity.status(HttpStatus.OK).body("Users list");
-    }
-
 }

@@ -1,5 +1,6 @@
 package eu.paasage.upperware.security.server.controller;
 
+import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -9,21 +10,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.naming.AuthenticationException;
+
 @ControllerAdvice
 public class ExceptionController extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({SecurityException.class})
-    public ResponseEntity<Object> handleSecurityException(
-            Exception ex, WebRequest request) {
-        return new ResponseEntity<Object>(
-                "Invalid credentials", new HttpHeaders(), HttpStatus.UNAUTHORIZED);
-    }
+    private static final String UNAUTHORIZED_MESSAGE = "Invalid credentials";
 
-    @ExceptionHandler({UserNotFoundException.class})
-    public ResponseEntity<Object> handleUserNotFoundException(
+    @ExceptionHandler({UserNotFoundException.class, AuthenticationException.class})
+    public ResponseEntity<ExceptionResponse> handleSecurityException(
             Exception ex, WebRequest request) {
-        return new ResponseEntity<Object>(
-                "Invalid credentials", new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+        ExceptionResponse response = ExceptionResponse.builder().message(UNAUTHORIZED_MESSAGE).build();
+        return new ResponseEntity<ExceptionResponse>(
+                response, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
-
 }
