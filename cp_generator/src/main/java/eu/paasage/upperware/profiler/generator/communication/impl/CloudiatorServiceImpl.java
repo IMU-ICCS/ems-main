@@ -40,9 +40,9 @@ public class CloudiatorServiceImpl implements CloudiatorService {
     public CloudiatorServiceImpl(GeneratorProperties generatorProperties) {
         ApiClient apiClient = new ApiClient();
         apiClient.getHttpClient().setReadTimeout(generatorProperties.getCloudiatorV2().getHttpReadTimeout(), TimeUnit.SECONDS);
+        apiClient.setBasePath(generatorProperties.getCloudiatorV2().getUrl());
+        apiClient.setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
         this.matchmakingApi = new MatchmakingApi(apiClient);
-        this.matchmakingApi.getApiClient().setBasePath(generatorProperties.getCloudiatorV2().getUrl());
-        this.matchmakingApi.getApiClient().setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
     }
 
     @Override
