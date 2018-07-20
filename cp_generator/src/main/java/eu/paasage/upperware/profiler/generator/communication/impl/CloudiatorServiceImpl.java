@@ -10,6 +10,7 @@ import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.NewCamelModelTools;
+import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,7 +38,9 @@ public class CloudiatorServiceImpl implements CloudiatorService {
     private MatchmakingApi matchmakingApi;
 
     public CloudiatorServiceImpl(GeneratorProperties generatorProperties) {
-        this.matchmakingApi = new MatchmakingApi();
+        ApiClient apiClient = new ApiClient();
+        apiClient.getHttpClient().setReadTimeout(generatorProperties.getCloudiatorV2().getHttpReadTimeout(), TimeUnit.SECONDS);
+        this.matchmakingApi = new MatchmakingApi(apiClient);
         this.matchmakingApi.getApiClient().setBasePath(generatorProperties.getCloudiatorV2().getUrl());
         this.matchmakingApi.getApiClient().setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
     }

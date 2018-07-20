@@ -46,5 +46,7 @@ public class GeneratorProperties {
 
         @NotBlank
         private String apiKey;
+
+        private long httpReadTimeout;
     }
 }
