@@ -36,7 +36,7 @@ public class UserController {
     @PostMapping("/users/sign-up")
     public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
         log.info("Sign-up request for username: {}", userRequest.getUsername());
-        if (!userService.search(userRequest.getUsername()).isEmpty()) {
+        if (!userService.exists(userRequest.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username is used, please try with another username");
         }
         userService.create(userRequest.getUsername(), userRequest.getPassword());

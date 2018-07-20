@@ -1,6 +1,5 @@
 package eu.paasage.upperware.security.server.properties;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.data.ldap.repository.config.EnableLdapRepositories;
@@ -12,10 +11,13 @@ import org.springframework.ldap.core.support.LdapContextSource;
 @ComponentScan(basePackages = {"eu.paasage.upperware.security.*"})
 @Profile("default")
 @EnableLdapRepositories(basePackages = "eu.paasage.upperware.security.**")
-public class MelodicLdapProperties {
+public class MelodicLdapConfiguration {
 
-    @Autowired
     private Environment env;
+
+    public MelodicLdapConfiguration(Environment env) {
+        this.env = env;
+    }
 
     @Bean
     public LdapContextSource contextSource() {

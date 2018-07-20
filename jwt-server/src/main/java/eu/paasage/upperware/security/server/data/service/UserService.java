@@ -7,6 +7,7 @@ import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
@@ -17,9 +18,6 @@ import javax.naming.Name;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,20 +28,21 @@ public class UserService {
     private LdapTemplate ldapTemplate;
     private JWTService jwtService;
 
+    private static final String PASSWORD_CHAR = "*";
+
     public void authenticate(final String username, final String password) throws UserNotFoundException {
-        log.info("Login request: l: {}, password: {}", username, password);
-        User userWithPassword = userLdapRepository.findByUsernameAndPassword(username, digestSHA(password)).orElseThrow(UserNotFoundException::new);
+        log.info("Login request: l: {}, password: {}", username, createPasswordCode(password));
+        if (!userLdapRepository.findByUsernameAndPassword(username, digestSHA(password)).isPresent()) {
+            throw new UserNotFoundException();
+        }
     }
 
-    public List<String> search(final String username) {
-        List<User> userList = userLdapRepository.findByUsernameLikeIgnoreCase(username);
-        if (userList == null) {
-            return Collections.emptyList();
-        }
+    private String createPasswordCode(String password) {
+        return StringUtils.repeat(PASSWORD_CHAR, password.length());
+    }
 
-        return userList.stream()
-                .map(User::getUsername)
-                .collect(Collectors.toList());
+    public boolean exists(String username) {
+        return userLdapRepository.existsByUsername(username);
     }
 
     public void create(final String username, final String password) {
