@@ -19,7 +19,7 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
@@ -31,7 +31,9 @@
         <module>melodic-commons</module>
         <module>melodic-cache</module>
         <module>cdo_client</module>
+        <module>cdo_client_oxygen</module>
         <module>cdo_server</module>
+        <module>cdo_server_oxygen</module>
         <module>adapter</module>
         <module>cp_generator</module>
         <module>meta_solver</module>
@@ -40,7 +42,9 @@
         <module>cp_solver</module>
         <module>la_converter</module>
         <module>dlms</module>
+        <module>discovery</module>
     </modules>
+
 
     <properties>
         <!-- version for all paasage components-->
@@ -65,9 +69,11 @@
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
         <!--DOCKER plugin properties-->
-        <docker.push>false</docker.push>
-        <docker.repository/>
-        <docker.imageName>${docker.repository}melodic/${project.name}-rc2.0</docker.imageName>
+        <!--<docker.push>false</docker.push>-->
+        <!--<docker.repository/>-->
+        <docker.push>true</docker.push>
+        <docker.repository>172.31.1.100:5000/</docker.repository>
+        <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
 
@@ -112,7 +118,8 @@
                 <!-- This may be strange but is necessary -
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
-                <version>${parent.version}</version>
+                <!--<version>${parent.version}</version>-->
+                <version>2.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -131,42 +138,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>docker-remote</id>
-            <properties>
-                <docker.push>true</docker.push>
-                <docker.repository>172.31.1.100:5000/</docker.repository>
-            </properties>
-            <activation>
-                <property>
-                    <name>!useLocalDocker</name>
-                </property>
-            </activation>
-        </profile>
-
-        <profile>
-            <id>doclint-java8-disable</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <properties>
-                <javadoc.opts>-Xdoclint:none</javadoc.opts>
-            </properties>
-        </profile>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <build>
         <pluginManagement>
@@ -234,24 +205,25 @@
                     <groupId>com.spotify</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.4.10</version>
-                    <configuration>
-                        <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.imageName}-rc2.0</imageName>
-                        <pushImage>${docker.push}</pushImage>
-                        <resources>
-                            <resource>
-                                <targetPath>/</targetPath>
-                                <directory>${project.build.directory}</directory>
-                                <include>${docker.jarToInclude}</include>
-                            </resource>
-                        </resources>
-                    </configuration>
                     <executions>
                         <execution>
+                            <id>execution</id>
                             <phase>install</phase>
                             <goals>
                                 <goal>build</goal>
                             </goals>
+                            <configuration>
+                                <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                                <imageName>${docker.imageName}-rc2.0</imageName>
+                                <pushImage>${docker.push}</pushImage>
+                                <resources>
+                                    <resource>
+                                        <targetPath>/</targetPath>
+                                        <directory>${project.build.directory}</directory>
+                                        <include>${docker.jarToInclude}</include>
+                                    </resource>
+                                </resources>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
@@ -338,5 +310,38 @@
         <connection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</connection>
         <developerConnection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
     </scm>
+
+    <profiles>
+        <profile>
+            <id>without-docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>execution</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>docker-local</id>
+            <properties>
+                <docker.push>false</docker.push>
+                <docker.repository>127.0.0.1:5000/</docker.repository>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>docker-remote</id>
+        </profile>
+
+    </profiles>
 
 </project>

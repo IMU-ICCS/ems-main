@@ -10,6 +10,8 @@ ADD https://repository-master.mulesoft.org/nexus/content/repositories/releases/o
 # ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper2outs_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper2outs_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CEtrafficmodifiedApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CEtrafficmodifiedApp.zip
+ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CASMuleEsperApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CAS_app.zip
+
 
 
 
@@ -30,6 +32,7 @@ RUN unzip mule-standalone-3.9.0.zip -d /opt
 # RUN cp 2ndLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
 RUN cp 2ndLevelEsper2outs_app.zip /opt
 RUN cp CEtrafficmodifiedApp.zip /opt
+RUN cp CAS_app.zip /opt
 RUN unzip vms-discovery-server.zip -d /opt
 
 # ======== Remove archives ========

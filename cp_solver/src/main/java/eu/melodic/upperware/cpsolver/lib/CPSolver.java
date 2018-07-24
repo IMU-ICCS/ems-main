@@ -17,7 +17,9 @@ import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
 import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
@@ -282,15 +284,16 @@ public class CPSolver {
 	public void readCPModel(String cdoPath, String pathName){
 		ConstraintProblem cp = null;
 		log.info("Reading CP model...");
-		CDOClient cl = new CDOClient();
-		cl.registerPackage(TypesPackage.eINSTANCE);
-		cl.registerPackage(CpPackage.eINSTANCE);
+
+		CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
+		CDOSessionX sessionX = clientX.getSession();
+
 		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		if (cdoPath != null){
 			log.info("Loading resource from CDO: " +cdoPath);
 			cdoMode = true;
-			CDOView view = cl.openView();
+			CDOView view = sessionX.openView();
 			CDOResource res = view.getResource(cdoPath);
 			EList<EObject> objs = res.getContents();
 			for (EObject obj: objs){
@@ -305,11 +308,12 @@ public class CPSolver {
 		else if (pathName != null){
 			log.info("Loading resource from file: " +pathName);
 			cdoMode = false;
-			cp = (ConstraintProblem)cl.loadModel(pathName);
+//			cp = (ConstraintProblem)cl.loadModel(pathName);
+			cp = (ConstraintProblem)clientX.loadModel(pathName);
 			readModel(cp);
 		}
 		log.info("CDO Mode: " + cdoMode);
-		cl.closeSession();
+		sessionX.closeSession();
 	}
 	
 	/* Solves the CPModel previously read, updates the model if a solution was found 
@@ -373,12 +377,16 @@ public class CPSolver {
 		log.info("Saving best solution in CDO.....");
 		CDOTransaction trans = null;
 		ConstraintProblem cp = null;
-		CDOClient cl = new CDOClient();
-		cl.registerPackage(TypesPackage.eINSTANCE);
-		cl.registerPackage(CpPackage.eINSTANCE);
+
+		CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
+		CDOSessionX sessionX = clientX.getSession();
+
+//		CDOClient cl = new CDOClient();
+//		cl.registerPackage(TypesPackage.eINSTANCE);
+//		cl.registerPackage(CpPackage.eINSTANCE);
 		//System.out.println("CDOMode: " + cdoMode);
 		if (cdoMode){
-			trans = cl.openTransaction();
+			trans = sessionX.openTransaction();
 			CDOResource resource = trans.getResource(cdoPath);
 			EList<EObject> contents = resource.getContents();
 			for (EObject obj: contents){
@@ -388,25 +396,15 @@ public class CPSolver {
 				}
 			}
 		} else{
-			cp = (ConstraintProblem)CDOClient.loadModel(pathName);
+			cp = (ConstraintProblem)clientX.loadModel(pathName);
 		}
 		if (isReconfig) {
 			updateUtilityOfDeployedSolution(cp);
 		}
 
-        Solution solution = null;
-        //if (timestamp == 0){
-        solution = CpFactory.eINSTANCE.createSolution();
+		Solution solution = CpFactory.eINSTANCE.createSolution();
         solution.setTimestamp(new Date().getTime());
         cp.getSolution().add(solution);
-//		} else {
-//			for (Solution s: cp.getSolution()){
-//				if (s.getTimestamp() == timestamp){
-//					solution = s;
-//					break;
-//				}
-//			}
-//		}
 
 		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
 		utilityValue.setValue(maxUtility);
@@ -453,9 +451,8 @@ public class CPSolver {
 			if (cdoMode){
 				trans.commit();
 				trans.close();
-			}
-			else{
-				cl.saveModel(cp, pathName);
+			} else{
+				clientX.saveModel(cp, pathName);
 			}
 			log.info("..... Solution saved");
 		}
@@ -463,7 +460,7 @@ public class CPSolver {
 			log.error("Something went wrong while storing the solution",e);
 			//e.printStackTrace();
 		}
-		cl.closeSession();
+		sessionX.closeSession();
 
 	}
 

@@ -16,6 +16,7 @@ import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRe
 import eu.paasage.camel.CamelModel;
 import eu.paasage.camel.deployment.DeploymentElement;
 import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
@@ -64,19 +65,19 @@ public class SolverToDeployment {
 		log.info("Notification URI: {}", notificationUri);
 		log.info("UUID: {}", requestUuid);
 
+		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
+		CDOTransaction transaction = session.openTransaction();
+
 		try {
 			NodeCandidates nodeCandidates = Objects.requireNonNull(cacheService.load(CacheUtils.createCacheKey(paasageConfigurationID)));
 
-			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
-			CDOTransaction cdoTransaction = cdoProxy.getCdoClient().openTransaction();
-
-			EList<EObject> contentsCM = cdoTransaction.getResource(camelModelID).getContents();
+			EList<EObject> contentsCM = transaction.getResource(camelModelID).getContents();
 
 			CamelModel camelModel = CdoTool.getLastCamelModel(contentsCM)
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
 			
-			EList<EObject> contentsPC = cdoTransaction.getResource(paasageConfigurationID).getContents();
+			EList<EObject> contentsPC = transaction.getResource(paasageConfigurationID).getContents();
 			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(1);
 
 			// Checking if there is a solution
@@ -90,7 +91,9 @@ public class SolverToDeployment {
 
 			// Do Work
 			try {
-				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(camelModelID);
+			    log.warn("Starting...");
+
+				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(transaction, camelModelID);
 
 				CloudMLHelper.setGlobalDMIdx(dmId);
 				CloudMLHelper.resetGlobalCount();
@@ -99,14 +102,14 @@ public class SolverToDeployment {
 
 				// Generate new instances into this new DM of camel
 				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution,
-						camelModelID, nodeCandidates, solverToDeploymentProperties);
+						camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;
 				}
 
 				dataholder.setDmId(dmId);
-				DataUtils.registerDataHolderToCDO(camelModelID, dataholder); // COPY TO CDO
+				DataUtils.registerDataHolderToCDO(camelModelID, dataholder, transaction); // COPY TO CDO
 
 			} catch (S2DException | CommitException e) {
 				log.error("Unable to complete data model instances registration", e);
@@ -118,6 +121,11 @@ public class SolverToDeployment {
 			log.error("RuntimeException", exception);
 			notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 			return;
+		} finally {
+			if (transaction != null && !transaction.isClosed()){
+				transaction.close();
+			}
+			session.closeSession();
 		}
 		notifySolutionApplied(camelModelID, notificationUri, requestUuid);
 	}
