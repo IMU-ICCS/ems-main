@@ -14,16 +14,25 @@ import lombok.Setter;
 @Getter
 public class NodeCandidateAttribute {
 
-    String name;
-    String componentId;
-    final String type = "cost"; //todo - different types - for now only cost
+    private String name;
+    private String componentId;
+    private NodeCandidatesAttributesType type;
+    private boolean isList;
+
     @Setter
     double value;
 
 
-    public NodeCandidateAttribute(String name, String componentId){
+    public NodeCandidateAttribute(String name, String componentId, NodeCandidatesAttributesType type, boolean isList){
 
         this.name = name;
         this.componentId = componentId;
+        this.type = type;
+        this.isList = isList;
+    }
+
+    @Override
+    public String toString(){
+        return this.name + " , component = " + this.componentId + " type = " + this.type;
     }
 }

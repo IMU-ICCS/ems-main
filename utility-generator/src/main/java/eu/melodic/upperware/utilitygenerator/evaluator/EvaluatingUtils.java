@@ -30,7 +30,7 @@ public class EvaluatingUtils {
     /* mapping variables from solution and cp model */
 
 
-    public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, List<VariableDTO> variables) {
+    public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
 
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
@@ -47,7 +47,7 @@ public class EvaluatingUtils {
     }
 
     //provider value is always int
-    public static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<Element> newConfigurationInt) {
+    public static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<Element> newConfigurationInt) {
 
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return (int) newConfigurationInt.stream()
@@ -58,7 +58,7 @@ public class EvaluatingUtils {
 
     }
 
-    private static VariableType getVariableType(String name, List<VariableDTO> variables) {
+    private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
         return variables.stream()
                 .filter(variable -> name.equals(variable.getId()))
                 .findFirst()
@@ -66,7 +66,7 @@ public class EvaluatingUtils {
                 .getType();
     }
 
-    private static Collection<String> getVariableNames(String componentId, List<VariableDTO> variables) {
+    private static Collection<String> getVariableNames(String componentId, Collection<VariableDTO> variables) {
 
         return variables.stream()
                 .filter(variable -> componentId.equals(variable.getComponentId()))
@@ -74,7 +74,7 @@ public class EvaluatingUtils {
                 .collect(Collectors.toList());
     }
 
-    private static String getVariableName(String componentId, VariableType type, List<VariableDTO> variables) {
+    private static String getVariableName(String componentId, VariableType type, Collection<VariableDTO> variables) {
         return variables.stream()
                 .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
                 .findFirst()
@@ -92,7 +92,7 @@ public class EvaluatingUtils {
                 .collect(Collectors.toList());
     }
 
-    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, List<VariableDTO> variables) {
+    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 

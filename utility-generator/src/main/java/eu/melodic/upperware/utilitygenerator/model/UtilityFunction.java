@@ -29,6 +29,8 @@ public class UtilityFunction {
     public UtilityFunction(String formula, Collection<Constant> constants){
         this.constants = constants.toArray(new Constant[constants.size()]);
         this.function = new Expression(formula);
+        log.info("constants = {}", constants.toArray().toString());
+
     }
 
     public double evaluateFunction(Collection<Argument> variables){
@@ -38,9 +40,10 @@ public class UtilityFunction {
 
         function.addConstants(constants);
         function.addArguments(variables.toArray(new Argument[variables.size()]));
+        function.addArguments(new Argument("CandidateCost", constants));
 
         if (function.getMissingUserDefinedArguments().length > 0){
-            throw new IllegalStateException("Not all arguments needed in function "+ function.getExpressionString() +"are set. Missing arguments: " +  Arrays.toString(function.getMissingUserDefinedArguments()));
+            throw new IllegalStateException("Missing arguments: " + Arrays.toString(function.getMissingUserDefinedArguments()) + " for function "+ function.getExpressionString());
         }
         double result = function.calculate();
         function.removeAllArguments();

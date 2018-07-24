@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.getVariableType;
+import static eu.melodic.upperware.utilitygenerator.converter.camel.MappingTypeUtils.getVariableType;
 
 @Slf4j
 @AllArgsConstructor
@@ -26,7 +26,7 @@ public class CurrentConfigConverter {
 
     private Collection<VariableDTO> variablesFromConstraintProblem;
 
-    public Collection<Element> convertCurrentConfig(Collection<MetricVariableImpl> variablesFromCamel, Collection<Element> deployedSolution, String formula){
+    public Collection<Element> convertCurrentConfig(Collection<MetricVariableImpl> variablesFromCamel, Collection<Element> deployedSolution){
         return deployedSolution.stream()
                 .filter(var -> isActualValueOfVariableUsedInFormula(getMatchingVariable(var.getName()), variablesFromCamel))
                 .map(actVar -> ElementFactory.createElementWithNewName(getVariableName(actVar, variablesFromCamel, variablesFromConstraintProblem), actVar))
@@ -41,8 +41,10 @@ public class CurrentConfigConverter {
                 .orElseThrow(() -> new IllegalStateException("Variable from solution " + variable.getName()+ " does not match with variable from Constraint Problem"));
 
         return variablesFromCamel.stream()
-                .filter(variableFromCamel -> (variableFromCamel.getComponent().getName().equals(matchingVariable.getComponentId()) && (matchingVariable.getType().equals(getVariableType(variableFromCamel)))))
-                .findAny().orElseThrow(()-> new IllegalStateException("Variable with name " + matchingVariable.getId() + " does not match with variable from Camel")).getName();
+                .filter(variableFromCamel -> (variableFromCamel.getComponent().getName().equals(matchingVariable.getComponentId())
+                        && (matchingVariable.getType().equals(getVariableType(variableFromCamel)))))
+                .findAny().orElseThrow(()-> new IllegalStateException("Variable with name " + matchingVariable.getId() + " does not match with variable from Camel"))
+                .getName();
 
     }
 

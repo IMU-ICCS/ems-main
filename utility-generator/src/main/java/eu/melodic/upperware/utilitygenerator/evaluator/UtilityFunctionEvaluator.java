@@ -9,23 +9,27 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.converter.*;
+import eu.melodic.upperware.utilitygenerator.converter.CurrentConfigConverter;
+import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
+import eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter;
+import eu.melodic.upperware.utilitygenerator.converter.VariableConverter;
+import eu.melodic.upperware.utilitygenerator.converter.camel.FromCamelModelConverter;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.utils.Printer;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Constant;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToArgument;
-import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToConstants;
+import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.*;
 
 @Slf4j
 public class UtilityFunctionEvaluator {
@@ -37,49 +41,73 @@ public class UtilityFunctionEvaluator {
     private VariableConverter variableConverter;
 
 
+    private Collection<MetricDTO> metricsFromConstraintProblem;
+    private Collection<VariableDTO> variablesFromConstraintProblem;
+    private Collection<Element> deployedSolution;
+
+
+    private NodeCandidates nodeCandidates;
+
+
     private Printer printer;
 
-    public UtilityFunctionEvaluator(String cdoPath, String path, List<VariableDTO> variables, Collection<MetricDTO> metricsDTOs,
+    public UtilityFunctionEvaluator(String cdoPath, String path, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem,
             Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
 
-        Objects.requireNonNull(variables, "List of Variables could not be null");
-        Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
-        Objects.requireNonNull(metricsDTOs, "List of Metrics could not be null");
+        this.variablesFromConstraintProblem = Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
+        this.metricsFromConstraintProblem = Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
+        this.deployedSolution = deployedSolution;
 
         this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter();
 
-        CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variables);
-        MetricsConverter metricsConverter = new MetricsConverter(metricsDTOs);
+        CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variablesFromConstraintProblem);
+        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
+
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(path);
-        String formula = fromCamelModelConverter.getUtilityFormula();
+        String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of utility function: {}", formula);
 
-        //todo - maybe current config may be a part of metrics?
-        Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariables(), deployedSolution, formula);
+        Collection<NodeCandidateAttribute> attributesOfNodeCandidates = fromCamelModelConverter.getAttributesOfNodeCandidates();
+        log.info("attributes of node candidates {}", attributesOfNodeCandidates);
+        Collection<NodeCandidateAttribute> listOfAttributesOfNodeCandidates = fromCamelModelConverter.getListOfAttributesOfNodeCandidates();
+        log.info("attributes of list of node candidates {}", listOfAttributesOfNodeCandidates);
+
+        this.nodeCandidatesConverter = new NodeCandidatesConverter(attributesOfNodeCandidates, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem);
+
+        Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
+        log.info("currentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
+
+        Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
+        log.info("current Config Arguments {} ", currentConfigArguments);
+
         Collection<Element> metrics = metricsConverter.convertMetrics(formula);
+        log.info("metrics: {}", metrics);
 
-        this.function = new UtilityFunction(formula, convertToConstants(Stream.concat(metrics.stream(), currentConfigArguments.stream()).collect(Collectors.toList())));
-        this.nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelConverter.getAttributesOfNodeCandidates(), nodeCandidates, variables);
+        Collection<Constant> listsOfAttributesOfNodeCandidates = convertArrayToConstants(nodeCandidatesConverter.convertListOfAttributesOfNodeCandidates());
+        log.info("list of att of node candidates {}", listOfAttributesOfNodeCandidates);
 
-        this.printer = new Printer(variables);
+        Collection<Element> allConstants = currentConfigAttributesOfNodeCandidates;
+        allConstants.addAll(currentConfigArguments);
+        allConstants.addAll(metrics);
+
+        this.function = new UtilityFunction(formula, Stream.concat(convertToConstants(allConstants).stream(), listsOfAttributesOfNodeCandidates.stream()).collect(Collectors.toList()));
+
+        this.printer = new Printer(variablesFromConstraintProblem);
         printer.printVariablesFromConstraintProblem();
     }
 
     public double evaluate(Collection<Element> solution) {
 
         Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(solution, function.getFormula());
+
         Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 
         double utility = function.evaluateFunction(concatLists(attributeNodeCandidates, variablesForFunction));
 
         maxUtility = utility> maxUtility? maxUtility: utility;
         return utility;
-    }
-
-    public double evaluateActualSolution() {
-        //todo
-        return 0.0;
     }
 
     //todo

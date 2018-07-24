@@ -14,6 +14,18 @@ class UtilityGeneratorApplicationTest extends Specification{
 
 
     Collection<MetricDTO> metrics = new ArrayList<>()
+    NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
+
+    def setup(){
+        NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
+        nodeCandidate.getPrice() >> 10.0
+        List<NodeCandidate> list = new ArrayList<>()
+        list.add(nodeCandidate)
+        Map<Integer, List<NodeCandidate>> nodeCandidatesMap = new HashMap<>()
+        nodeCandidatesMap.put(1, list)
+        mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
+        mockNodeCandidates.get(_) >> nodeCandidatesMap
+    }
 
     def "FCR test"(){
 
@@ -32,13 +44,7 @@ class UtilityGeneratorApplicationTest extends Specification{
 
         Collection<Element> intSolution = new ArrayList<>()
         intSolution.add(new IntElement(cardinalityName, 3))
-
-        NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
-        nodeCandidate.getPrice() >> 10.0
-        NodeCandidates nc = GroovyMock(NodeCandidates)
-        nc.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
-
-
+        intSolution.add(new IntElement(providerName, 1))
 
         Collection<IntElement> newConfiguration = new ArrayList<>()
         newConfiguration.add(new IntElement(cardinalityName, 2))
@@ -46,7 +52,7 @@ class UtilityGeneratorApplicationTest extends Specification{
 
 
         String path = "/Users/mrozanska/FCRnew.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication("cdo", path, variables, metrics, intSolution, nc)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication("cdo", path, variables, metrics, intSolution, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -69,20 +75,15 @@ class UtilityGeneratorApplicationTest extends Specification{
 
         Collection<Element> intSolution = new ArrayList<>()
         intSolution.add(new IntElement(cardinalityName, 3))
-
-        NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
-        nodeCandidate.getPrice() >> 10.0
-        NodeCandidates nc = GroovyMock(NodeCandidates)
-        nc.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
-
+        intSolution.add(new IntElement(providerName, 2))
 
         Collection<Element> newConfiguration = new ArrayList<>()
         newConfiguration.add(new IntElement(cardinalityName, 2))
         newConfiguration.add(new IntElement(providerName, 1))
 
 
-        String path = "/Users/mrozanska/CRMNewCamelModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication("cdo", path, variables, metrics, intSolution, nc)
+        String path = "/Users/mrozanska/CRMCamelModel.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication("cdo", path, variables, metrics, intSolution, mockNodeCandidates)
 
         when:
 

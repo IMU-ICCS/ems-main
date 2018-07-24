@@ -41,9 +41,4 @@ public class UtilityGeneratorApplication {
     public void printConfigurationWithMaximumUtility() {
         this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
     }
-
-    public double getUtilityForCurrentDeployedSolution() {
-        return this.utilityFunctionEvaluator.evaluateActualSolution();
-    }
-
 }

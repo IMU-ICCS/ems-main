@@ -12,8 +12,9 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
+import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
+import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidatesAttributesType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,9 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
-import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -36,18 +37,46 @@ public class NodeCandidatesConverter {
 
 
     private Collection<NodeCandidateAttribute> attributes;
+    private Collection<NodeCandidateAttribute> listOfAttributes;
+
     private NodeCandidates nodeCandidates;
-    private List<VariableDTO> variables;
+    private Collection<VariableDTO> variables;
     
     public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution, String formula){
 
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(solution);
         Collection<Element> arguments = new ArrayList<>();
 
-        attributes.stream()
-                .filter(a -> isInFormula(formula, a.getName()))
-                .forEach(a -> arguments.add(new IntElement(a.getName(), getNodeCandidate(newConfiguration, a.getComponentId()).getPrice().intValue())));
+        attributes.forEach(a -> arguments.add(ElementFactory.createElement(a.getName(),
+                getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType()))));
         return arguments;
+    }
+
+    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes, Collection<Element> deployedSolution){
+
+        Collection<ConfigurationElement> actualConfiguration = convertSolutionToNodeCandidates(deployedSolution);
+        Collection<Element> arguments = new ArrayList<>();
+
+        attributes.forEach(a -> arguments.add(ElementFactory.createElement(a.getName(),
+                getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType()))));
+        return arguments;
+
+    }
+
+    public Collection<Collection<Element>> convertListOfAttributesOfNodeCandidates(){
+        return listOfAttributes.stream().map(attribute -> blabla(nodeCandidates.get(attribute.getComponentId()), attribute)).collect(Collectors.toList());
+    }
+
+    private Collection<Element> blabla(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, NodeCandidateAttribute attribute){
+        Collection<Element> elements = new ArrayList<>();
+        nodeCandidatesMap.values().forEach(list -> elements.addAll(getOneList(list, attribute)));
+        return elements;
+    }
+
+    private Collection<Element> getOneList(List<NodeCandidate> list, NodeCandidateAttribute attribute){
+        return list.stream()
+                .map(nc -> ElementFactory.createElement(attribute.getName(), getAttributeOfNodeCandidate(nc, attribute.getType())))
+                .collect(Collectors.toList());
     }
 
     private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
@@ -83,4 +112,21 @@ public class NodeCandidatesConverter {
                 .orElseThrow(()-> new IllegalStateException("Configuration Element for component" + componentId +" is not found"))
                 .getNodeCandidate();
     }
+
+
+    private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, NodeCandidatesAttributesType type){
+
+        Number result = null;
+        switch (type){
+            case PRICE:
+                result = nodeCandidate.getPrice();
+                break;
+        }
+
+        if (result == null){
+            throw new IllegalArgumentException("something wrong");
+        }
+        return result;
+    }
+
 }
