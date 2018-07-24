@@ -7,7 +7,50 @@
 
 package eu.paasage.mddb.cdo.client;
 
+import camel.constraint.ConstraintModel;
+import camel.constraint.ConstraintPackage;
+import camel.core.CamelModel;
+import camel.core.CoreFactory;
 import camel.core.CorePackage;
+import camel.core.Model;
+import camel.data.DataModel;
+import camel.data.DataPackage;
+import camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentPackage;
+import camel.dsl.CamelDslStandaloneSetup;
+import camel.execution.ExecutionModel;
+import camel.execution.ExecutionPackage;
+import camel.location.GeographicalRegion;
+import camel.location.Location;
+import camel.location.LocationFactory;
+import camel.location.LocationModel;
+import camel.location.LocationPackage;
+import camel.metric.MetricFactory;
+import camel.metric.MetricModel;
+import camel.metric.MetricPackage;
+import camel.mms.MetaDataModel;
+import camel.mms.MmsPackage;
+import camel.organisation.CloudProvider;
+import camel.organisation.ExternalIdentifier;
+import camel.organisation.OrganisationFactory;
+import camel.organisation.OrganisationModel;
+import camel.organisation.OrganisationPackage;
+import camel.organisation.PlatformCredentials;
+import camel.organisation.Role;
+import camel.organisation.RoleAssignment;
+import camel.organisation.User;
+import camel.organisation.UserGroup;
+import camel.requirement.RequirementModel;
+import camel.requirement.RequirementPackage;
+import camel.scalability.ScalabilityModel;
+import camel.scalability.ScalabilityPackage;
+import camel.security.SecurityModel;
+import camel.security.SecurityPackage;
+import camel.type.TypeModel;
+import camel.type.TypePackage;
+import camel.unit.UnitModel;
+import camel.unit.UnitPackage;
+
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -45,18 +88,31 @@ import org.eclipse.net4j.util.om.log.PrintLogHandler;
 import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
 import org.eclipse.net4j.util.security.IPasswordCredentialsProvider;
 import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
+import org.eclipse.xtext.resource.SaveOptions;
+import org.eclipse.xtext.resource.SaveOptions.Builder;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.XtextResourceSet;
+
+import com.google.inject.Injector;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import eu.paasage.mddb.camel.examples.SensAppCDO;
+import eu.paasage.mddb.camel.examples.OrganisationExample;
 
 /**
  * @author Eike Stepper
@@ -269,18 +325,19 @@ public class CDOClient
 	 */
 	public void registerCamelPackages(){
 		registerPackage((CorePackage.eINSTANCE));
-//		registerPackage(CamelPackage.eINSTANCE);
-//		registerPackage(ScalabilityPackage.eINSTANCE);
-//		registerPackage(DeploymentPackage.eINSTANCE);
-//		registerPackage(OrganisationPackage.eINSTANCE);
-//		registerPackage(ProviderPackage.eINSTANCE);
-//		registerPackage(SecurityPackage.eINSTANCE);
-//		registerPackage(ExecutionPackage.eINSTANCE);
-//		registerPackage(TypePackage.eINSTANCE);
-//		registerPackage(RequirementPackage.eINSTANCE);
-//		registerPackage(MetricPackage.eINSTANCE);
-//		registerPackage(UnitPackage.eINSTANCE);
-//		registerPackage(LocationPackage.eINSTANCE);
+		registerPackage(ScalabilityPackage.eINSTANCE);
+		registerPackage(DeploymentPackage.eINSTANCE);
+		registerPackage(OrganisationPackage.eINSTANCE);
+		registerPackage(SecurityPackage.eINSTANCE);
+		registerPackage(ExecutionPackage.eINSTANCE);
+		registerPackage(TypePackage.eINSTANCE);
+		registerPackage(RequirementPackage.eINSTANCE);
+		registerPackage(MetricPackage.eINSTANCE);
+		registerPackage(UnitPackage.eINSTANCE);
+		registerPackage(LocationPackage.eINSTANCE);
+		registerPackage(DataPackage.eINSTANCE);
+		registerPackage(ConstraintPackage.eINSTANCE);
+		registerPackage(MmsPackage.eINSTANCE);
 	}
 	
 	/* This method is used for registering an EPackage mapping to the domain
@@ -455,6 +512,7 @@ public class CDOClient
 		try{
 			  if (validate) {
 				  if (!OCLValidation.validate(model)){
+					  //System.out.println("Problem with the validation of the model: " + model);
 					  trans.rollback();
 					  trans.close();
 					  return false;
@@ -493,11 +551,11 @@ public class CDOClient
 	 * returns as output true or false depending on whether the model has been successfully
 	 * loaded in main memory and then stored in the CDO Repository. 
 	 */
-//	public boolean importTextualModel(String filePath, String resourcePath, boolean validate){
-//		EObject object = loadTextualModel(filePath);
-//		if (object != null) return storeModel(object,resourcePath,validate);
-//		return false;
-//	}
+	public boolean importTextualModel(String filePath, String resourcePath, boolean validate){
+		EObject object = loadTextualModel(filePath);
+		if (object != null) return storeModel(object,resourcePath,validate);
+		return false;
+	}
 	
 	/* This method is used to save a model into the file system in a specific path given as input
 	 * The input parameters are: the model to store and the file path to store it in the file system.
@@ -506,7 +564,6 @@ public class CDOClient
 	 */
 	public boolean saveModel(EObject model, String pathName){
 		final ResourceSet rs = new ResourceSetImpl();
-//		rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		rs.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
 		Resource res = null;
 		File f = new File(pathName);
@@ -533,137 +590,12 @@ public class CDOClient
 		return false;
 	}
 	
-//	/* This method is used to create a particular model based on the CERIF
-//	 * meta-model in order to be able to test the functionality of the
-//	 * CDOClient in terms of storing and querying about the objects defined
-//	 * by this model.
-//	 */
-//	public static EObject createCerifModel(){
-//		CamelModel cm = CamelFactory.eINSTANCE.createCamelModel();
-//		cm.setName("MY CAMEL MODEL");
-//		OrganisationModel om = OrganisationFactory.eINSTANCE.createOrganisationModel();
-//		om.setName("MY ORGANISATION MODEL");
-//		LocationModel lm = LocationFactory.eINSTANCE.createLocationModel();
-//		lm.setName("MY LOCATION MODEL");
-//		cm.getOrganisationModels().add(om);
-//		cm.getLocationModels().add(lm);
-//		EList<User> users = om.getUsers();
-//		EList<UserGroup> ugroups = om.getUserGroups();
-//		EList<Role> roles = om.getRoles();
-//		EList<RoleAssignment> assigns = om.getRoleAssigments();
-//		EList<ExternalIdentifier> ids = om.getExternalIdentifiers();
-//		EList<DataCenter> dcs = om.getDataCentres();
-//
-//
-//		ExternalIdentifier id1 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
-//		id1.setIdentifier("ID1");
-//		ids.add(id1);
-//
-//		ExternalIdentifier id2 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
-//		id2.setIdentifier("ID2");
-//		ids.add(id2);
-//
-//		ExternalIdentifier id3 = OrganisationFactory.eINSTANCE.createExternalIdentifier();
-//		id3.setIdentifier("ID3");
-//		ids.add(id3);
-//
-//		User user1 = OrganisationFactory.eINSTANCE.createUser();
-//		user1.setLastName("User");
-//		user1.setFirstName("User1");
-//		user1.setName("User1");
-//		user1.setEmail("user@user1");
-//		EList<ExternalIdentifier> exIDs1 = user1.getExternalIdentifiers();
-//		exIDs1.add(id1);
-//		exIDs1.add(id2);
-//		users.add(user1);
-//
-//		PaaSageCredentials pc1 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-//		pc1.setPassword("user1");
-//		user1.setPaasageCredentials(pc1);
-//
-//		User user2 = OrganisationFactory.eINSTANCE.createUser();
-//		user2.setFirstName("User2");
-//		user2.setLastName("User");
-//		user2.setName("User2");
-//		user2.setEmail("user2@User");
-//		users.add(user2);
-//		exIDs1 = user2.getExternalIdentifiers();
-//		//exIDs1.add(id2);
-//		exIDs1.add(id3);
-//
-//		PaaSageCredentials pc2 = OrganisationFactory.eINSTANCE.createPaaSageCredentials();
-//		pc2.setPassword("user2");
-//		user2.setPaasageCredentials(pc2);
-//
-//		CloudProvider org1 = OrganisationFactory.eINSTANCE.createCloudProvider();
-//		org1.setEmail("email2");
-//		org1.setName("Org2");
-//		org1.setWww("www2");
-//		org1.setPublic(true);
-//		om.setProvider(org1);
-//
-//		UserGroup ug1 = OrganisationFactory.eINSTANCE.createUserGroup();
-//		ug1.setName("ug1");
-//		EList<User> members = ug1.getUsers();
-//		members.add(user1);
-//		ugroups.add(ug1);
-//
-//		Role r1 = OrganisationFactory.eINSTANCE.createRole();
-//		r1.setName("role1");
-//		roles.add(r1);
-//
-//		Role r2 = OrganisationFactory.eINSTANCE.createRole();
-//		r2.setName("role2");
-//		roles.add(r2);
-//
-//		RoleAssignment ra1 = OrganisationFactory.eINSTANCE.createRoleAssignment();
-//		ra1.setName("MY_ROLE_ASSIGNMENT");
-//		ra1.setRole(r1);
-//		ra1.setUser(user1);
-//		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
-//		try{
-//			ra1.setAssignmentTime(ft.parse("1976-12-16"));
-//			ra1.setStartTime(ft.parse("1977-12-16"));
-//			ra1.setEndTime(ft.parse("1978-12-16"));
-//			log.info("End date: " + ra1.getEndTime());
-//		}
-//		catch(Exception e){
-//			e.printStackTrace();
-//		}
-//		assigns.add(ra1);
-//
-//		Country l1 = LocationFactory.eINSTANCE.createCountry();
-//		l1.setName("Country1");
-//		l1.setId("C1");
-//		lm.getCountries().add(l1);
-//
-//		Country l2 = LocationFactory.eINSTANCE.createCountry();
-//		l2.setName("Country2");
-//		l2.setId("C2");
-//		lm.getCountries().add(l2);
-//
-//		DataCenter dc1 = OrganisationFactory.eINSTANCE.createDataCenter();
-//		dc1.setName("DC1");
-//		dc1.setCodeName("DC1");
-//		dc1.setLocation(l1);
-//		dcs.add(dc1);
-//
-//		DataCenter dc2 = OrganisationFactory.eINSTANCE.createDataCenter();
-//		dc2.setName("DC2");
-//		dc2.setCodeName("DC2");
-//		dc2.setLocation(l2);
-//		dcs.add(dc2);
-//
-//		return cm;
-//	}
-//
 	/* This method is used to load a model from a particular xmi resource. The model
 	 * can then be stored to the CDO Server/Repository. The method takes as input
 	 * the path (as a String) where the XML file resides.   
 	 */
 	public static EObject loadModel(String pathName){
 		  final ResourceSet rs = new ResourceSetImpl();
-//		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  rs.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
 		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
 		  log.info("Got resource: " + res);
@@ -673,20 +605,20 @@ public class CDOClient
 		  return contents.get(0);
 	}
 	
-//	/* This method is used to load a CAMEL textual model from the file system, whose path
-//	 * is provided as input. The loaded model is returned as the output of the method
-//	 */
-//	public static EObject loadTextualModel(String pathName){
-//		  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
-//		  XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
-//		  rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-//		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
-//		  EList<EObject> contents = res.getContents();
-//		  log.info("Contents are: " + contents);
-//
-//		  return contents.get(0);
-//	}
-//
+	/* This method is used to load a CAMEL textual model from the file system, whose path
+	 * is provided as input. The loaded model is returned as the output of the method
+	 */
+	public static EObject loadTextualModel(String pathName){
+		  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
+		  XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
+		  rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		  Resource res = rs.getResource(URI.createFileURI(pathName), true);
+		  EList<EObject> contents = res.getContents();
+		  log.info("Contents are: " + contents);
+
+		  return contents.get(0);
+	}
+
 	/* This method is used to load a model from a particular xmi resource. The model
 	 * can then be stored to the CDO Server/Repository. The method takes as input
 	 * the URL from which the XML file is available. This URL can point to an external
@@ -695,8 +627,8 @@ public class CDOClient
 	public static EObject loadModel(URL url){
 		  log.info("Got url: " + url);
 		  final ResourceSet rs = new ResourceSetImpl();
-//		  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 		  rs.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
+		  rs.getPackageRegistry().put(MetricPackage.eNS_URI, MetricPackage.eINSTANCE);
 		  EList<EObject> contents = null;
 		  try{
 			  Resource res = rs.getResource(URI.createURI(url.toURI().toString()), true);
@@ -711,29 +643,29 @@ public class CDOClient
 		  return contents.get(0);
 	}
 	
-//	/* This method is used to load a model from a particular textual CAMEL resource. The model
-//	 * can then be stored to the CDO Server/Repository. The method takes as input
-//	 * the URL from which the textual CAMEL file is available. This URL can point to an external
-//	 * web point or to an internal file or resource inside a jar file.
-//	 */
-//	public static EObject loadTextualModel(URL url){
-//		  log.info("Got url: " + url);
-//		  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
-//		  XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
-//		  rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-//		  EList<EObject> contents = null;
-//		  try{
-//			  Resource res = rs.getResource(URI.createURI(url.toURI().toString()), true);
-//			  log.info("Got resource: " + res);
-//			  contents = res.getContents();
-//			  log.info("Contents are: " + contents);
-//		  }
-//		  catch(Exception e){
-//			  e.printStackTrace();
-//		  }
-//
-//		  return contents.get(0);
-//	}
+	/* This method is used to load a model from a particular textual CAMEL resource. The model
+	 * can then be stored to the CDO Server/Repository. The method takes as input
+	 * the URL from which the textual CAMEL file is available. This URL can point to an external
+	 * web point or to an internal file or resource inside a jar file.
+	 */
+	public static EObject loadTextualModel(URL url){
+		  log.info("Got url: " + url);
+		  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
+		  XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
+		  rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+		  EList<EObject> contents = null;
+		  try{
+			  Resource res = rs.getResource(URI.createURI(url.toURI().toString()), true);
+			  log.info("Got resource: " + res);
+			  contents = res.getContents();
+			  log.info("Contents are: " + contents);
+		  }
+		  catch(Exception e){
+			  e.printStackTrace();
+		  }
+
+		  return contents.get(0);
+	}
 	
 	/* This method is used to load a model from a particular xmi resource. The model
 	 * can then be stored to the CDO Server/Repository. The method takes as input
@@ -755,145 +687,165 @@ public class CDOClient
 		  }
 		  return null;
 	}
-//
-//	/* This method is used to export a model that has been stored in the CDO Server/Repository.
-//	 * It takes as input three parameters: (a) the name of the CDOResource, (b) the
-//	 * Class of the model to be exported and (c) the path of the file to be created as a String.
-//	 * We must highlight that if the
-//	 * model required is not at the root of the CDOResource, we assume that it is
-//	 * obtained from the root EObject which maps to a CamelModel and that this CamelModel
-//	 * does not contain other models that have the same type as the requested model (as
-//	 * the first model of the respective type is actually obtained). We must also
-//	 * note that the user is responsible of providing correct input parameters as well
-//	 * as ensuring that the requested model is indeed stored in the CDOResource whose
-//	 * name is signified in the input parameters. In case of an exception affecting the model
-//	 * exporting, the value of false is returned by this method and the respective log file
-//	 * must be inspected to check the exception raised.
-//	 */
-//	public boolean exportModel(String resourceName, Class c, String filePath){
-//
-//		  CDOTransaction trans = null;
-//		  try{
-//			  FileOutputStream fos = new FileOutputStream(filePath);
-//			  trans = openTransaction();
-//			  CDOResource resource = trans.getResource(resourceName);
-//			  EObject obj = resource.getContents().get(0);
-//			  final ResourceSet rs = new ResourceSetImpl();
-//			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
-//
-//			  if (c.equals(CamelModel.class)){
-//				  resource.save(fos, opts);
-//			  }
-//			  else if (c.equals(DeploymentModel.class)){
-//				  if (obj instanceof DeploymentModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  DeploymentModel dm = cm.getDeploymentModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(ProviderModel.class)){
-//				  if (obj instanceof ProviderModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  ProviderModel dm = cm.getProviderModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(OrganisationModel.class)){
-//				  if (obj instanceof OrganisationModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  OrganisationModel dm = cm.getOrganisationModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(ScalabilityModel.class)){
-//				  if (obj instanceof ScalabilityModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  ScalabilityModel dm = cm.getScalabilityModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(ExecutionModel.class)){
-//				  if (obj instanceof ExecutionModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  ExecutionModel dm = cm.getExecutionModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(SecurityModel.class)){
-//				  if (obj instanceof SecurityModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  SecurityModel dm = cm.getSecurityModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(RequirementModel.class)){
-//				  if (obj instanceof RequirementModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  RequirementModel rm = cm.getRequirementModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(rm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(MetricModel.class)){
-//				  if (obj instanceof MetricModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  MetricModel dm = cm.getMetricModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(UnitModel.class)){
-//				  if (obj instanceof UnitModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  UnitModel dm = cm.getUnitModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  else if (c.equals(TypeModel.class)){
-//				  if (obj instanceof TypeModel) resource.save(fos, opts);
-//				  else if (obj instanceof CamelModel){
-//					  CamelModel cm = (CamelModel)obj;
-//					  TypeModel dm = cm.getTypeModels().get(0);
-//					  Resource res = rs.createResource(URI.createFileURI(filePath));
-//					  res.getContents().add(dm);
-//					  res.save(fos,opts);
-//				  }
-//			  }
-//			  trans.close();
-//			  return true;
-//		  }
-//		  catch(Exception e){
-//			  log.error("Something went wrong while exporting resource: " + resourceName, e);
-//			  //e.printStackTrace();
-//			  if (trans != null) trans.close();
-//		  }
-//		  return false;
-//	  }
+
+	/* This method is used to export a model that has been stored in the CDO Server/Repository.
+	 * It takes as input three parameters: (a) the name of the CDOResource, (b) the
+	 * Class of the model to be exported and (c) the path of the file to be created as a String.
+	 * We must highlight that if the
+	 * model required is not at the root of the CDOResource, we assume that it is
+	 * obtained from the root EObject which maps to a CamelModel and that this CamelModel
+	 * does not contain other models that have the same type as the requested model (as
+	 * the first model of the respective type is actually obtained). We must also
+	 * note that the user is responsible of providing correct input parameters as well
+	 * as ensuring that the requested model is indeed stored in the CDOResource whose
+	 * name is signified in the input parameters. In case of an exception affecting the model
+	 * exporting, the value of false is returned by this method and the respective log file
+	 * must be inspected to check the exception raised.
+	 */
+	public boolean exportModel(String resourceName, Class c, String filePath){
+
+		  CDOTransaction trans = null;
+		  try{
+			  FileOutputStream fos = new FileOutputStream(filePath);
+			  trans = openTransaction();
+			  CDOResource resource = trans.getResource(resourceName);
+			  EObject obj = resource.getContents().get(0);
+			  final ResourceSet rs = new ResourceSetImpl();
+			  rs.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
+
+			  if (c.equals(CamelModel.class)){
+				  resource.save(fos, opts);
+			  }
+			  else if (c.equals(DeploymentModel.class)){
+				  if (obj instanceof DeploymentModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  DeploymentModel dm = cm.getDeploymentModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(OrganisationModel.class)){
+				  if (obj instanceof OrganisationModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  OrganisationModel dm = cm.getOrganisationModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(ScalabilityModel.class)){
+				  if (obj instanceof ScalabilityModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ScalabilityModel dm = cm.getScalabilityModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(ExecutionModel.class)){
+				  if (obj instanceof ExecutionModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ExecutionModel dm = cm.getExecutionModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(SecurityModel.class)){
+				  if (obj instanceof SecurityModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  SecurityModel dm = cm.getSecurityModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(RequirementModel.class)){
+				  if (obj instanceof RequirementModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  RequirementModel rm = cm.getRequirementModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(rm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(MetricModel.class)){
+				  if (obj instanceof MetricModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  MetricModel dm = cm.getMetricModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(UnitModel.class)){
+				  if (obj instanceof UnitModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  UnitModel dm = cm.getUnitModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(TypeModel.class)){
+				  if (obj instanceof TypeModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  TypeModel dm = cm.getTypeModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(ConstraintModel.class)){
+				  if (obj instanceof ConstraintModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  ConstraintModel dm = cm.getConstraintModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(DataModel.class)){
+				  if (obj instanceof DataModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  DataModel dm = cm.getDataModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  else if (c.equals(MetaDataModel.class)){
+				  if (obj instanceof MetaDataModel) resource.save(fos, opts);
+				  else if (obj instanceof CamelModel){
+					  CamelModel cm = (CamelModel)obj;
+					  MetaDataModel dm = cm.getMetadataModels().get(0);
+					  Resource res = rs.createResource(URI.createFileURI(filePath));
+					  res.getContents().add(dm);
+					  res.save(fos,opts);
+				  }
+			  }
+			  trans.close();
+			  return true;
+		  }
+		  catch(Exception e){
+			  log.error("Something went wrong while exporting resource: " + resourceName, e);
+			  //e.printStackTrace();
+			  if (trans != null) trans.close();
+		  }
+		  return false;
+	  }
 
 	/* This method is used to export a model or instance of EObject in general into a XMI file.
 	 * The model/EObject must have been either created programmatically or obtained via
@@ -907,7 +859,6 @@ public class CDOClient
 	public boolean exportModel(EObject model, String filePath){
 		  try{
 			  final ResourceSet rs = new ResourceSetImpl();
-//			  rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
 			  rs.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
 			  Resource res = rs.createResource(URI.createFileURI(filePath));
 			  res.getContents().add(model);
@@ -921,58 +872,60 @@ public class CDOClient
 		  return false;
 	}
 	
-//	/* This method is used to export a model or instance of EObject in general into a CAMEL textual file.
-//	 * The model/EObject must have been either created programmatically or obtained via
-//	 * issuing a query. The method takes as input two parameters: (a) the query results
-//	 * as an EObject to be exported, (b) the path of the file to be created.
-//	 * Please note that this method should be called only when a respective CDO transaction
-//	 * has been opened - otherwise an exception will be thrown. Any exception leads to the
-//	 * return of a false value and the generation of a respective error entry in the log file;
-//	 * otherwise, a value of true is returned.
-//	 */
-//	public boolean exportTextualModel(EObject model, String filePath){
-//		Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
-//		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
-//		Resource resource = resourceSet.createResource(URI.createFileURI(filePath));
-//		EObject toSave = transformToCamelModel(model);
-//		resource.getContents().add(toSave);
-//		try {
-//			Builder options=SaveOptions.newBuilder();
-//			options.format();
-//			resource.save(options.getOptions().toOptionsMap());
-//			return true;
-//		}
-//		catch (IOException e) {
-//		  log.error("Something went wrong while exporting the CDO model: " + model + " into a CAMEL textual model", e);
-//		}
-//		return false;
-//	}
+	/* This method is used to export a model or instance of EObject in general into a CAMEL textual file.
+	 * The model/EObject must have been either created programmatically or obtained via
+	 * issuing a query. The method takes as input two parameters: (a) the query results
+	 * as an EObject to be exported, (b) the path of the file to be created.
+	 * Please note that this method should be called only when a respective CDO transaction
+	 * has been opened - otherwise an exception will be thrown. Any exception leads to the
+	 * return of a false value and the generation of a respective error entry in the log file;
+	 * otherwise, a value of true is returned.
+	 */
+	public boolean exportTextualModel(EObject model, String filePath){
+		Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
+		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+		Resource resource = resourceSet.createResource(URI.createFileURI(filePath));
+		EObject toSave = transformToCamelModel(model);
+		resource.getContents().add(toSave);
+		try {
+			Builder options=SaveOptions.newBuilder();
+			options.format();
+			resource.save(options.getOptions().toOptionsMap());
+			return true;
+		}
+		catch (IOException e) {
+		  log.error("Something went wrong while exporting the CDO model: " + model + " into a CAMEL textual model", e);
+		}
+		return false;
+	}
 	
-//	/*This method obtains a model and includes it in a CAMEL model, if it
-//	 * is not already. Then it returns the resulting CAMEL model. This method
-//	 * is useful for exporting CAMEL models in the textual-xtext form.
-//	 */
-//	private static EObject transformToCamelModel(EObject model){
-//		CamelModel toSave = null;
-//		if (! (model instanceof CamelModel)){
-//			toSave = CamelFactory.eINSTANCE.createCamelModel();
-//			String name = ((Model)model).getName();
-//			toSave.setName("CAMEL_" + name);
-//			if (model instanceof LocationModel) toSave.getLocationModels().add((LocationModel)model);
-//			else if (model instanceof RequirementModel) toSave.getRequirementModels().add((RequirementModel)model);
-//			else if (model instanceof DeploymentModel) toSave.getDeploymentModels().add((DeploymentModel)model);
-//			else if (model instanceof MetricModel) toSave.getMetricModels().add((MetricModel)model);
-//			else if (model instanceof ScalabilityModel) toSave.getScalabilityModels().add((ScalabilityModel)model);
-//			else if (model instanceof ExecutionModel) toSave.getExecutionModels().add((ExecutionModel)model);
-//			else if (model instanceof TypeModel) toSave.getTypeModels().add((TypeModel)model);
-//			else if (model instanceof SecurityModel) toSave.getSecurityModels().add((SecurityModel)model);
-//			else if (model instanceof UnitModel) toSave.getUnitModels().add((UnitModel)model);
-//			else if (model instanceof ProviderModel) toSave.getProviderModels().add((ProviderModel)model);
-//			else if (model instanceof OrganisationModel) toSave.getOrganisationModels().add((OrganisationModel)model);
-//		}
-//		else toSave = (CamelModel)model;
-//		return toSave;
-//	}
+	/*This method obtains a model and includes it in a CAMEL model, if it
+	 * is not already. Then it returns the resulting CAMEL model. This method
+	 * is useful for exporting CAMEL models in the textual-xtext form.
+	 */
+	private static EObject transformToCamelModel(EObject model){
+		CamelModel toSave = null;
+		if (! (model instanceof CamelModel)){
+			toSave = CoreFactory.eINSTANCE.createCamelModel();
+			String name = ((Model)model).getName();
+			toSave.setName("CAMEL_" + name);
+			if (model instanceof LocationModel) toSave.getLocationModels().add((LocationModel)model);
+			else if (model instanceof RequirementModel) toSave.getRequirementModels().add((RequirementModel)model);
+			else if (model instanceof DeploymentModel) toSave.getDeploymentModels().add((DeploymentModel)model);
+			else if (model instanceof MetricModel) toSave.getMetricModels().add((MetricModel)model);
+			else if (model instanceof ScalabilityModel) toSave.getScalabilityModels().add((ScalabilityModel)model);
+			else if (model instanceof ExecutionModel) toSave.getExecutionModels().add((ExecutionModel)model);
+			else if (model instanceof TypeModel) toSave.getTypeModels().add((TypeModel)model);
+			else if (model instanceof SecurityModel) toSave.getSecurityModels().add((SecurityModel)model);
+			else if (model instanceof UnitModel) toSave.getUnitModels().add((UnitModel)model);
+			else if (model instanceof DataModel) toSave.getDataModels().add((DataModel)model);
+			else if (model instanceof OrganisationModel) toSave.getOrganisationModels().add((OrganisationModel)model);
+			else if (model instanceof ConstraintModel) toSave.getConstraintModels().add((ConstraintModel)model);
+			else if (model instanceof MetaDataModel) toSave.getMetadataModels().add((MetaDataModel)model);
+		}
+		else toSave = (CamelModel)model;
+		return toSave;
+	}
 	
 	/* This method exports a CDO model stored in a particular resource path into the file
 	 * system at a specific path. The input parameters to be provided are the CDO resource 
@@ -990,21 +943,21 @@ public class CDOClient
 		return ok;
 	}
 	
-//	/* This method exports a CDO model stored in a particular resource path into the file
-//	 * system at a specific path in CAMEL textual form. The input parameters to be provided are the CDO resource
-//	 * path from which to retrieve the model and the path in the file system to store it.
-//	 * The method returns as output the value of true or false depending on whether the
-//	 * resource exists and has been successfully saved in the file system.
-//	 */
-//	public boolean exportTextualModel(String resourcePath, String filePath){
-//		CDOView view = openView();
-//		CDOResource prevResource = view.getResource(resourcePath);
-//		EObject model = prevResource.getContents().get(0);
-//		EObject copy = EcoreUtil.copy(model);
-//		boolean ok = exportTextualModel(copy,filePath);
-//		view.close();
-//		return ok;
-//	}
+	/* This method exports a CDO model stored in a particular resource path into the file
+	 * system at a specific path in CAMEL textual form. The input parameters to be provided are the CDO resource
+	 * path from which to retrieve the model and the path in the file system to store it.
+	 * The method returns as output the value of true or false depending on whether the
+	 * resource exists and has been successfully saved in the file system.
+	 */
+	public boolean exportTextualModel(String resourcePath, String filePath){
+		CDOView view = openView();
+		CDOResource prevResource = view.getResource(resourcePath);
+		EObject model = prevResource.getContents().get(0);
+		EObject copy = EcoreUtil.copy(model);
+		boolean ok = exportTextualModel(copy,filePath);
+		view.close();
+		return ok;
+	}
 	
 	/* This method is used to run a query over the contents stored in the 
 	 * CDO Store. You do not have to create a view before running the query
@@ -1229,104 +1182,104 @@ public class CDOClient
    * false depending on the result of the exporting. It must be noted that all exported models have a fixed
    * file name and are stored in the current directory. 
    */
-//  public boolean exportModelWithRefRec(String resourcePath, String dirPath, boolean xtext){
-//	  if (logging) log.info("Model in CDO resource path: " + resourcePath + " is being exported along with its (external) cross-referenced models");
-//	  boolean ok = true;
-//	  try{
-//		  dirPath = checkDirPath(dirPath);
-//		  if (dirPath == null) return false;
-//
-//		  CDOView view = openView();
-//		  CDOResource res = view.getResource(resourcePath);
-//		  EObject obj2 = res.getContents().get(0);
-//
-//		  Set<EObject> examined = new HashSet<EObject>();
-//		  Set<EObject> models = findCrossRefModels(obj2,examined);
-//		  Hashtable<EObject,EObject> refModels = new Hashtable<EObject,EObject>();
-//		  for (EObject model: models){
-//			  EObject newModel = EcoreUtil.copy(model);
-//			  refModels.put(model, newModel);
-//		  }
-//		  for (EObject model: models){
-//			  handleModelExportWithRef(model,refModels);
-//		  }
-//		  if (xtext) ok = exportTextualModelMassive(refModels,dirPath);
-//		  else ok = exportModelMassive(refModels,dirPath);
-//		  if (ok){
-//			  if (logging) log.info("Model in resource path: " + resourcePath + " successfully exported");
-//		  }
-//
-//		  view.close();
-//
-//	  }
-//	  catch(Exception e){
-//		  log.error("Something went wrong while exporting along with cross-referenced models the model identified by the CDO resource path: " + resourcePath, e);
-//	  }
-//	  return ok;
-//  }
+  public boolean exportModelWithRefRec(String resourcePath, String dirPath, boolean xtext){
+	  if (logging) log.info("Model in CDO resource path: " + resourcePath + " is being exported along with its (external) cross-referenced models");
+	  boolean ok = true;
+	  try{
+		  dirPath = checkDirPath(dirPath);
+		  if (dirPath == null) return false;
+
+		  CDOView view = openView();
+		  CDOResource res = view.getResource(resourcePath);
+		  EObject obj2 = res.getContents().get(0);
+
+		  Set<EObject> examined = new HashSet<EObject>();
+		  Set<EObject> models = findCrossRefModels(obj2,examined);
+		  Hashtable<EObject,EObject> refModels = new Hashtable<EObject,EObject>();
+		  for (EObject model: models){
+			  EObject newModel = EcoreUtil.copy(model);
+			  refModels.put(model, newModel);
+		  }
+		  for (EObject model: models){
+			  handleModelExportWithRef(model,refModels);
+		  }
+		  if (xtext) ok = exportTextualModelMassive(refModels,dirPath);
+		  else ok = exportModelMassive(refModels,dirPath);
+		  if (ok){
+			  if (logging) log.info("Model in resource path: " + resourcePath + " successfully exported");
+		  }
+
+		  view.close();
+
+	  }
+	  catch(Exception e){
+		  log.error("Something went wrong while exporting along with cross-referenced models the model identified by the CDO resource path: " + resourcePath, e);
+	  }
+	  return ok;
+  }
   
-//  /* This method exports in memory models which cross-reference each other into
-//   * the file system where their name is derived from the name of the previous
-//   * CDO models from which they were copied. It takes as input a mapping from
-//   * previous to new models to be stored as well as the file system path of the
-//   * directory in which they will be stored. Returns a boolean value indicating
-//   * whether the exporting was successful or not.
-//   */
-//
-//  private boolean exportModelMassive(Hashtable<EObject,EObject> refModels, String dirPath){
-//		final ResourceSet resourceSet = new ResourceSetImpl();
-//		resourceSet.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
-//		for (EObject prevModel: refModels.keySet()){
-//			EObject newModel = refModels.get(prevModel);
-//			Resource resource = resourceSet.createResource(URI.createFileURI(getFileNameFromPreviousModel(prevModel,".xmi")));
-//			EObject toSave = transformToCamelModel(newModel);
-//			resource.getContents().add(toSave);
-//		}
-//		for (Resource resource: resourceSet.getResources()){
-//			if (logging) log.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
-//			try {
-//				resource.save(opts);
-//			}
-//			catch (IOException e) {
-//			  log.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
-//			  return false;
-//			}
-//		}
-//		if (!dirPath.equals(".")) moveFiles(refModels.keySet(),dirPath,".xmi");
-//		return true;
-//	}
+  /* This method exports in memory models which cross-reference each other into
+   * the file system where their name is derived from the name of the previous
+   * CDO models from which they were copied. It takes as input a mapping from
+   * previous to new models to be stored as well as the file system path of the
+   * directory in which they will be stored. Returns a boolean value indicating
+   * whether the exporting was successful or not.
+   */
+
+  private boolean exportModelMassive(Hashtable<EObject,EObject> refModels, String dirPath){
+		final ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getPackageRegistry().put(CorePackage.eNS_URI, CorePackage.eINSTANCE);
+		for (EObject prevModel: refModels.keySet()){
+			EObject newModel = refModels.get(prevModel);
+			Resource resource = resourceSet.createResource(URI.createFileURI(getFileNameFromPreviousModel(prevModel,".xmi")));
+			EObject toSave = transformToCamelModel(newModel);
+			resource.getContents().add(toSave);
+		}
+		for (Resource resource: resourceSet.getResources()){
+			if (logging) log.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
+			try {
+				resource.save(opts);
+			}
+			catch (IOException e) {
+			  log.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
+			  return false;
+			}
+		}
+		if (!dirPath.equals(".")) moveFiles(refModels.keySet(),dirPath,".xmi");
+		return true;
+	}
   
-//  /* This method exports in memory models which cross-reference each other into
-//   * the file system where their name is derived from the name of the previous
-//   * CDO models from which they were copied. It takes as input a mapping from
-//   * previous to new models to be stored as well as the file system path of the
-//   * directory in which they will be stored. Returns a boolean value indicating
-//   * whether the exporting was successful or not.
-//   */
-//  private boolean exportTextualModelMassive(Hashtable<EObject,EObject> refModels, String dirPath){
-//		Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
-//		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
-//		for (EObject prevModel: refModels.keySet()){
-//			EObject newModel = refModels.get(prevModel);
-//			Resource resource = resourceSet.createResource(URI.createFileURI(getFileNameFromPreviousModel(prevModel,".camel")));
-//			EObject toSave = transformToCamelModel(newModel);
-//			resource.getContents().add(toSave);
-//		}
-//		for (Resource resource: resourceSet.getResources()){
-//			if (logging) log.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
-//			try {
-//				Builder options=SaveOptions.newBuilder();
-//				options.format();
-//				resource.save(options.getOptions().toOptionsMap());
-//			}
-//			catch (IOException e) {
-//			  log.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
-//			  return false;
-//			}
-//  		}
-//		if (!dirPath.equals(".")) moveFiles(refModels.keySet(),dirPath,".camel");
-//		return true;
-//	}
+  /* This method exports in memory models which cross-reference each other into
+   * the file system where their name is derived from the name of the previous
+   * CDO models from which they were copied. It takes as input a mapping from
+   * previous to new models to be stored as well as the file system path of the
+   * directory in which they will be stored. Returns a boolean value indicating
+   * whether the exporting was successful or not.
+   */
+  private boolean exportTextualModelMassive(Hashtable<EObject,EObject> refModels, String dirPath){
+		Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
+		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+		for (EObject prevModel: refModels.keySet()){
+			EObject newModel = refModels.get(prevModel);
+			Resource resource = resourceSet.createResource(URI.createFileURI(getFileNameFromPreviousModel(prevModel,".camel")));
+			EObject toSave = transformToCamelModel(newModel);
+			resource.getContents().add(toSave);
+		}
+		for (Resource resource: resourceSet.getResources()){
+			if (logging) log.info("Attempting to save resource: " + resource + " " + resource.getContents().size());
+			try {
+				Builder options=SaveOptions.newBuilder();
+				options.format();
+				resource.save(options.getOptions().toOptionsMap());
+			}
+			catch (IOException e) {
+			  log.error("Something went wrong while exporting the CDO model: " + resource.getContents().get(0) + " into a CAMEL textual model", e);
+			  return false;
+			}
+  		}
+		if (!dirPath.equals(".")) moveFiles(refModels.keySet(),dirPath,".camel");
+		return true;
+	}
   
   /* This method is used to move textual or xmi files previously generated into the
    * current directory to the directory pointed out by the second input arguments.
@@ -1380,89 +1333,81 @@ public class CDOClient
    * the exported models are in a xtext/textual or xmi form. It returns true or false 
    * depending on the outcome of the exporting.
    */
-//  public boolean exportCDOContent(String dirPath, boolean xtext){
-//	  if (logging) log.info("Exporting CDOContent as a zip file in file directory path: " + dirPath + " ...");
-//	  boolean ok = true;
-//
-//	  dirPath = checkDirPath(dirPath);
-//	  if (dirPath == null) return false;
-//
-//		  CDOView view = openView();
-//		  Set<EObject> models = getAllModels(view.getElements());
-//		  //System.out.println("The cross referenced models are: " + models);
-//		  Hashtable<EObject,EObject> refModels = new Hashtable<EObject,EObject>();
-//		  for (EObject model: models){
-//			  //System.out.println("Creating a copy for model: " + model);
-//			  EObject newModel = EcoreUtil.copy(model);
-//			  refModels.put(model, newModel);
-//			  //exportRefModel(model,refModels.get(model));
-//		  }
-//		  for (EObject model: models){
-//			  //System.out.println("Handling dependencies for model: " + model);
-//			  handleModelExportWithRef(model,refModels);
-//		  }
-//		  if (xtext) ok = exportTextualModelMassive(refModels,".");
-//		  else ok = exportModelMassive(refModels,".");
-//
-//		  view.close();
-//		  if (ok){
-//			try{
-//			  if (xtext) {
-//				  MyIOUtils.createZipArchive(".", ".camel", false, new FileOutputStream(dirPath + File.separator + "cdo.zip"));
-//				  MyIOUtils.deleteFiles(".", ".camel");
-//			  }
-//			  else{
-//				  MyIOUtils.createZipArchive(".", ".xmi", false, new FileOutputStream(dirPath + File.separator + "cdo.zip"));
-//				  MyIOUtils.deleteFiles(".", ".xmi");
-//			  }
-//			  if (logging) log.info("CDOContent successfully exported in file directory path: " + dirPath);
-//			  return true;
-//			}
-//			catch(Exception e){
-//			  log.error("Something went wrong while exporting whole CDO content",e);
-//			  ok = false;
-//			}
-//		  }
-//	  return ok;
-//  }
+  public boolean exportCDOContent(String dirPath, boolean xtext){
+	  if (logging) log.info("Exporting CDOContent as a zip file in file directory path: " + dirPath + " ...");
+	  boolean ok = true;
+
+	  dirPath = checkDirPath(dirPath);
+	  if (dirPath == null) return false;
+
+		  CDOView view = openView();
+		  Set<EObject> models = getAllModels(view.getElements());
+		  //System.out.println("The cross referenced models are: " + models);
+		  Hashtable<EObject,EObject> refModels = new Hashtable<EObject,EObject>();
+		  for (EObject model: models){
+			  //System.out.println("Creating a copy for model: " + model);
+			  EObject newModel = EcoreUtil.copy(model);
+			  refModels.put(model, newModel);
+			  //exportRefModel(model,refModels.get(model));
+		  }
+		  for (EObject model: models){
+			  //System.out.println("Handling dependencies for model: " + model);
+			  handleModelExportWithRef(model,refModels);
+		  }
+		  if (xtext) ok = exportTextualModelMassive(refModels,".");
+		  else ok = exportModelMassive(refModels,".");
+
+		  view.close();
+		  if (ok){
+			try{
+			  if (xtext) {
+				  MyIOUtils.createZipArchive(".", ".camel", false, new FileOutputStream(dirPath + File.separator + "cdo.zip"));
+				  MyIOUtils.deleteFiles(".", ".camel");
+			  }
+			  else{
+				  MyIOUtils.createZipArchive(".", ".xmi", false, new FileOutputStream(dirPath + File.separator + "cdo.zip"));
+				  MyIOUtils.deleteFiles(".", ".xmi");
+			  }
+			  if (logging) log.info("CDOContent successfully exported in file directory path: " + dirPath);
+			  return true;
+			}
+			catch(Exception e){
+			  log.error("Something went wrong while exporting whole CDO content",e);
+			  ok = false;
+			}
+		  }
+	  return ok;
+  }
   
-//  /* This method nullifies all external cross-references of a file-based model and
-//   * then stores it into the CDO repository. It takes as input the model itself,
-//   * the CDO resource path on which to store it and the CDO transaction used to
-//   * perform this storage.
-//   */
-//  private void importModelNoRef(EObject model,String name, CDOTransaction trans){
-//	  if (logging) log.info("Importing model with name: " + name + " in CDO by also nulling external references ...");
-//	  Map<EObject,Collection<Setting>> map = EcoreUtil.ExternalCrossReferencer.find(model);
-//	  CDOResource res = trans.getOrCreateResource(name);
-//	  EList<EObject> contents = res.getContents();
-//	  for(EObject obj: map.keySet()){
-//		  Collection<Setting> st = map.get(obj);
-//		  for (Setting set: st){
-//			  //System.out.println("GotX :" + set.getEObject() + " " + set.getEStructuralFeature() + " " + set.get(true));
-//			  Object target = set.get(true);
-//			  if (target instanceof Location){
-//				  Location loc = (Location)target;
-//				  //System.out.println("The target object is location: " + loc + " with id: " + loc.getId());
-//				  if (target instanceof Country){
-//					  Country c = (Country)target;
-//					  //System.out.println("The target object is also a country with name: " + c.getName());
-//				  }
-//			  }
-//			  if (target instanceof EObject){
-//				  set.set(null);
-//			  }
-//			  else{
-//				  List l = (List)target;
-//				  boolean ok = l.remove(obj);
-//				  if (!ok) System.out.println("Could not remove object: " + obj + " from list: " + l);
-//				  //l.clear();
-//			  }
-//		  }
-//	  }
-//	  contents.add(model);
-//	  if (logging) log.info("Importing of model with name: " + name + " in CDO finished");
-//  }
+  /* This method nullifies all external cross-references of a file-based model and
+   * then stores it into the CDO repository. It takes as input the model itself,
+   * the CDO resource path on which to store it and the CDO transaction used to
+   * perform this storage.
+   */
+  private void importModelNoRef(EObject model,String name, CDOTransaction trans){
+	  if (logging) log.info("Importing model with name: " + name + " in CDO by also nulling external references ...");
+	  Map<EObject,Collection<Setting>> map = EcoreUtil.ExternalCrossReferencer.find(model);
+	  CDOResource res = trans.getOrCreateResource(name);
+	  EList<EObject> contents = res.getContents();
+	  for(EObject obj: map.keySet()){
+		  Collection<Setting> st = map.get(obj);
+		  for (Setting set: st){
+			  //System.out.println("GotX :" + set.getEObject() + " " + set.getEStructuralFeature() + " " + set.get(true));
+			  Object target = set.get(true);
+			  if (target instanceof EObject){
+				  set.set(null);
+			  }
+			  else{
+				  List l = (List)target;
+				  boolean ok = l.remove(obj);
+				  if (!ok) System.out.println("Could not remove object: " + obj + " from list: " + l);
+				  //l.clear();
+			  }
+		  }
+	  }
+	  contents.add(model);
+	  if (logging) log.info("Importing of model with name: " + name + " in CDO finished");
+  }
   
   /* This method seeks to find a resource in a particular table mapping each resource to
    * a specific CDO resource path. If this resource is discovered, then the respective
@@ -1531,268 +1476,268 @@ public class CDOClient
 	  }
   }
   
-//  /* This method takes a zip file with the (possible) content of a CDO Repository/Store (which has
-//   * been previously exported) which is identified by the file path given as input and
-//   * stores all XMI/textual-xtext files contained in it in the CDO Repository, where a boolean
-//   * input parameter indicates the form of the files to be stored. This functionality useful for restoring
-//   * a previous content of a CDO Repository which has been exported for back up reasons.
-//   * The method either returns true or false depending on whether the content has been
-//   * successfully imported as a whole or not.
-//   */
-//  public boolean loadCDOContent(String filePath, boolean xtext){
-//	  try{
-//		if (logging) log.info("Loading content into CDO Repository from file path: " + filePath + " ...");
-//	    ZipFile zipFile = new ZipFile(filePath);
-//
-//	    Enumeration<? extends ZipEntry> entries = zipFile.entries();
-//	    Hashtable<String,EObject> models = new Hashtable<String,EObject>();
-//	    Hashtable<Resource,String> modelToName = new Hashtable<Resource,String>();
-//
-//	    File dir = new File("temp");
-//	    dir.mkdir();
-//
-//	    while(entries.hasMoreElements()){
-//	        ZipEntry entry = entries.nextElement();
-//	        String name = entry.getName();
-//	        InputStream stream = zipFile.getInputStream(entry);
-//	        File f = new File("temp/" + name);
-//	        MyIOUtils.loadInputStream(f,stream);
-//	    }
-//	    if (xtext){
-//	    	Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
-//			XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
-//			rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-//			List<String> names = new ArrayList<String>();
-//		    for (File f: dir.listFiles()){
-//		    	String name = f.getName();
-//		    	name = name.replace("_","/");
-//		    	int index = name.indexOf(".camel");
-//		    	name = name.substring(0,index);
-//		    	names.add(name);
-//		    	try{
-//					  Resource res = rs.getResource(URI.createURI(f.toURI().toString()), true);
-//					  if (logging) log.info("Got resource: " + res);
-//				  }
-//				  catch(Exception e){
-//					  e.printStackTrace();
-//				  }
-//		    }
-//		    EList<Resource> resources = rs.getResources();
-//		    for (int i = 0; i < resources.size(); i++){
-//		    	Resource res = resources.get(i);
-//		    	String name = names.get(i);
-//		    	EObject model = res.getContents().get(0);
-//		    	models.put(name,model);
-//		    	modelToName.put(model.eResource(), name);
-//		    }
-//	    }
-//	    else{
-//		    for (File f: dir.listFiles()){
-//		    	String name = f.getName();
-//		    	name = name.replace("_","/");
-//		    	int index = name.indexOf(".xmi");
-//		    	name = name.substring(0,index);
-//		    	EObject model = loadModel(f.toURI().toURL());
-//		    	models.put(name,model);
-//		    	//System.out.println("EResource is: " + model.eResource());
-//		    	modelToName.put(model.eResource(), name);
-//		    }
-//	    }
-//	    CDOTransaction trans = openTransaction();
-//	    for (String modelName: models.keySet()){
-//	    	EObject object = EcoreUtil.copy(models.get(modelName));
-//	    	//System.out.println("Created model: " + object + " contained in: " + object.eResource());
-//	    	importModelNoRef(object,modelName,trans);
-//	    }
-//	    for (String modelName: models.keySet()){
-//	    	fixModelRefs(modelName,models,modelToName,trans);
-//	    }
-//	    trans.commit();
-//	    trans.close();
-//
-//	    //Delete everything in the end
-//	    for (File f: dir.listFiles()) f.delete();
-//	    dir.delete();
-//
-//	    if (logging) log.info("Content into CDO Repository loaded ...");
-//	    return true;
-//	  }
-//	  catch(Exception e){
-//		  log.error("Something went wrong while loading content into CDO Repository", e);
-//	  }
-//	  return false;
-//  }
+  /* This method takes a zip file with the (possible) content of a CDO Repository/Store (which has
+   * been previously exported) which is identified by the file path given as input and
+   * stores all XMI/textual-xtext files contained in it in the CDO Repository, where a boolean
+   * input parameter indicates the form of the files to be stored. This functionality useful for restoring
+   * a previous content of a CDO Repository which has been exported for back up reasons.
+   * The method either returns true or false depending on whether the content has been
+   * successfully imported as a whole or not.
+   */
+  public boolean loadCDOContent(String filePath, boolean xtext){
+	  try{
+		if (logging) log.info("Loading content into CDO Repository from file path: " + filePath + " ...");
+	    ZipFile zipFile = new ZipFile(filePath);
+
+	    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+	    Hashtable<String,EObject> models = new Hashtable<String,EObject>();
+	    Hashtable<Resource,String> modelToName = new Hashtable<Resource,String>();
+
+	    File dir = new File("temp");
+	    dir.mkdir();
+
+	    while(entries.hasMoreElements()){
+	        ZipEntry entry = entries.nextElement();
+	        String name = entry.getName();
+	        InputStream stream = zipFile.getInputStream(entry);
+	        File f = new File("temp/" + name);
+	        MyIOUtils.loadInputStream(f,stream);
+	    }
+	    if (xtext){
+	    	Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
+			XtextResourceSet rs = injector.getInstance(XtextResourceSet.class);
+			rs.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
+			List<String> names = new ArrayList<String>();
+		    for (File f: dir.listFiles()){
+		    	String name = f.getName();
+		    	name = name.replace("_","/");
+		    	int index = name.indexOf(".camel");
+		    	name = name.substring(0,index);
+		    	names.add(name);
+		    	try{
+					  Resource res = rs.getResource(URI.createURI(f.toURI().toString()), true);
+					  if (logging) log.info("Got resource: " + res);
+				  }
+				  catch(Exception e){
+					  e.printStackTrace();
+				  }
+		    }
+		    EList<Resource> resources = rs.getResources();
+		    for (int i = 0; i < resources.size(); i++){
+		    	Resource res = resources.get(i);
+		    	String name = names.get(i);
+		    	EObject model = res.getContents().get(0);
+		    	models.put(name,model);
+		    	modelToName.put(model.eResource(), name);
+		    }
+	    }
+	    else{
+		    for (File f: dir.listFiles()){
+		    	String name = f.getName();
+		    	name = name.replace("_","/");
+		    	int index = name.indexOf(".xmi");
+		    	name = name.substring(0,index);
+		    	EObject model = loadModel(f.toURI().toURL());
+		    	models.put(name,model);
+		    	//System.out.println("EResource is: " + model.eResource());
+		    	modelToName.put(model.eResource(), name);
+		    }
+	    }
+	    CDOTransaction trans = openTransaction();
+	    for (String modelName: models.keySet()){
+	    	EObject object = EcoreUtil.copy(models.get(modelName));
+	    	//System.out.println("Created model: " + object + " contained in: " + object.eResource());
+	    	importModelNoRef(object,modelName,trans);
+	    }
+	    for (String modelName: models.keySet()){
+	    	fixModelRefs(modelName,models,modelToName,trans);
+	    }
+	    trans.commit();
+	    trans.close();
+
+	    //Delete everything in the end
+	    for (File f: dir.listFiles()) f.delete();
+	    dir.delete();
+
+	    if (logging) log.info("Content into CDO Repository loaded ...");
+	    return true;
+	  }
+	  catch(Exception e){
+		  log.error("Something went wrong while loading content into CDO Repository", e);
+	  }
+	  return false;
+  }
   
-//  /* This method transforms a XMI model to a textual CAMEL model. It takes as input
-//   * the path in the file system for both the XMI model to be transformed and the
-//   * CAMEL model to be generated and stored. The method returns the value of true
-//   * or false depending on whether the transformation was successful or not
-//   */
-//  public static boolean xmiToCAMEL(String xmiPath, String camelPath){
-//	  EObject model = loadModel(xmiPath);
-//	  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
-//	  XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
-//	  Resource resource = resourceSet.createResource(URI.createFileURI(camelPath));
-//	  EObject toSave = transformToCamelModel(model);
-//	  resource.getContents().add(toSave);
-//	  try {
-//		Builder options=SaveOptions.newBuilder();
-//		options.format();
-//		resource.save(options.getOptions().toOptionsMap());
-//		return true;
-//	  }
-//	  catch (IOException e) {
-//		  log.error("Something went wrong while transforming XMI model to CAMEL one", e);
-//	  }
-//	  return false;
-//  }
+  /* This method transforms a XMI model to a textual CAMEL model. It takes as input
+   * the path in the file system for both the XMI model to be transformed and the
+   * CAMEL model to be generated and stored. The method returns the value of true
+   * or false depending on whether the transformation was successful or not
+   */
+  public static boolean xmiToCAMEL(String xmiPath, String camelPath){
+	  EObject model = loadModel(xmiPath);
+	  Injector injector = new CamelDslStandaloneSetup().createInjectorAndDoEMFRegistration();
+	  XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+	  Resource resource = resourceSet.createResource(URI.createFileURI(camelPath));
+	  EObject toSave = transformToCamelModel(model);
+	  resource.getContents().add(toSave);
+	  try {
+		Builder options=SaveOptions.newBuilder();
+		options.format();
+		resource.save(options.getOptions().toOptionsMap());
+		return true;
+	  }
+	  catch (IOException e) {
+		  log.error("Something went wrong while transforming XMI model to CAMEL one", e);
+	  }
+	  return false;
+  }
   
-//  /* Main method which demonstrates the functionality of the CDOClient through
-//   * the usage of the various methods offered by it, when no arguments are given
-//   * to it. Otherwise, it takes as input the name of the method plus any additional
-//   * parameter required by it and executes it. The latter exploitation is useful for
-//   * a command line usage of the CDOClient API. */
-//  public static void main(String[] args){
-//	  //Create the CDOClient
-//	  CDOClient cl = new CDOClient("Administrator","0000");
-//	  if (args.length == 0){
-//		  //Creating & adding a listener to the session
-//		  MyListener listener = new MyListener();
-//		  cl.addListener(listener);
-//		  //Create a particular model (CERIF)
-//		  EObject model = cl.createCerifModel();
-//		  //Store the model under a CDOResource with a particular name
-//		  cl.storeModel(model,"cerif",true);
-//		  //Create a particular model (SensApp)
-//		  model = SensAppCDO.getSensAppCamelModel();
-//		  //Store the model under a CDOResource with a particular name
-//		  cl.storeModel(model,"sensAppResource1",true);
-//		  //Load a model from a XMI resource situated inside jar file
-//		  URL url = cl.getClass().getResource("/Scalarm.xmi");
-//		  //model = cl.loadModel("examples/Scalarm.xmi");
-//		  model = cl.loadModel(url);
-//		  //Store the model under a CDOResource with a particular name
-//		  cl.storeModel(model,"scalarmResource1",true);
-//
-//		  //Create transaction and use this to delete object
-//		  CDOTransaction trans = cl.openTransaction(true);
-//		  User user = trans.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
-//		  cl.deleteObject(user.getPaasageCredentials(),trans,false);
-//		  cl.deleteObject(user,trans,true);
-//		  //Create view, get cdoID and then delete object by using this id as input
-//		  CDOView view = cl.openView();
-//		  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.identifier='ID2'").getResult(ExternalIdentifier.class).get(0);
-//		  CDOID cdoID1 = id1.cdoID();
-//		  view.close();
-//		  cl.deleteObject(cdoID1);
-//
-//		  //Check that the objects have been deleted
-//		  view = cl.openView();
-//		  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.identifier='ID2' or id.identifier='ID3')").getResult(ExternalIdentifier.class);
-//		  log.info("Did we get the ids requested?: " + !(types.isEmpty()));
-//		  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
-//		  log.info("Did we get the users requested?: " + !(users.isEmpty()));
-//		  view.close();
-//
-//		  /*Run a query - three ways are shown here: (i) ocl query,
-//		   * (ii) hql query and (iii) get all contents of a CDO Resource
-//		   * and process them to e.g. find the one you are looking for. Please
-//		   * notice that for the third way, the user/developer has to first create
-//		   * a view, get the contents of the CDOResource and process them and
-//		   * finally close the view. If the contents have to be modified, then
-//		   * a transaction should be opened instead (and finally closed when
-//		   * processing has been ended).
-//		   */
-//		  //OCL query plus exporting of first result
-//		  List<EObject> results = cl.runQuery("ocl","camel::organisation::User.allInstances()","queryResult.xmi");
-//		  log.info("The results of the query are:" + results);
-//		  //HQL query with no exporting
-//		  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
-//		  log.info("The results of the query are:" + results);
-//		  //Obtaining all contents of a CDOResource
-//		  view = cl.openView();
-//		  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
-//		  log.info("The objs stored are: " + objs);
-//		  cl.closeView(view);
-//		  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
-//		  cl.exportModel("sensAppResource1", DeploymentModel.class, "examples/SensApp_DepModel.xmi");
-//		  //Remove listener as no longer needed
-//		  cl.removeListener(listener);
-//	  }
-//	  else{
-//		  String method = args[0];
-//		  boolean ok = false;
-//		  if (method.equals("importModel") || method.equals("importTextualModel")){
-//			  if (args.length >= 3){
-//				  String filePath = args[1];
-//				  String resourcePath = args[2];
-//				  boolean validate = true;
-//				  if (args.length == 4){
-//					  validate = Boolean.parseBoolean(args[3]);
-//				  }
-//				  else log.warn("3 or 4 arguments were expected. At most the 4 first arguments are taken into account");
-//				  if (method.equals("importModel"))
-//					  ok = cl.importModel(filePath, resourcePath, validate);
-//				  else if (method.equals("importTextualModel"))
-//					  ok = cl.importTextualModel(filePath, resourcePath, validate);
-//			  }
-//			  else{
-//				  log.error(method + " was called with a wrong number of arguments");
-//			  }
-//		  }
-//		  else if (method.equals("xmiToCAMEL")){
-//			  if (args.length >= 3){
-//				  String xmiPath = args[1];
-//				  String camelPath = args[2];
-//				  if (args.length > 3)
-//					  log.warn("3 arguments were expected. At most the 4 first arguments are taken into account");
-//					  ok = xmiToCAMEL(xmiPath, camelPath);
-//			  }
-//			  else{
-//				  log.error(method + " was called with a wrong number of arguments");
-//			  }
-//		  }
-//		  else if (method.equals("exportModel") || method.equals("exportTextualModel")){
-//			  if (args.length == 3){
-//				  String resourcePath = args[1];
-//				  String filePath = args[2];
-//				  if (method.equals("exportModel"))
-//					  ok = cl.exportModel(resourcePath, filePath);
-//				  else if (method.equals("exportTextualModel"))
-//					  ok = cl.exportTextualModel(resourcePath, filePath);
-//			  }
-//			  else log.error(method + " was called with a wrong number of arguments");
-//		  }
-//		  else if (method.equals("exportModelWithRefRec") || method.equals("exportModelWithRef")){
-//			  if (args.length == 4){
-//				  String resourcePath = args[1];
-//				  String dirPath = args[2];
-//				  String arg3 = args[3];
-//				  if (method.equals("exportModelWithRef"))
-//					  ok = cl.exportModelWithRef(resourcePath, dirPath, arg3);
-//				  else if (method.equals("exportModelWithRefRec")){
-//					  boolean xtext = Boolean.parseBoolean(arg3);
-//					  ok = cl.exportModelWithRefRec(resourcePath, dirPath, xtext);
-//				  }
-//			  }
-//			  else log.error(method + " was called with a wrong number of arguments");
-//		  }
-//		  else if (method.equals("exportCDOContent") || method.equals("loadCDOContent")){
-//			  if (args.length == 3){
-//				  String arg1 = args[1];
-//				  boolean xtext = Boolean.parseBoolean(args[2]);
-//				  if (method.equals("exportCDOContent"))
-//					  ok = cl.exportCDOContent(arg1,xtext);
-//				  else if (method.equals("loadCDOContent"))
-//					  ok = cl.loadCDOContent(arg1,xtext);
-//			  }
-//			  else log.error(method + " was called with a wrong number of arguments");
-//		  }
-//		  else log.error(method + " does not exist or cannot be executed in a command line manner");
-//		  if (ok) log.info(method + " was successfully performed");
-//	  }
-//	  //Close the CDOSession once you are done
-//	  cl.closeSession();
-//	  System.exit(1);
-//  }
+  /* Main method which demonstrates the functionality of the CDOClient through
+   * the usage of the various methods offered by it, when no arguments are given 
+   * to it. Otherwise, it takes as input the name of the method plus any additional
+   * parameter required by it and executes it. The latter exploitation is useful for
+   * a command line usage of the CDOClient API. */
+  public static void main(String[] args){
+	  //Create the CDOClient
+	  CDOClient cl = new CDOClient("Administrator","0000");
+	  if (args.length == 0){
+		  //Creating & adding a listener to the session
+		  MyListener listener = new MyListener();
+		  cl.addListener(listener);
+		  //Create a particular model (CERIF)
+		  EObject model = OrganisationExample.createExampleOrgModel();
+		  //Store the model under a CDOResource with a particular name
+		  cl.storeModel(model,"cerif",true);
+		  //Create a particular model (SensApp)
+		  model = SensAppCDO.getSensAppCamelModel();
+		  //Store the model under a CDOResource with a particular name
+		  cl.storeModel(model,"sensAppResource1",true);
+		  //Load a model from a XMI resource situated inside jar file
+		  //URL url = cl.getClass().getResource("/CRM.xmi");
+		  //model = cl.loadModel(url);
+		  //Store the model under a CDOResource with a particular name
+		  //cl.storeModel(model,"crmResource1",true);
+		  
+		  //Create transaction and use this to delete object
+		  CDOTransaction trans = cl.openTransaction(true);
+		  User user = trans.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class).get(0);
+		  cl.deleteObject(user.getPlatformCredentials(),trans,false);
+		  cl.deleteObject(user,trans,true);
+		  //Create view, get cdoID and then delete object by using this id as input
+		  CDOView view = cl.openView();
+		  ExternalIdentifier id1 = view.createQuery("hql", "select id from ExternalIdentifier id where id.identifier='ID2'").getResult(ExternalIdentifier.class).get(0);
+		  CDOID cdoID1 = id1.cdoID();
+		  view.close();
+		  cl.deleteObject(cdoID1);
+		  
+		  //Check that the objects have been deleted
+		  view = cl.openView();
+		  List<ExternalIdentifier> types = view.createQuery("hql","select id from ExternalIdentifier id where (id.identifier='ID2' or id.identifier='ID3')").getResult(ExternalIdentifier.class);
+		  log.info("Did we get the ids requested?: " + !(types.isEmpty()));
+		  List<User> users = view.createQuery("hql", "select u from User u where u.firstName='User2'").getResult(User.class);
+		  log.info("Did we get the users requested?: " + !(users.isEmpty()));
+		  view.close();
+		  
+		  /*Run a query - three ways are shown here: (i) ocl query, 
+		   * (ii) hql query and (iii) get all contents of a CDO Resource
+		   * and process them to e.g. find the one you are looking for. Please
+		   * notice that for the third way, the user/developer has to first create
+		   * a view, get the contents of the CDOResource and process them and 
+		   * finally close the view. If the contents have to be modified, then
+		   * a transaction should be opened instead (and finally closed when
+		   * processing has been ended). 
+		   */
+		  //OCL query plus exporting of first result
+		  List<EObject> results = cl.runQuery("ocl","organisation::User.allInstances()","queryResult.xmi");
+		  log.info("The results of the query are:" + results);
+		  //HQL query with no exporting
+		  results = cl.runQuery("hql","select dm from DeploymentModel dm",null);
+		  log.info("The results of the query are:" + results);
+		  //Obtaining all contents of a CDOResource
+		  view = cl.openView();
+		  EList<EObject> objs = view.getResource("sensAppResource1").getContents();
+		  log.info("The objs stored are: " + objs);
+		  cl.closeView(view);
+		  //Store the DeploymentModel of the loaded and stored CamelModel as an XMI file
+		  cl.exportModel("sensAppResource1", DeploymentModel.class, "output/SensApp_DepModel.xmi");
+		  //Remove listener as no longer needed
+		  cl.removeListener(listener);
+	  }
+	  else{
+		  String method = args[0];
+		  boolean ok = false;
+		  if (method.equals("importModel") || method.equals("importTextualModel")){
+			  if (args.length >= 3){
+				  String filePath = args[1];
+				  String resourcePath = args[2];
+				  boolean validate = true;
+				  if (args.length == 4){
+					  validate = Boolean.parseBoolean(args[3]);
+				  }
+				  else log.warn("3 or 4 arguments were expected. At most the 4 first arguments are taken into account");
+				  if (method.equals("importModel"))
+					  ok = cl.importModel(filePath, resourcePath, validate);
+				  else if (method.equals("importTextualModel"))
+					  ok = cl.importTextualModel(filePath, resourcePath, validate);
+			  }
+			  else{
+				  log.error(method + " was called with a wrong number of arguments");
+			  }
+		  }
+		  else if (method.equals("xmiToCAMEL")){
+			  if (args.length >= 3){
+				  String xmiPath = args[1];
+				  String camelPath = args[2];
+				  if (args.length > 3)
+					  log.warn("3 arguments were expected. At most the 4 first arguments are taken into account");
+					  ok = xmiToCAMEL(xmiPath, camelPath);
+			  }
+			  else{
+				  log.error(method + " was called with a wrong number of arguments");
+			  }
+		  }
+		  else if (method.equals("exportModel") || method.equals("exportTextualModel")){
+			  if (args.length == 3){
+				  String resourcePath = args[1];
+				  String filePath = args[2];
+				  if (method.equals("exportModel"))
+					  ok = cl.exportModel(resourcePath, filePath);
+				  else if (method.equals("exportTextualModel"))
+					  ok = cl.exportTextualModel(resourcePath, filePath);
+			  }
+			  else log.error(method + " was called with a wrong number of arguments");
+		  }
+		  else if (method.equals("exportModelWithRefRec") || method.equals("exportModelWithRef")){
+			  if (args.length == 4){
+				  String resourcePath = args[1];
+				  String dirPath = args[2];
+				  String arg3 = args[3];
+				  if (method.equals("exportModelWithRef"))
+					  ok = cl.exportModelWithRef(resourcePath, dirPath, arg3);
+				  else if (method.equals("exportModelWithRefRec")){
+					  boolean xtext = Boolean.parseBoolean(arg3);
+					  ok = cl.exportModelWithRefRec(resourcePath, dirPath, xtext);
+				  }
+			  }
+			  else log.error(method + " was called with a wrong number of arguments");
+		  }
+		  else if (method.equals("exportCDOContent") || method.equals("loadCDOContent")){
+			  if (args.length == 3){
+				  String arg1 = args[1];
+				  boolean xtext = Boolean.parseBoolean(args[2]);
+				  if (method.equals("exportCDOContent"))
+					  ok = cl.exportCDOContent(arg1,xtext);
+				  else if (method.equals("loadCDOContent"))
+					  ok = cl.loadCDOContent(arg1,xtext);
+			  }
+			  else log.error(method + " was called with a wrong number of arguments");
+		  }
+		  else log.error(method + " does not exist or cannot be executed in a command line manner");
+		  if (ok) log.info(method + " was successfully performed");
+	  }
+	  //Close the CDOSession once you are done
+	  cl.closeSession();
+	  System.exit(1);
+  }
+
 }
