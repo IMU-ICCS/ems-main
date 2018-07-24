@@ -26,24 +26,20 @@ public class UtilityFunction {
     private Expression function;
     private Constant[] constants;
 
-    public UtilityFunction(String formula, Collection<Constant> constants){
+    public UtilityFunction(String formula, Collection<Constant> constants) {
         this.constants = constants.toArray(new Constant[constants.size()]);
         this.function = new Expression(formula);
-        log.info("constants = {}", constants.toArray().toString());
-
     }
 
-    public double evaluateFunction(Collection<Argument> variables){
-
+    public double evaluateFunction(Collection<Argument> variables) {
         variables.forEach(a -> log.info("Argument: {}, {}", a.getArgumentName(), a.getArgumentValue()));
         Arrays.stream(constants).forEach(a -> log.info("Constant: {}, {}", a.getConstantName(), a.getConstantValue()));
 
         function.addConstants(constants);
         function.addArguments(variables.toArray(new Argument[variables.size()]));
-        function.addArguments(new Argument("CandidateCost", constants));
 
-        if (function.getMissingUserDefinedArguments().length > 0){
-            throw new IllegalStateException("Missing arguments: " + Arrays.toString(function.getMissingUserDefinedArguments()) + " for function "+ function.getExpressionString());
+        if (function.getMissingUserDefinedArguments().length > 0) {
+            throw new IllegalStateException("Missing arguments: " + Arrays.toString(function.getMissingUserDefinedArguments()) + " for function " + function.getExpressionString());
         }
         double result = function.calculate();
         function.removeAllArguments();
@@ -52,12 +48,11 @@ public class UtilityFunction {
         return result;
     }
 
-    public String getFormula(){
+    public String getFormula() {
         return function.getExpressionString();
     }
 
-    //before any addition
-    public static boolean isInFormula(String formula, String name){
+    public static boolean isInFormula(String formula, String name) {
         Expression expression = new Expression(formula);
         String[] arguments = expression.getMissingUserDefinedArguments();
         return Arrays.asList(arguments).contains(name);

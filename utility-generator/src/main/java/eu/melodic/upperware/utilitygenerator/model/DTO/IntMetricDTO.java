@@ -8,8 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.model.DTO;
 
-public class IntMetricDTO extends MetricDTO<Integer>{
-
+public class IntMetricDTO extends MetricDTO<Integer> {
 
     public IntMetricDTO(String name, Integer value) {
         super(name, value);

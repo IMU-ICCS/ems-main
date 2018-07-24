@@ -14,7 +14,7 @@ class UtilityFunctionTest extends Specification{
     def setup(){
         formula = "a+b/t"
         Collection<Constant> constants = new ArrayList<>()
-        constants.add(new Constant("a", 4));
+        constants.add(new Constant("a", 4))
         utilityFunction = new UtilityFunction(formula, constants)
     }
 

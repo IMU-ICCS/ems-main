@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.model.DTO;
 
-public class FloatMetricDTO extends MetricDTO<Float>{
+public class FloatMetricDTO extends MetricDTO<Float> {
 
     public FloatMetricDTO(String name, Float value) {
         super(name, value);

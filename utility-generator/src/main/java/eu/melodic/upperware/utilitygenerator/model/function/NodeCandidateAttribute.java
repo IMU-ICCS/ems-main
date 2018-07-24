@@ -18,13 +18,10 @@ public class NodeCandidateAttribute {
     private String componentId;
     private NodeCandidatesAttributesType type;
     private boolean isList;
-
     @Setter
     double value;
 
-
-    public NodeCandidateAttribute(String name, String componentId, NodeCandidatesAttributesType type, boolean isList){
-
+    public NodeCandidateAttribute(String name, String componentId, NodeCandidatesAttributesType type, boolean isList) {
         this.name = name;
         this.componentId = componentId;
         this.type = type;
@@ -32,7 +29,7 @@ public class NodeCandidateAttribute {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return this.name + " , component = " + this.componentId + " type = " + this.type;
     }
 }

@@ -21,7 +21,6 @@ import java.util.List;
 @Slf4j
 public class UtilityGeneratorApplication {
 
-
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
     public UtilityGeneratorApplication(String cdoPath, String path, List<VariableDTO> variables, Collection<MetricDTO> metrics, NodeCandidates nodeCandidates) {

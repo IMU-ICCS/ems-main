@@ -10,8 +10,6 @@ package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
-import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +29,6 @@ public class EvaluatingUtils {
 
 
     public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
-
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
         Collection<VariableDTO> cardinalities = variables.stream()
@@ -42,13 +39,12 @@ public class EvaluatingUtils {
                 .stream()
                 .filter(c -> intVar.getName().equals(c.getId()))
                 .findFirst()
-                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), (int)intVar.getValue()))); //cardinality is always int
+                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), (int) intVar.getValue()))); //cardinality is always int
         return cardinalitiesForComponent;
     }
 
     //provider value is always int
     public static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<Element> newConfigurationInt) {
-
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return (int) newConfigurationInt.stream()
                 .filter(intVar -> provider.equals(intVar.getName()))
@@ -67,7 +63,6 @@ public class EvaluatingUtils {
     }
 
     private static Collection<String> getVariableNames(String componentId, Collection<VariableDTO> variables) {
-
         return variables.stream()
                 .filter(variable -> componentId.equals(variable.getComponentId()))
                 .map(VariableDTO::getId)
@@ -80,16 +75,6 @@ public class EvaluatingUtils {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable with type %s for component %s does not exist", type, componentId)))
                 .getId();
-    }
-
-
-    //todo - for real var
-    //todo saving only important variables
-    static Collection<Element> convertSolution(Collection<IntElement> newConfigurationInt, Collection<RealElement> newConfigurationReal) {
-
-        return newConfigurationInt.stream()
-                .map(intVar -> new IntElement(intVar.getName(), intVar.getValue()))
-                .collect(Collectors.toList());
     }
 
     public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
@@ -109,7 +94,7 @@ public class EvaluatingUtils {
             switch (type) {
                 //int
                 case RAM:
-                    log.debug("Creating getRamPredicate for value {}", (long) var.getValue());
+                    log.debug("Creating getRamPredicate for value {}", var.getValue());
                     predicates.add(getRamPredicate((long) var.getValue()));
                     break;
                 case CARDINALITY:
@@ -127,7 +112,7 @@ public class EvaluatingUtils {
                     predicates.add(getOsPredicate((int) var.getValue()));
                     break;
 
-                    //real
+                //real
                 case STORAGE:
                     predicates.add(getStoragePredicate((double) var.getValue())); //fixme - to check
                     break;
@@ -136,7 +121,6 @@ public class EvaluatingUtils {
 
             }
         }
-
 
         return predicates.toArray(new Predicate[predicates.size()]);
     }

@@ -38,12 +38,10 @@ public class NodeCandidatesConverter {
 
     private Collection<NodeCandidateAttribute> attributes;
     private Collection<NodeCandidateAttribute> listOfAttributes;
-
     private NodeCandidates nodeCandidates;
     private Collection<VariableDTO> variables;
-    
-    public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution, String formula){
 
+    public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution) {
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(solution);
         Collection<Element> arguments = new ArrayList<>();
 
@@ -52,35 +50,35 @@ public class NodeCandidatesConverter {
         return arguments;
     }
 
-    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes, Collection<Element> deployedSolution){
-
+    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes, Collection<Element> deployedSolution) {
         Collection<ConfigurationElement> actualConfiguration = convertSolutionToNodeCandidates(deployedSolution);
         Collection<Element> arguments = new ArrayList<>();
 
         attributes.forEach(a -> arguments.add(ElementFactory.createElement(a.getName(),
                 getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType()))));
         return arguments;
-
     }
 
-    public Collection<Collection<Element>> convertListOfAttributesOfNodeCandidates(){
-        return listOfAttributes.stream().map(attribute -> blabla(nodeCandidates.get(attribute.getComponentId()), attribute)).collect(Collectors.toList());
+    public Collection<Collection<Element>> convertListOfAttributesOfNodeCandidates() {
+        return listOfAttributes.stream()
+                .map(attribute -> getValuesForOneAttribute(nodeCandidates.get(attribute.getComponentId()), attribute))
+                .collect(Collectors.toList());
     }
 
-    private Collection<Element> blabla(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, NodeCandidateAttribute attribute){
+
+    private Collection<Element> getValuesForOneAttribute(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, NodeCandidateAttribute attribute) {
         Collection<Element> elements = new ArrayList<>();
         nodeCandidatesMap.values().forEach(list -> elements.addAll(getOneList(list, attribute)));
         return elements;
     }
 
-    private Collection<Element> getOneList(List<NodeCandidate> list, NodeCandidateAttribute attribute){
+    private Collection<Element> getOneList(List<NodeCandidate> list, NodeCandidateAttribute attribute) {
         return list.stream()
                 .map(nc -> ElementFactory.createElement(attribute.getName(), getAttributeOfNodeCandidate(nc, attribute.getType())))
                 .collect(Collectors.toList());
     }
 
     private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
-
         log.debug("Converting solution to Node Candidates");
 
         Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
@@ -98,33 +96,29 @@ public class NodeCandidatesConverter {
             }
             log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
 
-
             newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
-
         }
         return newConfiguration;
     }
 
-    private static NodeCandidate getNodeCandidate(Collection<ConfigurationElement> newConfiguration, String componentId){
+    private static NodeCandidate getNodeCandidate(Collection<ConfigurationElement> newConfiguration, String componentId) {
         return newConfiguration.stream()
                 .filter(configurationElement -> configurationElement.getId().equals(componentId))
                 .findAny()
-                .orElseThrow(()-> new IllegalStateException("Configuration Element for component" + componentId +" is not found"))
+                .orElseThrow(() -> new IllegalStateException("Configuration Element for component" + componentId + " is not found"))
                 .getNodeCandidate();
     }
 
 
-    private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, NodeCandidatesAttributesType type){
-
+    private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, NodeCandidatesAttributesType type) {
         Number result = null;
-        switch (type){
+        switch (type) {
             case PRICE:
                 result = nodeCandidate.getPrice();
                 break;
         }
-
-        if (result == null){
-            throw new IllegalArgumentException("something wrong");
+        if (result == null) {
+            throw new IllegalArgumentException("type of Node Candidate attribute is wrong");
         }
         return result;
     }

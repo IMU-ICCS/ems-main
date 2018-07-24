@@ -8,6 +8,7 @@ import eu.melodic.upperware.utilitygenerator.model.function.Element
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
+import spock.lang.Ignore
 import spock.lang.Specification
 
 class UtilityGeneratorApplicationTest extends Specification{
@@ -34,7 +35,7 @@ class UtilityGeneratorApplicationTest extends Specification{
         String providerName = "providerName"
         String metricName = "RT_AVG"
         String componentId = "Component_App"
-        Collection<VariableDTO> variables = new ArrayList<>();
+        Collection<VariableDTO> variables = new ArrayList<>()
         variables.add(new VariableDTO(cardinalityName, componentId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(providerName, componentId, VariableType.PROVIDER))
 
@@ -58,18 +59,18 @@ class UtilityGeneratorApplicationTest extends Specification{
         double result = utilityGenerator.evaluate(newConfiguration)
 
         then:
-        noExceptionThrown();
+        noExceptionThrown()
 
     }
 
-
+    @Ignore
     def "CRM test"(){
 
         given:
         String cardinalityName = "SmartDesignCardinality"
         String providerName = "providerName"
         String componentId = "SmartDesign"
-        Collection<VariableDTO> variables = new ArrayList<>();
+        Collection<VariableDTO> variables = new ArrayList<>()
         variables.add(new VariableDTO(cardinalityName, componentId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(providerName, componentId, VariableType.PROVIDER))
 
@@ -91,7 +92,7 @@ class UtilityGeneratorApplicationTest extends Specification{
 
 
         then:
-        noExceptionThrown();
+        noExceptionThrown()
 
 
     }

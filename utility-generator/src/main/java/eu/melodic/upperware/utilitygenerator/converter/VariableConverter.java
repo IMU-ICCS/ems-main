@@ -22,10 +22,7 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 public class VariableConverter {
 
 
-    public Collection<Element> convertVariablesForFunction(Collection<Element> solution, String formula){
-
-        return solution.stream()
-                .filter(element -> isInFormula(formula, element.getName()))
-                .collect(Collectors.toList());
+    public Collection<Element> convertVariablesForFunction(Collection<Element> solution, String formula) {
+        return solution.stream().filter(element -> isInFormula(formula, element.getName())).collect(Collectors.toList());
     }
 }

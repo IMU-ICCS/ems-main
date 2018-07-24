@@ -67,7 +67,7 @@ public class CPSolver {
 	private boolean useExternalOptimizer = false;
 	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
-	private double utilityOfDeployedSolution;
+	private double utilityOfDeployedSolution = 0;
 	private List<VariableDTO> variablesForUG = new ArrayList<>();
 	private Collection<Element> deployedSolution;
 	private Collection<MetricDTO> metricsForUG;

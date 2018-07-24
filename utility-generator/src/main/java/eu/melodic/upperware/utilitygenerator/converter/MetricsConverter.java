@@ -25,12 +25,10 @@ public class MetricsConverter {
 
     private Collection<MetricDTO> metricsFromConstraintProblem;
 
-    public Collection<Element> convertMetrics(String function){
-
+    public Collection<Element> convertMetrics(String function) {
         return metricsFromConstraintProblem.stream()
                 .filter(m -> isInFormula(function, m.getName()))
                 .map(ElementFactory::createElement)
                 .collect(Collectors.toList());
-
     }
 }

@@ -39,20 +39,21 @@ public class FromCamelModelConverter {
     private Collection<MetricVariableImpl> metricVariables;
     private String utilityFunctionFormula;
 
-    public FromCamelModelConverter(String path){
+    public FromCamelModelConverter(String path) {
         this.model = (CamelModel) CDOClient.loadModel(path);
         this.metricModel = (MetricTypeModelImpl) model.getMetricModels().get(0);
 
         this.metricVariables = new ArrayList<>();
         metricModel.getMetrics().stream()
                 .filter(m -> m instanceof MetricVariable)
-                .forEach(m-> metricVariables.add((MetricVariableImpl) m));
+                .forEach(m -> metricVariables.add((MetricVariableImpl) m));
 
         log.info("metricVariables size = {}", metricVariables.size());
         this.utilityFunctionFormula = getUtilityFormula();
     }
 
-    public Collection<MetricVariableImpl> getVariablesUsedInFunction(){
+    /* variables which should be also in CP model */
+    public Collection<MetricVariableImpl> getVariablesUsedInFunction() {
         return metricVariables.stream()
                 .filter(variable -> isInFormula(utilityFunctionFormula, variable.getName())
                         && !variable.isCurrentConfiguration()
@@ -61,7 +62,7 @@ public class FromCamelModelConverter {
     }
 
     /* variables from Constraint Problem with current config flag */
-    public Collection<MetricVariableImpl> getCurrentConfigMetricVariablesUsedInFunction(){
+    public Collection<MetricVariableImpl> getCurrentConfigMetricVariablesUsedInFunction() {
         return metricVariables.stream()
                 .filter(variable -> variable.isCurrentConfiguration() && hasTypeOfVariable(variable) && isInFormula(utilityFunctionFormula, variable.getName()))
                 .collect(Collectors.toList());
@@ -69,7 +70,7 @@ public class FromCamelModelConverter {
 
 
     /* raw and composite metrics */
-    public Collection<Metric> getMetricsUsedInFunction(){
+    public Collection<Metric> getMetricsUsedInFunction() {
         return metricModel.getMetrics().stream()
                 .filter(m -> (m instanceof RawMetric || m instanceof CompositeMetric) && isInFormula(utilityFunctionFormula, m.getName()))
                 .collect(Collectors.toList());
@@ -78,7 +79,7 @@ public class FromCamelModelConverter {
 
     /* variable with NodeCandidateAttribute annotations */
     //todo - checking if type is good variableType or NodeCandidatesAttributesType
-    public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates(){
+    public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates() {
         return metricVariables.stream()
                 .filter(variable -> hasTypeOfNodeCandidateAttribute(variable)
                         && isInFormula(utilityFunctionFormula, variable.getName())
@@ -93,7 +94,7 @@ public class FromCamelModelConverter {
     //todo - to create one method
 
     /* variable with NodeCandidateAttribute anotations and current config flag */
-    public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates(){
+    public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates() {
         return metricVariables.stream()
                 .filter(variable -> variable.isCurrentConfiguration()
                         && hasTypeOfNodeCandidateAttribute(variable)
@@ -106,7 +107,7 @@ public class FromCamelModelConverter {
     }
 
     /* on candidates flag */ //todo - it may be connected with previous method
-    public Collection<NodeCandidateAttribute> getListOfAttributesOfNodeCandidates(){
+    public Collection<NodeCandidateAttribute> getListOfAttributesOfNodeCandidates() {
         return metricVariables.stream()
                 .filter(variable -> variable.isOnNodeCandidates() && hasTypeOfNodeCandidateAttribute(variable) && isInFormula(utilityFunctionFormula, variable.getName()))
                 .map(attribute -> new NodeCandidateAttribute(
@@ -115,7 +116,7 @@ public class FromCamelModelConverter {
     }
 
     /* optimisation requirement - utility function */
-    private String getUtilityFormula(){
+    private String getUtilityFormula() {
 
         RequirementModel requirementModel = model.getRequirementModels().get(0);
         OptimisationRequirement optimisationRequirement = (OptimisationRequirement) requirementModel
@@ -123,7 +124,7 @@ public class FromCamelModelConverter {
                 .stream()
                 .filter(r -> r instanceof OptimisationRequirementImpl)
                 .findAny()
-                .orElseThrow(()-> new IllegalStateException("optimization requirement is obligatory"));
+                .orElseThrow(() -> new IllegalStateException("optimization requirement is obligatory"));
 
         return optimisationRequirement.getMetricVariable().getFormula();
     }
