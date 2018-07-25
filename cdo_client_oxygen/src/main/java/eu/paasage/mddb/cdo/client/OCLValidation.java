@@ -19,6 +19,9 @@ import org.eclipse.ocl.pivot.internal.resource.StandaloneProjectMap;
 import org.eclipse.ocl.pivot.internal.utilities.PivotEnvironmentFactory;
 import org.eclipse.ocl.pivot.oclstdlib.OCLstdlibPackage;
 
+import java.util.List;
+import java.util.Objects;
+
 
 public class OCLValidation {
 	
@@ -58,6 +61,11 @@ public class OCLValidation {
 			return false;
 		}
 		return true;
+	}
+
+	public static boolean validate(List<EObject> objs) throws RuntimeException {
+		Objects.requireNonNull(objs);
+		return objs.stream().allMatch(OCLValidation::validate);
 	}
 
 }
