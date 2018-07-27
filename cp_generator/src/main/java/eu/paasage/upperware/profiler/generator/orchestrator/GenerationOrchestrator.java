@@ -12,27 +12,19 @@
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
 import camel.core.CamelModel;
-import camel.metric.MetricModel;
-import camel.metric.impl.MetricVariableImpl;
-import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
-import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
+import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -45,7 +37,7 @@ public class GenerationOrchestrator {
     private RequestSynchronizer requestSynchronizer;
 
     private CdoService cdoService;
-    private NewConstraintProblemServiceX newConstraintProblemServiceX;
+    private NewConstraintProblemService newConstraintProblemService;
 
     /**
      * Generates the CP model by using the provided model path
@@ -110,11 +102,9 @@ public class GenerationOrchestrator {
         log.info("************************************CP Generator Model To Solver************************************");
         log.info("Loading camel model {}", resourceName);
 
-        CamelModel camelModel = null;
+        CamelModel camelModel;
         try {
-            //TODO - loadCamelModel
-//            camelModel = cdoService.getCamelModel(resourceName, cdoTransaction);
-            camelModel = loadModel();
+            camelModel = cdoService.getCamelModel(resourceName, cdoTransaction);
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage(), e);
             return CpGenerationResult.error("There is not Processor for Camel Models. The input model can not be processed");
@@ -124,24 +114,21 @@ public class GenerationOrchestrator {
 
         String cpName = getCpName(camelModel);
 
+        //TODO - ten wrapper moze nie byc potrzebny.
+        PaasageConfiguration pc = null;
+
         log.info("** Calling CPModelDerivator");
 
-        ConstraintProblem cp = newConstraintProblemServiceX.createConstraintProblem(camelModel, cpName);
-//        sloService.update(camelModel, cp);
+        ConstraintProblem cp = newConstraintProblemService.createConstraintProblem(camelModel, cpName);
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
 
-        cdoService.saveModels( cp, cdoSessionX);
+        cdoService.saveModels(pc, cp, cdoSessionX);
 
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);
-    }
-
-    private camel.core.CamelModel loadModel(){
-//        return (camel.core.CamelModel) CDOClient.loadModel("C:\\Users\\Paweł Szkup\\runtime-EclipseXtext\\camel-oxygen\\src-gen\\FCRnew.xmi");
-        return (camel.core.CamelModel) CDOClient.loadModel("C:\\Users\\Paweł Szkup\\runtime-EclipseXtext\\camel-oxygen\\src-gen\\CRMCamelModel.xmi");
     }
 
     private String getCpName(CamelModel camelModel) {

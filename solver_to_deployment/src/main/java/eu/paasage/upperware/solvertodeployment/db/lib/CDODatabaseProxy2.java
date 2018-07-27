@@ -26,7 +26,7 @@ public class CDODatabaseProxy2 {
 
 	public static int copyFirstDeploymentModel(CDOTransaction transaction, String camelModelID) throws CommitException {
 
-		CamelModel camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+		CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
 				.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
 		EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
@@ -47,7 +47,7 @@ public class CDODatabaseProxy2 {
 	}
 
 	public static Optional<DeploymentModel> getLastDeployedModel(String camelModelID, CDOTransaction transaction){
-		CamelModel camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+		CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
 				.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
 		ExecutionModel lastExecutionModel = getLastElement(camelModel.getExecutionModels());
@@ -96,7 +96,7 @@ public class CDODatabaseProxy2 {
 //				this.session = cdoClient.getSession();
 //				this.transaction = session.openTransaction();
                 this.transaction = transaction;
-				this.camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+				this.camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
 						.orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 				this.deploymentModel = camelModel.getDeploymentModels().get(dmId);
 				this.dmId = dmId;
@@ -120,5 +120,16 @@ public class CDODatabaseProxy2 {
 
 	}
 
+
+	//TODO - move this to
+	private static Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
+		return getLastElement1(contentsCM)
+				.filter(CamelModel.class::isInstance)
+				.map(CamelModel.class::cast);
+	}
+
+	private static <T extends EObject> Optional<T> getLastElement1(List<T> collection) {
+		return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
+	}
 
 }

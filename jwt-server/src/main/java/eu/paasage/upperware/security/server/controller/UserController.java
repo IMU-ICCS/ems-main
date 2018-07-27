@@ -1,0 +1,45 @@
+package eu.paasage.upperware.security.server.controller;
+
+import eu.melodic.models.interfaces.security.UserRequest;
+import eu.paasage.upperware.security.authapi.SecurityConstants;
+import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
+import eu.paasage.upperware.security.server.data.service.UserService;
+import eu.paasage.upperware.security.server.exception.UserNotFoundException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
+
+@Slf4j
+@RestController
+@AllArgsConstructor(onConstructor = @__(@Autowired))
+public class UserController {
+
+    private UserService userService;
+
+    @PostMapping("/login")
+    public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
+            throws UserNotFoundException {
+        log.info("Login request for user with username: {}", userRequest.getUsername());
+        userService.authenticate(userRequest.getUsername(), userRequest.getPassword());
+        String token = userService.createToken(userRequest.getUsername());
+        response.setHeader(SecurityConstants.HEADER_STRING, token);
+        return new UserLoginResponse(userRequest.getUsername());
+    }
+
+    @PostMapping("/users/sign-up")
+    public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
+        log.info("Sign-up request for username: {}", userRequest.getUsername());
+        if (!userService.exists(userRequest.getUsername())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username is used, please try with another username");
+        }
+        userService.create(userRequest.getUsername(), userRequest.getPassword());
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+    }
+}

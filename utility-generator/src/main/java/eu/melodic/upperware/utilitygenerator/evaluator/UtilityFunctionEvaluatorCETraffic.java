@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.UtilityFunctionUtils.countNumberOfCores;
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertToDoubleMetric;
@@ -28,6 +29,8 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
 
     /* hardcoded for release 1.5 */
     private static final String METRIC_MINIMUM_CORES = "METRIC_MinimumCores";
+    private static final String WORKER_INFIX = "Worker";
+
     private DoubleMetric minimumCores;
 
 
@@ -42,7 +45,7 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     @Override
     public double evaluate(Collection<ConfigurationElement> newConfiguration) {
 
-        if (isReconfig && minimumCores.getValue() > (double) countNumberOfCores(newConfiguration)){
+        if (isReconfig && minimumCores.getValue() > countNumberOfWorkerCores(newConfiguration, WORKER_INFIX)){
             log.warn("Solution does not allow to complete all simulations by the deadline");
             return 0.0;
         } else {
@@ -53,6 +56,12 @@ public class UtilityFunctionEvaluatorCETraffic extends UtilityFunctionEvaluator 
     private void getAndAssignMetrics(List<MetricDTO> metricDTOS) {
 
         this.minimumCores = convertToDoubleMetric(metricDTOS, METRIC_MINIMUM_CORES, MetricType.MINIMUM_CORES, 0.0);
+    }
+
+    private int countNumberOfWorkerCores(Collection<ConfigurationElement> newConfiguration, String infix) {
+        int result = countNumberOfCores(newConfiguration.stream().filter(c -> c.getId().contains(infix)).collect(Collectors.toList()));
+        log.debug("Number of Worker cores = {}", result);
+        return result;
     }
 
     /* for tests*/

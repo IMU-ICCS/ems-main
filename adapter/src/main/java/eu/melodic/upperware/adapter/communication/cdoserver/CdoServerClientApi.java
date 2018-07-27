@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -46,7 +47,7 @@ public class CdoServerClientApi implements CdoServerApi {
   public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
-      CamelModel model = CdoTool.getLastCamelModel(contents)
+      CamelModel model = getLastCamelModel(contents)
               .orElseThrow(() -> new IllegalStateException(String.format("Could not find Camel Model for resourceName=%s", resourceName)));
 
       EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
@@ -123,6 +124,18 @@ public class CdoServerClientApi implements CdoServerApi {
             .filter(requirement -> requirement instanceof RequirementGroup)
             .map(requirement -> (RequirementGroup) requirement)
             .findFirst();
+  }
+
+
+  //TODO - move this to
+  public Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
+    return getLastElement(contentsCM)
+            .filter(CamelModel.class::isInstance)
+            .map(CamelModel.class::cast);
+  }
+
+  private <T extends EObject> Optional<T> getLastElement(List<T> collection) {
+    return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
   }
 
 }

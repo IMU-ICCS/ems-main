@@ -12,7 +12,6 @@ import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunction
 import eu.melodic.upperware.utilitygenerator.costfunction.CostUtilityFunctionFraction
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
-import eu.melodic.upperware.utilitygenerator.model.DoubleMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.MetricDTO
 import io.github.cloudiator.rest.model.Hardware
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -39,7 +38,7 @@ class CETrafficUseCaseTest extends Specification {
 
     def setup() {
 
-        String componentId = "componentId"
+        String componentId = "componentWorkerId"
 
         Hardware mockHardware = GroovyMock(Hardware)
         Hardware mockBiggerHardware = GroovyMock(Hardware)
@@ -65,7 +64,7 @@ class CETrafficUseCaseTest extends Specification {
 
         metrics = new ArrayList<>()
 
-        metric = Mock(DoubleMetricDTO)
+        metric = Mock(MetricDTO)
         metric.getName() >> METRIC_MINIMUM_CORES
         metrics.add(metric)
 

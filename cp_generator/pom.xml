@@ -62,10 +62,22 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.emf</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.net4j</groupId>
+                    <artifactId>util_3.4.0</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -90,7 +102,9 @@
 
         <dependency>
             <groupId>org.ow2.paasage.mddb.cdo</groupId>
-            <artifactId>client</artifactId>
+            <artifactId>client-oxygen</artifactId>
+            <version>2.1.0-SNAPSHOT</version>
+            <classifier>repackaged</classifier>
         </dependency>
 
         <dependency>

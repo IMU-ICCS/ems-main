@@ -8,7 +8,7 @@
 package eu.passage.upperware.commons.model.tools;
 
 
-import eu.paasage.camel.CamelModel;
+import camel.core.CamelModel;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.ecore.EObject;
 
@@ -29,7 +29,6 @@ public final class CdoTool {
                 .filter(CamelModel.class::isInstance)
                 .map(CamelModel.class::cast);
     }
-
 
     private static <T extends EObject> Optional<T> getLastElement(List<T> collection) {
         return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);

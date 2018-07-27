@@ -1,6 +1,6 @@
 package eu.paasage.upperware.profiler.generator.communication;
 
-import eu.paasage.camel.CamelModel;
+import camel.core.CamelModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
