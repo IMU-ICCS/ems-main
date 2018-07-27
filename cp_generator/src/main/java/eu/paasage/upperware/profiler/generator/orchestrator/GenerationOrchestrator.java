@@ -13,12 +13,11 @@ package eu.paasage.upperware.profiler.generator.orchestrator;
 
 import camel.core.CamelModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
-import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
+import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -37,7 +36,7 @@ public class GenerationOrchestrator {
     private RequestSynchronizer requestSynchronizer;
 
     private CdoService cdoService;
-    private NewConstraintProblemService newConstraintProblemService;
+    private NewConstraintProblemServiceX newConstraintProblemServiceX;
 
     /**
      * Generates the CP model by using the provided model path
@@ -111,21 +110,15 @@ public class GenerationOrchestrator {
         }
 
         log.info("Camel model {} loaded", resourceName);
-
         String cpName = getCpName(camelModel);
 
-        //TODO - ten wrapper moze nie byc potrzebny.
-        PaasageConfiguration pc = null;
-
         log.info("** Calling CPModelDerivator");
-
-        ConstraintProblem cp = newConstraintProblemService.createConstraintProblem(camelModel, cpName);
+        ConstraintProblem cp = newConstraintProblemServiceX.createConstraintProblem(camelModel, cpName);
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
 
-        cdoService.saveModels(pc, cp, cdoSessionX);
-
+        cdoService.saveModels(cp, cdoSessionX);
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);

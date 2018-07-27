@@ -28,6 +28,8 @@ public interface VariableService {
     Variable createFloatVariable(VariableType variableType, String componentId, String vmName, Domain domain);
 
 
+    Variable createIntegerVariable(String name, VariableType variableType, String componentId, String vmName, Domain domain);
+
     @Deprecated
     Variable createIntegerVariableWithRangeDomain(String varName, int lowerLimit, int upperLimit, VariableType variableType, String componentId);
 

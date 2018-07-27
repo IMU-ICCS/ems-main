@@ -3,7 +3,6 @@ package eu.paasage.upperware.profiler.generator.communication.impl;
 import camel.core.CamelModel;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.passage.upperware.commons.model.tools.CdoTool;
@@ -18,8 +17,6 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -59,16 +56,15 @@ public class CdoServiceImpl implements CdoService {
     }
 
     @Override
-    public void saveModels(PaasageConfiguration pc, ConstraintProblem cp, CDOSessionX cdoSessionX) {
+    public void saveModels(ConstraintProblem cp, CDOSessionX cdoSessionX) {
         String pcId= cp.getId();
 
         log.debug("CDODatabaseProxy - saveModels - Storing Models ");
         String cpPath = CDO_SERVER_PATH + pcId;
 
-        cdoClientX.exportModel(pc, "/logs/pc_model_"+cpPath+".xmi");
         cdoClientX.exportModel(cp, "/logs/cp_model_"+cpPath+".xmi");
 
-        cdoSessionX.storeModels(Arrays.asList(pc, cp), cpPath);
+        cdoSessionX.storeModels(cp, cpPath);
         log.debug("CDODatabaseProxy - saveModels - Models stored! ");
     }
 

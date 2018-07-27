@@ -12,5 +12,5 @@ public interface CdoService {
 
     CDOSessionX openSession();
 
-    void saveModels(PaasageConfiguration pc, ConstraintProblem cp, CDOSessionX cdoSessionX);
+    void saveModels(ConstraintProblem cp, CDOSessionX cdoSessionX);
 }
