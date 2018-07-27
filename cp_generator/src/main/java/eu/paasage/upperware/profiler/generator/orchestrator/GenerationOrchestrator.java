@@ -11,8 +11,7 @@
 
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
+import camel.core.CamelModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -20,13 +19,9 @@ import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
-import eu.paasage.upperware.profiler.generator.service.camel.PaasageConfigurationService;
-import eu.paasage.upperware.profiler.generator.service.camel.SloService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -38,9 +33,7 @@ import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GenerationOrchestrator {
 
-    private PaasageConfigurationService paaSageConfigurationService;
     private NotificationService notificationService;
-    private SloService sloService;
     private RequestSynchronizer requestSynchronizer;
 
     private CdoService cdoService;
@@ -122,12 +115,11 @@ public class GenerationOrchestrator {
         String cpName = getCpName(camelModel);
 
         //TODO - ten wrapper moze nie byc potrzebny.
-        PaasageConfiguration pc = paaSageConfigurationService.createPaasageConfiguration(camelModel, cpName);
+        PaasageConfiguration pc = null;
 
         log.info("** Calling CPModelDerivator");
 
         ConstraintProblem cp = newConstraintProblemService.createConstraintProblem(camelModel, cpName);
-        sloService.update(camelModel, cp);
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");
@@ -145,7 +137,6 @@ public class GenerationOrchestrator {
     }
 
     private String getAppId(CamelModel camelModel) {
-        EList<Application> applications = camelModel.getApplications();
-        return CollectionUtils.isNotEmpty(applications) ? applications.get(0).getName() : camelModel.getName();
+        return camelModel.getApplication().getName();
     }
 }

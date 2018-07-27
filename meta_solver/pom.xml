@@ -45,7 +45,13 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
-		
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>camel</artifactId>
+            <version>${paasage.version.old}</version>
+        </dependency>
+
 		<!-- CDO and Net4j dependencies -->
 		<dependency>
 			<groupId>org.eclipse.core</groupId>
