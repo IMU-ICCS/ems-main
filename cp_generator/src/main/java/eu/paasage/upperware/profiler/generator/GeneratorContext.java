@@ -12,7 +12,6 @@ import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
-import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemService;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
