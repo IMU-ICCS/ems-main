@@ -26,7 +26,14 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>camel</groupId>
+            <artifactId>camel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>camel</groupId>
+            <artifactId>camel.dsl</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -44,10 +51,22 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.emf</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.net4j</groupId>
+                    <artifactId>util_3.4.0</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -69,10 +88,10 @@
             <scope>test</scope>
         </dependency>
 
-
         <dependency>
-            <groupId>org.ow2.paasage.mddb.cdo</groupId>
+            <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
+            <classifier>repackaged</classifier>
         </dependency>
 
         <dependency>

@@ -86,6 +86,11 @@ public class VariableServiceImpl implements VariableService {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
+    @Override
+    public Variable createIntegerVariable(String name, VariableType variableType, String componentId, String vmName, Domain domain) {
+        return createVariable(name, domain, variableType, componentId, vmName);
+    }
+
     /**
      * Creates a integer variable with a range domain
      * @param varName The name of the variable

@@ -29,6 +29,7 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
@@ -41,7 +42,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
@@ -73,7 +76,7 @@ public class SolverToDeployment {
 
 			EList<EObject> contentsCM = transaction.getResource(camelModelID).getContents();
 
-			CamelModel camelModel = CdoTool.getLastCamelModel(contentsCM)
+			CamelModel camelModel = getLastCamelModel(contentsCM)
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
 			
@@ -218,4 +221,17 @@ public class SolverToDeployment {
 		notification.setWatermark(prepareWatermark(uuid));
 		return notification;
 	}
+
+
+	//TODO - move this to commons
+	public Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
+		return getLastElement(contentsCM)
+				.filter(CamelModel.class::isInstance)
+				.map(CamelModel.class::cast);
+	}
+
+	private <T extends EObject> Optional<T> getLastElement(List<T> collection) {
+		return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
+	}
+
 }

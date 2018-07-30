@@ -39,8 +39,9 @@
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.paasage.mddb.cdo</groupId>
+            <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
+            <classifier>repackaged</classifier>
         </dependency>
         <dependency>
             <groupId>org.jfree</groupId>
