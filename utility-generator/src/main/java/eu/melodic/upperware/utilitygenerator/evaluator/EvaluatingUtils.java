@@ -95,7 +95,7 @@ public class EvaluatingUtils {
                 //int
                 case RAM:
                     log.debug("Creating getRamPredicate for value {}", var.getValue());
-                    predicates.add(getRamPredicate((long) var.getValue()));
+                    predicates.add(getRamPredicate((long) (int) var.getValue()));
                     break;
                 case CARDINALITY:
                     break;

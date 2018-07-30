@@ -1,6 +1,7 @@
-package eu.melodic.upperware.utilitygenerator
+package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
+import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.model.DTO.IntMetricDTO
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO
@@ -8,7 +9,6 @@ import eu.melodic.upperware.utilitygenerator.model.function.Element
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class UtilityGeneratorApplicationTest extends Specification{
@@ -53,7 +53,7 @@ class UtilityGeneratorApplicationTest extends Specification{
 
 
         String path = "/Users/mrozanska/FCRnew.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication("cdo", path, variables, metrics, intSolution, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -63,8 +63,38 @@ class UtilityGeneratorApplicationTest extends Specification{
 
     }
 
-    @Ignore
-    def "CRM test"(){
+
+    def "FCR initial deployment test"(){
+
+        given:
+        String cardinalityName = "AppCardinality"
+        String providerName = "providerName"
+        String metricName = "RT_AVG"
+        String componentId = "Component_App"
+        Collection<VariableDTO> variables = new ArrayList<>()
+        variables.add(new VariableDTO(cardinalityName, componentId, VariableType.CARDINALITY))
+        variables.add(new VariableDTO(providerName, componentId, VariableType.PROVIDER))
+
+        metrics.add(new IntMetricDTO(metricName, 40))
+
+
+        Collection<IntElement> newConfiguration = new ArrayList<>()
+        newConfiguration.add(new IntElement(cardinalityName, 2))
+        newConfiguration.add(new IntElement(providerName, 1))
+
+
+        String path = "/Users/mrozanska/FCRnew.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, mockNodeCandidates)
+
+        when:
+        double result = utilityGenerator.evaluate(newConfiguration)
+
+        then:
+        noExceptionThrown()
+
+    }
+
+    def "CRMnew test"(){
 
         given:
         String cardinalityName = "SmartDesignCardinality"
@@ -83,8 +113,8 @@ class UtilityGeneratorApplicationTest extends Specification{
         newConfiguration.add(new IntElement(providerName, 1))
 
 
-        String path = "/Users/mrozanska/CRMCamelModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication("cdo", path, variables, metrics, intSolution, mockNodeCandidates)
+        String path = "/Users/mrozanska/CRMNewCamelModel.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, mockNodeCandidates)
 
         when:
 
@@ -93,8 +123,6 @@ class UtilityGeneratorApplicationTest extends Specification{
 
         then:
         noExceptionThrown()
-
-
     }
 
 

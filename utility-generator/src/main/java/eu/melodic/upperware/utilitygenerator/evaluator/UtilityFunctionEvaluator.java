@@ -41,12 +41,14 @@ public class UtilityFunctionEvaluator {
 
     private Printer printer;
 
-    public UtilityFunctionEvaluator(String cdoPath, String path, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem,
+    public UtilityFunctionEvaluator(String camelModelFilePath, boolean readFromFile, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem,
             Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
 
         Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
+        variablesFromConstraintProblem.forEach(v-> log.info("variables from constraint problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
+        log.info("metrics from constraint problem: {}", metricsFromConstraintProblem);
 
         this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter();
@@ -54,7 +56,7 @@ public class UtilityFunctionEvaluator {
         CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variablesFromConstraintProblem);
         MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
 
-        FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(path);
+        FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of utility function: {}", formula);
 
@@ -70,26 +72,38 @@ public class UtilityFunctionEvaluator {
 
         this.nodeCandidatesConverter = new NodeCandidatesConverter(attributesOfNodeCandidates, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem);
 
-        Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
-        log.info("currentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
-
-        Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
-        log.info("current Config Arguments {} ", currentConfigArguments);
 
         Collection<Element> metrics = metricsConverter.convertMetrics(formula);
         log.info("metrics: {}", metrics);
 
-        Collection<Element> allConstants = currentConfigAttributesOfNodeCandidates;
-        allConstants.addAll(currentConfigArguments);
-        allConstants.addAll(metrics);
+        Collection<Element> allConstants = metrics;
+
+        if (deployedSolution != null){ // for configuration? how to get values of current config arguments?
+            Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
+            log.info("currentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
+            Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
+            log.info("current Config Arguments {} ", currentConfigArguments);
+            allConstants.addAll(currentConfigArguments);
+            allConstants.addAll(currentConfigAttributesOfNodeCandidates);
+        }
+        else {
+            allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
+            allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
+        }
 
         this.function = new UtilityFunction(formula, convertToConstants(allConstants));
 
         this.printer = new Printer(variablesFromConstraintProblem);
         printer.printVariablesFromConstraintProblem();
+
+        fromCamelModelConverter.endWorkWithCamelModel();
     }
 
     public double evaluate(Collection<Element> solution) {
+
+        if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)){
+            return 0;
+        }
         Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(solution);
         Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 

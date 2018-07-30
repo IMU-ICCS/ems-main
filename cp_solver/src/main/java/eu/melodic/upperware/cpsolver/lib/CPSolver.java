@@ -50,7 +50,6 @@ import java.util.stream.Stream;
 public class CPSolver {
 
 	private Solver solver = null;
-	private String cdoPath = null;
 	private String pathName = null;
 	private Hashtable<String,IntVar> idToIntVar = new Hashtable<>();
 	private Hashtable<String,RealVar> idToRealVar = new Hashtable<>();
@@ -66,7 +65,6 @@ public class CPSolver {
 	private int constNum = 0;
 	private boolean cdoMode = false;
 	private long timestamp = 0;
-	private boolean useExternalOptimizer = false;
 	private UtilityGeneratorApplication utilityGenerator;
 	private double maxUtility;
 	private double utilityOfDeployedSolution = 0;
@@ -81,34 +79,31 @@ public class CPSolver {
 	/* Constructor which also reads the CP Model either from CDO via
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName, Boolean useExternalOptimizer, NodeCandidates nodeCandidates, UtilityGeneratorProperties utilityGeneratorProperties){
+	public CPSolver(String applicationId, String pathName, String camelModelFilePath, Boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties utilityGeneratorProperties){
 		this();
-		this.cdoPath = cdoPath;
 		this.pathName = pathName;
-		this.useExternalOptimizer = useExternalOptimizer != null && useExternalOptimizer;
 
-		readCPModel(cdoPath,pathName);
+		readCPModel(pathName, readFromFile);
 
-		if (this.useExternalOptimizer){
-			if (isReconfig){
-				this.utilityGenerator = new UtilityGeneratorApplication(cdoPath, pathName, variablesForUG, metricsForUG, deployedSolution, nodeCandidates);
-				//this.utilityOfDeployedSolution = this.utilityGenerator.getUtilityForCurrentDeployedSolution();
-			}
-			else {
-				this.utilityGenerator = new UtilityGeneratorApplication(cdoPath, pathName, variablesForUG, metricsForUG, nodeCandidates);
-			}
+		if (!readFromFile){
+			camelModelFilePath = applicationId;
+		}
+		if (isReconfig){
+			this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, deployedSolution, nodeCandidates);
+		}
+		else {
+			this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, nodeCandidates);
 		}
 	}
 	
 	/* Constructor which also reads the CP Model either from CDO via 
 	 * a CDO path given as String or from file system via a String path 
 	 */
-	public CPSolver(String cdoPath, String pathName, long timestamp){
+	public CPSolver(String pathName, boolean readFromFile, long timestamp){
 		this();
-		this.cdoPath = cdoPath;
 		this.pathName = pathName;
 		this.timestamp = timestamp;
-		readCPModel(cdoPath,pathName);
+		readCPModel(pathName, readFromFile);
 	}
 	
 	/* Default Constructor - need to read CP Model by calling the respective method 
@@ -143,8 +138,6 @@ public class CPSolver {
                 checkSolution(sols);
 			}
 		}
-		//Create optimisation goal
-
 	}
 
 	private void getActualConfiguration(ConstraintProblem cp) {
@@ -157,7 +150,6 @@ public class CPSolver {
 					.getVariableValue().stream()
 					.map(ElementFactory::createElement)
 					.collect(Collectors.toList());
-
 		}
 		else {
 			isReconfig = false;
@@ -281,20 +273,18 @@ public class CPSolver {
 	/* Reads the CPModel from CDO provided that a correct CDO path or a file path 
 	 * name for this model is provided as input
 	 */
-	public void readCPModel(String cdoPath, String pathName){
+	public void readCPModel(String pathName, boolean readFromFile){
 		ConstraintProblem cp = null;
 		log.info("Reading CP model...");
 
 		CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
-		CDOSessionX sessionX = clientX.getSession();
 
-		this.cdoPath = cdoPath;
-		this.pathName = pathName;
-		if (cdoPath != null){
-			log.info("Loading resource from CDO: " +cdoPath);
+		if (!readFromFile){
+			CDOSessionX sessionX = clientX.getSession();
+			log.info("Loading resource from CDO: " + pathName);
 			cdoMode = true;
 			CDOView view = sessionX.openView();
-			CDOResource res = view.getResource(cdoPath);
+			CDOResource res = view.getResource(pathName);
 			EList<EObject> objs = res.getContents();
 			for (EObject obj: objs){
 				if (obj instanceof ConstraintProblem){
@@ -304,6 +294,7 @@ public class CPSolver {
 			}
 			readModel(cp);
 			view.close();
+			sessionX.closeSession();
 		}
 		else if (pathName != null){
 			log.info("Loading resource from file: " +pathName);
@@ -313,7 +304,6 @@ public class CPSolver {
 			readModel(cp);
 		}
 		log.info("CDO Mode: " + cdoMode);
-		sessionX.closeSession();
 	}
 	
 	/* Solves the CPModel previously read, updates the model if a solution was found 
@@ -327,30 +317,23 @@ public class CPSolver {
 			solver.set(IntStrategyFactory.random(vars, System.currentTimeMillis()));
 		}
 
-		//if useExternalOptimizer is set - use Utility Generator
-		if(useExternalOptimizer){
-			log.info("Using Utility Generator for solution space:");
+		log.info("Using Utility Generator for solution space:");
 
-			if(solver.findSolution()) {
-
-				int i=1;
-				maxUtility = 0.0;
+		if(solver.findSolution()) {
+			int i=1;
+			maxUtility = 0.0;
+			calculateUtility();
+			while(solver.nextSolution()){
+				//log.debug("Checking utility of: #{} solution.", i++ );
+				i++;
 				calculateUtility();
-				while(solver.nextSolution()){
-					//log.debug("Checking utility of: #{} solution.", i++ );
-					i++;
-					calculateUtility();
-				}
-				log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
-				hasSolutions = (solver.isFeasible() == ESat.TRUE) && maxUtility > 0;
-				if (hasSolutions) {
-					saveBestSolutionInCDO();
-					utilityGenerator.printConfigurationWithMaximumUtility();
-				}
 			}
-		}
-		else {
-			log.warn("Using Utility Generator is obligatory");
+			log.info("Maximum utility after evaluating {} solutions is {}", i, maxUtility);
+			hasSolutions = (solver.isFeasible() == ESat.TRUE) && maxUtility > 0;
+			if (hasSolutions) {
+				saveBestSolutionInCDO();
+				utilityGenerator.printConfigurationWithMaximumUtility();
+			}
 		}
 		return hasSolutions;
 	}
@@ -379,15 +362,15 @@ public class CPSolver {
 		ConstraintProblem cp = null;
 
 		CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
-		CDOSessionX sessionX = clientX.getSession();
-
+		CDOSessionX sessionX = null;
 //		CDOClient cl = new CDOClient();
 //		cl.registerPackage(TypesPackage.eINSTANCE);
 //		cl.registerPackage(CpPackage.eINSTANCE);
 		//System.out.println("CDOMode: " + cdoMode);
 		if (cdoMode){
+			sessionX = clientX.getSession();
 			trans = sessionX.openTransaction();
-			CDOResource resource = trans.getResource(cdoPath);
+			CDOResource resource = trans.getResource(pathName);
 			EList<EObject> contents = resource.getContents();
 			for (EObject obj: contents){
 				if (obj instanceof ConstraintProblem){
@@ -451,6 +434,7 @@ public class CPSolver {
 			if (cdoMode){
 				trans.commit();
 				trans.close();
+				sessionX.closeSession();
 			} else{
 				clientX.saveModel(cp, pathName);
 			}
@@ -460,7 +444,6 @@ public class CPSolver {
 			log.error("Something went wrong while storing the solution",e);
 			//e.printStackTrace();
 		}
-		sessionX.closeSession();
 
 	}
 
@@ -1265,9 +1248,10 @@ public class CPSolver {
 
 	}
 
+	//storage is the only variable real/ hack!
 	private Collection<Element> addSingleValueRealVariables(Collection<Element> solution){
 		variablesForUG.stream()
-				.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
+				.filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())) && varDTO.getType().equals(VariableType.STORAGE))
 				.forEach(v -> solution.add(new RealElement(v.getId(), idToRealVar.get(v.getId()).getUB())));
 
 		return solution;

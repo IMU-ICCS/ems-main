@@ -28,4 +28,5 @@ public class ConvertingUtils {
     public static Collection<Constant> convertToConstants(Collection<Element> elements) {
         return elements.stream().map(ConstantFactory::createConstant).collect(Collectors.toList());
     }
+
 }

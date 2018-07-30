@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.converter.camel.MappingTypeUtils.getVariableType;
+import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 
 @Slf4j
 @AllArgsConstructor
@@ -31,6 +32,12 @@ public class CurrentConfigConverter {
                 .filter(var -> isActualValueOfVariableUsedInFormula(getMatchingVariable(var.getName()), variablesFromCamel))
                 .map(actVar -> ElementFactory.createElementWithNewName(getVariableName(actVar, variablesFromCamel, variablesFromConstraintProblem), actVar))
                 .collect(Collectors.toList());
+    }
+
+
+    //fixme
+    public Collection<Element> setDefaultValuesOfAttributes(Collection<MetricVariableImpl> variablesFromCamel){
+        return variablesFromCamel.stream().map(v -> createElement(v.getName(), 1.0)).collect(Collectors.toList());
     }
 
     private String getVariableName(Element variable, Collection<MetricVariableImpl> variablesFromCamel, Collection<VariableDTO> variables) {

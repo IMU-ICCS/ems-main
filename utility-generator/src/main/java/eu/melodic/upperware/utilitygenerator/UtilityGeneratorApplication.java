@@ -23,13 +23,13 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String cdoPath, String path, List<VariableDTO> variables, Collection<MetricDTO> metrics, NodeCandidates nodeCandidates) {
-        this(cdoPath, path, variables, metrics, null, nodeCandidates);
+    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, NodeCandidates nodeCandidates) {
+        this(camelModelFilePath, readFromFile, variables, metrics, null, nodeCandidates);
     }
 
-    public UtilityGeneratorApplication(String cdoPath, String path, List<VariableDTO> variables, Collection<MetricDTO> metrics, Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
         log.info("Creating of Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(cdoPath, path, variables, metrics, deployedSolution, nodeCandidates);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, variables, metrics, deployedSolution, nodeCandidates);
     }
 
     public double evaluate(Collection<Element> solution) {

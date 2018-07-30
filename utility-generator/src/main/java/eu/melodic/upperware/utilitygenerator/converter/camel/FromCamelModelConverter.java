@@ -18,10 +18,14 @@ import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
 import camel.requirement.RequirementModel;
 import camel.requirement.impl.OptimisationRequirementImpl;
+import eu.melodic.upperware.utilitygenerator.communication.CDOService;
+import eu.melodic.upperware.utilitygenerator.communication.CDOServiceFromFile;
+import eu.melodic.upperware.utilitygenerator.communication.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.view.CDOView;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,13 +38,25 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 @Getter
 public class FromCamelModelConverter {
 
+    private CDOService cdoService;
+    private CDOView view;
+
     private CamelModel model;
     private MetricTypeModelImpl metricModel;
     private Collection<MetricVariableImpl> metricVariables;
     private String utilityFunctionFormula;
 
-    public FromCamelModelConverter(String path) {
-        this.model = (CamelModel) CDOClient.loadModel(path);
+    public FromCamelModelConverter(String path, boolean readFromFile) {
+        if (readFromFile) {
+            this.cdoService = new CDOServiceFromFile();
+        } else {
+            this.cdoService = new CDOServiceImpl(new CDOClient());
+        }
+        log.info("path = {}", path);
+
+        this.view = cdoService.openView();
+        this.model = cdoService.getCamelModel(path, view);
+
         this.metricModel = (MetricTypeModelImpl) model.getMetricModels().get(0);
 
         this.metricVariables = new ArrayList<>();
@@ -50,11 +66,16 @@ public class FromCamelModelConverter {
 
         log.info("metricVariables size = {}", metricVariables.size());
         this.utilityFunctionFormula = getUtilityFormula();
+
+    }
+
+    public void endWorkWithCamelModel() {
+        cdoService.closeView(view);
     }
 
     /* variables which should be also in CP model */
     public Collection<MetricVariableImpl> getVariablesUsedInFunction() {
-        return metricVariables.stream()
+        return this.metricVariables.stream()
                 .filter(variable -> isInFormula(utilityFunctionFormula, variable.getName())
                         && !variable.isCurrentConfiguration()
                         && hasTypeOfVariable(variable))

@@ -12,7 +12,6 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidatesAttributesType;
 import io.github.cloudiator.rest.model.NodeCandidate;
@@ -28,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
+import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -41,21 +41,29 @@ public class NodeCandidatesConverter {
     private NodeCandidates nodeCandidates;
     private Collection<VariableDTO> variables;
 
+
     public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution) {
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(solution);
         Collection<Element> arguments = new ArrayList<>();
 
-        attributes.forEach(a -> arguments.add(ElementFactory.createElement(a.getName(),
+        attributes.forEach(a -> arguments.add(createElement(a.getName(),
                 getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType()))));
         return arguments;
     }
 
-    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes, Collection<Element> deployedSolution) {
+    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes,
+            Collection<Element> deployedSolution) {
         Collection<ConfigurationElement> actualConfiguration = convertSolutionToNodeCandidates(deployedSolution);
         Collection<Element> arguments = new ArrayList<>();
 
-        attributes.forEach(a -> arguments.add(ElementFactory.createElement(a.getName(),
+        attributes.forEach(a -> arguments.add(createElement(a.getName(),
                 getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType()))));
+        return arguments;
+    }
+
+    public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes){
+        Collection<Element> arguments = new ArrayList<>();
+        attributes.forEach(a -> arguments.add(createElement(a.getName(), 1.0)));
         return arguments;
     }
 
@@ -65,18 +73,12 @@ public class NodeCandidatesConverter {
                 .collect(Collectors.toList());
     }
 
-
-    private Collection<Element> getValuesForOneAttribute(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, NodeCandidateAttribute attribute) {
-        Collection<Element> elements = new ArrayList<>();
-        nodeCandidatesMap.values().forEach(list -> elements.addAll(getOneList(list, attribute)));
-        return elements;
+    //fixme - without getting from cache (if it is possible)
+    public boolean doesNodeCandidateForSolutionExist(Collection<Element> solution){
+        return convertSolutionToNodeCandidates(solution) == null;
     }
 
-    private Collection<Element> getOneList(List<NodeCandidate> list, NodeCandidateAttribute attribute) {
-        return list.stream()
-                .map(nc -> ElementFactory.createElement(attribute.getName(), getAttributeOfNodeCandidate(nc, attribute.getType())))
-                .collect(Collectors.toList());
-    }
+
 
     private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
         log.debug("Converting solution to Node Candidates");
@@ -96,6 +98,7 @@ public class NodeCandidatesConverter {
             }
             log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
 
+            //todo - it may be only a pair (Component, Node Candidate)
             newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
         }
         return newConfiguration;
@@ -121,6 +124,18 @@ public class NodeCandidatesConverter {
             throw new IllegalArgumentException("type of Node Candidate attribute is wrong");
         }
         return result;
+    }
+
+    private Collection<Element> getValuesForOneAttribute(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, NodeCandidateAttribute attribute) {
+        Collection<Element> elements = new ArrayList<>();
+        nodeCandidatesMap.values().forEach(list -> elements.addAll(getOneList(list, attribute)));
+        return elements;
+    }
+
+    private Collection<Element> getOneList(List<NodeCandidate> list, NodeCandidateAttribute attribute) {
+        return list.stream()
+                .map(nc -> createElement(attribute.getName(), getAttributeOfNodeCandidate(nc, attribute.getType())))
+                .collect(Collectors.toList());
     }
 
 }
