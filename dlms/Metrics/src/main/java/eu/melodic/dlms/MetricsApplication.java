@@ -45,6 +45,10 @@ public class MetricsApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return args -> {
+			String metricsRangeProperty = System.getProperties().getProperty("metricsRange");
+			MetricsRange metricsRange = MetricsRange.valueOf(metricsRangeProperty);
+			LOGGER.info("Application started with metricsRange {} set", metricsRangeProperty);
+
 			String url = System.getProperties().getProperty("mode");
 			LOGGER.info("Application started and URL {} identified", url);
 
@@ -53,7 +57,22 @@ public class MetricsApplication {
 				public void run() {
 					LOGGER.info("Running metrics collection for {}", url);
 
-					metricsController.collectMetrics(url);
+					switch(metricsRange) {
+						case ALLUXIO: {
+							metricsController.collectAlluxioMetrics(url);
+							break;
+						}
+						case MY_SQL: {
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+						case ALL: {
+							metricsController.collectAlluxioMetrics(url);
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+					}
+
 					metricsController.sendMetrics();
 				}
 			};
