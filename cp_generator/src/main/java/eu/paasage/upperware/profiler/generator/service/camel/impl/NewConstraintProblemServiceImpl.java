@@ -1,11 +1,8 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import camel.core.CamelModel;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.cache.exception.CacheException;
 //import eu.paasage.camel.deployment.Hosting;
 //import eu.paasage.camel.deployment.InternalComponent;
 //import eu.paasage.camel.deployment.ProvidedHost;
@@ -17,29 +14,13 @@ import eu.melodic.cache.exception.CacheException;
 //import eu.paasage.camel.requirement.OSOrImageRequirement;
 //import eu.paasage.camel.requirement.QuantitativeHardwareRequirement;
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.profiler.generator.communication.CloudiatorService;
-import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
-import eu.passage.upperware.commons.model.tools.CPModelTool;
-import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.model.NodeCandidate;
-import io.github.cloudiator.rest.model.NodeRequirements;
-import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
 @Slf4j
 @Service
@@ -47,7 +28,6 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
     private CpFactory cpFactory;
     private List<GeneratorService> generatorServices;
-    private CloudiatorService cloudiatorService;
     private CacheService<NodeCandidates> memcacheService;
     private CacheService<NodeCandidates> filecacheService;
     private NodeCandidatesService nodeCandidatesService;
@@ -57,12 +37,11 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 
     @Autowired
     public NewConstraintProblemServiceImpl(CpFactory cpFactory, List<GeneratorService> generatorServices,
-            CloudiatorService cloudiatorService, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
+            @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
             @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, NodeCandidatesService nodeCandidatesService,
             ConstantService constantService, ConstraintService constraintService, VariableService variableService) {
         this.cpFactory = cpFactory;
         this.generatorServices = generatorServices;
-        this.cloudiatorService = cloudiatorService;
         this.memcacheService = memcacheService;
         this.filecacheService = filecacheService;
         this.nodeCandidatesService = nodeCandidatesService;

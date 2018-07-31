@@ -22,8 +22,6 @@ import java.util.stream.Stream;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ConstantServiceImpl implements ConstantService {
 
-    private static final String VM_PROFILE_CONSTANT_PREFIX= "number_vm_";
-
     private CpFactory cpFactory;
     private TypesFactoryService typesFactoryService;
     private IdGenerator constantIdGenerator;
@@ -66,6 +64,26 @@ public class ConstantServiceImpl implements ConstantService {
     @Override
     public Constant createLongConstant(long value, String name) {
         return createConstant(name, BasicTypeEnum.LONG, typesFactoryService.getLongValueUpperware(value));
+    }
+
+    @Override
+    public Constant createIntegerConstant(NumericValueUpperware value, String name) {
+        return createConstant(name, BasicTypeEnum.INTEGER, value);
+    }
+
+    @Override
+    public Constant createDoubleConstant(NumericValueUpperware value, String name) {
+        return createConstant(name, BasicTypeEnum.DOUBLE, value);
+    }
+
+    @Override
+    public Constant createFloatConstant(NumericValueUpperware value, String name) {
+        return createConstant(name, BasicTypeEnum.FLOAT, value);
+    }
+
+    @Override
+    public Constant createLongConstant(NumericValueUpperware value, String name) {
+        return createConstant(name, BasicTypeEnum.LONG, value);
     }
 
     private Constant createConstant(String name, BasicTypeEnum basicTypeEnum, NumericValueUpperware numericValueUpperware){
@@ -144,11 +162,6 @@ public class ConstantServiceImpl implements ConstantService {
             constants.add(newConstant);
             return newConstant;
         });
-    }
-
-    @Override
-    public String getVMProfileConstantName(String vmpId) {
-        return VM_PROFILE_CONSTANT_PREFIX + vmpId;
     }
 
     private Optional<Constant> searchConstantByValue(EList<Constant> constants, Predicate<Pair<String, String>> predicate){
