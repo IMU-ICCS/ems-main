@@ -2,6 +2,7 @@ package eu.paasage.upperware.profiler.generator.service.camel;
 
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.VariableType;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import org.eclipse.emf.common.util.EList;
 
 import java.util.Optional;
@@ -26,6 +27,14 @@ public interface ConstantService extends GeneratorService{
     Constant createLongConstant(long value, String name);
 
 
+    Constant createIntegerConstant(NumericValueUpperware value, String name);
+
+    Constant createDoubleConstant(NumericValueUpperware value, String name);
+
+    Constant createFloatConstant(NumericValueUpperware value, String name);
+
+    Constant createLongConstant(NumericValueUpperware value, String name);
+
     Optional<Constant> searchConstantByName(EList<Constant> constants, String name);
 
 
@@ -42,6 +51,4 @@ public interface ConstantService extends GeneratorService{
 
     Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name);
 
-
-    String getVMProfileConstantName(String vmpId);
 }

@@ -7,10 +7,6 @@ import java.io.File;
  */
 public class MelodicConstants {
 
-    public static final String APP_COMPONENT_VAR_PREFIX= "U_app_component_";
-    public static final String APP_COMPONENT_VAR_MID= "_vm_";
-    public static final String APP_COMPONENT_VAR_SUFFIX= "_provider_";
-
     public static final String CDO_SERVER_PATH= "upperware-models/";
 
     public static final String GENERATION_DIR= "paasage" + File.separator + "configurations" + File.separator;
