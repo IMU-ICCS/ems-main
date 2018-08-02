@@ -28,10 +28,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
-//import eu.paasage.upperware.metamodel.cp.MetricVariable;
-//import eu.paasage.upperware.metamodel.cp.Variable;
-
-
 @Component
 @Slf4j
 public class CpModelHelper {
