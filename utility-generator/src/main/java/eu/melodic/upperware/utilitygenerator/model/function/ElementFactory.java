@@ -11,9 +11,8 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.DoubleMetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.FloatMetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.IntMetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
+import eu.paasage.upperware.metamodel.types.*;
 
 public class ElementFactory {
 
@@ -27,12 +26,25 @@ public class ElementFactory {
         }
     }
 
-    public static Element createElement(VariableValue variableValue) {
-        if (variableValue instanceof IntegerValueUpperware) {
-            return new IntElement(variableValue.getVariable().getId(), ((IntegerValueUpperware) variableValue).getValue());
-        } else { //DoubleValueUpperware
-            return new RealElement(variableValue.getVariable().getId(), ((DoubleValueUpperware) variableValue).getValue());
+    public static Element createElement(CpVariableValue variableValue) {
+        NumericValueUpperware value = variableValue.getValue();
+        Element variable;
+        if (value instanceof IntegerValueUpperware) {
+            IntegerValueUpperware intVal = (IntegerValueUpperware) value;
+            variable = new IntElement(variableValue.getVariable().getId(), intVal.getValue());
+        } else if (value instanceof DoubleValueUpperware) {
+            DoubleValueUpperware doubleVal = (DoubleValueUpperware) value;
+            variable = new RealElement(variableValue.getVariable().getId(), doubleVal.getValue());
+        } else if (value instanceof FloatValueUpperware) {
+            FloatValueUpperware floatVal = (FloatValueUpperware) value;
+            variable = new RealElement(variableValue.getVariable().getId(), (double) floatVal.getValue());
+        } else { //Long
+            LongValueUpperware longVal = (LongValueUpperware) value;
+            variable = new IntElement(variableValue.getVariable().getId(), (int) longVal.getValue());
         }
+        return variable;
+
+
     }
 
     public static Element createElementWithNewName(String name, Element element) {

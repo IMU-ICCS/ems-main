@@ -28,7 +28,7 @@ public class UtilityFunction {
 
     public UtilityFunction(String formula, Collection<Constant> constants) {
         this.constants = constants.toArray(new Constant[constants.size()]);
-        constants.forEach(c -> log.info("constant: {}, {}",c.getConstantName(), c.getConstantValue() ));
+        constants.forEach(c -> log.info("constant: {}, {}", c.getConstantName(), c.getConstantValue()));
         this.function = new Expression(formula);
     }
 
