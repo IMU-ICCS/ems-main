@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.melodic.dlms</groupId>
-	<artifactId>Metrics</artifactId>
+	<artifactId>DLMSAgent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Metrics</name>
-	<description>DLMS Metrics Project</description>
+	<description>DLMS Agent Project</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
