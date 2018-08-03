@@ -34,9 +34,8 @@ public class CurrentConfigConverter {
                 .collect(Collectors.toList());
     }
 
-
-    //fixme
-    public Collection<Element> setDefaultValuesOfAttributes(Collection<MetricVariableImpl> variablesFromCamel){
+    //todo
+    public Collection<Element> setDefaultValuesOfAttributes(Collection<MetricVariableImpl> variablesFromCamel) {
         return variablesFromCamel.stream().map(v -> createElement(v.getName(), 1.0)).collect(Collectors.toList());
     }
 
@@ -58,7 +57,7 @@ public class CurrentConfigConverter {
                         variableFromCamel.getComponent().getName().equals(variableFromConstraintProblem.getComponentId())
                                 && (variableFromConstraintProblem.getType().equals(getVariableType(variableFromCamel))));
     }
-    
+
     private VariableDTO getMatchingVariable(String name) {
         return variablesFromConstraintProblem.stream()
                 .filter(variable -> variable.getId().equals(name))

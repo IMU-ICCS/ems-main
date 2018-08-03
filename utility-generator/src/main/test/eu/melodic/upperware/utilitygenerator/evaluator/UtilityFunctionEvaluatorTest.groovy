@@ -5,7 +5,4 @@ import spock.lang.Specification
 class UtilityFunctionEvaluatorTest extends Specification{
 
 
-
-
-
 }

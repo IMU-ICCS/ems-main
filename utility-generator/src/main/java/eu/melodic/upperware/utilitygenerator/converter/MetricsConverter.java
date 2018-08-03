@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.converter;
 
+import camel.metric.Metric;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
@@ -29,6 +30,13 @@ public class MetricsConverter {
         return metricsFromConstraintProblem.stream()
                 .filter(m -> isInFormula(function, m.getName()))
                 .map(ElementFactory::createElement)
+                .collect(Collectors.toList());
+    }
+
+    //todo
+    public Collection<Element> setDefaultValuesOfAttributes(Collection<Metric> metricsUsedInFunction) {
+        return metricsUsedInFunction.stream()
+                .map(m -> ElementFactory.createElement(m.getName(), 1.0))
                 .collect(Collectors.toList());
     }
 }

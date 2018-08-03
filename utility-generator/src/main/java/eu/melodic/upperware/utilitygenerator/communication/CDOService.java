@@ -9,15 +9,21 @@
 package eu.melodic.upperware.utilitygenerator.communication;
 
 import camel.core.CamelModel;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 
 public interface CDOService {
 
-    CDOView openView();
+    CDOSessionX openSession();
 
-    void closeView(CDOView v);
+    CDOView openView(CDOSessionX sessionX);
+
+    CDOTransaction openTransaction(CDOSessionX sessionX);
 
     CamelModel getCamelModel(String name, CDOView view);
+
+    void closeSession(CDOSessionX sessionX);
 
 }
 

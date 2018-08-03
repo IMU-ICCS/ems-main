@@ -10,27 +10,22 @@ package eu.melodic.upperware.utilitygenerator.communication;
 
 
 import camel.core.CamelModel;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 import static java.lang.String.format;
 
@@ -38,13 +33,10 @@ import static java.lang.String.format;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CDOServiceImpl implements CDOService {
 
-    private CDOClient cdoClient;
-
-    private static Map<String, Object> opts = new HashMap<>();
+    private CDOClientX clientX;
 
     static {
         XMIResToResFact();
-        opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
     }
 
     private static void XMIResToResFact() {
@@ -58,43 +50,48 @@ public class CDOServiceImpl implements CDOService {
     }
 
     @Override
-    public CDOView openView() {
-        return cdoClient.openView();
-    }
-
-    @Override
-    public void closeView(CDOView v) {
-        cdoClient.closeView(v);
-    }
-
-
-    @Override
-    public CamelModel getCamelModel(String name, CDOView view) {
-        if (!(view.hasResource(name))) {
-            throw new IllegalArgumentException(format("Camel Model for name = %s does not exist in CDOServer", name));
+    public CamelModel getCamelModel(String resourceName, CDOView view) {
+        if (!(view.hasResource(resourceName))) {
+            throw new IllegalArgumentException(format("Camel Model for name = %s does not exist in CDOServer", resourceName));
         }
-        EList<EObject> contents = view.getResource(name).getContents();
+        EList<EObject> contents = view.getResource(resourceName).getContents();
 
-        return Optional.ofNullable(CollectionUtils.isNotEmpty(contents) ? contents.get(contents.size() - 1) : null)
-                .filter(CamelModel.class::isInstance)
-                .map(CamelModel.class::cast)
-                .orElseThrow(() -> new IllegalArgumentException(format("Cannot load Camel Model for resourceName=%s. " +
-                        "Check the value is valid and the model is available in CDO Server.", name)));
+        return CdoTool.getLastCamelModel(contents)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Cannot load Camel Model for resourceName=%s. " +
+                        "Check the value is valid and the model is available in CDO Server.", resourceName)));
+    }
+
+    @Override
+    public void closeSession(CDOSessionX sessionX) {
+        sessionX.closeSession();
+    }
+
+    @Override
+    public CDOSessionX openSession() {
+        return clientX.getSession();
+    }
+
+    @Override
+    public CDOView openView(CDOSessionX sessionX) {
+        return sessionX.openView();
+    }
+
+    @Override
+    public CDOTransaction openTransaction(CDOSessionX sessionX) {
+        return sessionX.openTransaction();
     }
 
     public ConstraintProblem getConstraintProblem(String name, CDOView view) {
-        cdoClient.registerPackage(TypesPackage.eINSTANCE);
-        cdoClient.registerPackage(CpPackage.eINSTANCE);
         ConstraintProblem cp = null;
         CDOResource resource = view.getResource(name);
         EList<EObject> objs = resource.getContents();
-        for (EObject obj: objs){
-            if (obj instanceof ConstraintProblem){
-                cp = (ConstraintProblem)obj;
+        for (EObject obj : objs) {
+            if (obj instanceof ConstraintProblem) {
+                cp = (ConstraintProblem) obj;
                 break;
             }
         }
-        if (cp == null){
+        if (cp == null) {
             throw new IllegalArgumentException(format("Cannot load Camel Model for name = %s", name));
         }
         return cp;

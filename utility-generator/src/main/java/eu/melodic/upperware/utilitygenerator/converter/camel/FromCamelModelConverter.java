@@ -22,7 +22,8 @@ import eu.melodic.upperware.utilitygenerator.communication.CDOService;
 import eu.melodic.upperware.utilitygenerator.communication.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.communication.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -39,7 +40,7 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 public class FromCamelModelConverter {
 
     private CDOService cdoService;
-    private CDOView view;
+    private CDOSessionX sessionX;
 
     private CamelModel model;
     private MetricTypeModelImpl metricModel;
@@ -50,15 +51,15 @@ public class FromCamelModelConverter {
         if (readFromFile) {
             this.cdoService = new CDOServiceFromFile();
         } else {
-            this.cdoService = new CDOServiceImpl(new CDOClient());
+            //this.cdoService = new CDOServiceImpl(new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE)));
+            this.cdoService = new CDOServiceImpl(new CDOClientXImpl());
         }
         log.info("path = {}", path);
 
-        this.view = cdoService.openView();
+        this.sessionX = cdoService.openSession();
+        CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
-
         this.metricModel = (MetricTypeModelImpl) model.getMetricModels().get(0);
-
         this.metricVariables = new ArrayList<>();
         metricModel.getMetrics().stream()
                 .filter(m -> m instanceof MetricVariable)
@@ -66,11 +67,10 @@ public class FromCamelModelConverter {
 
         log.info("metricVariables size = {}", metricVariables.size());
         this.utilityFunctionFormula = getUtilityFormula();
-
     }
 
     public void endWorkWithCamelModel() {
-        cdoService.closeView(view);
+        cdoService.closeSession(sessionX);
     }
 
     /* variables which should be also in CP model */
@@ -89,14 +89,12 @@ public class FromCamelModelConverter {
                 .collect(Collectors.toList());
     }
 
-
     /* raw and composite metrics */
     public Collection<Metric> getMetricsUsedInFunction() {
         return metricModel.getMetrics().stream()
                 .filter(m -> (m instanceof RawMetric || m instanceof CompositeMetric) && isInFormula(utilityFunctionFormula, m.getName()))
                 .collect(Collectors.toList());
     }
-
 
     /* variable with NodeCandidateAttribute annotations */
     //todo - checking if type is good variableType or NodeCandidatesAttributesType
@@ -138,7 +136,6 @@ public class FromCamelModelConverter {
 
     /* optimisation requirement - utility function */
     private String getUtilityFormula() {
-
         RequirementModel requirementModel = model.getRequirementModels().get(0);
         OptimisationRequirement optimisationRequirement = (OptimisationRequirement) requirementModel
                 .getRequirements()

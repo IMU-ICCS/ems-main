@@ -47,11 +47,11 @@ public class UtilityFunctionEvaluator {
         Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
-        variablesFromConstraintProblem.forEach(v-> log.info("variables from constraint problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
+        variablesFromConstraintProblem.forEach(v -> log.info("variables from constraint problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
         log.info("metrics from constraint problem: {}", metricsFromConstraintProblem);
 
         this.maxUtility = 0.0;
-        this.variableConverter = new VariableConverter();
+        this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
 
         CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variablesFromConstraintProblem);
         MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
@@ -78,17 +78,18 @@ public class UtilityFunctionEvaluator {
 
         Collection<Element> allConstants = metrics;
 
-        if (deployedSolution != null){ // for configuration? how to get values of current config arguments?
+        if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
             Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
             log.info("currentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
             Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
             log.info("current Config Arguments {} ", currentConfigArguments);
             allConstants.addAll(currentConfigArguments);
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
-        }
-        else {
+        } else {
+            log.info("It is an initial deployment. Setting values of current config and metrics to default values");
             allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
             allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
+            allConstants.addAll(metricsConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getMetricsUsedInFunction()));
         }
 
         this.function = new UtilityFunction(formula, convertToConstants(allConstants));
@@ -101,7 +102,10 @@ public class UtilityFunctionEvaluator {
 
     public double evaluate(Collection<Element> solution) {
 
-        if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)){
+
+        printer.printSolution(solution);
+        if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)) {
+            log.info("No Node Candidate for evaluated solution, return 0");
             return 0;
         }
         Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(solution);

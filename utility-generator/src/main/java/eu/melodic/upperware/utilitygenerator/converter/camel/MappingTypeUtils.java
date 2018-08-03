@@ -8,9 +8,11 @@
 package eu.melodic.upperware.utilitygenerator.converter.camel;
 
 import camel.metric.impl.MetricVariableImpl;
+import camel.mms.MmsObject;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidatesAttributesType;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.common.util.EList;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -48,7 +50,12 @@ public class MappingTypeUtils {
     }
 
     private static String getAnnotationOfMetricVariable(MetricVariableImpl metricVariable) {
-        String annotation = metricVariable.getMetricTemplate().getAttribute().getAnnotations().get(0).getId();
+        EList<MmsObject> annotations = metricVariable.getMetricTemplate().getAttribute().getAnnotations();
+        if (annotations.isEmpty()){
+            log.warn("Metric Variable {} has not definied annotation, returning empty String", metricVariable.getName());
+            return "";
+        }
+        String annotation = annotations.get(0).getId();
         log.debug("Found annotation {} for metric: {}", metricVariable.getName(), annotation);
         return annotation;
     }
@@ -66,6 +73,5 @@ public class MappingTypeUtils {
                 .filter(type -> annotation.contains(type.getName()))
                 .findAny();
     }
-
 
 }

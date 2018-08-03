@@ -26,8 +26,9 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.ow2.paasage.mddb.cdo</groupId>
+            <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
+            <classifier>repackaged</classifier>
         </dependency>
 
         <dependency>
@@ -123,24 +124,11 @@
             <artifactId>MathParser.org-mXparser</artifactId>
             <version>4.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+        </dependency>
 
 
     </dependencies>
-
-    <!--<build>-->
-        <!--<plugins>-->
-            <!--<plugin>-->
-                <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                <!--<version>2.19.1</version>-->
-                <!--<configuration>-->
-                    <!--<failIfNoTests>true</failIfNoTests>-->
-                    <!--<includes>-->
-                        <!--<include>**/*Test.*</include>-->
-                        <!--<include>**/*Spec.*</include>-->
-                    <!--</includes>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
-        <!--</plugins>-->
-    <!--</build>-->
-
 </project>

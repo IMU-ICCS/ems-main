@@ -61,7 +61,7 @@ public class NodeCandidatesConverter {
         return arguments;
     }
 
-    public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes){
+    public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
         Collection<Element> arguments = new ArrayList<>();
         attributes.forEach(a -> arguments.add(createElement(a.getName(), 1.0)));
         return arguments;
@@ -74,11 +74,9 @@ public class NodeCandidatesConverter {
     }
 
     //fixme - without getting from cache (if it is possible)
-    public boolean doesNodeCandidateForSolutionExist(Collection<Element> solution){
+    public boolean doesNodeCandidateForSolutionExist(Collection<Element> solution) {
         return convertSolutionToNodeCandidates(solution) == null;
     }
-
-
 
     private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
         log.debug("Converting solution to Node Candidates");
@@ -111,7 +109,6 @@ public class NodeCandidatesConverter {
                 .orElseThrow(() -> new IllegalStateException("Configuration Element for component" + componentId + " is not found"))
                 .getNodeCandidate();
     }
-
 
     private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, NodeCandidatesAttributesType type) {
         Number result = null;

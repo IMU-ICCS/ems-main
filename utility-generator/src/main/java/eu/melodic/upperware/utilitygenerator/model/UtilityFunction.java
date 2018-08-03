@@ -28,12 +28,13 @@ public class UtilityFunction {
 
     public UtilityFunction(String formula, Collection<Constant> constants) {
         this.constants = constants.toArray(new Constant[constants.size()]);
+        constants.forEach(c -> log.info("constant: {}, {}",c.getConstantName(), c.getConstantValue() ));
         this.function = new Expression(formula);
     }
 
     public double evaluateFunction(Collection<Argument> variables) {
-        variables.forEach(a -> log.info("Argument: {}, {}", a.getArgumentName(), a.getArgumentValue()));
-        Arrays.stream(constants).forEach(a -> log.info("Constant: {}, {}", a.getConstantName(), a.getConstantValue()));
+        variables.forEach(a -> log.debug("Argument: {}, {}", a.getArgumentName(), a.getArgumentValue()));
+        Arrays.stream(constants).forEach(a -> log.debug("Constant: {}, {}", a.getConstantName(), a.getConstantValue()));
 
         function.addConstants(constants);
         function.addArguments(variables.toArray(new Argument[variables.size()]));

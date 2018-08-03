@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.converter;
 
+import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,14 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 @AllArgsConstructor
 public class VariableConverter {
 
+    private Collection<VariableDTO> variablesFromConstraintProblem;
 
     public Collection<Element> convertVariablesForFunction(Collection<Element> solution, String formula) {
-        return solution.stream().filter(element -> isInFormula(formula, element.getName())).collect(Collectors.toList());
+        return solution.stream().filter(element -> isInFormula(formula, element.getName()) && isVariable(element)).collect(Collectors.toList());
+    }
+
+    //maybe it is possible to get values of metrics from solution?
+    private boolean isVariable(Element element) {
+        return variablesFromConstraintProblem.stream().anyMatch(v -> v.getId().equals(element.getName()));
     }
 }
