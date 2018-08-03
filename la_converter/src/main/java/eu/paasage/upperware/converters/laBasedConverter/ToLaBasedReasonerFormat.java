@@ -41,42 +41,9 @@ import eu.paasage.camel.deployment.DeploymentPackage;
 import eu.paasage.camel.organisation.OrganisationPackage;
 import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.type.TypePackage;
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
-import eu.paasage.upperware.metamodel.cp.BooleanDomain;
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Domain;
-import eu.paasage.upperware.metamodel.cp.Expression;
-import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.ListDomain;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
-import eu.paasage.upperware.metamodel.cp.MultiRangeDomain;
-import eu.paasage.upperware.metamodel.cp.NumericDomain;
-import eu.paasage.upperware.metamodel.cp.NumericExpression;
-import eu.paasage.upperware.metamodel.cp.NumericListDomain;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.RangeDomain;
-import eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression;
-import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
-import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
-import eu.paasage.upperware.metamodel.types.LongValueUpperware;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
-import eu.paasage.upperware.metamodel.types.StringValueUpperware;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.*;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -341,7 +308,7 @@ public class ToLaBasedReasonerFormat
 			sol= CPModelTool.createSolution(cp);
 		}
 		
-		buildVariables(cp.getVariables(), sol); 
+		buildVariables(cp.getCpVariables(), sol); 
 		
 		Map velocityVarsMap= new Hashtable();
 		
@@ -528,9 +495,9 @@ public class ToLaBasedReasonerFormat
 		}
 		
 		
-		buildVariables(cp.getVariables(), sol); 
+		buildVariables(cp.getCpVariables(), sol); 
 		
-		buildMetricVariables(cp.getMetricVariables(), sol);
+		buildMetricVariables(cp.getCpMetrics(), sol);
 		
 		buildObjectiveFunction(cp.getGoals().get(0).getExpression(), cp.getGoals().get(0).getGoalType());
 		
@@ -765,9 +732,7 @@ public class ToLaBasedReasonerFormat
 	protected CDOClientExtended createCDOClient()
 	{
 		CpPackage.eINSTANCE.eClass();
-		TypesPackage.eINSTANCE.eClass(); 
-		ApplicationPackage.eINSTANCE.eClass();
-		TypesPaasagePackage.eINSTANCE.eClass(); 
+		TypesPackage.eINSTANCE.eClass();
 		
 		Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
 	    Map<String, Object> m = reg.getExtensionToFactoryMap();
@@ -777,9 +742,6 @@ public class ToLaBasedReasonerFormat
 		
 		client.registerPackage(CpPackage.eINSTANCE);
 		client.registerPackage(TypesPackage.eINSTANCE);
-		
-		client.registerPackage(ApplicationPackage.eINSTANCE);
-		client.registerPackage(TypesPaasagePackage.eINSTANCE);
 		
 		client.registerPackage(TypePackage.eINSTANCE);
 				
@@ -802,14 +764,14 @@ public class ToLaBasedReasonerFormat
 	 * @param variablesCP The variables defined in the cp model. 
 	 * @param sol The solution
 	 */
-	public void buildVariables(EList<Variable> variablesCP, Solution sol)
+	public void buildVariables(EList<CpVariable> variablesCP, Solution sol)
 	{
 		 
 		int varsId= 0; 
 		
-		for(Variable var: variablesCP)
+		for(CpVariable var: variablesCP)
 		{
-			VariableValue variableValue= CPModelTool.searchVariableValue(sol, var);
+			CpVariableValue variableValue= CPModelTool.searchVariableValue(sol, var);
 			buildVariableDeclaration(var, varsId, variableValue); 
 			
 			varsId++; 
@@ -821,8 +783,8 @@ public class ToLaBasedReasonerFormat
 	 * @param variables The variables defined in the cp model. 
 	 * @param sol The solution
 	 */
-	public void buildMetricVariables(EList<MetricVariable> variables, Solution sol) {
-		for(MetricVariable var: variables) {
+	public void buildMetricVariables(EList<CpMetric> variables, Solution sol) {
+		for(CpMetric var: variables) {
 			MetricVariableValue metricValue= CPModelTool.searchMetricValue(sol, var);
 			buildMetricDeclaration(var, metricValue);
 		}
@@ -834,7 +796,7 @@ public class ToLaBasedReasonerFormat
 	 * @param id The id of the variable 
 	 * @param varValue The variable value
 	 */
-	public void buildVariableDeclaration(Variable var, int id, VariableValue varValue)
+	public void buildVariableDeclaration(CpVariable var, int id, CpVariableValue varValue)
 	{
 		String name= getValidId(var.getId());
 		
@@ -968,7 +930,7 @@ public class ToLaBasedReasonerFormat
 	 * @param metric The CP model metric variable related to the variable being defined
 	 * @param metricValue The metric value
 	 */
-	public void buildMetricDeclaration(MetricVariable metric, MetricVariableValue metricValue)
+	public void buildMetricDeclaration(CpMetric metric, MetricVariableValue metricValue)
 	{
 		String name= getValidId(metric.getId());
 		
@@ -1192,17 +1154,17 @@ public class ToLaBasedReasonerFormat
 	{
 		String expString=""; 
 		
-		if(numExp instanceof Variable)
+		if(numExp instanceof CpVariable)
 		{
-			expString= buildVariableValue((Variable) numExp); 
+			expString= buildVariableValue((CpVariable) numExp); 
 		}
 		else if (numExp instanceof Constant)
 		{
 			expString= buildConstantValue((Constant) numExp); 
 		}
-		else if (numExp instanceof MetricVariable)
+		else if (numExp instanceof CpMetric)
 		{
-			expString= buildMetricValue((MetricVariable) numExp); 
+			expString= buildMetricValue((CpMetric) numExp); 
 		}
 		else if(numExp instanceof SimpleUnaryExpression)
 		{
@@ -1284,7 +1246,7 @@ public class ToLaBasedReasonerFormat
 	 * @param var The variable
 	 * @return the expression to retrieve the variable value
 	 */
-	protected String buildVariableValue(Variable var)
+	protected String buildVariableValue(CpVariable var)
 	{
 		return getValidId(var.getId())+".Value()"; 
 	}
@@ -1295,7 +1257,7 @@ public class ToLaBasedReasonerFormat
 	 * @param var The  metric variable
 	 * @return the expression to retrieve the metric variable value
 	 */
-	protected String buildMetricValue(MetricVariable var)
+	protected String buildMetricValue(CpMetric var)
 	{
 		return getValidId(var.getId())+".Value()"; 
 	}
@@ -1441,7 +1403,7 @@ public class ToLaBasedReasonerFormat
 						if(infos.length==2)
 						{
 							String originalId= getOriginalId(infos[0]);
-							Variable var= searchVariableByName(cp, originalId);
+							CpVariable var= searchVariableByName(cp, originalId);
 							
 							logger.info("ToLaBasedReasonerFormat - assignValues - The variable "+originalId+" will have value "+infos[1]);
 							
@@ -1505,9 +1467,9 @@ public class ToLaBasedReasonerFormat
 	 * @param name The variable name
 	 * @return The variable or null if it does not exist
 	 */
-	public Variable searchVariableByName(ConstraintProblem cp, String name)
+	public CpVariable searchVariableByName(ConstraintProblem cp, String name)
 	{
-		for(Variable v: cp.getVariables())
+		for(CpVariable v: cp.getCpVariables())
 		{
 			logger.info("ToLaBasedReasonerFormat - searchVariableByName - VarName "+v.getId());
 			if(v.getId().equals(name))

@@ -23,21 +23,21 @@ public class FloatVariableCreator implements VariableCreator<Float> {
     private VariableService variableService;
 
     @Override
-    public Variable createVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain) {
-        return createWithRange(() -> variableService.createFloatVariable(variableType, componentName, domain),
+    public CpVariable createCpVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain) {
+        return createWithRange(() -> variableService.createFloatCpVariable(variableType, componentName, domain),
                 cp, variableType, componentName, unpackDomain(domain));
     }
 
     @Override
-    public Variable createVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain, String variableName) {
-        return createWithRange(() -> variableService.createFloatVariable(variableName, variableType, componentName, domain),
+    public CpVariable createCpVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain, String variableName) {
+        return createWithRange(() -> variableService.createFloatCpVariable(variableName, variableType, componentName, domain),
                 cp, variableType, componentName, unpackDomain(domain));
     }
 
-    private Variable createWithRange(Supplier<Variable> supplier, ConstraintProblem cp, VariableType variableType, String componentName, Pair<NumericValueUpperware, NumericValueUpperware> domainRange) {
+    private CpVariable createWithRange(Supplier<CpVariable> supplier, ConstraintProblem cp, VariableType variableType, String componentName, Pair<NumericValueUpperware, NumericValueUpperware> domainRange) {
 
-        Variable variable = supplier.get();
-        cp.getVariables().add(variable);
+        CpVariable variable = supplier.get();
+        cp.getCpVariables().add(variable);
 
         Constant minConstant = constantService.createFloatConstant(domainRange.getLeft(), constantService.getConstantName(variableType, componentName, "min"));
         cp.getConstants().add(minConstant);

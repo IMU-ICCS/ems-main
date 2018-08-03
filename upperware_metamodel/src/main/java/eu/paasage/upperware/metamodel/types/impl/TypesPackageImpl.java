@@ -2,10 +2,6 @@
  */
 package eu.paasage.upperware.metamodel.types.impl;
 
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
-
-import eu.paasage.upperware.metamodel.application.impl.ApplicationPackageImpl;
-
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 
 import eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl;
@@ -21,10 +17,6 @@ import eu.paasage.upperware.metamodel.types.StringValueUpperware;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.metamodel.types.ValueUpperware;
-
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
-
-import eu.paasage.upperware.metamodel.types.typesPaasage.impl.TypesPaasagePackageImpl;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -151,20 +143,14 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 
 		// Obtain or create and register interdependencies
 		CpPackageImpl theCpPackage = (CpPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) instanceof CpPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(CpPackage.eNS_URI) : CpPackage.eINSTANCE);
-		ApplicationPackageImpl theApplicationPackage = (ApplicationPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) instanceof ApplicationPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(ApplicationPackage.eNS_URI) : ApplicationPackage.eINSTANCE);
-		TypesPaasagePackageImpl theTypesPaasagePackage = (TypesPaasagePackageImpl)(EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) instanceof TypesPaasagePackageImpl ? EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI) : TypesPaasagePackage.eINSTANCE);
 
 		// Create package meta-data objects
 		theTypesPackage.createPackageContents();
 		theCpPackage.createPackageContents();
-		theApplicationPackage.createPackageContents();
-		theTypesPaasagePackage.createPackageContents();
 
 		// Initialize created meta-data
 		theTypesPackage.initializePackageContents();
 		theCpPackage.initializePackageContents();
-		theApplicationPackage.initializePackageContents();
-		theTypesPaasagePackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed
 		theTypesPackage.freeze();
@@ -386,12 +372,6 @@ public class TypesPackageImpl extends EPackageImpl implements TypesPackage {
 		setName(eNAME);
 		setNsPrefix(eNS_PREFIX);
 		setNsURI(eNS_URI);
-
-		// Obtain other dependent packages
-		TypesPaasagePackage theTypesPaasagePackage = (TypesPaasagePackage)EPackage.Registry.INSTANCE.getEPackage(TypesPaasagePackage.eNS_URI);
-
-		// Add subpackages
-		getESubpackages().add(theTypesPaasagePackage);
 
 		// Create type parameters
 

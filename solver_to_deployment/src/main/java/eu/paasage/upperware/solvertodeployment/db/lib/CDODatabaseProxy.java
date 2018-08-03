@@ -11,10 +11,8 @@ import eu.paasage.camel.provider.ProviderPackage;
 import eu.paasage.camel.type.TypePackage;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,8 +27,8 @@ public class CDODatabaseProxy {
 	private CDOClientX cdoClient;
 
 	private CDODatabaseProxy() {
-		cdoClient = new CDOClientXImpl(Arrays.asList(ApplicationPackage.eINSTANCE, CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
-				TypesPaasagePackage.eINSTANCE, TypePackage.eINSTANCE, CamelPackage.eINSTANCE, ProviderPackage.eINSTANCE,
+		cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
+				TypePackage.eINSTANCE, CamelPackage.eINSTANCE, ProviderPackage.eINSTANCE,
 				OrganisationPackage.eINSTANCE, DeploymentPackage.eINSTANCE));
 	}
 

@@ -10,11 +10,9 @@ import eu.melodic.cache.NodeCandidates;
 import eu.paasage.camel.deployment.*;
 import eu.paasage.camel.provider.ProviderModel;
 import eu.paasage.camel.type.StringsValue;
-import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
@@ -139,11 +137,11 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		
 		// Memory of instances
 		Map<Integer, EList<VMInstance>> localGroupVMInstances = new HashMap<>();
-		Map<String, List<VariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
+		Map<String, List<CpVariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
 
 		try {
 			DataHolder dataHolder = new DataHolder();
-			for (Entry<String, List<VariableValue>> entry : vvByComponentName.entrySet()) {
+			for (Entry<String, List<CpVariableValue>> entry : vvByComponentName.entrySet()) {
 				String componentName = entry.getKey();
 
 				int cardinality = CPModelTool.getIntValue(CPModelTool.getCardinality(entry.getValue()).orElseThrow(() -> new S2DException(String.format("Could not find cardinality for component %s", entry.getKey()))));
@@ -174,7 +172,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 						if (vmInstanceToRegisters == null) {
 							log.info("Creating new VM Instances...");
 
-							VM vm = findVMByName(deploymentModel.getVms(), getVmId(entry));
+							VM vm = findVMByName(deploymentModel.getVms(), ""); //TODO - vmId?
 
 							ProviderModel providerModel = ProviderModelTransformer.createProviderModel(nodeCandidate, componentName, constraintProblem.getId(), solverToDeploymentProperties.getEndpoint().getAmazon());
 							dataHolder.getProviderModel().add(providerModel);
@@ -216,9 +214,9 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 		return null;
 	}
 
-	private static String getVmId(Entry<String, List<VariableValue>> entry) {
-		return entry.getValue().get(0).getVariable().getVmId();
-	}
+//	private static String getVmId(Entry<String, List<CpVariableValue>> entry) {
+//		return entry.getValue().get(0).getVariable().getVmId();
+//	}
 
 	private static VM findVMByName(EList<VM> vms, String vmName) {
 		return vms.stream()
@@ -226,7 +224,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				.findFirst().orElse(null);
 	}
 
-	private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<VariableValue> variableValues) {
+	private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<CpVariableValue> variableValues) {
 		List<Predicate<NodeCandidate>> result = new ArrayList<>();
 
 		CPModelTool.getCores(variableValues)

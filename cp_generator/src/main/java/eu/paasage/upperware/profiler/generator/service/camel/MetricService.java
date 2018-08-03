@@ -1,15 +1,15 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
 import camel.type.PrimitiveType;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
+import eu.paasage.upperware.metamodel.cp.CpMetric;
 
 public interface MetricService {
 
-    MetricVariable createDoubleMetricVariable(String id);
+    CpMetric createDoubleCpMetric(String id);
 
-    MetricVariable createFloatMetricVariable(String id);
+    CpMetric createFloatCpMetric(String id);
 
-    MetricVariable createIntegerMetricVariable(String id);
+    CpMetric createIntegerCpMetric(String id);
 
-    MetricVariable createMetricVariable(String id, PrimitiveType primitiveType);
+    CpMetric createCpMetric(String id, PrimitiveType primitiveType);
 }

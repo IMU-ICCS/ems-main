@@ -12,18 +12,18 @@ public interface VariableService {
     String getVarName(VariableType variableType, String vmName);
 
 
-    Variable createIntegerVariable(VariableType variableType, String componentId, Domain domain);
+    CpVariable createIntegerCpVariable(VariableType variableType, String componentId, Domain domain);
 
-    Variable createDoubleVariable(VariableType variableType, String componentId, Domain domain);
+    CpVariable createDoubleCpVariable(VariableType variableType, String componentId, Domain domain);
 
-    Variable createFloatVariable(VariableType variableType, String componentId, Domain domain);
+    CpVariable createFloatCpVariable(VariableType variableType, String componentId, Domain domain);
 
 
-    Variable createIntegerVariable(String name, VariableType variableType, String componentId, Domain domain);
+    CpVariable createIntegerCpVariable(String name, VariableType variableType, String componentId, Domain domain);
 
-    Variable createDoubleVariable(String name, VariableType variableType, String componentId, Domain domain);
+    CpVariable createDoubleCpVariable(String name, VariableType variableType, String componentId, Domain domain);
 
-    Variable createFloatVariable(String name, VariableType variableType, String componentId, Domain domain);
+    CpVariable createFloatCpVariable(String name, VariableType variableType, String componentId, Domain domain);
 
 
     RangeDomain createIntegerRangeDomain(int from, int to);

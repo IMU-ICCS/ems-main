@@ -15,16 +15,16 @@ import org.eclipse.emf.cdo.CDOObject;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.VariableValue#getVariable <em>Variable</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.VariableValue#getValue <em>Value</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.CpVariableValue#getVariable <em>Variable</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.CpVariableValue#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariableValue()
+ * @see eu.paasage.upperware.metamodel.cp.CpPackage#getCpVariableValue()
  * @model
  * @extends CDOObject
  * @generated
  */
-public interface VariableValue extends CDOObject {
+public interface CpVariableValue extends CDOObject {
 	/**
 	 * Returns the value of the '<em><b>Variable</b></em>' reference.
 	 * <!-- begin-user-doc -->
@@ -34,22 +34,22 @@ public interface VariableValue extends CDOObject {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Variable</em>' reference.
-	 * @see #setVariable(Variable)
-	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariableValue_Variable()
+	 * @see #setVariable(CpVariable)
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getCpVariableValue_Variable()
 	 * @model required="true"
 	 * @generated
 	 */
-	Variable getVariable();
+	CpVariable getVariable();
 
 	/**
-	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.VariableValue#getVariable <em>Variable</em>}' reference.
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.CpVariableValue#getVariable <em>Variable</em>}' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Variable</em>' reference.
 	 * @see #getVariable()
 	 * @generated
 	 */
-	void setVariable(Variable value);
+	void setVariable(CpVariable value);
 
 	/**
 	 * Returns the value of the '<em><b>Value</b></em>' containment reference.
@@ -61,14 +61,14 @@ public interface VariableValue extends CDOObject {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Value</em>' containment reference.
 	 * @see #setValue(NumericValueUpperware)
-	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariableValue_Value()
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getCpVariableValue_Value()
 	 * @model containment="true" required="true"
 	 * @generated
 	 */
 	NumericValueUpperware getValue();
 
 	/**
-	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.VariableValue#getValue <em>Value</em>}' containment reference.
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.CpVariableValue#getValue <em>Value</em>}' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Value</em>' containment reference.
@@ -77,4 +77,4 @@ public interface VariableValue extends CDOObject {
 	 */
 	void setValue(NumericValueUpperware value);
 
-} // VariableValue
+} // CpVariableValue

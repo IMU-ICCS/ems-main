@@ -93,12 +93,12 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
-			case CpPackage.VARIABLE: {
-				Variable variable = (Variable)theEObject;
-				T result = caseVariable(variable);
-				if (result == null) result = caseNumericExpression(variable);
-				if (result == null) result = caseExpression(variable);
-				if (result == null) result = caseCPElement(variable);
+			case CpPackage.CP_VARIABLE: {
+				CpVariable cpVariable = (CpVariable)theEObject;
+				T result = caseCpVariable(cpVariable);
+				if (result == null) result = caseNumericExpression(cpVariable);
+				if (result == null) result = caseExpression(cpVariable);
+				if (result == null) result = caseCPElement(cpVariable);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -224,12 +224,12 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
-			case CpPackage.METRIC_VARIABLE: {
-				MetricVariable metricVariable = (MetricVariable)theEObject;
-				T result = caseMetricVariable(metricVariable);
-				if (result == null) result = caseNumericExpression(metricVariable);
-				if (result == null) result = caseExpression(metricVariable);
-				if (result == null) result = caseCPElement(metricVariable);
+			case CpPackage.CP_METRIC: {
+				CpMetric cpMetric = (CpMetric)theEObject;
+				T result = caseCpMetric(cpMetric);
+				if (result == null) result = caseNumericExpression(cpMetric);
+				if (result == null) result = caseExpression(cpMetric);
+				if (result == null) result = caseCPElement(cpMetric);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -239,15 +239,9 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
-			case CpPackage.VARIABLE_VALUE: {
-				VariableValue variableValue = (VariableValue)theEObject;
-				T result = caseVariableValue(variableValue);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
-			case CpPackage.METRIC_VARIABLE_VALUE: {
-				MetricVariableValue metricVariableValue = (MetricVariableValue)theEObject;
-				T result = caseMetricVariableValue(metricVariableValue);
+			case CpPackage.CP_VARIABLE_VALUE: {
+				CpVariableValue cpVariableValue = (CpVariableValue)theEObject;
+				T result = caseCpVariableValue(cpVariableValue);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -362,7 +356,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
 	 * @generated
 	 */
-	public T caseVariable(Variable object) {
+	public T caseCpVariable(CpVariable object) {
 		return null;
 	}
 
@@ -592,17 +586,17 @@ public class CpSwitch<T> extends Switch<T> {
 	}
 
 	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Metric Variable</em>'.
+	 * Returns the result of interpreting the object as an instance of '<em>Metric</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
 	 * returning a non-null result will terminate the switch.
 	 * <!-- end-user-doc -->
 	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Metric Variable</em>'.
+	 * @return the result of interpreting the object as an instance of '<em>Metric</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
 	 * @generated
 	 */
-	public T caseMetricVariable(MetricVariable object) {
+	public T caseCpMetric(CpMetric object) {
 		return null;
 	}
 
@@ -632,22 +626,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
 	 * @generated
 	 */
-	public T caseVariableValue(VariableValue object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Metric Variable Value</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Metric Variable Value</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseMetricVariableValue(MetricVariableValue object) {
+	public T caseCpVariableValue(CpVariableValue object) {
 		return null;
 	}
 
