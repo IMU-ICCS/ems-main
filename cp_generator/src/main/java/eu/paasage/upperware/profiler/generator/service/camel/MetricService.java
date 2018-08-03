@@ -1,13 +1,15 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import camel.type.PrimitiveType;
+import eu.paasage.upperware.metamodel.cp.CpMetric;
 
 public interface MetricService {
 
-    MetricVariable createMetricVariable(String id, BasicTypeEnum basicTypeEnum);
+    CpMetric createDoubleCpMetric(String id);
 
-    MetricVariable createDoubleMetricVariable(String id);
+    CpMetric createFloatCpMetric(String id);
 
-    MetricVariable createIntegerMetricVariable(String id);
+    CpMetric createIntegerCpMetric(String id);
+
+    CpMetric createCpMetric(String id, PrimitiveType primitiveType);
 }

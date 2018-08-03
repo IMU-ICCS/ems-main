@@ -3,9 +3,8 @@
 package eu.paasage.upperware.metamodel.cp.impl;
 
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
 
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 
@@ -25,7 +24,6 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <ul>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getTimestamp <em>Timestamp</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getVariableValue <em>Variable Value</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getMetricVariableValue <em>Metric Variable Value</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl#getUtilityValue <em>Utility Value</em>}</li>
  * </ul>
  *
@@ -85,18 +83,8 @@ public class SolutionImpl extends CDOObjectImpl implements Solution {
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
-	public EList<VariableValue> getVariableValue() {
-		return (EList<VariableValue>)eGet(CpPackage.Literals.SOLUTION__VARIABLE_VALUE, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@SuppressWarnings("unchecked")
-	public EList<MetricVariableValue> getMetricVariableValue() {
-		return (EList<MetricVariableValue>)eGet(CpPackage.Literals.SOLUTION__METRIC_VARIABLE_VALUE, true);
+	public EList<CpVariableValue> getVariableValue() {
+		return (EList<CpVariableValue>)eGet(CpPackage.Literals.SOLUTION__VARIABLE_VALUE, true);
 	}
 
 	/**

@@ -2,7 +2,6 @@ package eu.paasage.upperware.profiler.generator.communication;
 
 import camel.core.CamelModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 

@@ -18,10 +18,10 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getGoals <em>Goals</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getConstants <em>Constants</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getVariables <em>Variables</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCpVariables <em>Cp Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getConstraints <em>Constraints</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getAuxExpressions <em>Aux Expressions</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables <em>Metric Variables</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCpMetrics <em>Cp Metrics</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getSolution <em>Solution</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getDeployedSolutionId <em>Deployed Solution Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCandidateSolutionId <em>Candidate Solution Id</em>}</li>
@@ -92,20 +92,20 @@ public interface ConstraintProblem extends CDOObject {
 	EList<Constant> getConstants();
 
 	/**
-	 * Returns the value of the '<em><b>Variables</b></em>' containment reference list.
-	 * The list contents are of type {@link eu.paasage.upperware.metamodel.cp.Variable}.
+	 * Returns the value of the '<em><b>Cp Variables</b></em>' containment reference list.
+	 * The list contents are of type {@link eu.paasage.upperware.metamodel.cp.CpVariable}.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Variables</em>' containment reference list isn't clear,
+	 * If the meaning of the '<em>Cp Variables</em>' containment reference list isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Variables</em>' containment reference list.
-	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_Variables()
+	 * @return the value of the '<em>Cp Variables</em>' containment reference list.
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_CpVariables()
 	 * @model containment="true"
 	 * @generated
 	 */
-	EList<Variable> getVariables();
+	EList<CpVariable> getCpVariables();
 
 	/**
 	 * Returns the value of the '<em><b>Constraints</b></em>' containment reference list.
@@ -140,20 +140,20 @@ public interface ConstraintProblem extends CDOObject {
 	EList<Expression> getAuxExpressions();
 
 	/**
-	 * Returns the value of the '<em><b>Metric Variables</b></em>' containment reference list.
-	 * The list contents are of type {@link eu.paasage.upperware.metamodel.cp.MetricVariable}.
+	 * Returns the value of the '<em><b>Cp Metrics</b></em>' containment reference list.
+	 * The list contents are of type {@link eu.paasage.upperware.metamodel.cp.CpMetric}.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Metric Variables</em>' containment reference list isn't clear,
+	 * If the meaning of the '<em>Cp Metrics</em>' containment reference list isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Metric Variables</em>' containment reference list.
-	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_MetricVariables()
+	 * @return the value of the '<em>Cp Metrics</em>' containment reference list.
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getConstraintProblem_CpMetrics()
 	 * @model containment="true"
 	 * @generated
 	 */
-	EList<MetricVariable> getMetricVariables();
+	EList<CpMetric> getCpMetrics();
 
 	/**
 	 * Returns the value of the '<em><b>Solution</b></em>' containment reference list.

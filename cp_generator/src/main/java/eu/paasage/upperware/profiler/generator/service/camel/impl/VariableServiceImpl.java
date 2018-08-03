@@ -1,8 +1,5 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
-import eu.paasage.upperware.metamodel.application.ApplicationComponent;
-import eu.paasage.upperware.metamodel.application.Provider;
-import eu.paasage.upperware.metamodel.application.VirtualMachineProfile;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
@@ -13,9 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static eu.passage.upperware.commons.MelodicConstants.*;
 
 /**
  * Created by pszkup on 16.08.17.
@@ -34,106 +28,42 @@ public class VariableServiceImpl implements VariableService {
     }
 
     @Override
-    public Variable createVariable(ApplicationComponent ac, VirtualMachineProfile vm, Provider provider, int min, int max){
-        //Var creation
-        String vmId= vm.getCloudMLId();
-        String providerId= provider.getId();
-
-        String varName= generateApplicationComponentVarName(ac.getCloudMLId(), vmId, providerId);
-
-        log.debug("CPModelDerivator - createAppComponentVariable  - Creating var {} VM Profile/Instance {}", varName, vmId);
-
-        Variable var= createIntegerVariableWithRangeDomain(varName, min, max, null, null);
-        var.setVmId(vmId);
-        var.setProviderId(providerId);
-        var.setOsImageId(vm.getOs().getName());
-
-        return var;
-    }
-
-    /**
-     * Searches all the variables related to a given application component
-     * @param ac The application component
-     * @param cp The constraint problem for searching the variables
-     * @return A list of variables related to the application component
-     */
-    @Override
-    public List<Variable> getVariablesRelatedToAppComponent(ApplicationComponent ac, ConstraintProblem cp) {
-        String componentName = ac.getCloudMLId();
-
-        return cp.getVariables().stream()
-                .filter(variable -> variable.getId().contains(componentName))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Variable createIntegerVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
-        return createVariable(getVarName(variableType, componentId), domain, variableType, componentId, vmName);
-    }
-
-    @Override
-    public Variable createDoubleVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
+    public CpVariable createIntegerCpVariable(VariableType variableType, String componentId, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createLongVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
+    public CpVariable createDoubleCpVariable(VariableType variableType, String componentId, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createFloatVariable(VariableType variableType, String componentId, String vmName, Domain domain) {
+    public CpVariable createFloatCpVariable(VariableType variableType, String componentId, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createIntegerVariable(String name, VariableType variableType, String componentId, String vmName, Domain domain) {
-        return createVariable(name, domain, variableType, componentId, vmName);
-    }
-
-    /**
-     * Creates a integer variable with a range domain
-     * @param varName The name of the variable
-     * @param lowerLimit From limit
-     * @param upperLimit To limit
-     * @return The variable with a range domain
-     */
-    @Override
-    public Variable createIntegerVariableWithRangeDomain(String varName, int lowerLimit, int upperLimit, VariableType variableType, String componentId) {
-        return createVariable(varName, createIntegerRangeDomain(lowerLimit, upperLimit), variableType, componentId);
+    public CpVariable createIntegerCpVariable(String name, VariableType variableType, String componentId, Domain domain) {
+        return createVariable(name, domain, variableType, componentId);
     }
 
     @Override
-    public Variable createDoubleVariableWithRangeDomain(String varName, double lowerLimit, double upperLimit, VariableType variableType, String componentId) {
-        return createVariable(varName, createDoubleRangeDomain(lowerLimit, upperLimit), variableType, componentId);
+    public CpVariable createFloatCpVariable(String name, VariableType variableType, String componentId, Domain domain) {
+        return createVariable(name, domain, variableType, componentId);
     }
 
     @Override
-    public Variable createLongVariableWithRangeDomain(String varName, long lowerLimit, long upperLimit, VariableType variableType, String componentId) {
-        return createVariable(varName, createLongRangeDomain(lowerLimit, upperLimit), variableType, componentId);
+    public CpVariable createDoubleCpVariable(String name, VariableType variableType, String componentId, Domain domain) {
+        return createVariable(name, domain, variableType, componentId);
     }
 
-    @Override
-    public Variable createFloatVariableWithRangeDomain(String varName, float lowerLimit, float upperLimit, VariableType variableType, String componentId) {
-        return createVariable(varName, createFloatRangeDomain(lowerLimit, upperLimit), variableType, componentId);
-    }
-
-    private Variable createVariable(String varName, Domain domain, VariableType variableType, String componentId) {
-        return createVariable(varName, domain, variableType, componentId, null);
-    }
-
-    private Variable createVariable(String varName, Domain domain, VariableType variableType, String componentId, String vmName) {
-        Variable variable= cpFactory.createVariable();
+    private CpVariable createVariable(String varName, Domain domain, VariableType variableType, String componentId) {
+        CpVariable variable= cpFactory.createCpVariable();
         variable.setId(varName);
         variable.setDomain(domain);
         variable.setVariableType(variableType);
         variable.setComponentId(componentId);
-        variable.setVmId(vmName);
         return variable;
-    }
-
-    public String generateApplicationComponentVarName(String appComponentName, String vmpName, String providerId) {
-        return APP_COMPONENT_VAR_PREFIX+appComponentName+APP_COMPONENT_VAR_MID+vmpName+APP_COMPONENT_VAR_SUFFIX+providerId;
     }
 
     @Override
