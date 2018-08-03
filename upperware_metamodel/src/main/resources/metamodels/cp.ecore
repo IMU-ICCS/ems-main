@@ -19,16 +19,15 @@
                 eType="#//paasage/upperware/metamodel/cp/Goal" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="constants" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/Constant" containment="true"/>
-            <eStructuralFeatures xsi:type="ecore:EReference" name="variables" upperBound="-1"
-                eType="#//paasage/upperware/metamodel/cp/Variable" containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="cpVariables" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/CpVariable" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/ComparisonExpression" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="auxExpressions"
                 upperBound="-1" eType="#//paasage/upperware/metamodel/cp/Expression"
                 containment="true"/>
-            <eStructuralFeatures xsi:type="ecore:EReference" name="metricVariables"
-                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/MetricVariable"
-                containment="true"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="cpMetrics" upperBound="-1"
+                eType="#//paasage/upperware/metamodel/cp/CpMetric" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="solution" upperBound="-1"
                 eType="#//paasage/upperware/metamodel/cp/Solution" containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="deployedSolutionId"
@@ -42,14 +41,9 @@
               eSuperTypes="#//paasage/upperware/metamodel/cp/CPElement"/>
           <eClassifiers xsi:type="ecore:EClass" name="NumericExpression" abstract="true"
               eSuperTypes="#//paasage/upperware/metamodel/cp/Expression"/>
-          <eClassifiers xsi:type="ecore:EClass" name="Variable" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+          <eClassifiers xsi:type="ecore:EClass" name="CpVariable" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
             <eStructuralFeatures xsi:type="ecore:EReference" name="domain" lowerBound="1"
                 eType="#//paasage/upperware/metamodel/cp/Domain" containment="true"/>
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="locationId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="providerId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="vmId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="OsImageId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-            <eStructuralFeatures xsi:type="ecore:EAttribute" name="hardwareId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="variableType" lowerBound="1"
                 eType="#//paasage/upperware/metamodel/cp/VariableType"/>
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="componentId" lowerBound="1"
@@ -162,33 +156,26 @@
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="BooleanDomain" eSuperTypes="#//paasage/upperware/metamodel/cp/Domain"/>
-          <eClassifiers xsi:type="ecore:EClass" name="MetricVariable" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
+          <eClassifiers xsi:type="ecore:EClass" name="CpMetric" eSuperTypes="#//paasage/upperware/metamodel/cp/NumericExpression">
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1"
                 eType="ecore:EEnum paasageTypes.ecore#//paasage/upperware/metamodel/types/BasicTypeEnum"/>
+            <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
+                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
+                containment="true"/>
           </eClassifiers>
           <eClassifiers xsi:type="ecore:EClass" name="Solution">
             <eStructuralFeatures xsi:type="ecore:EAttribute" name="timestamp" lowerBound="1"
                 eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="variableValue"
-                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/VariableValue"
-                containment="true"/>
-            <eStructuralFeatures xsi:type="ecore:EReference" name="metricVariableValue"
-                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/MetricVariableValue"
+                upperBound="-1" eType="#//paasage/upperware/metamodel/cp/CpVariableValue"
                 containment="true"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="utilityValue" lowerBound="1"
                 eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
                 containment="true"/>
           </eClassifiers>
-          <eClassifiers xsi:type="ecore:EClass" name="VariableValue">
+          <eClassifiers xsi:type="ecore:EClass" name="CpVariableValue">
             <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
-                eType="#//paasage/upperware/metamodel/cp/Variable"/>
-            <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
-                eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
-                containment="true"/>
-          </eClassifiers>
-          <eClassifiers xsi:type="ecore:EClass" name="MetricVariableValue">
-            <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
-                eType="#//paasage/upperware/metamodel/cp/MetricVariable"/>
+                eType="#//paasage/upperware/metamodel/cp/CpVariable"/>
             <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1"
                 eType="ecore:EClass paasageTypes.ecore#//paasage/upperware/metamodel/types/NumericValueUpperware"
                 containment="true"/>

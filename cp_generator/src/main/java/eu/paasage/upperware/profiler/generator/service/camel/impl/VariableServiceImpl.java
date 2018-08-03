@@ -28,37 +28,37 @@ public class VariableServiceImpl implements VariableService {
     }
 
     @Override
-    public Variable createIntegerVariable(VariableType variableType, String componentId, Domain domain) {
+    public CpVariable createIntegerCpVariable(VariableType variableType, String componentId, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createDoubleVariable(VariableType variableType, String componentId, Domain domain) {
+    public CpVariable createDoubleCpVariable(VariableType variableType, String componentId, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createFloatVariable(VariableType variableType, String componentId, Domain domain) {
+    public CpVariable createFloatCpVariable(VariableType variableType, String componentId, Domain domain) {
         return createVariable(getVarName(variableType, componentId), domain, variableType, componentId);
     }
 
     @Override
-    public Variable createIntegerVariable(String name, VariableType variableType, String componentId, Domain domain) {
+    public CpVariable createIntegerCpVariable(String name, VariableType variableType, String componentId, Domain domain) {
         return createVariable(name, domain, variableType, componentId);
     }
 
     @Override
-    public Variable createFloatVariable(String name, VariableType variableType, String componentId, Domain domain) {
+    public CpVariable createFloatCpVariable(String name, VariableType variableType, String componentId, Domain domain) {
         return createVariable(name, domain, variableType, componentId);
     }
 
     @Override
-    public Variable createDoubleVariable(String name, VariableType variableType, String componentId, Domain domain) {
+    public CpVariable createDoubleCpVariable(String name, VariableType variableType, String componentId, Domain domain) {
         return createVariable(name, domain, variableType, componentId);
     }
 
-    private Variable createVariable(String varName, Domain domain, VariableType variableType, String componentId) {
-        Variable variable= cpFactory.createVariable();
+    private CpVariable createVariable(String varName, Domain domain, VariableType variableType, String componentId) {
+        CpVariable variable= cpFactory.createCpVariable();
         variable.setId(varName);
         variable.setDomain(domain);
         variable.setVariableType(variableType);
