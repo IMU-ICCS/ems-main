@@ -10,18 +10,13 @@
  */
 package eu.paasage.upperware.converters.laBasedConverter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import eu.paasage.camel.CamelPackage;
+import eu.paasage.camel.deployment.DeploymentPackage;
+import eu.paasage.camel.organisation.OrganisationPackage;
+import eu.paasage.camel.provider.ProviderPackage;
+import eu.paasage.camel.type.TypePackage;
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.*;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.ModelTool;
 import org.apache.commons.lang3.tuple.Pair;
@@ -36,14 +31,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
-import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.deployment.DeploymentPackage;
-import eu.paasage.camel.organisation.OrganisationPackage;
-import eu.paasage.camel.provider.ProviderPackage;
-import eu.paasage.camel.type.TypePackage;
-
-import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.types.*;
+import java.io.*;
+import java.util.*;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -784,10 +773,10 @@ public class ToLaBasedReasonerFormat
 	 * @param sol The solution
 	 */
 	public void buildMetricVariables(EList<CpMetric> variables, Solution sol) {
-		for(CpMetric var: variables) {
-			MetricVariableValue metricValue= CPModelTool.searchMetricValue(sol, var);
-			buildMetricDeclaration(var, metricValue);
-		}
+//		for(CpMetric var: variables) {
+//			MetricVariableValue metricValue= CPModelTool.searchMetricValue(sol, var);
+//			buildMetricDeclaration(var, metricValue);
+//		}
 	}
 	
 	/**
@@ -930,7 +919,7 @@ public class ToLaBasedReasonerFormat
 	 * @param metric The CP model metric variable related to the variable being defined
 	 * @param metricValue The metric value
 	 */
-	public void buildMetricDeclaration(CpMetric metric, MetricVariableValue metricValue)
+	public void buildMetricDeclaration(CpMetric metric, CpMetric metricValue)
 	{
 		String name= getValidId(metric.getId());
 		
