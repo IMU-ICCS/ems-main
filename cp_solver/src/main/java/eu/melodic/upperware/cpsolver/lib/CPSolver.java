@@ -118,10 +118,10 @@ public class CPSolver {
 	/* Processing the model fetched to inform the private variables of this class */
 	private void readModel(ConstraintProblem cp){
 		createConstants(cp.getConstants());
-		createVariables(cp.getVariables());
-		createMetricVariables(cp.getMetricVariables());
+		createVariables(cp.getCpVariables());
+		createMetricVariables(cp.getCpMetrics());
 		createConstraints(cp.getConstraints());
-		createVariablesForUG(cp.getVariables());
+		createVariablesForUG(cp.getCpVariables());
 		createMetricsForUG(cp.getConstants());
 		createUtilityFunctionType(cp);
 		getActualConfiguration(cp);
@@ -159,7 +159,7 @@ public class CPSolver {
 	}
 
 	//todo handle RealVar
-	private Var createVar(VariableValue variableValue){
+	private Var createVar(CpVariableValue variableValue){
 
 		NumericValueUpperware value = variableValue.getValue();
 		Var variable;
@@ -209,10 +209,10 @@ public class CPSolver {
         log.info("Creating metrics for Utility Generator is finished.");
 	}
 
-	private void createVariablesForUG(EList<Variable> variables) {
+	private void createVariablesForUG(EList<CpVariable> variables) {
 		log.info("Creating variables for Utility Generator");
 		this.variablesForUG = variables.stream()
-				.map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+				.map(cpVariable -> new VariableDTO(cpVariable.getId(), cpVariable.getComponentId(), cpVariable.getVariableType()))
 				.collect(Collectors.toList());
 		log.info("Creating variables for Utility Generator is finished");
 	}
@@ -226,66 +226,66 @@ public class CPSolver {
 					break;
 				}
 			}
-			if (sol != null){
-				log.info("Found solution with the timestamp given");
-				for (MetricVariableValue mvv: sol.getMetricVariableValue()){
-					MetricVariable mv = mvv.getVariable();
-					NumericValueUpperware val = mvv.getValue();
-					String mvName = mv.getId();
-					IntVar intVar = idToIntVar.get(mvName);
-					log.info("CHECKING METRIC VARIABLE TO ASSIGN IT A CONSTANT VALUE");
-					if (intVar != null){
-						int actualVal = 1;
-						if (val instanceof IntegerValueUpperware){
-							IntegerValueUpperware intVal = (IntegerValueUpperware)val;
-							actualVal = intVal.getValue();
-						}
-						else if (val instanceof DoubleValueUpperware){
-							DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
-							actualVal = (int)doubleVal.getValue();
-						}
-						else if (val instanceof FloatValueUpperware){
-							FloatValueUpperware floatVal = (FloatValueUpperware)val;
-							actualVal = (int)floatVal.getValue();
-						}
-						//solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
-						try{
-							intVar.updateLowerBound(actualVal,null);
-							intVar.updateUpperBound(actualVal,null);
-							log.info("UPDATING INTEGER VARIABLE!!!: " + intVar);
-						}
-						catch(Exception e){
-							e.printStackTrace();
-						}
-					}
-					else{
-						RealVar realVar = idToRealVar.get(mvName);
-						if (realVar != null){
-							double actualVal = 1.0;
-							if (val instanceof IntegerValueUpperware){
-								IntegerValueUpperware intVal = (IntegerValueUpperware)val;
-								actualVal = intVal.getValue();
-							}
-							else if (val instanceof DoubleValueUpperware){
-								DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
-								actualVal = doubleVal.getValue();
-							}
-							else if (val instanceof FloatValueUpperware){
-								FloatValueUpperware floatVal = (FloatValueUpperware)val;
-								actualVal = (double)floatVal.getValue();
-							}
-							try{
-								realVar.updateLowerBound(actualVal,null);
-								realVar.updateUpperBound(actualVal,null);
-								log.info("UPDATING REAL VARIABLE!!!: " + realVar);
-							}
-							catch(Exception e){
-								e.printStackTrace();
-							}
-						}
-					}
-				}
-			}
+//			if (sol != null){
+//				log.info("Found solution with the timestamp given");
+//				for (MetricVariableValue mvv: sol.getMetricVariableValue()){
+//					MetricVariable mv = mvv.getCpVariable();
+//					NumericValueUpperware val = mvv.getValue();
+//					String mvName = mv.getId();
+//					IntVar intVar = idToIntVar.get(mvName);
+//					log.info("CHECKING METRIC CpVariable TO ASSIGN IT A CONSTANT VALUE");
+//					if (intVar != null){
+//						int actualVal = 1;
+//						if (val instanceof IntegerValueUpperware){
+//							IntegerValueUpperware intVal = (IntegerValueUpperware)val;
+//							actualVal = intVal.getValue();
+//						}
+//						else if (val instanceof DoubleValueUpperware){
+//							DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
+//							actualVal = (int)doubleVal.getValue();
+//						}
+//						else if (val instanceof FloatValueUpperware){
+//							FloatValueUpperware floatVal = (FloatValueUpperware)val;
+//							actualVal = (int)floatVal.getValue();
+//						}
+//						//solver.post(IntConstraintFactory.arithm(intVar, "=", actualVal));
+//						try{
+//							intVar.updateLowerBound(actualVal,null);
+//							intVar.updateUpperBound(actualVal,null);
+//							log.info("UPDATING INTEGER VARIABLE!!!: " + intVar);
+//						}
+//						catch(Exception e){
+//							e.printStackTrace();
+//						}
+//					}
+//					else{
+//						RealVar realVar = idToRealVar.get(mvName);
+//						if (realVar != null){
+//							double actualVal = 1.0;
+//							if (val instanceof IntegerValueUpperware){
+//								IntegerValueUpperware intVal = (IntegerValueUpperware)val;
+//								actualVal = intVal.getValue();
+//							}
+//							else if (val instanceof DoubleValueUpperware){
+//								DoubleValueUpperware doubleVal = (DoubleValueUpperware)val;
+//								actualVal = doubleVal.getValue();
+//							}
+//							else if (val instanceof FloatValueUpperware){
+//								FloatValueUpperware floatVal = (FloatValueUpperware)val;
+//								actualVal = (double)floatVal.getValue();
+//							}
+//							try{
+//								realVar.updateLowerBound(actualVal,null);
+//								realVar.updateUpperBound(actualVal,null);
+//								log.info("UPDATING REAL VARIABLE!!!: " + realVar);
+//							}
+//							catch(Exception e){
+//								e.printStackTrace();
+//							}
+//						}
+//					}
+//				}
+//			}
 	}
 	
 	/* Reads the CPModel from CDO provided that a correct CDO path or a file path 
@@ -419,15 +419,15 @@ public class CPSolver {
 		DoubleValueUpperware utilityValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
 		utilityValue.setValue(maxUtility);
 		solution.setUtilityValue(utilityValue);
-		EList<VariableValue> varValues = solution.getVariableValue();
+		EList<CpVariableValue> varValues = solution.getVariableValue();
 		try{
-			EList<Variable> vars = cp.getVariables();
-			for (Variable var: vars){
-				VariableValue varVal = CpFactory.eINSTANCE.createVariableValue();
+			EList<CpVariable> vars = cp.getCpVariables();
+			for (CpVariable var: vars){
+				CpVariableValue varVal = CpFactory.eINSTANCE.createCpVariableValue();
 				varVal.setVariable(var);
 				Domain dom = var.getDomain();
 				int val = solutionWithMaximumUtilityInt.get(var.getId());
-				log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+				log.info("Discovered value for CpVariable :" + var.getId() + " is: " + val);
 				if (dom instanceof RangeDomain){
 					RangeDomain rd = (RangeDomain)dom;
 					NumericValueUpperware from = rd.getFrom();
@@ -487,13 +487,13 @@ public class CPSolver {
 	/* Checking whether an expression contains only integer variables */
 	private boolean involvesOnlyInt(Expression expr){
 		boolean onlyInt = false;
-		if (expr instanceof Variable){
-			Variable v = (Variable)expr;
+		if (expr instanceof CpVariable){
+			CpVariable v = (CpVariable)expr;
 			IntVar iv = idToIntVar.get(v.getId());
 			if (iv != null) onlyInt = true;
 		}
-		else if (expr instanceof MetricVariable){
-			MetricVariable v = (MetricVariable)expr;
+		else if (expr instanceof CpMetric){
+			CpMetric v = (CpMetric)expr;
 			IntVar iv = idToIntVar.get(v.getId());
 			if (iv != null) onlyInt = true;
 		}
@@ -551,10 +551,10 @@ public class CPSolver {
 		return "";
 	}
 	
-	/* Creating an integer variable out of an expression possibly comprising other integer variables */
+	/* Creating an integer CpVariable out of an expression possibly comprising other integer variables */
 	private IntVar parseExpression(Expression expr){
-		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
-			if (expr instanceof Variable || expr instanceof MetricVariable) {
+		if (expr instanceof CpVariable || expr instanceof Constant){
+			if (expr instanceof CpVariable || expr instanceof CpMetric) {
 				return idToIntVar.get(expr.getId());
 			} else {
 				Constant constant = (Constant)expr;
@@ -708,14 +708,14 @@ public class CPSolver {
 	/* Printing the array of variables */
 	private String printVarArray(solver.variables.Variable[] vars){
 		return Arrays.stream(vars)
-				.map(variable -> variable.getName())
+				.map(cpVariable -> cpVariable.getName())
 				.collect(Collectors.joining(" , ", "[", "]"));
 	}
 	
-	/* Creating a real variable out of an expression */
+	/* Creating a real CpVariable out of an expression */
 	private RealVar parseRealExpression(Expression expr, RealConstraint rc){
-		if (expr instanceof Variable || expr instanceof MetricVariable || expr instanceof Constant){
-			if (expr instanceof Variable){
+		if (expr instanceof CpVariable || expr instanceof Constant){
+			if (expr instanceof CpVariable){
 				RealVar v = null;
 				v = idToRealVar.get(expr.getId());
 				if (v == null){
@@ -727,7 +727,7 @@ public class CPSolver {
 				}
 				return v;
 			}
-			else if (expr instanceof MetricVariable){
+			else if (expr instanceof CpMetric){
 				RealVar v = null;
 				v = idToRealVar.get(expr.getId());
 				if (v == null){
@@ -909,8 +909,8 @@ public class CPSolver {
 			
 			Constraint constraint = null;
 			if (isInt){
-				if (expr1 instanceof Variable){
-					Variable var = (Variable)expr1;
+				if (expr1 instanceof CpVariable){
+					CpVariable var = (CpVariable)expr1;
 					String id = var.getId();
 					IntVar v = idToIntVar.get(id);
 					IntVar var2 = parseExpression(expr2);
@@ -918,8 +918,8 @@ public class CPSolver {
 					constraint = IntConstraintFactory.arithm(v, opStr, var2);
 					log.info("IntConstraint: " + v.getId() + " " + opStr + " " + var2.getId());
 				}
-				else if (expr1 instanceof MetricVariable){
-					MetricVariable var = (MetricVariable)expr1;
+				else if (expr1 instanceof CpMetric){
+					CpMetric var = (CpMetric)expr1;
 					String id = var.getId();
 					IntVar v = idToIntVar.get(id);
 					IntVar var2 = parseExpression(expr2);
@@ -963,10 +963,10 @@ public class CPSolver {
 			else{
 				if (rc == null) rc = new RealConstraint(solver);
 				StringBuilder function = new StringBuilder("(");
-				if (expr1 instanceof Variable){
-					Variable var = (Variable)expr1;
+				if (expr1 instanceof CpVariable){
+					CpVariable var = (CpVariable)expr1;
 					String id = var.getId();
-					log.info("Checking variable with name: " + id);
+					log.info("Checking CpVariable with name: " + id);
 					RealVar v = idToRealVar.get(id);
 					log.info("RealVar is: " + v);
 					if (v == null){
@@ -978,7 +978,7 @@ public class CPSolver {
 						}
 						//If not, then we have a problem
 						else{
-							log.error("Got a new variable not previously parsed");
+							log.error("Got a new CpVariable not previously parsed");
 						}
 					}
 					function.append(" {0} " + getComparator(operator,false) + " {1} )");
@@ -988,9 +988,9 @@ public class CPSolver {
 					log.info("RealConstraint: " + func + " with RealVars:" + printVarArray(all_vars));
 			        rc.addFunction(func, all_vars);
 				}
-				else if (expr1 instanceof MetricVariable){
+				else if (expr1 instanceof CpMetric){
 					log.debug("CASE 2");
-					MetricVariable var = (MetricVariable)expr1;
+					CpMetric var = (CpMetric)expr1;
 					String id = var.getId();
 					RealVar v = idToRealVar.get(id);
 					function.append(" {0} " + getComparator(operator,false) + " {1} )");
@@ -1058,9 +1058,9 @@ public class CPSolver {
 	}
 	
 	/* Creating the metric variables */
-	private void createMetricVariables(EList<MetricVariable> vars){
+	private void createMetricVariables(EList<CpMetric> vars){
 		log.info("--------------- MetricVariables ---------------");
-		for (MetricVariable var: vars){
+		for (CpMetric var: vars){
 			BasicTypeEnum type = var.getType();
 			if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)){
 				String id = var.getId();
@@ -1079,9 +1079,9 @@ public class CPSolver {
 	}
 	
 	/* Creating the normal variables */
-	private void createVariables(EList<Variable> vars){
+	private void createVariables(EList<CpVariable> vars){
 		log.info("--------------- Variables ---------------");
-		for (Variable var: vars){
+		for (CpVariable var: vars){
 			Domain dom = var.getDomain();
 			if (dom instanceof RangeDomain){
 				RangeDomain rd = (RangeDomain)dom;
@@ -1173,7 +1173,7 @@ public class CPSolver {
 		log.info("------------------------------------------");
 	}
 
-	private <T> void createEnumeratedDomain(Variable var, NumericListDomain nld, Class<T> type, ToIntFunction<? super T> mapper) {
+	private <T> void createEnumeratedDomain(CpVariable var, NumericListDomain nld, Class<T> type, ToIntFunction<? super T> mapper) {
 		int[] ints = nld.getValues()
                 .stream()
                 .filter(type::isInstance)

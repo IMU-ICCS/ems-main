@@ -5,12 +5,12 @@ package eu.paasage.upperware.metamodel.cp.impl;
 import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpMetric;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.Expression;
 import eu.paasage.upperware.metamodel.cp.Goal;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.Variable;
 
 import org.eclipse.emf.common.util.EList;
 
@@ -29,10 +29,10 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getId <em>Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getGoals <em>Goals</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getConstants <em>Constants</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getVariables <em>Variables</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getCpVariables <em>Cp Variables</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getConstraints <em>Constraints</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getAuxExpressions <em>Aux Expressions</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getMetricVariables <em>Metric Variables</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getCpMetrics <em>Cp Metrics</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getSolution <em>Solution</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getDeployedSolutionId <em>Deployed Solution Id</em>}</li>
  *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl#getCandidateSolutionId <em>Candidate Solution Id</em>}</li>
@@ -114,8 +114,8 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
-	public EList<Variable> getVariables() {
-		return (EList<Variable>)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__VARIABLES, true);
+	public EList<CpVariable> getCpVariables() {
+		return (EList<CpVariable>)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__CP_VARIABLES, true);
 	}
 
 	/**
@@ -144,8 +144,8 @@ public class ConstraintProblemImpl extends CDOObjectImpl implements ConstraintPr
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
-	public EList<MetricVariable> getMetricVariables() {
-		return (EList<MetricVariable>)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__METRIC_VARIABLES, true);
+	public EList<CpMetric> getCpMetrics() {
+		return (EList<CpMetric>)eGet(CpPackage.Literals.CONSTRAINT_PROBLEM__CP_METRICS, true);
 	}
 
 	/**

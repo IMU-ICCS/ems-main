@@ -1,9 +1,6 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import camel.constraint.ComparisonOperatorType;
-import camel.constraint.Constraint;
-import camel.constraint.impl.MetricConstraintImpl;
-import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.deployment.RequirementSet;
 import camel.deployment.SoftwareComponent;
@@ -23,7 +20,6 @@ import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
@@ -130,48 +126,48 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             List<MetricVariableImpl> variables = getVariables(camelModel, componentName);
 
             Optional<MetricVariableImpl> mCardinality = CamelMetadataTool.findVariableFor(variables, CamelMetadata.CARDINALITY);
-            Variable cardinalityVariable = null;
+            CpVariable cardinalityVariable = null;
 
             if (mCardinality.isPresent()) {
                 MetricVariableImpl cardinalityMetricVariable = mCardinality.get();
                 String variableCardinalityName = cardinalityMetricVariable.getName();
 
                 VariableCreator creator = variableCreatorFactory.getCreator(getType(cardinalityMetricVariable));
-                cardinalityVariable = creator.createVariable(cp, VariableType.CARDINALITY, componentName, variableService.createIntegerRangeDomain(minValue, maxValue), variableCardinalityName);
+                cardinalityVariable = creator.createCpVariable(cp, VariableType.CARDINALITY, componentName, variableService.createIntegerRangeDomain(minValue, maxValue), variableCardinalityName);
             } else {
                 VariableCreator creator = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE);
-                cardinalityVariable = creator.createVariable(cp, VariableType.CARDINALITY, componentName, variableService.createIntegerRangeDomain(minValue, maxValue));
+                cardinalityVariable = creator.createCpVariable(cp, VariableType.CARDINALITY, componentName, variableService.createIntegerRangeDomain(minValue, maxValue));
             }
 
             //required variables
             List<Integer> valuesForProviders = nodeCandidatesService.getValuesForProviders(nodeCandidatesByComponentName);
-            Variable providerVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
-                    .createVariable(cp, CamelMetadata.PROVIDER.variableType, componentName, variableService.createIntegerListDomain(valuesForProviders));
+            CpVariable providerVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
+                    .createCpVariable(cp, CamelMetadata.PROVIDER.variableType, componentName, variableService.createIntegerListDomain(valuesForProviders));
 
 
             //optional variables
-            Variable coresVariable = null;
+            CpVariable coresVariable = null;
             Optional<MetricVariableImpl> optCores = CamelMetadataTool.findVariableFor(variables, CamelMetadata.CORES);
             if (optCores.isPresent()){
                 List<Integer> valuesForCores = nodeCandidatesService.getValuesForCores(nodeCandidatesByComponentName);
                 coresVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
-                        .createVariable(cp, CamelMetadata.CORES.variableType, componentName, variableService.createIntegerListDomain(valuesForCores), optCores.get().getName());
+                        .createCpVariable(cp, CamelMetadata.CORES.variableType, componentName, variableService.createIntegerListDomain(valuesForCores), optCores.get().getName());
             }
 
-            Variable ramVariable = null;
+            CpVariable ramVariable = null;
             Optional<MetricVariableImpl> optRam = CamelMetadataTool.findVariableFor(variables, CamelMetadata.RAM);
             if (optRam.isPresent()){
                 List<Long> valuesForRam = nodeCandidatesService.getValuesForRam(nodeCandidatesByComponentName);
                 ramVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
-                        .createVariable(cp, CamelMetadata.RAM.variableType, componentName, variableService.createIntegerListDomain(mapLongToInteger(valuesForRam)), optRam.get().getName());
+                        .createCpVariable(cp, CamelMetadata.RAM.variableType, componentName, variableService.createIntegerListDomain(mapLongToInteger(valuesForRam)), optRam.get().getName());
             }
 
-            Variable storageVariable = null;
+            CpVariable storageVariable = null;
             Optional<MetricVariableImpl> optStorage = CamelMetadataTool.findVariableFor(variables, CamelMetadata.STORAGE);
             if (optStorage.isPresent()){
                 List<Double> valuesForStorage = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
                 storageVariable = variableCreatorFactory.getCreator(PrimitiveType.DOUBLE_TYPE)
-                        .createVariable(cp, CamelMetadata.STORAGE.variableType, componentName, variableService.createDoubleListDomain(valuesForStorage), optStorage.get().getName());
+                        .createCpVariable(cp, CamelMetadata.STORAGE.variableType, componentName, variableService.createDoubleListDomain(valuesForStorage), optStorage.get().getName());
             }
 
             //F(P,x)
@@ -239,7 +235,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 //
 //                Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
 //                ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
-//                MetricVariable doubleMetricVariable = metricService.createDoubleMetricVariable(metricContext.getMetric().getName());
+//                MetricVariable doubleMetricVariable = metricService.createDoubleCpMetric(metricContext.getMetric().getName());
 //                cp.getConstants().add(tresholdConstant);
 //                cp.getMetricVariables().add(doubleMetricVariable);
 //                cp.getConstraints().add(constraintService.createComparisonExpression(tresholdConstant, comparatorEnum, doubleMetricVariable, mc.getName()));
@@ -291,26 +287,27 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     private void addMetrics(ConstraintProblem cp, CamelModel camelModel) {
         // 1) - RawMetrics
         List<RawMetric> rawMetrics = getRawMetrics(camelModel);
-        cp.getMetricVariables()
+        cp.getCpMetrics()
                 .addAll(rawMetrics.stream()
                         .peek(metric -> log.info("Creating MetricVariable for RawMetrics: {} with type {}", metric.getName(), getType(metric)))
-                        .map(metric -> metricService.createMetricVariable(metric.getName(), getType(metric))).collect(Collectors.toList()));
+                        .map(metric -> metricService.createCpMetric(metric.getName(), getType(metric))).collect(Collectors.toList()));
 
 //        2) - CompositeMetrics
         List<CompositeMetric> compositeMetrics = getCompositeMetrics(camelModel);
-        cp.getMetricVariables()
+        cp.getCpMetrics()
                 .addAll(compositeMetrics.stream()
                         .peek(metric -> log.info("Creating MetricVariable for CompositeMetrics: {} with type {}", metric.getName(), getType(metric)))
-                        .map(metric ->metricService.createMetricVariable(metric.getName(), getType(metric))).collect(Collectors.toList()));
+                        .map(metric ->metricService.createCpMetric(metric.getName(), getType(metric))).collect(Collectors.toList()));
 
 //        4) - Traditional Attribute
         List<MetricVariableImpl> variables = getVariables(camelModel);
-        cp.getMetricVariables().addAll(variables
+        cp.getCpMetrics()
+                .addAll(variables
                 .stream()
                 .filter(MetricVariableImpl::isCurrentConfiguration)
                 .filter(CamelMetadataTool::isFromVariable)
                 .peek(metricVariable -> log.info("Creating metric variable for isCurrentConfiguration = true and traditional attribue {} with type {}", metricVariable.getName(), getType(metricVariable)))
-                .map(metricVariable -> metricService.createMetricVariable( metricVariable.getName(), getType(metricVariable)))
+                .map(metricVariable -> metricService.createCpMetric( metricVariable.getName(), getType(metricVariable)))
                 .collect(Collectors.toList()));
 
 //        7) - is onNodeCandidate
@@ -325,7 +322,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return from.stream().map(Long::intValue).collect(Collectors.toList());
     }
 
-    private Supplier<ComposedExpression> getProviderExpression(ConstraintProblem cp, Variable providerVariable, String componentName, Integer providerValue) {
+    private Supplier<ComposedExpression> getProviderExpression(ConstraintProblem cp, CpVariable providerVariable, String componentName, Integer providerValue) {
         Constant providerIndexConstant = constantService.createIntegerConstant(providerValue, "provider_" + componentName  + "_" + providerValue);
         cp.getConstants().add(providerIndexConstant);
         return createProviderFunction(cp, providerVariable, providerIndexConstant);
@@ -334,7 +331,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     /**
      * This method should return F(P,x) function
      */
-    private Supplier<ComposedExpression> createProviderFunction(ConstraintProblem cp, Variable providerVariable, Constant providerConstant){
+    private Supplier<ComposedExpression> createProviderFunction(ConstraintProblem cp, CpVariable providerVariable, Constant providerConstant){
         return new NewConstraintProblemServiceXImpl.SingletonSupplier<>(() -> {
             ComposedExpression composedExpression = constraintService.createComposedExpression(OperatorEnum.EQ, providerVariable, providerConstant);
             cp.getAuxExpressions().add(composedExpression);
@@ -342,7 +339,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         });
     }
 
-    private void createConstraints(ConstraintProblem cp, Variable variable, Variable cardinalityVariable, Constant min, Constant max, Supplier<ComposedExpression> composedExpressionSupplier) {
+    private void createConstraints(ConstraintProblem cp, CpVariable variable, CpVariable cardinalityVariable, Constant min, Constant max, Supplier<ComposedExpression> composedExpressionSupplier) {
 
         Constant zeroConstant = findConstantByName(cp.getConstants(), "0");
 

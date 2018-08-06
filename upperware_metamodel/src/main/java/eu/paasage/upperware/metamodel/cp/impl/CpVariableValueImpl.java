@@ -3,8 +3,8 @@
 package eu.paasage.upperware.metamodel.cp.impl;
 
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.MetricVariableValue;
+import eu.paasage.upperware.metamodel.cp.CpVariable;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 
@@ -14,25 +14,25 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Metric Variable Value</b></em>'.
+ * An implementation of the model object '<em><b>Variable Value</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl#getVariable <em>Variable</em>}</li>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.CpVariableValueImpl#getVariable <em>Variable</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.CpVariableValueImpl#getValue <em>Value</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class MetricVariableValueImpl extends CDOObjectImpl implements MetricVariableValue {
+public class CpVariableValueImpl extends CDOObjectImpl implements CpVariableValue {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	protected MetricVariableValueImpl() {
+	protected CpVariableValueImpl() {
 		super();
 	}
 
@@ -43,7 +43,7 @@ public class MetricVariableValueImpl extends CDOObjectImpl implements MetricVari
 	 */
 	@Override
 	protected EClass eStaticClass() {
-		return CpPackage.Literals.METRIC_VARIABLE_VALUE;
+		return CpPackage.Literals.CP_VARIABLE_VALUE;
 	}
 
 	/**
@@ -61,8 +61,8 @@ public class MetricVariableValueImpl extends CDOObjectImpl implements MetricVari
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public MetricVariable getVariable() {
-		return (MetricVariable)eGet(CpPackage.Literals.METRIC_VARIABLE_VALUE__VARIABLE, true);
+	public CpVariable getVariable() {
+		return (CpVariable)eGet(CpPackage.Literals.CP_VARIABLE_VALUE__VARIABLE, true);
 	}
 
 	/**
@@ -70,8 +70,8 @@ public class MetricVariableValueImpl extends CDOObjectImpl implements MetricVari
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setVariable(MetricVariable newVariable) {
-		eSet(CpPackage.Literals.METRIC_VARIABLE_VALUE__VARIABLE, newVariable);
+	public void setVariable(CpVariable newVariable) {
+		eSet(CpPackage.Literals.CP_VARIABLE_VALUE__VARIABLE, newVariable);
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class MetricVariableValueImpl extends CDOObjectImpl implements MetricVari
 	 * @generated
 	 */
 	public NumericValueUpperware getValue() {
-		return (NumericValueUpperware)eGet(CpPackage.Literals.METRIC_VARIABLE_VALUE__VALUE, true);
+		return (NumericValueUpperware)eGet(CpPackage.Literals.CP_VARIABLE_VALUE__VALUE, true);
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class MetricVariableValueImpl extends CDOObjectImpl implements MetricVari
 	 * @generated
 	 */
 	public void setValue(NumericValueUpperware newValue) {
-		eSet(CpPackage.Literals.METRIC_VARIABLE_VALUE__VALUE, newValue);
+		eSet(CpPackage.Literals.CP_VARIABLE_VALUE__VALUE, newValue);
 	}
 
-} //MetricVariableValueImpl
+} //CpVariableValueImpl

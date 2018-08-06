@@ -102,7 +102,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //
 //            //required variables
 //            List<Integer> valuesForProviders = nodeCandidatesService.getValuesForProviders(nodeCandidatesByComponentName);
-//            Variable providerVariable = createIntegerVariable(cp, VariableType.PROVIDER, componentName, vmName, valuesForProviders);
+//            Variable providerVariable = createIntegerCpVariable(cp, VariableType.PROVIDER, componentName, vmName, valuesForProviders);
 //
 //            HorizontalScaleRequirement scaleRequirementForComponent = NewCamelModelTools.getScaleRequirementForComponent(camelModel.getRequirementModels().get(0).getRequirements(), componentName);
 //
@@ -113,13 +113,13 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //                maxValue = scaleRequirementForComponent.getMaxInstances();
 //            }
 //
-//            Variable cardinalityVariable = createIntegerVariable(cp, VariableType.CARDINALITY, componentName, vmName, minValue, maxValue, variableService.createIntegerRangeDomain(minValue, maxValue));
+//            Variable cardinalityVariable = createIntegerCpVariable(cp, VariableType.CARDINALITY, componentName, vmName, minValue, maxValue, variableService.createIntegerRangeDomain(minValue, maxValue));
 //
 //            //optional variables
 //            Variable coresVariable = null;
 //            if (shouldAddCores(hardwareRequirements)){
 //                List<Integer> valuesForCores = nodeCandidatesService.getValuesForCores(nodeCandidatesByComponentName);
-//                coresVariable = createIntegerVariable(cp, VariableType.CORES, componentName, vmName, valuesForCores);
+//                coresVariable = createIntegerCpVariable(cp, VariableType.CORES, componentName, vmName, valuesForCores);
 //            }
 //
 //            Variable ramVariable = null;
@@ -131,7 +131,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //            Variable storageVariable = null;
 //            if (shouldAddStorage(hardwareRequirements)){
 //                List<Double> valuesForStorage = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
-//                storageVariable = createDoubleVariable(cp, VariableType.STORAGE, componentName, vmName, valuesForStorage);
+//                storageVariable = createDoubleCpVariable(cp, VariableType.STORAGE, componentName, vmName, valuesForStorage);
 //            }
 //
 //            OSOrImageRequirement osOrImageRequirements = NewCamelModelTools.getOsOrImageRequirements(vm);
@@ -139,7 +139,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //            Variable osVariable = null;
 //            if (shouldAddOs(osOrImageRequirements)){
 //                List<Integer> valuesForOs = nodeCandidatesService.getValuesForOsFamily(nodeCandidatesByComponentName);
-//                osVariable = createIntegerVariable(cp, VariableType.OS, componentName, vmName, valuesForOs);
+//                osVariable = createIntegerCpVariable(cp, VariableType.OS, componentName, vmName, valuesForOs);
 //            }
 //
 //
@@ -270,7 +270,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //        cp.getConstraints().add(constraintService.createComparisonExpression(multiplyMaxComposedExpression, ComparatorEnum.GREATER_OR_EQUAL_TO, zeroConstant));
 //    }
 //
-//    private Variable createIntegerVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Integer> values) {
+//    private Variable createIntegerCpVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Integer> values) {
 //        if (CollectionUtils.isEmpty(values)){
 //            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
 //            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
@@ -279,12 +279,12 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //        int minPossibleValue = values.get(0);
 //        int maxPossibleValue = values.get(values.size()-1);
 //
-//        return createIntegerVariable(cp, variableType, componentId, vmName, minPossibleValue, maxPossibleValue, variableService.createIntegerListDomain(values));
+//        return createIntegerCpVariable(cp, variableType, componentId, vmName, minPossibleValue, maxPossibleValue, variableService.createIntegerListDomain(values));
 //    }
 //
-//    private Variable createIntegerVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, int minPossibleValue, int maxPossibleValue, Domain domain) {
+//    private Variable createIntegerCpVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, int minPossibleValue, int maxPossibleValue, Domain domain) {
 //
-//        Variable variable = variableService.createIntegerVariable(variableType, componentId, vmName, domain);
+//        Variable variable = variableService.createIntegerCpVariable(variableType, componentId, vmName, domain);
 //        cp.getVariables().add(variable);
 //
 //        Constant minConstant = constantService.createIntegerConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));
@@ -329,7 +329,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //        return variable;
 //    }
 //
-//    private Variable createFloatVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Float> values) {
+//    private Variable createFloatCpVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Float> values) {
 //        if (CollectionUtils.isEmpty(values)){
 //            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
 //            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
@@ -338,7 +338,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //        float minPossibleValue = values.get(0);
 //        float maxPossibleValue = values.get(values.size()-1);
 //
-//        Variable variable = variableService.createFloatVariable(variableType, componentId, vmName, variableService.createFloatListDomain(values));
+//        Variable variable = variableService.createFloatCpVariable(variableType, componentId, vmName, variableService.createFloatListDomain(values));
 //        cp.getVariables().add(variable);
 //
 //        Constant minConstant = constantService.createFloatConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));
@@ -357,7 +357,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //    }
 //
 //
-//    private Variable createDoubleVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Double> values) {
+//    private Variable createDoubleCpVariable(ConstraintProblem cp, VariableType variableType, String componentId, String vmName, List<Double> values) {
 //        if (CollectionUtils.isEmpty(values)){
 //            log.warn("Empty set of variable type: {} for: {}", variableType, componentId);
 //            throw new GeneratorException(String.format("Empty set of variable type: %s for: %s", variableType, componentId));
@@ -366,7 +366,7 @@ public class NewConstraintProblemServiceImpl implements NewConstraintProblemServ
 //        double minPossibleValue = values.get(0);
 //        double maxPossibleValue = values.get(values.size()-1);
 //
-//        Variable variable = variableService.createDoubleVariable(variableType, componentId, vmName, variableService.createDoubleListDomain(values));
+//        Variable variable = variableService.createDoubleCpVariable(variableType, componentId, vmName, variableService.createDoubleListDomain(values));
 //        cp.getVariables().add(variable);
 //
 //        Constant minConstant = constantService.createDoubleConstant(minPossibleValue, constantService.getConstantName(variableType, componentId, "min"));

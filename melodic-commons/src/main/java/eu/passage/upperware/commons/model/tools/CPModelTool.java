@@ -26,17 +26,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CPModelTool {
 
-    public static Optional<Variable> getVariable(List<Variable> variables, VariableType variableType, String appName){
+    public static Optional<CpVariable> getVariable(List<CpVariable> variables, VariableType variableType, String appName){
         Objects.requireNonNull(variableType);
         Objects.requireNonNull(appName);
 
-        Predicate<Variable> typePredicate = variable -> variableType.equals(variable.getVariableType());
-        Predicate<Variable> namePredicate = variable -> appName.equals(variable.getComponentId());
+        Predicate<CpVariable> typePredicate = cpVariable -> variableType.equals(cpVariable.getVariableType());
+        Predicate<CpVariable> namePredicate = cpVariable -> appName.equals(cpVariable.getComponentId());
 
         return getFirst(variables, typePredicate.and(namePredicate));
     }
 
-    public static List<Variable> getVariables(List<Variable> variables, String appName){
+    public static List<CpVariable> getVariables(List<CpVariable> variables, String appName){
         Objects.requireNonNull(appName);
 
         return variables.stream()
@@ -44,32 +44,32 @@ public class CPModelTool {
                 .collect(Collectors.toList());
     }
 
-    public static Map<String, List<Variable>> groupByAppName(List<Variable> variables){
-        return variables.stream().collect(Collectors.groupingBy(Variable::getComponentId));
+    public static Map<String, List<CpVariable>> groupByAppName(List<CpVariable> variables){
+        return variables.stream().collect(Collectors.groupingBy(CpVariable::getComponentId));
     }
 
-    public static List<String> getComponentNames(List<Variable> variables){
-        return variables.stream().map(Variable::getComponentId).distinct().sorted().collect(Collectors.toList());
+    public static List<String> getComponentNames(List<CpVariable> variables){
+        return variables.stream().map(CpVariable::getComponentId).distinct().sorted().collect(Collectors.toList());
     }
 
 
-    public static Optional<VariableValue> getVariableValue(List<VariableValue> variables, VariableType variableType, String appName){
+    public static Optional<CpVariableValue> getVariableValue(List<CpVariableValue> variables, VariableType variableType, String appName){
         Objects.requireNonNull(variableType);
         Objects.requireNonNull(appName);
 
-        Predicate<VariableValue> typePredicate = variableValue -> variableType.equals(variableValue.getVariable().getVariableType());
-        Predicate<VariableValue> namePredicate = variableValue -> appName.equals(variableValue.getVariable().getComponentId());
+        Predicate<CpVariableValue> typePredicate = cpVariableValue -> variableType.equals(cpVariableValue.getVariable().getVariableType());
+        Predicate<CpVariableValue> namePredicate = cpVariableValue -> appName.equals(cpVariableValue.getVariable().getComponentId());
 
         return getFirst(variables, typePredicate.and(namePredicate));
     }
 
-    public static Optional<VariableValue> getVariableValue(List<VariableValue> variables, VariableType variableType){
+    public static Optional<CpVariableValue> getVariableValue(List<CpVariableValue> variables, VariableType variableType){
         Objects.requireNonNull(variableType);
 
-        return getFirst(variables, variableValue -> variableType.equals(variableValue.getVariable().getVariableType()));
+        return getFirst(variables, cpVariableValue -> variableType.equals(cpVariableValue.getVariable().getVariableType()));
     }
 
-    public static List<VariableValue> getVariableValues(List<VariableValue> variables, String appName){
+    public static List<CpVariableValue> getVariableValues(List<CpVariableValue> variables, String appName){
         Objects.requireNonNull(appName);
 
         return variables.stream()
@@ -77,54 +77,54 @@ public class CPModelTool {
                 .collect(Collectors.toList());
     }
 
-    public static Map<String, List<VariableValue>> groupVariableValuesByAppName(List<VariableValue> variables){
+    public static Map<String, List<CpVariableValue>> groupVariableValuesByAppName(List<CpVariableValue> variables){
         return variables.stream().collect(Collectors.groupingBy(variableValue -> variableValue.getVariable().getComponentId()));
     }
 
-    public static List<String> getComponentNamesFromVariableValues(List<VariableValue> variables){
+    public static List<String> getComponentNamesFromVariableValues(List<CpVariableValue> variables){
         return variables.stream().map(variableValue -> variableValue.getVariable().getComponentId()).distinct().sorted().collect(Collectors.toList());
     }
 
-    public static Optional<VariableValue> getCardinality(List<VariableValue> variableValues){
+    public static Optional<CpVariableValue> getCardinality(List<CpVariableValue> variableValues){
         return getVariableValue(variableValues, VariableType.CARDINALITY);
     }
 
-    public static Optional<VariableValue> getProviderId(List<VariableValue> variableValues){
+    public static Optional<CpVariableValue> getProviderId(List<CpVariableValue> variableValues){
         return getVariableValue(variableValues, VariableType.PROVIDER);
     }
 
-    public static Optional<VariableValue> getOs(List<VariableValue> variableValues){
+    public static Optional<CpVariableValue> getOs(List<CpVariableValue> variableValues){
         return getVariableValue(variableValues, VariableType.OS);
     }
 
-    public static Optional<VariableValue> getCores(List<VariableValue> variableValues){
+    public static Optional<CpVariableValue> getCores(List<CpVariableValue> variableValues){
         return getVariableValue(variableValues, VariableType.CORES);
     }
 
-    public static Optional<VariableValue> getRam(List<VariableValue> variableValues){
+    public static Optional<CpVariableValue> getRam(List<CpVariableValue> variableValues){
         return getVariableValue(variableValues, VariableType.RAM);
     }
 
-    public static Optional<VariableValue> getStorage(List<VariableValue> variableValues){
+    public static Optional<CpVariableValue> getStorage(List<CpVariableValue> variableValues){
         return getVariableValue(variableValues, VariableType.STORAGE);
     }
 
-    public static int getIntValue(VariableValue variableValue){
+    public static int getIntValue(CpVariableValue variableValue){
         Objects.requireNonNull(variableValue.getValue());
         return ((IntegerValueUpperware) variableValue.getValue()).getValue();
     }
 
-    public static long getLongValue(VariableValue variableValue){
+    public static long getLongValue(CpVariableValue variableValue){
         Objects.requireNonNull(variableValue.getValue());
         return ((LongValueUpperware) variableValue.getValue()).getValue();
     }
 
-    public static float getFloatValue(VariableValue variableValue){
+    public static float getFloatValue(CpVariableValue variableValue){
         Objects.requireNonNull(variableValue.getValue());
         return ((FloatValueUpperware) variableValue.getValue()).getValue();
     }
 
-    public static double getDoubleValue(VariableValue variableValue){
+    public static double getDoubleValue(CpVariableValue variableValue){
         Objects.requireNonNull(variableValue.getValue());
         return ((DoubleValueUpperware) variableValue.getValue()).getValue();
     }
@@ -138,8 +138,8 @@ public class CPModelTool {
         }
 
         log.info("VARIABLES:");
-        for (Variable variable : cp.getVariables()) {
-            log.info(toString(variable));
+        for (CpVariable cpVariable : cp.getCpVariables()) {
+            log.info(toString(cpVariable));
         }
 
         log.info("CONSTRAINTS");
@@ -153,7 +153,7 @@ public class CPModelTool {
         }
 
         log.info("METRICS");
-        for(MetricVariable met : cp.getMetricVariables()){
+        for(CpMetric met : cp.getCpMetrics()){
             log.info(met.getId() + ": " +CPModelTool.toString(met));
         }
 
@@ -172,16 +172,14 @@ public class CPModelTool {
     }
 
     /**
-     * Provides string representation of variable - for logging purposes
+     * Provides string representation of CpVariable - for logging purposes
      * @return string
      */
-    public static String toString(Variable var) {
-        String retString = System.lineSeparator() + var.getId() + System.lineSeparator()
+    public static String toString(CpVariable var) {
+        return System.lineSeparator() + var.getId() + System.lineSeparator()
                 + "  componentId " + var.getComponentId()+ System.lineSeparator()
                 + "  variableType " + var.getVariableType()+ System.lineSeparator()
-                + "  vmId " + var.getVmId() + System.lineSeparator()
                 + "  domain " + toString(var.getDomain()) + System.lineSeparator();
-        return retString;
 
     }
 
@@ -220,7 +218,7 @@ public class CPModelTool {
         } else if (expression instanceof ComparisonExpression) {
             ComparisonExpression comparisonExp = (ComparisonExpression) expression;
             retString = System.lineSeparator() + "( " + toString(comparisonExp.getExp1()) + " " + comparisonExp.getComparator().getName() + " " + toString(comparisonExp.getExp2()) + " ) ";
-        } else if (expression instanceof Constant || expression instanceof Variable) {
+        } else if (expression instanceof Constant || expression instanceof CpVariable) {
             retString = expression.getId();
         } else {
             log.error("NumericExpresion: {} not yet supported", expression.getClass().toString());
@@ -230,9 +228,9 @@ public class CPModelTool {
     }
 
 
-    public static void assignNumericValue(String val, Variable var, Solution solution) {
+    public static void assignNumericValue(String val, CpVariable var, Solution solution) {
 
-        VariableValue varValue = CpFactory.eINSTANCE.createVariableValue();
+        CpVariableValue varValue = CpFactory.eINSTANCE.createCpVariableValue();
 
         varValue.setVariable(var);
 
@@ -297,12 +295,12 @@ public class CPModelTool {
         }
     }
 
-    public static String getValueFromVar(Variable var, ConstraintProblem cp) {
+    public static String getValueFromVar(CpVariable var, ConstraintProblem cp) {
         //Gets the last solution
 
         if (cp.getSolution().size() > 0) {
             Solution sol = searchLastSolution(cp.getSolution());
-            VariableValue vv = getVariableValueByVariableId(var.getId(), sol);
+            CpVariableValue vv = getVariableValueByVariableId(var.getId(), sol);
 
             if (vv != null) {
                 return getValueFromNumericValue(vv.getValue()).getLeft();
@@ -357,16 +355,12 @@ public class CPModelTool {
 
 
 
-    public static VariableValue searchVariableValue(Solution sol, Variable var) {
+    public static CpVariableValue searchVariableValue(Solution sol, CpVariable var) {
         return getVariableValueByVariableId(var.getId(), sol);
     }
 
-    public static VariableValue getVariableValueByVariableId(String id, Solution sol) {
+    public static CpVariableValue getVariableValueByVariableId(String id, Solution sol) {
         return getFirst(sol.getVariableValue(), vv -> vv.getVariable().getId().equals(id)).orElse(null);
-    }
-
-    public static MetricVariableValue searchMetricValue(Solution sol, MetricVariable var) {
-        return getFirst(sol.getMetricVariableValue(), value -> value.getVariable().getId().equals(var.getId())).orElse(null);
     }
 
     private static <T> Optional<T> getFirst(List<T> elements, Predicate<T> predicate) {

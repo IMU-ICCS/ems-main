@@ -3,10 +3,8 @@ package eu.paasage.upperware.profiler.generator;
 import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
-import eu.paasage.upperware.metamodel.application.ApplicationFactory;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasageFactory;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
@@ -64,19 +62,10 @@ public class GeneratorContext {
     }
 
     @Bean
-    public ApplicationFactory applicationFactory() {
-        return ApplicationFactory.eINSTANCE;
-    }
-
-    @Bean
     public TypesFactory typesFactory() {
         return TypesFactory.eINSTANCE;
     }
 
-    @Bean
-    public TypesPaasageFactory typesPaasageFactory() {
-        return TypesPaasageFactory.eINSTANCE;
-    }
 
     @Bean
     public RestTemplate restTemplate() {

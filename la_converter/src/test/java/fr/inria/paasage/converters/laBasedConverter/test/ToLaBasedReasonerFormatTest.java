@@ -10,15 +10,16 @@
  */
 package fr.inria.paasage.converters.laBasedConverter.test;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import eu.paasage.upperware.converters.laBasedConverter.CDOClientExtended;
+import eu.paasage.upperware.converters.laBasedConverter.ToLaBasedReasonerFormat;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.cp.CpVariable;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.ModelTool;
 import junit.framework.Assert;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
@@ -26,13 +27,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import eu.paasage.upperware.converters.laBasedConverter.CDOClientExtended;
-import eu.paasage.upperware.converters.laBasedConverter.ToLaBasedReasonerFormat;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
@@ -224,19 +222,19 @@ public class ToLaBasedReasonerFormatTest
 		
 		ConstraintProblem cp= (ConstraintProblem) resources.get(1); 
 		
-		Variable var1= converter.searchVariableByName(cp, "app_component_simpleApplicationWar_in_vm_M"); 
+		CpVariable var1= converter.searchVariableByName(cp, "app_component_simpleApplicationWar_in_vm_M");
 		
 		Assert.assertNotNull("The variable app_component_simpleApplicationWar_in_vm_M does not exist", var1);
 		
 		Assert.assertEquals("The value of the variable app_component_simpleApplicationWar_in_vm_M is not correct", "1", CPModelTool.getValueFromVar(var1, cp));
-		
-		Variable var2= converter.searchVariableByName(cp, "app_component_Tomcat_in_vm_M"); 
+
+		CpVariable var2= converter.searchVariableByName(cp, "app_component_Tomcat_in_vm_M");
 		
 		Assert.assertNotNull("The variable app_component_Tomcat_in_vm_M does not exist", var2);
 		
 		Assert.assertEquals("The value of the variable app_component_Tomcat_in_vm_M is not correct", "1", CPModelTool.getValueFromVar(var2, cp));
-		
-		Variable var3= converter.searchVariableByName(cp, "number_vm_M"); 
+
+		CpVariable var3= converter.searchVariableByName(cp, "number_vm_M");
 		
 		Assert.assertNotNull("The variable number_vm_M does not exist", var3);
 		
@@ -256,21 +254,21 @@ public class ToLaBasedReasonerFormatTest
 		
 		List<EObject> resources= client.getResourceContents(CDO_SERVER_PATH+appNameNF);
 		
-		ConstraintProblem cp= (ConstraintProblem) resources.get(1); 
-		
-		Variable var1= converter.searchVariableByName(cp, "app_component_simpleApplicationWar_in_vm_M"); 
+		ConstraintProblem cp= (ConstraintProblem) resources.get(1);
+
+		CpVariable var1= converter.searchVariableByName(cp, "app_component_simpleApplicationWar_in_vm_M");
 		
 		Assert.assertNotNull("The variable app_component_simpleApplicationWar_in_vm_M does not exist", var1);
 		
 		Assert.assertEquals("The value of the variable app_component_simpleApplicationWar_in_vm_M is not correct", "1", CPModelTool.getValueFromVar(var1, cp));
-		
-		Variable var2= converter.searchVariableByName(cp, "app_component_Tomcat_in_vm_M"); 
+
+		CpVariable var2= converter.searchVariableByName(cp, "app_component_Tomcat_in_vm_M");
 		
 		Assert.assertNotNull("The variable app_component_Tomcat_in_vm_M does not exist", var2);
 		
 		Assert.assertEquals("The value of the variable app_component_Tomcat_in_vm_M is not correct", "1", CPModelTool.getValueFromVar(var2, cp));
-		
-		Variable var3= converter.searchVariableByName(cp, "number_vm_M"); 
+
+		CpVariable var3= converter.searchVariableByName(cp, "number_vm_M");
 		
 		Assert.assertNotNull("The variable number_vm_M does not exist", var3);
 		

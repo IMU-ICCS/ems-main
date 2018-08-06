@@ -9,9 +9,9 @@ import org.eclipse.emf.common.util.EList;
 
 public interface VariableCreator<E extends Number> {
 
-    Variable createVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain);
+    CpVariable createCpVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain);
 
-    Variable createVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain, String variableName);
+    CpVariable createCpVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain, String variableName);
 
     default Pair<NumericValueUpperware, NumericValueUpperware> unpackDomain(NumericDomain numericDomain) {
         if (numericDomain instanceof RangeDomain) {
