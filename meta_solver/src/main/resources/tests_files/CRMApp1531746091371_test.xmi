@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types" id="CRMApp1531746091371">
+  <constants id="0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="1">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="cardinality_SmartDesign_min">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </constants>
+  <constants id="cardinality_SmartDesign_max">
+    <value xsi:type="types:IntegerValueUpperware" value="6"/>
+  </constants>
+  <constants id="provider_SmartDesign_min">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="provider_SmartDesign_max">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="cores_SmartDesign_min">
+    <value xsi:type="types:IntegerValueUpperware" value="4"/>
+  </constants>
+  <constants id="cores_SmartDesign_max">
+    <value xsi:type="types:IntegerValueUpperware" value="40"/>
+  </constants>
+  <constants id="ram_SmartDesign_min">
+    <value xsi:type="types:IntegerValueUpperware" value="32768"/>
+  </constants>
+  <constants id="ram_SmartDesign_max">
+    <value xsi:type="types:IntegerValueUpperware" value="249856"/>
+  </constants>
+  <constants id="storage_SmartDesign_min">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="storage_SmartDesign_max">
+    <value xsi:type="types:IntegerValueUpperware" value="2097152"/>
+  </constants>
+  <constants id="provider_SmartDesign_0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="cores_SmartDesign_min_p_0">
+    <value xsi:type="types:IntegerValueUpperware" value="4"/>
+  </constants>
+  <constants id="cores_SmartDesign_max_p_0">
+    <value xsi:type="types:IntegerValueUpperware" value="40"/>
+  </constants>
+  <constants id="ram_SmartDesign_min_p_0" type="Long">
+    <value xsi:type="types:LongValueUpperware" value="32768"/>
+  </constants>
+  <constants id="ram_SmartDesign_max_p_0" type="Long">
+    <value xsi:type="types:LongValueUpperware" value="249856"/>
+  </constants>
+  <constants id="storage_SmartDesign_min_p_0" type="Double">
+    <value xsi:type="types:DoubleValueUpperware"/>
+  </constants>
+  <constants id="storage_SmartDesign_max_p_0" type="Double">
+    <value xsi:type="types:DoubleValueUpperware" value="2097152.0"/>
+  </constants>
+  <constants id="constant_0" type="Double">
+    <value xsi:type="types:DoubleValueUpperware" value="80.0"/>
+  </constants>
+  <variables id="SmartDesignCardinality" variableType="cardinality" componentId="SmartDesign">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="2"/>
+      <to xsi:type="types:IntegerValueUpperware" value="6"/>
+    </domain>
+  </variables>
+  <variables id="provider_SmartDesign" variableType="provider" componentId="SmartDesign">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+    </domain>
+  </variables>
+  <variables id="Cores" variableType="cores" componentId="SmartDesign">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="8"/>
+      <values xsi:type="types:IntegerValueUpperware" value="16"/>
+      <values xsi:type="types:IntegerValueUpperware" value="32"/>
+      <values xsi:type="types:IntegerValueUpperware" value="36"/>
+      <values xsi:type="types:IntegerValueUpperware" value="40"/>
+    </domain>
+  </variables>
+  <variables id="ram_SmartDesign" variableType="ram" componentId="SmartDesign">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="32768"/>
+      <values xsi:type="types:IntegerValueUpperware" value="35020"/>
+      <values xsi:type="types:IntegerValueUpperware" value="61440"/>
+      <values xsi:type="types:IntegerValueUpperware" value="61952"/>
+      <values xsi:type="types:IntegerValueUpperware" value="62464"/>
+      <values xsi:type="types:IntegerValueUpperware" value="65536"/>
+      <values xsi:type="types:IntegerValueUpperware" value="70041"/>
+      <values xsi:type="types:IntegerValueUpperware" value="119808"/>
+      <values xsi:type="types:IntegerValueUpperware" value="124928"/>
+      <values xsi:type="types:IntegerValueUpperware" value="163840"/>
+      <values xsi:type="types:IntegerValueUpperware" value="249856"/>
+    </domain>
+  </variables>
+  <constraints id="c_0" exp1="//@variables.0" exp2="//@constants.2" comparator="greaterOrEqualTo"/>
+  <constraints id="c_1" exp1="//@variables.0" exp2="//@constants.3" comparator="lessOrEqualTo"/>
+  <constraints id="c_2" exp1="//@variables.1" exp2="//@constants.4" comparator="greaterOrEqualTo"/>
+  <constraints id="c_3" exp1="//@variables.1" exp2="//@constants.5" comparator="lessOrEqualTo"/>
+  <constraints id="c_4" exp1="//@variables.2" exp2="//@constants.6" comparator="greaterOrEqualTo"/>
+  <constraints id="c_5" exp1="//@variables.2" exp2="//@constants.7" comparator="lessOrEqualTo"/>
+  <constraints id="c_6" exp1="//@variables.3" exp2="//@constants.8" comparator="greaterOrEqualTo"/>
+  <constraints id="c_7" exp1="//@variables.3" exp2="//@constants.9" comparator="lessOrEqualTo"/>
+  <constraints id="c_10" exp1="//@auxExpressions.2" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+  <constraints id="c_11" exp1="//@auxExpressions.4" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+  <constraints id="c_12" exp1="//@auxExpressions.6" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+  <constraints id="c_13" exp1="//@auxExpressions.8" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_0" expressions="//@variables.2 //@constants.13" operator="minus"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_1" expressions="//@variables.1 //@constants.12" operator="eq"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_2" expressions="//@variables.0 //@auxExpressions.1 //@auxExpressions.0" operator="times"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_3" expressions="//@constants.14 //@variables.2" operator="minus"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_4" expressions="//@variables.0 //@auxExpressions.1 //@auxExpressions.3" operator="times"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_5" expressions="//@variables.3 //@constants.15" operator="minus"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_6" expressions="//@variables.0 //@auxExpressions.1 //@auxExpressions.5" operator="times"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_7" expressions="//@constants.16 //@variables.3" operator="minus"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_8" expressions="//@variables.0 //@auxExpressions.1 //@auxExpressions.7" operator="times"/>
+  <solution timestamp="1532940552981">
+    <variableValue variable="//@variables.0">
+      <value xsi:type="types:IntegerValueUpperware" value="2"/>
+    </variableValue>
+    <variableValue variable="//@variables.1">
+      <value xsi:type="types:IntegerValueUpperware"/>
+    </variableValue>
+    <variableValue variable="//@variables.2">
+      <value xsi:type="types:IntegerValueUpperware" value="4"/>
+    </variableValue>
+    <variableValue variable="//@variables.3">
+      <value xsi:type="types:IntegerValueUpperware" value="35020"/>
+    </variableValue>
+    <utilityValue xsi:type="types:DoubleValueUpperware" value="0.01282051282051282"/>
+  </solution>
+  <solution timestamp="1532944097268">
+    <variableValue variable="//@variables.0">
+      <value xsi:type="types:IntegerValueUpperware" value="2"/>
+    </variableValue>
+    <variableValue variable="//@variables.1">
+      <value xsi:type="types:IntegerValueUpperware"/>
+    </variableValue>
+    <variableValue variable="//@variables.2">
+      <value xsi:type="types:IntegerValueUpperware" value="4"/>
+    </variableValue>
+    <variableValue variable="//@variables.3">
+      <value xsi:type="types:IntegerValueUpperware" value="35020"/>
+    </variableValue>
+    <utilityValue xsi:type="types:DoubleValueUpperware" value="0.01282051282051282"/>
+  </solution>
+  <solution timestamp="1533039880463">
+    <variableValue variable="//@variables.0">
+      <value xsi:type="types:IntegerValueUpperware" value="2"/>
+    </variableValue>
+    <variableValue variable="//@variables.1">
+      <value xsi:type="types:IntegerValueUpperware"/>
+    </variableValue>
+    <variableValue variable="//@variables.2">
+      <value xsi:type="types:IntegerValueUpperware" value="4"/>
+    </variableValue>
+    <variableValue variable="//@variables.3">
+      <value xsi:type="types:IntegerValueUpperware" value="35020"/>
+    </variableValue>
+    <utilityValue xsi:type="types:DoubleValueUpperware" value="0.01282051282051282"/>
+  </solution>
+</cp:ConstraintProblem>
