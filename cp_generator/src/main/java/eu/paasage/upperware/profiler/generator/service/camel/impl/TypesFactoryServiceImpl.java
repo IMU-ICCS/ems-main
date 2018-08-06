@@ -1,6 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.upperware.metamodel.types.*;
+import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,19 @@ public class TypesFactoryServiceImpl implements TypesFactoryService {
         LongValueUpperware result= typesFactory.createLongValueUpperware();
         result.setValue(value);
         return result;
+    }
+
+    @Override
+    public NumericValueUpperware copy(NumericValueUpperware from) {
+        if (from instanceof IntegerValueUpperware) {
+            return getIntegerValueUpperware(((IntegerValueUpperware) from).getValue());
+        } else if (from instanceof DoubleValueUpperware) {
+            return getDoubleValueUpperware(((DoubleValueUpperware) from).getValue());
+        } else if (from instanceof FloatValueUpperware) {
+            return getFloatValueUpperware(((FloatValueUpperware) from).getValue());
+        }
+
+        throw new GeneratorException("Unsupported type for " + from);
     }
 
 }

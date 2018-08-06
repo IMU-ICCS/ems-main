@@ -1,6 +1,9 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import camel.constraint.ComparisonOperatorType;
+import camel.constraint.Constraint;
+import camel.constraint.impl.MetricConstraintImpl;
+import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.deployment.RequirementSet;
 import camel.deployment.SoftwareComponent;
@@ -97,7 +100,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
         Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
         try {
-            memcacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
+//            memcacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
             String nodeCandidatesFilePath = "/logs/node_candidates_"+ CDO_SERVER_PATH + cp.getId();
             filecacheService.store(nodeCandidatesFilePath, NodeCandidates.of(nodeCandidatesMap));
 
@@ -222,32 +225,37 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private void addConstraint(ConstraintProblem cp, CamelModel camelModel) {
 
-//        ServiceLevelObjective sloRequirement = getSLORequirement(camelModel);
-//        if (sloRequirement == null) {
-//            return;
-//        }
-//
-//        Constraint constraint = sloRequirement.getConstraint();
-//        if (constraint != null) {
-//            if (constraint instanceof MetricConstraintImpl) {
-//                MetricConstraintImpl mc = (MetricConstraintImpl) constraint;
-//                MetricContext metricContext = mc.getMetricContext();
-//
-//                Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
-//                ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
-//                MetricVariable doubleMetricVariable = metricService.createDoubleCpMetric(metricContext.getMetric().getName());
-//                cp.getConstants().add(tresholdConstant);
-//                cp.getMetricVariables().add(doubleMetricVariable);
-//                cp.getConstraints().add(constraintService.createComparisonExpression(tresholdConstant, comparatorEnum, doubleMetricVariable, mc.getName()));
-//            }
-//
-//            if (constraint instanceof MetricVariableConstraintImpl) {
-//                MetricVariableConstraintImpl mvc = (MetricVariableConstraintImpl) constraint;
-//                camel.metric.MetricVariable metricVariable = ((MetricVariableConstraintImpl) constraint).getMetricVariable();
-//                double threshold = ((MetricVariableConstraintImpl) constraint).getThreshold();
-//                ComparisonOperatorType comparisonOperator = ((MetricVariableConstraintImpl) constraint).getComparisonOperator();
-//            }
-//        }
+        ServiceLevelObjective sloRequirement = getSLORequirement(camelModel);
+        if (sloRequirement == null) {
+            return;
+        }
+
+        Constraint constraint = sloRequirement.getConstraint();
+        if (constraint != null) {
+            if (constraint instanceof MetricConstraintImpl) {
+                MetricConstraintImpl mc = (MetricConstraintImpl) constraint;
+                MetricContext metricContext = mc.getMetricContext();
+
+                Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
+                ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
+
+                CpMetric cpMetric = metricService.getByName(metricContext.getMetric().getName(), cp).orElseGet(() -> {
+                    CpMetric result = metricService.createCpMetric(metricContext.getMetric().getName(), getType(metricContext.getMetric()));
+                    cp.getCpMetrics().add(result);
+                    return result;
+                });
+
+                cp.getConstants().add(tresholdConstant);
+                cp.getConstraints().add(constraintService.createComparisonExpression(tresholdConstant, comparatorEnum, cpMetric, mc.getName()));
+            }
+
+            if (constraint instanceof MetricVariableConstraintImpl) {
+                MetricVariableConstraintImpl mvc = (MetricVariableConstraintImpl) constraint;
+                camel.metric.MetricVariable metricVariable = ((MetricVariableConstraintImpl) constraint).getMetricVariable();
+                double threshold = ((MetricVariableConstraintImpl) constraint).getThreshold();
+                ComparisonOperatorType comparisonOperator = ((MetricVariableConstraintImpl) constraint).getComparisonOperator();
+            }
+        }
     }
 
     private ComparatorEnum convertComparator(ComparisonOperatorType comparisonOperator){

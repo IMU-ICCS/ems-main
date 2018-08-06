@@ -1,7 +1,10 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
 import camel.type.PrimitiveType;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpMetric;
+
+import java.util.Optional;
 
 public interface MetricService {
 
@@ -12,4 +15,6 @@ public interface MetricService {
     CpMetric createIntegerCpMetric(String id);
 
     CpMetric createCpMetric(String id, PrimitiveType primitiveType);
+
+    Optional<CpMetric> getByName(String id, ConstraintProblem cp);
 }
