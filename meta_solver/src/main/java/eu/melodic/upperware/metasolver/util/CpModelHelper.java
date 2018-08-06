@@ -9,24 +9,6 @@
 
 package eu.melodic.upperware.metasolver.util;
 
-import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
-import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.deployment.DeploymentPackage;
-import eu.paasage.camel.execution.ExecutionPackage;
-import eu.paasage.camel.location.LocationPackage;
-import eu.paasage.camel.metric.MetricPackage;
-import eu.paasage.camel.organisation.OrganisationPackage;
-import eu.paasage.camel.provider.ProviderPackage;
-import eu.paasage.camel.requirement.RequirementPackage;
-import eu.paasage.camel.scalability.ScalabilityPackage;
-import eu.paasage.camel.security.SecurityPackage;
-import eu.paasage.camel.type.TypePackage;
-import eu.paasage.camel.unit.UnitPackage;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.Constant;
@@ -36,24 +18,13 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
-import org.eclipse.emf.cdo.eresource.EresourcePackage;
-import org.eclipse.emf.cdo.net4j.CDONet4jSession;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.net4j.Net4jUtil;
-import org.eclipse.net4j.connector.IConnector;
-import org.eclipse.net4j.tcp.TCPUtil;
-import org.eclipse.net4j.util.container.ContainerUtil;
-import org.eclipse.net4j.util.container.IManagedContainer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -63,11 +34,6 @@ import java.util.Map;
 // From: eu.paasage.mddb.cdo.client.CDOClient
 //import eu.paasage.camel.dsl.CamelDslStandaloneSetup;
 //import eu.paasage.camel.deployment.Component;
-import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -151,10 +117,6 @@ public class CpModelHelper {
 			return false;
 		} finally {
 			if (transaction!=null) { transaction.rollback(); transaction.close(); }
-            if (session != null) {
-                session.closeSession();
-                session = null;
-            }
 
 			// release resource
 			releaseCpModel(cpModelPath, "updateCpModelWithMetricValues()");
@@ -218,10 +180,6 @@ public class CpModelHelper {
 			return null;
 		} finally {
 			if (view!=null) view.close();
-            if (session != null) {
-                session.closeSession();
-                session = null;
-            }
 
 			// release resource
 			releaseCpModel(cpModelPath, "getSolutionUtilities()");
@@ -283,11 +241,6 @@ public class CpModelHelper {
 			return null;
 		} finally {
 			if (transaction!=null) { transaction.rollback(); transaction.close(); }
-            if (session != null) {
-                session.closeSession();
-                session = null;
-            }
-
 			// release resource
 			releaseCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
 		}
@@ -336,10 +289,6 @@ public class CpModelHelper {
 			return -2;
 		} finally {
 			if (transaction!=null) { transaction.rollback(); transaction.close(); }
-            if (session != null) {
-                session.closeSession();
-                session = null;
-            }
 
 			// release resource
 			releaseCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
@@ -347,14 +296,6 @@ public class CpModelHelper {
 	}
 	
 	// ------------------------------------------------------------------------
-
-	/*public void connect() {
-        //log.debug("CpModelHelper.connect(): helper #{}", id);
-	}
-	
-	public void disconnect() {
-        //log.debug("CpModelHelper.disconnect(): helper #{}", id);
-    }*/
 
 	protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
 		synchronized (LOCKS) {

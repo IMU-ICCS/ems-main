@@ -17,31 +17,11 @@ This provides application with the properties (in that way can be provided exter
 
 package eu.melodic.upperware.metasolver.util;
 
-import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.deployment.DeploymentPackage;
-import eu.paasage.camel.execution.ExecutionPackage;
-import eu.paasage.camel.location.LocationPackage;
-import eu.paasage.camel.metric.MetricPackage;
-import eu.paasage.camel.organisation.OrganisationPackage;
-import eu.paasage.camel.provider.ProviderPackage;
-import eu.paasage.camel.requirement.RequirementPackage;
-import eu.paasage.camel.scalability.ScalabilityPackage;
-import eu.paasage.camel.security.SecurityPackage;
-import eu.paasage.camel.type.TypePackage;
-import eu.paasage.camel.unit.UnitPackage;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
 import org.eclipse.emf.cdo.eresource.CDOResource;
-import org.eclipse.emf.cdo.eresource.EresourcePackage;
-import org.eclipse.emf.cdo.net4j.CDONet4jSession;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
@@ -51,14 +31,10 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.net4j.Net4jUtil;
-import org.eclipse.net4j.connector.IConnector;
-import org.eclipse.net4j.tcp.TCPUtil;
-import org.eclipse.net4j.util.container.ContainerUtil;
-import org.eclipse.net4j.util.container.IManagedContainer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 //import org.eclipse.emf.common.util.URI;
 //import org.eclipse.emf.ecore.EObject;
@@ -78,11 +54,6 @@ import java.io.IOException;
 //import org.eclipse.emf.ecore.EObject;
 // From: eu.paasage.mddb.cdo.client.CDOClient
 //import eu.paasage.camel.dsl.CamelDslStandaloneSetup;
-
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
 
 public class UtilCpModelImport {
 
@@ -113,45 +84,49 @@ public class UtilCpModelImport {
 
 	protected static String resourceId = "/CRMApp1531746091371_test";
 
-  protected static void testGetCpModel() {
-	  try {
-			CpPackage.eINSTANCE.eClass();CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
-			//CDONet4jSession cdoSession = openSession();CDOSessionX session = cdoClient.getSession();
+	protected static void testGetCpModel() {
+		try {
+			CpPackage.eINSTANCE.eClass();
+			CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+
+			//CDONet4jSession cdoSession = openSession();
+			CDOSessionX session = cdoClient.getSession();
 			CDOView cdoView = session.openView();
 
 			// Get CP model
 			CDOResource resource = cdoView.getResource(resourceId);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+			ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
 
 			// Print Delta Utility
-			printDeltaUtility( cpModel );
+			printDeltaUtility(cpModel);
 
 			cdoView.close();
 			session.closeSession();
 
-	  } catch (Exception ex) {
-		  System.err.println(ex.toString());
-		  ex.printStackTrace(System.err);
-	  }
-  }
+		} catch (Exception ex) {
+			System.err.println(ex.toString());
+			ex.printStackTrace(System.err);
+		}
+	}
 
-  protected static void testUpdateCpModel() {CDOSessionX session = null;
-      CDOTransaction transaction = null;
-	  try {
+	protected static void testUpdateCpModel() {
+		CDOSessionX session = null;
+		CDOTransaction transaction = null;
+		try {
 			CpPackage.eINSTANCE.eClass();
 			CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
 
-          session = cdoClient.getSession();
-			 transaction = session.openTransaction();
-			
+			session = cdoClient.getSession();
+			transaction = session.openTransaction();
+
 			// Get CP model
 			CDOResource resource = transaction.getResource(resourceId);
 			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
-			
+
 			// Print Delta Utility - BEFORE UPDATE
 			System.out.println("-------------  BEFORE UPDATE  --------------");
 			printDeltaUtility( cpModel );
-			
+
 			// Add new solution to Delta Utility
 			System.out.println("-------------      UPDATE     --------------");
 /*			DeltaUtility du = cpModel.getDeltaUtility();
@@ -208,29 +183,30 @@ public class UtilCpModelImport {
 			cpModel.getSolution().add(newSolution);
 
 			transaction.commit();
-*/			
+*/
 			// Print Delta Utility - AFTER UPDATE
 			System.out.println("-------------  AFTER UPDATE   --------------");
 			printDeltaUtility( cpModel );
-			
-			transaction = null;
-          session.closeSession();
 
-	  } catch (Exception ex) {
-		  System.err.println(ex.toString());
-		  ex.printStackTrace(System.err);} finally {
-          if (transaction != null) {
-              transaction.rollback();
-              transaction.close();
-          }
-          if (session != null) {
-              session.closeSession();
-              session = null;
-          }
-	  }
-  }
-  
-  protected static void printDeltaUtility(ConstraintProblem cpModel) {
+			transaction = null;
+			session.closeSession();
+
+		} catch (Exception ex) {
+			System.err.println(ex.toString());
+			ex.printStackTrace(System.err);
+		} finally {
+			if (transaction != null) {
+				transaction.rollback();
+				transaction.close();
+			}
+			if (session != null) {
+				session.closeSession();
+				session = null;
+			}
+		}
+	}
+
+	protected static void printDeltaUtility(ConstraintProblem cpModel) {
 		// Print Delta Utility
 /*		DeltaUtility du = cpModel.getDeltaUtility();
 		Parameter solSelected = du.getSelectedSolution();

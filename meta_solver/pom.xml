@@ -24,7 +24,6 @@
         <dependency>
             <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
             <classifier>repackaged</classifier>
         </dependency>
         <dependency>
@@ -81,6 +80,13 @@
 			<artifactId>gson</artifactId>
 			<version>2.8.2</version>
 		</dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.0</version>
+        </dependency>
     </dependencies>
 
     <build>

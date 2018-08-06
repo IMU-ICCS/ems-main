@@ -34,11 +34,6 @@ public class MetaSolverApplicationListener implements ApplicationListener<Applic
 		this.properties = (MetaSolverProperties) applicationContext.getBean(MetaSolverProperties.class);
     }
  
-    /*@Autowired
-    public void setMetricValueMonitorBean(MetricValueMonitorBean bean) {
-        this.metricValueMonitorBean = bean;
-    }*/
- 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
 		
@@ -46,13 +41,8 @@ public class MetaSolverApplicationListener implements ApplicationListener<Applic
 		
 		if (event instanceof org.springframework.context.event.ContextRefreshedEvent) {
 			log.debug("** Application Event Received : Context Refreshed");
-            //properties.loadCdoConfig();
-            //((eu.melodic.upperware.metasolver.util.CpModelHelper) applicationContext.getBean(eu.melodic.upperware.metasolver.util.CpModelHelper.class)).connect();
 			metricValueMonitorBean.subscribe();
 		} else
-		/*if (event instanceof org.springframework.boot.context.event.ApplicationReadyEvent) {
-			log.debug("** Application Event Received : Application Ready");
-		} else*/
 		if (event instanceof org.springframework.context.event.ContextClosedEvent) {
 			log.debug("** Application Event Received : Context Closed");
 			metricValueMonitorBean.unsubscribe();

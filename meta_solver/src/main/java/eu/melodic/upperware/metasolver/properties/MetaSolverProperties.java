@@ -14,6 +14,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -75,80 +77,18 @@ public class MetaSolverProperties {
 			private TopicType type;
 		}
 	}
-	
-	public static boolean booleanValue(String str) {
+
+	private static boolean booleanValue(String str) {
 		return booleanValue(str, false);
 	}
-	
-	public static boolean booleanValue(String str, boolean defVal) {
-		if (str==null || (str=str.trim()).isEmpty()) return defVal;
-		return (str.equalsIgnoreCase("true") || str.equalsIgnoreCase("yes") || str.equalsIgnoreCase("on"));
-	}
-	
-	// --------------------------------------------------------------
-	
-	/*@Valid
-	@NotNull
-	private CdoConfig cdo;
 
-	@Getter
-	@Setter
-	@ToString(exclude="password")
-	public static class CdoConfig {
-		private String host = "localhost";
-		private int port = 2036;
-		private String repositoryName = "repo1";
-		private boolean logging = false;
-		private boolean secure = false;
-		private String username;
-		private String password;
-	}*/
-	
-	public static boolean parseBoolean(String s, boolean def) {
-		if (s==null || s.trim().isEmpty()) return def;
-		s = s.toLowerCase();
-		return (s.equals("true") || s.equals("on") || s.equals("yes") || s.equals("enabled"));
+	private static boolean booleanValue(String str, boolean defVal) {
+		if (StringUtils.isBlank(str)) return defVal;
+		return BooleanUtils.toBooleanObject(str);
 	}
 	
-	/*protected static String getCdoConfigFile() {
-		String configPath = System.getProperty("eu.paasage.configdir", System.getenv("PAASAGE_CONFIG_DIR"));
-		if (configPath==null || configPath.trim().isEmpty()) configPath = "/";
-		if (!configPath.endsWith("/")) configPath += "/";
-		String configFile = configPath + "eu.paasage.mddb.cdo.client.properties";
-		return configPath;
-	}
-	
-	public void loadCdoConfig() {
-		// Get CDO client configuration path using the PaaSage style
-		// i.e. the -Deu.paasage.configdir system property or the PAASAGE_CONFIG_DIR environment variable
-		String configPath = System.getProperty("eu.paasage.configdir", System.getenv("PAASAGE_CONFIG_DIR"));
-		if (configPath==null || configPath.trim().isEmpty()) configPath = "/";
-		if (!configPath.endsWith("/")) configPath += "/";
-		String configFile = configPath + "eu.paasage.mddb.cdo.client.properties";
-		
-		// Load CDO client configuration from file
-		log.debug("MetaSolverProperties: Loading CDO config from file: {}", configFile);
-		java.util.Properties cdoCfg = new java.util.Properties();
-		try (java.io.Reader reader = new java.io.FileReader(new java.io.File(configFile))) { cdoCfg.load(reader); }
-		catch (java.io.FileNotFoundException ex) { log.error("MetaSolverProperties: CDO config file not found: {}", configFile); }
-		catch (java.io.IOException ex) { log.error("MetaSolverProperties: Error while reading CDO config file: {}: {}", configFile, ex); }
-		catch (Exception ex) { log.error("MetaSolverProperties: Error while loading CDO config from file: {}: {}", configFile, ex); }
-		log.debug("MetaSolverProperties: Loaded CDO config from file: {}", configFile);
-		log.debug("MetaSolverProperties: Loaded CDO config from file: {}", cdoCfg);
-		
-		// Set CDO config. properties
-		cdo.setHost( cdoCfg.getProperty("host") );
-		cdo.setPort( Integer.parseInt(cdoCfg.getProperty("port", "2036")) );
-		cdo.setRepositoryName( cdoCfg.getProperty("repository") );
-		cdo.setLogging( parseBoolean(cdoCfg.getProperty("logging", "off"), false) );
-		cdo.setSecure( parseBoolean(cdoCfg.getProperty("secure", "off"), false) );
-		cdo.setUsername( cdoCfg.getProperty("username") );
-		cdo.setPassword( cdoCfg.getProperty("password") );
-		log.debug("MetaSolverProperties: CDO config updated: {}", cdo);
-	}*/
-			
 	// --------------------------------------------------------------
-	
+
 	@Valid
 	@NotNull
 	private double utilityThresholdFactor;
