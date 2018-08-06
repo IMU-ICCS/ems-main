@@ -865,7 +865,6 @@ public class CPSolver {
     /* Creating the metric variables */
     private void createMetrics(EList<CpMetric> metrics) {
         log.info("--------------- Metric ---------------");
-        log.info("metric size {}", metrics.size());
         for (CpMetric metric : metrics) {
             NumericValueUpperware value = metric.getValue();
             if (metric.getType().equals(BasicTypeEnum.DOUBLE)) {

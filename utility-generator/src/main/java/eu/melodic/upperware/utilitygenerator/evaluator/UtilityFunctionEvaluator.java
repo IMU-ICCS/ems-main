@@ -48,7 +48,7 @@ public class UtilityFunctionEvaluator {
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
         variablesFromConstraintProblem.forEach(v -> log.info("variables from constraint problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
-        log.info("metrics from constraint problem: {}", metricsFromConstraintProblem);
+        log.info("metrics from constraint problem: {}", metricsFromConstraintProblem.toString());
 
         this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
@@ -81,15 +81,17 @@ public class UtilityFunctionEvaluator {
         if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
             Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
             log.info("currentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
-            Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
-            log.info("current Config Arguments {} ", currentConfigArguments);
-            allConstants.addAll(currentConfigArguments);
+            /* that code is connected with variables with flag current-config.
+            Its value can be taken from solution or from corresponding metric value. For now the assumption is that it will be taken from metric.*/
+            //Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
+            //log.info("current Config Arguments {} ", currentConfigArguments);
+            //allConstants.addAll(currentConfigArguments);
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
         } else {
-            log.info("It is an initial deployment. Setting values of current config and metrics to default values");
+            log.info("It is an initial deployment. Setting values of attributes of Node Candidates to default values");
             allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
-            allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
-            allConstants.addAll(metricsConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getMetricsUsedInFunction()));
+            //allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
+            //allConstants.addAll(metricsConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getMetricsUsedInFunction()));
         }
 
         this.function = new UtilityFunction(formula, convertToConstants(allConstants));
@@ -102,8 +104,6 @@ public class UtilityFunctionEvaluator {
 
     public double evaluate(Collection<Element> solution) {
 
-
-        printer.printSolution(solution);
         if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)) {
             log.info("No Node Candidate for evaluated solution, return 0");
             return 0;

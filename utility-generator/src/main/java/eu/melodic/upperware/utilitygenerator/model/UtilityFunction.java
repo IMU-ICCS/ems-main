@@ -33,8 +33,8 @@ public class UtilityFunction {
     }
 
     public double evaluateFunction(Collection<Argument> variables) {
-        variables.forEach(a -> log.debug("Argument: {}, {}", a.getArgumentName(), a.getArgumentValue()));
-        Arrays.stream(constants).forEach(a -> log.debug("Constant: {}, {}", a.getConstantName(), a.getConstantValue()));
+        variables.forEach(a -> log.info("Argument: {}, {}", a.getArgumentName(), a.getArgumentValue()));
+        Arrays.stream(constants).forEach(a -> log.info("Constant: {}, {}", a.getConstantName(), a.getConstantValue()));
 
         function.addConstants(constants);
         function.addArguments(variables.toArray(new Argument[variables.size()]));
@@ -46,6 +46,7 @@ public class UtilityFunction {
         function.removeAllArguments();
         function.removeAllConstants();
         log.info("result {}", result);
+        log.info("-----------------------");
         return result;
     }
 
