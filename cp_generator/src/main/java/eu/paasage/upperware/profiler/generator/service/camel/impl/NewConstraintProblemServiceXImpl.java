@@ -246,7 +246,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                 });
 
                 cp.getConstants().add(tresholdConstant);
-                cp.getConstraints().add(constraintService.createComparisonExpression(tresholdConstant, comparatorEnum, cpMetric, mc.getName()));
+                cp.getConstraints().add(constraintService.createComparisonExpression(cpMetric, comparatorEnum, tresholdConstant, mc.getName()));
             }
 
             if (constraint instanceof MetricVariableConstraintImpl) {
