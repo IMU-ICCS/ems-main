@@ -104,6 +104,7 @@ public class UtilityFunctionEvaluator {
 
     public double evaluate(Collection<Element> solution) {
 
+        printer.printSolution(solution);
         if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)) {
             log.info("No Node Candidate for evaluated solution, return 0");
             return 0;
@@ -113,7 +114,7 @@ public class UtilityFunctionEvaluator {
 
         double utility = function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
 
-        maxUtility = utility > maxUtility ? maxUtility : utility;
+        maxUtility = utility > maxUtility ? utility : maxUtility;
         return utility;
     }
 

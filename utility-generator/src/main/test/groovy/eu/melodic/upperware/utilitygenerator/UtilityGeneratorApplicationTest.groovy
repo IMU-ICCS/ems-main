@@ -32,6 +32,8 @@ class UtilityGeneratorApplicationTest extends Specification{
 
         given:
         String cardinalityName = "AppCardinality"
+        String actCardinalityName = "AppActCardinality"
+
         String providerName = "providerName"
         String metricName = "RT_AVG"
         String componentId = "Component_App"
@@ -39,9 +41,8 @@ class UtilityGeneratorApplicationTest extends Specification{
         variables.add(new VariableDTO(cardinalityName, componentId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(providerName, componentId, VariableType.PROVIDER))
 
-
         metrics.add(new IntMetricDTO(metricName, 40))
-
+        metrics.add(new IntMetricDTO(actCardinalityName, 1))
 
         Collection<Element> intSolution = new ArrayList<>()
         intSolution.add(new IntElement(cardinalityName, 3))
@@ -68,6 +69,8 @@ class UtilityGeneratorApplicationTest extends Specification{
 
         given:
         String cardinalityName = "AppCardinality"
+        String actCardinalityName = "AppActCardinality"
+
         String providerName = "providerName"
         String metricName = "RT_AVG"
         String componentId = "Component_App"
@@ -76,7 +79,7 @@ class UtilityGeneratorApplicationTest extends Specification{
         variables.add(new VariableDTO(providerName, componentId, VariableType.PROVIDER))
 
         metrics.add(new IntMetricDTO(metricName, 40))
-
+        metrics.add(new IntMetricDTO(actCardinalityName, 1))
 
         Collection<IntElement> newConfiguration = new ArrayList<>()
         newConfiguration.add(new IntElement(cardinalityName, 2))

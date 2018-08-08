@@ -270,34 +270,35 @@ public class CPSolver {
         try {
             EList<CpVariable> vars = cp.getCpVariables();
             for (CpVariable var : vars) {
+                log.debug("Considering variable: {}", var.getId());
                 CpVariableValue varVal = CpFactory.eINSTANCE.createCpVariableValue();
                 varVal.setVariable(var);
                 Domain dom = var.getDomain();
-                int val = solutionWithMaximumUtilityInt.get(var.getId());
-                log.info("Discovered value for variable :" + var.getId() + " is: " + val);
                 if (dom instanceof RangeDomain) {
                     RangeDomain rd = (RangeDomain) dom;
                     NumericValueUpperware from = rd.getFrom();
                     if (from instanceof IntegerValueUpperware) {
-                        IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
-                        value.setValue(val);
-                        varVal.setValue(value);
-                    } else {
-                        LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
-                        value.setValue(val);
-                        varVal.setValue(value);
+                        createIntegerVariableValue(var, varVal);
+                    } else if (from instanceof LongValueUpperware){
+                        createLongVariableValue(var, varVal);
+                    }
+                    else if (from instanceof DoubleValueUpperware){
+                        createDoubleVariableValue(var, varVal);
+                    }
+                    else {
+                        createFloatVariableValue(var, varVal);
                     }
                 } else if (dom instanceof NumericDomain) {
                     NumericDomain nd = (NumericDomain) dom;
                     BasicTypeEnum type = nd.getType();
                     if (type.equals(BasicTypeEnum.INTEGER)) {
-                        IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
-                        value.setValue(val);
-                        varVal.setValue(value);
+                        createIntegerVariableValue(var, varVal);
+                    } else if (type.equals(BasicTypeEnum.LONG)){
+                        createLongVariableValue(var, varVal);
+                    } else if (type.equals(BasicTypeEnum.DOUBLE)){
+                        createDoubleVariableValue(var, varVal);
                     } else {
-                        LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
-                        value.setValue(val);
-                        varVal.setValue(value);
+                        createFloatVariableValue(var, varVal);
                     }
                 }
                 varValues.add(varVal);
@@ -315,6 +316,39 @@ public class CPSolver {
             //e.printStackTrace();
         }
     }
+
+    private void createFloatVariableValue(CpVariable var, CpVariableValue varVal) {
+        double val = solutionWithMaximumUtilityReal.get(var.getId());
+        log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+        FloatValueUpperware value = TypesFactory.eINSTANCE.createFloatValueUpperware();
+        value.setValue((float) val);
+        varVal.setValue(value);
+    }
+
+    private void createDoubleVariableValue(CpVariable var, CpVariableValue varVal) {
+        double val = solutionWithMaximumUtilityReal.get(var.getId());
+        log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+        DoubleValueUpperware value = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+        value.setValue(val);
+        varVal.setValue(value);
+    }
+
+    private void createLongVariableValue(CpVariable var, CpVariableValue varVal) {
+        int val = solutionWithMaximumUtilityInt.get(var.getId());
+        log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+        LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
+        value.setValue(val);
+        varVal.setValue(value);
+    }
+
+    private void createIntegerVariableValue(CpVariable var, CpVariableValue varVal) {
+        int val = solutionWithMaximumUtilityInt.get(var.getId());
+        log.info("Discovered value for variable :" + var.getId() + " is: " + val);
+        IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+        value.setValue(val);
+        varVal.setValue(value);
+    }
+
 
     private void updateUtilityOfDeployedSolution(ConstraintProblem cp) {
         log.debug("Updating utility of deployed solution = {}", utilityOfDeployedSolution);
@@ -1082,6 +1116,7 @@ public class CPSolver {
 
         variablesForUG.stream()
                 .filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
+                .filter(varDTO -> idToIntVar.get(varDTO.getId()) != null)
                 .forEach(v -> solution.add(ElementFactory.createElement(v.getId(), idToIntVar.get(v.getId()).getValue())));
 
         return solution;

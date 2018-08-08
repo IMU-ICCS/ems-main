@@ -51,7 +51,6 @@ public class FromCamelModelConverter {
         if (readFromFile) {
             this.cdoService = new CDOServiceFromFile();
         } else {
-            //this.cdoService = new CDOServiceImpl(new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE)));
             this.cdoService = new CDOServiceImpl(new CDOClientXImpl());
         }
         log.info("path = {}", path);
@@ -64,8 +63,6 @@ public class FromCamelModelConverter {
         metricModel.getMetrics().stream()
                 .filter(m -> m instanceof MetricVariable)
                 .forEach(m -> metricVariables.add((MetricVariableImpl) m));
-
-        log.info("metricVariables size = {}", metricVariables.size());
         this.utilityFunctionFormula = getUtilityFormula();
     }
 
@@ -110,7 +107,6 @@ public class FromCamelModelConverter {
                 .collect(Collectors.toList());
 
     }
-    //todo - to create one method
 
     /* variable with NodeCandidateAttribute anotations and current config flag */
     public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates() {
