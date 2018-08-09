@@ -22,6 +22,7 @@ import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribu
 import eu.melodic.upperware.utilitygenerator.utils.Printer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,8 +42,8 @@ public class UtilityFunctionEvaluator {
 
     private Printer printer;
 
-    public UtilityFunctionEvaluator(String camelModelFilePath, boolean readFromFile, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem,
-            Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityFunctionEvaluator(String camelModelFilePath, boolean readFromFile, Collection<VariableDTO> variablesFromConstraintProblem,
+            Collection<MetricDTO> metricsFromConstraintProblem, Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
 
         Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
@@ -76,7 +77,7 @@ public class UtilityFunctionEvaluator {
         Collection<Element> metrics = metricsConverter.convertMetrics(formula);
         log.info("metrics: {}", metrics);
 
-        Collection<Element> allConstants = metrics;
+        Collection<Element> allConstants = new ArrayList<>(metrics);
 
         if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
             Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
@@ -103,7 +104,6 @@ public class UtilityFunctionEvaluator {
     }
 
     public double evaluate(Collection<Element> solution) {
-
         printer.printSolution(solution);
         if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)) {
             log.info("No Node Candidate for evaluated solution, return 0");
@@ -117,10 +117,4 @@ public class UtilityFunctionEvaluator {
         maxUtility = utility > maxUtility ? utility : maxUtility;
         return utility;
     }
-
-    //todo
-    public void printConfigurationWithMaximumUtility() {
-        printer.printConfigurationWithMaximumUtility();
-    }
-
 }

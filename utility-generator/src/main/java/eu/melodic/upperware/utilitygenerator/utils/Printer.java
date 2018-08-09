@@ -30,7 +30,7 @@ public class Printer {
 
 
     public void printSolution(Collection<Element> solution) {
-        log.info("Solution:");
+        log.debug("Solution:");
         solution.stream()
                 .filter(varPredicate)
                 .forEach(filteredVar -> log.info("{} = {} ", filteredVar.getName(), filteredVar.getValue()));

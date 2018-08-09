@@ -36,8 +36,4 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(solution);
     }
 
-
-    public void printConfigurationWithMaximumUtility() {
-        this.utilityFunctionEvaluator.printConfigurationWithMaximumUtility();
-    }
 }

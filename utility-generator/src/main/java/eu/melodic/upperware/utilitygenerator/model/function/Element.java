@@ -13,10 +13,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Element<Number> {
+public class Element<T extends Number> {
 
     private String name;
-    private Number value;
+    private T value;
 
     @Override
     public String toString() {

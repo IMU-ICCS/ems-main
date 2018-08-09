@@ -12,11 +12,9 @@ package eu.melodic.upperware.utilitygenerator.communication;
 import camel.core.CamelModel;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
@@ -51,7 +49,7 @@ public class CDOServiceImpl implements CDOService {
 
     @Override
     public CamelModel getCamelModel(String resourceName, CDOView view) {
-        if (!(view.hasResource(resourceName))) {
+        if (!view.hasResource(resourceName)) {
             throw new IllegalArgumentException(format("Camel Model for name = %s does not exist in CDOServer", resourceName));
         }
         EList<EObject> contents = view.getResource(resourceName).getContents();
@@ -81,20 +79,5 @@ public class CDOServiceImpl implements CDOService {
         return sessionX.openTransaction();
     }
 
-    public ConstraintProblem getConstraintProblem(String name, CDOView view) {
-        ConstraintProblem cp = null;
-        CDOResource resource = view.getResource(name);
-        EList<EObject> objs = resource.getContents();
-        for (EObject obj : objs) {
-            if (obj instanceof ConstraintProblem) {
-                cp = (ConstraintProblem) obj;
-                break;
-            }
-        }
-        if (cp == null) {
-            throw new IllegalArgumentException(format("Cannot load Camel Model for name = %s", name));
-        }
-        return cp;
-    }
 }
 

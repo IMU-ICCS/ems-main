@@ -44,27 +44,24 @@ public class NodeCandidatesConverter {
 
     public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution) {
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(solution);
-        Collection<Element> arguments = new ArrayList<>();
 
-        attributes.forEach(a -> arguments.add(createElement(a.getName(),
-                getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType()))));
-        return arguments;
+        return attributes.stream()
+                .map(a -> createElement(a.getName(),
+                        getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()),a.getType())))
+                .collect(Collectors.toList());
     }
 
     public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes,
             Collection<Element> deployedSolution) {
         Collection<ConfigurationElement> actualConfiguration = convertSolutionToNodeCandidates(deployedSolution);
-        Collection<Element> arguments = new ArrayList<>();
-
-        attributes.forEach(a -> arguments.add(createElement(a.getName(),
-                getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType()))));
-        return arguments;
-    }
+        return attributes.stream()
+                .map(a-> createElement(a.getName(),
+                        getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType())))
+                .collect(Collectors.toList());
+        }
 
     public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
-        Collection<Element> arguments = new ArrayList<>();
-        attributes.forEach(a -> arguments.add(createElement(a.getName(), 1.0)));
-        return arguments;
+        return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());
     }
 
     public Collection<Collection<Element>> convertListOfAttributesOfNodeCandidates() {

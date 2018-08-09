@@ -28,7 +28,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.view.CDOView;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -59,10 +58,10 @@ public class FromCamelModelConverter {
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
         this.metricModel = (MetricTypeModelImpl) model.getMetricModels().get(0);
-        this.metricVariables = new ArrayList<>();
-        metricModel.getMetrics().stream()
+        this.metricVariables = metricModel.getMetrics().stream()
                 .filter(m -> m instanceof MetricVariable)
-                .forEach(m -> metricVariables.add((MetricVariableImpl) m));
+                .map(m -> (MetricVariableImpl) m)
+                .collect(Collectors.toList());
         this.utilityFunctionFormula = getUtilityFormula();
     }
 
