@@ -8,7 +8,8 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +22,13 @@ import static eu.melodic.cache.NodeCandidatePredicates.*;
 import static java.lang.String.format;
 
 @Slf4j
-class EvaluatingUtils {
+public class EvaluatingUtils {
 
 
     /* mapping variables from solution and cp model */
 
 
-    static Map<String, Integer> getCardinalitiesForComponent(Collection<IntVar> newConfiguration, List<VariableDTO> variables) {
-
+    public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
         Collection<VariableDTO> cardinalities = variables.stream()
@@ -39,14 +39,14 @@ class EvaluatingUtils {
                 .stream()
                 .filter(c -> intVar.getName().equals(c.getId()))
                 .findFirst()
-                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), intVar.getValue())));
+                .ifPresent(variable -> cardinalitiesForComponent.put(variable.getComponentId(), (int) intVar.getValue()))); //cardinality is always int
         return cardinalitiesForComponent;
     }
 
-    static int getProviderValue(String componentId, List<VariableDTO> variables, Collection<IntVar> newConfigurationInt) {
-
+    //provider value is always int
+    public static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<Element> newConfigurationInt) {
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
-        return newConfigurationInt.stream()
+        return (int) newConfigurationInt.stream()
                 .filter(intVar -> provider.equals(intVar.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", provider)))
@@ -54,7 +54,7 @@ class EvaluatingUtils {
 
     }
 
-    private static VariableType getVariableType(String name, List<VariableDTO> variables) {
+    private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
         return variables.stream()
                 .filter(variable -> name.equals(variable.getId()))
                 .findFirst()
@@ -62,15 +62,14 @@ class EvaluatingUtils {
                 .getType();
     }
 
-    private static Collection<String> getVariableNames(String componentId, List<VariableDTO> variables) {
-
+    private static Collection<String> getVariableNames(String componentId, Collection<VariableDTO> variables) {
         return variables.stream()
                 .filter(variable -> componentId.equals(variable.getComponentId()))
                 .map(VariableDTO::getId)
                 .collect(Collectors.toList());
     }
 
-    private static String getVariableName(String componentId, VariableType type, List<VariableDTO> variables) {
+    private static String getVariableName(String componentId, VariableType type, Collection<VariableDTO> variables) {
         return variables.stream()
                 .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
                 .findFirst()
@@ -78,39 +77,25 @@ class EvaluatingUtils {
                 .getId();
     }
 
-
-    //todo - for real var
-    //todo saving only important variables
-    static Collection<Var> convertSolution(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
-
-        return newConfigurationInt.stream()
-                .map(intVar -> new IntVar(intVar.getName(), intVar.getValue()))
-                .collect(Collectors.toList());
-    }
-
-    static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<IntVar> newConfigurationInt,
-            Collection<RealVar> newConfigurationReal, List<VariableDTO> variables) {
+    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
 
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
-        List<IntVar> variablesIntForComponent = newConfigurationInt.stream()
-                .filter(intVar -> variableNamesForComponent.contains(intVar.getName()))
-                .collect(Collectors.toList());
-
-        List<RealVar> variablesRealForComponent = newConfigurationReal.stream()
-                .filter(realVar -> variableNamesForComponent.contains(realVar.getName()))
+        List<Element> variablesForComponent = solution.stream()
+                .filter(var -> variableNamesForComponent.contains(var.getName()))
                 .collect(Collectors.toList());
 
         List<Predicate<NodeCandidate>> predicates = new ArrayList<>();
 
 
-        for (IntVar var : variablesIntForComponent) {
+        for (Element var : variablesForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
 
             switch (type) {
+                //int
                 case RAM:
-                    log.debug("Creating getRamPredicate for value {}", (long) var.getValue());
-                    predicates.add(getRamPredicate((long) var.getValue()));
+                    log.debug("Creating getRamPredicate for value {}", var.getValue());
+                    predicates.add(getRamPredicate((long) (int) var.getValue()));
                     break;
                 case CARDINALITY:
                     break;
@@ -120,83 +105,24 @@ class EvaluatingUtils {
                     break;
                 case CORES:
                     log.debug("Creating getCoresPredicate for value {}", var.getValue());
-                    predicates.add(getCoresPredicate(var.getValue()));
+                    predicates.add(getCoresPredicate((int) var.getValue()));
                     break;
                 case OS:
                     log.debug("Creating getOsPredicate for value {}", var.getValue());
-                    predicates.add(getOsPredicate(var.getValue()));
-                    break;
-                case LOCATION:
+                    predicates.add(getOsPredicate((int) var.getValue()));
                     break;
 
-            }
-        }
-
-        for (RealVar var : variablesRealForComponent) {
-            VariableType type = getVariableType(var.getName(), variables);
-            switch (type) {
-                case CPU:
-                    break;
+                //real
                 case STORAGE:
-                    //predicates.add(getStoragePredicate(var.)) todo
+                    predicates.add(getStoragePredicate((double) var.getValue())); //fixme - to check
                     break;
                 case LOCATION:
                     break;
+
             }
         }
 
         return predicates.toArray(new Predicate[predicates.size()]);
     }
 
-    static boolean checkIfNotReconfigurableComponentsAreChanged(String notReconfigurableComponentSuffix, Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
-
-
-        return actConfiguration.stream()
-                .filter(component -> component.getId().endsWith(notReconfigurableComponentSuffix))
-                .anyMatch(component -> newConfiguration.stream()
-                        .filter(newComponent -> component.getId().equals(newComponent.getId()))
-                        .noneMatch(newComponent -> newComponent.getId().equals(component.getId())
-                                && newComponent.getNodeCandidate().equals(component.getNodeCandidate()))
-
-                );
-
-
-    }
-
-
-    static IntMetric convertToIntMetric(List<MetricDTO> metricDTOS, String name, MetricType type, int defaultValue) {
-        return findOptionalMetric(metricDTOS, name)
-                .map(metricDTO -> {
-                    IntMetric intMetric = IntMetric.of((IntMetricDTO) metricDTO, type);
-                    log.info("Get metric: {} = {}", intMetric.getType(), intMetric.getValue());
-                    return intMetric;
-                })
-                .orElseGet(() -> {
-                    IntMetric intMetric = IntMetric.of(type, name, defaultValue);
-                    log.warn("Metric {} does not exist, setting value to {}", intMetric.getId(), intMetric.getValue());
-                    return intMetric;
-                });
-
-    }
-
-    static DoubleMetric convertToDoubleMetric(List<MetricDTO> metricDTOS, String name, MetricType type, double defaultValue) {
-        return findOptionalMetric(metricDTOS, name)
-                .map(metricDTO -> {
-                    DoubleMetric doubleMetric = DoubleMetric.of(type, metricDTO.getName(), Double.valueOf((double)((Integer)metricDTO.getValue()).intValue()));
-//                  DoubleMetric doubleMetric = DoubleMetric.of((DoubleMetricDTO) metricDTO, type);
-                    log.info("Get metric: {} = {}", doubleMetric.getType(), doubleMetric.getValue());
-                    return doubleMetric;
-                })
-                .orElseGet(() -> {
-                    DoubleMetric doubleMetric = DoubleMetric.of(type, name, defaultValue);
-                    log.warn("Metric {} does not exist, setting value to {}", doubleMetric.getId(), doubleMetric.getValue());
-                    return doubleMetric;
-                });
-    }
-
-    private static Optional<MetricDTO> findOptionalMetric(List<MetricDTO> metricDTOS, String name) {
-        return metricDTOS.stream()
-                .filter(metric -> metric.getName().equals(name))
-                .findAny();
-    }
 }

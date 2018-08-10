@@ -34,22 +34,21 @@ public class CPSolverController {
     String cdoResourcePath = request.getCdoModelsPath();
     String notificationUri = request.getNotificationURI();
     String requestUuid = request.getWatermark().getUuid();
-    Boolean useExternalOptimizer = request.getUseExternalOptimizer();
-    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid + " " + useExternalOptimizer );
+    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
 
-    executor.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, useExternalOptimizer);
+    executor.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
     log.info("Sleeping...");
   }
 
   @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
   public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
     String applicationId = request.getApplicationId();
+    String camelModelfilePath = request.getCamelModelFilePath();
     String filePath = request.getFileModelsPath();
     String requestUuid = request.getWatermark().getUuid();
     String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
-    Boolean useExternalOptimizer = request.getUseExternalOptimizer();
-    log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + filePath + " " +requestUuid + " " +useExternalOptimizer);
-    executor.generateCPSolutionFromFile(applicationId, filePath, nodeCandidatesFilePath, requestUuid, useExternalOptimizer);
+    log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + camelModelfilePath + " " + filePath + " " +requestUuid);
+    executor.generateCPSolutionFromFile(applicationId, camelModelfilePath, filePath, nodeCandidatesFilePath, requestUuid);
   }
 
 
