@@ -13,14 +13,14 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.Function#getValue <em>Value</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.CpFunction#getValue <em>Value</em>}</li>
  * </ul>
  *
- * @see eu.paasage.upperware.metamodel.cp.CpPackage#getFunction()
+ * @see eu.paasage.upperware.metamodel.cp.CpPackage#getCpFunction()
  * @model
  * @generated
  */
-public interface Function extends ComposedExpression {
+public interface CpFunction extends ComposedExpression {
 	/**
 	 * Returns the value of the '<em><b>Value</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
@@ -31,14 +31,14 @@ public interface Function extends ComposedExpression {
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Value</em>' containment reference.
 	 * @see #setValue(NumericValueUpperware)
-	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getFunction_Value()
+	 * @see eu.paasage.upperware.metamodel.cp.CpPackage#getCpFunction_Value()
 	 * @model containment="true"
 	 * @generated
 	 */
 	NumericValueUpperware getValue();
 
 	/**
-	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.Function#getValue <em>Value</em>}' containment reference.
+	 * Sets the value of the '{@link eu.paasage.upperware.metamodel.cp.CpFunction#getValue <em>Value</em>}' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Value</em>' containment reference.
@@ -47,4 +47,4 @@ public interface Function extends ComposedExpression {
 	 */
 	void setValue(NumericValueUpperware value);
 
-} // Function
+} // CpFunction

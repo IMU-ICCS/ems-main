@@ -14,13 +14,13 @@ import eu.paasage.upperware.metamodel.cp.ConfigurationUpperware;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
+import eu.paasage.upperware.metamodel.cp.CpFunction;
 import eu.paasage.upperware.metamodel.cp.CpMetric;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.Expression;
-import eu.paasage.upperware.metamodel.cp.Function;
 import eu.paasage.upperware.metamodel.cp.Goal;
 import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
 import eu.paasage.upperware.metamodel.cp.ListDomain;
@@ -237,7 +237,7 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EClass functionEClass = null;
+	private EClass cpFunctionEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1007,8 +1007,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EClass getFunction() {
-		return functionEClass;
+	public EClass getCpFunction() {
+		return cpFunctionEClass;
 	}
 
 	/**
@@ -1016,8 +1016,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EReference getFunction_Value() {
-		return (EReference)functionEClass.getEStructuralFeatures().get(0);
+	public EReference getCpFunction_Value() {
+		return (EReference)cpFunctionEClass.getEStructuralFeatures().get(0);
 	}
 
 	/**
@@ -1235,8 +1235,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		createEReference(normalisedUtilityDimensionEClass, NORMALISED_UTILITY_DIMENSION__SOLUTIONS);
 		createEReference(normalisedUtilityDimensionEClass, NORMALISED_UTILITY_DIMENSION__GOAL);
 
-		functionEClass = createEClass(FUNCTION);
-		createEReference(functionEClass, FUNCTION__VALUE);
+		cpFunctionEClass = createEClass(CP_FUNCTION);
+		createEReference(cpFunctionEClass, CP_FUNCTION__VALUE);
 
 		configurationUpperwareEClass = createEClass(CONFIGURATION_UPPERWARE);
 		createEReference(configurationUpperwareEClass, CONFIGURATION_UPPERWARE__SOLUTION);
@@ -1301,8 +1301,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		composedUnaryExpressionEClass.getESuperTypes().add(this.getUnaryExpression());
 		booleanDomainEClass.getESuperTypes().add(this.getDomain());
 		cpMetricEClass.getESuperTypes().add(this.getNumericExpression());
-		normalisedUtilityDimensionEClass.getESuperTypes().add(this.getFunction());
-		functionEClass.getESuperTypes().add(this.getComposedExpression());
+		normalisedUtilityDimensionEClass.getESuperTypes().add(this.getCpFunction());
+		cpFunctionEClass.getESuperTypes().add(this.getComposedExpression());
 		configurationUpperwareEClass.getESuperTypes().add(this.getNumericExpression());
 
 		// Initialize classes, features, and operations; add parameters
@@ -1403,8 +1403,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		initEReference(getNormalisedUtilityDimension_Solutions(), this.getParameter(), null, "solutions", null, 0, 2, NormalisedUtilityDimension.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getNormalisedUtilityDimension_Goal(), this.getGoal(), null, "goal", null, 1, 1, NormalisedUtilityDimension.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-		initEClass(functionEClass, Function.class, "Function", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getFunction_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 0, 1, Function.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEClass(cpFunctionEClass, CpFunction.class, "CpFunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getCpFunction_Value(), theTypesPackage.getNumericValueUpperware(), null, "value", null, 0, 1, CpFunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(configurationUpperwareEClass, ConfigurationUpperware.class, "ConfigurationUpperware", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getConfigurationUpperware_Solution(), this.getParameter(), null, "solution", null, 0, 1, ConfigurationUpperware.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

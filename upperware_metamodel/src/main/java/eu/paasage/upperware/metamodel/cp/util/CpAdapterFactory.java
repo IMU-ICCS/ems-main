@@ -168,8 +168,8 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createNormalisedUtilityDimensionAdapter();
 			}
 			@Override
-			public Adapter caseFunction(Function object) {
-				return createFunctionAdapter();
+			public Adapter caseCpFunction(CpFunction object) {
+				return createCpFunctionAdapter();
 			}
 			@Override
 			public Adapter caseConfigurationUpperware(ConfigurationUpperware object) {
@@ -546,16 +546,16 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.Function <em>Function</em>}'.
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.CpFunction <em>Function</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.Function
+	 * @see eu.paasage.upperware.metamodel.cp.CpFunction
 	 * @generated
 	 */
-	public Adapter createFunctionAdapter() {
+	public Adapter createCpFunctionAdapter() {
 		return null;
 	}
 
