@@ -74,7 +74,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 			case CpPackage.CP_VARIABLE_VALUE: return (EObject)createCpVariableValue();
 			case CpPackage.PARAMETER: return (EObject)createParameter();
 			case CpPackage.NORMALISED_UTILITY_DIMENSION: return (EObject)createNormalisedUtilityDimension();
-			case CpPackage.FUNCTION: return (EObject)createFunction();
+			case CpPackage.CP_FUNCTION: return (EObject)createCpFunction();
 			case CpPackage.CONFIGURATION_UPPERWARE: return (EObject)createConfigurationUpperware();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
@@ -306,9 +306,9 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public Function createFunction() {
-		FunctionImpl function = new FunctionImpl();
-		return function;
+	public CpFunction createCpFunction() {
+		CpFunctionImpl cpFunction = new CpFunctionImpl();
+		return cpFunction;
 	}
 
 	/**

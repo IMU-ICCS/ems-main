@@ -2,8 +2,8 @@
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
+import eu.paasage.upperware.metamodel.cp.CpFunction;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Function;
 
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 
@@ -17,18 +17,18 @@ import org.eclipse.emf.ecore.EClass;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl#getValue <em>Value</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class FunctionImpl extends ComposedExpressionImpl implements Function {
+public class CpFunctionImpl extends ComposedExpressionImpl implements CpFunction {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	protected FunctionImpl() {
+	protected CpFunctionImpl() {
 		super();
 	}
 
@@ -39,7 +39,7 @@ public class FunctionImpl extends ComposedExpressionImpl implements Function {
 	 */
 	@Override
 	protected EClass eStaticClass() {
-		return CpPackage.Literals.FUNCTION;
+		return CpPackage.Literals.CP_FUNCTION;
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class FunctionImpl extends ComposedExpressionImpl implements Function {
 	 * @generated
 	 */
 	public NumericValueUpperware getValue() {
-		return (NumericValueUpperware)eGet(CpPackage.Literals.FUNCTION__VALUE, true);
+		return (NumericValueUpperware)eGet(CpPackage.Literals.CP_FUNCTION__VALUE, true);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class FunctionImpl extends ComposedExpressionImpl implements Function {
 	 * @generated
 	 */
 	public void setValue(NumericValueUpperware newValue) {
-		eSet(CpPackage.Literals.FUNCTION__VALUE, newValue);
+		eSet(CpPackage.Literals.CP_FUNCTION__VALUE, newValue);
 	}
 
-} //FunctionImpl
+} //CpFunctionImpl
