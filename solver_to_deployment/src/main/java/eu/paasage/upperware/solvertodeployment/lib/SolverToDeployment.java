@@ -4,6 +4,10 @@
 
 package eu.paasage.upperware.solvertodeployment.lib;
 
+import camel.core.CamelModel;
+import camel.core.Feature;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentTypeModel;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.CacheUtils;
 import eu.melodic.cache.NodeCandidates;
@@ -13,20 +17,17 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequest;
 import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequestImpl;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentElement;
-import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
-import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
+import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2New;
+import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxyNew;
+import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
-import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
-import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
+import eu.paasage.upperware.solvertodeployment.utils.DataHolderNew;
+import eu.paasage.upperware.solvertodeployment.utils.DataUtilsNew;
+import eu.paasage.upperware.solvertodeployment.utils.SolverToDeploymentHelperNew;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
-import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -68,7 +69,7 @@ public class SolverToDeployment {
 		log.info("Notification URI: {}", notificationUri);
 		log.info("UUID: {}", requestUuid);
 
-		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
+		CDOSessionX session = CDODatabaseProxyNew.getInstance().getCdoClient().getSession();
 		CDOTransaction transaction = session.openTransaction();
 
 		try {
@@ -96,15 +97,17 @@ public class SolverToDeployment {
 			try {
 			    log.warn("Starting...");
 
-				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(transaction, camelModelID);
+				int dmId = CDODatabaseProxy2New.copyFirstDeploymentModel(transaction, camelModelID);
 
-				CloudMLHelper.setGlobalDMIdx(dmId);
-				CloudMLHelper.resetGlobalCount();
+				CloudMLHelperNew.setGlobalDMIdx(dmId);
+				CloudMLHelperNew.resetGlobalCount();
 
-				DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(dmId);
+				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) camelModel.getDeploymentModels().get(dmId);
+
+				EList<DeploymentInstanceModel> deploymentInstanceModels = SolverToDeploymentHelperNew.getDeploymentInstanceModelsList(camelModel.getDeploymentModels(), dmId);
 
 				// Generate new instances into this new DM of camel
-				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution,
+				DataHolderNew dataholder = DataUtilsNew.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModels, constraintProblem, solution,
 						camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
@@ -112,7 +115,7 @@ public class SolverToDeployment {
 				}
 
 				dataholder.setDmId(dmId);
-				DataUtils.registerDataHolderToCDO(camelModelID, dataholder, transaction); // COPY TO CDO
+				DataUtilsNew.registerDataHolderToCDO(camelModelID, dataholder, transaction); // COPY TO CDO
 
 			} catch (S2DException | CommitException e) {
 				log.error("Unable to complete data model instances registration", e);
@@ -136,29 +139,23 @@ public class SolverToDeployment {
 	public static void dumpDM(CamelModel cm, int level) {
 		log.info("Camel doc contains " + cm.getDeploymentModels().size() + " Deployment Model");
 		if (level > 1)
-			for(int i=0; i<cm.getDeploymentModels().size(); i++) {
-				DeploymentModel dm = cm.getDeploymentModels().get(i);
-				log.info("  DM"+i+" :" +
-								" InternalComponentInstances: " + dm.getInternalComponentInstances().size()+
-								" VMInstances: "+ dm.getVmInstances().size() +
-								" HostingInstances: "+ dm.getHostingInstances().size() +
+			for (int i = 0; i < cm.getDeploymentModels().size(); i++) { //tu od i=1??
+				DeploymentInstanceModel dm = (DeploymentInstanceModel) cm.getDeploymentModels().get(i);
+				log.info("  DeploymentInstanceModel " + i + " :" +
+						" SoftwareComponentInstances: " + dm.getSoftwareComponentInstances().size() +
 								" CommInstances: " + dm.getCommunicationInstances().size());
 				if (level > 2) {
 					// ICI
-					log.info("InternalComponentInstances: " + getAsString(dm.getInternalComponentInstances()));
-					// VMI
-					log.info("VMInstances: " + getAsString(dm.getVmInstances()));
-					// HI
-					log.info("HostingInstances: "+getAsString(dm.getHostingInstances()));
+					log.info("SoftwareComponentInstances: " + getAsString(dm.getSoftwareComponentInstances()));
 					// CI
-					log.info("CommIntances: "+getAsString(dm.getCommunicationInstances()));
+					log.info("CommInstances: " + getAsString(dm.getCommunicationInstances()));
 				}
 			}
 
 	}
 
-	private static <T extends DeploymentElement> String getAsString(EList<T> deploymentElements){
-		return deploymentElements.stream().map(DeploymentElement::getName).collect(Collectors.joining(" "));
+	private static <T extends Feature> String getAsString(EList<T> features) {
+		return features.stream().map(Feature::getName).collect(Collectors.joining(" "));
 	}
 
 	private void notifySolutionApplied(String camelModelID, String notificationUri, String uuid) {
