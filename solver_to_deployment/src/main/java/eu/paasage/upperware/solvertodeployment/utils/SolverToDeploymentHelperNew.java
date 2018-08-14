@@ -1,6 +1,8 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import camel.deployment.*;
+import camel.deployment.DeploymentTypeModel;
+import camel.deployment.SoftwareComponent;
+import camel.deployment.SoftwareComponentInstance;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import lombok.extern.slf4j.Slf4j;
@@ -28,18 +30,6 @@ public class SolverToDeploymentHelperNew {
                 .filter(internalComponent -> internalComponent.getName().equalsIgnoreCase(componentName))
                 .findFirst()
                 .orElseThrow(() -> new S2DException("Unable to find " + componentName + " component in camel model"));
-    }
-
-
-    //DeploymentInstanceModels from DeploymentModels
-    public static EList<DeploymentInstanceModel> getDeploymentInstanceModelsList(EList<DeploymentModel> deploymentModels, int dmId) {
-        EList<DeploymentInstanceModel> deploymentInstanceModels = new BasicEList<>();
-        for (int i = 0; i < deploymentModels.size(); i++) {
-            if (i != dmId) {
-                deploymentInstanceModels.add((DeploymentInstanceModel) deploymentModels.get(i));
-            }
-        }
-        return deploymentInstanceModels;
     }
 
 

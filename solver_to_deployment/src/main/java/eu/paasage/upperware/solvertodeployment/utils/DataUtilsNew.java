@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class DataUtilsNew {
-    public static DataHolderNew computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, EList<DeploymentInstanceModel> deploymentInstanceModels,
+    public static DataHolderNew computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
                                                        ConstraintProblem constraintProblem, Solution solution, String camelModelID,
                                                        NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
                                                        CDOTransaction transaction
@@ -148,7 +148,7 @@ public class DataUtilsNew {
             log.debug("2. Dealing with Communication Instances");
             for (Communication communication : deploymentTypeModel.getCommunications()) {
                 log.info("2a Dealing with communication: {}", communication.getName());
-                EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication, deploymentInstanceModels, dataHolder.getComponentInstancesToRegister());
+                EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication, deploymentInstanceModel, dataHolder.getComponentInstancesToRegister());
                 dataHolder.getCommunicationInstances().addAll(communicationInstances);
             }
             log.debug("3. Changing names.");

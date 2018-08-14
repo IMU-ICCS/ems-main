@@ -37,17 +37,12 @@ public class CommunicationProvidedRequiredDomain {
 		return communicationProducerConsumerDomain;
 	}
 
-    private static EList<SoftwareComponentInstance> findComponentInstanceFromDeploymentInstanceModels(Component component, List<DeploymentInstanceModel> deploymentInstanceModels) {
-        EList<SoftwareComponentInstance> softwareComponentInstances = new BasicEList<>();
-
-        deploymentInstanceModels.stream()
-                .map(DeploymentInstanceModel::getSoftwareComponentInstances)
-                .forEach(softwareComponentInstances::addAll);
+    private static EList<SoftwareComponentInstance> findComponentInstanceFromDeploymentInstanceModels(Component component, DeploymentInstanceModel deploymentInstanceModel) {
         EList<SoftwareComponentInstance> softwareCIs = new BasicEList<>();
 
         log.debug("Looking for ComponentInstance (SoftwareCI from DM) for type: " + component.getName());
 		StringBuilder logTxt = new StringBuilder();
-        for (SoftwareComponentInstance softwareComponentInstance : softwareComponentInstances) {
+        for (SoftwareComponentInstance softwareComponentInstance : deploymentInstanceModel.getSoftwareComponentInstances()) {
             log.debug("finComponentInstance: testing" + softwareComponentInstance.getName() + " of type " + softwareComponentInstance.getType().getName());
             logTxt.append("Compare ").append(softwareComponentInstance.getType()).append(" AND ").append(component);
             if (softwareComponentInstance.getType().getName().equals(component.getName()))
@@ -101,7 +96,7 @@ public class CommunicationProvidedRequiredDomain {
 		return result;
 	}
 
-    public static EList<CommunicationInstance> createCommunicationInstanceFromDemand(Communication com, List<DeploymentInstanceModel> deploymentInstanceModels, List<SoftwareComponentInstance> softwareComponentInstances) throws S2DException {
+    public static EList<CommunicationInstance> createCommunicationInstanceFromDemand(Communication com, DeploymentInstanceModel deploymentInstanceModel, List<SoftwareComponentInstance> softwareComponentInstances) throws S2DException {
 		// Gathering information
 		CommunicationProvidedRequiredDomain result = findComponentFromCommunication(com);
 		EList<CommunicationInstance> communicationInstances = new BasicEList<>();
@@ -109,8 +104,8 @@ public class CommunicationProvidedRequiredDomain {
         EList<SoftwareComponentInstance> reqInstances = null;
         EList<SoftwareComponentInstance> provInstances = null;
         if (softwareComponentInstances == null) {
-            reqInstances = findComponentInstanceFromDeploymentInstanceModels(result.reqComponent, deploymentInstanceModels);
-            provInstances = findComponentInstanceFromDeploymentInstanceModels(result.provComponent, deploymentInstanceModels);
+            reqInstances = findComponentInstanceFromDeploymentInstanceModels(result.reqComponent, deploymentInstanceModel);
+            provInstances = findComponentInstanceFromDeploymentInstanceModels(result.provComponent, deploymentInstanceModel);
 		} else {
             reqInstances = findComponentInstanceFromComponents(result.reqComponent, softwareComponentInstances);
             provInstances = findComponentInstanceFromComponents(result.provComponent, softwareComponentInstances);

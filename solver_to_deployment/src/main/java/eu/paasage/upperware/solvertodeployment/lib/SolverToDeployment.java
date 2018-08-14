@@ -26,7 +26,6 @@ import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolderNew;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtilsNew;
-import eu.paasage.upperware.solvertodeployment.utils.SolverToDeploymentHelperNew;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +81,7 @@ public class SolverToDeployment {
 
 			
 			EList<EObject> contentsPC = transaction.getResource(paasageConfigurationID).getContents();
-			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(1);
+			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(0);
 
 			// Checking if there is a solution
 			if (constraintProblem.getSolution().size()==0) {
@@ -97,17 +96,17 @@ public class SolverToDeployment {
 			try {
 			    log.warn("Starting...");
 
-				int dmId = CDODatabaseProxy2New.copyFirstDeploymentModel(transaction, camelModelID);
+				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) camelModel.getDeploymentModels().get(0);
+
+				int dmId = CDODatabaseProxy2New.saveNewDeploymentInstanceModel(transaction, camelModelID);
 
 				CloudMLHelperNew.setGlobalDMIdx(dmId);
 				CloudMLHelperNew.resetGlobalCount();
 
-				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) camelModel.getDeploymentModels().get(dmId);
-
-				EList<DeploymentInstanceModel> deploymentInstanceModels = SolverToDeploymentHelperNew.getDeploymentInstanceModelsList(camelModel.getDeploymentModels(), dmId);
-
 				// Generate new instances into this new DM of camel
-				DataHolderNew dataholder = DataUtilsNew.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModels, constraintProblem, solution,
+
+				DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) camelModel.getDeploymentModels().get(dmId);
+				DataHolderNew dataholder = DataUtilsNew.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModel, constraintProblem, solution,
 						camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);

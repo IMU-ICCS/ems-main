@@ -1,10 +1,10 @@
 package eu.paasage.upperware.solvertodeployment.db.lib;
 
 import camel.core.CamelModel;
+import camel.deployment.DeploymentFactory;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
-import camel.execution.ExecutionModel;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolderNew;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -12,7 +12,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +19,38 @@ import java.util.Optional;
 
 @Slf4j
 public class CDODatabaseProxy2New {
-    public static int copyFirstDeploymentModel(CDOTransaction transaction, String camelModelID) throws CommitException {
+    
+    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
+        CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
+                .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+
+        DeploymentModel deploymentModel = getLastElement(camelModel.getDeploymentModels());
+        if (deploymentModel instanceof DeploymentInstanceModel) {
+            return Optional.of((DeploymentInstanceModel) deploymentModel);
+        }
+        return Optional.empty();
+    }
+
+    private static <T extends EObject> T getLastElement(List<T> collection) {
+        return CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size() - 1) : null;
+    }
+
+    public static int saveNewDeploymentInstanceModel(CDOTransaction transaction, String camelModelID)
+            throws CommitException {
+
+        DeploymentInstanceModel deploymentInstanceModel = DeploymentFactory.eINSTANCE.createDeploymentInstanceModel();
 
         CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
         EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
-        DeploymentModel dm = deploymentModels.get(0);
-        DeploymentModel dmCopy = EcoreUtil.copy(dm);
 
-        deploymentModels.add(dmCopy);
+        //set required fields in new DeploymentInstanceModel
+        String name = deploymentModels.get(0).getName();
+        deploymentInstanceModel.setName(name + deploymentModels.size());
+        deploymentInstanceModel.setType((DeploymentTypeModel) deploymentModels.get(0));
+
+        deploymentModels.add(deploymentInstanceModel);
         int dmId = deploymentModels.size() - 1;
 
         try {
@@ -42,32 +63,6 @@ public class CDODatabaseProxy2New {
         return dmId;
     }
 
-    public static Optional<DeploymentTypeModel> getLastDeployedTypeModel(String camelModelID, CDOTransaction transaction) {
-        CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
-                .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
-
-        ExecutionModel lastExecutionModel = getLastElement(camelModel.getExecutionModels());
-        if (lastExecutionModel != null) {
-            return Optional.of(lastExecutionModel.getDeploymentTypeModel());
-        }
-        return Optional.empty();
-    }
-
-    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
-        CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
-                .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
-
-        DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) getLastElement(camelModel.getDeploymentModels());
-        if (deploymentInstanceModel != null) {
-            return Optional.of(deploymentInstanceModel);
-        }
-        return Optional.empty();
-    }
-
-    private static <T extends EObject> T getLastElement(List<T> collection) {
-        return CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size() - 1) : null;
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////
     // Registering stuff into CDO
     //////////////////////////////////////////////////////////////////////////////////////
@@ -76,13 +71,10 @@ public class CDODatabaseProxy2New {
 
         public void registerElements(DataHolderNew dataHolder, String camelModelID, CDOTransaction transaction) {
             CDODatabaseProxy2New.DataUpdater.CamelAndDeploymentModelTransactionManager transactionManager = new CDODatabaseProxy2New.DataUpdater.CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId(), transaction);
-            transactionManager.deploymentInstanceModels.forEach(deploymentInstanceModel -> {
-                deploymentInstanceModel.getSoftwareComponentInstances()
-                        .addAll(dataHolder.getComponentInstancesToRegister());
-                deploymentInstanceModel.getCommunicationInstances()
-                        .addAll(dataHolder.getCommunicationInstances());
-            });
-
+            transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
+                    .getSoftwareComponentInstances().addAll(dataHolder.getComponentInstancesToRegister());
+            transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
+                    .getCommunicationInstances().addAll(dataHolder.getCommunicationInstances());
             transactionManager.commit();
         }
 
@@ -103,19 +95,17 @@ public class CDODatabaseProxy2New {
                 this.transaction = transaction;
                 this.camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
                         .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
-                this.deploymentTypeModel = (DeploymentTypeModel) camelModel.getDeploymentModels().get(dmId);
+                this.deploymentTypeModel = (DeploymentTypeModel) camelModel.getDeploymentModels().get(0);
                 this.dmId = dmId;
 
                 this.deploymentInstanceModels = new ArrayList<>();
-                for (int i = 0; i < camelModel.getDeploymentModels().size(); i++) {
-                    if (i != dmId) {
-                        deploymentInstanceModels.add((DeploymentInstanceModel) camelModel.getDeploymentModels().get(i));
-                    }
+                for (int i = 1; i < camelModel.getDeploymentModels().size(); i++) {
+                    deploymentInstanceModels.add((DeploymentInstanceModel) camelModel.getDeploymentModels().get(i));
                 }
             }
 
             void commit() {
-                camelModel.getDeploymentModels().set(dmId, deploymentTypeModel);
+                camelModel.getDeploymentModels().set(dmId, deploymentInstanceModels.get(dmId - 1));
                 try {
                     transaction.commit();
                 } catch (CommitException e) {
