@@ -44,7 +44,7 @@ public class UtilityFunction {
         double result = function.calculate();
         function.removeAllArguments();
         function.removeAllConstants();
-        log.debug("result {}", result);
+        log.info("Utility value: {}", result);
         log.debug("-----------------------");
         return result;
     }

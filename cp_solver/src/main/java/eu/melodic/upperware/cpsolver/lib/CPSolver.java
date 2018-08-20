@@ -137,7 +137,7 @@ public class CPSolver {
     private void createMetricsForUG(EList<CpMetric> metrics) {
         log.info("Creating metrics for Utility Generator");
         this.metricsForUG = metrics.stream().map(MetricDTOFactory::createMetricDTO).collect(Collectors.toList());
-        log.info("Creating metrics for Utility Generator is finished, number of metrics: {}.", metricsForUG);
+        log.info("Creating metrics for Utility Generator is finished, number of metrics: {}.", metricsForUG.size());
     }
 
     private void createVariablesForUG(EList<CpVariable> variables) {
@@ -185,8 +185,6 @@ public class CPSolver {
             IntVar[] vars = values.stream().toArray(value -> new IntVar[values.size()]);
             solver.set(IntStrategyFactory.random(vars, System.currentTimeMillis()));
         }
-
-        log.info("Using Utility Generator for solution space:");
 
         if (solver.findSolution()) {
             int i = 1;
@@ -1098,7 +1096,7 @@ public class CPSolver {
 
         double utility = utilityGenerator.evaluate(Stream.concat(intSolution.stream(), realSolution.stream()).collect(Collectors.toList()));
         if (utility > maxUtility) {
-            log.info("New utility value {} is greater than {}", utility, maxUtility);
+            log.debug("New utility value {} is greater than {}", utility, maxUtility);
             convertAndUpdateBestSolution(utility);
         } else {
             log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);

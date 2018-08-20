@@ -27,6 +27,7 @@ import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
+import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import io.github.cloudiator.rest.ApiException;
@@ -219,6 +220,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         addMetrics(cp, camelModel);
 
         addConstraint(cp, camelModel);
+        CPModelTool.printCpModel(cp);
 
         return cp;
     }
