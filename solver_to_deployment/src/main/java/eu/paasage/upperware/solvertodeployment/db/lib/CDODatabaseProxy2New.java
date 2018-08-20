@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @Slf4j
 public class CDODatabaseProxy2New {
-    
+
     public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
         CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
@@ -71,10 +71,16 @@ public class CDODatabaseProxy2New {
 
         public void registerElements(DataHolderNew dataHolder, String camelModelID, CDOTransaction transaction) {
             CDODatabaseProxy2New.DataUpdater.CamelAndDeploymentModelTransactionManager transactionManager = new CDODatabaseProxy2New.DataUpdater.CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId(), transaction);
+
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
                     .getSoftwareComponentInstances().addAll(dataHolder.getComponentInstancesToRegister());
+
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
                     .getCommunicationInstances().addAll(dataHolder.getCommunicationInstances());
+
+            transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
+                    .getVmInstances().addAll(dataHolder.getVmInstancesToRegister());
+
             transactionManager.commit();
         }
 

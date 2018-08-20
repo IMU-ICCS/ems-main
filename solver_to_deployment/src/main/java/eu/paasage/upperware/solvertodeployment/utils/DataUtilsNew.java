@@ -1,5 +1,6 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
+import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
 import com.google.common.collect.Sets;
@@ -28,8 +29,12 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class DataUtilsNew {
+
+    private static final String VM_PREFIX_NAME = "WM";
+    private static final String COMPONENT_PREFIX_NAME = "Component";
+
     public static DataHolderNew computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
-                                                       ConstraintProblem constraintProblem, Solution solution, String camelModelID,
+                                                       ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
                                                        NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
                                                        CDOTransaction transaction
     ) throws S2DException {
@@ -113,12 +118,14 @@ public class DataUtilsNew {
         }
 
         // Memory of instances
+        Map<Integer, EList<VMInstance>> localGroupVMInstances = new HashMap<>();
         Map<String, List<CpVariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
 
         try {
             DataHolderNew dataHolder = new DataHolderNew();
             for (Map.Entry<String, List<CpVariableValue>> entry : vvByComponentName.entrySet()) {
                 String componentName = entry.getKey();
+
 
                 int cardinality = CPModelTool.getIntValue(CPModelTool.getCardinality(entry.getValue()).orElseThrow(() -> new S2DException(String.format("Could not find cardinality for component %s", entry.getKey()))));
                 if (cardinality > 0) {
@@ -139,6 +146,40 @@ public class DataUtilsNew {
                     try {
                         EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelperNew.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
                         dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
+
+
+                        //create VM Instance
+                        int myKey = localComponentGroups.get(componentName);
+                        EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
+                        log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
+
+                        log.info("Creating VmInstances for component: {}", componentName);
+
+                        if (vmInstanceToRegisters == null) {
+                            log.info("Creating new VM Instances for component: {} ...", componentName);
+
+
+                            VM vm = findVMByName(deploymentTypeModel.getVms(), componentName);
+
+                            if (vm == null) {
+                                log.info("Vm does not exist");
+                                log.info("Component name: {}", componentName);
+                                log.info("Number of VMs in list: {}, vm names: ", deploymentTypeModel.getVms().size());
+                                deploymentTypeModel.getVms().forEach(vm1 ->
+                                        log.info(vm1.getName()));
+                            }
+
+                            ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
+
+                            vmInstanceToRegisters = SolverToDeploymentHelperNew.searchAndCreateVMInstance(vm, cardinality);
+                            vmInstanceToRegisters.forEach(vmInstance -> providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel));
+                            dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
+                            // memorize
+                            localGroupVMInstances.put(myKey, vmInstanceToRegisters);
+                            log.info("**NEW** VMs for key {}", myKey);
+                        }
+
+
                     } catch (S2DException e) {
                         throw e;
                     }
@@ -152,7 +193,7 @@ public class DataUtilsNew {
                 dataHolder.getCommunicationInstances().addAll(communicationInstances);
             }
             log.debug("3. Changing names.");
-            changeNames(dataHolder, camelModelID, transaction);
+            changeNames(dataHolder, camelModelId, transaction);
             log.debug("4. Done.");
             return dataHolder;
 
@@ -200,6 +241,12 @@ public class DataUtilsNew {
 //			}
 //			session.closeSession();
 //		}
+    }
+
+    private static VM findVMByName(EList<VM> vms, String componentName) {
+        return vms.stream()
+                .filter(vm -> vm.getName().replaceFirst(VM_PREFIX_NAME, COMPONENT_PREFIX_NAME).equals(componentName))
+                .findFirst().orElse(null);
     }
 
     private static <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, DataUtilsNew.VMKey> function) {

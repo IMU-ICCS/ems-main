@@ -1,8 +1,6 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import camel.deployment.DeploymentTypeModel;
-import camel.deployment.SoftwareComponent;
-import camel.deployment.SoftwareComponentInstance;
+import camel.deployment.*;
 import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import lombok.extern.slf4j.Slf4j;
@@ -70,17 +68,17 @@ public class SolverToDeploymentHelperNew {
     // VM Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
-//    public static EList<VMInstance> searchAndCreateVMInstance(VM result, int cardinality) throws S2DException {
-//
-//        EList<VMInstance> vmInstances = new BasicEList<>();
-//        for(int i=0; i<cardinality; i++) {
-//            VMInstance vmInstanceResult = CloudMLHelperNew.createVMInstance(result);
-//            Attribute attribute = CloudMLHelperNew.findVMType(providerModel);
-//            vmInstanceResult.setVmType(attribute);
-//            vmInstanceResult.setVmTypeValue(attribute.getValue());
-//            vmInstances.add(vmInstanceResult);
-//        }
-//        return vmInstances;
-//    }
+    public static EList<VMInstance> searchAndCreateVMInstance(VM result, int cardinality) throws S2DException {
+
+        EList<VMInstance> vmInstances = new BasicEList<>();
+        for (int i = 0; i < cardinality; i++) {
+            VMInstance vmInstanceResult = CloudMLHelperNew.createVMInstance(result);
+            //Attribute attribute = CloudMLHelperNew.findVMType(providerModel);
+            // vmInstanceResult.setVmTypeValue(attribute.getValue());
+            vmInstanceResult.setType(result);
+            vmInstances.add(vmInstanceResult);
+        }
+        return vmInstances;
+    }
 
 }

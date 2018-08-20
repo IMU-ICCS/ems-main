@@ -2,6 +2,7 @@ package eu.paasage.upperware.solvertodeployment.utils;
 
 import camel.deployment.CommunicationInstance;
 import camel.deployment.SoftwareComponentInstance;
+import camel.deployment.VMInstance;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +19,8 @@ public class DataHolderNew {
 
     private List<CommunicationInstance> communicationInstances = new ArrayList<>();
 
+    private List<VMInstance> vmInstancesToRegister = new ArrayList<>();
+
     //private List<ProviderModel> providerModel = new ArrayList<>();
-    //private List<VMInstance> vmInstancesToRegister = new ArrayList<>();
     //private List<HostingInstance> hostingInstancesToRegister = new ArrayList<>();
 }

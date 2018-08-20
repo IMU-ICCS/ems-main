@@ -107,7 +107,7 @@ public class SolverToDeployment {
 
 				DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) camelModel.getDeploymentModels().get(dmId);
 				DataHolderNew dataholder = DataUtilsNew.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModel, constraintProblem, solution,
-						camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
+						camelModel, camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;
@@ -138,16 +138,19 @@ public class SolverToDeployment {
 	public static void dumpDM(CamelModel cm, int level) {
 		log.info("Camel doc contains " + cm.getDeploymentModels().size() + " Deployment Model");
 		if (level > 1)
-			for (int i = 0; i < cm.getDeploymentModels().size(); i++) { //tu od i=1??
+			for (int i = 1; i < cm.getDeploymentModels().size(); i++) {
 				DeploymentInstanceModel dm = (DeploymentInstanceModel) cm.getDeploymentModels().get(i);
 				log.info("  DeploymentInstanceModel " + i + " :" +
 						" SoftwareComponentInstances: " + dm.getSoftwareComponentInstances().size() +
-								" CommInstances: " + dm.getCommunicationInstances().size());
+						" CommInstances: " + dm.getCommunicationInstances().size()
+						+ " VmInstances: " + dm.getVmInstances());
 				if (level > 2) {
 					// ICI
 					log.info("SoftwareComponentInstances: " + getAsString(dm.getSoftwareComponentInstances()));
 					// CI
 					log.info("CommInstances: " + getAsString(dm.getCommunicationInstances()));
+					// VMI
+					log.info("VmInstances: " + getAsString(dm.getVmInstances()));
 				}
 			}
 
