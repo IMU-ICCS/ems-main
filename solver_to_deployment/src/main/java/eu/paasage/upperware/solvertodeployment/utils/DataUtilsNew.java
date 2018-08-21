@@ -10,7 +10,6 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2New;
-import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
@@ -37,8 +36,7 @@ public class DataUtilsNew {
                                                        ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
                                                        NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
                                                        CDOTransaction transaction
-    ) throws S2DException {
-
+    ) {
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
         Map<String, Integer> localComponentGroups = new HashMap<>();
@@ -79,38 +77,38 @@ public class DataUtilsNew {
 
 
         // Merging sets
-        for (Communication communication : deploymentTypeModel.getCommunications()) {
-            String provName = CloudMLHelperNew.findProvidedComponentFromCommunication(communication).getName();
-            int provId = localComponentGroups.get(provName);
-            String reqName = CloudMLHelperNew.findRequiredComponentFromCommunication(communication).getName();
-            int reqId = localComponentGroups.get(reqName);
-            if (provId == reqId) continue; // already merge
-            if (provId < reqId) {
-                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
-                    if (entry.getValue() == reqId)
-                        entry.setValue(provId);
-                }
-                // merge all elements of reqId into provId
-                localGroups.get(provId).addAll(localGroups.get(reqId));
-                // reqId & provId use the same set
-                localGroups.put(reqId, localGroups.get(provId));
-            } else {
-                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
-                    if (entry.getValue() == provId)
-                        entry.setValue(reqId);
-                }
-                // merge all elements of reqId into provId
-                localGroups.get(provId).addAll(localGroups.get(reqId));
-                // reqId & provId use the same set
-                localGroups.put(reqId, localGroups.get(provId));
-            }
-
-        }
+//        for (Communication communication : deploymentTypeModel.getCommunications()) {
+//            String provName = CloudMLHelperNew.findProvidedComponentFromCommunication(communication).getName();
+//            int provId = localComponentGroups.get(provName);
+//            String reqName = CloudMLHelperNew.findRequiredComponentFromCommunication(communication).getName();
+//            int reqId = localComponentGroups.get(reqName);
+//            if (provId == reqId) continue; // already merge
+//            if (provId < reqId) {
+//                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
+//                    if (entry.getValue() == reqId)
+//                        entry.setValue(provId);
+//                }
+//                // merge all elements of reqId into provId
+//                localGroups.get(provId).addAll(localGroups.get(reqId));
+//                // reqId & provId use the same set
+//                localGroups.put(reqId, localGroups.get(provId));
+//            } else {
+//                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
+//                    if (entry.getValue() == provId)
+//                        entry.setValue(reqId);
+//                }
+//                // merge all elements of reqId into provId
+//                localGroups.get(provId).addAll(localGroups.get(reqId));
+//                // reqId & provId use the same set
+//                localGroups.put(reqId, localGroups.get(provId));
+//            }
+//
+//        }
 
         // Preparing VMInstance memory
         int key = 0;
-        for (SoftwareComponent ic : softwareComponents) {
-            if (localComponentGroups.get(ic.getName()) == key) {
+        for (SoftwareComponent sc : softwareComponents) {
+            if (localComponentGroups.get(sc.getName()) == key) {
                 String msg = localGroups.get(key).stream().collect(Collectors.joining(" "));
                 log.info("Group {}: {}", key, msg);
             }
@@ -143,17 +141,25 @@ public class DataUtilsNew {
 
                     log.info("Found Node Candidate: {}", nodeCandidate);
 
-                    try {
                         EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelperNew.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
                         dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
 
 
                         //create VM Instance
                         int myKey = localComponentGroups.get(componentName);
+                    localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
                         EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
+                    log.info("LocalGroupVMInstances:");
+                    localGroupVMInstances.forEach((integer, vmInstances) -> vmInstances
+                            .forEach(vmInstance -> log.info("key: {}, vmInstance: {}", integer, vmInstance.getName())));
                         log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
 
-                        log.info("Creating VmInstances for component: {}", componentName);
+                    log.info("Creating VmInstances for component: {} with key: {}", componentName, myKey);
+
+                    if (vmInstanceToRegisters != null) {
+                        log.info("vmInstanceToRegisters list: ");
+                        vmInstanceToRegisters.forEach(vmInstance -> log.info("Instance: {}", vmInstance.getName()));
+                    }
 
                         if (vmInstanceToRegisters == null) {
                             log.info("Creating new VM Instances for component: {} ...", componentName);
@@ -172,16 +178,20 @@ public class DataUtilsNew {
                             ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
 
                             vmInstanceToRegisters = SolverToDeploymentHelperNew.searchAndCreateVMInstance(vm, cardinality);
-                            vmInstanceToRegisters.forEach(vmInstance -> providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel));
+                            vmInstanceToRegisters.forEach(vmInstance -> {
+                                providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
+                                log.info("VmInstance: {}", vmInstance.getName());
+                            });
                             dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
                             // memorize
                             localGroupVMInstances.put(myKey, vmInstanceToRegisters);
                             log.info("**NEW** VMs for key {}", myKey);
                         }
-
-
-                    } catch (S2DException e) {
-                        throw e;
+                    // Create Hosting
+                    for (int i = 0; i < cardinality; i++) {
+                        SoftwareComponentInstance iCI = softwareComponentInstances.get(i);
+                        VMInstance vmI = vmInstanceToRegisters.get(i);
+                        dataHolder.getHostingInstancesToRegister().addAll(SolverToDeploymentHelperNew.createHostingInstance(vmI, iCI, deploymentTypeModel));
                     }
                 }
             }
@@ -203,9 +213,6 @@ public class DataUtilsNew {
         return null;
     }
 
-//	private static String getVmId(Entry<String, List<CpVariableValue>> entry) {
-//		return entry.getValue().get(0).getVariable().getVmId();
-//	}
 
     private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<CpVariableValue> variableValues) {
         List<Predicate<NodeCandidate>> result = new ArrayList<>();
@@ -226,21 +233,10 @@ public class DataUtilsNew {
     }
 
     private static void changeNames(DataHolderNew result, String camelModelID, CDOTransaction transaction) {
-//		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
-//		CDOTransaction transaction = session.openTransaction();
-//
-//		try {
         CDODatabaseProxy2New.getLastDeployedInstanceModel(camelModelID, transaction).ifPresent(deployedModel -> {
-
-            //2. Component
+            //1. Component
             changeNames(result.getComponentInstancesToRegister(), deployedModel.getSoftwareComponentInstances(), DataUtilsNew.VMKey::getInstance);
         });
-//		} finally {
-//			if (transaction != null && !transaction.isClosed()) {
-//				session.closeTransaction(transaction);
-//			}
-//			session.closeSession();
-//		}
     }
 
     private static VM findVMByName(EList<VM> vms, String componentName) {
@@ -325,6 +321,5 @@ public class DataUtilsNew {
             return result;
         }
     }
-
 
 }

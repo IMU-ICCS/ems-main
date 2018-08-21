@@ -81,6 +81,9 @@ public class CDODatabaseProxy2New {
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
                     .getVmInstances().addAll(dataHolder.getVmInstancesToRegister());
 
+            transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
+                    .getHostingInstances().addAll(dataHolder.getHostingInstancesToRegister());
+
             transactionManager.commit();
         }
 
@@ -88,16 +91,12 @@ public class CDODatabaseProxy2New {
 
             DeploymentTypeModel deploymentTypeModel;
             CamelModel camelModel;
-            //			CDOSessionX session;
             CDOTransaction transaction;
             int dmId;
             ArrayList<DeploymentInstanceModel> deploymentInstanceModels;
 
             CamelAndDeploymentModelTransactionManager(String camelModelID, int dmId, CDOTransaction transaction) {
 
-//				CDOClientX cdoClient = CDODatabaseProxy.getInstance().getCdoClient();
-//				this.session = cdoClient.getSession();
-//				this.transaction = session.openTransaction();
                 this.transaction = transaction;
                 this.camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
                         .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
@@ -117,17 +116,10 @@ public class CDODatabaseProxy2New {
                 } catch (CommitException e) {
                     log.error("Problem with commit", e);
                 }
-//				finally {
-//					if (transaction != null && !transaction.isClosed()) {
-//						session.closeTransaction(transaction);
-//					}
-//					session.closeSession();
-//				}
             }
         }
 
     }
-
 
     //TODO - move this to
     private static Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM) {

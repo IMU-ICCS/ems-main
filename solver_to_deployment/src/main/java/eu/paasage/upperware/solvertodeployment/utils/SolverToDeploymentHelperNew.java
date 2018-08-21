@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,39 +35,6 @@ public class SolverToDeploymentHelperNew {
 
 
     //////////////////////////////////////////////////////////////////////////////////////
-    // Hosting Instance
-    //////////////////////////////////////////////////////////////////////////////////////
-
-//    public static Hosting findHosting(SoftwareComponent component, DeploymentTypeModel deploymentTypeModel) throws S2DException {
-//        List<Hosting> matchingHosts = new ArrayList<>();
-//        deploymentTypeModel.getHostings()
-//                .forEach(h -> {
-//                   if(h.getRequiredHosts().stream()
-//                            .anyMatch(requiredHost -> requiredHost.getName().equals(component.getRequiredHost().getName()))){
-//                       matchingHosts.add(h);
-//                   }
-//                });
-//
-//        if(!matchingHosts.isEmpty()){
-//            return matchingHosts.get(0);
-//        }
-//        else{
-//            throw new S2DException("Unable to find hosting for application component name :" + component.getName() + " . Seems to have error in original model");
-//        }
-//    }
-//
-//    public static HostingInstance createHostingInstance(VMInstance vmInstance, SoftwareComponentInstance softwareComponentInstance, DeploymentTypeModel deploymentTypeModel) throws S2DException {
-//        SoftwareComponent softwareComponent = (SoftwareComponent) softwareComponentInstance.getType();
-//        Hosting hosting = findHosting(softwareComponent, deploymentTypeModel);
-//
-//        HostingInstance hostingInstance = CloudMLHelperNew.buildNewHostingInstance(softwareComponentInstance.getType().getName(), vmInstance, softwareComponentInstance, hosting);
-//        if(hostingInstance == null) {
-//            throw new S2DException("Unable to find hosting for application component name" + softwareComponentInstance.getName());
-//        }
-//        return hostingInstance;
-//    }
-
-    //////////////////////////////////////////////////////////////////////////////////////
     // VM Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -81,4 +51,36 @@ public class SolverToDeploymentHelperNew {
         return vmInstances;
     }
 
+
+    //	//////////////////////////////////////////////////////////////////////////////////////
+//	// Hosting Instance
+//	//////////////////////////////////////////////////////////////////////////////////////
+
+    private static List<Hosting> findHostings(SoftwareComponent component, DeploymentTypeModel deploymentTypeModel) throws S2DException {
+        List<Hosting> result = new ArrayList<>();
+
+        deploymentTypeModel.getHostings().forEach(hosting -> {
+            EList<RequiredHost> requiredHosts = hosting.getRequiredHosts();
+            requiredHosts.forEach(requiredHost -> log.info("Required host from hosting: {}", requiredHost.getName()));
+            String requiredHostFromComponentName = component.getRequiredHost().getName();
+            log.info("Req host from component: {}", requiredHostFromComponentName);
+            Optional<RequiredHost> first = requiredHosts.stream().filter(requiredHost -> requiredHost.getName().equals(requiredHostFromComponentName)).findFirst();
+            if (first.isPresent()) {
+                result.add(hosting);
+            }
+        });
+
+        return result;
+    }
+
+    public static List<HostingInstance> createHostingInstance(VMInstance vmInstance, SoftwareComponentInstance softwareComponentInstance, DeploymentTypeModel deploymentTypeModel) throws S2DException {
+        List<HostingInstance> result = new ArrayList<>();
+        SoftwareComponent softwareComponent = (SoftwareComponent) softwareComponentInstance.getType();
+        List<Hosting> hostings = findHostings(softwareComponent, deploymentTypeModel);
+        hostings.forEach(hosting -> {
+            HostingInstance hostingInstance = CloudMLHelperNew.buildNewHostingInstance(softwareComponentInstance.getType().getName(), vmInstance, softwareComponentInstance, hosting);
+            result.add(hostingInstance);
+        });
+        return result;
+    }
 }

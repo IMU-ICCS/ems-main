@@ -29,7 +29,7 @@ public class CloudMLHelperNew {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-    // Internal Component Comnunication
+    // Software Component Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
     public static SoftwareComponent findProvidedComponentFromCommunication(Communication com) {
@@ -39,10 +39,6 @@ public class CloudMLHelperNew {
     public static SoftwareComponent findRequiredComponentFromCommunication(Communication com) {
         return (SoftwareComponent) (com.getRequiredCommunication().eContainer());
     }
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    // Software Component Instance
-    //////////////////////////////////////////////////////////////////////////////////////
 
     public static SoftwareComponentInstance createSCInstance(SoftwareComponent softwareComponent) {
         // Create Instance + name + type
@@ -96,42 +92,17 @@ public class CloudMLHelperNew {
         return vmInstance;
     }
 
-//    public static Attribute findVMType(ProviderModel providerModel) throws S2DException {
-//        Attribute result = null;
-//        if(providerModel == null ) {
-//            throw new S2DException("Bad calling . Provider musn't not be null");
-//        }
-//        EList<Feature> subFeatures = providerModel.getRootFeature().getSubFeatures();
-//        StringBuilder logTxt = new StringBuilder("\n * Start looking vmType for providerModel " + providerModel.getName());
-//        logTxt.append(" \n  ** Scan SubFeature of provider model. Scanning ").append(subFeatures.size()).append(" elements");
-//        for (Feature feature : subFeatures) {
-//            EList<Attribute> attributes = feature.getAttributes();
-//            logTxt.append(" ** Will scanning all attributes for feature ").append(feature.getName()).append(". Number of attributes : ").append(attributes.size());
-//
-//            for (Attribute attribute : attributes) {
-//                logTxt.append("\n    *** Is attribute name equals vmType ? : ").append(attribute.getName()).append(" bla ").append(attribute.getValue());
-//
-//                if("VMType".equals(attribute.getName())) {
-//                    result = attribute;
-//                }
-//            }
-//        }
-//        if(result == null)
-//            throw new S2DException("Unable to find VMType . There is error in original model ! .Details :" + logTxt);
-//        return result;
-//    }
-
     //////////////////////////////////////////////////////////////////////////////////////
     // Hosting Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
-//    public static HostingInstance buildNewHostingInstance(String acName,VMInstance vmInstance, SoftwareComponentInstance softwareComponentInstance, Hosting hosting) {
-//        // CreateHostingInstance
-//        HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
-//        hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalSuffix());
-//        hostingInstance.setProvidedHostInstance(vmInstance.getProvidedHostInstances().get(0));
-//        hostingInstance.getRequiredHostInstances().add(softwareComponentInstance.getRequiredHostInstance());
-//        hostingInstance.setType(hosting);
-//        return hostingInstance;
-//    }
+    public static HostingInstance buildNewHostingInstance(String acName, VMInstance vmInstance, SoftwareComponentInstance softwareComponentInstance, Hosting hosting) {
+        // CreateHostingInstance
+        HostingInstance hostingInstance = DeploymentFactory.eINSTANCE.createHostingInstance();
+        hostingInstance.setName("VMto" + acName + "HostingInstance_" + getGlobalSuffix());
+        hostingInstance.setProvidedHostInstance(vmInstance.getProvidedHostInstances().get(0));
+        hostingInstance.getRequiredHostInstances().add(softwareComponentInstance.getRequiredHostInstance());
+        hostingInstance.setType(hosting);
+        return hostingInstance;
+    }
 }

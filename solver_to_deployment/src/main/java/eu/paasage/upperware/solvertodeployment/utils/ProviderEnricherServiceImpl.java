@@ -24,8 +24,6 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
     private SolverToDeploymentProperties solverToDeploymentProperties;
 
     private static final String AWS_EC2 = "aws-ec2";
-    // private static final String AMAZON_ENDPOINT = ;//"amazonEndpoint"; //value get from Properties
-
     private static final String CLOUD_API_NAME_SUFFIX = "Api";
     private static final String CLOUD_PROPERTY_NAME_SUFFIX = "Property";
     private static final String CLOUD_CREDENTIAL_NAME_SUFFIX = "Credential";
@@ -52,6 +50,7 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
         attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
         attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
 
+        //TODO change getting region
         GeographicalRegion region = camelModel.getLocationModels().get(0).getRegions().get(0);
         vmInstance.setLocation(region);
     }
