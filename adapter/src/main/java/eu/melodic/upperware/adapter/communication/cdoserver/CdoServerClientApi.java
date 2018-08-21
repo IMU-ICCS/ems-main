@@ -17,7 +17,6 @@ import camel.execution.ExecutionFactory;
 import camel.execution.ExecutionModel;
 import camel.requirement.Requirement;
 import camel.requirement.RequirementModel;
-import eu.paasage.camel.execution.ExecutionContext;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CdoTool;
@@ -74,16 +73,19 @@ public class CdoServerClientApi implements CdoServerApi {
           CamelModel model = (CamelModel) contents.get(i);
 
           if(model != null) {
-            EList<ExecutionModel> executionModels = model.getExecutionModels();
-            int numberOfExecModels = executionModels.size();
 
-            for (int j = numberOfExecModels - 1; j > -1; j--) {
-              EList<ExecutionContext> executionContexts = executionModels.get(j).getExecutionContexts();
-              if (!executionContexts.isEmpty()) {
-                cdoClient.exportModel(model, "~/"+resourceName+".xmi");
-                return executionContexts.get(executionContexts.size()-1).getDeploymentModel();
-              }
-            }
+            return (DeploymentInstanceModel) model.getDeploymentModels().get(model.getDeploymentModels().size() - 1);
+
+//            EList<ExecutionModel> executionModels = model.getExecutionModels();
+//            int numberOfExecModels = executionModels.size();
+
+//            for (int j = numberOfExecModels - 1; j > -1; j--) {
+//              EList<ExecutionContext> executionContexts = executionModels.get(j).getExecutionContexts();
+//              if (!executionContexts.isEmpty()) {
+//                cdoClient.exportModel(model, "~/"+resourceName+".xmi");
+//                return executionContexts.get(executionContexts.size()-1).getDeploymentModel();
+//              }
+//            }
           }
       }
       return null;
@@ -94,27 +96,27 @@ public class CdoServerClientApi implements CdoServerApi {
 
   @Override
   public void setExecutionContext(DeploymentModel deploymentModel, String execContextName, String requirementGroupName, CDOTransaction tr) {
-    CamelModel camelModel = (CamelModel) deploymentModel.eContainer();
-    Collection<ExecutionModel> execModels = camelModel.getExecutionModels();
-    Application app = camelModel.getApplications().get(0);
-
-    Optional<RequirementGroup> requirementGroupOpt = getRequirementGroup(camelModel.getRequirementModels());
-    RequirementGroup requirementGroup = requirementGroupOpt
-            .orElseThrow(() -> new IllegalArgumentException(format("Could not find RequirementGroup for %s application", app.getName())));
-
-      ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
-      newExecModel.setName(execContextName);
-
-      //TODO - co z tym
-      ExecutionContext execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
-      execContext.setName(execContextName);
-      execContext.setApplication(app);
-      execContext.setDeploymentModel(deploymentModel);
-      execContext.setRequirementGroup(requirementGroup);
-
-      newExecModel.getExecutionContexts().add(execContext);
-
-      execModels.add(newExecModel);
+//    CamelModel camelModel = (CamelModel) deploymentModel.eContainer();
+//    Collection<ExecutionModel> execModels = camelModel.getExecutionModels();
+//    Application app = camelModel.getApplications().get(0);
+//
+//    Optional<RequirementGroup> requirementGroupOpt = getRequirementGroup(camelModel.getRequirementModels());
+//    RequirementGroup requirementGroup = requirementGroupOpt
+//            .orElseThrow(() -> new IllegalArgumentException(format("Could not find RequirementGroup for %s application", app.getName())));
+//
+//      ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+//      newExecModel.setName(execContextName);
+//
+//      //TODO - co z tym
+//      ExecutionContext execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
+//      execContext.setName(execContextName);
+//      execContext.setApplication(app);
+//      execContext.setDeploymentModel(deploymentModel);
+//      execContext.setRequirementGroup(requirementGroup);
+//
+//      newExecModel.getExecutionContexts().add(execContext);
+//
+//      execModels.add(newExecModel);
   }
 
   @Override

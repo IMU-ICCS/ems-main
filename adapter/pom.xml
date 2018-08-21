@@ -77,11 +77,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.ow2.paasage</groupId>
-      <artifactId>melodic-cache</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>eu.melodic</groupId>
       <artifactId>interfaces</artifactId>
     </dependency>
