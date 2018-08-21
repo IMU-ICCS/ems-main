@@ -9,13 +9,13 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.core.Application;
+import camel.core.CamelModel;
+import camel.deployment.*;
 import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponentInstanceMonitor;
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.*;
-import eu.paasage.camel.provider.Feature;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,12 +30,13 @@ import static java.util.stream.Collectors.toSet;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class ApplicationComponentInstanceMonitorConverter implements ModelConverter<DeploymentModel, Collection<ApplicationComponentInstanceMonitor>> {
+public class ApplicationComponentInstanceMonitorConverter implements ModelConverter<DeploymentInstanceModel, Collection<ApplicationComponentInstanceMonitor>> {
 
   private AdapterProperties properties;
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<ApplicationComponentInstanceMonitor> toComparableModel(DeploymentModel model) {
+  public Collection<ApplicationComponentInstanceMonitor> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building application component instance monitors model (based on hosting instances)");
     EList<HostingInstance> hostingInsts = model.getHostingInstances();
     if (CollectionUtils.isEmpty(hostingInsts)) {
@@ -49,25 +50,24 @@ public class ApplicationComponentInstanceMonitorConverter implements ModelConver
     log.info("Processing of {}", hostingInst.getName());
 
     Application app = ConverterUtils.extractApplication((CamelModel) hostingInst.eContainer().eContainer());
-    InternalComponentInstance icInst = (InternalComponentInstance) hostingInst.getRequiredHostInstance().eContainer();
-    VMInstance vmInst = (VMInstance) hostingInst.getProvidedHostInstance().eContainer();
 
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
+    SoftwareComponentInstance scInst = ConverterUtils.findSoftwareComponentInstance(hostingInst);
+    VMInstance vmInst = ConverterUtils.findVMInstance(hostingInst);
 
     AdapterProperties.Colosseum.Timeouts timeouts = properties.getColosseum().getTimeouts();
 
     ApplicationComponentInstanceMonitor monitor = ApplicationComponentInstanceMonitor.builder()
-      .acInstName(icInst.getName())
+      .acInstName(scInst.getName())
       .acInstTimeout(timeouts.getAcInst())
-      .acName(icInst.getType().getName())
+      .acName(scInst.getType().getName())
       .vmInstName(vmInst.getName())
-      .cloudName(ConverterUtils.extractCloudName(rootFeature))
+      .cloudName(providerInfoSupplier.getCloudName(vmInst))
       .appName(app.getName())
-      .lcName(ConverterUtils.extractConfiguration((InternalComponent) icInst.getType()).getName())
+      .lcName(ConverterUtils.extractConfiguration((SoftwareComponent) scInst.getType()).getName())
       .vmName(vmInst.getType().getName())
-      .location(ConverterUtils.extractLocation(rootFeature))
-      .hardware(ConverterUtils.convertToString(vmInst.getVmTypeValue()))
-      .image(ConverterUtils.extractImage(rootFeature))
+      .location(providerInfoSupplier.getLocation(vmInst))
+      .hardware(providerInfoSupplier.getMachineType(vmInst))
+      .image(providerInfoSupplier.getImage(vmInst))
       .build();
 
     log.info("Built application component instance monitor: {}", monitor);

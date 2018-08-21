@@ -9,8 +9,9 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.VMInstance;
 import com.google.common.collect.Sets;
-import eu.paasage.camel.deployment.*;
 import eu.melodic.upperware.adapter.plangenerator.model.VirtualMachineInstanceMonitor;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
@@ -27,12 +28,12 @@ import static java.util.stream.Collectors.toSet;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class VirtualMachineInstanceMonitorConverter implements ModelConverter<DeploymentModel, Collection<VirtualMachineInstanceMonitor>> {
+public class VirtualMachineInstanceMonitorConverter implements ModelConverter<DeploymentInstanceModel, Collection<VirtualMachineInstanceMonitor>> {
 
   private AdapterProperties properties;
 
   @Override
-  public Collection<VirtualMachineInstanceMonitor> toComparableModel(DeploymentModel model) {
+  public Collection<VirtualMachineInstanceMonitor> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building virtual machine instance monitors model");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {

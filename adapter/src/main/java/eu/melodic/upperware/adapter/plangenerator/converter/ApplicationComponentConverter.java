@@ -9,15 +9,17 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.core.Application;
+import camel.core.CamelModel;
+import camel.deployment.*;
 import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponent;
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.*;
-import eu.paasage.camel.provider.Feature;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -26,12 +28,16 @@ import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public class ApplicationComponentConverter implements ModelConverter<DeploymentModel, Collection<ApplicationComponent>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class ApplicationComponentConverter implements ModelConverter<DeploymentInstanceModel, Collection<ApplicationComponent>> {
+
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<ApplicationComponent> toComparableModel(DeploymentModel model) {
+  public Collection<ApplicationComponent> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building application component models (based on hostings)");
-    EList<Hosting> hostings = model.getHostings();
+    DeploymentTypeModel initialModel = ConverterUtils.findDeploymentTypeModel(model);
+    EList<Hosting> hostings = initialModel.getHostings();
     if (CollectionUtils.isEmpty(hostings)) {
       log.info("There are no hostings defined - no application components will be created");
       return Sets.newHashSet();
@@ -43,21 +49,20 @@ public class ApplicationComponentConverter implements ModelConverter<DeploymentM
     log.info("Processing of {}", hosting.getName());
 
     Application app = ConverterUtils.extractApplication((CamelModel) hosting.eContainer().eContainer());
-    InternalComponent ic = (InternalComponent) hosting.getRequiredHost().eContainer();
-    VM vm = (VM) hosting.getProvidedHost().eContainer();
-    
+    VM vm = ConverterUtils.findVM(hosting);
+    SoftwareComponent sc = ConverterUtils.findSoftwareComponent(hosting);
+
     VMInstance vmInstance = ConverterUtils.findAssociatedVmInstance(vm);
-    Feature rootFeature = (Feature) vmInstance.getVmType().eContainer().eContainer();
 
     ApplicationComponent ac = ApplicationComponent.builder()
-      .name(ic.getName())
+      .name(sc.getName())
       .appName(app.getName())
-      .lcName(ConverterUtils.extractConfiguration(ic).getName())
+      .lcName(ConverterUtils.extractConfiguration(sc).getName())
       .vmName(vm.getName())
-      .cloudName(ConverterUtils.extractCloudName(rootFeature))
-      .location(ConverterUtils.extractLocation(rootFeature))
-      .hardware(ConverterUtils.convertToString(vmInstance.getVmTypeValue()))
-      .image(ConverterUtils.extractImage(rootFeature))
+      .cloudName(providerInfoSupplier.getCloudName(vmInstance))
+      .location(providerInfoSupplier.getLocation(vmInstance))
+      .hardware(providerInfoSupplier.getMachineType(vmInstance))
+      .image(providerInfoSupplier.getImage(vmInstance))
       .build();
 
     log.info("Built component: {}", ac);

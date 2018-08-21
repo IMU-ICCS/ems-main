@@ -9,19 +9,22 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentModel;
+import camel.core.Application;
+import camel.core.CamelModel;
+import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.upperware.adapter.plangenerator.model.ApplicationInstance;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class ApplicationInstanceConverter implements ModelConverter<DeploymentModel, ApplicationInstance> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class ApplicationInstanceConverter implements ModelConverter<DeploymentInstanceModel, ApplicationInstance> {
 
   @Override
-  public ApplicationInstance toComparableModel(DeploymentModel model) {
+  public ApplicationInstance toComparableModel(DeploymentInstanceModel model) {
     log.info("Building application instance model");
     ApplicationInstance appInst = toApplicationInstance(ConverterUtils.extractApplication((CamelModel) model.eContainer()));
     log.info("Built application instance: {}", appInst);

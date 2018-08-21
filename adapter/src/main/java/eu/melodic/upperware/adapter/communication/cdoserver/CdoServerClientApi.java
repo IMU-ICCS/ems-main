@@ -9,14 +9,15 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentModel;
+import camel.core.Application;
+import camel.core.CamelModel;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentModel;
+import camel.execution.ExecutionFactory;
+import camel.execution.ExecutionModel;
+import camel.requirement.Requirement;
+import camel.requirement.RequirementModel;
 import eu.paasage.camel.execution.ExecutionContext;
-import eu.paasage.camel.execution.ExecutionFactory;
-import eu.paasage.camel.execution.ExecutionModel;
-import eu.paasage.camel.requirement.RequirementGroup;
-import eu.paasage.camel.requirement.RequirementModel;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CdoTool;
@@ -31,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -44,23 +45,26 @@ public class CdoServerClientApi implements CdoServerApi {
   private CDOClientX cdoClient;
 
   @Override
-  public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
+  public DeploymentInstanceModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
-      CamelModel model = getLastCamelModel(contents)
-              .orElseThrow(() -> new IllegalStateException(String.format("Could not find Camel Model for resourceName=%s", resourceName)));
+      CamelModel model = CdoTool.getLastCamelModel(contents)
+              .orElseThrow(() -> new IllegalStateException(format("Could not find Camel Model for resourceName=%s", resourceName)));
 
       EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
       if (CollectionUtils.isNotEmpty(deploymentModels)) {
-        return deploymentModels.get(deploymentModels.size() - 1);
+        DeploymentModel deploymentModel = deploymentModels.get(deploymentModels.size() - 1);
+        if (deploymentModel instanceof DeploymentInstanceModel) {
+          return (DeploymentInstanceModel) deploymentModel;
+        }
       }
     }
-    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
+    throw new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
       "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
 
   @Override
-  public DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr) {
+  public DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
 
     if (CollectionUtils.isNotEmpty(contents)) {
@@ -84,7 +88,7 @@ public class CdoServerClientApi implements CdoServerApi {
       }
       return null;
     }
-    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
+    throw new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
       "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
 
@@ -101,6 +105,7 @@ public class CdoServerClientApi implements CdoServerApi {
       ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
       newExecModel.setName(execContextName);
 
+      //TODO - co z tym
       ExecutionContext execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
       execContext.setName(execContextName);
       execContext.setApplication(app);
@@ -117,25 +122,12 @@ public class CdoServerClientApi implements CdoServerApi {
     return cdoClient.getSession();
   }
 
-  private Optional<RequirementGroup> getRequirementGroup(EList<RequirementModel> requirementModels) {
+  private Optional<Requirement> getRequirement(EList<RequirementModel> requirementModels) {
     return requirementModels.stream()
             .map(RequirementModel::getRequirements)
             .flatMap(Collection::stream)
-            .filter(requirement -> requirement instanceof RequirementGroup)
-            .map(requirement -> (RequirementGroup) requirement)
+            .filter(Objects::nonNull)
             .findFirst();
-  }
-
-
-  //TODO - move this to
-  public Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
-    return getLastElement(contentsCM)
-            .filter(CamelModel.class::isInstance)
-            .map(CamelModel.class::cast);
-  }
-
-  private <T extends EObject> Optional<T> getLastElement(List<T> collection) {
-    return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
   }
 
 }

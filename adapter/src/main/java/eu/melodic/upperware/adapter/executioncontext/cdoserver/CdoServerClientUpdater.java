@@ -9,8 +9,8 @@
 
 package eu.melodic.upperware.adapter.executioncontext.cdoserver;
 
+import camel.deployment.DeploymentModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
-import eu.paasage.camel.deployment.DeploymentModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

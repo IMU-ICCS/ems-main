@@ -9,12 +9,11 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.VMInstance;
 import com.google.common.collect.Sets;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.provider.Attribute;
-import eu.paasage.camel.provider.Feature;
 import eu.melodic.upperware.adapter.plangenerator.model.CloudApi;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,10 +29,12 @@ import static java.util.stream.Collectors.toSet;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CloudApiConverter implements ModelConverter<DeploymentModel, Collection<CloudApi>> {
+public class CloudApiConverter implements ModelConverter<DeploymentInstanceModel, Collection<CloudApi>> {
+
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<CloudApi> toComparableModel(DeploymentModel model) {
+  public Collection<CloudApi> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building cloud api models (based on VM instances)");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
@@ -49,25 +50,9 @@ public class CloudApiConverter implements ModelConverter<DeploymentModel, Collec
   private CloudApi toCloudApi(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
-    String name = null;
-    String driver = null;
-
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
-
-    for (Attribute attr : rootFeature.getAttributes()) {
-      switch (attr.getName()) {
-        case ConverterUtils.ATTRIB_NAME:
-          name = ConverterUtils.convertToString(attr.getValue()) + ConverterUtils.CLOUD_API_NAME_SUFFIX;
-          break;
-        case ConverterUtils.ATTRIB_DRIVER:
-          driver = ConverterUtils.convertToString(attr.getValue());
-          break;
-      }
-    }
-
     CloudApi cloudApi = CloudApi.builder()
-      .name(name)
-      .driver(driver)
+      .name(providerInfoSupplier.getApiName(vmInst))
+      .driver(providerInfoSupplier.getDriver(vmInst))
       .build();
 
     log.info("Built cloud api: {}", cloudApi);
