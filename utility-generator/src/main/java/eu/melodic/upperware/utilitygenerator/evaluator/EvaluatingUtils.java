@@ -114,7 +114,7 @@ public class EvaluatingUtils {
 
                 //real
                 case STORAGE:
-                    predicates.add(getStoragePredicate((double) var.getValue())); //fixme - to check
+                    predicates.add(getStoragePredicate((int) var.getValue())); //fixme - to check
                     break;
                 case LOCATION:
                     break;

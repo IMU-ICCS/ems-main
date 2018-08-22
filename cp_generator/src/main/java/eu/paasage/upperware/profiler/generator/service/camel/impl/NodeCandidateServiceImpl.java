@@ -5,6 +5,7 @@ import io.github.cloudiator.rest.model.Hardware;
 import io.github.cloudiator.rest.model.Image;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import io.github.cloudiator.rest.model.OperatingSystem;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -37,10 +38,10 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     }
 
     @Override
-    public Pair<Double, Double> getRangeForStorage(List<NodeCandidate> nodeCandidates) {
+    public Pair<Integer, Integer> getRangeForStorage(List<NodeCandidate> nodeCandidates) {
         Optional<Double> minValue = getHardwareMinValue(nodeCandidates, Hardware::getDisk);
         Optional<Double> maxValue = getHardwareMaxValue(nodeCandidates, Hardware::getDisk);
-        return ImmutablePair.of(minValue.orElse(0.0), maxValue.orElse(0.0));
+        return ImmutablePair.of(minValue.orElse(0.0).intValue(), maxValue.orElse(0.0).intValue());
     }
 
     @Override
@@ -69,8 +70,8 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     }
 
     @Override
-    public List<Double> getValuesForStorage(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
-        return getPossibleValues(nodeCandidatesMap, Hardware::getDisk);
+    public List<Integer> getValuesForStorage(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
+        return convertToInteger(getPossibleValues(nodeCandidatesMap, Hardware::getDisk));
     }
 
     @Override
@@ -148,6 +149,10 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     private static <T, K extends Comparable<K>> Collector<T, ?, TreeMap<K, List<T>>> sortedGroupingBy(Function<T, K> function) {
         return Collectors.groupingBy(function,
                 TreeMap::new, Collectors.toList());
+    }
+
+    private List<Integer> convertToInteger(List<Double> from){
+        return CollectionUtils.emptyIfNull(from).stream().mapToInt(Double::intValue).boxed().collect(Collectors.toList());
     }
 
 }
