@@ -234,7 +234,7 @@ current ProvidedHostInstance and to the RequiredHostInstance matching the Intern
 				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
 
 		CPModelTool.getStorage(variableValues)
-				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getDoubleValue(variableValue))));
+				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getIntValue(variableValue))));
 
 		CPModelTool.getOs(variableValues)
 				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));

@@ -169,9 +169,9 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             CpVariable storageVariable = null;
             Optional<MetricVariableImpl> optStorage = CamelMetadataTool.findVariableFor(variables, CamelMetadata.STORAGE);
             if (optStorage.isPresent()){
-                List<Double> valuesForStorage = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
-                storageVariable = variableCreatorFactory.getCreator(PrimitiveType.DOUBLE_TYPE)
-                        .createCpVariable(cp, CamelMetadata.STORAGE.variableType, componentName, variableService.createDoubleListDomain(valuesForStorage), optStorage.get().getName());
+                List<Integer> valuesForStorage = nodeCandidatesService.getValuesForStorage(nodeCandidatesByComponentName);
+                storageVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
+                        .createCpVariable(cp, CamelMetadata.STORAGE.variableType, componentName, variableService.createIntegerListDomain(valuesForStorage), optStorage.get().getName());
             }
 
             //F(P,x)
@@ -205,11 +205,11 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                 }
 
                 if (storageVariable != null) {
-                    Pair<Double, Double> rangeForStorage = nodeCandidatesService.getRangeForStorage(nodeCandidatesForProvider);
-                    Constant min = constantService.createDoubleConstant(rangeForStorage.getLeft(), constantService.getConstantName(VariableType.STORAGE, componentName, "min", "p", String.valueOf(providerIndex)));
+                    Pair<Integer, Integer> rangeForStorage = nodeCandidatesService.getRangeForStorage(nodeCandidatesForProvider);
+                    Constant min = constantService.createIntegerConstant(rangeForStorage.getLeft(), constantService.getConstantName(VariableType.STORAGE, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createDoubleConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, componentName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createIntegerConstant(rangeForStorage.getRight(), constantService.getConstantName(VariableType.STORAGE, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, storageVariable, cardinalityVariable, min, max, providerFunctionSupplier);
