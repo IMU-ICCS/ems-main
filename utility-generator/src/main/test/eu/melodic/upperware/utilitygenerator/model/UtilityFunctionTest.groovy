@@ -31,6 +31,21 @@ class UtilityFunctionTest extends Specification{
         noExceptionThrown()
     }
 
+    def "shouldNotReturnNaN"(){
+        given:
+        Collection<Argument> arguments = new ArrayList<>()
+        arguments.add(new Argument("b", 4))
+        arguments.add(new Argument("t", 0))
+
+        when:
+        double result = utilityFunction.evaluateFunction(arguments)
+
+        then:
+        System.out.println(result);
+        !result.isNaN()
+        noExceptionThrown()
+    }
+
 
     def "evaluateFunctionWithoutAllArgumentsTest"(){
         given:
