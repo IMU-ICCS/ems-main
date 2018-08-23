@@ -42,9 +42,13 @@ public class UtilityFunction {
             throw new IllegalStateException("Missing arguments: " + Arrays.toString(function.getMissingUserDefinedArguments()) + " for function " + function.getExpressionString());
         }
         double result = function.calculate();
+        if (Double.isNaN(result)){
+            log.warn("Result of calculating the utility function is NaN, returning 0");
+            result = 0.0;
+        }
         function.removeAllArguments();
         function.removeAllConstants();
-        log.info("Utility value: {}", result);
+        log.debug("Utility value: {}", result);
         log.debug("-----------------------");
         return result;
     }
