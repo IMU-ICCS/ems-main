@@ -49,7 +49,6 @@ public class UtilityFunctionEvaluator {
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
         variablesFromConstraintProblem.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
-        log.info("Metrics from Constraint Problem: {}", metricsFromConstraintProblem.toString());
 
         this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);

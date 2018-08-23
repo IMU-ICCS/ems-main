@@ -51,7 +51,6 @@ public class EvaluatingUtils {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", provider)))
                 .getValue();
-
     }
 
     private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
@@ -87,12 +86,10 @@ public class EvaluatingUtils {
 
         List<Predicate<NodeCandidate>> predicates = new ArrayList<>();
 
-
         for (Element var : variablesForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
 
             switch (type) {
-                //int
                 case RAM:
                     log.debug("Creating getRamPredicate for value {}", var.getValue());
                     predicates.add(getRamPredicate((long) (int) var.getValue()));
@@ -111,10 +108,8 @@ public class EvaluatingUtils {
                     log.debug("Creating getOsPredicate for value {}", var.getValue());
                     predicates.add(getOsPredicate((int) var.getValue()));
                     break;
-
-                //real
                 case STORAGE:
-                    predicates.add(getStoragePredicate((int) var.getValue())); //fixme - to check
+                    predicates.add(getStoragePredicate((int) var.getValue()));
                     break;
                 case LOCATION:
                     break;
