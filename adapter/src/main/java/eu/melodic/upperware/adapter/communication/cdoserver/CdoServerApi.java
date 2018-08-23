@@ -9,17 +9,17 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
-import eu.paasage.camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentInstanceModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 public interface CdoServerApi {
 
-  DeploymentModel getModelToDeploy(String resourceName, CDOTransaction tr);
+  DeploymentInstanceModel getModelToDeploy(String resourceName, CDOTransaction tr);
 
-  DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr);
+  DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr);
 
-  void setExecutionContext(DeploymentModel deploymentModel, String execContextName, String requirementGroupName, CDOTransaction tr);
+  void setExecutionContext(DeploymentInstanceModel deploymentModel);
 
   CDOSessionX openSession();
 }

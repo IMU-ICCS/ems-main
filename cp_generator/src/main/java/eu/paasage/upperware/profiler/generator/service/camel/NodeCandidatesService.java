@@ -19,7 +19,7 @@ public interface NodeCandidatesService {
 
     Pair<Long, Long> getRangeForRam(List<NodeCandidate> nodeCandidates);
 
-    Pair<Double, Double> getRangeForStorage(List<NodeCandidate> nodeCandidates);
+    Pair<Integer, Integer> getRangeForStorage(List<NodeCandidate> nodeCandidates);
 
     Pair<Integer, Integer> getRangeForCores(List<NodeCandidate> nodeCandidates);
 
@@ -30,7 +30,7 @@ public interface NodeCandidatesService {
 
     List<Long> getValuesForRam(Map<Integer, List<NodeCandidate>> nodeCandidates);
 
-    List<Double> getValuesForStorage(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
+    List<Integer> getValuesForStorage(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
 
     List<Integer> getValuesForCores(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
 

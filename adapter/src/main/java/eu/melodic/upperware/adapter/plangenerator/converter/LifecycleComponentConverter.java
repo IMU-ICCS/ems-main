@@ -9,14 +9,14 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.*;
 import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.LifecycleComponent;
-import eu.paasage.camel.deployment.Configuration;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.InternalComponent;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -25,12 +25,14 @@ import static java.util.stream.Collectors.*;
 
 @Slf4j
 @Service
-public class LifecycleComponentConverter implements ModelConverter<DeploymentModel, Collection<LifecycleComponent>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class LifecycleComponentConverter implements ModelConverter<DeploymentInstanceModel, Collection<LifecycleComponent>> {
 
   @Override
-  public Collection<LifecycleComponent> toComparableModel(DeploymentModel model) {
+  public Collection<LifecycleComponent> toComparableModel( DeploymentInstanceModel model) {
     log.info("Building lifecycle component models (based on configuration of internal components)");
-    EList<InternalComponent> ics = model.getInternalComponents();
+    DeploymentTypeModel initialModel = ConverterUtils.findDeploymentTypeModel(model);
+    EList<SoftwareComponent> ics = initialModel.getSoftwareComponents();
     if (CollectionUtils.isEmpty(ics)) {
       log.info("There are no internal components defined - no lifecycle components will be created");
       return Sets.newHashSet();
@@ -38,10 +40,10 @@ public class LifecycleComponentConverter implements ModelConverter<DeploymentMod
     return ics.stream().map(this::toLifecycleComponent).collect(toSet());
   }
 
-  private LifecycleComponent toLifecycleComponent(InternalComponent ic) {
-    log.info("Processing of {}", ic.getName());
+  private LifecycleComponent toLifecycleComponent(SoftwareComponent sc) {
+    log.info("Processing of {}", sc.getName());
 
-    Configuration config = ConverterUtils.extractConfiguration(ic);
+    ScriptConfiguration config = ConverterUtils.extractConfiguration(sc);
 
     LifecycleComponent lc = LifecycleComponent.builder()
       .name(config.getName())

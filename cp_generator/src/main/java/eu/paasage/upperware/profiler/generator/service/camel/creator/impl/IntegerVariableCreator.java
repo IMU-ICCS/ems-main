@@ -4,6 +4,7 @@ import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstraintService;
+import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
 import eu.paasage.upperware.profiler.generator.service.camel.VariableService;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class IntegerVariableCreator implements VariableCreator<Integer> {
     private ConstantService constantService;
     private ConstraintService constraintService;
     private VariableService variableService;
+    private TypesFactoryService typesFactoryService;
 
     @Override
     public CpVariable createCpVariable(ConstraintProblem cp, VariableType variableType, String componentName, NumericDomain domain) {
@@ -41,13 +43,13 @@ public class IntegerVariableCreator implements VariableCreator<Integer> {
         CpVariable variable = supplier.get();
         cp.getCpVariables().add(variable);
 
-        Constant minConstant = constantService.createIntegerConstant(domainRange.getLeft(), constantService.getConstantName(variableType, componentName, "min"));
+        Constant minConstant = constantService.createIntegerConstant(typesFactoryService.copy(domainRange.getLeft()), constantService.getConstantName(variableType, componentName, "min"));
         cp.getConstants().add(minConstant);
 
         ComparisonExpression minCompariton = constraintService.createComparisonExpression(variable, ComparatorEnum.GREATER_OR_EQUAL_TO, minConstant);
         cp.getConstraints().add(minCompariton);
 
-        Constant maxConstant = constantService.createIntegerConstant(domainRange.getRight(), constantService.getConstantName(variableType, componentName, "max"));
+        Constant maxConstant = constantService.createIntegerConstant(typesFactoryService.copy(domainRange.getRight()), constantService.getConstantName(variableType, componentName, "max"));
         cp.getConstants().add(maxConstant);
 
         ComparisonExpression maxComparition = constraintService.createComparisonExpression(variable, ComparatorEnum.LESS_OR_EQUAL_TO, maxConstant);

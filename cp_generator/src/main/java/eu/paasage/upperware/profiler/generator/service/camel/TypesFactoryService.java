@@ -1,9 +1,6 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
-import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
-import eu.paasage.upperware.metamodel.types.LongValueUpperware;
+import eu.paasage.upperware.metamodel.types.*;
 
 public interface TypesFactoryService {
 
@@ -14,5 +11,7 @@ public interface TypesFactoryService {
     FloatValueUpperware getFloatValueUpperware(float value);
 
     LongValueUpperware getLongValueUpperware(long value);
+
+    NumericValueUpperware copy(NumericValueUpperware from);
 
 }

@@ -20,20 +20,20 @@ public class ConfigurationElement {
     private NodeCandidate nodeCandidate;
     private int cardinality;
 
-    public double getFullPrice(){
+    public double getFullPrice() {
         return nodeCandidate.getPrice() * cardinality;
     }
 
-    public long getFullRam(){
+    public long getFullRam() {
         return nodeCandidate.getHardware().getRam() * cardinality;
     }
 
-    public int getTotalNumberOfCores(){
+    public int getTotalNumberOfCores() {
         return cardinality * nodeCandidate.getHardware().getCores();
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("Component: %s ( cardinality = %d,  %s)", id, cardinality, nodeCandidate.toString());
     }
 }
