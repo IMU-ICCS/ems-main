@@ -32,24 +32,15 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.m
 
   @Override
   public void create(eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponent ac) {
-    String name = ac.getName();
-    checkNotNull(name);
-    String appName = ac.getAppName();
-    checkNotNull(appName);
-    String lcName = ac.getLcName();
-    checkNotNull(lcName);
-    String vmName = ac.getVmName();
-    checkNotNull(vmName);
+    String name = checkNotNull(ac.getName());
+    String appName = checkNotNull(ac.getAppName());
+    String lcName = checkNotNull(ac.getLcName());
+    String vmName = checkNotNull(ac.getVmName());;
 
-    String cloudName = ac.getCloudName();
-    checkNotNull(cloudName);
-
-    String location = ac.getLocation();
-    checkNotNull(location);
-    String hardware = ac.getHardware();
-    checkNotNull(hardware);
-    String image = ac.getImage();
-    checkNotNull(image);
+    String cloudName = checkNotNull(ac.getCloudName());
+    String location = checkNotNull(ac.getLocation());
+    String hardware = checkNotNull(ac.getHardware());
+    String image = checkNotNull(ac.getImage());
 
     log.info("Executing Create Application Component task for component {}", name);
 
@@ -77,12 +68,9 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.m
         "- application component cannot be created", image, cloudName, cloudId));
     }
 
-    Long locationId = locationEntity.getId();
-    checkNotNull(locationId);
-    Long hardwareId = hardwareEntity.getId();
-    checkNotNull(hardwareId);
-    Long imageId = imageEntity.getId();
-    checkNotNull(imageId);
+    Long locationId = checkNotNull(locationEntity.getId());
+    Long hardwareId = checkNotNull(hardwareEntity.getId());
+    Long imageId = checkNotNull(imageEntity.getId());
 
     Application appEntity = context.getApplication(appName)
       .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum " +
@@ -96,12 +84,9 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.m
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) " +
         "does not exist in Colosseum - application component cannot be created", vmName, cloudId, locationId, hardwareId, imageId)));
 
-    Long appId = appEntity.getId();
-    checkNotNull(appId);
-    Long lcId = lcComponent.getId();
-    checkNotNull(lcId);
-    Long vmId = vmEntity.getId();
-    checkNotNull(vmId);
+    Long appId = checkNotNull(appEntity.getId());
+    Long lcId = checkNotNull(lcComponent.getId());
+    Long vmId = checkNotNull(vmEntity.getId());
 
     if (context.getApplicationComponent(appName, lcId, vmId).isPresent()) {
       log.warn("Application Component with params (appName={}, lcId={}, vmId={}) already exists in Colosseum - " +

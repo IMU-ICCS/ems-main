@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.adapter;
 
+import camel.deployment.DeploymentInstanceModel;
 import com.google.common.collect.Maps;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
@@ -16,11 +17,10 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
-import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
-import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
-import eu.paasage.camel.deployment.DeploymentModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
+import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
@@ -35,10 +35,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
 
-import static eu.melodic.models.commons.NotificationResult.StatusType.*;
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
+import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
 import static java.lang.String.format;
 
 @Slf4j
@@ -93,8 +94,8 @@ public class Coordinator {
     CDOTransaction tr = cdoSessionX.openTransaction();
 
     try {
-      DeploymentModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr);
-      DeploymentModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr);
+      DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
+      DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
       if (currentModel == null) {
         plan = planGenerator.buildConfigurationPlan(targetModel);
       } else {

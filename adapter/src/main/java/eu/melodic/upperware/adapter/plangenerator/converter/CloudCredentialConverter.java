@@ -9,13 +9,12 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.VMInstance;
 import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.CloudCredential;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.provider.Attribute;
-import eu.paasage.camel.provider.Feature;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,12 +30,13 @@ import static java.util.stream.Collectors.toSet;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CloudCredentialConverter implements ModelConverter<DeploymentModel, Collection<CloudCredential>> {
+public class CloudCredentialConverter implements ModelConverter<DeploymentInstanceModel, Collection<CloudCredential>> {
 
   private AdapterProperties properties;
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<CloudCredential> toComparableModel(DeploymentModel model) {
+  public Collection<CloudCredential> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building cloud credential models (based on VM instances)");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
@@ -53,24 +53,12 @@ public class CloudCredentialConverter implements ModelConverter<DeploymentModel,
   private CloudCredential toCloudCredential(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
-    String name = null;
-    String cloudName = null;
-
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
-
-    for (Attribute attr : rootFeature.getAttributes()) {
-      switch (attr.getName()) {
-        case ConverterUtils.ATTRIB_NAME:
-          cloudName = ConverterUtils.convertToString(attr.getValue());
-          name = cloudName + ConverterUtils.CLOUD_CREDENTIAL_NAME_SUFFIX;
-          break;
-      }
-    }
+    String cloudName = providerInfoSupplier.getCloudName(vmInst);
 
     AdapterProperties.Clouds clouds = properties.getClouds();
 
     CloudCredential cloudCredential = CloudCredential.builder()
-      .name(name)
+      .name(providerInfoSupplier.getCredentialsName(vmInst))
       .cloudName(cloudName)
       .login(clouds.getLogin(cloudName))
       .password(clouds.getPassword(cloudName))

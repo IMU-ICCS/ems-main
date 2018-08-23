@@ -9,13 +9,14 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentTypeModel;
+import camel.deployment.VM;
+import camel.deployment.VMInstance;
 import com.google.common.collect.Sets;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.VM;
-import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.provider.Feature;
 import eu.melodic.upperware.adapter.plangenerator.model.VirtualMachine;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,19 +26,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class VirtualMachineConverter implements ModelConverter<DeploymentModel, Collection<VirtualMachine>> {
+public class VirtualMachineConverter implements ModelConverter<DeploymentInstanceModel, Collection<VirtualMachine>> {
 
   private AdapterProperties properties;
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<VirtualMachine> toComparableModel(DeploymentModel model) {
+  public Collection<VirtualMachine> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building virtual machine models");
-    EList<VM> vms = model.getVms();
+    DeploymentTypeModel initialModel = ConverterUtils.findDeploymentTypeModel(model);
+    EList<VM> vms = initialModel.getVms();
     if (CollectionUtils.isEmpty(vms)) {
       log.info("There are no VMs defined - no virtual machines will be created");
       return Sets.newHashSet();
@@ -50,17 +53,17 @@ public class VirtualMachineConverter implements ModelConverter<DeploymentModel, 
     log.info("Processing of {}", vm.getName());
 
     VMInstance vmInst = ConverterUtils.findAssociatedVmInstance(vm);
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
+
     AdapterProperties.Colosseum.Timeouts timeouts = properties.getColosseum().getTimeouts();
 
     VirtualMachine virtualMachine = VirtualMachine.builder()
       .name(vm.getName())
-      .cloudName(ConverterUtils.extractCloudName(rootFeature))
-      .location(ConverterUtils.extractLocation(rootFeature))
+      .cloudName(providerInfoSupplier.getCloudName(vmInst))
+      .location(providerInfoSupplier.getLocation(vmInst))
       .locationTimeout(timeouts.getLocation())
-      .hardware(ConverterUtils.convertToString(vmInst.getVmTypeValue()))
+      .hardware(providerInfoSupplier.getMachineType(vmInst))
       .hardwareTimeout(timeouts.getHardware())
-      .image(ConverterUtils.extractImage(rootFeature))
+      .image(providerInfoSupplier.getImage(vmInst))
       .imageTimeout(timeouts.getImage())
       .build();
 
