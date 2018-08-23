@@ -10,7 +10,6 @@
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
 import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.DeploymentModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
@@ -20,7 +19,7 @@ public interface CdoServerApi {
 
   DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr);
 
-  void setExecutionContext(DeploymentModel deploymentModel, String execContextName, String requirementGroupName, CDOTransaction tr);
+  void setExecutionContext(DeploymentInstanceModel deploymentModel);
 
   CDOSessionX openSession();
 }
