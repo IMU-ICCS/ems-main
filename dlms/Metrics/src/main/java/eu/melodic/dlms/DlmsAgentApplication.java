@@ -19,12 +19,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Application class for metrics collection.
+ * Application class for the DLMS agent.
  */
 @SpringBootApplication
-public class MetricsApplication {
+public class DlmsAgentApplication {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(MetricsApplication.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsAgentApplication.class);
 
 	private static final int DELAY_AFTER_STARTUP = 1000;
 	private static final int CALL_INTERVAL = 60000;
@@ -36,7 +36,7 @@ public class MetricsApplication {
 	 * Main method for starting. No arguments needed for normal use.
 	 */
 	public static void main(String[] args) {
-		SpringApplication.run(MetricsApplication.class, args);
+		SpringApplication.run(DlmsAgentApplication.class, args);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package eu.melodic.dlms;
 
 import eu.melodic.dlms.data.Metrics;
+import eu.melodic.dlms.exception.NoMetricsException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
