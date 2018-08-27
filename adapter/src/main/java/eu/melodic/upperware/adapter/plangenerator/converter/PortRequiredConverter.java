@@ -50,8 +50,8 @@ public class PortRequiredConverter implements ModelConverter<DeploymentInstanceM
 
         Application app = ConverterUtils.extractApplication(ConverterUtils.getAncesstor(comm, CamelModel.class));
         RequiredCommunication reqComm = comm.getRequiredCommunication();
-        SoftwareComponentInstance sc = ConverterUtils.getAncesstor(reqComm, SoftwareComponentInstance.class);
-        VM vm = ConverterUtils.findAssociatedVm((SoftwareComponent) sc.getType());
+        SoftwareComponent sc = ConverterUtils.getAncesstor(reqComm, SoftwareComponent.class);
+        VM vm = ConverterUtils.findAssociatedVm(sc);
 
         VMInstance vmInstance = ConverterUtils.findAssociatedVmInstance(vm);
 
@@ -61,7 +61,7 @@ public class PortRequiredConverter implements ModelConverter<DeploymentInstanceM
                 .mandatory(reqComm.isIsMandatory())
                 .cloudName(providerInfoSupplier.getCloudName(vmInstance))
                 .appName(app.getName())
-                .lcName(ConverterUtils.extractConfiguration((SoftwareComponent) sc.getType()).getName())
+                .lcName(ConverterUtils.extractConfiguration(sc).getName())
                 .vmName(vm.getName())
                 .location(providerInfoSupplier.getLocation(vmInstance))
                 .hardware(providerInfoSupplier.getMachineType(vmInstance))
