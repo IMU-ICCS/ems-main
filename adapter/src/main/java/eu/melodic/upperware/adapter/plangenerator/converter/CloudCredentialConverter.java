@@ -53,7 +53,7 @@ public class CloudCredentialConverter implements ModelConverter<DeploymentInstan
   private CloudCredential toCloudCredential(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
-    String cloudName = providerInfoSupplier.getCloudName(vmInst);
+    String cloudName = providerInfoSupplier.getName(vmInst);
 
     AdapterProperties.Clouds clouds = properties.getClouds();
 

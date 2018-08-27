@@ -53,7 +53,7 @@ public class CloudPropertyConverter implements ModelConverter<DeploymentInstance
   private CloudProperty toCloudProperty(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
-    String cloudName = providerInfoSupplier.getCloudName(vmInst);
+    String cloudName = providerInfoSupplier.getName(vmInst);
 
     AdapterProperties.Clouds clouds = properties.getClouds();
     AdapterProperties.Clouds.Filters filters = clouds.getFilters();

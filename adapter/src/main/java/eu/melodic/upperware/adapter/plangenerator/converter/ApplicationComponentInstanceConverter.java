@@ -59,7 +59,7 @@ public class ApplicationComponentInstanceConverter implements ModelConverter<Dep
       .name(scInst.getName())
       .acName(scInst.getType().getName())
       .vmInstName(vmInst.getName())
-      .cloudName(providerInfoSupplier.getCloudName(vmInst))
+      .cloudName(providerInfoSupplier.getName(vmInst))
       .appName(app.getName())
       .lcName(extractConfiguration((SoftwareComponent) scInst.getType()).getName())
       .vmName(vmInst.getType().getName())

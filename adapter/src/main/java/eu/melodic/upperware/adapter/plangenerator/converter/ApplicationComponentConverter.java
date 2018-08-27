@@ -59,7 +59,7 @@ public class ApplicationComponentConverter implements ModelConverter<DeploymentI
       .appName(app.getName())
       .lcName(ConverterUtils.extractConfiguration(sc).getName())
       .vmName(vm.getName())
-      .cloudName(providerInfoSupplier.getCloudName(vmInstance))
+      .cloudName(providerInfoSupplier.getName(vmInstance))
       .location(providerInfoSupplier.getLocation(vmInstance))
       .hardware(providerInfoSupplier.getMachineType(vmInstance))
       .image(providerInfoSupplier.getImage(vmInstance))

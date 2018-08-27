@@ -59,7 +59,7 @@ public class PortRequiredConverter implements ModelConverter<DeploymentInstanceM
                 .name(reqComm.getName())
                 .acName(sc.getName())
                 .mandatory(reqComm.isIsMandatory())
-                .cloudName(providerInfoSupplier.getCloudName(vmInstance))
+                .cloudName(providerInfoSupplier.getName(vmInstance))
                 .appName(app.getName())
                 .lcName(ConverterUtils.extractConfiguration(sc).getName())
                 .vmName(vm.getName())
