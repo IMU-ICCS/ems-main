@@ -29,9 +29,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataUtilsNew {
 
-    private static final String VM_PREFIX_NAME = "WM";
-    private static final String COMPONENT_PREFIX_NAME = "Component";
-
     public static DataHolderNew computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
                                                        ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
                                                        NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
@@ -62,18 +59,16 @@ public class DataUtilsNew {
                         .forEach(providedCommunication -> providedPorts.add(providedCommunication.getPortNumber()))
         );
 
-        softwareComponents.forEach(softwareComponent -> {
-            softwareComponent.getRequiredCommunications()
-                    .forEach(requiredCommunication -> {
-                        if (!providedPorts.contains(requiredCommunication.getPortNumber())) {
-                            try {
-                                throw new S2DException(String.format("Port number %d required by %s is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName()));
-                            } catch (S2DException e) {
-                                e.printStackTrace();
-                            }
+        softwareComponents.forEach(softwareComponent -> softwareComponent.getRequiredCommunications()
+                .forEach(requiredCommunication -> {
+                    if (!providedPorts.contains(requiredCommunication.getPortNumber())) {
+                        try {
+                            throw new S2DException(String.format("Port number %d required by %s is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName()));
+                        } catch (S2DException e) {
+                            e.printStackTrace();
                         }
-                    });
-        });
+                    }
+                }));
 
 
         // Merging sets
@@ -141,52 +136,49 @@ public class DataUtilsNew {
 
                     log.info("Found Node Candidate: {}", nodeCandidate);
 
-                        EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelperNew.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
-                        dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
+                    EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelperNew.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
+                    dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
 
 
-                        //create VM Instance
-                        int myKey = localComponentGroups.get(componentName);
+                    //create VM Instance
                     localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
-                        EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
-                    log.info("LocalGroupVMInstances:");
+
                     localGroupVMInstances.forEach((integer, vmInstances) -> vmInstances
                             .forEach(vmInstance -> log.info("key: {}, vmInstance: {}", integer, vmInstance.getName())));
-                        log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
 
+                    int myKey = localComponentGroups.get(componentName);
+                    EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
+                    log.info("LocalGroupVMInstances:");
+                    log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
                     log.info("Creating VmInstances for component: {} with key: {}", componentName, myKey);
 
                     if (vmInstanceToRegisters != null) {
                         log.info("vmInstanceToRegisters list: ");
                         vmInstanceToRegisters.forEach(vmInstance -> log.info("Instance: {}", vmInstance.getName()));
-                    }
+                    } else {
+                        log.info("Creating new VM Instances for component: {} ...", componentName);
+                        VM vm = findVMByComponentName(deploymentTypeModel, componentName);
 
-                        if (vmInstanceToRegisters == null) {
-                            log.info("Creating new VM Instances for component: {} ...", componentName);
+                        if (vm == null) {
+                            log.info("Vm does not exist");
+                            log.info("Component name: {}", componentName);
+                            log.info("Number of VMs in list: {}, vm names: ", deploymentTypeModel.getVms().size());
 
-
-                            VM vm = findVMByName(deploymentTypeModel.getVms(), componentName);
-
-                            if (vm == null) {
-                                log.info("Vm does not exist");
-                                log.info("Component name: {}", componentName);
-                                log.info("Number of VMs in list: {}, vm names: ", deploymentTypeModel.getVms().size());
-                                deploymentTypeModel.getVms().forEach(vm1 ->
-                                        log.info(vm1.getName()));
-                            }
-
-                            ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
-
-                            vmInstanceToRegisters = SolverToDeploymentHelperNew.searchAndCreateVMInstance(vm, cardinality);
-                            vmInstanceToRegisters.forEach(vmInstance -> {
-                                providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
-                                log.info("VmInstance: {}", vmInstance.getName());
-                            });
-                            dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
-                            // memorize
-                            localGroupVMInstances.put(myKey, vmInstanceToRegisters);
-                            log.info("**NEW** VMs for key {}", myKey);
+                            deploymentTypeModel.getVms().forEach(vm1 -> log.info(vm1.getName()));
                         }
+
+                        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
+
+                        vmInstanceToRegisters = SolverToDeploymentHelperNew.searchAndCreateVMInstance(vm, cardinality);
+                        vmInstanceToRegisters.forEach(vmInstance -> {
+                            providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
+                            log.info("VmInstance: {}", vmInstance.getName());
+                        });
+                        dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
+                        // memorize
+                        localGroupVMInstances.put(myKey, vmInstanceToRegisters);
+                        log.info("**NEW** VMs for key {}", myKey);
+                    }
                     // Create Hosting
                     for (int i = 0; i < cardinality; i++) {
                         SoftwareComponentInstance iCI = softwareComponentInstances.get(i);
@@ -213,7 +205,6 @@ public class DataUtilsNew {
         return null;
     }
 
-
     private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<CpVariableValue> variableValues) {
         List<Predicate<NodeCandidate>> result = new ArrayList<>();
 
@@ -224,7 +215,7 @@ public class DataUtilsNew {
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
 
         CPModelTool.getStorage(variableValues)
-                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getDoubleValue(variableValue))));
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getIntValue(variableValue))));
 
         CPModelTool.getOs(variableValues)
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));
@@ -239,10 +230,16 @@ public class DataUtilsNew {
         });
     }
 
-    private static VM findVMByName(EList<VM> vms, String componentName) {
-        return vms.stream()
-                .filter(vm -> vm.getName().replaceFirst(VM_PREFIX_NAME, COMPONENT_PREFIX_NAME).equals(componentName))
-                .findFirst().orElse(null);
+    private static VM findVMByComponentName(DeploymentTypeModel deploymentTypeModel, String componentName) {
+        for (Hosting hosting : deploymentTypeModel.getHostings()) {
+            for (RequiredHost requiredHost : hosting.getRequiredHosts()) {
+                String scName = ((SoftwareComponent) requiredHost.eContainer()).getName();
+                if (componentName.equals(scName)){
+                    return (VM) hosting.getProvidedHost().eContainer();
+                }
+            }
+        }
+        return null;
     }
 
     private static <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, DataUtilsNew.VMKey> function) {

@@ -38,14 +38,14 @@ public class SolverToDeploymentHelperNew {
     // VM Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
-    public static EList<VMInstance> searchAndCreateVMInstance(VM result, int cardinality) throws S2DException {
+    public static EList<VMInstance> searchAndCreateVMInstance(VM vm, int cardinality) throws S2DException {
 
         EList<VMInstance> vmInstances = new BasicEList<>();
         for (int i = 0; i < cardinality; i++) {
-            VMInstance vmInstanceResult = CloudMLHelperNew.createVMInstance(result);
+            VMInstance vmInstanceResult = CloudMLHelperNew.createVMInstance(vm);
             //Attribute attribute = CloudMLHelperNew.findVMType(providerModel);
             // vmInstanceResult.setVmTypeValue(attribute.getValue());
-            vmInstanceResult.setType(result);
+            vmInstanceResult.setType(vm);
             vmInstances.add(vmInstanceResult);
         }
         return vmInstances;
