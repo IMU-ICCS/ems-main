@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.adapter;
 
+import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
 import com.google.common.collect.Maps;
 import eu.melodic.models.commons.NotificationResult;
@@ -26,6 +27,7 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.PlanValidator;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,7 @@ import java.util.Map;
 
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
 import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
+import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 import static java.lang.String.format;
 
 @Slf4j
@@ -47,156 +50,167 @@ import static java.lang.String.format;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class Coordinator {
 
-  private static final Map<String, Object> LOCKS = Maps.newConcurrentMap();
+    private static final Map<String, Object> LOCKS = Maps.newConcurrentMap();
 
-  private CdoServerApi cdoServerApi;
+    private CdoServerApi cdoServerApi;
 
-  private PlanGenerator planGenerator;
-  private PlanValidator planValidator;
-  private PlanExecutor planExecutor;
-  private CdoServerUpdater cdoServerUpdater;
-  private ToLogGraphLogger toLogGraphLogger;
+    private PlanGenerator planGenerator;
+    private PlanValidator planValidator;
+    private PlanExecutor planExecutor;
+    private CdoServerUpdater cdoServerUpdater;
+    private ToLogGraphLogger toLogGraphLogger;
 
-  private ContextOperations context;
+    private ContextOperations context;
 
-  private RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
-  private AdapterProperties properties;
+    private AdapterProperties properties;
 
-  @Async
-  public void deployNewModel(String resourceName, String notificationUri, String uuid) {
-    try {
-      acquireLock(resourceName);
-    } catch (Exception e) {
-      log.error("An exception occurred during acquiring lock for application {}", resourceName, e);
-      notifyErrorOccurred(resourceName, notificationUri, uuid, e);
-      return;
-    }
-    log.info("Starting new model deployment process");
-    try {
-      run(resourceName, notificationUri, uuid);
-    } catch (Exception e) {
-      log.error("An exception occurred during deployment process", e);
-      notifyErrorOccurred(resourceName, notificationUri, uuid, e);
-    } finally {
-      releaseLock(resourceName);
-    }
-    log.info("New model deployment process has been finished");
-  }
+    private CDOClientX cdoClientX;
 
-  public void refreshContext() {
-    context.refreshContext();
-  }
-
-  private void run(String resourceName, String notificationUri, String uuid) {
-    Plan plan;
-    CDOSessionX cdoSessionX = cdoServerApi.openSession();
-    CDOTransaction tr = cdoSessionX.openTransaction();
-
-    try {
-      DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
-      DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
-      if (currentModel == null) {
-        plan = planGenerator.buildConfigurationPlan(targetModel);
-      } else {
-        plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
-        if (!planValidator.validate(plan)) {
-          notifyPlanRejected(resourceName, notificationUri, uuid);
-          return;
+    @Async
+    public void deployNewModel(String resourceName, String notificationUri, String uuid) {
+        try {
+            acquireLock(resourceName);
+        } catch (Exception e) {
+            log.error("An exception occurred during acquiring lock for application {}", resourceName, e);
+            notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+            return;
         }
-      }
-    } finally {
-      cdoSessionX.closeTransaction(tr);
-      cdoSessionX.closeSession();
+        log.info("Starting new model deployment process");
+        try {
+            run(resourceName, notificationUri, uuid);
+        } catch (Exception e) {
+            log.error("An exception occurred during deployment process", e);
+            notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+        } finally {
+            releaseLock(resourceName);
+        }
+        log.info("New model deployment process has been finished");
     }
-    if (!context.isLoaded()) {
-      context.refreshContext();
+
+    public void refreshContext() {
+        context.refreshContext();
     }
 
-    toLogGraphLogger.logGraph(plan.getTaskGraph());
+    private void run(String resourceName, String notificationUri, String uuid) {
+        Plan plan;
+        CDOSessionX cdoSessionX = cdoServerApi.openSession();
+        CDOTransaction tr = cdoSessionX.openTransaction();
 
-    planExecutor.executePlan(plan);
-    cdoServerUpdater.updateCamelModel(resourceName);
-    notifyPlanApplied(resourceName, notificationUri, uuid);
-  }
+        try {
+            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
+            DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
+            if (currentModel == null) {
+                saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
+                plan = planGenerator.buildConfigurationPlan(targetModel);
+            } else {
+                plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
+                if (!planValidator.validate(plan)) {
+                    notifyPlanRejected(resourceName, notificationUri, uuid);
+                    return;
+                }
+            }
+        } finally {
+            cdoSessionX.closeTransaction(tr);
+            cdoSessionX.closeSession();
+        }
+        if (!context.isLoaded()) {
+            context.refreshContext();
+        }
 
-  private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
-    log.info("Sending plan applied notification");
-    NotificationResult result = prepareSuccessNotificationResult();
-    DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
-    sendNotification(notification, notificationUri);
-  }
+        toLogGraphLogger.logGraph(plan.getTaskGraph());
 
-  private void notifyPlanRejected(String resourceName, String notificationUri, String uuid) {
-    log.info("Sending plan rejected notification");
-    NotificationResult result = prepareErrorNotificationResult("Built plan was rejected by Plan Validator");
-    DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
-    sendNotification(notification, notificationUri);
-  }
-
-  private void notifyErrorOccurred(String resourceName, String notificationUri, String uuid, Exception e) {
-    String errorMsg = e.getMessage();
-    log.error("Sending error notification: {}", errorMsg);
-    NotificationResult result = prepareErrorNotificationResult(errorMsg);
-    DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
-    sendNotification(notification, notificationUri);
-  }
-
-  private NotificationResult prepareSuccessNotificationResult() {
-    NotificationResult result = new NotificationResultImpl();
-    result.setStatus(SUCCESS);
-    return result;
-  }
-
-  private NotificationResult prepareErrorNotificationResult(String errorMsg) {
-    NotificationResult result = new NotificationResultImpl();
-    result.setErrorDescription(errorMsg);
-    result.setStatus(ERROR);
-    return result;
-  }
-
-  private DeploymentNotificationRequest prepareNotification(String resourceName, NotificationResult result, String uuid) {
-    DeploymentNotificationRequest notification = new DeploymentNotificationRequestImpl();
-    notification.setApplicationId(resourceName);
-    notification.setResult(result);
-    notification.setWatermark(prepareWatermark(uuid));
-    return notification;
-  }
-
-  private Watermark prepareWatermark(String uuid) {
-    Watermark watermark = new WatermarkImpl();
-    watermark.setUser("adapter");
-    watermark.setSystem("adapter");
-    watermark.setDate(new Date());
-    watermark.setUuid(uuid);
-    return watermark;
-  }
-
-  private void sendNotification(DeploymentNotificationRequest notification, String notificationUri) {
-    String esbUrl = properties.getEsb().getUrl();
-    if (esbUrl.endsWith("/")) {
-      esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
+        planExecutor.executePlan(plan);
+        cdoServerUpdater.updateCamelModel(resourceName);
+        notifyPlanApplied(resourceName, notificationUri, uuid);
     }
-    if (notificationUri.startsWith("/")) {
-      notificationUri = notificationUri.substring(1);
-    }
-    restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
-  }
 
-  private static void acquireLock(String resourceName) {
-    synchronized (LOCKS) {
-      log.info("Acquiring lock for application {}", resourceName);
-      Object obj = LOCKS.get(resourceName);
-      if (obj != null) {
-        throw new IllegalStateException(format("(Re)configuration process for %s is running. " +
-          "Wait until it is completed and repeat request.", resourceName));
-      }
-      LOCKS.put(resourceName, Boolean.TRUE);
+    private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
+        log.info("Sending plan applied notification");
+        NotificationResult result = prepareSuccessNotificationResult();
+        DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
+        sendNotification(notification, notificationUri);
     }
-  }
 
-  private static void releaseLock(String resourceName) {
-    log.info("Releasing lock for application {}", resourceName);
-    LOCKS.remove(resourceName);
-  }
+    private void notifyPlanRejected(String resourceName, String notificationUri, String uuid) {
+        log.info("Sending plan rejected notification");
+        NotificationResult result = prepareErrorNotificationResult("Built plan was rejected by Plan Validator");
+        DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
+        sendNotification(notification, notificationUri);
+    }
+
+    private void notifyErrorOccurred(String resourceName, String notificationUri, String uuid, Exception e) {
+        String errorMsg = e.getMessage();
+        log.error("Sending error notification: {}", errorMsg);
+        NotificationResult result = prepareErrorNotificationResult(errorMsg);
+        DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
+        sendNotification(notification, notificationUri);
+    }
+
+    private NotificationResult prepareSuccessNotificationResult() {
+        NotificationResult result = new NotificationResultImpl();
+        result.setStatus(SUCCESS);
+        return result;
+    }
+
+    private NotificationResult prepareErrorNotificationResult(String errorMsg) {
+        NotificationResult result = new NotificationResultImpl();
+        result.setErrorDescription(errorMsg);
+        result.setStatus(ERROR);
+        return result;
+    }
+
+    private DeploymentNotificationRequest prepareNotification(String resourceName, NotificationResult result, String uuid) {
+        DeploymentNotificationRequest notification = new DeploymentNotificationRequestImpl();
+        notification.setApplicationId(resourceName);
+        notification.setResult(result);
+        notification.setWatermark(prepareWatermark(uuid));
+        return notification;
+    }
+
+    private Watermark prepareWatermark(String uuid) {
+        Watermark watermark = new WatermarkImpl();
+        watermark.setUser("adapter");
+        watermark.setSystem("adapter");
+        watermark.setDate(new Date());
+        watermark.setUuid(uuid);
+        return watermark;
+    }
+
+    private void sendNotification(DeploymentNotificationRequest notification, String notificationUri) {
+        String esbUrl = properties.getEsb().getUrl();
+        if (esbUrl.endsWith("/")) {
+            esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
+        }
+        if (notificationUri.startsWith("/")) {
+            notificationUri = notificationUri.substring(1);
+        }
+        restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
+    }
+
+    private static void acquireLock(String resourceName) {
+        synchronized (LOCKS) {
+            log.info("Acquiring lock for application {}", resourceName);
+            Object obj = LOCKS.get(resourceName);
+            if (obj != null) {
+                throw new IllegalStateException(format("(Re)configuration process for %s is running. " +
+                        "Wait until it is completed and repeat request.", resourceName));
+            }
+            LOCKS.put(resourceName, Boolean.TRUE);
+        }
+    }
+
+    private static void releaseLock(String resourceName) {
+        log.info("Releasing lock for application {}", resourceName);
+        LOCKS.remove(resourceName);
+    }
+
+    private void saveCamelModelToFile(CamelModel camelModel) {
+        String pcId = camelModel.getName();
+        log.debug("CDODatabaseProxy - saveModels to file");
+        String cpPath = CDO_SERVER_PATH + pcId;
+        cdoClientX.exportModel(camelModel, "/logs/adapter_camel_models/" + cpPath + System.currentTimeMillis() + ".xmi");
+        log.debug("CDODatabaseProxy - saveModels - Models saved to file! ");
+    }
 }
