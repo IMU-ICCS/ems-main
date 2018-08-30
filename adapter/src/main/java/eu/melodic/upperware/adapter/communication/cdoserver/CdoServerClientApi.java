@@ -10,9 +10,12 @@
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
 import camel.core.CamelModel;
+import camel.data.DataSource;
+import camel.data.DataTypeModel;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
+import camel.deployment.SoftwareComponent;
 import camel.execution.ExecutionFactory;
 import camel.execution.ExecutionModel;
 import camel.execution.HistoryRecord;
@@ -115,17 +118,39 @@ public class CdoServerClientApi implements CdoServerApi {
 
   private ExecutionModel createExecutionModel(DeploymentTypeModel deploymentTypeModel) {
     ExecutionModel executionModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+    executionModel.setName(getUniqueExecutionName());
     executionModel.setStartTime(new Date());
     executionModel.setDeploymentTypeModel(deploymentTypeModel);
+    executionModel.setRequirementModel(((CamelModel)deploymentTypeModel.eContainer()).getRequirementModels().get(0));
+    executionModel.setAbstractDataModel(getDataTypeModelForComponent(getDBComponent(deploymentTypeModel)));
     return executionModel;
   }
 
   private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
     HistoryRecord historyRecord = ExecutionFactory.eINSTANCE.createHistoryRecord();
+    historyRecord.setName(getUniqueHistoryName());
     historyRecord.setStartTime(new Date());
     historyRecord.setFromDeploymentInstanceModel(oldModel);
     historyRecord.setToDeploymentInstanceModel(newModel);
+//    historyRecord.setType(); //TODO - set type
     return historyRecord;
+  }
+
+  private SoftwareComponent getDBComponent(DeploymentTypeModel deploymentTypeModel){
+    return deploymentTypeModel
+            .getSoftwareComponents()
+            .stream()
+            .filter(softwareComponent -> CollectionUtils.isNotEmpty(softwareComponent.getManagesDataSource()))
+            .findFirst().orElseThrow(() -> new IllegalStateException("Could not find DB component."));
+  }
+
+  private DataTypeModel getDataTypeModelForComponent(SoftwareComponent softwareComponent){
+    DataSource dataSource = softwareComponent
+            .getManagesDataSource()
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException(format("Could not find Manage datasource for component %s.", softwareComponent.getName())));
+    return (DataTypeModel) dataSource.eContainer();
   }
 
   private Optional<HistoryRecord> getLastHistoryRecord(ExecutionModel executionModel){
@@ -168,4 +193,15 @@ public class CdoServerClientApi implements CdoServerApi {
     return Optional.ofNullable(historyRecords.get(historyRecords.size() - 1).getToDeploymentInstanceModel());
   }
 
+  private String getUniqueHistoryName(){
+    return getUniqueName("HistoryRecord");
+  }
+
+  private String getUniqueExecutionName(){
+    return getUniqueName("ExecutionModel");
+  }
+
+  private String getUniqueName(String name){
+    return name + System.currentTimeMillis();
+  }
 }
