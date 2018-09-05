@@ -12,15 +12,10 @@ package eu.melodic.upperware.adapter;
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
-import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.paasage.upperware.security.authapi.token.JWTService;
-import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -85,17 +80,6 @@ public class ApplicationContext {
       }
     }
     return executor;
-  }
-
-  @Bean
-  @ConfigurationProperties
-  public MelodicSecurityProperties melodicSecurityProperties(){
-    return new MelodicSecurityProperties();
-  }
-
-  @Bean
-  public JWTService getJWTService(){
-    return new JWTServiceImpl(melodicSecurityProperties());
   }
 
 }
