@@ -9,7 +9,11 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
+import camel.core.Attribute;
 import camel.core.CamelModel;
+import camel.core.CoreFactory;
+import camel.core.QualityAttribute;
+import camel.data.DataFactory;
 import camel.data.DataSource;
 import camel.data.DataTypeModel;
 import camel.deployment.DeploymentInstanceModel;
@@ -19,6 +23,8 @@ import camel.deployment.SoftwareComponent;
 import camel.execution.ExecutionFactory;
 import camel.execution.ExecutionModel;
 import camel.execution.HistoryRecord;
+import camel.type.StringValue;
+import camel.type.TypeFactory;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CdoTool;
@@ -122,7 +128,7 @@ public class CdoServerClientApi implements CdoServerApi {
     executionModel.setStartTime(new Date());
     executionModel.setDeploymentTypeModel(deploymentTypeModel);
     executionModel.setRequirementModel(((CamelModel)deploymentTypeModel.eContainer()).getRequirementModels().get(0));
-    executionModel.setAbstractDataModel(getDataTypeModelForComponent(getDBComponent(deploymentTypeModel)));
+//    executionModel.setAbstractDataModel(getDataTypeModelForComponent(getDBComponent(deploymentTypeModel)));
     return executionModel;
   }
 
@@ -132,8 +138,20 @@ public class CdoServerClientApi implements CdoServerApi {
     historyRecord.setStartTime(new Date());
     historyRecord.setFromDeploymentInstanceModel(oldModel);
     historyRecord.setToDeploymentInstanceModel(newModel);
-//    historyRecord.setType(); //TODO - set type
+    historyRecord.setType(createType());
     return historyRecord;
+  }
+
+  private Attribute createType() {
+    StringValue stringValue = TypeFactory.eINSTANCE.createStringValue();
+    stringValue.setValue("DUMMY VALUE");
+
+//    Attribute attribute = CoreFactory.eINSTANCE.createAttribute();
+    QualityAttribute attribute = CoreFactory.eINSTANCE.createQualityAttribute();
+    attribute.setName(getUniqueAttributeName());
+    attribute.setValue(stringValue);
+
+    return attribute;
   }
 
   private SoftwareComponent getDBComponent(DeploymentTypeModel deploymentTypeModel){
@@ -141,10 +159,16 @@ public class CdoServerClientApi implements CdoServerApi {
             .getSoftwareComponents()
             .stream()
             .filter(softwareComponent -> CollectionUtils.isNotEmpty(softwareComponent.getManagesDataSource()))
-            .findFirst().orElseThrow(() -> new IllegalStateException("Could not find DB component."));
+            .findFirst().orElse(null);
   }
 
   private DataTypeModel getDataTypeModelForComponent(SoftwareComponent softwareComponent){
+    if (softwareComponent == null) {
+      DataTypeModel dataTypeModel = DataFactory.eINSTANCE.createDataTypeModel();
+      dataTypeModel.setName(getUniqueDataTypeName());
+      return dataTypeModel;
+    }
+
     DataSource dataSource = softwareComponent
             .getManagesDataSource()
             .stream()
@@ -191,6 +215,14 @@ public class CdoServerClientApi implements CdoServerApi {
   private Optional<DeploymentInstanceModel> getCurrentlyInstalledModel(ExecutionModel executionModel){
     List<HistoryRecord> historyRecords = ListUtils.emptyIfNull(executionModel.getHistoryRecords());
     return Optional.ofNullable(historyRecords.get(historyRecords.size() - 1).getToDeploymentInstanceModel());
+  }
+
+  private String getUniqueAttributeName(){
+    return getUniqueName("Attribute");
+  }
+
+  private String getUniqueDataTypeName(){
+    return getUniqueName("HistoryRecord");
   }
 
   private String getUniqueHistoryName(){

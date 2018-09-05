@@ -46,31 +46,20 @@ public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<Application
   }
 
   private void monitor(ApplicationComponentInstanceMonitor acInstMonitor) {
-    String acInstName = acInstMonitor.getAcInstName();
-    checkNotNull(acInstName);
-    Long acInstTimeout = acInstMonitor.getAcInstTimeout();
-    checkNotNull(acInstTimeout);
+    String acInstName = checkNotNull(acInstMonitor.getAcInstName());
+    Long acInstTimeout = checkNotNull(acInstMonitor.getAcInstTimeout());
 
-    String acName = acInstMonitor.getAcName();
-    checkNotNull(acName);
-    String vmInstName = acInstMonitor.getVmInstName();
-    checkNotNull(vmInstName);
+    String acName = checkNotNull(acInstMonitor.getAcName());
+    String vmInstName = checkNotNull(acInstMonitor.getVmInstName());
 
-    String cloudName = acInstMonitor.getCloudName();
-    checkNotNull(cloudName);
-    String appName = acInstMonitor.getAppName();
-    checkNotNull(appName);
-    String lcName = acInstMonitor.getLcName();
-    checkNotNull(lcName);
-    String vmName = acInstMonitor.getVmName();
-    checkNotNull(vmName);
+    String cloudName = checkNotNull(acInstMonitor.getCloudName());
+    String appName = checkNotNull(acInstMonitor.getAppName());
+    String lcName = checkNotNull(acInstMonitor.getLcName());
+    String vmName = checkNotNull(acInstMonitor.getVmName());
 
-    String location = acInstMonitor.getLocation();
-    checkNotNull(location);
-    String hardware = acInstMonitor.getHardware();
-    checkNotNull(hardware);
-    String image = acInstMonitor.getImage();
-    checkNotNull(image);
+    String location = checkNotNull(acInstMonitor.getLocation());
+    String hardware = checkNotNull(acInstMonitor.getHardware());
+    String image = checkNotNull(acInstMonitor.getImage());
 
     log.info("Executing AC Instance Monitoring task {}", acInstName);
 
@@ -98,12 +87,9 @@ public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<Application
         "- application component instance cannot be monitored", image, cloudName, cloudId));
     }
 
-    Long locationId = locationEntity.getId();
-    checkNotNull(locationId);
-    Long hardwareId = hardwareEntity.getId();
-    checkNotNull(hardwareId);
-    Long imageId = imageEntity.getId();
-    checkNotNull(imageId);
+    Long locationId = checkNotNull(locationEntity.getId());
+    Long hardwareId = checkNotNull(hardwareEntity.getId());
+    Long imageId = checkNotNull(imageEntity.getId());
 
     LifecycleComponent lcEntity = context.getLifecycleComponent(lcName)
       .orElseThrow(() -> new IllegalStateException(format("Lifecycle component %s does not exist in Colosseum " +
@@ -113,10 +99,8 @@ public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<Application
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) " +
         "does not exist in Colosseum - application component instance cannot be monitored", vmName, cloudId, locationId, hardwareId, imageId)));
 
-    Long lcId = lcEntity.getId();
-    checkNotNull(lcId);
-    Long vmId = vmEntity.getId();
-    checkNotNull(vmId);
+    Long lcId = checkNotNull(lcEntity.getId());
+    Long vmId = checkNotNull(vmEntity.getId());
 
     ApplicationComponent acEntity = context.getApplicationComponent(appName, lcId, vmId)
       .orElseThrow(() -> new IllegalStateException(format("Application component %s (appName=%s, lcId=%s, vmId=%s) " +
@@ -130,12 +114,9 @@ public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<Application
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine Instance %s does not exist in Colosseum " +
         "- application component instance cannot be monitored", vmInstName)));
 
-    Long acId = acEntity.getId();
-    checkNotNull(acId);
-    Long appInstId = appInstEntity.getId();
-    checkNotNull(appInstId);
-    Long vmInstId = vmInstEntity.getId();
-    checkNotNull(vmInstId);
+    Long acId = checkNotNull(acEntity.getId());
+    Long appInstId = checkNotNull(appInstEntity.getId());
+    Long vmInstId = checkNotNull(vmInstEntity.getId());
 
     Instance acInstEntity = context.getApplicationComponentInstance(acId, appInstId, vmInstId)
       .orElseThrow(() -> new IllegalStateException(format("Application component instance %s (acId=%s, appInstId=%s, vmInstId=%s) " +
