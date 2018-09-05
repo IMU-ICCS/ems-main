@@ -24,5 +24,4 @@ public class DataHolder {
 
     private List<HostingInstance> hostingInstancesToRegister = new ArrayList<>();
 
-    //private List<ProviderModel> providerModel = new ArrayList<>();
 }
