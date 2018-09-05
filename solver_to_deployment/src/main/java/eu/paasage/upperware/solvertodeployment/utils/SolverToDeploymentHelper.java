@@ -1,7 +1,7 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
 import camel.deployment.*;
-import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
+import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.BasicEList;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
-public class SolverToDeploymentHelperNew {
+public class SolverToDeploymentHelper {
     //////////////////////////////////////////////////////////////////////////////////////
     // Software Component Instance
     //////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ public class SolverToDeploymentHelperNew {
     public static EList<SoftwareComponentInstance> createSoftwareComponentInstance(String componentName, DeploymentTypeModel deploymentTypeModel, int nb) throws S2DException {
         SoftwareComponent softwareComponent = findSoftwareComponent(deploymentTypeModel, componentName);
         return IntStream.range(0, nb)
-                .mapToObj(value -> CloudMLHelperNew.createSCInstance(softwareComponent))
+                .mapToObj(value -> CloudMLHelper.createSCInstance(softwareComponent))
                 .collect(Collectors.toCollection(BasicEList::new));
     }
 
@@ -42,8 +42,8 @@ public class SolverToDeploymentHelperNew {
 
         EList<VMInstance> vmInstances = new BasicEList<>();
         for (int i = 0; i < cardinality; i++) {
-            VMInstance vmInstanceResult = CloudMLHelperNew.createVMInstance(vm);
-            //Attribute attribute = CloudMLHelperNew.findVMType(providerModel);
+            VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(vm);
+            //Attribute attribute = CloudMLHelper.findVMType(providerModel);
             // vmInstanceResult.setVmTypeValue(attribute.getValue());
             vmInstanceResult.setType(vm);
             vmInstances.add(vmInstanceResult);
@@ -78,7 +78,7 @@ public class SolverToDeploymentHelperNew {
         SoftwareComponent softwareComponent = (SoftwareComponent) softwareComponentInstance.getType();
         List<Hosting> hostings = findHostings(softwareComponent, deploymentTypeModel);
         hostings.forEach(hosting -> {
-            HostingInstance hostingInstance = CloudMLHelperNew.buildNewHostingInstance(softwareComponentInstance.getType().getName(), vmInstance, softwareComponentInstance, hosting);
+            HostingInstance hostingInstance = CloudMLHelper.buildNewHostingInstance(softwareComponentInstance.getType().getName(), vmInstance, softwareComponentInstance, hosting);
             result.add(hostingInstance);
         });
         return result;

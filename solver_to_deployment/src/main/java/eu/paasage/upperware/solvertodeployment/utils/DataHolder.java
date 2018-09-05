@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class DataHolderNew {
+public class DataHolder {
 
     @Setter
     private int dmId;

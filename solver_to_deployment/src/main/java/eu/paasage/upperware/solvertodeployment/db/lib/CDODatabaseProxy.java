@@ -13,19 +13,19 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Arrays;
 
 @Slf4j
-public class CDODatabaseProxyNew {
+public class CDODatabaseProxy {
 
-    private static CDODatabaseProxyNew INSTANCE = new CDODatabaseProxyNew();
+    private static CDODatabaseProxy INSTANCE = new CDODatabaseProxy();
 
     @Getter
     private CDOClientX cdoClient;
 
-    private CDODatabaseProxyNew() {
+    private CDODatabaseProxy() {
         cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
                 TypePackage.eINSTANCE, OrganisationPackage.eINSTANCE, DeploymentPackage.eINSTANCE));
     }
 
-    public static CDODatabaseProxyNew getInstance() {
+    public static CDODatabaseProxy getInstance() {
         return INSTANCE;
     }
 }

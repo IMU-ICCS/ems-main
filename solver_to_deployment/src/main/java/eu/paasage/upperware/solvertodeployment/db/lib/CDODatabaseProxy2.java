@@ -5,7 +5,7 @@ import camel.deployment.DeploymentFactory;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
-import eu.paasage.upperware.solvertodeployment.utils.DataHolderNew;
+import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public class CDODatabaseProxy2New {
+public class CDODatabaseProxy2 {
 
     public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
         CamelModel camelModel = getLastCamelModel(transaction.getResource(camelModelID).getContents())
@@ -69,8 +69,8 @@ public class CDODatabaseProxy2New {
 
     public static class DataUpdater {
 
-        public void registerElements(DataHolderNew dataHolder, String camelModelID, CDOTransaction transaction) {
-            CDODatabaseProxy2New.DataUpdater.CamelAndDeploymentModelTransactionManager transactionManager = new CDODatabaseProxy2New.DataUpdater.CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId(), transaction);
+        public void registerElements(DataHolder dataHolder, String camelModelID, CDOTransaction transaction) {
+            CDODatabaseProxy2.DataUpdater.CamelAndDeploymentModelTransactionManager transactionManager = new CDODatabaseProxy2.DataUpdater.CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId(), transaction);
 
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
                     .getSoftwareComponentInstances().addAll(dataHolder.getComponentInstancesToRegister());

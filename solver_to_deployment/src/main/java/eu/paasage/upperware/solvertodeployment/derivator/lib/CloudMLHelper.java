@@ -2,7 +2,7 @@ package eu.paasage.upperware.solvertodeployment.derivator.lib;
 
 import camel.deployment.*;
 
-public class CloudMLHelperNew {
+public class CloudMLHelper {
 
 
     private static int _globalCount = 0;

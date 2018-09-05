@@ -5,7 +5,7 @@
 package eu.paasage.upperware.solvertodeployment.lib;
 
 import camel.deployment.*;
-import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelperNew;
+import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,8 +25,8 @@ public class CommunicationProvidedRequiredDomain {
 	static CommunicationProvidedRequiredDomain findComponentFromCommunication(Communication com) throws S2DException {
 		CommunicationProvidedRequiredDomain communicationProducerConsumerDomain = new CommunicationProvidedRequiredDomain();
 
-        SoftwareComponent internalComponentProv = CloudMLHelperNew.findProvidedComponentFromCommunication(com);
-        SoftwareComponent internalComponentReq = CloudMLHelperNew.findRequiredComponentFromCommunication(com);
+		SoftwareComponent internalComponentProv = CloudMLHelper.findProvidedComponentFromCommunication(com);
+		SoftwareComponent internalComponentReq = CloudMLHelper.findRequiredComponentFromCommunication(com);
 
 		log.debug("--> "+internalComponentProv.getName()+" -- "+internalComponentReq.getName());
 

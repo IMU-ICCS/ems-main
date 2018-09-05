@@ -9,7 +9,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2New;
+import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
@@ -27,12 +27,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class DataUtilsNew {
+public class DataUtils {
 
-    public static DataHolderNew computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
-                                                       ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
-                                                       NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
-                                                       CDOTransaction transaction
+    public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
+                                                    ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
+                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
+                                                    CDOTransaction transaction
     ) {
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
@@ -73,9 +73,9 @@ public class DataUtilsNew {
 
         // Merging sets
 //        for (Communication communication : deploymentTypeModel.getCommunications()) {
-//            String provName = CloudMLHelperNew.findProvidedComponentFromCommunication(communication).getName();
+//            String provName = CloudMLHelper.findProvidedComponentFromCommunication(communication).getName();
 //            int provId = localComponentGroups.get(provName);
-//            String reqName = CloudMLHelperNew.findRequiredComponentFromCommunication(communication).getName();
+//            String reqName = CloudMLHelper.findRequiredComponentFromCommunication(communication).getName();
 //            int reqId = localComponentGroups.get(reqName);
 //            if (provId == reqId) continue; // already merge
 //            if (provId < reqId) {
@@ -115,7 +115,7 @@ public class DataUtilsNew {
         Map<String, List<CpVariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
 
         try {
-            DataHolderNew dataHolder = new DataHolderNew();
+            DataHolder dataHolder = new DataHolder();
             for (Map.Entry<String, List<CpVariableValue>> entry : vvByComponentName.entrySet()) {
                 String componentName = entry.getKey();
 
@@ -136,7 +136,7 @@ public class DataUtilsNew {
 
                     log.info("Found Node Candidate: {}", nodeCandidate);
 
-                    EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelperNew.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
+                    EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelper.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
                     dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
 
 
@@ -169,7 +169,7 @@ public class DataUtilsNew {
 
                         ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
 
-                        vmInstanceToRegisters = SolverToDeploymentHelperNew.searchAndCreateVMInstance(vm, cardinality);
+                        vmInstanceToRegisters = SolverToDeploymentHelper.searchAndCreateVMInstance(vm, cardinality);
                         vmInstanceToRegisters.forEach(vmInstance -> {
                             providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
                             log.info("VmInstance: {}", vmInstance.getName());
@@ -183,7 +183,7 @@ public class DataUtilsNew {
                     for (int i = 0; i < cardinality; i++) {
                         SoftwareComponentInstance iCI = softwareComponentInstances.get(i);
                         VMInstance vmI = vmInstanceToRegisters.get(i);
-                        dataHolder.getHostingInstancesToRegister().addAll(SolverToDeploymentHelperNew.createHostingInstance(vmI, iCI, deploymentTypeModel));
+                        dataHolder.getHostingInstancesToRegister().addAll(SolverToDeploymentHelper.createHostingInstance(vmI, iCI, deploymentTypeModel));
                     }
                 }
             }
@@ -223,10 +223,10 @@ public class DataUtilsNew {
         return result.toArray(new Predicate[result.size()]);
     }
 
-    private static void changeNames(DataHolderNew result, String camelModelID, CDOTransaction transaction) {
-        CDODatabaseProxy2New.getLastDeployedInstanceModel(camelModelID, transaction).ifPresent(deployedModel -> {
+    private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
+        CDODatabaseProxy2.getLastDeployedInstanceModel(camelModelID, transaction).ifPresent(deployedModel -> {
             //1. Component
-            changeNames(result.getComponentInstancesToRegister(), deployedModel.getSoftwareComponentInstances(), DataUtilsNew.VMKey::getInstance);
+            changeNames(result.getComponentInstancesToRegister(), deployedModel.getSoftwareComponentInstances(), DataUtils.VMKey::getInstance);
         });
     }
 
@@ -242,10 +242,10 @@ public class DataUtilsNew {
         return null;
     }
 
-    private static <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, DataUtilsNew.VMKey> function) {
-        Map<DataUtilsNew.VMKey, List<T>> newVmTemporaryMap = createInstanceMap(newInstances, function);
-        Map<DataUtilsNew.VMKey, List<T>> deployedInstances = createInstanceMap(oldInstances, function);
-        for (DataUtilsNew.VMKey vmKey : deployedInstances.keySet()) {
+    private static <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, DataUtils.VMKey> function) {
+        Map<DataUtils.VMKey, List<T>> newVmTemporaryMap = createInstanceMap(newInstances, function);
+        Map<DataUtils.VMKey, List<T>> deployedInstances = createInstanceMap(oldInstances, function);
+        for (DataUtils.VMKey vmKey : deployedInstances.keySet()) {
             List<T> oldVmInstances = deployedInstances.get(vmKey);
             List<T> newVmInstances = newVmTemporaryMap.getOrDefault(vmKey, Collections.emptyList());
 
@@ -258,11 +258,11 @@ public class DataUtilsNew {
         }
     }
 
-    private static <T extends Feature> Map<DataUtilsNew.VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, DataUtilsNew.VMKey> function) {
-        Map<DataUtilsNew.VMKey, List<T>> result = new HashMap<>();
+    private static <T extends Feature> Map<DataUtils.VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, DataUtils.VMKey> function) {
+        Map<DataUtils.VMKey, List<T>> result = new HashMap<>();
 
         for (T instance : vmInstancesToRegister) {
-            DataUtilsNew.VMKey vmKey = function.apply(instance);
+            DataUtils.VMKey vmKey = function.apply(instance);
 
             if (!result.containsKey(vmKey)) {
                 result.put(vmKey, new ArrayList<>());
@@ -272,8 +272,8 @@ public class DataUtilsNew {
         return result;
     }
 
-    public static void registerDataHolderToCDO(String camelModelID, DataHolderNew dataholder, CDOTransaction transaction) {
-        new CDODatabaseProxy2New.DataUpdater().registerElements(dataholder, camelModelID, transaction);
+    public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder, CDOTransaction transaction) {
+        new CDODatabaseProxy2.DataUpdater().registerElements(dataholder, camelModelID, transaction);
     }
 
     @Getter
@@ -283,9 +283,9 @@ public class DataUtilsNew {
         private String name;
         private String type;
 
-        private static DataUtilsNew.VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
+        private static DataUtils.VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
             String vmName = removeSuffixFromInstance(softwareComponentInstance.getName());
-            return new DataUtilsNew.VMKey(vmName, "");
+            return new DataUtils.VMKey(vmName, "");
         }
 
         private static String removeSuffixFromInstance(String vmName) {
@@ -305,7 +305,7 @@ public class DataUtilsNew {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            DataUtilsNew.VMKey vmKey = (DataUtilsNew.VMKey) o;
+            DataUtils.VMKey vmKey = (DataUtils.VMKey) o;
 
             if (name != null ? !name.equals(vmKey.name) : vmKey.name != null) return false;
             return type != null ? type.equals(vmKey.type) : vmKey.type == null;
