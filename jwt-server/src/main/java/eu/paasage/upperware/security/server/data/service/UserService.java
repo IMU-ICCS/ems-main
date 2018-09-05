@@ -73,7 +73,7 @@ public class UserService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        return "{sha}" + base64;
+        return "{SHA}" + base64;
     }
 
     public String createToken(String username) {
