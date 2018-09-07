@@ -5,6 +5,8 @@ import camel.deployment.DeploymentFactory;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
+import camel.location.LocationModel;
+import camel.location.impl.LocationFactoryImpl;
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -71,6 +73,17 @@ public class CDODatabaseProxy2 {
 
         public void registerElements(DataHolder dataHolder, String camelModelID, CDOTransaction transaction) {
             CDODatabaseProxy2.DataUpdater.CamelAndDeploymentModelTransactionManager transactionManager = new CDODatabaseProxy2.DataUpdater.CamelAndDeploymentModelTransactionManager(camelModelID, dataHolder.getDmId(), transaction);
+
+            if (transactionManager.camelModel.getLocationModels().isEmpty()){
+                String locationModelName = transactionManager.camelModel.getName() + "LocationModel";
+                log.info("Creating new Location Model {}", locationModelName);
+                LocationModel locationModel = LocationFactoryImpl.eINSTANCE.createLocationModel();
+                locationModel.setName(locationModelName);
+                transactionManager.camelModel.getLocationModels().add(locationModel);
+            }
+
+            transactionManager.camelModel.getLocationModels().get(transactionManager.dmId-1)
+                    .getRegions().addAll(dataHolder.getLocationsToRegister());
 
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
                     .getSoftwareComponentInstances().addAll(dataHolder.getComponentInstancesToRegister());

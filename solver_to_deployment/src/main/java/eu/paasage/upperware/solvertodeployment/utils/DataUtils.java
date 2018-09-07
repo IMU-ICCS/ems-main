@@ -3,6 +3,8 @@ package eu.paasage.upperware.solvertodeployment.utils;
 import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
+import camel.location.GeographicalRegion;
+import camel.location.impl.LocationFactoryImpl;
 import com.google.common.collect.Sets;
 import eu.melodic.cache.NodeCandidatePredicates;
 import eu.melodic.cache.NodeCandidates;
@@ -17,6 +19,7 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
@@ -30,9 +33,9 @@ import java.util.stream.Collectors;
 public class DataUtils {
 
     public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
-                                                    ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
-                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
-                                                    CDOTransaction transaction
+            ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
+            NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
+            CDOTransaction transaction
     ) {
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
@@ -139,7 +142,6 @@ public class DataUtils {
                     EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelper.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
                     dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
 
-
                     //create VM Instance
                     localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
 
@@ -174,6 +176,11 @@ public class DataUtils {
                             providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
                             log.info("VmInstance: {}", vmInstance.getName());
                         });
+
+                        GeographicalRegion location = getOrCreateRegion(dataHolder, nodeCandidate, camelModel);
+                        vmInstanceToRegisters.forEach(vmInstance -> vmInstance.setLocation(location));
+
+
                         dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
                         // memorize
                         localGroupVMInstances.put(myKey, vmInstanceToRegisters);
@@ -205,6 +212,36 @@ public class DataUtils {
         return null;
     }
 
+    private static GeographicalRegion getOrCreateRegion(DataHolder dataHolder, @NonNull NodeCandidate nodeCandidate, @NonNull CamelModel camelModel) {
+
+        String regionName = nodeCandidate.getLocation().getName();
+        GeographicalRegion geographicalRegion = LocationFactoryImpl.eINSTANCE.createGeographicalRegion();
+        geographicalRegion.setName(regionName);
+        geographicalRegion.setId(regionName);
+
+        Optional<GeographicalRegion> optionalGeographicalRegionToRegister = dataHolder.getLocationsToRegister().stream()
+                .filter(region -> regionName.equals(region.getName())).findAny();
+        if (optionalGeographicalRegionToRegister.isPresent()) {
+            log.info("GeographicalRegion {} exists in locations created to register", regionName);
+            return optionalGeographicalRegionToRegister.get();
+        } else if (camelModel.getLocationModels().isEmpty()) {
+            dataHolder.getLocationsToRegister().add(geographicalRegion);
+            log.info("There is no Location Model in the Camel Model, new Location Model with GeographicalRegion {} will be created", regionName);
+            return geographicalRegion;
+        } else {
+            Optional<GeographicalRegion> geographicalRegionFromCamel = camelModel.getLocationModels().get(0).getRegions().stream()
+                    .filter(region -> regionName.equals(region.getName())).findAny();
+            if (geographicalRegionFromCamel.isPresent()) {
+                log.info("GeographicalRegion {} was found in the Camel Location Model", regionName);
+                return geographicalRegionFromCamel.get();
+            } else {
+                dataHolder.getLocationsToRegister().add(geographicalRegion);
+                log.info("GeographicalRegion {} does not exist in the Camel Location Model, creating a new one", regionName);
+                return geographicalRegion;
+            }
+        }
+    }
+
     private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<CpVariableValue> variableValues) {
         List<Predicate<NodeCandidate>> result = new ArrayList<>();
 
@@ -234,7 +271,7 @@ public class DataUtils {
         for (Hosting hosting : deploymentTypeModel.getHostings()) {
             for (RequiredHost requiredHost : hosting.getRequiredHosts()) {
                 String scName = ((SoftwareComponent) requiredHost.eContainer()).getName();
-                if (componentName.equals(scName)){
+                if (componentName.equals(scName)) {
                     return (VM) hosting.getProvidedHost().eContainer();
                 }
             }

@@ -4,6 +4,7 @@ import camel.deployment.CommunicationInstance;
 import camel.deployment.HostingInstance;
 import camel.deployment.SoftwareComponentInstance;
 import camel.deployment.VMInstance;
+import camel.location.GeographicalRegion;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,5 +24,7 @@ public class DataHolder {
     private List<VMInstance> vmInstancesToRegister = new ArrayList<>();
 
     private List<HostingInstance> hostingInstancesToRegister = new ArrayList<>();
+
+    private List<GeographicalRegion> locationsToRegister = new ArrayList<>();
 
 }

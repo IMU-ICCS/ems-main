@@ -4,7 +4,6 @@ import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.CoreFactory;
 import camel.deployment.VMInstance;
-import camel.location.GeographicalRegion;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
@@ -50,9 +49,6 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
         attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
         attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
 
-        //TODO change getting region
-        GeographicalRegion region = camelModel.getLocationModels().get(0).getRegions().get(0);
-        vmInstance.setLocation(region);
     }
 
     private Attribute createAttribute(String attributeName, String attributeValue) {
