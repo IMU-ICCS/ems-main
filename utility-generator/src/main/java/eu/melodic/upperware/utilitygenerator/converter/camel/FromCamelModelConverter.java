@@ -63,7 +63,6 @@ public class FromCamelModelConverter {
                 .map(m -> (MetricVariableImpl) m)
                 .collect(Collectors.toList());
         this.utilityFunctionFormula = getUtilityFormula();
-
     }
 
     public void endWorkWithCamelModel() {

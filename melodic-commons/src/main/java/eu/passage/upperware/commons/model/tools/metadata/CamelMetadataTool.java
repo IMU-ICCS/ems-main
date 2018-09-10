@@ -32,15 +32,16 @@ public class CamelMetadataTool {
     }
 
     public static CamelMetadata findVariableType(MetricVariableImpl metricVariable) {
-        String annotation = getAnnotationOfMetricVariable(metricVariable);
-        return CamelMetadata.VM_LIST.stream().filter(type -> type.camelName.equals(annotation)).findAny().orElseThrow(
-                () -> new IllegalArgumentException("Wrong annotation: " + annotation + " is not a supported type"));
-
+        return findCamelMetaDataType(metricVariable, CamelMetadata.VM_LIST);
     }
 
     public static CamelMetadata findNodeCandidateAttributeType(MetricVariableImpl metricVariable) {
+        return findCamelMetaDataType(metricVariable, CamelMetadata.NC_LIST);
+    }
+
+    private static CamelMetadata findCamelMetaDataType(MetricVariableImpl metricVariable, List<CamelMetadata> metadataList) {
         String annotation = getAnnotationOfMetricVariable(metricVariable);
-        return CamelMetadata.NC_LIST.stream().filter(type -> type.camelName.equals(annotation)).findAny().orElseThrow(
+        return metadataList.stream().filter(type -> type.camelName.equals(annotation)).findAny().orElseThrow(
                 () -> new IllegalArgumentException("Wrong annotation: " + annotation + " is not a supported type"));
     }
 
