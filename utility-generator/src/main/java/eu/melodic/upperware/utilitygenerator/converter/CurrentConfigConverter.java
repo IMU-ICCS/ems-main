@@ -12,13 +12,13 @@ import camel.metric.impl.MetricVariableImpl;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.converter.camel.MappingTypeUtils.getVariableType;
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 
 @Slf4j
@@ -46,7 +46,7 @@ public class CurrentConfigConverter {
                 .orElseThrow(() -> new IllegalStateException("Variable from solution " + variable.getName() + " does not match with variable from Constraint Problem"));
         return variablesFromCamel.stream()
                 .filter(variableFromCamel -> (variableFromCamel.getComponent().getName().equals(matchingVariable.getComponentId())
-                        && (matchingVariable.getType().equals(getVariableType(variableFromCamel)))))
+                        && (matchingVariable.getType().equals(CamelMetadataTool.findVariableType(variableFromCamel).variableType))))
                 .findAny().orElseThrow(() -> new IllegalStateException("Variable with name " + matchingVariable.getId() + " does not match with variable from Camel"))
                 .getName();
     }
@@ -55,7 +55,7 @@ public class CurrentConfigConverter {
         return variablesFromCamel.stream()
                 .anyMatch(variableFromCamel ->
                         variableFromCamel.getComponent().getName().equals(variableFromConstraintProblem.getComponentId())
-                                && (variableFromConstraintProblem.getType().equals(getVariableType(variableFromCamel))));
+                                && (variableFromConstraintProblem.getType().equals(CamelMetadataTool.findVariableType(variableFromCamel).variableType)));
     }
 
     private VariableDTO getMatchingVariable(String name) {
