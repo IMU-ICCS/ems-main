@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.model.function;
 
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,12 +17,12 @@ public class NodeCandidateAttribute {
 
     private String name;
     private String componentId;
-    private NodeCandidatesAttributesType type;
+    private CamelMetadata type;
     private boolean isList;
     @Setter
     double value;
 
-    public NodeCandidateAttribute(String name, String componentId, NodeCandidatesAttributesType type, boolean isList) {
+    public NodeCandidateAttribute(String name, String componentId, CamelMetadata type, boolean isList) {
         this.name = name;
         this.componentId = componentId;
         this.type = type;

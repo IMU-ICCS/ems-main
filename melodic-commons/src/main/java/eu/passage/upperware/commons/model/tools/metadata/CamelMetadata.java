@@ -11,10 +11,10 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum CamelMetadata {
 
-    CPU("m_cpu", VariableType.CPU, false),
-    CORES("m_cores", VariableType.CORES, false),
-    RAM("m_ram", VariableType.CPU, false),
-    STORAGE("m_storage", VariableType.STORAGE, false),
+    CPU("CPU", VariableType.CPU, false),
+    CORES("CPU", VariableType.CORES, false),
+    RAM("RAM", VariableType.CPU, false),
+    STORAGE("Storage", VariableType.STORAGE, false),
     CARDINALITY("m_cardinality", VariableType.CARDINALITY, false),
 
     PROVIDER("", VariableType.PROVIDER, false),
