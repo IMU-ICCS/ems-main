@@ -11,7 +11,6 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum CamelMetadata {
 
-    CPU("CPU", VariableType.CPU, false),
     CORES("CPU", VariableType.CORES, false),
     RAM("RAM", VariableType.CPU, false),
     STORAGE("Storage", VariableType.STORAGE, false),
@@ -26,7 +25,7 @@ public enum CamelMetadata {
     public boolean onNodeCandidate;
 
 
-    public static final List<CamelMetadata> VM_LIST = Collections.unmodifiableList(Arrays.asList(CPU, CORES, RAM, STORAGE, CARDINALITY));
+    public static final List<CamelMetadata> VM_LIST = Collections.unmodifiableList(Arrays.asList(CORES, RAM, STORAGE, CARDINALITY));
     public static final List<CamelMetadata> NC_LIST = Collections.unmodifiableList(Collections.singletonList(PRICE));
 
 }
