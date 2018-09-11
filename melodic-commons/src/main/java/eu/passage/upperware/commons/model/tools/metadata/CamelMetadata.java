@@ -12,7 +12,7 @@ import java.util.List;
 public enum CamelMetadata {
 
     CORES("CPU", VariableType.CORES, false),
-    RAM("RAM", VariableType.CPU, false),
+    RAM("RAM", VariableType.RAM, false),
     STORAGE("Storage", VariableType.STORAGE, false),
     CARDINALITY("m_cardinality", VariableType.CARDINALITY, false),
 
