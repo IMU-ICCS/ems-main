@@ -10,7 +10,6 @@ package eu.passage.upperware.commons.model.tools;
 
 import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.DeploymentModel;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
@@ -53,13 +52,9 @@ public final class CdoTool {
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
     }
 
-    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
-        CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
-
-        DeploymentModel deploymentModel = CdoTool.getLastElement(camelModel.getDeploymentModels());
-        if (deploymentModel instanceof DeploymentInstanceModel) {
-            return Optional.of((DeploymentInstanceModel) deploymentModel);
-        }
-        return Optional.empty();
+    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(CamelModel camelModel) {
+        return getLastElementAsOptional(camelModel.getDeploymentModels())
+                .filter(DeploymentInstanceModel.class::isInstance)
+                .map(DeploymentInstanceModel.class::cast);
     }
 }
