@@ -9,7 +9,6 @@ import org.eclipse.emf.common.util.EList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,17 +37,11 @@ public class SolverToDeploymentHelper {
     // VM Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
-    public static EList<VMInstance> searchAndCreateVMInstance(VM vm, int cardinality) throws S2DException {
+    public static EList<VMInstance> searchAndCreateVMInstance(VM vm, int cardinality) {
 
-        EList<VMInstance> vmInstances = new BasicEList<>();
-        for (int i = 0; i < cardinality; i++) {
-            VMInstance vmInstanceResult = CloudMLHelper.createVMInstance(vm);
-            //Attribute attribute = CloudMLHelper.findVMType(providerModel);
-            // vmInstanceResult.setVmTypeValue(attribute.getValue());
-            vmInstanceResult.setType(vm);
-            vmInstances.add(vmInstanceResult);
-        }
-        return vmInstances;
+        return IntStream.range(0, cardinality)
+                .mapToObj(i -> CloudMLHelper.createVMInstance(vm))
+                .collect(Collectors.toCollection(BasicEList::new));
     }
 
 
@@ -64,13 +57,17 @@ public class SolverToDeploymentHelper {
             requiredHosts.forEach(requiredHost -> log.info("Required host from hosting: {}", requiredHost.getName()));
             String requiredHostFromComponentName = component.getRequiredHost().getName();
             log.info("Req host from component: {}", requiredHostFromComponentName);
-            Optional<RequiredHost> first = requiredHosts.stream().filter(requiredHost -> requiredHost.getName().equals(requiredHostFromComponentName)).findFirst();
-            if (first.isPresent()) {
+
+            if (isHostingRequired(requiredHosts, requiredHostFromComponentName)) {
                 result.add(hosting);
             }
         });
 
         return result;
+    }
+
+    private static boolean isHostingRequired(EList<RequiredHost> requiredHosts, String requiredHostFromComponentName) {
+        return requiredHosts.stream().anyMatch(requiredHost -> requiredHost.getName().equals(requiredHostFromComponentName));
     }
 
     public static List<HostingInstance> createHostingInstance(VMInstance vmInstance, SoftwareComponentInstance softwareComponentInstance, DeploymentTypeModel deploymentTypeModel) throws S2DException {

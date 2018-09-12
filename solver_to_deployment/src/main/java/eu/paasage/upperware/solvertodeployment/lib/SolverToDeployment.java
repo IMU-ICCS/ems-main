@@ -27,6 +27,7 @@ import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProp
 import eu.paasage.upperware.solvertodeployment.utils.DataHolder;
 import eu.paasage.upperware.solvertodeployment.utils.DataUtils;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -42,9 +43,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
@@ -76,15 +75,16 @@ public class SolverToDeployment {
 
 			EList<EObject> contentsCM = transaction.getResource(camelModelID).getContents();
 
-			CamelModel camelModel = getLastCamelModel(contentsCM)
+			CamelModel camelModel = CdoTool.getLastCamelModel(contentsCM)
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
 			
 			EList<EObject> contentsPC = transaction.getResource(paasageConfigurationID).getContents();
-			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(0);
+			ConstraintProblem constraintProblem = (ConstraintProblem) CdoTool.getFirstElement(contentsPC);
 
 			// Checking if there is a solution
-			if (constraintProblem.getSolution().size()==0) {
+
+			if (CollectionUtils.isEmpty(constraintProblem.getSolution())) {
 				log.info("No solution available in Constraint Problem!");
 				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 				return;
@@ -94,9 +94,7 @@ public class SolverToDeployment {
 
 			// Do Work
 			try {
-			    log.warn("Starting...");
-
-				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) camelModel.getDeploymentModels().get(0);
+				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(camelModel.getDeploymentModels());
 
 				int dmId = CDODatabaseProxy2.saveNewDeploymentInstanceModel(transaction, camelModelID);
 
@@ -220,17 +218,4 @@ public class SolverToDeployment {
 		notification.setWatermark(prepareWatermark(uuid));
 		return notification;
 	}
-
-
-	//TODO - move this to commons
-	public Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
-		return getLastElement(contentsCM)
-				.filter(CamelModel.class::isInstance)
-				.map(CamelModel.class::cast);
-	}
-
-	private <T extends EObject> Optional<T> getLastElement(List<T> collection) {
-		return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
-	}
-
 }

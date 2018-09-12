@@ -4,6 +4,7 @@ import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
 import camel.location.GeographicalRegion;
+import camel.location.LocationModel;
 import camel.location.impl.LocationFactoryImpl;
 import com.google.common.collect.Sets;
 import eu.melodic.cache.NodeCandidatePredicates;
@@ -221,6 +222,7 @@ public class DataUtils {
 
         Optional<GeographicalRegion> optionalGeographicalRegionToRegister = dataHolder.getLocationsToRegister().stream()
                 .filter(region -> regionName.equals(region.getName())).findAny();
+
         if (optionalGeographicalRegionToRegister.isPresent()) {
             log.info("GeographicalRegion {} exists in locations created to register", regionName);
             return optionalGeographicalRegionToRegister.get();
@@ -229,8 +231,12 @@ public class DataUtils {
             log.info("There is no Location Model in the Camel Model, new Location Model with GeographicalRegion {} will be created", regionName);
             return geographicalRegion;
         } else {
-            Optional<GeographicalRegion> geographicalRegionFromCamel = camelModel.getLocationModels().get(0).getRegions().stream()
-                    .filter(region -> regionName.equals(region.getName())).findAny();
+            Optional<GeographicalRegion> geographicalRegionFromCamel = camelModel.getLocationModels().stream()
+                    .map(LocationModel::getRegions)
+                    .flatMap(Collection::stream).distinct()
+                    .collect(Collectors.toList())
+                    .stream()
+                    .filter(geographicalRegion1 -> regionName.equals(geographicalRegion1.getName())).findAny();
             if (geographicalRegionFromCamel.isPresent()) {
                 log.info("GeographicalRegion {} was found in the Camel Location Model", regionName);
                 return geographicalRegionFromCamel.get();

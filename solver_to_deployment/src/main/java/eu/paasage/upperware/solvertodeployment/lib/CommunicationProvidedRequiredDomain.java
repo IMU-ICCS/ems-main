@@ -28,7 +28,7 @@ public class CommunicationProvidedRequiredDomain {
 		SoftwareComponent internalComponentProv = CloudMLHelper.findProvidedComponentFromCommunication(com);
 		SoftwareComponent internalComponentReq = CloudMLHelper.findRequiredComponentFromCommunication(com);
 
-		log.debug("--> "+internalComponentProv.getName()+" -- "+internalComponentReq.getName());
+		log.debug("--> {} -- {}", internalComponentProv.getName(), internalComponentReq.getName());
 
 		communicationProducerConsumerDomain.setCommunication(com);
 		communicationProducerConsumerDomain.setReqComponent(internalComponentReq);
@@ -40,19 +40,19 @@ public class CommunicationProvidedRequiredDomain {
     private static EList<SoftwareComponentInstance> findComponentInstanceFromDeploymentInstanceModels(Component component, DeploymentInstanceModel deploymentInstanceModel) {
         EList<SoftwareComponentInstance> softwareCIs = new BasicEList<>();
 
-        log.debug("Looking for ComponentInstance (SoftwareCI from DM) for type: " + component.getName());
+		log.debug("Looking for ComponentInstance (SoftwareCI from DM) for type: {}", component.getName());
 		StringBuilder logTxt = new StringBuilder();
         for (SoftwareComponentInstance softwareComponentInstance : deploymentInstanceModel.getSoftwareComponentInstances()) {
-            log.debug("finComponentInstance: testing" + softwareComponentInstance.getName() + " of type " + softwareComponentInstance.getType().getName());
+			log.debug("finComponentInstance: testing {} of type {}", softwareComponentInstance.getName(), softwareComponentInstance.getType().getName());
             logTxt.append("Compare ").append(softwareComponentInstance.getType()).append(" AND ").append(component);
-            if (softwareComponentInstance.getType().getName().equals(component.getName()))
-			{
-				log.error("Ok Component Instance Find " + logTxt);
+			if (softwareComponentInstance.getType().getName().equals(component.getName())) {
+				log.error("Ok Component Instance Find {}", logTxt);
                 softwareCIs.add(softwareComponentInstance);
 			}
 		}
-        if (softwareCIs.isEmpty())
-			log.info("**WARNING. Component Instance not found for component : " + component.getName());
+		if (softwareCIs.isEmpty()) {
+			log.info("**WARNING. Component Instance not found for component : {}", component.getName());
+		}
         return softwareCIs;
     }
 
@@ -60,12 +60,12 @@ public class CommunicationProvidedRequiredDomain {
         EList<SoftwareComponentInstance> internalCIs = new BasicEList<>();
 
 		StringBuilder logTxt = new StringBuilder();
-		log.debug("Looking for ComponentInstance (InternalCI list) for type: "+component.getName());
+		log.debug("Looking for ComponentInstance (InternalCI list) for type: {}", component.getName());
         for (SoftwareComponentInstance internalCI : softwareComponentInstances) {
-			log.debug("finComponentInstance: testing "+internalCI.getName()+" of type "+internalCI.getType().getName());
+			log.debug("finComponentInstance: testing {} of type {}", internalCI.getName(), internalCI.getType().getName());
 			logTxt.append("Compare ").append(internalCI.getType()).append(" AND ").append(component);
 			if(internalCI.getType().getName().equals(component.getName())) {
-				log.debug("Ok Component Instance Find " + logTxt);
+				log.debug("Ok Component Instance Find {}", logTxt);
 				internalCIs.add(internalCI);
 			}
 		}
@@ -78,7 +78,7 @@ public class CommunicationProvidedRequiredDomain {
                                                                               EList<? extends CommunicationPortInstance> requiredCommunicationInstances) {
 
 		if(communication == null) {
-			log.error("Try to find Communication port instance with commmunication port equal to null !!");
+			log.error("Try to find Communication port instance with communication port equal to null!!");
 			return null;
 		}
 
@@ -91,7 +91,7 @@ public class CommunicationProvidedRequiredDomain {
 		}
 
 		if(result == null) {
-			log.error("Unable to find CommunicationPortInstance for " +communication.getName() + "!!" );
+			log.error("Unable to find CommunicationPortInstance for {}!!", communication.getName());
 		}
 		return result;
 	}
@@ -130,7 +130,7 @@ public class CommunicationProvidedRequiredDomain {
 			if (providedCommunicationPortInstance!=null)
 				providedCommunicationPortInstances.add(providedCommunicationPortInstance);
 			else
-				log.error("Unable to find providedCommunicationPortInstance for " + iCI.getName()+" for communication "+com.getName());
+				log.error("Unable to find providedCommunicationPortInstance for {} for communication {}", iCI.getName(), com.getName());
 		}
 
         for (SoftwareComponentInstance iCI : reqInstances) {
@@ -138,7 +138,7 @@ public class CommunicationProvidedRequiredDomain {
 			if (requiredCommunicationPortInstance!=null)
 				requiredCommunicationPortInstances.add(requiredCommunicationPortInstance);
 			else
-				log.error("Unable to find requiredCommunicationPortInstance for " + iCI.getName()+" for communication "+com.getName());
+				log.error("Unable to find requiredCommunicationPortInstance for {} for communication {}", iCI.getName(), com.getName());
 		}
 
 		// Creating Communication Instances
