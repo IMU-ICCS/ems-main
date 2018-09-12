@@ -267,7 +267,7 @@ public class DataUtils {
 
     private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
         CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
-        CdoTool.getLastDeployedInstanceModel(camelModel).ifPresent(deployedModel -> {
+        CdoTool.getLastDeployedInstanceModel(camelModel.getDeploymentModels()).ifPresent(deployedModel -> {
             //1. Component
             changeNames(result.getComponentInstancesToRegister(), deployedModel.getSoftwareComponentInstances(), DataUtils.VMKey::getInstance);
         });
