@@ -17,6 +17,7 @@ import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequired
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -233,9 +234,7 @@ public class DataUtils {
         } else {
             Optional<GeographicalRegion> geographicalRegionFromCamel = camelModel.getLocationModels().stream()
                     .map(LocationModel::getRegions)
-                    .flatMap(Collection::stream).distinct()
-                    .collect(Collectors.toList())
-                    .stream()
+                    .flatMap(List::stream)
                     .filter(geographicalRegion1 -> regionName.equals(geographicalRegion1.getName())).findAny();
             if (geographicalRegionFromCamel.isPresent()) {
                 log.info("GeographicalRegion {} was found in the Camel Location Model", regionName);
@@ -267,7 +266,7 @@ public class DataUtils {
     }
 
     private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
-        CDODatabaseProxy2.getLastDeployedInstanceModel(camelModelID, transaction).ifPresent(deployedModel -> {
+        CdoTool.getLastDeployedInstanceModel(camelModelID, transaction).ifPresent(deployedModel -> {
             //1. Component
             changeNames(result.getComponentInstancesToRegister(), deployedModel.getSoftwareComponentInstances(), DataUtils.VMKey::getInstance);
         });

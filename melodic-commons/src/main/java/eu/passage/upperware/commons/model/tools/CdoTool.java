@@ -9,6 +9,8 @@ package eu.passage.upperware.commons.model.tools;
 
 
 import camel.core.CamelModel;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentModel;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
@@ -32,7 +34,7 @@ public final class CdoTool {
     }
 
     private static <T extends EObject> Optional<T> getLastElementAsOptional(List<T> collection) {
-        return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
+        return Optional.ofNullable(getLastElement(collection));
     }
 
     public static <T extends EObject> T getLastElement(List<T> collection) {
@@ -49,5 +51,15 @@ public final class CdoTool {
     public static CamelModel getCamelModelById(CDOTransaction transaction, String camelModelID) {
         return CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+    }
+
+    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
+        CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
+
+        DeploymentModel deploymentModel = CdoTool.getLastElement(camelModel.getDeploymentModels());
+        if (deploymentModel instanceof DeploymentInstanceModel) {
+            return Optional.of((DeploymentInstanceModel) deploymentModel);
+        }
+        return Optional.empty();
     }
 }

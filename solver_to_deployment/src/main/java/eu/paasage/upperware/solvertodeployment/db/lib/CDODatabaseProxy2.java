@@ -16,20 +16,9 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Slf4j
 public class CDODatabaseProxy2 {
-
-    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(String camelModelID, CDOTransaction transaction) {
-        CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
-
-        DeploymentModel deploymentModel = CdoTool.getLastElement(camelModel.getDeploymentModels());
-        if (deploymentModel instanceof DeploymentInstanceModel) {
-            return Optional.of((DeploymentInstanceModel) deploymentModel);
-        }
-        return Optional.empty();
-    }
 
     public static int saveNewDeploymentInstanceModel(CDOTransaction transaction, String camelModelID)
             throws CommitException {
