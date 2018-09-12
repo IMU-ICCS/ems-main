@@ -9,7 +9,10 @@ package eu.passage.upperware.commons.model.tools;
 
 
 import camel.core.CamelModel;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentModel;
 import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
 import java.util.List;
@@ -25,12 +28,35 @@ import java.util.Optional;
 public final class CdoTool {
 
     public static Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
-        return getLastElement(contentsCM)
+        return getLastElementAsOptional(contentsCM)
                 .filter(CamelModel.class::isInstance)
                 .map(CamelModel.class::cast);
     }
 
-    private static <T extends EObject> Optional<T> getLastElement(List<T> collection) {
-        return Optional.ofNullable(CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size()-1) : null);
+    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(List<DeploymentModel> deploymentModels) {
+        return getLastElementAsOptional(deploymentModels)
+                .filter(DeploymentInstanceModel.class::isInstance)
+                .map(DeploymentInstanceModel.class::cast);
     }
+
+    private static <T extends EObject> Optional<T> getLastElementAsOptional(List<T> collection) {
+        return Optional.ofNullable(getLastElement(collection));
+    }
+
+    public static <T extends EObject> T getLastElement(List<T> collection) {
+        return CollectionUtils.isNotEmpty(collection) ? collection.get(collection.size() - 1) : null;
+    }
+
+    public static <T extends EObject> T getFirstElement(List<T> collection) {
+        if (CollectionUtils.isEmpty(collection)) {
+            throw new IllegalStateException("Could not find first element - collection is empty");
+        }
+        return collection.get(0);
+    }
+
+    public static CamelModel getCamelModelById(CDOTransaction transaction, String camelModelID) {
+        return CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
+                .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+    }
+
 }
