@@ -7,16 +7,15 @@ import java.util.Properties;
 // Class to read the properties from the properties file
 
 public class GetPropertyValues {
-	private int recordsConsider = 0;
+	private int recordsConsider = 0; // number of instances to consider from the database
 	private int bestLatency = 0;
 	private int worstLatency = 0;
 	private int bestBandwidth = 0;
 	private int worstBandwidth = 0;
 	private int timeInterval = 0; // time interval in seconds to update
 	private String function = ""; // algorithm to calculate for the latest
-	private int timePurge = 0; //time to purge old records in seconds
-	private int numRecord = 0; //number of records to generate each second
-	
+	private int timePurge = 0; // time to purge old records in seconds
+	private int numRecordGenerate = 0; // number of records to generate each second
 
 //	read the config files and populate the elements
 	public void readValues() {
@@ -41,7 +40,7 @@ public class GetPropertyValues {
 			timeInterval = Integer.parseInt(properties.getProperty("timeInterval"));
 			function = properties.getProperty("function");
 			timePurge = Integer.parseInt(properties.getProperty("timePurge"));
-
+			numRecordGenerate = Integer.parseInt(properties.getProperty("numRecordGenerate"));
 		} catch (Exception e) {
 			System.out.println("Exception: " + e);
 		}
@@ -109,6 +108,14 @@ public class GetPropertyValues {
 
 	public void setTimePurge(int timePurge) {
 		this.timePurge = timePurge;
+	}
+
+	public int getNumRecordGenerate() {
+		return numRecordGenerate;
+	}
+
+	public void setNumRecordGenerate(int numRecordGenerate) {
+		this.numRecordGenerate = numRecordGenerate;
 	}
 
 }

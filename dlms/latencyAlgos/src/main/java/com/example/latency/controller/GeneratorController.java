@@ -35,10 +35,11 @@ public class GeneratorController {
 		 * deleteData(date2);// delete the old data
 		 */
 		// generate data
-		double numberOfDataGenerated = 
-		
+		long numRecordGenerate = propValues.getNumRecordGenerate();
+		long sleepTime = 1000 / numRecordGenerate;
+
 		while (true) {
-			Thread.sleep(100);	// number of records generated per second
+			Thread.sleep(sleepTime); // number of records generated per second
 			generator.generateData(propValues);
 
 			long newTime = System.currentTimeMillis();

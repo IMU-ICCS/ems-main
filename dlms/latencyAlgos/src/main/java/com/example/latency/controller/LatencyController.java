@@ -55,7 +55,7 @@ public class LatencyController {
 	@Async
 	public void run() {
 		long currentTime = System.currentTimeMillis();
-		// this to initialize data
+		// this to initialize data manually
 
 //		int subtractNum = 180000;
 //		for (int i = 1; i < 5000; i++)
@@ -66,12 +66,12 @@ public class LatencyController {
 			long newTime = System.currentTimeMillis();
 			if ((newTime - currentTime) >= propValues.getTimeInterval() * 1000) {
 				storeInternally();
-				printDataStructure(); // print the stored data structure
+				printDataStructure(); // write the stored data structure in the logger file
 				currentTime = newTime;
 			}
 
 		}
-//		
+//		if need to ask in the console
 //		askUser(); // ask user the dataset they want to find the latency and bandwidth
 	}
 
@@ -106,8 +106,8 @@ public class LatencyController {
 				dc2, date);
 
 		// to store in the array
-		int latency = 0;
-		int bandWidth = 0;
+		double latency = 0;
+		double bandWidth = 0;
 
 		if (dataCenterList.size() == 0) { // if no record exists
 
@@ -128,8 +128,8 @@ public class LatencyController {
 				bandWidth += dcLatencyBandwidthItem.getBandwidth();
 			}
 			// use average
-			latency = latency / dataCenterList.size();
-			bandWidth = bandWidth / dataCenterList.size();
+			latency = latency / (double) dataCenterList.size();
+			bandWidth = bandWidth / (double) dataCenterList.size();
 
 //		}
 			DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandWidth);
@@ -143,8 +143,26 @@ public class LatencyController {
 		}
 	}
 
-	// use gps coordinate to calculate the latency and bandwidth
-	public void useGPS(String location1, String location2, int latency, int bandwidth) {
+	public void algoEqualWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
+		int latency = 0, bandwidth = 0;
+		for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
+			latency += dcLatencyBandwidthItem.getLatency();
+			bandwidth += dcLatencyBandwidthItem.getBandwidth();
+		}
+		latency = latency / dataCenterList.size();
+		bandwidth = bandwidth / dataCenterList.size();
+
+		DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandwidth);
+		List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
+
+		if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
+			dcDistanceList = dcDistanceMap.get(dc1);
+
+		dcDistanceList.add(dcDistanceNew);
+		dcDistanceMap.put(dc1, dcDistanceList);
+	}
+
+	public void latestHighestWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
 
 	}
 

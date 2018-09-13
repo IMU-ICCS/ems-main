@@ -3,10 +3,10 @@ package com.example.latency.model;
 public class DCDistance {
 
 	private String name;
-	private int latency;
-	private int bandwidth;
+	private double latency;
+	private double bandwidth;
 
-	public DCDistance(String name, int latency, int bandwidth) {
+	public DCDistance(String name, double latency, double bandwidth) {
 		this.name = name;
 		this.latency = latency;
 		this.bandwidth = bandwidth;
@@ -24,19 +24,19 @@ public class DCDistance {
 		this.name = name;
 	}
 
-	public int getLatency() {
+	public double getLatency() {
 		return latency;
 	}
 
-	public void setLatency(int latency) {
+	public void setLatency(double latency) {
 		this.latency = latency;
 	}
 
-	public int getBandwidth() {
+	public double getBandwidth() {
 		return bandwidth;
 	}
 
-	public void setBandwidth(int bandwidth) {
+	public void setBandwidth(double bandwidth) {
 		this.bandwidth = bandwidth;
 	}
 

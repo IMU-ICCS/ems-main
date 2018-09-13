@@ -4,10 +4,10 @@ public class TwoDataCenterValues {
 
 	private final String dc1;
 	private final String dc2;
-	private final int latency;
-	private final int bandwidth;
+	private final double latency;
+	private final double bandwidth;
 
-	public TwoDataCenterValues(String dc1, String dc2, int latency, int bandwidth) {
+	public TwoDataCenterValues(String dc1, String dc2, double latency, double bandwidth) {
 		this.dc1 = dc1;
 		this.dc2 = dc2;
 		this.latency = latency;
@@ -22,11 +22,11 @@ public class TwoDataCenterValues {
 		return dc2;
 	}
 
-	public int getLatency() {
+	public double getLatency() {
 		return latency;
 	}
 
-	public int getBandwidth() {
+	public double getBandwidth() {
 		return bandwidth;
 	}
 

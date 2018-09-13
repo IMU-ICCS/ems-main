@@ -23928,3 +23928,288 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No b
 2018-09-13 14:09:51.293  INFO 16967 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-west-1	us-west-2	1119	911
 2018-09-13 14:12:36.209  INFO 16967 --- [Thread-13] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
 2018-09-13 14:12:36.241  INFO 16967 --- [Thread-13] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2018-09-13 16:18:00.405  INFO 22415 --- [main] c.e.latency.LatencyApplicationTests      : Starting LatencyApplicationTests on Dipeshs-MacBook-Pro.local with PID 22415 (started by Dipesh in /Users/Dipesh/OneDrive/Research Engineer/bitbucket/upperware/dlms/latencyAlgos)
+2018-09-13 16:18:00.411  INFO 22415 --- [main] c.e.latency.LatencyApplicationTests      : No active profile set, falling back to default profiles: default
+2018-09-13 16:18:00.455  INFO 22415 --- [main] o.s.w.c.s.GenericWebApplicationContext   : Refreshing org.springframework.web.context.support.GenericWebApplicationContext@33bc72d1: startup date [Thu Sep 13 16:18:00 CEST 2018]; root of context hierarchy
+2018-09-13 16:18:02.153  INFO 22415 --- [main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$64b1e1f5] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2018-09-13 16:18:02.461  INFO 22415 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2018-09-13 16:18:02.930  INFO 22415 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2018-09-13 16:18:02.989  INFO 22415 --- [main] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2018-09-13 16:18:03.009  INFO 22415 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2018-09-13 16:18:03.108  INFO 22415 --- [main] org.hibernate.Version                    : HHH000412: Hibernate Core {5.2.17.Final}
+2018-09-13 16:18:03.110  INFO 22415 --- [main] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2018-09-13 16:18:03.159  INFO 22415 --- [main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2018-09-13 16:18:03.300  INFO 22415 --- [main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+2018-09-13 16:18:04.030  INFO 22415 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2018-09-13 16:18:05.242  INFO 22415 --- [main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2018-09-13 16:18:05.650  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.web.context.support.GenericWebApplicationContext@33bc72d1: startup date [Thu Sep 13 16:18:00 CEST 2018]; root of context hierarchy
+2018-09-13 16:18:05.720  WARN 22415 --- [main] aWebConfiguration$JpaWebMvcConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2018-09-13 16:18:05.830  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/cloudprovider],methods=[GET]}" onto public java.util.List<com.example.latency.model.CloudProvider> com.example.latency.controller.CloudProviderController.getAllCloudProvider()
+2018-09-13 16:18:05.832  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/cloudprovider],methods=[POST]}" onto public com.example.latency.model.CloudProvider com.example.latency.controller.CloudProviderController.createCloudProvider(com.example.latency.model.CloudProvider)
+2018-09-13 16:18:05.833  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/cloudprovider/{id}],methods=[GET]}" onto public com.example.latency.model.CloudProvider com.example.latency.controller.CloudProviderController.getCloudProviderById(java.lang.Long)
+2018-09-13 16:18:05.836  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/datacenter],methods=[GET]}" onto public java.util.List<com.example.latency.model.DataCenter> com.example.latency.controller.DataCenterController.getAllRegion()
+2018-09-13 16:18:05.836  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/datacenter],methods=[POST]}" onto public com.example.latency.model.DataCenter com.example.latency.controller.DataCenterController.createRegion(com.example.latency.model.DataCenter)
+2018-09-13 16:18:05.837  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/datacenter/{id}],methods=[GET]}" onto public com.example.latency.model.DataCenter com.example.latency.controller.DataCenterController.getRegionById(java.lang.Long)
+2018-09-13 16:18:05.839  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/dcrelation],methods=[GET]}" onto public java.util.List<com.example.latency.model.DataCenterLatencyBandwidth> com.example.latency.controller.DataCenterLatencyBandwidthController.getAllDataCenterLatencyBandwidth()
+2018-09-13 16:18:05.840  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/dcrelation],methods=[POST]}" onto public com.example.latency.model.DataCenterLatencyBandwidth com.example.latency.controller.DataCenterLatencyBandwidthController.createDataCenterLatencyBandwidth(com.example.latency.model.DataCenterLatencyBandwidth)
+2018-09-13 16:18:05.841  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/dcrelation/{id}],methods=[GET]}" onto public com.example.latency.model.DataCenterLatencyBandwidth com.example.latency.controller.DataCenterLatencyBandwidthController.getDataCenterLatencyBandwidthById(java.lang.Long)
+2018-09-13 16:18:05.844  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/region],methods=[GET]}" onto public java.util.List<com.example.latency.model.Region> com.example.latency.controller.RegionController.getAllRegion()
+2018-09-13 16:18:05.845  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/region],methods=[POST]}" onto public com.example.latency.model.Region com.example.latency.controller.RegionController.createRegion(com.example.latency.model.Region)
+2018-09-13 16:18:05.845  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/region/{id}],methods=[GET]}" onto public com.example.latency.model.Region com.example.latency.controller.RegionController.getRegionById(java.lang.Long)
+2018-09-13 16:18:05.848  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/input/{dc1}/{dc2}],methods=[GET]}" onto public com.example.latency.model.TwoDataCenterValues com.example.latency.controller.UserInputController.retrieve(java.lang.String,java.lang.String)
+2018-09-13 16:18:05.858  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2018-09-13 16:18:05.860  INFO 22415 --- [main] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2018-09-13 16:18:05.940  INFO 22415 --- [main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2018-09-13 16:18:05.940  INFO 22415 --- [main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2018-09-13 16:18:06.382  INFO 22415 --- [main] c.e.latency.LatencyApplicationTests      : Started LatencyApplicationTests in 6.326 seconds (JVM running for 7.293)
+2018-09-13 16:18:06.465  INFO 22415 --- [SimpleAsyncTaskExecutor-2] o.h.h.i.QueryTranslatorFactoryInitiator  : HHH000397: Using ASTQueryTranslatorFactory
+2018-09-13 16:18:06.696  INFO 22415 --- [Thread-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2018-09-13 16:18:06.703  INFO 22415 --- [Thread-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2018-09-13 16:35:21.103  INFO 22843 --- [restartedMain] com.example.latency.LatencyApplication   : Starting LatencyApplication on Dipeshs-MacBook-Pro.local with PID 22843 (started by Dipesh in /Users/Dipesh/OneDrive/Research Engineer/bitbucket/upperware/dlms/latencyAlgos)
+2018-09-13 16:35:21.106  INFO 22843 --- [restartedMain] com.example.latency.LatencyApplication   : No active profile set, falling back to default profiles: default
+2018-09-13 16:35:21.163  INFO 22843 --- [restartedMain] ConfigServletWebServerApplicationContext : Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2a50b0ce: startup date [Thu Sep 13 16:35:21 CEST 2018]; root of context hierarchy
+2018-09-13 16:35:22.658  INFO 22843 --- [restartedMain] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$6c1b83b1] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2018-09-13 16:35:23.106  INFO 22843 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2018-09-13 16:35:23.133  INFO 22843 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2018-09-13 16:35:23.134  INFO 22843 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.32
+2018-09-13 16:35:23.143  INFO 22843 --- [localhost-startStop-1] o.a.catalina.core.AprLifecycleListener   : The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [/Users/Dipesh/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.]
+2018-09-13 16:35:23.304  INFO 22843 --- [localhost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2018-09-13 16:35:23.305  INFO 22843 --- [localhost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 2142 ms
+2018-09-13 16:35:23.355  INFO 22843 --- [localhost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Servlet dispatcherServlet mapped to [/]
+2018-09-13 16:35:23.359  INFO 22843 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2018-09-13 16:35:23.359  INFO 22843 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+2018-09-13 16:35:23.360  INFO 22843 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'httpPutFormContentFilter' to: [/*]
+2018-09-13 16:35:23.360  INFO 22843 --- [localhost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'requestContextFilter' to: [/*]
+2018-09-13 16:35:23.517  INFO 22843 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2018-09-13 16:35:23.751  INFO 22843 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2018-09-13 16:35:23.790  INFO 22843 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2018-09-13 16:35:23.811  INFO 22843 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [
+	name: default
+	...]
+2018-09-13 16:35:23.906  INFO 22843 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate Core {5.2.17.Final}
+2018-09-13 16:35:23.907  INFO 22843 --- [restartedMain] org.hibernate.cfg.Environment            : HHH000206: hibernate.properties not found
+2018-09-13 16:35:23.951  INFO 22843 --- [restartedMain] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+2018-09-13 16:35:24.091  INFO 22843 --- [restartedMain] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+2018-09-13 16:35:24.690  INFO 22843 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2018-09-13 16:35:25.264  INFO 22843 --- [restartedMain] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2018-09-13 16:35:25.479  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@2a50b0ce: startup date [Thu Sep 13 16:35:21 CEST 2018]; root of context hierarchy
+2018-09-13 16:35:25.528  WARN 22843 --- [restartedMain] aWebConfiguration$JpaWebMvcConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2018-09-13 16:35:25.566  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/cloudprovider],methods=[GET]}" onto public java.util.List<com.example.latency.model.CloudProvider> com.example.latency.controller.CloudProviderController.getAllCloudProvider()
+2018-09-13 16:35:25.567  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/cloudprovider],methods=[POST]}" onto public com.example.latency.model.CloudProvider com.example.latency.controller.CloudProviderController.createCloudProvider(com.example.latency.model.CloudProvider)
+2018-09-13 16:35:25.567  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/cloudprovider/{id}],methods=[GET]}" onto public com.example.latency.model.CloudProvider com.example.latency.controller.CloudProviderController.getCloudProviderById(java.lang.Long)
+2018-09-13 16:35:25.568  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/datacenter],methods=[GET]}" onto public java.util.List<com.example.latency.model.DataCenter> com.example.latency.controller.DataCenterController.getAllRegion()
+2018-09-13 16:35:25.569  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/datacenter],methods=[POST]}" onto public com.example.latency.model.DataCenter com.example.latency.controller.DataCenterController.createRegion(com.example.latency.model.DataCenter)
+2018-09-13 16:35:25.569  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/datacenter/{id}],methods=[GET]}" onto public com.example.latency.model.DataCenter com.example.latency.controller.DataCenterController.getRegionById(java.lang.Long)
+2018-09-13 16:35:25.571  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/dcrelation],methods=[GET]}" onto public java.util.List<com.example.latency.model.DataCenterLatencyBandwidth> com.example.latency.controller.DataCenterLatencyBandwidthController.getAllDataCenterLatencyBandwidth()
+2018-09-13 16:35:25.571  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/dcrelation],methods=[POST]}" onto public com.example.latency.model.DataCenterLatencyBandwidth com.example.latency.controller.DataCenterLatencyBandwidthController.createDataCenterLatencyBandwidth(com.example.latency.model.DataCenterLatencyBandwidth)
+2018-09-13 16:35:25.571  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/dcrelation/{id}],methods=[GET]}" onto public com.example.latency.model.DataCenterLatencyBandwidth com.example.latency.controller.DataCenterLatencyBandwidthController.getDataCenterLatencyBandwidthById(java.lang.Long)
+2018-09-13 16:35:25.573  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/region],methods=[GET]}" onto public java.util.List<com.example.latency.model.Region> com.example.latency.controller.RegionController.getAllRegion()
+2018-09-13 16:35:25.573  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/region],methods=[POST]}" onto public com.example.latency.model.Region com.example.latency.controller.RegionController.createRegion(com.example.latency.model.Region)
+2018-09-13 16:35:25.574  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/api/region/{id}],methods=[GET]}" onto public com.example.latency.model.Region com.example.latency.controller.RegionController.getRegionById(java.lang.Long)
+2018-09-13 16:35:25.574  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/input/{dc1}/{dc2}],methods=[GET]}" onto public com.example.latency.model.TwoDataCenterValues com.example.latency.controller.UserInputController.retrieve(java.lang.String,java.lang.String)
+2018-09-13 16:35:25.577  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2018-09-13 16:35:25.578  INFO 22843 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2018-09-13 16:35:25.610  INFO 22843 --- [restartedMain] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2018-09-13 16:35:25.610  INFO 22843 --- [restartedMain] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2018-09-13 16:35:25.869  INFO 22843 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2018-09-13 16:35:25.903  INFO 22843 --- [restartedMain] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2018-09-13 16:35:25.905  INFO 22843 --- [restartedMain] o.s.j.e.a.AnnotationMBeanExporter        : Bean with name 'dataSource' has been autodetected for JMX exposure
+2018-09-13 16:35:25.909  INFO 22843 --- [restartedMain] o.s.j.e.a.AnnotationMBeanExporter        : Located MBean 'dataSource': registering with JMX server as MBean [com.zaxxer.hikari:name=dataSource,type=HikariDataSource]
+2018-09-13 16:35:25.945  INFO 22843 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2018-09-13 16:35:25.947  INFO 22843 --- [restartedMain] com.example.latency.LatencyApplication   : Started LatencyApplication in 5.226 seconds (JVM running for 5.666)
+2018-09-13 16:35:25.996  INFO 22843 --- [SimpleAsyncTaskExecutor-2] o.h.h.i.QueryTranslatorFactoryInitiator  : HHH000397: Using ASTQueryTranslatorFactory
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : datacenter1	datacenter2	latency	bandwidth
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-3	us-east-1	914	1189
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-3	us-east-2	899	892
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-3	us-west-1	652	1032
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-3	us-west-2	1106	1164
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-3	sa-east-1	858	1015
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-3	North-Central-US	1133	1104
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	us-east-1	1141	931
+2018-09-13 16:35:30.450  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	us-east-2	1159	996
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	us-west-1	1050	955
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	us-west-2	920	792
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	ca-central-1	1052	722
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	eu-central-1	832	980
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	eu-west-1	984	1008
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	eu-west-2	993	1027
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	eu-west-3	973	808
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	ap-southeast-1	881	1070
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	ap-southeast-2	904	933
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	sa-east-1	1165	936
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	East-US	1057	878
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	East-US-2	1179	695
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	Central-US	871	965
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-south-1	North-Central-US	1089	840
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	us-east-1	939	836
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	us-east-2	950	992
+2018-09-13 16:35:30.451  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	us-west-1	1004	913
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	us-west-2	1017	996
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	eu-west-3	1138	889
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	sa-east-1	749	1048
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-2	North-Central-US	703	1075
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	us-east-1	889	882
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	us-east-2	1015	1200
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	us-west-1	991	1006
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	us-west-2	1034	1027
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	eu-west-2	1083	1163
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	eu-west-3	974	1271
+2018-09-13 16:35:30.452  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	sa-east-1	1168	994
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-west-1	North-Central-US	1135	1195
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	us-east-1	1099	842
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	us-east-2	939	1089
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	us-west-1	1240	883
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	us-west-2	966	865
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	ca-central-1	847	971
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	eu-central-1	939	995
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	eu-west-1	928	961
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	eu-west-2	912	1029
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	eu-west-3	1111	1228
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	ap-southeast-1	1160	1087
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	ap-southeast-2	1101	1289
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	ap-south-1	950	1006
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	sa-east-1	1117	1080
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	East-US	874	1218
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	East-US-2	1149	896
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	Central-US	926	561
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-3	North-Central-US	965	937
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	us-east-1	984	1092
+2018-09-13 16:35:30.453  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	us-east-2	992	1091
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	us-west-1	926	610
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	us-west-2	947	878
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	ca-central-1	846	926
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	eu-central-1	1137	986
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	eu-west-1	880	946
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	eu-west-2	1090	967
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	eu-west-3	933	1013
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	ap-northeast-3	977	973
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	ap-southeast-1	941	857
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	ap-southeast-2	922	894
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	ap-south-1	1127	1188
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	sa-east-1	1166	1224
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	East-US	1104	1282
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	East-US-2	895	934
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	Central-US	1016	957
+2018-09-13 16:35:30.454  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-2	North-Central-US	1008	1229
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	us-east-1	1189	1079
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	us-east-2	1018	981
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	us-west-1	1136	823
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	us-west-2	1187	782
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	ca-central-1	1242	973
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	eu-central-1	1098	1059
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	eu-west-1	1230	846
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	eu-west-2	1154	1114
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	eu-west-3	840	1161
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	ap-northeast-2	880	945
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	ap-northeast-3	968	1075
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	ap-southeast-1	1005	929
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	ap-southeast-2	881	1038
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	ap-south-1	1032	942
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	sa-east-1	776	844
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	East-US	970	980
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	East-US-2	1003	897
+2018-09-13 16:35:30.455  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	Central-US	870	1204
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-northeast-1	North-Central-US	829	1154
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	us-east-1	883	1137
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	us-east-2	1063	809
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	us-west-1	1174	1055
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	us-west-2	1013	926
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	eu-central-1	1051	1181
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	eu-west-1	1124	731
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	eu-west-2	985	1077
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	eu-west-3	1035	1076
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	sa-east-1	1003	956
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	East-US	1017	1073
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	East-US-2	1167	1175
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : Central-US	North-Central-US	1153	948
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : North-Central-US	us-east-1	1038	732
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : North-Central-US	us-east-2	1081	819
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : North-Central-US	us-west-1	955	1082
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : North-Central-US	us-west-2	996	1074
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : North-Central-US	sa-east-1	913	1066
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	us-east-1	1165	847
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	us-east-2	1057	892
+2018-09-13 16:35:30.456  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	us-west-1	968	945
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	us-west-2	1091	933
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	eu-central-1	1149	667
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	eu-west-1	799	862
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	eu-west-2	978	1127
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	eu-west-3	963	866
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	sa-east-1	948	983
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	East-US	1061	1046
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	East-US-2	1041	1059
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	Central-US	944	1032
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ca-central-1	North-Central-US	1034	975
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : sa-east-1	us-east-1	916	1059
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : sa-east-1	us-east-2	871	991
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : sa-east-1	us-west-1	1013	884
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : sa-east-1	us-west-2	1043	938
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	us-east-1	835	731
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	us-east-2	1097	931
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	us-west-1	878	996
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	us-west-2	946	912
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	eu-central-1	990	904
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	eu-west-1	795	923
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	eu-west-2	1079	933
+2018-09-13 16:35:30.457  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	eu-west-3	1045	983
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	sa-east-1	1368	957
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	East-US-2	1171	1128
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US	North-Central-US	1063	934
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	us-east-1	1078	978
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	us-east-2	875	1234
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	us-west-1	1002	1125
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	us-west-2	996	891
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	eu-central-1	1126	784
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	eu-west-1	1106	1069
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	eu-west-2	970	996
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	eu-west-3	1019	1100
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	sa-east-1	1034	896
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : East-US-2	North-Central-US	872	1012
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	us-east-1	1062	933
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	us-east-2	883	999
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	us-west-1	929	1074
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	us-west-2	1203	1152
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	ca-central-1	813	1063
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	eu-central-1	1084	1080
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	eu-west-1	1084	1125
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	eu-west-2	847	973
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	eu-west-3	1072	1112
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	ap-southeast-2	976	1173
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	sa-east-1	833	925
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	East-US	923	829
+2018-09-13 16:35:30.458  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	East-US-2	861	963
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	Central-US	941	993
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-1	North-Central-US	866	1126
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	us-east-1	959	968
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	us-east-2	1050	1016
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	us-west-1	828	1110
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	us-west-2	676	1145
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	ca-central-1	1055	1034
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	eu-central-1	1110	884
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	eu-west-1	949	1134
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	eu-west-2	1132	1050
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	eu-west-3	850	919
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	sa-east-1	1035	1143
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	East-US	1085	1043
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	East-US-2	884	1000
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	Central-US	890	1116
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : ap-southeast-2	North-Central-US	883	927
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	us-east-1	1123	1097
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	us-east-2	1034	971
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	us-west-1	1135	1006
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	us-west-2	887	1141
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	eu-west-1	947	1116
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	eu-west-2	785	1048
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	eu-west-3	1090	814
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	sa-east-1	972	856
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : eu-central-1	North-Central-US	1009	1030
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-east-1	us-east-2	999	1065
+2018-09-13 16:35:30.459  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-east-1	us-west-1	903	909
+2018-09-13 16:35:30.460  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-east-1	us-west-2	1108	1091
+2018-09-13 16:35:30.460  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-east-2	us-west-1	767	941
+2018-09-13 16:35:30.460  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-east-2	us-west-2	1165	830
+2018-09-13 16:35:30.460  INFO 22843 --- [SimpleAsyncTaskExecutor-2] c.e.l.controller.LatencyController       : us-west-1	us-west-2	1163	944
+2018-09-13 16:35:37.224  INFO 22843 --- [Thread-13] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2018-09-13 16:35:37.228  INFO 22843 --- [Thread-13] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
