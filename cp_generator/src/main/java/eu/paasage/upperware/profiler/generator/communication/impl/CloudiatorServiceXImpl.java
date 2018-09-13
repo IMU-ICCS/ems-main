@@ -69,14 +69,14 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
         Map<MmsObject, List<Attribute>> requirementsMap = getRequirementsMap(resourceRequirement);
 
-        getAttribute(requirementsMap, "minRam").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
-        getAttribute(requirementsMap, "maxRam").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
+        getAttribute(requirementsMap, "totalMemoryHasMin").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
+        getAttribute(requirementsMap, "totalMemoryHasMax").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
 
-        getAttribute(requirementsMap, "minCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
-        getAttribute(requirementsMap, "maxCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
+        getAttribute(requirementsMap, "hasMinNumberofCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
+        getAttribute(requirementsMap, "hasMaxNumberofCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
 
-        getAttribute(requirementsMap, "minStorage").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "disk", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
-        getAttribute(requirementsMap, "maxStorage").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "disk", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
+        getAttribute(requirementsMap, "hasMin").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "disk", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
+        getAttribute(requirementsMap, "hasMax").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "disk", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
 
         getAttribute(requirementsMap, "minCpu").ifPresent(attribute -> log.warn("MinCpu requirement is not supported"));
         getAttribute(requirementsMap, "maxCpu").ifPresent(attribute -> log.warn("MaxCpu requirement is not supported"));
