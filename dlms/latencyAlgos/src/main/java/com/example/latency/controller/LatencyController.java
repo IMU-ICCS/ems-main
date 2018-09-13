@@ -1,6 +1,7 @@
 package com.example.latency.controller;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -56,7 +57,6 @@ public class LatencyController {
 	public void run() {
 		long currentTime = System.currentTimeMillis();
 		// this to initialize data manually
-
 //		int subtractNum = 180000;
 //		for (int i = 1; i < 5000; i++)
 //			insertData(subtractNum * i);
@@ -100,8 +100,9 @@ public class LatencyController {
 
 	// Search and get data from the database
 	public void searchDatabase(String dc1, String dc2) {
-		LocalDate localDate = LocalDate.now().minusDays(numberOfDaysConsider);
-		Date date = java.sql.Date.valueOf(localDate);
+		LocalDateTime localDateTime = LocalDateTime.now();
+		localDateTime = localDateTime.minusSeconds(this.propValues.getTimeInterval());
+		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository.findByLatestRecords(dc1,
 				dc2, date);
 
@@ -122,10 +123,11 @@ public class LatencyController {
 			 * 
 			 */
 		} else {
-
+			int count = 0;
 			for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
 				latency += dcLatencyBandwidthItem.getLatency();
 				bandWidth += dcLatencyBandwidthItem.getBandwidth();
+				count++;
 			}
 			// use average
 			latency = latency / (double) dataCenterList.size();
@@ -140,7 +142,9 @@ public class LatencyController {
 
 			dcDistanceList.add(dcDistanceNew);
 			dcDistanceMap.put(dc1, dcDistanceList);
+			System.out.println("Records\t" + count);
 		}
+
 	}
 
 	public void algoEqualWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
