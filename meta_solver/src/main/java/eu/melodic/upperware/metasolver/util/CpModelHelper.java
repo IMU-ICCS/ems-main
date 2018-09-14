@@ -11,10 +11,7 @@ package eu.melodic.upperware.metasolver.util;
 
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
@@ -88,27 +85,24 @@ public class CpModelHelper {
 			
 			// add metric variable values for all (extracted) metric variable names
 			//XXX: R1.5 hack: metric variable are stored as Constants in CP model, with their Id's prefixed with 'METRIC_'
-			EList<Constant> cpConstList = cpModel.getConstants();
-			for (Constant c : cpConstList) {
-				String id = c.getId().trim();
-				if (id.startsWith("METRIC_") && !id.startsWith("METRIC_UTILITYTYPE_")) {
-					String mvName = id.substring("METRIC_".intern().length());
-					String mvValue = metricValues.get(mvName);
-					if (mvValue!=null && !mvValue.isEmpty()) {
-						BasicTypeEnum type = c.getType();
-						NumericValueUpperware newVal = null;
-						switch (type) {
-							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue( (int)Double.parseDouble(mvValue) ); break;
-							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue( (float)Double.parseDouble(mvValue) ); break;
-							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue( Double.parseDouble(mvValue) ); break;
-							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue( (long)Double.parseDouble(mvValue) ); break;
-						}
-						c.setValue(newVal);
+			EList<CpMetric> cpMetricList = cpModel.getCpMetrics();
+			for (CpMetric c : cpMetricList) {
+				String mvName = c.getId().trim();
+				String mvValue = metricValues.get(mvName);
+				log.info("Updating metric:" +mvName + " with value:" +mvValue +" in CP model.");
+				if (mvValue!=null && !mvValue.isEmpty()) {
+					BasicTypeEnum type = c.getType();
+					NumericValueUpperware newVal = null;
+					switch (type) {
+						case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue( (int)Double.parseDouble(mvValue) ); break;
+						case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue( (float)Double.parseDouble(mvValue) ); break;
+						case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue( Double.parseDouble(mvValue) ); break;
+						case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue( (long)Double.parseDouble(mvValue) ); break;
 					}
+					c.setValue(newVal);
 				}
 			}
 
-			
 			// commit changes
 			transaction.commit();
 			transaction = null;
