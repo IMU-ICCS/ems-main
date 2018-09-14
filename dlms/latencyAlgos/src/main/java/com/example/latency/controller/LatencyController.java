@@ -60,8 +60,9 @@ public class LatencyController {
 //		int subtractNum = 180000;
 //		for (int i = 1; i < 5000; i++)
 //			insertData(subtractNum * i);
-		storeInternally();
-		printDataStructure(); // print the stored data structure
+		storeInternally(); // use algorithm to find latency and bandwidth based on historical data or
+							// location
+		printDataStructure(); // write the stored data structure to a file
 		while (true) {
 			long newTime = System.currentTimeMillis();
 			if ((newTime - currentTime) >= propValues.getTimeInterval() * 1000) {
@@ -92,63 +93,58 @@ public class LatencyController {
 				Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
 
 				dcPairList.add(nameList[0] + "," + nameList[1]);
-				searchDatabase(nameList[0], nameList[1]);
+
+				// for different functions
+				switch (propValues.getFunction()) {
+				case "average":
+					computeAverage(nameList[0], nameList[1]);
+					break;
+				case "latest_higher":
+					computeLatestHigher(nameList[0], nameList[1]);
+					break;
+				default:
+					System.out.println("Sorry the function has not been implemented yet!");
+				}
+
 			}
 		}
 
 	}
 
-	// Search and get data from the database
-	public void searchDatabase(String dc1, String dc2) {
+	// algo : average
+	public void computeAverage(String dc1, String dc2) {
 		LocalDateTime localDateTime = LocalDateTime.now();
 		localDateTime = localDateTime.minusSeconds(this.propValues.getTimeInterval());
 		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository.findByLatestRecords(dc1,
 				dc2, date);
 
-		// to store in the array
-		double latency = 0;
-		double bandWidth = 0;
+		if (dataCenterList.size() == 0) { // if no record exists
+//			calculateUsingGPS(dc1, dc2);
+		} else {
+			algoEqualWeight(dataCenterList, dc1, dc2);
+		}
+
+	}
+
+	// algo : latest higher
+	public void computeLatestHigher(String dc1, String dc2) {
+		LocalDateTime localDateTime = LocalDateTime.now();
+		localDateTime = localDateTime.minusSeconds(this.propValues.getTimeInterval());
+		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository
+				.findByLatestRecordsOrdered(dc1, dc2, date);
 
 		if (dataCenterList.size() == 0) { // if no record exists
-
-			// this computes distance and calculates latency and bandwidth
-			/*
-			 * double distance = 0; try { distance = locationController.findLocation(dc1,
-			 * dc2); Thread.sleep(1000); } catch (Exception e) { // TODO Auto-generated
-			 * catch block e.printStackTrace(); }
-			 * 
-			 * Integer[] latArray = findlatlongWithDist(distance); latency = latArray[0];
-			 * bandWidth = latArray[1];
-			 * 
-			 */
+//			calculateUsingGPS(dc1, dc2, latency, bandwidth);
 		} else {
-			int count = 0;
-			for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
-				latency += dcLatencyBandwidthItem.getLatency();
-				bandWidth += dcLatencyBandwidthItem.getBandwidth();
-				count++;
-			}
-			// use average
-			latency = latency / (double) dataCenterList.size();
-			bandWidth = bandWidth / (double) dataCenterList.size();
-
-//		}
-			DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandWidth);
-			List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
-
-			if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
-				dcDistanceList = dcDistanceMap.get(dc1);
-
-			dcDistanceList.add(dcDistanceNew);
-			dcDistanceMap.put(dc1, dcDistanceList);
-			System.out.println("Records\t" + count);
+			algoLatestHigherWeight(dataCenterList, dc1, dc2);
 		}
 
 	}
 
 	public void algoEqualWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
-		int latency = 0, bandwidth = 0;
+		double latency = 0, bandwidth = 0;
 		for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
 			latency += dcLatencyBandwidthItem.getLatency();
 			bandwidth += dcLatencyBandwidthItem.getBandwidth();
@@ -166,8 +162,56 @@ public class LatencyController {
 		dcDistanceMap.put(dc1, dcDistanceList);
 	}
 
-	public void latestHighestWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
+	public void algoLatestHigherWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
+		double latency = 0, bandwidth = 0;
+		int numberRecords = dataCenterList.size();
 
+		double multiply = 0;
+		int numCounter = 1; // to multiply with
+		double denom = 0;// to divide
+		for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
+			multiply = (numberRecords - numCounter + 1.0) / (double) numberRecords;
+			latency += dcLatencyBandwidthItem.getLatency() * multiply;
+			bandwidth += dcLatencyBandwidthItem.getBandwidth() * multiply;
+
+			denom += multiply;
+			numCounter++;
+		}
+		latency = latency / denom;
+		bandwidth = bandwidth / denom;
+
+		DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandwidth);
+		List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
+
+		if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
+			dcDistanceList = dcDistanceMap.get(dc1);
+
+		dcDistanceList.add(dcDistanceNew);
+		dcDistanceMap.put(dc1, dcDistanceList);
+	}
+
+	public void calculateUsingGPS(String dc1, String dc2) {
+//		/*
+		double distance = 0;
+		try {
+			distance = locationController.findLocation(dc1, dc2);
+		} catch (Exception e) { // TODO Auto-generated
+			e.printStackTrace();
+		}
+
+		Integer[] latArray = findlatlongWithDist(distance);
+		double latency = latArray[0];
+		double bandwidth = latArray[1];
+
+		DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandwidth);
+		List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
+
+		if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
+			dcDistanceList = dcDistanceMap.get(dc1);
+
+		dcDistanceList.add(dcDistanceNew);
+		dcDistanceMap.put(dc1, dcDistanceList);
+//		 * 
 	}
 
 	// initialize data

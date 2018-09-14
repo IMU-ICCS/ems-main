@@ -20,9 +20,12 @@ public interface DataCenterLatencyBandwidthRepository extends JpaRepository<Data
 
 	@Query(value = "select * from " + databaseName
 			+ " where dc1 = :dc1 and dc2 = :dc2 and timestamp > :timestamp", nativeQuery = true)
-//	Optional<DataCenterLatencyBandwidth> findByLatestRecords(@Param("dc1") String dc1, @Param("dc2") String dc2,
-//			@Param("timestamp") Date timestamp);
 	List<DataCenterLatencyBandwidth> findByLatestRecords(@Param("dc1") String dc1, @Param("dc2") String dc2,
+			@Param("timestamp") Date timestamp);
+
+	@Query(value = "select * from " + databaseName
+			+ " where dc1 = :dc1 and dc2 = :dc2 and timestamp > :timestamp order by timestamp desc", nativeQuery = true)
+	List<DataCenterLatencyBandwidth> findByLatestRecordsOrdered(@Param("dc1") String dc1, @Param("dc2") String dc2,
 			@Param("timestamp") Date timestamp);
 
 	@Temporal(TemporalType.DATE)
