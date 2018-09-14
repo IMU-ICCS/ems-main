@@ -11,9 +11,6 @@ package eu.melodic.upperware.cpsolver;
 
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.paasage.upperware.security.authapi.token.JWTService;
-import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -53,16 +50,4 @@ public class CpSolverContext {
     Integer port = cacheProperties.getCache().getPort();
     return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
   }
-
-  @Bean
-  @ConfigurationProperties
-  public MelodicSecurityProperties melodicSecurityProperties(){
-    return new MelodicSecurityProperties();
-  }
-
-  @Bean
-  public JWTService getJWTService(){
-    return new JWTServiceImpl(melodicSecurityProperties());
-  }
-
 }

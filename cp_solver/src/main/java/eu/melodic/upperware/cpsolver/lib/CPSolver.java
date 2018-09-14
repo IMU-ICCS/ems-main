@@ -14,7 +14,6 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTOFactory;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
-import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -69,8 +68,7 @@ public class CPSolver {
     private Collection<Element> deployedSolution;
     private Collection<MetricDTO> metricsForUG;
     private boolean isReconfig = false;
-    private Map<String, Integer> solutionWithMaximumUtilityInt = new HashMap<>();
-    private Map<String, Double> solutionWithMaximumUtilityReal = new HashMap<>();
+    private Map<String, Number> solutionWithMaximumUtility = new HashMap<>();
 
 
     /* Constructor which also reads the CP Model either from CDO via
@@ -137,7 +135,7 @@ public class CPSolver {
     private void createMetricsForUG(EList<CpMetric> metrics) {
         log.info("Creating metrics for Utility Generator");
         this.metricsForUG = metrics.stream().map(MetricDTOFactory::createMetricDTO).collect(Collectors.toList());
-        log.info("Creating metrics for Utility Generator is finished, number of metrics: {}.", metricsForUG);
+        log.info("Creating metrics for Utility Generator is finished, number of metrics: {}.", metricsForUG.size());
     }
 
     private void createVariablesForUG(EList<CpVariable> variables) {
@@ -186,8 +184,6 @@ public class CPSolver {
             solver.set(IntStrategyFactory.random(vars, System.currentTimeMillis()));
         }
 
-        log.info("Using Utility Generator for solution space:");
-
         if (solver.findSolution()) {
             int i = 1;
             maxUtility = 0.0;
@@ -209,13 +205,13 @@ public class CPSolver {
 
         maxUtility = utility;
 
-        solutionWithMaximumUtilityInt = idToIntVar.values().stream()
+        solutionWithMaximumUtility = idToIntVar.values().stream()
                 .filter(intVar -> variablesForUG.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
                 .collect(Collectors.toMap(IntVar::getName, IntVar::getValue));
 
-        solutionWithMaximumUtilityReal = idToRealVar.values().stream()
+        idToRealVar.values().stream()
                 .filter(realVar -> variablesForUG.stream().anyMatch(v -> realVar.getName().equals(v.getId())))
-                .collect(Collectors.toMap(RealVar::getName, RealVar::getUB));
+                .forEach(realVar -> solutionWithMaximumUtility.put(realVar.getName(), realVar.getUB()));
     }
 
     /* Saving the solution in the cp model and storing back the model to its
@@ -312,7 +308,7 @@ public class CPSolver {
     }
 
     private void createFloatVariableValue(CpVariable var, CpVariableValue varVal) {
-        double val = solutionWithMaximumUtilityReal.get(var.getId());
+        double val = solutionWithMaximumUtility.get(var.getId()).floatValue();
         log.info("Discovered value for variable :{} is: {}", var.getId(), val);
         FloatValueUpperware value = TypesFactory.eINSTANCE.createFloatValueUpperware();
         value.setValue((float) val);
@@ -320,7 +316,7 @@ public class CPSolver {
     }
 
     private void createDoubleVariableValue(CpVariable var, CpVariableValue varVal) {
-        double val = solutionWithMaximumUtilityReal.get(var.getId());
+        double val = solutionWithMaximumUtility.get(var.getId()).doubleValue();
         log.info("Discovered value for variable : {} is: {}", var.getId(), val);
         DoubleValueUpperware value = TypesFactory.eINSTANCE.createDoubleValueUpperware();
         value.setValue(val);
@@ -328,7 +324,7 @@ public class CPSolver {
     }
 
     private void createLongVariableValue(CpVariable var, CpVariableValue varVal) {
-        int val = solutionWithMaximumUtilityInt.get(var.getId());
+        int val = solutionWithMaximumUtility.get(var.getId()).intValue();
         log.info("Discovered value for variable : {} is: {} ", var.getId(), val);
         LongValueUpperware value = TypesFactory.eINSTANCE.createLongValueUpperware();
         value.setValue(val);
@@ -336,7 +332,7 @@ public class CPSolver {
     }
 
     private void createIntegerVariableValue(CpVariable var, CpVariableValue varVal) {
-        int val = solutionWithMaximumUtilityInt.get(var.getId());
+        int val = solutionWithMaximumUtility.get(var.getId()).intValue();
         log.info("Discovered value for variable : {} is: {}", var.getId(), val);
         IntegerValueUpperware value = TypesFactory.eINSTANCE.createIntegerValueUpperware();
         value.setValue(val);
@@ -978,7 +974,7 @@ public class CPSolver {
                 } else if (type.equals(BasicTypeEnum.LONG)) {
                     createEnumeratedDomain(var, nld, LongValueUpperware.class, value -> (int) value.getValue());
                 } else if (type.equals(BasicTypeEnum.DOUBLE)) {
-
+                    //createEnumeratedDomain(var, nld, DoubleValueUpperware.class, value -> (int) value.getValue());
                     double min = nld.getValues().stream().mapToDouble(value -> ((DoubleValueUpperware) value).getValue()).min().orElse(0d);
                     double max = nld.getValues().stream().mapToDouble(value -> ((DoubleValueUpperware) value).getValue()).max().orElse(Double.MAX_VALUE);
 
@@ -987,7 +983,6 @@ public class CPSolver {
                     log.info("RealElement: {}", v);
                     idToRealVar.put(id, v);
                 } else if (type.equals(BasicTypeEnum.FLOAT)) {
-
                     double min = nld.getValues().stream().mapToDouble(value -> ((FloatValueUpperware) value).getValue()).min().orElse(0d);
                     double max = nld.getValues().stream().mapToDouble(value -> ((FloatValueUpperware) value).getValue()).max().orElse(Double.MAX_VALUE);
 
@@ -1087,45 +1082,28 @@ public class CPSolver {
 
         intSolution = addSingleValueIntVariables(intSolution);
         log.debug("Second step: {}", intSolution);
-
         Collection<Element> realSolution = Arrays.stream(solver.retrieveRealVars())
                 .map(var -> ElementFactory.createElement(var.getName(), var.getUB()))
                 .collect(Collectors.toList());
-
-        realSolution = addSingleValueRealVariables(realSolution);
-
+        //realSolution = addSingleValueRealVariables(realSolution);
         log.debug("Second step real:{}", realSolution);
 
         double utility = utilityGenerator.evaluate(Stream.concat(intSolution.stream(), realSolution.stream()).collect(Collectors.toList()));
         if (utility > maxUtility) {
-            log.info("New utility value {} is greater than {}", utility, maxUtility);
+            log.debug("New utility value {} is greater than {}", utility, maxUtility);
             convertAndUpdateBestSolution(utility);
         } else {
             log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);
         }
     }
 
-    //fixme: checking if single value should be in idToIntVar or in idToRealVar
     private Collection<Element> addSingleValueIntVariables(Collection<Element> solution) {
-
         variablesForUG.stream()
                 .filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
                 .filter(varDTO -> idToIntVar.get(varDTO.getId()) != null)
                 .forEach(v -> solution.add(ElementFactory.createElement(v.getId(), idToIntVar.get(v.getId()).getValue())));
-
-        return solution;
-
-    }
-
-    //storage is the only variable real/ hack!
-    private Collection<Element> addSingleValueRealVariables(Collection<Element> solution) {
-        variablesForUG.stream()
-                .filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())) && varDTO.getType().equals(VariableType.STORAGE))
-                .forEach(v -> solution.add(new RealElement(v.getId(), idToRealVar.get(v.getId()).getUB())));
-
         return solution;
     }
-
 
     private BoolVar createBoolVar() {
         return VariableFactory.bool(getBoolVarName(), solver);

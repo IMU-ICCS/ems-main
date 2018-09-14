@@ -33,8 +33,9 @@
             <artifactId>melodic-commons</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.ow2.paasage.mddb.cdo</groupId>
+            <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
+            <classifier>repackaged</classifier>
         </dependency>
 
         <dependency>

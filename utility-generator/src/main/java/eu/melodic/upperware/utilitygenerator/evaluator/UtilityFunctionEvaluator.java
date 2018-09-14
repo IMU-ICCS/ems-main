@@ -48,8 +48,7 @@ public class UtilityFunctionEvaluator {
         Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
-        variablesFromConstraintProblem.forEach(v -> log.info("variables from constraint problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
-        log.info("metrics from constraint problem: {}", metricsFromConstraintProblem.toString());
+        variablesFromConstraintProblem.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
 
         this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
@@ -59,13 +58,13 @@ public class UtilityFunctionEvaluator {
 
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
-        log.info("Formula of utility function: {}", formula);
+        log.info("Formula of the utility function: {}", formula);
 
         Collection<NodeCandidateAttribute> attributesOfNodeCandidates = fromCamelModelConverter.getAttributesOfNodeCandidates();
-        log.info("attributes of node candidates {}", attributesOfNodeCandidates);
+        log.info("Attributes of Node Candidates: {}", attributesOfNodeCandidates);
 
         Collection<NodeCandidateAttribute> listOfAttributesOfNodeCandidates = fromCamelModelConverter.getListOfAttributesOfNodeCandidates();
-        log.info("attributes of list of node candidates {}", listOfAttributesOfNodeCandidates);
+        log.info("Attributes of list of Node Candidates: {}", listOfAttributesOfNodeCandidates);
 
         if (!listOfAttributesOfNodeCandidates.isEmpty()) {
             log.warn("Flag on candidates is not supported in Utility Generator");
@@ -81,7 +80,7 @@ public class UtilityFunctionEvaluator {
 
         if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
             Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
-            log.info("currentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
+            log.info("CurrentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
             /* that code is connected with variables with flag current-config.
             Its value can be taken from solution or from corresponding metric value. For now the assumption is that it will be taken from metric.*/
             //Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);

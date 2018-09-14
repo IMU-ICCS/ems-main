@@ -32,8 +32,8 @@ public class ToLogGraphLogger implements GraphLogger {
 
         List<GNode> nodes = new ArrayList<>();
 
-        DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(taskGraph);
-        TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(taskGraph);
+        DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex<>(taskGraph);
+        TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator<>(taskGraph);
 
         while (it.hasNext()) {
             Task task = it.next();
@@ -66,7 +66,7 @@ public class ToLogGraphLogger implements GraphLogger {
 
     @Override
     public void logCount(DirectedGraph<Task, DefaultEdge> taskGraph) {
-        TopologicalOrderIterator<Task, DefaultEdge> it1 = new TopologicalOrderIterator(taskGraph);
+        TopologicalOrderIterator<Task, DefaultEdge> it1 = new TopologicalOrderIterator<>(taskGraph);
 
         int counter = 0;
         while (it1.hasNext()){

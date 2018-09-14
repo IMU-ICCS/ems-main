@@ -13,7 +13,7 @@ import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
-import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidatesAttributesType;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,7 +47,7 @@ public class NodeCandidatesConverter {
 
         return attributes.stream()
                 .map(a -> createElement(a.getName(),
-                        getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()),a.getType())))
+                        getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType())))
                 .collect(Collectors.toList());
     }
 
@@ -55,10 +55,10 @@ public class NodeCandidatesConverter {
             Collection<Element> deployedSolution) {
         Collection<ConfigurationElement> actualConfiguration = convertSolutionToNodeCandidates(deployedSolution);
         return attributes.stream()
-                .map(a-> createElement(a.getName(),
+                .map(a -> createElement(a.getName(),
                         getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType())))
                 .collect(Collectors.toList());
-        }
+    }
 
     public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
         return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());
@@ -107,7 +107,7 @@ public class NodeCandidatesConverter {
                 .getNodeCandidate();
     }
 
-    private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, NodeCandidatesAttributesType type) {
+    private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, CamelMetadata type) {
         Number result = null;
         switch (type) {
             case PRICE:
@@ -115,7 +115,7 @@ public class NodeCandidatesConverter {
                 break;
         }
         if (result == null) {
-            throw new IllegalArgumentException("type of Node Candidate attribute is wrong");
+            throw new IllegalArgumentException("Illegal type of Node Candidate attribute: " + type);
         }
         return result;
     }

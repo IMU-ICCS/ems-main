@@ -254,7 +254,7 @@ public class CpSwitch<T> extends Switch<T> {
 			case CpPackage.NORMALISED_UTILITY_DIMENSION: {
 				NormalisedUtilityDimension normalisedUtilityDimension = (NormalisedUtilityDimension)theEObject;
 				T result = caseNormalisedUtilityDimension(normalisedUtilityDimension);
-				if (result == null) result = caseFunction(normalisedUtilityDimension);
+				if (result == null) result = caseCpFunction(normalisedUtilityDimension);
 				if (result == null) result = caseComposedExpression(normalisedUtilityDimension);
 				if (result == null) result = caseNumericExpression(normalisedUtilityDimension);
 				if (result == null) result = caseExpression(normalisedUtilityDimension);
@@ -262,13 +262,13 @@ public class CpSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
-			case CpPackage.FUNCTION: {
-				Function function = (Function)theEObject;
-				T result = caseFunction(function);
-				if (result == null) result = caseComposedExpression(function);
-				if (result == null) result = caseNumericExpression(function);
-				if (result == null) result = caseExpression(function);
-				if (result == null) result = caseCPElement(function);
+			case CpPackage.CP_FUNCTION: {
+				CpFunction cpFunction = (CpFunction)theEObject;
+				T result = caseCpFunction(cpFunction);
+				if (result == null) result = caseComposedExpression(cpFunction);
+				if (result == null) result = caseNumericExpression(cpFunction);
+				if (result == null) result = caseExpression(cpFunction);
+				if (result == null) result = caseCPElement(cpFunction);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -671,7 +671,7 @@ public class CpSwitch<T> extends Switch<T> {
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
 	 * @generated
 	 */
-	public T caseFunction(Function object) {
+	public T caseCpFunction(CpFunction object) {
 		return null;
 	}
 

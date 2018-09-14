@@ -181,7 +181,7 @@ public interface CpFactory extends EFactory {
 	 * @return a new object of class '<em>Function</em>'.
 	 * @generated
 	 */
-	Function createFunction();
+	CpFunction createCpFunction();
 
 	/**
 	 * Returns a new object of class '<em>Configuration Upperware</em>'.

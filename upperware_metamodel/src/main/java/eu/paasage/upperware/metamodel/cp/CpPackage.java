@@ -1315,14 +1315,14 @@ public interface CpPackage extends EPackage {
 	int PARAMETER_OPERATION_COUNT = 0;
 
 	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl <em>Function</em>}' class.
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl <em>Function</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.FunctionImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getFunction()
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpFunction()
 	 * @generated
 	 */
-	int FUNCTION = 25;
+	int CP_FUNCTION = 25;
 
 	/**
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -1331,7 +1331,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__ID = COMPOSED_EXPRESSION__ID;
+	int CP_FUNCTION__ID = COMPOSED_EXPRESSION__ID;
 
 	/**
 	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
@@ -1340,7 +1340,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__EXPRESSIONS = COMPOSED_EXPRESSION__EXPRESSIONS;
+	int CP_FUNCTION__EXPRESSIONS = COMPOSED_EXPRESSION__EXPRESSIONS;
 
 	/**
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
@@ -1349,7 +1349,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__OPERATOR = COMPOSED_EXPRESSION__OPERATOR;
+	int CP_FUNCTION__OPERATOR = COMPOSED_EXPRESSION__OPERATOR;
 
 	/**
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
@@ -1358,7 +1358,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__VALUE = COMPOSED_EXPRESSION_FEATURE_COUNT + 0;
+	int CP_FUNCTION__VALUE = COMPOSED_EXPRESSION_FEATURE_COUNT + 0;
 
 	/**
 	 * The number of structural features of the '<em>Function</em>' class.
@@ -1367,7 +1367,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION_FEATURE_COUNT = COMPOSED_EXPRESSION_FEATURE_COUNT + 1;
+	int CP_FUNCTION_FEATURE_COUNT = COMPOSED_EXPRESSION_FEATURE_COUNT + 1;
 
 	/**
 	 * The number of operations of the '<em>Function</em>' class.
@@ -1376,7 +1376,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION_OPERATION_COUNT = COMPOSED_EXPRESSION_OPERATION_COUNT + 0;
+	int CP_FUNCTION_OPERATION_COUNT = COMPOSED_EXPRESSION_OPERATION_COUNT + 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.NormalisedUtilityDimensionImpl <em>Normalised Utility Dimension</em>}' class.
@@ -1395,7 +1395,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__ID = FUNCTION__ID;
+	int NORMALISED_UTILITY_DIMENSION__ID = CP_FUNCTION__ID;
 
 	/**
 	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
@@ -1404,7 +1404,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__EXPRESSIONS = FUNCTION__EXPRESSIONS;
+	int NORMALISED_UTILITY_DIMENSION__EXPRESSIONS = CP_FUNCTION__EXPRESSIONS;
 
 	/**
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
@@ -1413,7 +1413,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__OPERATOR = FUNCTION__OPERATOR;
+	int NORMALISED_UTILITY_DIMENSION__OPERATOR = CP_FUNCTION__OPERATOR;
 
 	/**
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
@@ -1422,7 +1422,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__VALUE = FUNCTION__VALUE;
+	int NORMALISED_UTILITY_DIMENSION__VALUE = CP_FUNCTION__VALUE;
 
 	/**
 	 * The feature id for the '<em><b>Solutions</b></em>' reference list.
@@ -1431,7 +1431,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__SOLUTIONS = FUNCTION_FEATURE_COUNT + 0;
+	int NORMALISED_UTILITY_DIMENSION__SOLUTIONS = CP_FUNCTION_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Goal</b></em>' reference.
@@ -1440,7 +1440,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__GOAL = FUNCTION_FEATURE_COUNT + 1;
+	int NORMALISED_UTILITY_DIMENSION__GOAL = CP_FUNCTION_FEATURE_COUNT + 1;
 
 	/**
 	 * The number of structural features of the '<em>Normalised Utility Dimension</em>' class.
@@ -1449,7 +1449,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION_FEATURE_COUNT = FUNCTION_FEATURE_COUNT + 2;
+	int NORMALISED_UTILITY_DIMENSION_FEATURE_COUNT = CP_FUNCTION_FEATURE_COUNT + 2;
 
 	/**
 	 * The number of operations of the '<em>Normalised Utility Dimension</em>' class.
@@ -1458,7 +1458,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION_OPERATION_COUNT = FUNCTION_OPERATION_COUNT + 0;
+	int NORMALISED_UTILITY_DIMENSION_OPERATION_COUNT = CP_FUNCTION_OPERATION_COUNT + 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl <em>Configuration Upperware</em>}' class.
@@ -2353,25 +2353,25 @@ public interface CpPackage extends EPackage {
 	EReference getNormalisedUtilityDimension_Goal();
 
 	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Function <em>Function</em>}'.
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.CpFunction <em>Function</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Function</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Function
+	 * @see eu.paasage.upperware.metamodel.cp.CpFunction
 	 * @generated
 	 */
-	EClass getFunction();
+	EClass getCpFunction();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.Function#getValue <em>Value</em>}'.
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.CpFunction#getValue <em>Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the containment reference '<em>Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Function#getValue()
-	 * @see #getFunction()
+	 * @see eu.paasage.upperware.metamodel.cp.CpFunction#getValue()
+	 * @see #getCpFunction()
 	 * @generated
 	 */
-	EReference getFunction_Value();
+	EReference getCpFunction_Value();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware <em>Configuration Upperware</em>}'.
@@ -3126,14 +3126,14 @@ public interface CpPackage extends EPackage {
 		EReference NORMALISED_UTILITY_DIMENSION__GOAL = eINSTANCE.getNormalisedUtilityDimension_Goal();
 
 		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl <em>Function</em>}' class.
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl <em>Function</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.FunctionImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getFunction()
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpFunction()
 		 * @generated
 		 */
-		EClass FUNCTION = eINSTANCE.getFunction();
+		EClass CP_FUNCTION = eINSTANCE.getCpFunction();
 
 		/**
 		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
@@ -3141,7 +3141,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference FUNCTION__VALUE = eINSTANCE.getFunction_Value();
+		EReference CP_FUNCTION__VALUE = eINSTANCE.getCpFunction_Value();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl <em>Configuration Upperware</em>}' class.

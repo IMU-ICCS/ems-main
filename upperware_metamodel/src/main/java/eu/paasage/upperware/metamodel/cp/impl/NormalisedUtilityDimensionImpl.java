@@ -25,7 +25,7 @@ import org.eclipse.emf.ecore.EClass;
  *
  * @generated
  */
-public class NormalisedUtilityDimensionImpl extends FunctionImpl implements NormalisedUtilityDimension {
+public class NormalisedUtilityDimensionImpl extends CpFunctionImpl implements NormalisedUtilityDimension {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

@@ -9,12 +9,15 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentTypeModel;
 import com.google.common.collect.Sets;
-import eu.paasage.camel.deployment.DeploymentModel;
 import eu.melodic.upperware.adapter.plangenerator.model.Communication;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -23,12 +26,14 @@ import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public class CommunicationConverter implements ModelConverter<DeploymentModel, Collection<Communication>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class CommunicationConverter implements ModelConverter<DeploymentInstanceModel, Collection<Communication>> {
 
   @Override
-  public Collection<Communication> toComparableModel(DeploymentModel model) {
+  public Collection<Communication> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building communication models");
-    EList<eu.paasage.camel.deployment.Communication> comms = model.getCommunications();
+    DeploymentTypeModel initialModel = ConverterUtils.findDeploymentTypeModel(model);
+    EList<camel.deployment.Communication> comms = initialModel.getCommunications();
     if (CollectionUtils.isEmpty(comms)) {
       log.info("There are no communications defined - no communications will be created");
       return Sets.newHashSet();
@@ -36,7 +41,7 @@ public class CommunicationConverter implements ModelConverter<DeploymentModel, C
     return comms.stream().map(this::toCommunication).collect(toSet());
   }
 
-  private Communication toCommunication(eu.paasage.camel.deployment.Communication comm) {
+  private Communication toCommunication(camel.deployment.Communication comm) {
     log.info("Processing of {}", comm.getName());
 
     Communication communication = Communication.builder()

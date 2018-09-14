@@ -9,10 +9,10 @@
 
 package eu.melodic.upperware.adapter.plangenerator;
 
-import eu.paasage.camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentInstanceModel;
+import eu.melodic.upperware.adapter.plangenerator.converter.CamelModelConverter;
 import eu.melodic.upperware.adapter.plangenerator.graph.DefaultGraphGenerator;
 import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
-import eu.melodic.upperware.adapter.plangenerator.converter.CamelModelConverter;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -33,7 +33,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
   private DefaultGraphGenerator generator;
 
   @Override
-  public Plan buildConfigurationPlan(@NonNull DeploymentModel model) {
+  public Plan buildConfigurationPlan(@NonNull DeploymentInstanceModel model) {
     log.info("Building configuration plan");
     ComparableModel compModel = converter.toComparableModel(model);
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateConfigGraph(compModel);
@@ -43,7 +43,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
   }
 
   @Override
-  public Plan buildReconfigurationPlan(@NonNull DeploymentModel oldModel, @NonNull DeploymentModel newModel) {
+  public Plan buildReconfigurationPlan(@NonNull DeploymentInstanceModel oldModel, @NonNull DeploymentInstanceModel newModel) {
     log.info("Building reconfiguration plan");
     ComparableModel oldCompModel = converter.toComparableModel(oldModel);
     ComparableModel newCompModel = converter.toComparableModel(newModel);

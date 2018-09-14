@@ -9,7 +9,7 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
-import eu.paasage.camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CamelModelConverter implements ModelConverter<DeploymentModel, ComparableModel> {
+public class CamelModelConverter implements ModelConverter<DeploymentInstanceModel, ComparableModel> {
 
   private CloudApiConverter cloudApiConverter;
   private CloudConverter cloudConverter;
@@ -43,7 +43,7 @@ public class CamelModelConverter implements ModelConverter<DeploymentModel, Comp
   private ApplicationComponentInstanceMonitorConverter applicationComponentInstanceMonitorConverter;
 
   @Override
-  public ComparableModel toComparableModel(DeploymentModel deploymentModel) {
+  public ComparableModel toComparableModel(DeploymentInstanceModel deploymentModel) {
     return ComparableModel.builder()
       .cloudApis(cloudApiConverter.toComparableModel(deploymentModel))
       .clouds(cloudConverter.toComparableModel(deploymentModel))
