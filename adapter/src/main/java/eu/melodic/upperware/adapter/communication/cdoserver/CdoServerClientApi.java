@@ -9,13 +9,18 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
+import camel.core.Attribute;
 import camel.core.CamelModel;
+import camel.core.CoreFactory;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
 import camel.execution.ExecutionFactory;
 import camel.execution.ExecutionModel;
 import camel.execution.HistoryRecord;
+import camel.requirement.RequirementModel;
+import camel.type.StringValue;
+import camel.type.TypeFactory;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CdoTool;
@@ -115,17 +120,43 @@ public class CdoServerClientApi implements CdoServerApi {
 
   private ExecutionModel createExecutionModel(DeploymentTypeModel deploymentTypeModel) {
     ExecutionModel executionModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+    executionModel.setName(getUniqueExecutionName());
     executionModel.setStartTime(new Date());
     executionModel.setDeploymentTypeModel(deploymentTypeModel);
+    executionModel.setRequirementModel(getRequirementModel(deploymentTypeModel).orElseThrow(() -> new IllegalStateException("Missing required RequirementModel")));
     return executionModel;
   }
 
-  private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
+    private Optional<RequirementModel> getRequirementModel(DeploymentTypeModel deploymentTypeModel) {
+        EList<RequirementModel> requirementModels = ((CamelModel) deploymentTypeModel.eContainer()).getRequirementModels();
+        if (CollectionUtils.isNotEmpty(requirementModels)){
+            return Optional.of(requirementModels.get(0));
+        }
+        return Optional.empty();
+    }
+
+    private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
+    Attribute type = createType();
+    newModel.getAttributes().add(type);
+
     HistoryRecord historyRecord = ExecutionFactory.eINSTANCE.createHistoryRecord();
+    historyRecord.setName(getUniqueHistoryName());
     historyRecord.setStartTime(new Date());
     historyRecord.setFromDeploymentInstanceModel(oldModel);
     historyRecord.setToDeploymentInstanceModel(newModel);
+    historyRecord.setType(type);
     return historyRecord;
+  }
+
+  private Attribute createType() {
+    StringValue stringValue = TypeFactory.eINSTANCE.createStringValue();
+    stringValue.setValue("DUMMY VALUE");
+
+    Attribute attribute = CoreFactory.eINSTANCE.createAttribute();
+    attribute.setName(getUniqueAttributeName());
+    attribute.setValue(stringValue);
+
+    return attribute;
   }
 
   private Optional<HistoryRecord> getLastHistoryRecord(ExecutionModel executionModel){
@@ -168,4 +199,19 @@ public class CdoServerClientApi implements CdoServerApi {
     return Optional.ofNullable(historyRecords.get(historyRecords.size() - 1).getToDeploymentInstanceModel());
   }
 
+  private String getUniqueAttributeName(){
+    return getUniqueName("Attribute");
+  }
+
+  private String getUniqueHistoryName(){
+    return getUniqueName("HistoryRecord");
+  }
+
+  private String getUniqueExecutionName(){
+    return getUniqueName("ExecutionModel");
+  }
+
+  private String getUniqueName(String name){
+    return name + System.currentTimeMillis();
+  }
 }

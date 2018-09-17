@@ -58,7 +58,7 @@ public class VirtualMachineConverter implements ModelConverter<DeploymentInstanc
 
     VirtualMachine virtualMachine = VirtualMachine.builder()
       .name(vm.getName())
-      .cloudName(providerInfoSupplier.getCloudName(vmInst))
+      .cloudName(providerInfoSupplier.getName(vmInst))
       .location(providerInfoSupplier.getLocation(vmInst))
       .locationTimeout(timeouts.getLocation())
       .hardware(providerInfoSupplier.getMachineType(vmInst))

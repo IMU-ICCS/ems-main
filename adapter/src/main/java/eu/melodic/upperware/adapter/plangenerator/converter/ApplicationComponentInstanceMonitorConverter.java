@@ -61,7 +61,7 @@ public class ApplicationComponentInstanceMonitorConverter implements ModelConver
       .acInstTimeout(timeouts.getAcInst())
       .acName(scInst.getType().getName())
       .vmInstName(vmInst.getName())
-      .cloudName(providerInfoSupplier.getCloudName(vmInst))
+      .cloudName(providerInfoSupplier.getName(vmInst))
       .appName(app.getName())
       .lcName(ConverterUtils.extractConfiguration((SoftwareComponent) scInst.getType()).getName())
       .vmName(vmInst.getType().getName())

@@ -57,7 +57,7 @@ public class PortProvidedConverter implements ModelConverter<DeploymentInstanceM
             .name(pc.getName())
             .acName(sc.getName())
             .port(pc.getPortNumber())
-            .cloudName(providerInfoSupplier.getCloudName(vmInstance))
+            .cloudName(providerInfoSupplier.getName(vmInstance))
             .appName(app.getName())
             .lcName(ConverterUtils.extractConfiguration(sc).getName())
             .vmName(vm.getName())
