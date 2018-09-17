@@ -12,17 +12,13 @@ package eu.melodic.upperware.adapter.communication.cdoserver;
 import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.CoreFactory;
-import camel.core.QualityAttribute;
-import camel.data.DataFactory;
-import camel.data.DataSource;
-import camel.data.DataTypeModel;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
-import camel.deployment.SoftwareComponent;
 import camel.execution.ExecutionFactory;
 import camel.execution.ExecutionModel;
 import camel.execution.HistoryRecord;
+import camel.requirement.RequirementModel;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
@@ -127,12 +123,19 @@ public class CdoServerClientApi implements CdoServerApi {
     executionModel.setName(getUniqueExecutionName());
     executionModel.setStartTime(new Date());
     executionModel.setDeploymentTypeModel(deploymentTypeModel);
-    executionModel.setRequirementModel(((CamelModel)deploymentTypeModel.eContainer()).getRequirementModels().get(0));
-//    executionModel.setAbstractDataModel(getDataTypeModelForComponent(getDBComponent(deploymentTypeModel)));
+    executionModel.setRequirementModel(getRequirementModel(deploymentTypeModel).orElseThrow(() -> new IllegalStateException("Missing required RequirementModel")));
     return executionModel;
   }
 
-  private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
+    private Optional<RequirementModel> getRequirementModel(DeploymentTypeModel deploymentTypeModel) {
+        EList<RequirementModel> requirementModels = ((CamelModel) deploymentTypeModel.eContainer()).getRequirementModels();
+        if (CollectionUtils.isNotEmpty(requirementModels)){
+            return Optional.of(requirementModels.get(0));
+        }
+        return Optional.empty();
+    }
+
+    private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
     Attribute type = createType();
     newModel.getAttributes().add(type);
 
@@ -154,29 +157,6 @@ public class CdoServerClientApi implements CdoServerApi {
     attribute.setValue(stringValue);
 
     return attribute;
-  }
-
-  private SoftwareComponent getDBComponent(DeploymentTypeModel deploymentTypeModel){
-    return deploymentTypeModel
-            .getSoftwareComponents()
-            .stream()
-            .filter(softwareComponent -> CollectionUtils.isNotEmpty(softwareComponent.getManagesDataSource()))
-            .findFirst().orElse(null);
-  }
-
-  private DataTypeModel getDataTypeModelForComponent(SoftwareComponent softwareComponent){
-    if (softwareComponent == null) {
-      DataTypeModel dataTypeModel = DataFactory.eINSTANCE.createDataTypeModel();
-      dataTypeModel.setName(getUniqueDataTypeName());
-      return dataTypeModel;
-    }
-
-    DataSource dataSource = softwareComponent
-            .getManagesDataSource()
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException(format("Could not find Manage datasource for component %s.", softwareComponent.getName())));
-    return (DataTypeModel) dataSource.eContainer();
   }
 
   private Optional<HistoryRecord> getLastHistoryRecord(ExecutionModel executionModel){
@@ -221,10 +201,6 @@ public class CdoServerClientApi implements CdoServerApi {
 
   private String getUniqueAttributeName(){
     return getUniqueName("Attribute");
-  }
-
-  private String getUniqueDataTypeName(){
-    return getUniqueName("HistoryRecord");
   }
 
   private String getUniqueHistoryName(){
