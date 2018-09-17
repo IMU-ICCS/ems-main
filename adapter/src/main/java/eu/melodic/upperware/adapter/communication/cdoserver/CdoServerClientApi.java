@@ -133,12 +133,15 @@ public class CdoServerClientApi implements CdoServerApi {
   }
 
   private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
+    Attribute type = createType();
+    newModel.getAttributes().add(type);
+
     HistoryRecord historyRecord = ExecutionFactory.eINSTANCE.createHistoryRecord();
     historyRecord.setName(getUniqueHistoryName());
     historyRecord.setStartTime(new Date());
     historyRecord.setFromDeploymentInstanceModel(oldModel);
     historyRecord.setToDeploymentInstanceModel(newModel);
-    historyRecord.setType(createType());
+    historyRecord.setType(type);
     return historyRecord;
   }
 
@@ -146,8 +149,7 @@ public class CdoServerClientApi implements CdoServerApi {
     StringValue stringValue = TypeFactory.eINSTANCE.createStringValue();
     stringValue.setValue("DUMMY VALUE");
 
-//    Attribute attribute = CoreFactory.eINSTANCE.createAttribute();
-    QualityAttribute attribute = CoreFactory.eINSTANCE.createQualityAttribute();
+    Attribute attribute = CoreFactory.eINSTANCE.createAttribute();
     attribute.setName(getUniqueAttributeName());
     attribute.setValue(stringValue);
 
