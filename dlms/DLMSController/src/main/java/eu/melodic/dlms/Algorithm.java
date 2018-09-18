@@ -44,6 +44,8 @@ public class Algorithm {
 	 */
 	private Date lastRun;
 
+	private double weight;
+
 	public String getName() {
 		return name;
 	}
@@ -90,6 +92,14 @@ public class Algorithm {
 
 	public void setLastRun(Date lastRun) {
 		this.lastRun = lastRun;
+	}
+
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
 	}
 
 	@Override

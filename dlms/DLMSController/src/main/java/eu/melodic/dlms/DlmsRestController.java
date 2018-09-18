@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,21 +27,24 @@ public class DlmsRestController {
 	}
 
 	/**
-	 * Returns the accumulated results of all registered algorithms.
+	 * Returns the accumulated results of all registered algorithms as a weighted utility value.
 	 */
-	@RequestMapping(value = "/dlmsController", method = RequestMethod.GET)
-	public Map<String, Double> getResults() {
-		Map<String, Double> results = new HashMap<>(algorithms.entrySet().size());
-
+	@RequestMapping(value = "/dlmsController/utilityValue", method = RequestMethod.GET)
+	public double getUtilityValue() {
+		double utilityValue = 0;
 		for(Map.Entry<Algorithm, AlgorithmRunner> algorithmEntry : algorithms.entrySet()) {
 			AlgorithmRunner runner = algorithmEntry.getValue();
-			final double algorithmResults = runner.queryResults();
-			LOGGER.info("result for algorithm {}: {}", algorithmEntry.getKey().getName(), algorithmResults);
+			double algorithmResult = runner.queryResults();
+			LOGGER.info("result for algorithm {}: {}", algorithmEntry.getKey().getName(), algorithmResult);
 
-			results.put(algorithmEntry.getKey().getName(), algorithmResults);
+			double weightedResult = algorithmResult * algorithmEntry.getKey().getWeight();
+			LOGGER.info("result {} weighted with {} = {}", algorithmResult, algorithmEntry.getKey().getWeight(), weightedResult);
+
+			utilityValue += weightedResult;
+			LOGGER.info("utility value changed to {}", utilityValue);
 		}
 
-		return results;
+		return utilityValue;
 	}
 
 }
