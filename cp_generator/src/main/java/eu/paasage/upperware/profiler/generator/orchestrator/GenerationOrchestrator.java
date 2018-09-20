@@ -12,6 +12,7 @@
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
 import camel.core.CamelModel;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
@@ -104,6 +105,9 @@ public class GenerationOrchestrator {
         CamelModel camelModel;
         try {
             camelModel = cdoService.getCamelModel(resourceName, cdoTransaction);
+
+//            camelModel = loadModel();
+
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage(), e);
             return CpGenerationResult.error("There is not Processor for Camel Models. The input model can not be processed");
@@ -122,6 +126,10 @@ public class GenerationOrchestrator {
         log.info("** CP Model Id: {}", cpId);
 
         return CpGenerationResult.succes(cpId);
+    }
+
+    private camel.core.CamelModel loadModel(){
+        return (camel.core.CamelModel) CDOClient.loadModel("C:\\work\\Genomnew.xmi");
     }
 
     private String getCpName(CamelModel camelModel) {

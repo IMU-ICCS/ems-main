@@ -119,50 +119,50 @@ public class ConstantServiceImpl implements ConstantService {
         return searchConstantByValue(constants,
                 pair -> pair.getRight().equals(Double.class.getCanonicalName()) && Double.parseDouble(pair.getLeft()) == value);
     }
+//
+//    @Override
+//    public Constant searchOrCreateConstantByValue(EList<Constant> constants, int value, String name) {
+//        Optional<Constant> constant = searchConstantByValue(constants, value);
+//
+//        return constant.orElseGet(() -> {
+//            Constant newConstant = createIntegerConstant(value, name);
+//            constants.add(newConstant);
+//            return newConstant;
+//        });
+//    }
 
     @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, int value, String name) {
+    public Constant searchOrCreateConstantByValue(EList<Constant> constants, double value) {
         Optional<Constant> constant = searchConstantByValue(constants, value);
 
         return constant.orElseGet(() -> {
-            Constant newConstant = createIntegerConstant(value, name);
+            Constant newConstant = createDoubleConstant(value);
             constants.add(newConstant);
             return newConstant;
         });
     }
 
-    @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, double value, String name) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
-
-        return constant.orElseGet(() -> {
-            Constant newConstant = createDoubleConstant(value, name);
-            constants.add(newConstant);
-            return newConstant;
-        });
-    }
-
-    @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, float value, String name) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
-
-        return constant.orElseGet(() -> {
-            Constant newConstant = createFloatConstant(value, name);
-            constants.add(newConstant);
-            return newConstant;
-        });
-    }
-
-    @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
-
-        return constant.orElseGet(() -> {
-            Constant newConstant = createLongConstant(value, name);
-            constants.add(newConstant);
-            return newConstant;
-        });
-    }
+//    @Override
+//    public Constant searchOrCreateConstantByValue(EList<Constant> constants, float value, String name) {
+//        Optional<Constant> constant = searchConstantByValue(constants, value);
+//
+//        return constant.orElseGet(() -> {
+//            Constant newConstant = createFloatConstant(value, name);
+//            constants.add(newConstant);
+//            return newConstant;
+//        });
+//    }
+//
+//    @Override
+//    public Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name) {
+//        Optional<Constant> constant = searchConstantByValue(constants, value);
+//
+//        return constant.orElseGet(() -> {
+//            Constant newConstant = createLongConstant(value, name);
+//            constants.add(newConstant);
+//            return newConstant;
+//        });
+//    }
 
     private Optional<Constant> searchConstantByValue(EList<Constant> constants, Predicate<Pair<String, String>> predicate){
         for(Constant c: constants) {

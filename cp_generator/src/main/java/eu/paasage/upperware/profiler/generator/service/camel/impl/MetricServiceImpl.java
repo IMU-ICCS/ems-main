@@ -1,6 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import camel.type.PrimitiveType;
+import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.CpMetric;
@@ -13,6 +14,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -53,8 +55,10 @@ public class MetricServiceImpl implements MetricService {
     }
 
     @Override
-    public Optional<CpMetric> getByName(String id, ConstraintProblem cp) {
-        return cp.getCpMetrics().stream().filter(cpMetric -> id.equals(cpMetric.getId())).findFirst();
+    public Optional<CpMetric> getByName(List<CpMetric> metrics, String name) {
+        return metrics.stream()
+                .filter(metric -> metric.getId().equals(name))
+                .findFirst();
     }
 
     private CpMetric createMetricVariable(String id, BasicTypeEnum basicTypeEnum, NumericValueUpperware numericValueUpperware) {

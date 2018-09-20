@@ -4,6 +4,7 @@ import camel.type.PrimitiveType;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpMetric;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MetricService {
@@ -16,5 +17,5 @@ public interface MetricService {
 
     CpMetric createCpMetric(String id, PrimitiveType primitiveType);
 
-    Optional<CpMetric> getByName(String id, ConstraintProblem cp);
+    Optional<CpMetric> getByName(List<CpMetric> metrics, String name);
 }

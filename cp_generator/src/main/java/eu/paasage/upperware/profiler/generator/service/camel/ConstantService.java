@@ -43,12 +43,12 @@ public interface ConstantService extends GeneratorService{
     Optional<Constant> searchConstantByValue(EList<Constant> constants, double value);
 
 
-    Constant searchOrCreateConstantByValue(EList<Constant> constants, int value, String name);
+//    Constant searchOrCreateConstantByValue(EList<Constant> constants, int value, String name);
 
-    Constant searchOrCreateConstantByValue(EList<Constant> constants, double value, String name);
+    Constant searchOrCreateConstantByValue(EList<Constant> constants, double value);
 
-    Constant searchOrCreateConstantByValue(EList<Constant> constants, float value, String name);
-
-    Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name);
+//    Constant searchOrCreateConstantByValue(EList<Constant> constants, float value, String name);
+//
+//    Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name);
 
 }
