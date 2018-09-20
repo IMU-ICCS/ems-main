@@ -31,6 +31,7 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.model.CloudCredential;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import io.github.cloudiator.rest.model.NodeRequirements;
 import io.github.cloudiator.rest.model.Requirement;
@@ -389,6 +390,8 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
         for (SoftwareComponent softwareComponent : deploymentTypeModel.getSoftwareComponents()) {
             List<NodeCandidate> nodeCandidates = loadProviders(deploymentTypeModel.getGlobalRequirementSet(), softwareComponent.getRequirementSet(), camelModel.getLocationModels(), getImageId(softwareComponent));
+            nodeCandidates = removeCredentials(nodeCandidates);
+            log.debug("Credentials in the Node Candidate List has been removed.");
             Map<String, List<NodeCandidate>> nodeCandidatesByProvider = nodeCandidatesService.groupByProviders(nodeCandidates);
             Map<Integer, List<NodeCandidate>> nodeCandidatesByProviderIndex = getAsIndexMap(nodeCandidatesByProvider);
             result.put(softwareComponent.getName(), nodeCandidatesByProviderIndex);
@@ -427,6 +430,11 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             throw new GeneratorException(String.format("Problem during fetching node candidates - empty result for query %s", toJson(nodeRequirements.getRequirements())));
         }
 
+        return nodeCandidates;
+    }
+
+    private List<NodeCandidate> removeCredentials(List<NodeCandidate> nodeCandidates){
+        nodeCandidates.forEach(nc -> nc.getCloud().setCredential(new CloudCredential()));
         return nodeCandidates;
     }
 
