@@ -21,6 +21,7 @@ import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,10 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<NodeCandidate> findNodeCandidates(NodeRequirements nodeRequirements) throws ApiException {
-        return matchmakingApi.findNodeCandidates(nodeRequirements);
+        List<NodeCandidate> nodeCandidates = matchmakingApi.findNodeCandidates(nodeRequirements);
+        removeCredentials(nodeCandidates);
+        log.debug("Credentials in the Node Candidate List has been removed.");
+        return nodeCandidates;
     }
 
     @Override
@@ -228,5 +232,9 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return String.valueOf(((DoubleValue) value).getValue());
         }
         throw new GeneratorException("Unsuppoerted value type");
+    }
+
+    private void removeCredentials(List<NodeCandidate> nodeCandidates){
+        ListUtils.emptyIfNull(nodeCandidates).forEach(nc -> nc.getCloud().setCredential(new CloudCredential()));
     }
 }
