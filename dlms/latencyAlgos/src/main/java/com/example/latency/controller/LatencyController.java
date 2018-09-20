@@ -301,7 +301,7 @@ public class LatencyController {
 		TwoDataCenterValues twoDataCenterValues = null;
 		String[] dcGiven = { dc1, dc2 };
 		Arrays.sort(dcGiven, String.CASE_INSENSITIVE_ORDER);
-		if (dcPairList.contains(dcGiven[0] + "," + dcGiven[1])) {
+		if (dcPairListWithData.contains(dcGiven[0] + "," + dcGiven[1])) {
 			twoDataCenterValues = calculateLatencyBandwidth(dcGiven);
 			printForGiven(dcGiven);
 		} else
@@ -311,7 +311,7 @@ public class LatencyController {
 
 	public List<TwoDataCenterValues> calculateAllDataCenter() {
 		List<TwoDataCenterValues> twoDataCenterValuesList = new ArrayList<TwoDataCenterValues>();
-		for (String item : dcPairList) {
+		for (String item : dcPairListWithData) {
 			System.out.println(item);
 			String[] dcArray = item.trim().split(",");
 			TwoDataCenterValues twoDataCenterValues;
