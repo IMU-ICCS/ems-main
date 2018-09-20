@@ -67,7 +67,7 @@ public class CDODatabaseProxy2 {
                 transactionManager.camelModel.getLocationModels().add(locationModel);
             }
 
-            transactionManager.camelModel.getLocationModels().get(transactionManager.dmId-1)
+            transactionManager.camelModel.getLocationModels().get(0)
                     .getRegions().addAll(dataHolder.getLocationsToRegister());
 
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
