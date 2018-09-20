@@ -48,6 +48,8 @@ public class LatencyController {
 	private LocationController locationController = new LocationController();
 
 	List<String> dcPairList = new ArrayList<>();// list of paired dataset to get latency and ping for user defined ones
+	List<String> dcPairListWithData = new ArrayList<>();// list of paired dataset with historical data to get latency
+														// and ping for user defined ones
 	List<List<DCDistance>> dcDistanceList = new ArrayList<List<DCDistance>>();
 	Map<String, List<DCDistance>> dcDistanceMap = new HashMap<String, List<DCDistance>>();
 
@@ -55,6 +57,7 @@ public class LatencyController {
 
 	@Async
 	public void run() {
+		storeInternally(); // first time store internally so it can be called
 		long currentTime = System.currentTimeMillis();
 		// this to initialize data manually
 //		int subtractNum = 180000;
@@ -93,6 +96,9 @@ public class LatencyController {
 				Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
 
 				dcPairList.add(nameList[0] + "," + nameList[1]);
+				int a;
+				if (nameList[0].contains("South-Central"))
+					a = 3;
 
 				// for different functions
 				switch (propValues.getFunction()) {
@@ -123,6 +129,7 @@ public class LatencyController {
 //			calculateUsingGPS(dc1, dc2);
 		} else {
 			algoEqualWeight(dataCenterList, dc1, dc2);
+			dcPairListWithData.add(dc1 + "," + dc2);
 		}
 
 	}
@@ -139,6 +146,8 @@ public class LatencyController {
 //			calculateUsingGPS(dc1, dc2, latency, bandwidth);
 		} else {
 			algoLatestHigherWeight(dataCenterList, dc1, dc2);
+			// now add to pairlist
+			dcPairListWithData.add(dc1 + "," + dc2);
 		}
 
 	}
@@ -298,6 +307,18 @@ public class LatencyController {
 		} else
 			System.out.println("Unfortunately we do not have data for that");
 		return twoDataCenterValues;
+	}
+
+	public List<TwoDataCenterValues> calculateAllDataCenter() {
+		List<TwoDataCenterValues> twoDataCenterValuesList = new ArrayList<TwoDataCenterValues>();
+		for (String item : dcPairList) {
+			System.out.println(item);
+			String[] dcArray = item.trim().split(",");
+			TwoDataCenterValues twoDataCenterValues;
+			twoDataCenterValues = calculateLatencyBandwidth(dcArray);
+			twoDataCenterValuesList.add(twoDataCenterValues);
+		}
+		return twoDataCenterValuesList;
 	}
 
 	// return the latency, bandwidth, datacenter1, and datacenter2

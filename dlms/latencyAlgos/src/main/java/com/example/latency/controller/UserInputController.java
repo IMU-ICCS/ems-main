@@ -1,5 +1,7 @@
 package com.example.latency.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,11 @@ public class UserInputController {
 	@GetMapping("/{dc1}/{dc2}")
 	public TwoDataCenterValues retrieve(@PathVariable String dc1, @PathVariable String dc2) {
 		return (latencyController.calculateTwoDataCenter(dc1, dc2));
+	}
+
+	@GetMapping("/all")
+	public List<TwoDataCenterValues> retrieveAll() {
+		return (latencyController.calculateAllDataCenter());
 	}
 
 }
