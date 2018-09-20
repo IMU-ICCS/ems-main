@@ -189,7 +189,7 @@ public class ExpressionServiceImpl implements ExpressionService {
         if (token.tokenId == Operator.PLUS_ID) {
             return OperatorEnum.PLUS;
         } else if (token.tokenId == Operator.MINUS_ID) {
-            return OperatorEnum.MIN;
+            return OperatorEnum.MINUS;
         } else if (token.tokenId == Operator.MULTIPLY_ID) {
             return OperatorEnum.TIMES;
         } else if (token.tokenId == Operator.DIVIDE_ID){
@@ -240,7 +240,7 @@ public class ExpressionServiceImpl implements ExpressionService {
 
                         NumericDomain domain = createDomain(nc, variableType);
 
-                        VariableCreator creator = variableCreatorFactory.getCreator(getType(metricVariable));
+                        VariableCreator creator = variableCreatorFactory.getCreator(CamelModelTool.getType(metricVariable));
                         CpVariable newVariable = creator.createCpVariable(cp, variableType.variableType, componentName, domain, metricVariable.getName());
                         cp.getCpVariables().add(newVariable);
                         return newVariable;
@@ -272,7 +272,7 @@ public class ExpressionServiceImpl implements ExpressionService {
     }
 
     private CpMetric createCpMetric(Metric metric) {
-        PrimitiveType type = getType(metric);
+        PrimitiveType type = CamelModelTool.getType(metric);
         switch (type) {
             case INT_TYPE:
                 return metricService.createIntegerCpMetric(metric.getName());
@@ -296,11 +296,6 @@ public class ExpressionServiceImpl implements ExpressionService {
             default:
                 throw new GeneratorException("Unsupported type " + variableType.name());
         }
-    }
-
-    //TODO - this method is duplicated
-    private PrimitiveType getType(Metric metricVariable) {
-        return metricVariable.getMetricTemplate().getValueType().getPrimitiveType();
     }
 
     private Optional<ComposedExpression> getAuxExpressionsByName(Token token, ConstraintProblem cp) {

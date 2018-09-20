@@ -266,69 +266,17 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
                 if (StringUtils.isNotBlank(formula)){
                     expressionService.parse(name, formula, cp, camelModel, cacheKey);
-                    Optional<ComposedExpression> byName = constraintService.getByName(cp.getAuxExpressions(), name);
-                    if (byName.isPresent()) {
-                        ComposedExpression composedExpression = byName.get();
-                        Constant tresholdConstant = constantService.createDoubleConstant(threshold);
-                        ComparatorEnum comparatorEnum = convertComparator(comparisonOperator);
-                        cp.getConstants().add(tresholdConstant);
-                        cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, comparatorEnum, tresholdConstant, constraint.getName()));
-                    } else {
-                        throw new GeneratorException("DUPA!!!!!");
-                    }
+
+                    ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
+                            .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
+
+                    Constant tresholdConstant = constantService.createDoubleConstant(threshold);
+                    cp.getConstants().add(tresholdConstant);
+                    cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
                 }
-
-//
-//
-//                expressionService.prepareExpression(name, formula, cp, camelModel);
-
             }
         }
     }
-
-//    private void createIfNeeded(String name, String formula, ConstraintProblem cp, CamelModel camelModel) {
-//        if (componentAlreadyExists(cp, name)) {
-//            return;
-//        }
-//
-//
-//
-//        if (StringUtils.isBlank(formula)) {
-//            return;
-//        } else {
-//
-//        }
-//
-//    }
-//
-//    public void prepareExpression(String[] argumentNames, ConstraintProblem cp, CamelModel camelModel) {
-//        for (String argumentName : argumentNames) {
-//            if (!componentAlreadyExists(cp, argumentName)) {
-//                List<MetricVariableImpl> variables = getVariables(camelModel);
-//
-//                Optional<MetricVariableImpl> variable = variables.stream()
-//                        .filter(metricVariable -> argumentName.equals(metricVariable.getName()))
-//                        .findFirst();
-//
-//                if (variable.isPresent()) {
-//                    MetricVariableImpl metricVariable = variable.get();
-//                    PrimitiveType primitiveType = getType(metricVariable);
-//
-////                    variableCreatorFactory.getCreator(primitiveType).createCpVariable(cp, )
-//                }
-//
-//            }
-//        }
-//
-//    }
-//
-//    private boolean componentAlreadyExists(ConstraintProblem cp, String argName) {
-//        //TODO - uwspolnic to
-//        return cp.getCpVariables().stream().anyMatch(expression -> argName.equals(expression.getId()))
-//                || cp.getCpMetrics().stream().anyMatch(expression -> argName.equals(expression.getId()))
-//                || cp.getAuxExpressions().stream().anyMatch(expression -> argName.equals(expression.getId()));
-//    }
-
 
     private ComparatorEnum convertComparator(ComparisonOperatorType comparisonOperator){
         if (comparisonOperator == null) {
@@ -395,14 +343,6 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                 .stream()
                 .filter(MetricVariableImpl::isOnNodeCandidates)
                 .forEach(metricVariable -> log.warn("Flag onNodeCandidate currently unsupported. Variable {} will be ignored", metricVariable.getName()));
-
-
-//        List<MetricVariableImpl> variablesWithFormula = variables.stream()
-//                .filter(metricVariable -> StringUtils.isNotEmpty(metricVariable.getFormula()))
-//                .collect(Collectors.toList());
-
-//        8) - variables with formula
-//        variablesWithFormula.forEach(metricVariable -> expressionService.parse(metricVariable.getName(), metricVariable.getFormula(), cp, camelModel, cacheKey));
     }
 
     private List<Integer> mapLongToInteger(List<Long> from){

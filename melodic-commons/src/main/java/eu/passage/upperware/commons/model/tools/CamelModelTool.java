@@ -7,6 +7,7 @@ import camel.metric.MetricModel;
 import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
+import camel.type.PrimitiveType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
 
@@ -71,5 +72,10 @@ public class CamelModelTool {
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
+
+    public static PrimitiveType getType(Metric metricVariable) {
+        return metricVariable.getMetricTemplate().getValueType().getPrimitiveType();
+    }
+
 
 }
