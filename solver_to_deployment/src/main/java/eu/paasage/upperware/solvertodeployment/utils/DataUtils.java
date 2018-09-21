@@ -38,9 +38,9 @@ import java.util.stream.Collectors;
 public class DataUtils {
 
     public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
-            ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
-            NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
-            CDOTransaction transaction
+                                                    ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
+                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
+                                                    CDOTransaction transaction
     ) {
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
@@ -271,10 +271,12 @@ public class DataUtils {
     private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
         CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
 
-        ExecutionModel executionModel = CdoTool.getLastElementAsOptional(camelModel.getExecutionModels())
-                .orElseThrow(() -> new IllegalStateException("Could not find camel model for " + camelModelID));
+        Optional<ExecutionModel> executionModel = CdoTool.getLastElementAsOptional(camelModel.getExecutionModels());
+        if (!executionModel.isPresent()) {
+            return;
+        }
 
-        CdoTool.getCurrentlyInstalledModel(executionModel).ifPresent(deploymentInstanceModel -> {
+        CdoTool.getCurrentlyInstalledModel(executionModel.get()).ifPresent(deploymentInstanceModel -> {
             //1. VMInstances
             changeNames(result.getVmInstancesToRegister(), deploymentInstanceModel.getVmInstances(), VMKey::getInstance);
 
