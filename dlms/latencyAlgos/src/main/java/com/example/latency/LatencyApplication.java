@@ -20,7 +20,7 @@ import com.example.latency.extras.GetPropertyValues;
 @EnableAsync
 public class LatencyApplication {
 
-	@Autowired // to run from the same app
+	@Autowired
 	LatencyController latencyController;
 	@Autowired
 	GeneratorController generatorController;

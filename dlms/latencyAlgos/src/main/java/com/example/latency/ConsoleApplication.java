@@ -17,6 +17,7 @@ public class ConsoleApplication implements CommandLineRunner {
 		// TODO Auto-generated method stub
 		LatencyController latencyController = new LatencyController();
 		latencyController.run();
+
 	}
 
 }

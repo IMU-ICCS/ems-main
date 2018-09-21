@@ -2,7 +2,6 @@ package com.example.latency.Runner;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -46,7 +45,7 @@ public class Generator {
 
 		// to sort the dataCenter names
 		String[] nameList = { dataCenter1.getName(), dataCenter2.getName() };
-		Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
+//		Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
 
 		int latency = generateRandomNum(propValues.getBestLatency(), propValues.getWorstLatency());
 		int bandwidth = generateRandomNum(propValues.getBestLatency(), propValues.getWorstLatency());

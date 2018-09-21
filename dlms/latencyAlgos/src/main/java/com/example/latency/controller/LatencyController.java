@@ -3,14 +3,12 @@ package com.example.latency.controller;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -24,8 +22,8 @@ import com.example.latency.extras.GetPropertyValues;
 import com.example.latency.model.DCDistance;
 import com.example.latency.model.DataCenter;
 import com.example.latency.model.DataCenterLatencyBandwidth;
+import com.example.latency.model.Distance;
 import com.example.latency.model.TwoDataCenterValues;
-import com.example.latency.repository.CloudProviderRepository;
 import com.example.latency.repository.DataCenterLatencyBandwidthRepository;
 import com.example.latency.repository.DataCenterRepository;
 
@@ -35,11 +33,9 @@ import com.example.latency.repository.DataCenterRepository;
 public class LatencyController {
 
 	private GetPropertyValues propValues = new GetPropertyValues(); // store config
-	private int max = 30; // number of datacenters for random initialization;
-	private int numberOfDaysConsider = 30; // record from the history to consider
+	private int max = 30; // number of datacenters for random initialization, NOT USED NOW
+//	private int numberOfDaysConsider = 30; // record from the history to consider
 
-	@Autowired
-	private CloudProviderRepository cloudProviderRepository;
 	@Autowired
 	private DataCenterRepository dataCenterRepository;
 	@Autowired
@@ -51,7 +47,10 @@ public class LatencyController {
 	List<String> dcPairListWithData = new ArrayList<>();// list of paired dataset with historical data to get latency
 														// and ping for user defined ones
 	List<List<DCDistance>> dcDistanceList = new ArrayList<List<DCDistance>>();
-	Map<String, List<DCDistance>> dcDistanceMap = new HashMap<String, List<DCDistance>>();
+
+	// latency and bandwidth between two datacenter. String in Map is in the form:
+	// {dc1},{dc2}
+	Map<String, Distance> dcDistanceMap = new HashMap<String, Distance>();
 
 	private static final Logger logger = LoggerFactory.getLogger(LatencyController.class);
 
@@ -93,12 +92,10 @@ public class LatencyController {
 				DataCenter dc2 = dataCenterList.get(j);
 
 				String[] nameList = { dc1.getName(), dc2.getName() };
-				Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
+//				Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
 
+				// which data centers do we cover
 				dcPairList.add(nameList[0] + "," + nameList[1]);
-				int a;
-				if (nameList[0].contains("South-Central"))
-					a = 3;
 
 				// for different functions
 				switch (propValues.getFunction()) {
@@ -161,14 +158,11 @@ public class LatencyController {
 		latency = latency / dataCenterList.size();
 		bandwidth = bandwidth / dataCenterList.size();
 
-		DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandwidth);
-		List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
+		Distance distanceNew = new Distance(latency, bandwidth);
+//		List<Distance> distanceList = new ArrayList<Distance>();
+//		distanceList.add(distanceNew);
 
-		if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
-			dcDistanceList = dcDistanceMap.get(dc1);
-
-		dcDistanceList.add(dcDistanceNew);
-		dcDistanceMap.put(dc1, dcDistanceList);
+		dcDistanceMap.put(dc1 + "," + dc2, distanceNew);
 	}
 
 	public void algoLatestHigherWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1, String dc2) {
@@ -189,14 +183,11 @@ public class LatencyController {
 		latency = latency / denom;
 		bandwidth = bandwidth / denom;
 
-		DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandwidth);
-		List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
+		Distance distanceNew = new Distance(latency, bandwidth);
+//		List<Distance> distanceList = new ArrayList<Distance>();
+//		distanceList.add(distanceNew);
 
-		if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
-			dcDistanceList = dcDistanceMap.get(dc1);
-
-		dcDistanceList.add(dcDistanceNew);
-		dcDistanceMap.put(dc1, dcDistanceList);
+		dcDistanceMap.put(dc1 + "," + dc2, distanceNew);
 	}
 
 	public void calculateUsingGPS(String dc1, String dc2) {
@@ -212,14 +203,11 @@ public class LatencyController {
 		double latency = latArray[0];
 		double bandwidth = latArray[1];
 
-		DCDistance dcDistanceNew = new DCDistance(dc2, latency, bandwidth);
-		List<DCDistance> dcDistanceList = new ArrayList<DCDistance>();
+		Distance distanceNew = new Distance(latency, bandwidth);
+//		List<Distance> distanceList = new ArrayList<Distance>();
+//		distanceList.add(distanceNew);
 
-		if (dcDistanceMap.containsKey(dc1)) // if dc1 already exists
-			dcDistanceList = dcDistanceMap.get(dc1);
-
-		dcDistanceList.add(dcDistanceNew);
-		dcDistanceMap.put(dc1, dcDistanceList);
+		dcDistanceMap.put(dc1, distanceNew);
 //		 * 
 	}
 
@@ -240,7 +228,7 @@ public class LatencyController {
 
 		// to sort the dataCenter names
 		String[] nameList = { dataCenter1.getName(), dataCenter2.getName() };
-		Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
+//		Arrays.sort(nameList, String.CASE_INSENSITIVE_ORDER);
 
 		int latency = generateRandomNum(propValues.getBestLatency(), propValues.getWorstLatency());
 		int bandwidth = generateRandomNum(propValues.getBestLatency(), propValues.getWorstLatency());
@@ -258,52 +246,22 @@ public class LatencyController {
 	public void printDataStructure() {
 //		System.out.println("datacenter1" + "\t" + "datacenter2" + "\t" + "latency" + "\t" + "bandwidth");
 		logger.info("datacenter1" + "\t" + "datacenter2" + "\t" + "latency" + "\t" + "bandwidth");
-		for (Entry<String, List<DCDistance>> entry : dcDistanceMap.entrySet()) {
-			String dc1Name = entry.getKey();
-			for (DCDistance dcDistance : entry.getValue()) {
-//				System.out.println(dc1Name + "\t" + dcDistance.getName() + "\t" + dcDistance.getLatency() + "\t"
-//						+ dcDistance.getBandwidth());
-				logger.info(dc1Name + "\t" + dcDistance.getName() + "\t" + dcDistance.getLatency() + "\t"
-						+ dcDistance.getBandwidth());
-			}
+		for (Entry<String, Distance> entry : dcDistanceMap.entrySet()) {
+			String dcName = entry.getKey();
+			String list[] = dcName.trim().split(",");
+			Distance distance = entry.getValue();
+			logger.info(list[0] + "\t" + list[1] + "\t" + distance.getLatency() + "\t" + distance.getBandwidth());
+
 		}
-
-	}
-
-	// ask user the name of datacenters to know latency and bandwidth between them
-	public void askUser() {
-		Scanner sc = new Scanner(System.in);
-		System.out.print("Press yes to ask ");
-		String userChoice = sc.nextLine();
-		while (userChoice.equalsIgnoreCase("yes")) {
-
-			System.out.print("Enter name of the first datacenter ");
-
-			String dc1 = sc.nextLine();
-			System.out.print("Enter name of the second datacenter ");
-
-			String dc2 = sc.nextLine();
-			String[] dcGiven = { dc1, dc2 };
-			Arrays.sort(dcGiven, String.CASE_INSENSITIVE_ORDER);
-			if (dcPairList.contains(dcGiven[0] + "," + dcGiven[1])) {
-				printForGiven(dcGiven);
-			} else
-				System.out.println("Unfortunately we do not have data for that");
-
-			System.out.println("Press yes to ask again");
-			userChoice = sc.nextLine();
-		}
-		System.out.println("Thanks for asking!");
 
 	}
 
 	public TwoDataCenterValues calculateTwoDataCenter(String dc1, String dc2) {
 		TwoDataCenterValues twoDataCenterValues = null;
 		String[] dcGiven = { dc1, dc2 };
-		Arrays.sort(dcGiven, String.CASE_INSENSITIVE_ORDER);
+//		Arrays.sort(dcGiven, String.CASE_INSENSITIVE_ORDER);
 		if (dcPairListWithData.contains(dcGiven[0] + "," + dcGiven[1])) {
 			twoDataCenterValues = calculateLatencyBandwidth(dcGiven);
-			printForGiven(dcGiven);
 		} else
 			System.out.println("Unfortunately we do not have data for that");
 		return twoDataCenterValues;
@@ -324,26 +282,10 @@ public class LatencyController {
 	// return the latency, bandwidth, datacenter1, and datacenter2
 	public TwoDataCenterValues calculateLatencyBandwidth(String[] dcGiven) {
 		TwoDataCenterValues twoDataCenterValues = null;
-		List<DCDistance> dcDistance = dcDistanceMap.get(dcGiven[0]);
-		for (DCDistance item : dcDistance) {
-			if (item.getName().equalsIgnoreCase(dcGiven[1])) {
-				twoDataCenterValues = new TwoDataCenterValues(dcGiven[0], dcGiven[1], item.getLatency(),
-						item.getBandwidth());
-			}
-		}
+		Distance distance = dcDistanceMap.get(dcGiven[0] + "," + dcGiven[1]);
+		twoDataCenterValues = new TwoDataCenterValues(dcGiven[0], dcGiven[1], distance.getLatency(),
+				distance.getBandwidth());
 		return twoDataCenterValues;
-	}
-
-	// print the latency and bandwidth for user input
-	public void printForGiven(String[] dcGiven) {
-
-		List<DCDistance> dcDistance = dcDistanceMap.get(dcGiven[0]);
-		for (DCDistance item : dcDistance) {
-			if (item.getName().equalsIgnoreCase(dcGiven[1])) {
-				System.out.println(
-						dcGiven[0] + "\t" + dcGiven[1] + "\t" + item.getLatency() + "\t" + item.getBandwidth());
-			}
-		}
 	}
 
 	// return the latitude and longitude in an array

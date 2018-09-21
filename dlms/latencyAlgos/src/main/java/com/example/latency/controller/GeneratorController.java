@@ -31,9 +31,8 @@ public class GeneratorController {
 
 		// delete all records
 		/*
-		Date date2 = new Date(currentTime);
-//		System.out.println(date2);
-		deleteData(date2);// delete the old data
+		 * Date date2 = new Date(currentTime); // System.out.println(date2);
+		 * deleteData(date2);// delete the old data
 		 */
 		// generate data
 		long numRecordGenerate = propValues.getNumRecordGenerate();
