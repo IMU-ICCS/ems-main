@@ -10,8 +10,10 @@ package eu.passage.upperware.commons.model.tools;
 
 import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.DeploymentModel;
+import camel.execution.ExecutionModel;
+import camel.execution.HistoryRecord;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
@@ -33,13 +35,7 @@ public final class CdoTool {
                 .map(CamelModel.class::cast);
     }
 
-    public static Optional<DeploymentInstanceModel> getLastDeployedInstanceModel(List<DeploymentModel> deploymentModels) {
-        return getLastElementAsOptional(deploymentModels)
-                .filter(DeploymentInstanceModel.class::isInstance)
-                .map(DeploymentInstanceModel.class::cast);
-    }
-
-    private static <T extends EObject> Optional<T> getLastElementAsOptional(List<T> collection) {
+    public static <T extends EObject> Optional<T> getLastElementAsOptional(List<T> collection) {
         return Optional.ofNullable(getLastElement(collection));
     }
 
@@ -57,6 +53,14 @@ public final class CdoTool {
     public static CamelModel getCamelModelById(CDOTransaction transaction, String camelModelID) {
         return CdoTool.getLastCamelModel(transaction.getResource(camelModelID).getContents())
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
+    }
+
+    public static Optional<DeploymentInstanceModel> getCurrentlyInstalledModel(ExecutionModel executionModel){
+        List<HistoryRecord> historyRecords = ListUtils.emptyIfNull(executionModel.getHistoryRecords());
+        if (CollectionUtils.isEmpty(historyRecords)){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(historyRecords.get(historyRecords.size() - 1).getToDeploymentInstanceModel());
     }
 
 }
