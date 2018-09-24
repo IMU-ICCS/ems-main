@@ -68,6 +68,7 @@ public class LatencyController {
 		while (true) {
 			long newTime = System.currentTimeMillis();
 			if ((newTime - currentTime) >= propValues.getTimeInterval() * 1000) {
+				reset();
 				storeInternally();
 				printDataStructure(); // write the stored data structure in the logger file
 				currentTime = newTime;
@@ -78,6 +79,12 @@ public class LatencyController {
 //		askUser(); // ask user the dataset they want to find the latency and bandwidth
 	}
 
+	public void reset() {
+		dcPairList = new ArrayList<>();
+		dcPairListWithData = new ArrayList<>();
+		dcDistanceMap = new HashMap<String, Distance>();
+	}
+
 	public void insertData() {
 		int subtractNum = 18000;
 		for (int i = 1; i < 5000; i++)
@@ -85,7 +92,8 @@ public class LatencyController {
 	}
 
 	public void storeInternally() {
-		List<DataCenter> dataCenterList = dataCenterRepository.findAll();
+		List<DataCenter> dataCenterList = new ArrayList<DataCenter>();
+		dataCenterList = dataCenterRepository.findAll();
 		for (int i = 0; i < dataCenterList.size(); i++) {
 			DataCenter dc1 = dataCenterList.get(i);
 			for (int j = i + 1; j < dataCenterList.size(); j++) {
@@ -276,6 +284,7 @@ public class LatencyController {
 			twoDataCenterValues = calculateLatencyBandwidth(dcArray);
 			twoDataCenterValuesList.add(twoDataCenterValues);
 		}
+		System.out.println("The size is" + twoDataCenterValuesList.size());
 		return twoDataCenterValuesList;
 	}
 
