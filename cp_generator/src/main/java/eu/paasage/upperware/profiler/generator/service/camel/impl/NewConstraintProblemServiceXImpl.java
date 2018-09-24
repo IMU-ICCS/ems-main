@@ -231,51 +231,64 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private void addConstraint(ConstraintProblem cp, CamelModel camelModel, String cacheKey) {
 
-        ServiceLevelObjective sloRequirement = getSLORequirement(camelModel);
-        if (sloRequirement == null) {
-            return;
-        }
+        getSLORequirement(camelModel)
+            .stream()
+            .peek(slo -> log.info("Working with SLO with type: " + getConstraintType(slo) + " - name " + slo.getName()))
+            .forEach(sloRequirement -> {
 
-        Constraint constraint = sloRequirement.getConstraint();
-        if (constraint != null) {
-            if (constraint instanceof MetricConstraintImpl) {
-                MetricConstraintImpl mc = (MetricConstraintImpl) constraint;
-                MetricContext metricContext = mc.getMetricContext();
+                Constraint constraint = sloRequirement.getConstraint();
+                if (constraint != null) {
+                    if (constraint instanceof MetricConstraintImpl) {
+                        MetricConstraintImpl mc = (MetricConstraintImpl) constraint;
+                        MetricContext metricContext = mc.getMetricContext();
 
-                Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
-                ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
+                        Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
+                        ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
 
-                CpMetric cpMetric = metricService.getByName(cp.getCpMetrics(), metricContext.getMetric().getName()).orElseGet(() -> {
-                    CpMetric result = metricService.createCpMetric(metricContext.getMetric().getName(), getType(metricContext.getMetric()));
-                    cp.getCpMetrics().add(result);
-                    return result;
-                });
+                        CpMetric cpMetric = metricService.getByName(cp.getCpMetrics(), metricContext.getMetric().getName()).orElseGet(() -> {
+                            CpMetric result = metricService.createCpMetric(metricContext.getMetric().getName(), getType(metricContext.getMetric()));
+                            cp.getCpMetrics().add(result);
+                            return result;
+                        });
 
-                cp.getConstants().add(tresholdConstant);
-                cp.getConstraints().add(constraintService.createComparisonExpression(cpMetric, comparatorEnum, tresholdConstant, mc.getName()));
-            }
+                        cp.getConstants().add(tresholdConstant);
+                        cp.getConstraints().add(constraintService.createComparisonExpression(cpMetric, comparatorEnum, tresholdConstant, mc.getName()));
+                    }
 
-            if (constraint instanceof MetricVariableConstraintImpl) {
-                MetricVariableConstraintImpl mvc = (MetricVariableConstraintImpl) constraint;
-                camel.metric.MetricVariable metricVariable = mvc.getMetricVariable();
-                double threshold = mvc.getThreshold();
-                ComparisonOperatorType comparisonOperator = mvc.getComparisonOperator();
+                    if (constraint instanceof MetricVariableConstraintImpl) {
+                        MetricVariableConstraintImpl mvc = (MetricVariableConstraintImpl) constraint;
+                        camel.metric.MetricVariable metricVariable = mvc.getMetricVariable();
+                        double threshold = mvc.getThreshold();
+                        ComparisonOperatorType comparisonOperator = mvc.getComparisonOperator();
 
-                String name = metricVariable.getName();
-                String formula = metricVariable.getFormula();
+                        String name = metricVariable.getName();
+                        String formula = metricVariable.getFormula();
 
-                if (StringUtils.isNotBlank(formula)){
-                    expressionService.parse(name, formula, cp, camelModel, cacheKey);
+                        if (StringUtils.isNotBlank(formula)){
+                            expressionService.parse(name, formula, cp, camelModel, cacheKey);
 
-                    ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
-                            .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
+                            ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
+                                    .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
 
-                    Constant tresholdConstant = constantService.createDoubleConstant(threshold);
-                    cp.getConstants().add(tresholdConstant);
-                    cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
+                            Constant tresholdConstant = constantService.createDoubleConstant(threshold);
+                            cp.getConstants().add(tresholdConstant);
+                            cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
+                        }
+                    }
                 }
-            }
+        });
+
+    }
+
+    private String getConstraintType(ServiceLevelObjective slo) {
+        String result = "Unknown";
+        Constraint constraint = slo.getConstraint();
+        if (constraint instanceof MetricConstraintImpl) {
+            result = "MetricConstraintImpl";
+        } else if (constraint instanceof MetricVariableConstraintImpl) {
+            result = "MetricVariableConstraintImpl";
         }
+        return result;
     }
 
     private ComparatorEnum convertComparator(ComparisonOperatorType comparisonOperator){
@@ -301,15 +314,16 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
 
-    private ServiceLevelObjective getSLORequirement(CamelModel camelModel) {
+    private List<ServiceLevelObjective> getSLORequirement(CamelModel camelModel) {
+        List<ServiceLevelObjective> result = new ArrayList<>();
         for (RequirementModel requirementModel : CollectionUtils.emptyIfNull(camelModel.getRequirementModels())) {
             for (camel.requirement.Requirement requirement : CollectionUtils.emptyIfNull(requirementModel.getRequirements())) {
                 if (requirement instanceof ServiceLevelObjective) {
-                    return (ServiceLevelObjective) requirement;
+                    result.add((ServiceLevelObjective) requirement);
                 }
             }
         }
-        return null;
+        return result;
     }
 
     private void addMetrics(ConstraintProblem cp, CamelModel camelModel) {
