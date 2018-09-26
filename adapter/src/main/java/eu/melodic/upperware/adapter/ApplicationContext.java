@@ -32,8 +32,6 @@ public class ApplicationContext {
 
   private AdapterProperties adapterProperties;
 
-  private AuthorizationServiceClientProperties authorizationServiceClientProperties;
-
   @Bean
   public Filter loggingFilter() {
     CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
@@ -88,7 +86,7 @@ public class ApplicationContext {
 
   @Bean
   public AuthorizationServiceClient getAuthorizationServiceClient() {
-    return new AuthorizationServiceClient(authorizationServiceClientProperties);
+    return new AuthorizationServiceClient(new AuthorizationServiceClientProperties());
   }
 
 }
