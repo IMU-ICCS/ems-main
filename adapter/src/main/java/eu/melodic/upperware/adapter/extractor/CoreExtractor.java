@@ -1,12 +1,15 @@
 package eu.melodic.upperware.adapter.extractor;
 
 import camel.deployment.DeploymentInstanceModel;
-import eu.melodic.security.authorization.client.extractor.*;
-import java.util.Map;
+import eu.melodic.security.authorization.client.extractor.DataExtractor;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
-public class CoreExtractor implements DataExtractor<DeploymentInstanceModel,Integer> {
+public class CoreExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Integer> {
+
     @Override
     public String getKey() {
         return "total-number-of-cores";
@@ -14,7 +17,12 @@ public class CoreExtractor implements DataExtractor<DeploymentInstanceModel,Inte
 
     @Override
     public Integer getValue(DeploymentInstanceModel deploymentModel) {
-        return 1;
+        Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
+        return nodeCandidateForDeployment
+                .values()
+                .stream()
+                .mapToInt(value -> value.getHardware().getCores())
+                .sum();
     }
 
     @Override

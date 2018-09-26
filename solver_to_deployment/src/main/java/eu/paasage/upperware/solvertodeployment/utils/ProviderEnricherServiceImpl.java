@@ -6,6 +6,7 @@ import camel.core.CoreFactory;
 import camel.deployment.VMInstance;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
+import com.google.gson.Gson;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import io.github.cloudiator.rest.model.CloudType;
 import io.github.cloudiator.rest.model.Image;
@@ -20,13 +21,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ProviderEnricherServiceImpl implements ProviderEnricherService {
 
-    private SolverToDeploymentProperties solverToDeploymentProperties;
-
     private static final String AWS_EC2 = "aws-ec2";
     private static final String CLOUD_API_NAME_SUFFIX = "Api";
     private static final String CLOUD_PROPERTY_NAME_SUFFIX = "Property";
     private static final String CLOUD_CREDENTIAL_NAME_SUFFIX = "Credential";
 
+    private SolverToDeploymentProperties solverToDeploymentProperties;
+    private Gson gson = new Gson();
 
     @Autowired
     public ProviderEnricherServiceImpl(SolverToDeploymentProperties solverToDeploymentProperties) {
@@ -36,7 +37,6 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
     @Override
     public void enrichVMInstance(@NonNull VMInstance vmInstance, @NonNull NodeCandidate nodeCandidate, @NonNull String constraintProblemId, @NonNull CamelModel camelModel) {
         EList<Attribute> attributes = vmInstance.getAttributes();
-
         attributes.add(createAttribute("cloudName", extractCloudName(nodeCandidate, vmInstance.getName(), constraintProblemId)));
         attributes.add(createAttribute("providerName", createProviderName(nodeCandidate, vmInstance.getName(), constraintProblemId)));
         attributes.add(createAttribute("location", extractLocation(nodeCandidate)));
@@ -48,7 +48,7 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
         attributes.add(createAttribute("credentialsName", extractCredentialsName(nodeCandidate)));
         attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
         attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
-
+        attributes.add(createAttribute("nodeCandidate",gson.toJson(nodeCandidate)));
     }
 
     private Attribute createAttribute(String attributeName, String attributeValue) {

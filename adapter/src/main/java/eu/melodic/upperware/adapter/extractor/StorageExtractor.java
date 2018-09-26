@@ -3,10 +3,13 @@ package eu.melodic.upperware.adapter.extractor;
 import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.security.authorization.client.extractor.*;
 import java.util.Map;
+
+import io.github.cloudiator.rest.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StorageExtractor implements DataExtractor<DeploymentInstanceModel,Double> {
+public class StorageExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Double> {
+
     @Override
     public String getKey() {
         return "total-storage";
@@ -14,7 +17,12 @@ public class StorageExtractor implements DataExtractor<DeploymentInstanceModel,D
 
     @Override
     public Double getValue(DeploymentInstanceModel deploymentModel) {
-        return 1.0;
+        Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
+        return nodeCandidateForDeployment
+                .values()
+                .stream()
+                .mapToDouble(value -> value.getHardware().getDisk())
+                .sum();
     }
 
     @Override
