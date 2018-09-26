@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableAsync
-@ComponentScan(basePackages = {"eu.melodic.upperware.adapter", "eu.melodic.security.authorization.util.properties"})
+@ComponentScan(basePackages = {"eu.melodic.upperware.adapter"})
 public class AdapterApplication {
 
   public static void main(String[] args) {
