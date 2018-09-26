@@ -11,6 +11,8 @@ package eu.melodic.upperware.adapter;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
+import eu.melodic.security.authorization.client.AuthorizationServiceClient;
+import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -29,6 +31,8 @@ import javax.servlet.Filter;
 public class ApplicationContext {
 
   private AdapterProperties adapterProperties;
+
+  private AuthorizationServiceClientProperties authorizationServiceClientProperties;
 
   @Bean
   public Filter loggingFilter() {
@@ -80,6 +84,11 @@ public class ApplicationContext {
       }
     }
     return executor;
+  }
+
+  @Bean
+  public AuthorizationServiceClient getAuthorizationServiceClient() {
+    return new AuthorizationServiceClient(authorizationServiceClientProperties);
   }
 
 }

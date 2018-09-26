@@ -18,6 +18,8 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
+import eu.melodic.security.authorization.client.AuthorizationServiceClient;
+import eu.melodic.security.authorization.client.extractor.*;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
@@ -68,6 +70,8 @@ public class Coordinator {
 
     private CDOClientX cdoClientX;
 
+    private AuthorizationServiceClient authorizationServiceClient;
+
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid) {
         try {
@@ -98,9 +102,11 @@ public class Coordinator {
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
         CDOTransaction tr = cdoSessionX.openTransaction();
 
+		DeploymentInstanceModel targetModel = null;
+		DeploymentInstanceModel currentModel = null;
         try {
-            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
-            DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
+            targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
+            currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
             if (currentModel == null) {
                 saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
                 plan = planGenerator.buildConfigurationPlan(targetModel);
@@ -121,9 +127,55 @@ public class Coordinator {
 
         toLogGraphLogger.logGraph(plan.getTaskGraph());
 
-        planExecutor.executePlan(plan);
-        cdoServerUpdater.updateCamelModel(resourceName);
-        notifyPlanApplied(resourceName, notificationUri, uuid);
+		// pre-authorize target model
+        if (targetModel!=null) {
+			try {
+				preAuthorizeTargetModel(targetModel);
+
+				planExecutor.executePlan(plan);
+				cdoServerUpdater.updateCamelModel(resourceName);
+				notifyPlanApplied(resourceName, notificationUri, uuid);
+			} catch (Exception ex) {
+				notifyPlanRejected(resourceName, notificationUri, uuid);
+			}
+		} else {
+			log.warn("Cannot pre-authorize target model. Target model is null");
+		}
+    }
+
+//XXX:DEL: after completing development+tests
+    public String test() {
+        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST - BEGIN");
+        preAuthorizeTargetModel( null );
+        //run("/FCR", "", "");
+        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST - END");
+        return "SUCCESS";
+    }
+
+    private void preAuthorizeTargetModel(DeploymentInstanceModel targetModel) {
+        
+		// Collect plan information to submit to (Pre-)Authorization Server
+        String resource = "deployment-model";	//XXX: ...or the actual resource-id of target model in CDO
+        String action = "DEPLOY";
+        String subject = "Adapter";
+
+		// Call data extractors to collect information from target model 
+		DataExtractorHelper helper = new DataExtractorHelper(authorizationServiceClient);
+        Map<String,Object> extra = helper.getModelData( targetModel );
+		log.info("preAuthorizeTargetModel: Extracted target model data: {}", extra);
+
+        // Use PDP client to pre-authorize execution plan against policies
+        try {
+            log.debug("Calling PDP: {}", authorizationServiceClient.getPdpEndpoint());
+            boolean permit = authorizationServiceClient.requestAccess(resource, action, subject, extra);
+            log.debug("PDP decision: {}", permit);
+
+            if (!permit)
+                throw new RuntimeException("Plan pre-authorization have failed.");
+        } catch (Exception ex) {
+            log.warn("An error occurred while evaluating web access request: ", ex);
+            throw new RuntimeException(ex);
+        }
     }
 
     private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
