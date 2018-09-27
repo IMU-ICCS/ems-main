@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.paasage.upperware.metamodel.cp.VariableType;
@@ -23,9 +24,6 @@ import static java.lang.String.format;
 
 @Slf4j
 public class EvaluatingUtils {
-
-
-    /* mapping variables from solution and cp model */
 
 
     public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
@@ -53,31 +51,7 @@ public class EvaluatingUtils {
                 .getValue();
     }
 
-    private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
-        return variables.stream()
-                .filter(variable -> name.equals(variable.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", name)))
-                .getType();
-    }
-
-    private static Collection<String> getVariableNames(String componentId, Collection<VariableDTO> variables) {
-        return variables.stream()
-                .filter(variable -> componentId.equals(variable.getComponentId()))
-                .map(VariableDTO::getId)
-                .collect(Collectors.toList());
-    }
-
-    private static String getVariableName(String componentId, VariableType type, Collection<VariableDTO> variables) {
-        return variables.stream()
-                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(format("Variable with type %s for component %s does not exist", type, componentId)))
-                .getId();
-    }
-
     public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
-
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
         List<Element> variablesForComponent = solution.stream()
@@ -118,6 +92,40 @@ public class EvaluatingUtils {
         }
 
         return predicates.toArray(new Predicate[predicates.size()]);
+    }
+
+    public static boolean areUnmoveableComponentsMoved(Collection<String> unmoveableComponents, Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
+        return !newConfiguration.stream()
+                .filter(component -> unmoveableComponents.contains(component.getId()))
+                .allMatch(component -> actConfiguration.stream()
+                        .filter(actComponent -> actComponent.getId().equals(component.getId()))
+                        .allMatch(actComponent -> actComponent.getCardinality() == component.getCardinality()
+                                && actComponent.getNodeCandidate().equals(component.getNodeCandidate())
+                        )
+                );
+    }
+
+    private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
+        return variables.stream()
+                .filter(variable -> name.equals(variable.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(format("Variable %s does not exist", name)))
+                .getType();
+    }
+
+    private static Collection<String> getVariableNames(String componentId, Collection<VariableDTO> variables) {
+        return variables.stream()
+                .filter(variable -> componentId.equals(variable.getComponentId()))
+                .map(VariableDTO::getId)
+                .collect(Collectors.toList());
+    }
+
+    private static String getVariableName(String componentId, VariableType type, Collection<VariableDTO> variables) {
+        return variables.stream()
+                .filter(v -> ((componentId.equals(v.getComponentId())) && type.equals(v.getType())))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(format("Variable with type %s for component %s does not exist", type, componentId)))
+                .getId();
     }
 
 }

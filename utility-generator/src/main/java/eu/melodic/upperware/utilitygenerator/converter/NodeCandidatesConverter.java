@@ -42,9 +42,7 @@ public class NodeCandidatesConverter {
     private Collection<VariableDTO> variables;
 
 
-    public Collection<Element> convertAttributesOfNodeCandidates(Collection<Element> solution) {
-        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(solution);
-
+    public Collection<Element> convertAttributesOfNodeCandidates(Collection<ConfigurationElement> newConfiguration) {
         return attributes.stream()
                 .map(a -> createElement(a.getName(),
                         getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType())))
@@ -75,7 +73,7 @@ public class NodeCandidatesConverter {
         return convertSolutionToNodeCandidates(solution) == null;
     }
 
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
+    public Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
         log.debug("Converting solution to Node Candidates");
 
         Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
@@ -103,7 +101,7 @@ public class NodeCandidatesConverter {
         return newConfiguration.stream()
                 .filter(configurationElement -> configurationElement.getId().equals(componentId))
                 .findAny()
-                .orElseThrow(() -> new IllegalStateException("Configuration Element for component" + componentId + " is not found"))
+                .orElseThrow(() -> new IllegalStateException("Configuration Element for component " + componentId + " is not found"))
                 .getNodeCandidate();
     }
 

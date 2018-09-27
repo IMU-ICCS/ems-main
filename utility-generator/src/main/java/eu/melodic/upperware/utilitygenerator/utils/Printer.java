@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.utils;
 
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement;
@@ -15,6 +16,7 @@ import eu.melodic.upperware.utilitygenerator.model.function.RealElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
 import java.util.function.Predicate;
@@ -43,7 +45,7 @@ public class Printer {
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
-    public void printVariablesFromConstraintProblem(){
+    public void printVariablesFromConstraintProblem() {
 
         log.debug("Variables from Constraint Problem:");
         for (VariableDTO v : variables) {
@@ -52,8 +54,8 @@ public class Printer {
 
     }
 
-    //todo
-    public void printConfigurationWithMaximumUtility() {
-        log.info("Configuration with maximum utility:");
+    public void printConfiguration(Collection<ConfigurationElement> configuration) {
+        CollectionUtils.emptyIfNull(configuration).forEach(el -> log.debug(el.toString()));
     }
+
 }

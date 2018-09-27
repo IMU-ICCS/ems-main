@@ -14,6 +14,7 @@ import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.converter.VariableConverter;
 import eu.melodic.upperware.utilitygenerator.converter.camel.FromCamelModelConverter;
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
@@ -39,6 +40,8 @@ public class UtilityFunctionEvaluator {
     private UtilityFunction function;
     private NodeCandidatesConverter nodeCandidatesConverter;
     private VariableConverter variableConverter;
+    private Collection<String> unmoveableComponents;
+    private Collection<ConfigurationElement> deployedConfiguration;
 
     private Printer printer;
 
@@ -59,6 +62,8 @@ public class UtilityFunctionEvaluator {
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of the utility function: {}", formula);
+        this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponents();
+        log.info("Unmoveable components: {}", unmoveableComponents.toString());
 
         Collection<NodeCandidateAttribute> attributesOfNodeCandidates = fromCamelModelConverter.getAttributesOfNodeCandidates();
         log.info("Attributes of Node Candidates: {}", attributesOfNodeCandidates);
@@ -79,6 +84,7 @@ public class UtilityFunctionEvaluator {
         Collection<Element> allConstants = new ArrayList<>(metrics);
 
         if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
+            deployedConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(deployedSolution);
             Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
             log.info("CurrentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
             /* that code is connected with variables with flag current-config.
@@ -88,6 +94,7 @@ public class UtilityFunctionEvaluator {
             //allConstants.addAll(currentConfigArguments);
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
         } else {
+            deployedConfiguration = null;
             log.info("It is an initial deployment. Setting values of attributes of Node Candidates to default values");
             allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
             //allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
@@ -104,11 +111,17 @@ public class UtilityFunctionEvaluator {
 
     public double evaluate(Collection<Element> solution) {
         printer.printSolution(solution);
-        if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)) {
-            log.info("No Node Candidate for evaluated solution, return 0");
+        Collection<ConfigurationElement> newConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(solution);
+
+        if (newConfiguration == null) {
+            log.info("No Node Candidate for the evaluated solution, returning 0");
+            return 0;
+        } else if (deployedConfiguration != null && EvaluatingUtils.areUnmoveableComponentsMoved(unmoveableComponents, deployedConfiguration, newConfiguration)) {
+            log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
-        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(solution);
+
+        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(newConfiguration);
         Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 
         double utility = function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
