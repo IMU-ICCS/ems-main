@@ -11,11 +11,14 @@ package eu.melodic.upperware.adapter;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
+import eu.melodic.security.authorization.client.AuthorizationServiceClient;
+import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -82,4 +85,14 @@ public class ApplicationContext {
     return executor;
   }
 
+  @Bean
+  public AuthorizationServiceClient getAuthorizationServiceClient(AuthorizationServiceClientProperties authorizationServiceClientProperties) {
+    return new AuthorizationServiceClient(authorizationServiceClientProperties);
+  }
+
+  @Bean
+  @ConfigurationProperties
+  public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
+    return new AuthorizationServiceClientProperties();
+  }
 }

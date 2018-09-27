@@ -1,11 +1,14 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
+import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
+import camel.execution.ExecutionModel;
 import camel.location.GeographicalRegion;
 import camel.location.LocationModel;
 import camel.location.impl.LocationFactoryImpl;
+import camel.type.StringValue;
 import com.google.common.collect.Sets;
 import eu.melodic.cache.NodeCandidatePredicates;
 import eu.melodic.cache.NodeCandidates;
@@ -35,9 +38,9 @@ import java.util.stream.Collectors;
 public class DataUtils {
 
     public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
-            ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
-            NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
-            CDOTransaction transaction
+                                                    ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
+                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
+                                                    CDOTransaction transaction
     ) {
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
@@ -267,9 +270,18 @@ public class DataUtils {
 
     private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
         CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
-        CdoTool.getLastDeployedInstanceModel(camelModel.getDeploymentModels()).ifPresent(deployedModel -> {
-            //1. Component
-            changeNames(result.getComponentInstancesToRegister(), deployedModel.getSoftwareComponentInstances(), DataUtils.VMKey::getInstance);
+
+        Optional<ExecutionModel> executionModel = CdoTool.getLastElementAsOptional(camelModel.getExecutionModels());
+        if (!executionModel.isPresent()) {
+            return;
+        }
+
+        CdoTool.getCurrentlyInstalledModel(executionModel.get()).ifPresent(deploymentInstanceModel -> {
+            //1. VMInstances
+            changeNames(result.getVmInstancesToRegister(), deploymentInstanceModel.getVmInstances(), VMKey::getInstance);
+
+            //2. Component
+            changeNames(result.getComponentInstancesToRegister(), deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::getInstance);
         });
     }
 
@@ -326,21 +338,36 @@ public class DataUtils {
         private String name;
         private String type;
 
-        private static DataUtils.VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
-            String vmName = removeSuffixFromInstance(softwareComponentInstance.getName());
-            return new DataUtils.VMKey(vmName, "");
+        private static VMKey getInstance(VMInstance vmInstance) {
+
+            String vmType = vmInstance.getAttributes()
+                    .stream()
+                    .filter(att -> att.getName().equals("machineType"))
+                    .findFirst()
+                    .map(Attribute::getValue)
+                    .map(value -> (StringValue) value)
+                    .map(StringValue::getValue)
+                    .orElseThrow(() -> new IllegalStateException("Could not find machineType attribute for VMInstance: " + vmInstance.getName()));
+
+            String name = removeSuffixFromInstance(vmInstance.getName());
+
+            return new VMKey(name, vmType);
         }
 
+        private static VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
+            String name = removeSuffixFromInstance(softwareComponentInstance.getName());
+            return new VMKey(name, "");
+        }
         private static String removeSuffixFromInstance(String vmName) {
             return removeSuffix(removeSuffix(vmName));
         }
 
-        private static String removeSuffix(String vmName) {
-            if (vmName != null) {
-                int i = vmName.lastIndexOf("_");
-                return vmName.substring(0, i);
+        private static String removeSuffix(String name) {
+            if (name != null) {
+                int i = name.lastIndexOf("_");
+                return name.substring(0, i);
             }
-            return vmName;
+            return null;
         }
 
         @Override

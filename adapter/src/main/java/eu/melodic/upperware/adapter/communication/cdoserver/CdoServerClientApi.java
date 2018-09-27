@@ -81,7 +81,7 @@ public class CdoServerClientApi implements CdoServerApi {
         if (deploymentTypeModelOpt.isPresent()) {
           Optional<ExecutionModel> executionModelOpt = getExecutionModel(model, deploymentTypeModelOpt.get());
           if (executionModelOpt.isPresent()){
-            return getCurrentlyInstalledModel(executionModelOpt.get()).orElse(null);
+            return CdoTool.getCurrentlyInstalledModel(executionModelOpt.get()).orElse(null);
           }
         }
       }
@@ -192,11 +192,6 @@ public class CdoServerClientApi implements CdoServerApi {
       }
     }
     return Optional.empty();
-  }
-
-  private Optional<DeploymentInstanceModel> getCurrentlyInstalledModel(ExecutionModel executionModel){
-    List<HistoryRecord> historyRecords = ListUtils.emptyIfNull(executionModel.getHistoryRecords());
-    return Optional.ofNullable(historyRecords.get(historyRecords.size() - 1).getToDeploymentInstanceModel());
   }
 
   private String getUniqueAttributeName(){
