@@ -86,13 +86,13 @@ public class ApplicationContext {
   }
 
   @Bean
-  public AuthorizationServiceClient getAuthorizationServiceClient() {
-    return new AuthorizationServiceClient(authorizationServiceClientProperties());
+  public AuthorizationServiceClient getAuthorizationServiceClient(AuthorizationServiceClientProperties authorizationServiceClientProperties) {
+    return new AuthorizationServiceClient(authorizationServiceClientProperties);
   }
 
-    @Bean
-    @ConfigurationProperties
-    public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
-        return new AuthorizationServiceClientProperties();
-    }
+  @Bean
+  @ConfigurationProperties
+  public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
+    return new AuthorizationServiceClientProperties();
+  }
 }
