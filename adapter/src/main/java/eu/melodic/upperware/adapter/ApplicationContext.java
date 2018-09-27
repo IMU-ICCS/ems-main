@@ -18,6 +18,7 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -86,7 +87,12 @@ public class ApplicationContext {
 
   @Bean
   public AuthorizationServiceClient getAuthorizationServiceClient() {
-    return new AuthorizationServiceClient(new AuthorizationServiceClientProperties());
+    return new AuthorizationServiceClient(authorizationServiceClientProperties());
   }
 
+    @Bean
+    @ConfigurationProperties
+    public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
+        return new AuthorizationServiceClientProperties();
+    }
 }
