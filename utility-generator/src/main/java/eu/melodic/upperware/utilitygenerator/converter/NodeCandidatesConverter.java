@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -62,17 +61,6 @@ public class NodeCandidatesConverter {
         return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());
     }
 
-    public Collection<Collection<Element>> convertListOfAttributesOfNodeCandidates() {
-        return listOfAttributes.stream()
-                .map(attribute -> getValuesForOneAttribute(nodeCandidates.get(attribute.getComponentId()), attribute))
-                .collect(Collectors.toList());
-    }
-
-    //fixme - without getting from cache (if it is possible)
-    public boolean doesNodeCandidateForSolutionExist(Collection<Element> solution) {
-        return convertSolutionToNodeCandidates(solution) == null;
-    }
-
     public Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
         log.debug("Converting solution to Node Candidates");
 
@@ -91,7 +79,6 @@ public class NodeCandidatesConverter {
             }
             log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
 
-            //todo - it may be only a pair (Component, Node Candidate)
             newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
         }
         return newConfiguration;
@@ -117,17 +104,4 @@ public class NodeCandidatesConverter {
         }
         return result;
     }
-
-    private Collection<Element> getValuesForOneAttribute(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, NodeCandidateAttribute attribute) {
-        Collection<Element> elements = new ArrayList<>();
-        nodeCandidatesMap.values().forEach(list -> elements.addAll(getOneList(list, attribute)));
-        return elements;
-    }
-
-    private Collection<Element> getOneList(List<NodeCandidate> list, NodeCandidateAttribute attribute) {
-        return list.stream()
-                .map(nc -> createElement(attribute.getName(), getAttributeOfNodeCandidate(nc, attribute.getType())))
-                .collect(Collectors.toList());
-    }
-
 }

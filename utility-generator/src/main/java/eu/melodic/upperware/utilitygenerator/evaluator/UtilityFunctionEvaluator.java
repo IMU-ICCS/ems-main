@@ -9,7 +9,6 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.converter.CurrentConfigConverter;
 import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.converter.VariableConverter;
@@ -56,12 +55,12 @@ public class UtilityFunctionEvaluator {
         this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
 
-        CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variablesFromConstraintProblem);
         MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
 
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of the utility function: {}", formula);
+
         this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponents();
         log.info("Unmoveable components: {}", unmoveableComponents.toString());
 
@@ -87,18 +86,12 @@ public class UtilityFunctionEvaluator {
             deployedConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(deployedSolution);
             Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
             log.info("CurrentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
-            /* that code is connected with variables with flag current-config.
-            Its value can be taken from solution or from corresponding metric value. For now the assumption is that it will be taken from metric.*/
-            //Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
-            //log.info("current Config Arguments {} ", currentConfigArguments);
-            //allConstants.addAll(currentConfigArguments);
+
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
         } else {
             deployedConfiguration = null;
-            log.info("It is an initial deployment. Setting values of attributes of Node Candidates to default values");
+            log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
             allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
-            //allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
-            //allConstants.addAll(metricsConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getMetricsUsedInFunction()));
         }
 
         this.function = new UtilityFunction(formula, convertToConstants(allConstants));

@@ -11,10 +11,7 @@ package eu.melodic.upperware.utilitygenerator.converter.camel;
 import camel.core.CamelModel;
 import camel.deployment.DeploymentTypeModel;
 import camel.deployment.SoftwareComponent;
-import camel.metric.CompositeMetric;
-import camel.metric.Metric;
 import camel.metric.MetricVariable;
-import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
@@ -72,26 +69,6 @@ public class FromCamelModelConverter {
         cdoService.closeSession(sessionX);
     }
 
-    /* variables which should be also in CP model */
-    public Collection<MetricVariableImpl> getVariablesUsedInFunction() {
-        return this.metricVariables.stream()
-                .filter(variable -> isInFormula(utilityFunctionFormula, variable.getName())
-                        && !variable.isCurrentConfiguration()
-                        && CamelMetadataTool.isFromVariable(variable))
-                .collect(Collectors.toList());
-    }
-
-    /* variables from Constraint Problem with current config flag */
-    public Collection<MetricVariableImpl> getCurrentConfigMetricVariablesUsedInFunction() {
-        return metricVariables.stream().filter(this::isCurrentConfig).collect(Collectors.toList());
-    }
-
-    /* raw and composite metrics */
-    public Collection<Metric> getMetricsUsedInFunction() {
-        return metricModel.getMetrics().stream()
-                .filter(m -> (m instanceof RawMetric || m instanceof CompositeMetric) && isInFormula(utilityFunctionFormula, m.getName()))
-                .collect(Collectors.toList());
-    }
 
     /* variable with NodeCandidateAttribute annotations */
     public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates() {
@@ -168,12 +145,4 @@ public class FromCamelModelConverter {
                 && !variable.isOnNodeCandidates()
                 && !variable.isCurrentConfiguration();
     }
-
-    /* current config flag */
-    private boolean isCurrentConfig(MetricVariableImpl variable) {
-        return CamelMetadataTool.isFromVariable(variable)
-                && isInFormula(utilityFunctionFormula, variable.getName())
-                && variable.isCurrentConfiguration();
-    }
-
 }

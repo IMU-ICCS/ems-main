@@ -24,10 +24,6 @@ public class ConfigurationElement {
         return nodeCandidate.getPrice() * cardinality;
     }
 
-    public long getFullRam() {
-        return nodeCandidate.getHardware().getRam() * cardinality;
-    }
-
     public int getTotalNumberOfCores() {
         return cardinality * nodeCandidate.getHardware().getCores();
     }
