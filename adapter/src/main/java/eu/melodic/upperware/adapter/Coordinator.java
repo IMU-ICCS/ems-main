@@ -138,6 +138,7 @@ public class Coordinator {
 				cdoServerUpdater.updateCamelModel(resourceName);
 				notifyPlanApplied(resourceName, notificationUri, uuid);
 			} catch (Exception ex) {
+			    log.error("Error: ", ex);
 				notifyPlanRejected(resourceName, notificationUri, uuid);
 			}
 		} else {
