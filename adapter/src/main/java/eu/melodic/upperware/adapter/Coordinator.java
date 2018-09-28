@@ -129,8 +129,10 @@ public class Coordinator {
 
 		// pre-authorize target model
         if (targetModel!=null) {
+            log.info("Authorizing deployment plan with Authorization-Service...");
 			try {
 				preAuthorizeTargetModel(targetModel);
+                log.info("Deployment plan authorized, executing...");
 
 				planExecutor.executePlan(plan);
 				cdoServerUpdater.updateCamelModel(resourceName);
