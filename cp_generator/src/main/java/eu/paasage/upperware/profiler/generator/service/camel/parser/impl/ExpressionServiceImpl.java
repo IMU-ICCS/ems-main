@@ -2,10 +2,8 @@ package eu.paasage.upperware.profiler.generator.service.camel.parser.impl;
 
 import camel.core.CamelModel;
 import camel.metric.CompositeMetric;
-import camel.metric.Metric;
 import camel.metric.RawMetric;
 import camel.metric.impl.MetricVariableImpl;
-import camel.type.PrimitiveType;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.paasage.upperware.metamodel.cp.*;
@@ -34,10 +32,15 @@ import org.mariuszgromada.math.mxparser.parsertokens.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.lang.String.format;
 
 @Slf4j
 @Service
@@ -69,15 +72,7 @@ public class ExpressionServiceImpl implements ExpressionService {
         evaluateExpression(new StackCreator(expression.getCopyOfInitialTokens()), finalExpressionName, cp, camelModel, cacheKey);
     }
 
-    public Token createMetricToken(String name, int tokenLevel) {
-        return createToken(name, tokenLevel, MetricElement.INSTANCE);
-    }
-
-    public Token createVariableToken(String name, int tokenLevel) {
-        return createToken(name, tokenLevel, VariableElement.INSTANCE);
-    }
-
-    public Token createAuxExpression(String name, int tokenLevel) {
+    private Token createAuxExpression(String name, int tokenLevel) {
         return createToken(name, tokenLevel, AuxExpressionElement.INSTANCE);
     }
 
@@ -99,24 +94,22 @@ public class ExpressionServiceImpl implements ExpressionService {
         return generator.generate(5);
     }
 
-    private void  evaluateExpression(StackCreator stackCreator, String finalExpressionName, ConstraintProblem cp, CamelModel camelModel, String cacheKey) {
+    private void evaluateExpression(StackCreator stackCreator, String finalExpressionName, ConstraintProblem cp, CamelModel camelModel, String cacheKey) {
         stackCreator.print();
 
         int deepestLevel = stackCreator.getDeepestLevel();
         if (deepestLevel == StackCreator.DEEPEST_POSSIBLE_LEVEL) {
             log.info("Deepest level= {} finish evaluating", deepestLevel);
             return;
-        } else {
-            log.info("Deepest level= {} continue evaluating", deepestLevel);
         }
+        log.info("Deepest level= {} continue evaluating", deepestLevel);
 
         List<Marker> deepestGroups = stackCreator.getDeepestGroups(deepestLevel);
         if (CollectionUtils.isEmpty(deepestGroups)) {
             log.info("Looking for level: {}, found: 0. Finish calculation", deepestLevel);
             return;
-        } else {
-            log.info("Looking for level: {}, found: {}", deepestLevel, deepestGroups.size());
         }
+        log.info("Looking for level: {}, found: {}", deepestLevel, deepestGroups.size());
 
         int i = 1;
         for (Marker marker : deepestGroups) {
@@ -144,8 +137,9 @@ public class ExpressionServiceImpl implements ExpressionService {
 
             List<Token> tokensToAnalise = Stream.of(prevToken, operator, nextToken).collect(Collectors.toList());
 
-            log.debug("All expression {} going to repleace {} with {}", getTokenToPrint(marker.getTokens()),
-                    getTokenToPrint(tokensToAnalise), getTokenToPrint(Collections.singletonList(newToken)));
+            log.debug("The expression {} will be replaced by {} in expression {}",
+                    getTokenToPrint(tokensToAnalise), getTokenToPrint(Collections.singletonList(newToken)),
+                    getTokenToPrint(marker.getTokens()));
 
             repleaceGroupInMarker(marker.getTokens(), tokensToAnalise, newToken);
             result = newToken;
@@ -245,44 +239,30 @@ public class ExpressionServiceImpl implements ExpressionService {
                         cp.getCpVariables().add(newVariable);
                         return newVariable;
                     } else {
-                        throw new GeneratorException("Could not create variable for " + metricVariable.getName() + ". Missing or unsupported variable type");
+                        throw new GeneratorException(format("Could not create variable for %s - missing or unsupported variable type", metricVariable.getName()));
                     }
 
                 } else {
-                    throw new GeneratorException("Variables with formula not supported yet");
-                    //auxExpression
+                    //TODO - Variables with formula
+                    parse(metricVariable.getName(), metricVariable.getFormula(), cp, camelModel, cacheKey);
                 }
             }
 
             Optional<RawMetric> rawMetricOptional = CamelModelTool.getRawMetric(camelModel, token.tokenStr);
             if (rawMetricOptional.isPresent()) {
-                CpMetric metric = createCpMetric(rawMetricOptional.get());
+                CpMetric metric = metricService.createCpMetric(rawMetricOptional.get());
                 cp.getCpMetrics().add(metric);
                 return metric;
             }
 
             Optional<CompositeMetric> compositeMetricOptional = CamelModelTool.getCompositeMetric(camelModel, token.tokenStr);
             if (compositeMetricOptional.isPresent()) {
-                CpMetric metric = createCpMetric(compositeMetricOptional.get());
+                CpMetric metric = metricService.createCpMetric(compositeMetricOptional.get());
                 cp.getCpMetrics().add(metric);
                 return metric;
             }
         }
         throw new GeneratorException("Unsupported type: " + token.tokenTypeId + " with name: " + token.tokenStr);
-    }
-
-    private CpMetric createCpMetric(Metric metric) {
-        PrimitiveType type = CamelModelTool.getType(metric);
-        switch (type) {
-            case INT_TYPE:
-                return metricService.createIntegerCpMetric(metric.getName());
-            case FLOAT_TYPE:
-                return metricService.createFloatCpMetric(metric.getName());
-            case DOUBLE_TYPE:
-                return metricService.createDoubleCpMetric(metric.getName());
-            default:
-                throw new GeneratorException("Unsupported Type " + type.getName() + " for Metric " + metric.getName());
-        }
     }
 
     private NumericDomain createDomain(Map<Integer, List<NodeCandidate>> nodeCandidates, CamelMetadata variableType) {

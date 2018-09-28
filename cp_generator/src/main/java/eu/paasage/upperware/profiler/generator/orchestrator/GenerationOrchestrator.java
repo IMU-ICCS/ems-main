@@ -110,7 +110,7 @@ public class GenerationOrchestrator {
 
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage(), e);
-            return CpGenerationResult.error("There is not Processor for Camel Models. The input model can not be processed");
+            return CpGenerationResult.error("Problem during loading CamelModel");
         }
 
         log.info("Camel model {} loaded", resourceName);

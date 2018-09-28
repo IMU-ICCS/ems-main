@@ -5,6 +5,7 @@ import camel.constraint.Constraint;
 import camel.constraint.impl.MetricConstraintImpl;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
+import camel.core.NamedElement;
 import camel.deployment.RequirementSet;
 import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
@@ -329,15 +330,21 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     private void addMetrics(ConstraintProblem cp, CamelModel camelModel) {
         // 1) - RawMetrics
         List<RawMetric> rawMetrics = getRawMetrics(camelModel);
+        log.info("Found {} RawMetrics: {}", rawMetrics.size(), rawMetrics.stream().map(NamedElement::getName).collect(Collectors.joining(",", "[", "]")));
+
         cp.getCpMetrics()
                 .addAll(rawMetrics.stream()
+                        .peek(metric -> log.info("Working with RawMetric: {}", metric.getName()))
                         .peek(metric -> log.info("Creating MetricVariable for RawMetrics: {} with type {}", metric.getName(), getType(metric)))
                         .map(metric -> metricService.createCpMetric(metric.getName(), getType(metric))).collect(Collectors.toList()));
 
 //        2) - CompositeMetrics
         List<CompositeMetric> compositeMetrics = getCompositeMetrics(camelModel);
+        log.info("Found {} CompositeMetrics: {}", compositeMetrics.size(), compositeMetrics.stream().map(NamedElement::getName).collect(Collectors.joining(",", "[", "]")));
+
         cp.getCpMetrics()
                 .addAll(compositeMetrics.stream()
+                        .peek(metric -> log.info("Working with CompositeMetric: {}", metric.getName()))
                         .peek(metric -> log.info("Creating MetricVariable for CompositeMetrics: {} with type {}", metric.getName(), getType(metric)))
                         .map(metric ->metricService.createCpMetric(metric.getName(), getType(metric))).collect(Collectors.toList()));
 
