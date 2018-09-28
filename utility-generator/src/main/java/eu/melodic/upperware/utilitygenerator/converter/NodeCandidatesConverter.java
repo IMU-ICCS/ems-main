@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadata.PRICE;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -41,20 +42,13 @@ public class NodeCandidatesConverter {
     private Collection<VariableDTO> variables;
 
 
-    public Collection<Element> convertAttributesOfNodeCandidates(Collection<ConfigurationElement> newConfiguration) {
-        return attributes.stream()
-                .map(a -> createElement(a.getName(),
-                        getAttributeOfNodeCandidate(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType())))
-                .collect(Collectors.toList());
+    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
+            Collection<ConfigurationElement> newConfiguration) {
+        return convertAttributes(nodeCandidateAttributes, newConfiguration);
     }
 
-    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> attributes,
-            Collection<Element> deployedSolution) {
-        Collection<ConfigurationElement> actualConfiguration = convertSolutionToNodeCandidates(deployedSolution);
-        return attributes.stream()
-                .map(a -> createElement(a.getName(),
-                        getAttributeOfNodeCandidate(getNodeCandidate(actualConfiguration, a.getComponentId()), a.getType())))
-                .collect(Collectors.toList());
+    public Collection<Element> convertAttributes(Collection<ConfigurationElement> newConfiguration) {
+        return convertAttributes(attributes, newConfiguration);
     }
 
     public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
@@ -84,6 +78,14 @@ public class NodeCandidatesConverter {
         return newConfiguration;
     }
 
+    private Collection<Element> convertAttributes(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
+            Collection<ConfigurationElement> newConfiguration) {
+        return nodeCandidateAttributes.stream()
+                .map(a -> createElement(a.getName(),
+                        getAttributeValue(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType())))
+                .collect(Collectors.toList());
+    }
+
     private static NodeCandidate getNodeCandidate(Collection<ConfigurationElement> newConfiguration, String componentId) {
         return newConfiguration.stream()
                 .filter(configurationElement -> configurationElement.getId().equals(componentId))
@@ -92,16 +94,11 @@ public class NodeCandidatesConverter {
                 .getNodeCandidate();
     }
 
-    private static Number getAttributeOfNodeCandidate(NodeCandidate nodeCandidate, CamelMetadata type) {
-        Number result = null;
-        switch (type) {
-            case PRICE:
-                result = nodeCandidate.getPrice();
-                break;
-        }
-        if (result == null) {
+    private static Number getAttributeValue(NodeCandidate nodeCandidate, CamelMetadata type) {
+        if (PRICE.equals(type)) {
+            return nodeCandidate.getPrice();
+        } else {
             throw new IllegalArgumentException("Illegal type of Node Candidate attribute: " + type);
         }
-        return result;
     }
 }

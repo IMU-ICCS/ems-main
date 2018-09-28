@@ -34,8 +34,6 @@ import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.co
 @Slf4j
 public class UtilityFunctionEvaluator {
 
-    private double maxUtility;
-
     private UtilityFunction function;
     private NodeCandidatesConverter nodeCandidatesConverter;
     private VariableConverter variableConverter;
@@ -52,16 +50,13 @@ public class UtilityFunctionEvaluator {
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
         variablesFromConstraintProblem.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
 
-        this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
-
-        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
 
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of the utility function: {}", formula);
 
-        this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponents();
+        this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", unmoveableComponents.toString());
 
         Collection<NodeCandidateAttribute> attributesOfNodeCandidates = fromCamelModelConverter.getAttributesOfNodeCandidates();
@@ -76,7 +71,7 @@ public class UtilityFunctionEvaluator {
 
         this.nodeCandidatesConverter = new NodeCandidatesConverter(attributesOfNodeCandidates, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem);
 
-
+        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
         Collection<Element> metrics = metricsConverter.convertMetrics(formula);
         log.info("metrics: {}", metrics);
 
@@ -84,7 +79,7 @@ public class UtilityFunctionEvaluator {
 
         if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
             deployedConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(deployedSolution);
-            Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
+            Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedConfiguration);
             log.info("CurrentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
 
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
@@ -114,12 +109,9 @@ public class UtilityFunctionEvaluator {
             return 0;
         }
 
-        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(newConfiguration);
+        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributes(newConfiguration);
         Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 
-        double utility = function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
-
-        maxUtility = utility > maxUtility ? utility : maxUtility;
-        return utility;
+        return function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
     }
 }

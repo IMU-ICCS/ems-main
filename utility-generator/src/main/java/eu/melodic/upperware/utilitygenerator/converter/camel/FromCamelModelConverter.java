@@ -90,7 +90,7 @@ public class FromCamelModelConverter {
     }
 
     /* software components with unmoveable annotation */
-    public Collection<String> getUnmoveableComponents() {
+    public Collection<String> getUnmoveableComponentNames() {
         return ((DeploymentTypeModel) model.getDeploymentModels().get(0))
                 .getSoftwareComponents().stream()
                 .filter(this::isUnmoveable)
