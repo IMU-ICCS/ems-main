@@ -6,6 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.mariuszgromada.math.mxparser.mXparser;
 import org.mariuszgromada.math.mxparser.parsertokens.Token;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,9 +61,31 @@ public class StackCreator {
     }
 
     void print(){
-        if (log.isDebugEnabled()){
-            log.debug("Full expression:");
+        if (log.isInfoEnabled()){
+            log.info("Full expression:");
+            PrintStream oryginalOutputStream = System.out;
+            System.setOut(new TracingPrintStream(oryginalOutputStream));
             mXparser.consolePrintTokens(stack);
+            System.setOut(oryginalOutputStream);
+        }
+    }
+
+    @Slf4j
+    static class TracingPrintStream extends PrintStream {
+        TracingPrintStream(PrintStream original) {
+            super(original);
+        }
+
+        @Override
+        public void print(String s) {
+            log.info(s);
+            super.print(s);
+        }
+
+        @Override
+        public void println(String line) {
+            log.info(line);
+            super.println(line);
         }
     }
 }

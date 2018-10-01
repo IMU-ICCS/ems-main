@@ -173,9 +173,12 @@ public class ExpressionServiceImpl implements ExpressionService {
         eu.paasage.upperware.metamodel.cp.NumericExpression nextExpression = getExpression(nextToken, cp, camelModel, cacheKey);
         eu.paasage.upperware.metamodel.cp.OperatorEnum operatorEnum = getOperator(operator);
 
+        log.info("Going to create ComposedExpression with name {}", finalName );
         ComposedExpression composedExpression = constraintService.createComposedExpression(operatorEnum, finalName, prevExpression, nextExpression);
+        int sizeBefore = cp.getAuxExpressions().size();
         cp.getAuxExpressions().add(composedExpression);
-
+        int sizeAfter = cp.getAuxExpressions().size();
+        log.info("Adding CpMetrics. Size before: {}, Size after: {}, values: {}", sizeBefore, sizeAfter, cp.getAuxExpressions().stream().map(CPElement::getId).collect(Collectors.joining(",", "[", "]")));
         return createAuxExpression(composedExpression.getId(), newLevel);
     }
 
@@ -223,6 +226,7 @@ public class ExpressionServiceImpl implements ExpressionService {
             if (variableOpt.isPresent()) {
                 MetricVariableImpl metricVariable = variableOpt.get();
 
+                String variableName = metricVariable.getName();
                 if (StringUtils.isBlank(metricVariable.getFormula())) {
                     //simple variable
                     if (CamelMetadataTool.isFromVariable(metricVariable)) {
@@ -235,16 +239,18 @@ public class ExpressionServiceImpl implements ExpressionService {
                         NumericDomain domain = createDomain(nc, variableType);
 
                         VariableCreator creator = variableCreatorFactory.getCreator(CamelModelTool.getType(metricVariable));
-                        CpVariable newVariable = creator.createCpVariable(cp, variableType.variableType, componentName, domain, metricVariable.getName());
+                        CpVariable newVariable = creator.createCpVariable(cp, variableType.variableType, componentName, domain, variableName);
                         cp.getCpVariables().add(newVariable);
                         return newVariable;
                     } else {
-                        throw new GeneratorException(format("Could not create variable for %s - missing or unsupported variable type", metricVariable.getName()));
+                        throw new GeneratorException(format("Could not create variable for %s - missing or unsupported variable type", variableName));
                     }
 
                 } else {
-                    //TODO - Variables with formula
-                    parse(metricVariable.getName(), metricVariable.getFormula(), cp, camelModel, cacheKey);
+                    //Variables with formula
+                    parse(variableName, metricVariable.getFormula(), cp, camelModel, cacheKey);
+                    return constraintService.getByName(cp.getAuxExpressions(), variableName)
+                            .orElseThrow(() -> new GeneratorException(format("Could not find newly created AuxExpression for name: %s", variableName)));
                 }
             }
 
@@ -262,7 +268,7 @@ public class ExpressionServiceImpl implements ExpressionService {
                 return metric;
             }
         }
-        throw new GeneratorException("Unsupported type: " + token.tokenTypeId + " with name: " + token.tokenStr);
+        throw new GeneratorException(format("Unsupported type: %s with name: %s", token.tokenTypeId, token.tokenStr));
     }
 
     private NumericDomain createDomain(Map<Integer, List<NodeCandidate>> nodeCandidates, CamelMetadata variableType) {
