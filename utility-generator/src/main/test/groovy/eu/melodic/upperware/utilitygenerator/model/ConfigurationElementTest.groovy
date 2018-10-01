@@ -1,6 +1,7 @@
 package groovy.eu.melodic.upperware.utilitygenerator.model
 
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
+import eu.melodic.upperware.utilitygenerator.model.UtilityFunction
 import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Specification
 
@@ -68,5 +69,18 @@ class ConfigurationElementTest extends Specification {
         then:
         result
         noExceptionThrown()
+    }
+
+    def "different object"(){
+
+        given:
+        UtilityFunction function = Mock(UtilityFunction)
+
+        when:
+        boolean result = first.equals(function)
+
+        then:
+        noExceptionThrown()
+        !result
     }
 }

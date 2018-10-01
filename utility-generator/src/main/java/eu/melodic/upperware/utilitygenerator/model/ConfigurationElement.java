@@ -12,6 +12,8 @@ import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @AllArgsConstructor
 @Getter
 public class ConfigurationElement {
@@ -34,35 +36,18 @@ public class ConfigurationElement {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-
-        if (!ConfigurationElement.class.isAssignableFrom(obj.getClass())) {
-            return false;
-        }
-
-        final ConfigurationElement other = (ConfigurationElement) obj;
-        if ((this.getId() == null) ? (other.getId() != null) : !this.getId().equals(other.getId())) {
-            return false;
-        }
-
-        if ((this.getNodeCandidate() == null) ? (other.getNodeCandidate() != null) : !this.getNodeCandidate().equals(other.getNodeCandidate())) {
-            return false;
-        }
-
-        return this.getCardinality() == other.getCardinality();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConfigurationElement)) return false;
+        ConfigurationElement that = (ConfigurationElement) o;
+        return getCardinality() == that.getCardinality() &&
+                Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getNodeCandidate(), that.getNodeCandidate());
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 53 * hash + (this.getId() != null ? this.getId().hashCode() : 0);
-        hash = 53 * hash + this.getCardinality();
-        hash = 53 * hash + (this.getNodeCandidate() != null ? this.getNodeCandidate().hashCode() : 0);
-        return hash;
+
+        return Objects.hash(getId(), getNodeCandidate(), getCardinality());
     }
-
-
 }
