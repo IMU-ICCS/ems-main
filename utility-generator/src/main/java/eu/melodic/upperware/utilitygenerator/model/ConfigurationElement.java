@@ -32,4 +32,37 @@ public class ConfigurationElement {
     public String toString() {
         return String.format("Component: %s ( cardinality = %d,  %s)", id, cardinality, nodeCandidate.toString());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!ConfigurationElement.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        final ConfigurationElement other = (ConfigurationElement) obj;
+        if ((this.getId() == null) ? (other.getId() != null) : !this.getId().equals(other.getId())) {
+            return false;
+        }
+
+        if ((this.getNodeCandidate() == null) ? (other.getNodeCandidate() != null) : !this.getNodeCandidate().equals(other.getNodeCandidate())) {
+            return false;
+        }
+
+        return this.getCardinality() == other.getCardinality();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + (this.getId() != null ? this.getId().hashCode() : 0);
+        hash = 53 * hash + this.getCardinality();
+        hash = 53 * hash + (this.getNodeCandidate() != null ? this.getNodeCandidate().hashCode() : 0);
+        return hash;
+    }
+
+
 }

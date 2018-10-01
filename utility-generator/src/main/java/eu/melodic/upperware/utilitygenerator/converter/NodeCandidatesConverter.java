@@ -95,10 +95,9 @@ public class NodeCandidatesConverter {
     }
 
     private static Number getAttributeValue(NodeCandidate nodeCandidate, CamelMetadata type) {
-        if (PRICE.equals(type)) {
+        if (PRICE.equals(type))
             return nodeCandidate.getPrice();
-        } else {
+        else
             throw new IllegalArgumentException("Illegal type of Node Candidate attribute: " + type);
-        }
     }
 }

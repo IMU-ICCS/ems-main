@@ -99,9 +99,7 @@ public class EvaluatingUtils {
                 .filter(component -> unmoveableComponents.contains(component.getId()))
                 .allMatch(component -> actConfiguration.stream()
                         .filter(actComponent -> actComponent.getId().equals(component.getId()))
-                        .allMatch(actComponent -> actComponent.getCardinality() == component.getCardinality()
-                                && actComponent.getNodeCandidate().equals(component.getNodeCandidate())
-                        )
+                        .allMatch(actComponent -> actComponent.equals(component))
                 );
     }
 
