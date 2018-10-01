@@ -147,7 +147,7 @@ public class CPModelTool {
             log.info(ce.getId() + ": " +CPModelTool.toString(ce));
         }
 
-        log.info("AUX Expressions");
+        log.info("AUX EXPRESSIONS");
         for(Expression aux : cp.getAuxExpressions()){
             log.info(aux.getId() + ": " +CPModelTool.toString(aux));
         }
@@ -204,29 +204,32 @@ public class CPModelTool {
 
         if (expression instanceof ComposedExpression) {
             ComposedExpression composedExp = (ComposedExpression) expression;
-            String composedString = "( ";
+            StringBuilder composedString = new StringBuilder();
 
             for (NumericExpression ne : composedExp.getExpressions()) {
-                if (ne.equals(composedExp.getExpressions().get(0))) {
-                    composedString = composedString + toString(ne);
+                if (isFirstExpression(composedExp, ne)) {
+                    composedString.append(toString(ne));
                 } else {
-                    composedString = composedString + " " + composedExp.getOperator().getName() + " " + toString(ne);
+                    composedString.append(" ").append(composedExp.getOperator().getName()).append(" ").append(toString(ne));
                 }
             }
-            retString = retString + composedString + " )";
+            retString = "(" + composedString + " )";
 
         } else if (expression instanceof ComparisonExpression) {
             ComparisonExpression comparisonExp = (ComparisonExpression) expression;
             retString = System.lineSeparator() + "( " + toString(comparisonExp.getExp1()) + " " + comparisonExp.getComparator().getName() + " " + toString(comparisonExp.getExp2()) + " ) ";
-        } else if (expression instanceof Constant || expression instanceof CpVariable) {
+        } else if (expression instanceof Constant || expression instanceof CpVariable || expression instanceof CpMetric) {
             retString = expression.getId();
         } else {
-            log.error("NumericExpresion: {} not yet supported", expression.getClass().toString());
+            log.error("toString method for {} not supported yet", expression.getClass().toString());
         }
 
         return retString;
     }
 
+    private static boolean isFirstExpression(ComposedExpression composedExp, NumericExpression ne) {
+        return ne.equals(composedExp.getExpressions().get(0));
+    }
 
     public static void assignNumericValue(String val, CpVariable var, Solution solution) {
 
