@@ -28,7 +28,6 @@ public class VariableConverter {
         return solution.stream().filter(element -> isInFormula(formula, element.getName()) && isVariable(element)).collect(Collectors.toList());
     }
 
-    //maybe it is possible to get values of metrics from solution?
     private boolean isVariable(Element element) {
         return variablesFromConstraintProblem.stream().anyMatch(v -> v.getId().equals(element.getName()));
     }

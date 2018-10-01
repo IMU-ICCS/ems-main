@@ -28,7 +28,7 @@ public class UtilityGeneratorApplication {
     }
 
     public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
-        log.info("Creating of Utility Generator");
+        log.info("Creating of the Utility Generator");
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, variables, metrics, deployedSolution, nodeCandidates);
     }
 

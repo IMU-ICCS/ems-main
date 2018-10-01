@@ -9,10 +9,9 @@
 package eu.melodic.upperware.utilitygenerator.converter.camel;
 
 import camel.core.CamelModel;
-import camel.metric.CompositeMetric;
-import camel.metric.Metric;
+import camel.deployment.DeploymentTypeModel;
+import camel.deployment.SoftwareComponent;
 import camel.metric.MetricVariable;
-import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
@@ -24,6 +23,7 @@ import eu.melodic.upperware.utilitygenerator.communication.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -69,69 +69,32 @@ public class FromCamelModelConverter {
         cdoService.closeSession(sessionX);
     }
 
-    /* variables which should be also in CP model */
-    public Collection<MetricVariableImpl> getVariablesUsedInFunction() {
-        return this.metricVariables.stream()
-                .filter(variable -> isInFormula(utilityFunctionFormula, variable.getName())
-                        && !variable.isCurrentConfiguration()
-                        && CamelMetadataTool.isFromVariable(variable))
-                .collect(Collectors.toList());
-    }
-
-    /* variables from Constraint Problem with current config flag */
-    public Collection<MetricVariableImpl> getCurrentConfigMetricVariablesUsedInFunction() {
-        return metricVariables.stream()
-                .filter(variable -> variable.isCurrentConfiguration()
-                        && CamelMetadataTool.isFromVariable(variable)
-                        && isInFormula(utilityFunctionFormula, variable.getName()))
-                .collect(Collectors.toList());
-    }
-
-    /* raw and composite metrics */
-    public Collection<Metric> getMetricsUsedInFunction() {
-        return metricModel.getMetrics().stream()
-                .filter(m -> (m instanceof RawMetric || m instanceof CompositeMetric)
-                        && isInFormula(utilityFunctionFormula, m.getName()))
-                .collect(Collectors.toList());
-    }
 
     /* variable with NodeCandidateAttribute annotations */
-    //todo - checking if type is good variableType or NodeCandidatesAttributesType
     public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates() {
-        return metricVariables.stream()
-                .filter(variable -> CamelMetadataTool.isFromNodeCandidate(variable)
-                        && isInFormula(utilityFunctionFormula, variable.getName())
-                        && !variable.isOnNodeCandidates()
-                        && !variable.isCurrentConfiguration())
-                .map(attribute -> new NodeCandidateAttribute(
-                        attribute.getName(), attribute.getComponent().getName(),
-                        CamelMetadataTool.findNodeCandidateAttributeType(attribute), false))
-                .collect(Collectors.toList());
-
+        return createNodeCandidatesAttributes(metricVariables.stream()
+                .filter(this::isAttributeOfNodeCandidate).collect(Collectors.toList()), false);
     }
 
     /* variable with NodeCandidateAttribute anotations and current config flag */
     public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates() {
-        return metricVariables.stream()
-                .filter(variable -> variable.isCurrentConfiguration()
-                        && CamelMetadataTool.isFromNodeCandidate(variable)
-                        && isInFormula(utilityFunctionFormula, variable.getName())
-                        && !variable.isOnNodeCandidates())
-                .map(attribute -> new NodeCandidateAttribute(
-                        attribute.getName(), attribute.getComponent().getName(),
-                        CamelMetadataTool.findNodeCandidateAttributeType(attribute), false))
-                .collect(Collectors.toList());
+        return createNodeCandidatesAttributes(metricVariables.stream()
+                .filter(this::isCurrentConfigAttributeOfNodeCandidate).collect(Collectors.toList()), false);
     }
 
-    /* on candidates flag */ //todo - it may be connected with previous method
+    /* on candidates flag */
     public Collection<NodeCandidateAttribute> getListOfAttributesOfNodeCandidates() {
-        return metricVariables.stream()
-                .filter(variable -> variable.isOnNodeCandidates()
-                        && CamelMetadataTool.isFromNodeCandidate(variable)
-                        && isInFormula(utilityFunctionFormula, variable.getName()))
-                .map(attribute -> new NodeCandidateAttribute(
-                        attribute.getName(), attribute.getComponent().getName(),
-                        CamelMetadataTool.findNodeCandidateAttributeType(attribute), true))
+        return createNodeCandidatesAttributes(metricVariables.stream()
+                .filter(this::isListOfAttributesOfNodeCandidates)
+                .collect(Collectors.toList()), true);
+    }
+
+    /* software components with unmoveable annotation */
+    public Collection<String> getUnmoveableComponentNames() {
+        return ((DeploymentTypeModel) model.getDeploymentModels().get(0))
+                .getSoftwareComponents().stream()
+                .filter(this::isUnmoveable)
+                .map(SoftwareComponent::getName)
                 .collect(Collectors.toList());
     }
 
@@ -146,5 +109,40 @@ public class FromCamelModelConverter {
                 .orElseThrow(() -> new IllegalStateException("Optimization Requirement is obligatory"));
 
         return optimisationRequirement.getMetricVariable().getFormula();
+    }
+
+    private boolean isUnmoveable(SoftwareComponent softwareComponent) {
+        return !softwareComponent.getAnnotations().isEmpty()
+                && softwareComponent.getAnnotations().get(0).getId().equals(CamelMetadata.UNMOVEABLE.camelName);
+    }
+
+    private Collection<NodeCandidateAttribute> createNodeCandidatesAttributes(Collection<MetricVariableImpl> attributes, boolean isList) {
+        return attributes.stream()
+                .map(attribute -> new NodeCandidateAttribute(attribute.getName(), attribute.getComponent().getName(),
+                        CamelMetadataTool.findNodeCandidateAttributeType(attribute), isList))
+                .collect(Collectors.toList());
+    }
+
+    /* on candidates flag */
+    private boolean isListOfAttributesOfNodeCandidates(MetricVariableImpl variable) {
+        return CamelMetadataTool.isFromNodeCandidate(variable)
+                && isInFormula(utilityFunctionFormula, variable.getName())
+                && variable.isOnNodeCandidates();
+    }
+
+    /* variable with NodeCandidateAttribute anotations and current config flag */
+    private boolean isCurrentConfigAttributeOfNodeCandidate(MetricVariableImpl variable) {
+        return CamelMetadataTool.isFromNodeCandidate(variable)
+                && isInFormula(utilityFunctionFormula, variable.getName())
+                && !variable.isOnNodeCandidates()
+                && variable.isCurrentConfiguration();
+    }
+
+    /* variable with NodeCandidateAttribute annotations */
+    private boolean isAttributeOfNodeCandidate(MetricVariableImpl variable) {
+        return CamelMetadataTool.isFromNodeCandidate(variable)
+                && isInFormula(utilityFunctionFormula, variable.getName())
+                && !variable.isOnNodeCandidates()
+                && !variable.isCurrentConfiguration();
     }
 }
