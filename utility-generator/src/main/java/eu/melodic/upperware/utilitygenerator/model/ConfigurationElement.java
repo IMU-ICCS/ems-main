@@ -10,44 +10,21 @@ package eu.melodic.upperware.utilitygenerator.model;
 
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-import java.util.Objects;
 
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
 public class ConfigurationElement {
 
     private String id;
     private NodeCandidate nodeCandidate;
     private int cardinality;
 
-    public double getFullPrice() {
-        return nodeCandidate.getPrice() * cardinality;
-    }
-
-    public int getTotalNumberOfCores() {
-        return cardinality * nodeCandidate.getHardware().getCores();
-    }
-
     @Override
     public String toString() {
         return String.format("Component: %s ( cardinality = %d,  %s)", id, cardinality, nodeCandidate.toString());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ConfigurationElement)) return false;
-        ConfigurationElement that = (ConfigurationElement) o;
-        return getCardinality() == that.getCardinality() &&
-                Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getNodeCandidate(), that.getNodeCandidate());
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(getId(), getNodeCandidate(), getCardinality());
-    }
 }

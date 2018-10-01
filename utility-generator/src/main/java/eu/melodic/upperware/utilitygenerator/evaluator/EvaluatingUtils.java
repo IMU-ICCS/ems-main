@@ -98,9 +98,7 @@ public class EvaluatingUtils {
         return !newConfiguration.stream()
                 .filter(component -> unmoveableComponents.contains(component.getId()))
                 .allMatch(component -> actConfiguration.stream()
-                        .filter(actComponent -> actComponent.getId().equals(component.getId()))
-                        .allMatch(actComponent -> actComponent.equals(component))
-                );
+                        .anyMatch(actComponent -> actComponent.equals(component)));
     }
 
     private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
