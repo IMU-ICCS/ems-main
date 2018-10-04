@@ -1,5 +1,6 @@
 package eu.melodic.dlms;
 
+import eu.melodic.dlms.utilitygenerator.Algorithm;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

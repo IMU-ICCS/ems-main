@@ -1,4 +1,4 @@
-package eu.melodic.dlms;
+package eu.melodic.dlms.utilitygenerator;
 
 /**
  * Interface for algorithm runner classes.

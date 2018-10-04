@@ -1,4 +1,4 @@
-package eu.melodic.dlms;
+package eu.melodic.dlms.utilitygenerator;
 
 import java.util.Date;
 import java.util.Objects;
@@ -45,6 +45,11 @@ public class Algorithm {
 	private Date lastRun;
 
 	private double weight;
+
+	/**
+	 * Identifier for use with CAMEL.
+	 */
+	private String camelId;
 
 	public String getName() {
 		return name;
@@ -102,6 +107,14 @@ public class Algorithm {
 		this.weight = weight;
 	}
 
+	public String getCamelId() {
+		return camelId;
+	}
+
+	public void setCamelId(String camelId) {
+		this.camelId = camelId;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if(this == o) {
@@ -117,5 +130,12 @@ public class Algorithm {
 	@Override
 	public int hashCode() {
 		return Objects.hash(name);
+	}
+
+	@Override
+	public String toString() {
+		return "Algorithm{" +
+				"name='" + name + '\'' +
+				'}';
 	}
 }

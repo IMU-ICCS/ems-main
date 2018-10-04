@@ -1,11 +1,15 @@
 package eu.melodic.dlms;
 
+import eu.melodic.dlms.utilitygenerator.Algorithm;
+import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
+import eu.melodic.dlms.utilitygenerator.UtilityMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,24 +31,21 @@ public class DlmsRestController {
 	}
 
 	/**
-	 * Returns the accumulated results of all registered algorithms as a weighted utility value.
+	 * Returns a map of all active algorithms with the value their runner class produced from the call of queryResults().
+	 *
+	 * <p><b>TODO: Signature will change as soon as Diff-class is created (needs to be passed in here; see DlmsControllerClient.getUtilityValues())</b>
 	 */
 	@RequestMapping(value = "/dlmsController/utilityValue", method = RequestMethod.GET)
-	public double getUtilityValue() {
-		double utilityValue = 0;
-		for(Map.Entry<Algorithm, AlgorithmRunner> algorithmEntry : algorithms.entrySet()) {
-			AlgorithmRunner runner = algorithmEntry.getValue();
+	public UtilityMetrics getUtilityValue() {
+		Map<String, Double> utilityValueMap = new HashMap<>(algorithms.size());
+
+		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
 			double algorithmResult = runner.queryResults();
-			LOGGER.info("result for algorithm {}: {}", algorithmEntry.getKey().getName(), algorithmResult);
+			LOGGER.info("result for algorithm {}: {}", key.getName(), algorithmResult);
+			utilityValueMap.put(key.getCamelId(), algorithmResult);
+		});
 
-			double weightedResult = algorithmResult * algorithmEntry.getKey().getWeight();
-			LOGGER.info("result {} weighted with {} = {}", algorithmResult, algorithmEntry.getKey().getWeight(), weightedResult);
-
-			utilityValue += weightedResult;
-			LOGGER.info("utility value changed to {}", utilityValue);
-		}
-
-		return utilityValue;
+		return new UtilityMetrics(utilityValueMap);
 	}
 
 }

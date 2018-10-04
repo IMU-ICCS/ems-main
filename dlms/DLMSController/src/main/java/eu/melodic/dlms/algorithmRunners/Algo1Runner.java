@@ -1,6 +1,6 @@
 package eu.melodic.dlms.algorithmRunners;
 
-import eu.melodic.dlms.AlgorithmRunner;
+import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 
 /**
  * Demo implementation of a simple algorithm.
