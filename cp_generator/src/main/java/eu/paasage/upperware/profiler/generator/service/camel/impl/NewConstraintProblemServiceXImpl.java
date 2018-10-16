@@ -34,7 +34,6 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import io.github.cloudiator.rest.model.NodeRequirements;
 import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -444,12 +443,12 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String imageId) {
-        NodeRequirements nodeRequirements = cloudiatorServiceX.createNodeRequirements(globalRequirementSet, localRequirementSet, locationModels, imageId);
-        log.info("Requirements: {}", nodeRequirements);
+        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, imageId);
+        log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;
         try {
-            nodeCandidates = cloudiatorServiceX.findNodeCandidates(nodeRequirements);
+            nodeCandidates = cloudiatorServiceX.findNodeCandidates(requirements);
         } catch (ApiException e) {
             log.error("Error during fetching node candidates. Code: {}, ResponseBody: {}", e.getCode(), e.getResponseBody());
             log.error("ApiException: ", e);
@@ -462,7 +461,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         }
 
         if (CollectionUtils.isEmpty(nodeCandidates)){
-            throw new GeneratorException(String.format("Problem during fetching node candidates - empty result for query %s", toJson(nodeRequirements.getRequirements())));
+            throw new GeneratorException(String.format("Problem during fetching node candidates - empty result for query %s", toJson(requirements)));
         }
 
         return nodeCandidates;
