@@ -18,7 +18,9 @@ public enum CamelMetadata {
 
     PROVIDER("", VariableType.PROVIDER, false),
 
-    PRICE("m_price", null, true);
+    PRICE("m_price", null, true),
+
+    UNMOVEABLE("m_unmoveable", null, false);
 
     public String camelName;
     public VariableType variableType;

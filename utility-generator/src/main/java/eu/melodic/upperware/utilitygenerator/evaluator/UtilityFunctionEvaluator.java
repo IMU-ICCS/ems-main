@@ -9,11 +9,11 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.converter.CurrentConfigConverter;
 import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.converter.VariableConverter;
 import eu.melodic.upperware.utilitygenerator.converter.camel.FromCamelModelConverter;
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
@@ -34,11 +34,11 @@ import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.co
 @Slf4j
 public class UtilityFunctionEvaluator {
 
-    private double maxUtility;
-
     private UtilityFunction function;
     private NodeCandidatesConverter nodeCandidatesConverter;
     private VariableConverter variableConverter;
+    private Collection<String> unmoveableComponents;
+    private Collection<ConfigurationElement> deployedConfiguration;
 
     private Printer printer;
 
@@ -50,15 +50,14 @@ public class UtilityFunctionEvaluator {
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
         variablesFromConstraintProblem.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
 
-        this.maxUtility = 0.0;
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
-
-        CurrentConfigConverter currentConfigConverter = new CurrentConfigConverter(variablesFromConstraintProblem);
-        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
 
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of the utility function: {}", formula);
+
+        this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponentNames();
+        log.info("Unmoveable components: {}", unmoveableComponents.toString());
 
         Collection<NodeCandidateAttribute> attributesOfNodeCandidates = fromCamelModelConverter.getAttributesOfNodeCandidates();
         log.info("Attributes of Node Candidates: {}", attributesOfNodeCandidates);
@@ -72,26 +71,22 @@ public class UtilityFunctionEvaluator {
 
         this.nodeCandidatesConverter = new NodeCandidatesConverter(attributesOfNodeCandidates, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem);
 
-
+        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
         Collection<Element> metrics = metricsConverter.convertMetrics(formula);
         log.info("metrics: {}", metrics);
 
         Collection<Element> allConstants = new ArrayList<>(metrics);
 
         if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
-            Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedSolution);
+            deployedConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(deployedSolution);
+            Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedConfiguration);
             log.info("CurrentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
-            /* that code is connected with variables with flag current-config.
-            Its value can be taken from solution or from corresponding metric value. For now the assumption is that it will be taken from metric.*/
-            //Collection<Element> currentConfigArguments = currentConfigConverter.convertCurrentConfig(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction(), deployedSolution);
-            //log.info("current Config Arguments {} ", currentConfigArguments);
-            //allConstants.addAll(currentConfigArguments);
+
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
         } else {
-            log.info("It is an initial deployment. Setting values of attributes of Node Candidates to default values");
+            deployedConfiguration = null;
+            log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
             allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
-            //allConstants.addAll(currentConfigConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigMetricVariablesUsedInFunction()));
-            //allConstants.addAll(metricsConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getMetricsUsedInFunction()));
         }
 
         this.function = new UtilityFunction(formula, convertToConstants(allConstants));
@@ -104,16 +99,19 @@ public class UtilityFunctionEvaluator {
 
     public double evaluate(Collection<Element> solution) {
         printer.printSolution(solution);
-        if (nodeCandidatesConverter.doesNodeCandidateForSolutionExist(solution)) {
-            log.info("No Node Candidate for evaluated solution, return 0");
+        Collection<ConfigurationElement> newConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(solution);
+
+        if (newConfiguration == null) {
+            log.info("No Node Candidate for the evaluated solution, returning 0");
+            return 0;
+        } else if (deployedConfiguration != null && EvaluatingUtils.areUnmoveableComponentsMoved(unmoveableComponents, deployedConfiguration, newConfiguration)) {
+            log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
-        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributesOfNodeCandidates(solution);
+
+        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributes(newConfiguration);
         Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 
-        double utility = function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
-
-        maxUtility = utility > maxUtility ? utility : maxUtility;
-        return utility;
+        return function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
     }
 }

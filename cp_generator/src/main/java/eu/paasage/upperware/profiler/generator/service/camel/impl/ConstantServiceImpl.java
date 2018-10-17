@@ -121,44 +121,11 @@ public class ConstantServiceImpl implements ConstantService {
     }
 
     @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, int value, String name) {
+    public Constant searchOrCreateConstantByValue(EList<Constant> constants, double value) {
         Optional<Constant> constant = searchConstantByValue(constants, value);
 
         return constant.orElseGet(() -> {
-            Constant newConstant = createIntegerConstant(value, name);
-            constants.add(newConstant);
-            return newConstant;
-        });
-    }
-
-    @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, double value, String name) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
-
-        return constant.orElseGet(() -> {
-            Constant newConstant = createDoubleConstant(value, name);
-            constants.add(newConstant);
-            return newConstant;
-        });
-    }
-
-    @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, float value, String name) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
-
-        return constant.orElseGet(() -> {
-            Constant newConstant = createFloatConstant(value, name);
-            constants.add(newConstant);
-            return newConstant;
-        });
-    }
-
-    @Override
-    public Constant searchOrCreateConstantByValue(EList<Constant> constants, long value, String name) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
-
-        return constant.orElseGet(() -> {
-            Constant newConstant = createLongConstant(value, name);
+            Constant newConstant = createDoubleConstant(value);
             constants.add(newConstant);
             return newConstant;
         });

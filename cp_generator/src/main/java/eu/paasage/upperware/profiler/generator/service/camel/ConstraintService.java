@@ -1,6 +1,9 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
 import eu.paasage.upperware.metamodel.cp.*;
+import org.eclipse.emf.common.util.EList;
+
+import java.util.Optional;
 
 public interface ConstraintService extends GeneratorService {
 
@@ -12,4 +15,5 @@ public interface ConstraintService extends GeneratorService {
 
     ComposedExpression createComposedExpression(OperatorEnum op, String id, NumericExpression... numericExpressions);
 
+    Optional<ComposedExpression> getByName(EList<Expression> expressions, String name);
 }

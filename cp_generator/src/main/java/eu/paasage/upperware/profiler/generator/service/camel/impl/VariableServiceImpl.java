@@ -6,10 +6,12 @@ import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService
 import eu.paasage.upperware.profiler.generator.service.camel.VariableService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by pszkup on 16.08.17.
@@ -133,4 +135,10 @@ public class VariableServiceImpl implements VariableService {
         return rd;
     }
 
+    @Override
+    public Optional<CpVariable> getByName(EList<CpVariable> cpVariables, String name) {
+        return cpVariables.stream()
+                .filter(expression -> expression.getId().equals(name))
+                .findFirst();
+    }
 }

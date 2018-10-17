@@ -1,8 +1,10 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
 import eu.paasage.upperware.metamodel.cp.*;
+import org.eclipse.emf.common.util.EList;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by pszkup on 16.08.17.
@@ -42,4 +44,6 @@ public interface VariableService {
     NumericListDomain createLongListDomain(List<Long> values);
 
     NumericListDomain createFloatListDomain(List<Float> values);
+
+    Optional<CpVariable> getByName(EList<CpVariable> expressions, String name);
 }
