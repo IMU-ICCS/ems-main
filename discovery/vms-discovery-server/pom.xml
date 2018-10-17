@@ -1,89 +1,89 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>eu.melodic.upperware.discovery</groupId>
-		<artifactId>discovery</artifactId>
-		<version>2.1.0-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>eu.melodic.upperware.discovery</groupId>
+        <artifactId>discovery</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>vms-discovery-server</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+    <artifactId>vms-discovery-server</artifactId>
+    <version>2.1.0-SNAPSHOT</version>
 
-	<name>Upperware - VM Sensor Discovery Server</name>
+    <name>Upperware - VM Sensor Discovery Server</name>
 
-	<properties>
-		<docker.imageName>${docker.repository}melodic/vms-discovery-server</docker.imageName>
-		<docker.jarToInclude>vms-discovery-server-docker.zip</docker.jarToInclude>
-	</properties>
+    <properties>
+        <docker.imageName>${docker.repository}melodic/vms-discovery-server</docker.imageName>
+        <docker.jarToInclude>vms-discovery-server-docker.zip</docker.jarToInclude>
+    </properties>
 
-	<dependencies>
-		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
-		<dependency>
-			<groupId>org.apache.sshd</groupId>
-			<artifactId>apache-sshd</artifactId>
-			<version>1.6.0</version>
-			<type>pom</type>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-jdk14</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>apache-sshd</artifactId>
+            <version>1.6.0</version>
+            <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.25</version>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.25</version>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>eu.melodic.upperware.discovery.server.VmsDiscoveryServer</mainClass>
-					<executable>maven</executable>
-					<!-- optional -->
-					<!--<workingDirectory>/tmp</workingDirectory>-->
-					<!--<arguments>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>eu.melodic.upperware.discovery.server.VmsDiscoveryServer</mainClass>
+                    <executable>maven</executable>
+                    <!-- optional -->
+                    <!--<workingDirectory>/tmp</workingDirectory>-->
+                    <!--<arguments>
                         <argument>-X</argument>
                         <argument>myproject:dist</argument>
                     </arguments>-->
-					<!--<systemProperties>
+                    <!--<systemProperties>
                         <systemProperty>
                             <key>myproperty</key>
                             <value>myvalue</value>
                         </systemProperty>
                     </systemProperties>-->
-				</configuration>
-			</plugin>
-			<!-- IMPORTANT: DON'T USE MAVEN ASSEMBLY PLUGIN. IT INVALIDATES SIGNING OF DEPENDENCY JARS  (esp. BouncyCastleProvider JCE PROVIDER) -->
-			<!--<plugin>
+                </configuration>
+            </plugin>
+            <!-- IMPORTANT: DON'T USE MAVEN ASSEMBLY PLUGIN. IT INVALIDATES SIGNING OF DEPENDENCY JARS  (esp. BouncyCastleProvider JCE PROVIDER) -->
+            <!--<plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
@@ -105,64 +105,64 @@
                 </configuration>
             </plugin>-->
 
-			<!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<descriptor>src/assembly/docker.xml</descriptor>
-					<finalName>vms-discovery-server</finalName>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+            <!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptor>src/assembly/docker.xml</descriptor>
+                    <finalName>vms-discovery-server</finalName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
-			<plugin>
-				<groupId>com.coderplus.maven.plugins</groupId>
-				<artifactId>copy-rename-maven-plugin</artifactId>
-				<version>1.0</version>
-				<executions>
-					<!--<execution>-->
-					<!--<id>rename-zip</id>-->
-					<!--<phase>package</phase>-->
-					<!--<goals>-->
-					<!--<goal>rename</goal>-->
-					<!--</goals>-->
-					<!--<configuration>-->
-					<!--<sourceFile>target/vms-discovery-server-docker.zip</sourceFile>-->
-					<!--<destinationFile>target/vms-discovery-server.zip</destinationFile>-->
-					<!--<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>-->
-					<!--</configuration>-->
-					<!--</execution>-->
-					<execution>
-						<id>copy-zip</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<sourceFile>target/vms-discovery-server-docker.zip</sourceFile>
-							<destinationFile>../../../tests-melodic/esper-demo/vms-discovery-server.zip
-							</destinationFile>
-							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <!--<execution>-->
+                    <!--<id>rename-zip</id>-->
+                    <!--<phase>package</phase>-->
+                    <!--<goals>-->
+                    <!--<goal>rename</goal>-->
+                    <!--</goals>-->
+                    <!--<configuration>-->
+                    <!--<sourceFile>target/vms-discovery-server-docker.zip</sourceFile>-->
+                    <!--<destinationFile>target/vms-discovery-server.zip</destinationFile>-->
+                    <!--<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>-->
+                    <!--</configuration>-->
+                    <!--</execution>-->
+                    <execution>
+                        <id>copy-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>target/vms-discovery-server-docker.zip</sourceFile>
+                            <destinationFile>../../../tests-melodic/esper-demo/vms-discovery-server.zip
+                            </destinationFile>
+                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-			</plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+            </plugin>
 
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
 </project>
