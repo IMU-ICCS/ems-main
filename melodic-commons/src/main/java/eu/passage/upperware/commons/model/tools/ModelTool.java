@@ -19,9 +19,8 @@ import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
 
-import eu.paasage.upperware.metamodel.application.PaasageConfiguration;
 import eu.passage.upperware.commons.MelodicConstants;
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -33,11 +32,8 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 /**
  * Methods to load and save a model from and to an XMI
  */
+@Slf4j
 public class ModelTool {
-
-    //TODO - change logger name
-    public static Logger logger = Logger.getLogger("paasage-profiler-log");
-
 
     public static Resource loadModel(File modelFile) {
         return loadModel(modelFile.getAbsolutePath());
@@ -59,11 +55,11 @@ public class ModelTool {
 
 
             for (Resource.Diagnostic d : r.getWarnings()) {
-                logger.info(d.toString());
+                log.info(d.toString());
             }
 
             for (Resource.Diagnostic d : r.getErrors()) {
-                logger.info(d.toString());
+                log.info(d.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,11 +88,11 @@ public class ModelTool {
 
 
             for (Resource.Diagnostic d : r.getWarnings()) {
-                logger.info(d.toString());
+                log.info(d.toString());
             }
 
             for (Resource.Diagnostic d : r.getErrors()) {
-                logger.info(d.toString());
+                log.info(d.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -137,7 +133,7 @@ public class ModelTool {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-            logger.error("WARNING:" + e.getMessage());
+            log.error("WARNING:" + e.getMessage());
 
         } finally {
             try {

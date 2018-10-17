@@ -44,5 +44,4 @@ public class SolverToDeploymentContext {
     Integer port = cacheProperties.getCache().getPort();
     return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
   }
-
 }

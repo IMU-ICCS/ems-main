@@ -58,7 +58,7 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	public EObject create(EClass eClass) {
 		switch (eClass.getClassifierID()) {
 			case CpPackage.CONSTRAINT_PROBLEM: return (EObject)createConstraintProblem();
-			case CpPackage.VARIABLE: return (EObject)createVariable();
+			case CpPackage.CP_VARIABLE: return (EObject)createCpVariable();
 			case CpPackage.NUMERIC_DOMAIN: return (EObject)createNumericDomain();
 			case CpPackage.RANGE_DOMAIN: return (EObject)createRangeDomain();
 			case CpPackage.NUMERIC_LIST_DOMAIN: return (EObject)createNumericListDomain();
@@ -69,13 +69,12 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 			case CpPackage.LIST_DOMAIN: return (EObject)createListDomain();
 			case CpPackage.MULTI_RANGE_DOMAIN: return (EObject)createMultiRangeDomain();
 			case CpPackage.BOOLEAN_DOMAIN: return (EObject)createBooleanDomain();
-			case CpPackage.METRIC_VARIABLE: return (EObject)createMetricVariable();
+			case CpPackage.CP_METRIC: return (EObject)createCpMetric();
 			case CpPackage.SOLUTION: return (EObject)createSolution();
-			case CpPackage.VARIABLE_VALUE: return (EObject)createVariableValue();
-			case CpPackage.METRIC_VARIABLE_VALUE: return (EObject)createMetricVariableValue();
+			case CpPackage.CP_VARIABLE_VALUE: return (EObject)createCpVariableValue();
 			case CpPackage.PARAMETER: return (EObject)createParameter();
 			case CpPackage.NORMALISED_UTILITY_DIMENSION: return (EObject)createNormalisedUtilityDimension();
-			case CpPackage.FUNCTION: return (EObject)createFunction();
+			case CpPackage.CP_FUNCTION: return (EObject)createCpFunction();
 			case CpPackage.CONFIGURATION_UPPERWARE: return (EObject)createConfigurationUpperware();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
@@ -147,9 +146,9 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public Variable createVariable() {
-		VariableImpl variable = new VariableImpl();
-		return variable;
+	public CpVariable createCpVariable() {
+		CpVariableImpl cpVariable = new CpVariableImpl();
+		return cpVariable;
 	}
 
 	/**
@@ -257,9 +256,9 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public MetricVariable createMetricVariable() {
-		MetricVariableImpl metricVariable = new MetricVariableImpl();
-		return metricVariable;
+	public CpMetric createCpMetric() {
+		CpMetricImpl cpMetric = new CpMetricImpl();
+		return cpMetric;
 	}
 
 	/**
@@ -277,19 +276,9 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public VariableValue createVariableValue() {
-		VariableValueImpl variableValue = new VariableValueImpl();
-		return variableValue;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public MetricVariableValue createMetricVariableValue() {
-		MetricVariableValueImpl metricVariableValue = new MetricVariableValueImpl();
-		return metricVariableValue;
+	public CpVariableValue createCpVariableValue() {
+		CpVariableValueImpl cpVariableValue = new CpVariableValueImpl();
+		return cpVariableValue;
 	}
 
 	/**
@@ -317,9 +306,9 @@ public class CpFactoryImpl extends EFactoryImpl implements CpFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public Function createFunction() {
-		FunctionImpl function = new FunctionImpl();
-		return function;
+	public CpFunction createCpFunction() {
+		CpFunctionImpl cpFunction = new CpFunctionImpl();
+		return cpFunction;
 	}
 
 	/**

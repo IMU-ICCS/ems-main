@@ -9,27 +9,31 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.VMInstance;
 import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.VirtualMachineInstance;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.provider.Feature;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 
-import static eu.melodic.upperware.adapter.plangenerator.converter.ConverterUtils.*;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public class VirtualMachineInstanceConverter implements ModelConverter<DeploymentModel, Collection<VirtualMachineInstance>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class VirtualMachineInstanceConverter implements ModelConverter<DeploymentInstanceModel, Collection<VirtualMachineInstance>> {
+
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<VirtualMachineInstance> toComparableModel(DeploymentModel model) {
+  public Collection<VirtualMachineInstance> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building virtual machine instance models");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
@@ -42,15 +46,13 @@ public class VirtualMachineInstanceConverter implements ModelConverter<Deploymen
   private VirtualMachineInstance toVirtualMachineInstance(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
-
     VirtualMachineInstance vmInstance = VirtualMachineInstance.builder()
       .name(vmInst.getName())
       .vmName(vmInst.getType().getName())
-      .cloudName(extractCloudName(rootFeature))
-      .location(extractLocation(rootFeature))
-      .hardware(convertToString(vmInst.getVmTypeValue()))
-      .image(extractImage(rootFeature))
+      .cloudName(providerInfoSupplier.getName(vmInst))
+      .location(providerInfoSupplier.getLocation(vmInst))
+      .hardware(providerInfoSupplier.getMachineType(vmInst))
+      .image(providerInfoSupplier.getImage(vmInst))
       .build();
 
     log.info("Built virtual machine instance: {}", vmInstance);

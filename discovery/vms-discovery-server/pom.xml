@@ -157,10 +157,10 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-            </plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+			</plugin>
 
         </plugins>
     </build>

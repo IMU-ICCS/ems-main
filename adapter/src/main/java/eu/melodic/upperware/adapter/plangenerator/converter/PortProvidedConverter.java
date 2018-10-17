@@ -9,15 +9,15 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
-import com.google.common.collect.Sets;
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.*;
-import eu.paasage.camel.provider.Feature;
+import camel.core.Application;
+import camel.core.CamelModel;
+import camel.deployment.*;
 import eu.melodic.upperware.adapter.plangenerator.model.PortProvided;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -28,12 +28,16 @@ import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public class PortProvidedConverter implements ModelConverter<DeploymentModel, Collection<PortProvided>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class PortProvidedConverter implements ModelConverter<DeploymentInstanceModel, Collection<PortProvided>> {
+
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<PortProvided> toComparableModel(DeploymentModel model) {
+  public Collection<PortProvided> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building port provided models (based on provided communications)");
-    Set<ProvidedCommunication> pcs = getProvidedCommunications(model);
+    DeploymentTypeModel initialModel = ConverterUtils.findDeploymentTypeModel(model);
+    Set<ProvidedCommunication> pcs = getProvidedCommunications(initialModel);
     if (CollectionUtils.isEmpty(pcs)) {
       log.info("There are no provided communications defined - no ports provided will be created");
     }
@@ -44,43 +48,31 @@ public class PortProvidedConverter implements ModelConverter<DeploymentModel, Co
     log.info("Processing of {}", pc.getName());
 
     Application app = ConverterUtils.extractApplication(((CamelModel) pc.eContainer().eContainer().eContainer()));
-    InternalComponent ic = (InternalComponent) pc.eContainer();
+    SoftwareComponent sc = (SoftwareComponent) pc.eContainer();
 
-    VM vm = ConverterUtils.findAssociatedVm(ic);
+    VM vm = ConverterUtils.findAssociatedVm(sc);
     VMInstance vmInstance = ConverterUtils.findAssociatedVmInstance(vm);
-    Feature rootFeature = (Feature) vmInstance.getVmType().eContainer().eContainer();
 
     PortProvided portProvided = PortProvided.builder()
-      .name(pc.getName())
-      .acName(ic.getName())
-      .port(pc.getPortNumber())
-      .cloudName(ConverterUtils.extractCloudName(rootFeature))
-      .appName(app.getName())
-      .lcName(ConverterUtils.extractConfiguration(ic).getName())
-      .vmName(vm.getName())
-      .location(ConverterUtils.extractLocation(rootFeature))
-      .hardware(ConverterUtils.convertToString(vmInstance.getVmTypeValue()))
-      .image(ConverterUtils.extractImage(rootFeature))
-      .build();
+            .name(pc.getName())
+            .acName(sc.getName())
+            .port(pc.getPortNumber())
+            .cloudName(providerInfoSupplier.getName(vmInstance))
+            .appName(app.getName())
+            .lcName(ConverterUtils.extractConfiguration(sc).getName())
+            .vmName(vm.getName())
+            .location(providerInfoSupplier.getLocation(vmInstance))
+            .hardware(providerInfoSupplier.getMachineType(vmInstance))
+            .image(providerInfoSupplier.getImage(vmInstance))
+            .build();
 
     log.info("Built port: {}", portProvided);
 
     return portProvided;
   }
 
-  private Set<ProvidedCommunication> getProvidedCommunications(DeploymentModel model) {
-    Set<ProvidedCommunication> pcs = Sets.newHashSet();
-    List<InternalComponent> ics = model.getInternalComponents();
-
-    if (CollectionUtils.isNotEmpty(ics)) {
-      ics.forEach(ic -> {
-        EList<ProvidedCommunication> $pcs = ic.getProvidedCommunications();
-        if (CollectionUtils.isNotEmpty($pcs)) {
-          pcs.addAll($pcs);
-        }
-      });
-    }
-
-    return pcs;
+  private Set<ProvidedCommunication> getProvidedCommunications(DeploymentTypeModel model) {
+    List<SoftwareComponent> ics = model.getSoftwareComponents();
+    return ics.stream().map(Component::getProvidedCommunications).flatMap(Collection::stream).collect(toSet());
   }
 }

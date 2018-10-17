@@ -84,8 +84,8 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createNumericExpressionAdapter();
 			}
 			@Override
-			public Adapter caseVariable(Variable object) {
-				return createVariableAdapter();
+			public Adapter caseCpVariable(CpVariable object) {
+				return createCpVariableAdapter();
 			}
 			@Override
 			public Adapter caseDomain(Domain object) {
@@ -148,20 +148,16 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createBooleanDomainAdapter();
 			}
 			@Override
-			public Adapter caseMetricVariable(MetricVariable object) {
-				return createMetricVariableAdapter();
+			public Adapter caseCpMetric(CpMetric object) {
+				return createCpMetricAdapter();
 			}
 			@Override
 			public Adapter caseSolution(Solution object) {
 				return createSolutionAdapter();
 			}
 			@Override
-			public Adapter caseVariableValue(VariableValue object) {
-				return createVariableValueAdapter();
-			}
-			@Override
-			public Adapter caseMetricVariableValue(MetricVariableValue object) {
-				return createMetricVariableValueAdapter();
+			public Adapter caseCpVariableValue(CpVariableValue object) {
+				return createCpVariableValueAdapter();
 			}
 			@Override
 			public Adapter caseParameter(Parameter object) {
@@ -172,8 +168,8 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 				return createNormalisedUtilityDimensionAdapter();
 			}
 			@Override
-			public Adapter caseFunction(Function object) {
-				return createFunctionAdapter();
+			public Adapter caseCpFunction(CpFunction object) {
+				return createCpFunctionAdapter();
 			}
 			@Override
 			public Adapter caseConfigurationUpperware(ConfigurationUpperware object) {
@@ -256,16 +252,16 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.Variable <em>Variable</em>}'.
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.CpVariable <em>Variable</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariable
 	 * @generated
 	 */
-	public Adapter createVariableAdapter() {
+	public Adapter createCpVariableAdapter() {
 		return null;
 	}
 
@@ -480,16 +476,16 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.MetricVariable <em>Metric Variable</em>}'.
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.CpMetric <em>Metric</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariable
+	 * @see eu.paasage.upperware.metamodel.cp.CpMetric
 	 * @generated
 	 */
-	public Adapter createMetricVariableAdapter() {
+	public Adapter createCpMetricAdapter() {
 		return null;
 	}
 
@@ -508,30 +504,16 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.VariableValue <em>Variable Value</em>}'.
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.CpVariableValue <em>Variable Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.VariableValue
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariableValue
 	 * @generated
 	 */
-	public Adapter createVariableValueAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.MetricVariableValue <em>Metric Variable Value</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue
-	 * @generated
-	 */
-	public Adapter createMetricVariableValueAdapter() {
+	public Adapter createCpVariableValueAdapter() {
 		return null;
 	}
 
@@ -564,16 +546,16 @@ public class CpAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.Function <em>Function</em>}'.
+	 * Creates a new adapter for an object of class '{@link eu.paasage.upperware.metamodel.cp.CpFunction <em>Function</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * @see eu.paasage.upperware.metamodel.cp.Function
+	 * @see eu.paasage.upperware.metamodel.cp.CpFunction
 	 * @generated
 	 */
-	public Adapter createFunctionAdapter() {
+	public Adapter createCpFunctionAdapter() {
 		return null;
 	}
 

@@ -9,46 +9,42 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.core.CamelModel;
+import camel.deployment.DeploymentInstanceModel;
+import camel.organisation.OrganisationModel;
 import eu.melodic.upperware.adapter.plangenerator.model.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.organisation.Entity;
-import eu.paasage.camel.organisation.OrganisationModel;
-import eu.paasage.camel.organisation.User;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class ApplicationConverter implements ModelConverter<DeploymentModel, Application> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class ApplicationConverter implements ModelConverter<DeploymentInstanceModel, Application> {
 
   @Override
-  public Application toComparableModel(DeploymentModel model) {
+  public Application toComparableModel(DeploymentInstanceModel model) {
     log.info("Building application model");
     Application app = toApplication(ConverterUtils.extractApplication((CamelModel) model.eContainer()));
     log.info("Built application: {}", app);
     return app;
   }
 
-  private Application toApplication(eu.paasage.camel.Application app) {
+  private Application toApplication(camel.core.Application app) {
+    EList<OrganisationModel> organisationModels = ((CamelModel) app.eContainer()).getOrganisationModels();
+    if (CollectionUtils.isEmpty(organisationModels)) {
+      throw new IllegalArgumentException("Empty OrganisationModel!");
+    }
+
     return Application.builder()
       .name(app.getName())
       .version(app.getVersion())
       .description(app.getDescription())
-      .owner(toOwner(app.getOwner()))
+      .owner(organisationModels.get(0).getName())
       .build();
   }
 
-  private String toOwner(Entity owner) {
-    if (owner instanceof OrganisationModel) {
-      log.debug("Application owner is being got directly from name of OrganisationModel");
-      return ((OrganisationModel) owner).getName();
-    }
-    if (owner instanceof User) {
-      log.debug("Application owner is being got from name of OrganisationModel via User");
-      return ((OrganisationModel) owner.eContainer()).getName();
-    }
-    log.debug("Application owner is not an instance of OrganisationModel nor User - the owner will not be set");
-    return null;
-  }
 }

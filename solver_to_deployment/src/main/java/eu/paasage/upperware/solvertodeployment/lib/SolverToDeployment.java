@@ -4,6 +4,10 @@
 
 package eu.paasage.upperware.solvertodeployment.lib;
 
+import camel.core.CamelModel;
+import camel.core.Feature;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentTypeModel;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.CacheUtils;
 import eu.melodic.cache.NodeCandidates;
@@ -13,9 +17,7 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequest;
 import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequestImpl;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.DeploymentElement;
-import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
@@ -28,6 +30,7 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
@@ -64,23 +67,24 @@ public class SolverToDeployment {
 		log.info("Notification URI: {}", notificationUri);
 		log.info("UUID: {}", requestUuid);
 
+		CDOSessionX session = CDODatabaseProxy.getInstance().getCdoClient().getSession();
+		CDOTransaction transaction = session.openTransaction();
+
 		try {
 			NodeCandidates nodeCandidates = Objects.requireNonNull(cacheService.load(CacheUtils.createCacheKey(paasageConfigurationID)));
 
-			CDODatabaseProxy cdoProxy = CDODatabaseProxy.getInstance();
-			CDOTransaction cdoTransaction = cdoProxy.getCdoClient().openTransaction();
-
-			EList<EObject> contentsCM = cdoTransaction.getResource(camelModelID).getContents();
+			EList<EObject> contentsCM = transaction.getResource(camelModelID).getContents();
 
 			CamelModel camelModel = CdoTool.getLastCamelModel(contentsCM)
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelID));
 
 			
-			EList<EObject> contentsPC = cdoTransaction.getResource(paasageConfigurationID).getContents();
-			ConstraintProblem constraintProblem = (ConstraintProblem) contentsPC.get(1);
+			EList<EObject> contentsPC = transaction.getResource(paasageConfigurationID).getContents();
+			ConstraintProblem constraintProblem = (ConstraintProblem) CdoTool.getFirstElement(contentsPC);
 
 			// Checking if there is a solution
-			if (constraintProblem.getSolution().size()==0) {
+
+			if (CollectionUtils.isEmpty(constraintProblem.getSolution())) {
 				log.info("No solution available in Constraint Problem!");
 				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 				return;
@@ -90,25 +94,27 @@ public class SolverToDeployment {
 
 			// Do Work
 			try {
-				int dmId = CDODatabaseProxy2.copyFirstDeploymentModel(camelModelID);
+				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(camelModel.getDeploymentModels());
+
+				int dmId = CDODatabaseProxy2.saveNewDeploymentInstanceModel(transaction, camelModelID);
 
 				CloudMLHelper.setGlobalDMIdx(dmId);
 				CloudMLHelper.resetGlobalCount();
 
-				DeploymentModel deploymentModel = camelModel.getDeploymentModels().get(dmId);
-
 				// Generate new instances into this new DM of camel
-				DataHolder dataholder  = DataUtils.computeDatasToRegister(deploymentModel, constraintProblem, solution,
-						camelModelID, nodeCandidates, solverToDeploymentProperties);
+
+				DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) camelModel.getDeploymentModels().get(dmId);
+				DataHolder dataholder = DataUtils.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModel, constraintProblem, solution,
+						camelModel, camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;
 				}
 
 				dataholder.setDmId(dmId);
-				DataUtils.registerDataHolderToCDO(camelModelID, dataholder); // COPY TO CDO
+				DataUtils.registerDataHolderToCDO(camelModelID, dataholder, transaction); // COPY TO CDO
 
-			} catch (S2DException | CommitException e) {
+			} catch (CommitException e) {
 				log.error("Unable to complete data model instances registration", e);
 				notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 				return;
@@ -118,6 +124,11 @@ public class SolverToDeployment {
 			log.error("RuntimeException", exception);
 			notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 			return;
+		} finally {
+			if (transaction != null && !transaction.isClosed()){
+				transaction.close();
+			}
+			session.closeSession();
 		}
 		notifySolutionApplied(camelModelID, notificationUri, requestUuid);
 	}
@@ -125,29 +136,26 @@ public class SolverToDeployment {
 	public static void dumpDM(CamelModel cm, int level) {
 		log.info("Camel doc contains " + cm.getDeploymentModels().size() + " Deployment Model");
 		if (level > 1)
-			for(int i=0; i<cm.getDeploymentModels().size(); i++) {
-				DeploymentModel dm = cm.getDeploymentModels().get(i);
-				log.info("  DM"+i+" :" +
-								" InternalComponentInstances: " + dm.getInternalComponentInstances().size()+
-								" VMInstances: "+ dm.getVmInstances().size() +
-								" HostingInstances: "+ dm.getHostingInstances().size() +
-								" CommInstances: " + dm.getCommunicationInstances().size());
+			for (int i = 1; i < cm.getDeploymentModels().size(); i++) {
+				DeploymentInstanceModel dm = (DeploymentInstanceModel) cm.getDeploymentModels().get(i);
+				log.info("  DeploymentInstanceModel " + i + " :" +
+						" SoftwareComponentInstances: " + dm.getSoftwareComponentInstances().size() +
+						" CommInstances: " + dm.getCommunicationInstances().size()
+						+ " VmInstances: " + dm.getVmInstances());
 				if (level > 2) {
 					// ICI
-					log.info("InternalComponentInstances: " + getAsString(dm.getInternalComponentInstances()));
-					// VMI
-					log.info("VMInstances: " + getAsString(dm.getVmInstances()));
-					// HI
-					log.info("HostingInstances: "+getAsString(dm.getHostingInstances()));
+					log.info("SoftwareComponentInstances: " + getAsString(dm.getSoftwareComponentInstances()));
 					// CI
-					log.info("CommIntances: "+getAsString(dm.getCommunicationInstances()));
+					log.info("CommInstances: " + getAsString(dm.getCommunicationInstances()));
+					// VMI
+					log.info("VmInstances: " + getAsString(dm.getVmInstances()));
 				}
 			}
 
 	}
 
-	private static <T extends DeploymentElement> String getAsString(EList<T> deploymentElements){
-		return deploymentElements.stream().map(DeploymentElement::getName).collect(Collectors.joining(" "));
+	private static <T extends Feature> String getAsString(EList<T> features) {
+		return features.stream().map(Feature::getName).collect(Collectors.joining(" "));
 	}
 
 	private void notifySolutionApplied(String camelModelID, String notificationUri, String uuid) {

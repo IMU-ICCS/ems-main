@@ -9,15 +9,14 @@
 
 package eu.melodic.upperware.adapter.executioncontext.cdoserver;
 
+import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
-import eu.paasage.camel.deployment.DeploymentModel;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 @Slf4j
 @Service
@@ -29,34 +28,23 @@ public class CdoServerClientUpdater implements CdoServerUpdater {
   @Override
   public void updateCamelModel(String resourceName) {
     log.info("Updating CAMEL model in CDO Server");
-    setExecutionContext(resourceName);
+    setHistoryRecord(resourceName);
     log.info("CAMEL model has been updated");
   }
 
-  private void setExecutionContext(String resourceName) {
-    CDOTransaction tr = cdoServerApi.openTransaction();
+  private void setHistoryRecord(String resourceName) {
+    CDOSessionX cdoSessionX = cdoServerApi.openSession();
+    CDOTransaction tr = cdoSessionX.openTransaction();
+
     try {
-      DeploymentModel camelModel = cdoServerApi.getModelToDeploy(resourceName, tr);
-      String executionContextName = getRandomExecutionContextName();
-      String requirementGroupName = getRandomRequirementGroupName();
-      cdoServerApi.setExecutionContext(camelModel, executionContextName, requirementGroupName, tr);
+      DeploymentInstanceModel modelToDeploy = cdoServerApi.getModelToDeploy(resourceName, tr);
+      cdoServerApi.setExecutionContext(modelToDeploy);
       tr.commit();
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
-      cdoServerApi.closeTransaction(tr);
+      cdoSessionX.closeTransaction(tr);
+      cdoSessionX.closeSession();
     }
-  }
-
-  private String getRandomExecutionContextName() {
-    return ("ExecutionContext_" + getUniqueId());
-  }
-
-  private String getRandomRequirementGroupName() {
-    return ("RequirementGroup_" + getUniqueId());
-  }
-
-  private String getUniqueId() {
-    return Long.toString((new Date()).getTime());
   }
 }

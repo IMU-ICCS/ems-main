@@ -1,34 +1,35 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 package eu.paasage.upperware.solvertodeployment.utils;
 
+import camel.core.Attribute;
+import camel.core.CamelModel;
+import camel.core.Feature;
+import camel.deployment.*;
+import camel.execution.ExecutionModel;
+import camel.location.GeographicalRegion;
+import camel.location.LocationModel;
+import camel.location.impl.LocationFactoryImpl;
+import camel.type.StringValue;
 import com.google.common.collect.Sets;
 import eu.melodic.cache.NodeCandidatePredicates;
 import eu.melodic.cache.NodeCandidates;
-import eu.paasage.camel.deployment.*;
-import eu.paasage.camel.provider.ProviderModel;
-import eu.paasage.camel.type.StringsValue;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.VariableValue;
-import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
-import eu.paasage.upperware.solvertodeployment.derivator.lib.CloudMLHelper;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
 import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -36,330 +37,356 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataUtils {
 
-	/*<pre>
+    public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
+                                                    ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
+                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
+                                                    CDOTransaction transaction
+    ) {
+        // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
+        // component i => i
+        Map<String, Integer> localComponentGroups = new HashMap<>();
+        // i => { components }
+        Map<Integer, Set<String>> localGroups = new HashMap<>();
+        // Init
 
-The Solver-to-deployement component is implemented in Java. It receives the solution as a list of objects with the PaaSageVariable type.
-APaaSageVariable object is described as follows:
-- RelatedComponent:  It gives the ApplicationComponent of the UpperModel to instanciate in the CAMEL model.
-- RelatedVirtualMachineProfile: It enables determining the VM template to instanciate in the CAMEL model.
-- RelatedProvider: It gives the Provider from the UpperwareModel that allows finding in which provider the VM must be instanciated.
+        EList<SoftwareComponent> softwareComponents = deploymentTypeModel.getSoftwareComponents();
+        for (int i = 0; i < softwareComponents.size(); i++) {
+            String componentName = softwareComponents.get(i).getName();
+            localComponentGroups.put(componentName, i);
+            localGroups.put(i, Sets.newHashSet(componentName));
+        }
 
-The creation process comprises the following steps.
-
-1. Creation of the InternalComponentInstances.
-
-A PaaSageVariable’s relatedComponent is used to create one corresponding InternalComponentInstance. To do so, we need to find in the CAMEL
-model the associated InternalComponent. This InternalComponent is associated to a list of ProvidedCommunications and a list of requiredCom-
-munications. For each item of these lists, we must create a corresponding instance, either ProvidedCommunicationInstance or RequiredCommuni-
-cationInstance (depending on the original type). The two resulting lists can then be associated to the InternalComponentInstance.
-
-
-2. Creation of the VmInstance.
-
-D3.1.2 - Product Upperware Report -- Page 74 of 98
-PaaSageVariable’s RelatedVirtualMachineProfile and RelatedProvider are used to create a vmInstance. Those two values allow finding the VM and
-the ProviderModel. From the VM, we create a ProvidedHostInstances that gets associated to the VmInstance. The ProviderModel is used to find the
-VMType and VMTypeValue of the VmInstance.
+        localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
+        localGroups.forEach((index, set) -> log.info("groups: <{} {} >", index, set));
 
 
-3. Creation of the HostingInstances.
+        //checking if each required port is provided by another component
+        Set<Integer> providedPorts = new HashSet<>();
+        softwareComponents.forEach(softwareComponent ->
+                softwareComponent.getProvidedCommunications()
+                        .forEach(providedCommunication -> providedPorts.add(providedCommunication.getPortNumber()))
+        );
 
-The HostingInstances are created using the previously-created VmInstance and InternalComponentInstances, as well as the InternalComponent
-associated to the ComponentInstance.
-A HostingInstance must be created for each ProvidedHostInstance associated to the VmInstance. Each HostingInstance must be associated to theA
-current ProvidedHostInstance and to the RequiredHostInstance matching the InternalComponentInstance.
+        softwareComponents.forEach(softwareComponent -> softwareComponent.getRequiredCommunications()
+                .forEach(requiredCommunication -> {
+                    if (!providedPorts.contains(requiredCommunication.getPortNumber())) {
+                        try {
+                            throw new S2DException(String.format("Port number %d required by %s is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName()));
+                        } catch (S2DException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }));
 
-4. Create CommunicationInstances
 
- </pre>
-	 */
-	public static DataHolder computeDatasToRegister(DeploymentModel deploymentModel,
-													ConstraintProblem constraintProblem, Solution solution, String camelModelID,
-													NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties) throws S2DException {
+        // Merging sets
+//        for (Communication communication : deploymentTypeModel.getCommunications()) {
+//            String provName = CloudMLHelper.findProvidedComponentFromCommunication(communication).getName();
+//            int provId = localComponentGroups.get(provName);
+//            String reqName = CloudMLHelper.findRequiredComponentFromCommunication(communication).getName();
+//            int reqId = localComponentGroups.get(reqName);
+//            if (provId == reqId) continue; // already merge
+//            if (provId < reqId) {
+//                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
+//                    if (entry.getValue() == reqId)
+//                        entry.setValue(provId);
+//                }
+//                // merge all elements of reqId into provId
+//                localGroups.get(provId).addAll(localGroups.get(reqId));
+//                // reqId & provId use the same set
+//                localGroups.put(reqId, localGroups.get(provId));
+//            } else {
+//                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
+//                    if (entry.getValue() == provId)
+//                        entry.setValue(reqId);
+//                }
+//                // merge all elements of reqId into provId
+//                localGroups.get(provId).addAll(localGroups.get(reqId));
+//                // reqId & provId use the same set
+//                localGroups.put(reqId, localGroups.get(provId));
+//            }
+//
+//        }
 
-		// Analyzing the model for LOCAL group, ie component connected by LOCAL communication
-		// component i => i
-		Map<String, Integer> localComponentGroups = new HashMap<>();
-		// i => { components }
-		Map<Integer, Set<String>> localGroups= new HashMap<>();
-		// Init
+        // Preparing VMInstance memory
+        int key = 0;
+        for (SoftwareComponent sc : softwareComponents) {
+            if (localComponentGroups.get(sc.getName()) == key) {
+                String msg = localGroups.get(key).stream().collect(Collectors.joining(" "));
+                log.info("Group {}: {}", key, msg);
+            }
+            key++;
+        }
 
-		EList<InternalComponent> internalComponents = deploymentModel.getInternalComponents();
-		for (int i = 0; i < internalComponents.size(); i++) {
-			String componentName = internalComponents.get(i).getName();
-			localComponentGroups.put(componentName, i);
-			localGroups.put(i, Sets.newHashSet(componentName));
-		}
+        // Memory of instances
+        Map<Integer, EList<VMInstance>> localGroupVMInstances = new HashMap<>();
+        Map<String, List<CpVariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
 
-		localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
-		localGroups.forEach((index, set) ->log.info("groups: <{} {} >", index, set));
+        try {
+            DataHolder dataHolder = new DataHolder();
+            for (Map.Entry<String, List<CpVariableValue>> entry : vvByComponentName.entrySet()) {
+                String componentName = entry.getKey();
 
-		// Merging sets
-		for (Communication communication : deploymentModel.getCommunications()) {
-			if (communication.getType() == CommunicationType.LOCAL) {
-				String provName = CloudMLHelper.findProvidedComponentFromCommunication(communication).getName();
-				int provId = localComponentGroups.get(provName);
-				String reqName = CloudMLHelper.findRequiredComponentFromCommunication(communication).getName();
-				int reqId = localComponentGroups.get(reqName);
-				if (provId == reqId) continue; // already merge
-				if (provId < reqId) {
-					for(Entry<String, Integer> entry : localComponentGroups.entrySet()) {
-						if (entry.getValue() == reqId)
-							entry.setValue(provId);
-					}
-					// merge all elements of reqId into provId
-					localGroups.get(provId).addAll(localGroups.get(reqId));
-					// reqId & provId use the same set
-					localGroups.put(reqId, localGroups.get(provId));
-				} else {
-					for(Entry<String, Integer> entry : localComponentGroups.entrySet()) {
-						if (entry.getValue() == provId)
-							entry.setValue(reqId);
-					}
-					// merge all elements of reqId into provId
-					localGroups.get(provId).addAll(localGroups.get(reqId));
-					// reqId & provId use the same set
-					localGroups.put(reqId, localGroups.get(provId));
-				}
-			}
-		}
 
-		// Preparing VMInstance memory
-		int key=0;
-		for (InternalComponent ic : internalComponents) {
-			if (localComponentGroups.get(ic.getName())==key) {
-				String msg = localGroups.get(key).stream().collect(Collectors.joining(" "));
-				log.info("Group {}: {}", key, msg);
-			}
-			key++;
-		}
-		
-		// Memory of instances
-		Map<Integer, EList<VMInstance>> localGroupVMInstances = new HashMap<>();
-		Map<String, List<VariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
+                int cardinality = CPModelTool.getIntValue(CPModelTool.getCardinality(entry.getValue()).orElseThrow(() -> new S2DException(String.format("Could not find cardinality for component %s", entry.getKey()))));
+                if (cardinality > 0) {
+                    int providerId = CPModelTool.getIntValue(CPModelTool.getProviderId(entry.getValue())
+                            .orElseThrow(() -> new S2DException(String.format("Could not find provider for component %s", entry.getKey()))));
 
-		try {
-			DataHolder dataHolder = new DataHolder();
-			for (Entry<String, List<VariableValue>> entry : vvByComponentName.entrySet()) {
-				String componentName = entry.getKey();
+                    Predicate<NodeCandidate>[] nodeCandidatePredicates = getNodeCandidatePredicates(entry.getValue());
 
-				int cardinality = CPModelTool.getIntValue(CPModelTool.getCardinality(entry.getValue()).orElseThrow(() -> new S2DException(String.format("Could not find cardinality for component %s", entry.getKey()))));
-				if (cardinality > 0) {
-					int providerId = CPModelTool.getIntValue(CPModelTool.getProviderId(entry.getValue())
-							.orElseThrow(() -> new S2DException(String.format("Could not find provider for component %s", entry.getKey()))));
+                    log.info(Arrays.stream(nodeCandidatePredicates)
+                            .map(Object::toString)
+                            .collect(Collectors.joining(",", "Filtering node candidates by component " + componentName + ", provider with id: " + providerId + " and " + nodeCandidatePredicates.length + " predicates [", "]")));
 
-					Predicate<NodeCandidate>[] nodeCandidatePredicates = getNodeCandidatePredicates(entry.getValue());
+                    NodeCandidate nodeCandidate = nodeCandidates.getCheapest(componentName, providerId, nodeCandidatePredicates)
+                            .orElseThrow(() -> new S2DException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
 
-					log.info(Arrays.stream(nodeCandidatePredicates)
-							.map(Object::toString)
-							.collect(Collectors.joining(",", "Filtering node candidates by component " + componentName + ", provider with id: " + providerId +  " and " + nodeCandidatePredicates.length + " predicates [", "]")));
+                    log.info("Found Node Candidate: {}", nodeCandidate);
 
-					NodeCandidate nodeCandidate = nodeCandidates.getCheapest(componentName, providerId, nodeCandidatePredicates)
-							.orElseThrow(() -> new S2DException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
+                    EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelper.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
+                    dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
 
-					log.info("Found Node Candidate: {}", nodeCandidate);
+                    //create VM Instance
+                    localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
 
-					try {
-						EList<InternalComponentInstance> internalComponentInstanceToRegisters = SolverToDeployementHelper.createInternalComponentInstance(componentName, deploymentModel, cardinality);
-						dataHolder.getComponentInstancesToRegister().addAll(internalComponentInstanceToRegisters);
+                    localGroupVMInstances.forEach((integer, vmInstances) -> vmInstances
+                            .forEach(vmInstance -> log.info("key: {}, vmInstance: {}", integer, vmInstance.getName())));
 
-						// Create VM Instance or not (if LOCAL communication)
-						int myKey = localComponentGroups.get(componentName);
-						EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
-						log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
+                    int myKey = localComponentGroups.get(componentName);
+                    EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
+                    log.info("LocalGroupVMInstances:");
+                    log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
+                    log.info("Creating VmInstances for component: {} with key: {}", componentName, myKey);
 
-						if (vmInstanceToRegisters == null) {
-							log.info("Creating new VM Instances...");
+                    if (vmInstanceToRegisters != null) {
+                        log.info("vmInstanceToRegisters list: ");
+                        vmInstanceToRegisters.forEach(vmInstance -> log.info("Instance: {}", vmInstance.getName()));
+                    } else {
+                        log.info("Creating new VM Instances for component: {} ...", componentName);
+                        VM vm = findVMByComponentName(deploymentTypeModel, componentName);
 
-							VM vm = findVMByName(deploymentModel.getVms(), getVmId(entry));
+                        if (vm == null) {
+                            log.info("Vm does not exist");
+                            log.info("Component name: {}", componentName);
+                            log.info("Number of VMs in list: {}, vm names: ", deploymentTypeModel.getVms().size());
 
-							ProviderModel providerModel = ProviderModelTransformer.createProviderModel(nodeCandidate, componentName, constraintProblem.getId(), solverToDeploymentProperties.getEndpoint().getAmazon());
-							dataHolder.getProviderModel().add(providerModel);
+                            deploymentTypeModel.getVms().forEach(vm1 -> log.info(vm1.getName()));
+                        }
 
-							vmInstanceToRegisters = SolverToDeployementHelper.searchAndCreateVMInstance(providerModel, vm, cardinality);
-							dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
-							// memorize
-							localGroupVMInstances.put(myKey,  vmInstanceToRegisters);
-							log.info("**NEW** VMs for key {}", myKey);
-						}
+                        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
 
-						// Create Hosting
-						for(int i=0; i<cardinality; i++) {
-							InternalComponentInstance iCI = internalComponentInstanceToRegisters.get(i);
-							VMInstance vmI = vmInstanceToRegisters.get(i);
-							dataHolder.getHostingInstancesToRegister().add(SolverToDeployementHelper.createHostingInstance(vmI, iCI, deploymentModel));
-						}
+                        vmInstanceToRegisters = SolverToDeploymentHelper.searchAndCreateVMInstance(vm, cardinality);
+                        vmInstanceToRegisters.forEach(vmInstance -> {
+                            providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
+                            log.info("VmInstance: {}", vmInstance.getName());
+                        });
 
-					} catch(S2DException e) {
-						throw e;
-					}
-				}
-			}
+                        GeographicalRegion location = getOrCreateRegion(dataHolder, nodeCandidate, camelModel);
+                        vmInstanceToRegisters.forEach(vmInstance -> vmInstance.setLocation(location));
 
-			log.debug("2. Dealing with Communication Instances");
-			for (Communication communication : deploymentModel.getCommunications()) {
-				log.info("2a Dealing with communication: {} type: {}", communication.getName(), communication.getType());
-				EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication, deploymentModel, dataHolder.getComponentInstancesToRegister());
-				dataHolder.getCommunicationInstances().addAll(communicationInstances);
-			}
-			log.debug("3. Changing names.");
-			changeNames(dataHolder, camelModelID);
-			log.debug("4. Done.");
-			return dataHolder;
 
-		} catch (Exception e) {
-			log.error("Problem with S2D: ", e);
-		}
-		return null;
-	}
+                        dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
+                        // memorize
+                        localGroupVMInstances.put(myKey, vmInstanceToRegisters);
+                        log.info("**NEW** VMs for key {}", myKey);
+                    }
+                    // Create Hosting
+                    for (int i = 0; i < cardinality; i++) {
+                        SoftwareComponentInstance iCI = softwareComponentInstances.get(i);
+                        VMInstance vmI = vmInstanceToRegisters.get(i);
+                        dataHolder.getHostingInstancesToRegister().addAll(SolverToDeploymentHelper.createHostingInstance(vmI, iCI, deploymentTypeModel));
+                    }
+                }
+            }
 
-	private static String getVmId(Entry<String, List<VariableValue>> entry) {
-		return entry.getValue().get(0).getVariable().getVmId();
-	}
+            log.debug("2. Dealing with Communication Instances");
+            for (Communication communication : deploymentTypeModel.getCommunications()) {
+                log.info("2a Dealing with communication: {}", communication.getName());
+                EList<CommunicationInstance> communicationInstances = CommunicationProvidedRequiredDomain.createCommunicationInstanceFromDemand(communication, deploymentInstanceModel, dataHolder.getComponentInstancesToRegister());
+                dataHolder.getCommunicationInstances().addAll(communicationInstances);
+            }
+            log.debug("3. Changing names.");
+            changeNames(dataHolder, camelModelId, transaction);
+            log.debug("4. Done.");
+            return dataHolder;
 
-	private static VM findVMByName(EList<VM> vms, String vmName) {
-		return vms.stream()
-				.filter(vm -> vm.getName().equals(vmName))
-				.findFirst().orElse(null);
-	}
+        } catch (Exception e) {
+            log.error("Problem with S2D: ", e);
+        }
+        return null;
+    }
 
-	private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<VariableValue> variableValues) {
-		List<Predicate<NodeCandidate>> result = new ArrayList<>();
+    private static GeographicalRegion getOrCreateRegion(DataHolder dataHolder, @NonNull NodeCandidate nodeCandidate, @NonNull CamelModel camelModel) {
 
-		CPModelTool.getCores(variableValues)
-				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getCoresPredicate(CPModelTool.getIntValue(variableValue))));
+        String regionName = nodeCandidate.getLocation().getName();
+        GeographicalRegion geographicalRegion = LocationFactoryImpl.eINSTANCE.createGeographicalRegion();
+        geographicalRegion.setName(regionName);
+        geographicalRegion.setId(regionName);
 
-		CPModelTool.getRam(variableValues)
-				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
+        Optional<GeographicalRegion> optionalGeographicalRegionToRegister = dataHolder.getLocationsToRegister().stream()
+                .filter(region -> regionName.equals(region.getName())).findAny();
 
-		CPModelTool.getStorage(variableValues)
-				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getDoubleValue(variableValue))));
+        if (optionalGeographicalRegionToRegister.isPresent()) {
+            log.info("GeographicalRegion {} exists in locations created to register", regionName);
+            return optionalGeographicalRegionToRegister.get();
+        } else if (camelModel.getLocationModels().isEmpty()) {
+            dataHolder.getLocationsToRegister().add(geographicalRegion);
+            log.info("There is no Location Model in the Camel Model, new Location Model with GeographicalRegion {} will be created", regionName);
+            return geographicalRegion;
+        } else {
+            Optional<GeographicalRegion> geographicalRegionFromCamel = camelModel.getLocationModels().stream()
+                    .map(LocationModel::getRegions)
+                    .flatMap(List::stream)
+                    .filter(geographicalRegion1 -> regionName.equals(geographicalRegion1.getName())).findAny();
+            if (geographicalRegionFromCamel.isPresent()) {
+                log.info("GeographicalRegion {} was found in the Camel Location Model", regionName);
+                return geographicalRegionFromCamel.get();
+            } else {
+                dataHolder.getLocationsToRegister().add(geographicalRegion);
+                log.info("GeographicalRegion {} does not exist in the Camel Location Model, creating a new one", regionName);
+                return geographicalRegion;
+            }
+        }
+    }
 
-		CPModelTool.getOs(variableValues)
-				.ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));
+    private static Predicate<NodeCandidate>[] getNodeCandidatePredicates(List<CpVariableValue> variableValues) {
+        List<Predicate<NodeCandidate>> result = new ArrayList<>();
 
-		return result.toArray(new Predicate[result.size()]);
-	}
+        CPModelTool.getCores(variableValues)
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getCoresPredicate(CPModelTool.getIntValue(variableValue))));
 
-	private static void changeNames(DataHolder result, String camelModelID) {
-		CDOTransaction transaction = CDODatabaseProxy.getInstance().getCdoClient().openTransaction();
-		try {
-			CDODatabaseProxy2.getLastDeployedModel(camelModelID, transaction).ifPresent(deployedModel -> {
-				//1. VMInstances
-				changeNames(result.getVmInstancesToRegister(), deployedModel.getVmInstances(), VMKey::getInstance);
+        CPModelTool.getRam(variableValues)
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
 
-				//2. Component
-				changeNames(result.getComponentInstancesToRegister(), deployedModel.getInternalComponentInstances(), VMKey::getInstance);
-					});
-		} finally {
-			if (transaction != null && !transaction.isClosed()) {
-				CDODatabaseProxy.getInstance().getCdoClient().closeTransaction(transaction);
-			}
-		}
-	}
+        CPModelTool.getStorage(variableValues)
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getIntValue(variableValue))));
 
-	private static <T extends DeploymentElement> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, VMKey> function) {
-		Map<VMKey, List<T>> newVmTemporaryMap = createInstanceMap(newInstances, function);
-		Map<VMKey, List<T>> deployedInstances = createInstanceMap(oldInstances, function);
-		for (VMKey vmKey : deployedInstances.keySet()) {
+        CPModelTool.getOs(variableValues)
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));
+
+        return result.toArray(new Predicate[result.size()]);
+    }
+
+    private static void changeNames(DataHolder result, String camelModelID, CDOTransaction transaction) {
+        CamelModel camelModel = CdoTool.getCamelModelById(transaction, camelModelID);
+
+        Optional<ExecutionModel> executionModel = CdoTool.getLastElementAsOptional(camelModel.getExecutionModels());
+        if (!executionModel.isPresent()) {
+            return;
+        }
+
+        CdoTool.getCurrentlyInstalledModel(executionModel.get()).ifPresent(deploymentInstanceModel -> {
+            //1. VMInstances
+            changeNames(result.getVmInstancesToRegister(), deploymentInstanceModel.getVmInstances(), VMKey::getInstance);
+
+            //2. Component
+            changeNames(result.getComponentInstancesToRegister(), deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::getInstance);
+        });
+    }
+
+    private static VM findVMByComponentName(DeploymentTypeModel deploymentTypeModel, String componentName) {
+        for (Hosting hosting : deploymentTypeModel.getHostings()) {
+            for (RequiredHost requiredHost : hosting.getRequiredHosts()) {
+                String scName = ((SoftwareComponent) requiredHost.eContainer()).getName();
+                if (componentName.equals(scName)) {
+                    return (VM) hosting.getProvidedHost().eContainer();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, DataUtils.VMKey> function) {
+        Map<DataUtils.VMKey, List<T>> newVmTemporaryMap = createInstanceMap(newInstances, function);
+        Map<DataUtils.VMKey, List<T>> deployedInstances = createInstanceMap(oldInstances, function);
+        for (DataUtils.VMKey vmKey : deployedInstances.keySet()) {
             List<T> oldVmInstances = deployedInstances.get(vmKey);
             List<T> newVmInstances = newVmTemporaryMap.getOrDefault(vmKey, Collections.emptyList());
 
-            for (int i=0; i< oldVmInstances.size(); i++) {
-                if (newVmInstances.size()>i) {
+            for (int i = 0; i < oldVmInstances.size(); i++) {
+                if (newVmInstances.size() > i) {
                     T newVmInstance = newVmInstances.get(i);
                     newVmInstance.setName(oldVmInstances.get(i).getName());
                 }
             }
         }
-	}
+    }
 
-	private static <T extends DeploymentElement> Map<VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, VMKey> function) {
-		Map<VMKey, List<T>> result = new HashMap<>();
+    private static <T extends Feature> Map<DataUtils.VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, DataUtils.VMKey> function) {
+        Map<DataUtils.VMKey, List<T>> result = new HashMap<>();
 
-		for (T instance : vmInstancesToRegister) {
-			VMKey vmKey = function.apply(instance);
+        for (T instance : vmInstancesToRegister) {
+            DataUtils.VMKey vmKey = function.apply(instance);
 
-			if (!result.containsKey(vmKey)){
-			    result.put(vmKey, new ArrayList<>());
+            if (!result.containsKey(vmKey)) {
+                result.put(vmKey, new ArrayList<>());
             }
             result.get(vmKey).add(instance);
-		}
-		return result;
-	}
+        }
+        return result;
+    }
 
-	public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder) {
+    public static void registerDataHolderToCDO(String camelModelID, DataHolder dataholder, CDOTransaction transaction) {
+        new CDODatabaseProxy2.DataUpdater().registerElements(dataholder, camelModelID, transaction);
+    }
 
-		for (ProviderModel providerModel: dataholder.getProviderModel()) {
-			CDODatabaseProxy2.registerProviderModel(providerModel,camelModelID, dataholder.getDmId());
-		}
+    @Getter
+    @AllArgsConstructor
+    static class VMKey {
 
-		for (VMInstance vmInstance : dataholder.getVmInstancesToRegister()) {
-			CDODatabaseProxy2.registerVMInstance(vmInstance,camelModelID, dataholder.getDmId());
-		}
+        private String name;
+        private String type;
 
-		for (InternalComponentInstance internalComponentInstance : dataholder.getComponentInstancesToRegister()) {
-			CDODatabaseProxy2.registerInternalComponentInstance(internalComponentInstance ,camelModelID, dataholder.getDmId());
-		}
+        private static VMKey getInstance(VMInstance vmInstance) {
 
-		for (HostingInstance hostingInstance : dataholder.getHostingInstancesToRegister()) {
-			CDODatabaseProxy2.registerHostingInstance(hostingInstance ,camelModelID, dataholder.getDmId());
-		}
+            String vmType = vmInstance.getAttributes()
+                    .stream()
+                    .filter(att -> att.getName().equals("machineType"))
+                    .findFirst()
+                    .map(Attribute::getValue)
+                    .map(value -> (StringValue) value)
+                    .map(StringValue::getValue)
+                    .orElseThrow(() -> new IllegalStateException("Could not find machineType attribute for VMInstance: " + vmInstance.getName()));
 
-		for (CommunicationInstance communicationInstance : dataholder.getCommunicationInstances()) {
-			CDODatabaseProxy2.registerCommunicationInstance(communicationInstance,camelModelID, dataholder.getDmId());
-		}
-	}
+            String name = removeSuffixFromInstance(vmInstance.getName());
 
-	@Getter
-	@AllArgsConstructor
-	static class VMKey {
+            return new VMKey(name, vmType);
+        }
 
-		private String name;
-		private String type;
+        private static VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
+            String name = removeSuffixFromInstance(softwareComponentInstance.getName());
+            return new VMKey(name, "");
+        }
+        private static String removeSuffixFromInstance(String vmName) {
+            return removeSuffix(removeSuffix(vmName));
+        }
 
-		private static VMKey getInstance(VMInstance vmInstance) {
-			String vmName = removeSuffixFromInstance(vmInstance.getName());
-			String vmType = ((StringsValue)vmInstance.getVmTypeValue()).getValue();
-			return new VMKey(vmName, vmType);
-		}
+        private static String removeSuffix(String name) {
+            if (name != null) {
+                int i = name.lastIndexOf("_");
+                return name.substring(0, i);
+            }
+            return null;
+        }
 
-		private static VMKey getInstance(InternalComponentInstance internalComponentInstance) {
-			String vmName = removeSuffixFromInstance(internalComponentInstance.getName());
-			return new VMKey(vmName, "");
-		}
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
 
-		private static String removeSuffixFromInstance(String vmName){
-			return removeSuffix(removeSuffix(vmName));
-		}
+            DataUtils.VMKey vmKey = (DataUtils.VMKey) o;
 
-		private static String removeSuffix(String vmName){
-			if (vmName != null) {
-				int i = vmName.lastIndexOf("_");
-				return vmName.substring(0, i);
-			}
-			return vmName;
-		}
+            if (name != null ? !name.equals(vmKey.name) : vmKey.name != null) return false;
+            return type != null ? type.equals(vmKey.type) : vmKey.type == null;
+        }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-
-			VMKey vmKey = (VMKey) o;
-
-			if (name != null ? !name.equals(vmKey.name) : vmKey.name != null) return false;
-			return type != null ? type.equals(vmKey.type) : vmKey.type == null;
-		}
-
-		@Override
-		public int hashCode() {
-			int result = name != null ? name.hashCode() : 0;
-			result = 31 * result + (type != null ? type.hashCode() : 0);
-			return result;
-		}
-	}
-
+        @Override
+        public int hashCode() {
+            int result = name != null ? name.hashCode() : 0;
+            result = 31 * result + (type != null ? type.hashCode() : 0);
+            return result;
+        }
+    }
 
 }
-

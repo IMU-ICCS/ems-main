@@ -21,7 +21,7 @@ import org.eclipse.emf.common.util.EList;
  * @model
  * @generated
  */
-public interface NormalisedUtilityDimension extends Function {
+public interface NormalisedUtilityDimension extends CpFunction {
 	/**
 	 * Returns the value of the '<em><b>Solutions</b></em>' reference list.
 	 * The list contents are of type {@link eu.paasage.upperware.metamodel.cp.Parameter}.

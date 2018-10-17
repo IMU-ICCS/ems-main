@@ -33,28 +33,18 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
 
   @Override
   public void create(ApplicationComponentInstance acInst) {
-    String name = acInst.getName();
-    checkNotNull(name);
-    String acName = acInst.getAcName();
-    checkNotNull(acName);
-    String vmInstName = acInst.getVmInstName();
-    checkNotNull(vmInstName);
+    String name = checkNotNull(acInst.getName());
+    String acName = checkNotNull(acInst.getAcName());
+    String vmInstName = checkNotNull(acInst.getVmInstName());
 
-    String cloudName = acInst.getCloudName();
-    checkNotNull(cloudName);
-    String appName = acInst.getAppName();
-    checkNotNull(appName);
-    String lcName = acInst.getLcName();
-    checkNotNull(lcName);
-    String vmName = acInst.getVmName();
-    checkNotNull(vmName);
+    String cloudName = checkNotNull(acInst.getCloudName());
+    String appName = checkNotNull(acInst.getAppName());
+    String lcName = checkNotNull(acInst.getLcName());
+    String vmName = checkNotNull(acInst.getVmName());
 
-    String location = acInst.getLocation();
-    checkNotNull(location);
-    String hardware = acInst.getHardware();
-    checkNotNull(hardware);
-    String image = acInst.getImage();
-    checkNotNull(image);
+    String location = checkNotNull(acInst.getLocation());
+    String hardware = checkNotNull(acInst.getHardware());
+    String image = checkNotNull(acInst.getImage());
 
     log.info("Executing Create Application Component Instance {} task for application component {}", name, acName);
 
@@ -82,12 +72,9 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
         "- application component instance cannot be created", image, cloudName, cloudId));
     }
 
-    Long locationId = locationEntity.getId();
-    checkNotNull(locationId);
-    Long hardwareId = hardwareEntity.getId();
-    checkNotNull(hardwareId);
-    Long imageId = imageEntity.getId();
-    checkNotNull(imageId);
+    Long locationId = checkNotNull(locationEntity.getId());
+    Long hardwareId = checkNotNull(hardwareEntity.getId());
+    Long imageId = checkNotNull(imageEntity.getId());
 
     LifecycleComponent lcEntity = context.getLifecycleComponent(lcName)
       .orElseThrow(() -> new IllegalStateException(format("Lifecycle component %s does not exist in Colosseum " +
@@ -97,10 +84,8 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) " +
         "does not exist in Colosseum - application component instance cannot be created", vmName, cloudId, locationId, hardwareId, imageId)));
 
-    Long lcId = lcEntity.getId();
-    checkNotNull(lcId);
-    Long vmId = vmEntity.getId();
-    checkNotNull(vmId);
+    Long lcId = checkNotNull(lcEntity.getId());
+    Long vmId = checkNotNull(vmEntity.getId());
 
     ApplicationComponent acEntity = context.getApplicationComponent(appName, lcId, vmId)
       .orElseThrow(() -> new IllegalStateException(format("Application component %s (appName=%s, lcId=%s, vmId=%s) " +
@@ -114,12 +99,9 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine Instance %s does not exist in Colosseum " +
         "- application component instance cannot be created", vmInstName)));
 
-    Long acId = acEntity.getId();
-    checkNotNull(acId);
-    Long appInstId = appInstEntity.getId();
-    checkNotNull(appInstId);
-    Long vmInstId = vmInstEntity.getId();
-    checkNotNull(vmInstId);
+    Long acId = checkNotNull(acEntity.getId());
+    Long appInstId = checkNotNull(appInstEntity.getId());
+    Long vmInstId = checkNotNull(vmInstEntity.getId());
 
     if (context.getApplicationComponentInstance(appInstId, vmInstId).isPresent()) {
       log.warn("Application Component Instance with params (appInstId={}, vmInstId={}) already exists " +
@@ -141,36 +123,25 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
 
   @Override
   public void delete(ApplicationComponentInstance acInst) {
-    String name = acInst.getName();
-    checkNotNull(name);
-    String acName = acInst.getAcName();
-    checkNotNull(acName);
-    String vmInstName = acInst.getVmInstName();
-    checkNotNull(vmInstName);
+    String name = checkNotNull(acInst.getName());
+    String acName = checkNotNull(acInst.getAcName());
+    String vmInstName = checkNotNull(acInst.getVmInstName());
 
-    String cloudName = acInst.getCloudName();
-    checkNotNull(cloudName);
-    String appName = acInst.getAppName();
-    checkNotNull(appName);
-    String lcName = acInst.getLcName();
-    checkNotNull(lcName);
-    String vmName = acInst.getVmName();
-    checkNotNull(vmName);
+    String cloudName = checkNotNull(acInst.getCloudName());
+    String appName = checkNotNull(acInst.getAppName());
+    String lcName = checkNotNull(acInst.getLcName());
+    String vmName = checkNotNull(acInst.getVmName());
 
-    String location = acInst.getLocation();
-    checkNotNull(location);
-    String hardware = acInst.getHardware();
-    checkNotNull(hardware);
-    String image = acInst.getImage();
-    checkNotNull(image);
+    String location = checkNotNull(acInst.getLocation());
+    String hardware = checkNotNull(acInst.getHardware());
+    String image = checkNotNull(acInst.getImage());
 
     log.info("Executing Delete Application Component Instance {} task for application component {}", name, acName);
 
     Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
       format("Cloud %s was not configured in Colosseum - application component instance cannot be deleted", cloudName)));
 
-    Long cloudId = cloudEntity.getId();
-    checkNotNull(cloudId);
+    Long cloudId = checkNotNull(cloudEntity.getId());
 
     Location locationEntity = api.getLocation(cloudId, location);
     if (locationEntity == null) {
@@ -190,12 +161,9 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
         "- application component instance cannot be deleted", image, cloudName, cloudId));
     }
 
-    Long locationId = locationEntity.getId();
-    checkNotNull(locationId);
-    Long hardwareId = hardwareEntity.getId();
-    checkNotNull(hardwareId);
-    Long imageId = imageEntity.getId();
-    checkNotNull(imageId);
+    Long locationId = checkNotNull(locationEntity.getId());
+    Long hardwareId = checkNotNull(hardwareEntity.getId());
+    Long imageId = checkNotNull(imageEntity.getId());
 
     LifecycleComponent lcEntity = context.getLifecycleComponent(lcName)
       .orElseThrow(() -> new IllegalStateException(format("Lifecycle component %s does not exist in Colosseum " +
@@ -205,10 +173,8 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine %s (cloudId=%s, locationId=%s, hardwareId=%s, imageId=%s) " +
         "does not exist in Colosseum - application component instance cannot be deleted", vmName, cloudId, locationId, hardwareId, imageId)));
 
-    Long lcId = lcEntity.getId();
-    checkNotNull(lcId);
-    Long vmId = vmEntity.getId();
-    checkNotNull(vmId);
+    Long lcId = checkNotNull(lcEntity.getId());
+    Long vmId = checkNotNull(vmEntity.getId());
 
     ApplicationComponent acEntity = context.getApplicationComponent(appName, lcId, vmId)
       .orElseThrow(() -> new IllegalStateException(format("Application component %s (appName=%s, lcId=%s, vmId=%s) " +
@@ -222,12 +188,9 @@ public class ApplicationComponentInstanceTaskExecutor extends ColosseumTaskExecu
       .orElseThrow(() -> new IllegalStateException(format("Virtual Machine Instance %s does not exist in Colosseum " +
         "- application component instance cannot be deleted", vmInstName)));
 
-    Long acId = acEntity.getId();
-    checkNotNull(acId);
-    Long appInstId = appInstEntity.getId();
-    checkNotNull(appInstId);
-    Long vmInstId = vmInstEntity.getId();
-    checkNotNull(vmInstId);
+    Long acId = checkNotNull(acEntity.getId());
+    Long appInstId = checkNotNull(appInstEntity.getId());
+    Long vmInstId = checkNotNull(vmInstEntity.getId());
 
     Optional<Instance> acInstEntityOptional = context.getApplicationComponentInstance(appInstId, vmInstId);
 

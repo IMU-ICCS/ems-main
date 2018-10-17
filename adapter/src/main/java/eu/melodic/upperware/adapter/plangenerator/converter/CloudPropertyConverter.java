@@ -9,13 +9,12 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.VMInstance;
 import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.plangenerator.model.CloudProperty;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.VMInstance;
-import eu.paasage.camel.provider.Attribute;
-import eu.paasage.camel.provider.Feature;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,12 +30,13 @@ import static java.util.stream.Collectors.toSet;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class CloudPropertyConverter implements ModelConverter<DeploymentModel, Collection<CloudProperty>> {
+public class CloudPropertyConverter implements ModelConverter<DeploymentInstanceModel, Collection<CloudProperty>> {
 
   private AdapterProperties properties;
+  private ProviderInfoSupplier providerInfoSupplier;
 
   @Override
-  public Collection<CloudProperty> toComparableModel(DeploymentModel model) {
+  public Collection<CloudProperty> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building cloud property models (based on VM instances)");
     EList<VMInstance> vmInsts = model.getVmInstances();
     if (CollectionUtils.isEmpty(vmInsts)) {
@@ -53,25 +53,13 @@ public class CloudPropertyConverter implements ModelConverter<DeploymentModel, C
   private CloudProperty toCloudProperty(VMInstance vmInst) {
     log.info("Processing of {}", vmInst.getName());
 
-    String name = null;
-    String cloudName = null;
-
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
-
-    for (Attribute attr : rootFeature.getAttributes()) {
-      switch (attr.getName()) {
-        case ConverterUtils.ATTRIB_NAME:
-          cloudName = ConverterUtils.convertToString(attr.getValue());
-          name = cloudName + ConverterUtils.CLOUD_PROPERTY_NAME_SUFFIX;
-          break;
-      }
-    }
+    String cloudName = providerInfoSupplier.getName(vmInst);
 
     AdapterProperties.Clouds clouds = properties.getClouds();
     AdapterProperties.Clouds.Filters filters = clouds.getFilters();
 
     CloudProperty cloudProperty = CloudProperty.builder()
-      .name(name)
+      .name(providerInfoSupplier.getPropertyName(vmInst))
       .cloudName(cloudName)
       .filters(filters != null ? filters.getPairs(cloudName) : null)
       .build();

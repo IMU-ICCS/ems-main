@@ -9,28 +9,35 @@
 
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
+import camel.core.Application;
+import camel.core.CamelModel;
+import camel.deployment.*;
 import com.google.common.collect.Sets;
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.deployment.*;
-import eu.paasage.camel.provider.Feature;
 import eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponentInstance;
+import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 
-import static eu.melodic.upperware.adapter.plangenerator.converter.ConverterUtils.*;
+import static eu.melodic.upperware.adapter.plangenerator.converter.ConverterUtils.extractApplication;
+import static eu.melodic.upperware.adapter.plangenerator.converter.ConverterUtils.extractConfiguration;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
-public class ApplicationComponentInstanceConverter implements ModelConverter<DeploymentModel, Collection<ApplicationComponentInstance>> {
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class ApplicationComponentInstanceConverter implements ModelConverter<DeploymentInstanceModel, Collection<ApplicationComponentInstance>> {
+
+  private ProviderInfoSupplier providerInfoSupplier;
+
 
   @Override
-  public Collection<ApplicationComponentInstance> toComparableModel(DeploymentModel model) {
+  public Collection<ApplicationComponentInstance> toComparableModel(DeploymentInstanceModel model) {
     log.info("Building application component instance models (based on hosting instances)");
     EList<HostingInstance> hostingInsts = model.getHostingInstances();
     if (CollectionUtils.isEmpty(hostingInsts)) {
@@ -44,22 +51,21 @@ public class ApplicationComponentInstanceConverter implements ModelConverter<Dep
     log.info("Processing of {}", hostingInst.getName());
 
     Application app = extractApplication((CamelModel) hostingInst.eContainer().eContainer());
-    InternalComponentInstance icInst = (InternalComponentInstance) hostingInst.getRequiredHostInstance().eContainer();
-    VMInstance vmInst = (VMInstance) hostingInst.getProvidedHostInstance().eContainer();
 
-    Feature rootFeature = (Feature) vmInst.getVmType().eContainer().eContainer();
+    SoftwareComponentInstance scInst = ConverterUtils.findSoftwareComponentInstance(hostingInst);
+    VMInstance vmInst = ConverterUtils.findVMInstance(hostingInst);
 
     ApplicationComponentInstance acInst = ApplicationComponentInstance.builder()
-      .name(icInst.getName())
-      .acName(icInst.getType().getName())
+      .name(scInst.getName())
+      .acName(scInst.getType().getName())
       .vmInstName(vmInst.getName())
-      .cloudName(extractCloudName(rootFeature))
+      .cloudName(providerInfoSupplier.getName(vmInst))
       .appName(app.getName())
-      .lcName(extractConfiguration((InternalComponent) icInst.getType()).getName())
+      .lcName(extractConfiguration((SoftwareComponent) scInst.getType()).getName())
       .vmName(vmInst.getType().getName())
-      .location(extractLocation(rootFeature))
-      .hardware(convertToString(vmInst.getVmTypeValue()))
-      .image(extractImage(rootFeature))
+      .location(providerInfoSupplier.getLocation(vmInst))
+      .hardware(providerInfoSupplier.getMachineType(vmInst))
+      .image(providerInfoSupplier.getImage(vmInst))
       .build();
 
     log.info("Built component instance: {}", acInst);

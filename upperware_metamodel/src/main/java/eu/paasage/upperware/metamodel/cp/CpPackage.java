@@ -132,13 +132,13 @@ public interface CpPackage extends EPackage {
 	int CONSTRAINT_PROBLEM__CONSTANTS = 2;
 
 	/**
-	 * The feature id for the '<em><b>Variables</b></em>' containment reference list.
+	 * The feature id for the '<em><b>Cp Variables</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONSTRAINT_PROBLEM__VARIABLES = 3;
+	int CONSTRAINT_PROBLEM__CP_VARIABLES = 3;
 
 	/**
 	 * The feature id for the '<em><b>Constraints</b></em>' containment reference list.
@@ -159,13 +159,13 @@ public interface CpPackage extends EPackage {
 	int CONSTRAINT_PROBLEM__AUX_EXPRESSIONS = 5;
 
 	/**
-	 * The feature id for the '<em><b>Metric Variables</b></em>' containment reference list.
+	 * The feature id for the '<em><b>Cp Metrics</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONSTRAINT_PROBLEM__METRIC_VARIABLES = 6;
+	int CONSTRAINT_PROBLEM__CP_METRICS = 6;
 
 	/**
 	 * The feature id for the '<em><b>Solution</b></em>' containment reference list.
@@ -287,14 +287,14 @@ public interface CpPackage extends EPackage {
 	int NUMERIC_EXPRESSION_OPERATION_COUNT = EXPRESSION_OPERATION_COUNT + 0;
 
 	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl <em>Variable</em>}' class.
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpVariableImpl <em>Variable</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.VariableImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariable()
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpVariableImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpVariable()
 	 * @generated
 	 */
-	int VARIABLE = 4;
+	int CP_VARIABLE = 4;
 
 	/**
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -303,7 +303,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE__ID = NUMERIC_EXPRESSION__ID;
+	int CP_VARIABLE__ID = NUMERIC_EXPRESSION__ID;
 
 	/**
 	 * The feature id for the '<em><b>Domain</b></em>' containment reference.
@@ -312,52 +312,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE__DOMAIN = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
-
-	/**
-	 * The feature id for the '<em><b>Location Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int VARIABLE__LOCATION_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
-
-	/**
-	 * The feature id for the '<em><b>Provider Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int VARIABLE__PROVIDER_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
-
-	/**
-	 * The feature id for the '<em><b>Vm Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int VARIABLE__VM_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 3;
-
-	/**
-	 * The feature id for the '<em><b>Os Image Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int VARIABLE__OS_IMAGE_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 4;
-
-	/**
-	 * The feature id for the '<em><b>Hardware Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int VARIABLE__HARDWARE_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 5;
+	int CP_VARIABLE__DOMAIN = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Variable Type</b></em>' attribute.
@@ -366,7 +321,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE__VARIABLE_TYPE = NUMERIC_EXPRESSION_FEATURE_COUNT + 6;
+	int CP_VARIABLE__VARIABLE_TYPE = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
 
 	/**
 	 * The feature id for the '<em><b>Component Id</b></em>' attribute.
@@ -375,7 +330,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE__COMPONENT_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 7;
+	int CP_VARIABLE__COMPONENT_ID = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
 
 	/**
 	 * The number of structural features of the '<em>Variable</em>' class.
@@ -384,7 +339,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 8;
+	int CP_VARIABLE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 3;
 
 	/**
 	 * The number of operations of the '<em>Variable</em>' class.
@@ -393,7 +348,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
+	int CP_VARIABLE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.DomainImpl <em>Domain</em>}' class.
@@ -1158,14 +1113,14 @@ public interface CpPackage extends EPackage {
 	int BOOLEAN_DOMAIN_OPERATION_COUNT = DOMAIN_OPERATION_COUNT + 0;
 
 	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableImpl <em>Metric Variable</em>}' class.
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpMetricImpl <em>Metric</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariable()
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpMetricImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpMetric()
 	 * @generated
 	 */
-	int METRIC_VARIABLE = 20;
+	int CP_METRIC = 20;
 
 	/**
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -1174,7 +1129,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int METRIC_VARIABLE__ID = NUMERIC_EXPRESSION__ID;
+	int CP_METRIC__ID = NUMERIC_EXPRESSION__ID;
 
 	/**
 	 * The feature id for the '<em><b>Type</b></em>' attribute.
@@ -1183,25 +1138,34 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int METRIC_VARIABLE__TYPE = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
+	int CP_METRIC__TYPE = NUMERIC_EXPRESSION_FEATURE_COUNT + 0;
 
 	/**
-	 * The number of structural features of the '<em>Metric Variable</em>' class.
+	 * The feature id for the '<em><b>Value</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int METRIC_VARIABLE_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
+	int CP_METRIC__VALUE = NUMERIC_EXPRESSION_FEATURE_COUNT + 1;
 
 	/**
-	 * The number of operations of the '<em>Metric Variable</em>' class.
+	 * The number of structural features of the '<em>Metric</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int METRIC_VARIABLE_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
+	int CP_METRIC_FEATURE_COUNT = NUMERIC_EXPRESSION_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of operations of the '<em>Metric</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CP_METRIC_OPERATION_COUNT = NUMERIC_EXPRESSION_OPERATION_COUNT + 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl <em>Solution</em>}' class.
@@ -1232,22 +1196,13 @@ public interface CpPackage extends EPackage {
 	int SOLUTION__VARIABLE_VALUE = 1;
 
 	/**
-	 * The feature id for the '<em><b>Metric Variable Value</b></em>' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int SOLUTION__METRIC_VARIABLE_VALUE = 2;
-
-	/**
 	 * The feature id for the '<em><b>Utility Value</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int SOLUTION__UTILITY_VALUE = 3;
+	int SOLUTION__UTILITY_VALUE = 2;
 
 	/**
 	 * The number of structural features of the '<em>Solution</em>' class.
@@ -1256,7 +1211,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int SOLUTION_FEATURE_COUNT = 4;
+	int SOLUTION_FEATURE_COUNT = 3;
 
 	/**
 	 * The number of operations of the '<em>Solution</em>' class.
@@ -1268,14 +1223,14 @@ public interface CpPackage extends EPackage {
 	int SOLUTION_OPERATION_COUNT = 0;
 
 	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl <em>Variable Value</em>}' class.
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpVariableValueImpl <em>Variable Value</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariableValue()
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpVariableValueImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpVariableValue()
 	 * @generated
 	 */
-	int VARIABLE_VALUE = 22;
+	int CP_VARIABLE_VALUE = 22;
 
 	/**
 	 * The feature id for the '<em><b>Variable</b></em>' reference.
@@ -1284,7 +1239,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE_VALUE__VARIABLE = 0;
+	int CP_VARIABLE_VALUE__VARIABLE = 0;
 
 	/**
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
@@ -1293,7 +1248,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE_VALUE__VALUE = 1;
+	int CP_VARIABLE_VALUE__VALUE = 1;
 
 	/**
 	 * The number of structural features of the '<em>Variable Value</em>' class.
@@ -1302,7 +1257,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE_VALUE_FEATURE_COUNT = 2;
+	int CP_VARIABLE_VALUE_FEATURE_COUNT = 2;
 
 	/**
 	 * The number of operations of the '<em>Variable Value</em>' class.
@@ -1311,53 +1266,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int VARIABLE_VALUE_OPERATION_COUNT = 0;
-
-	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl <em>Metric Variable Value</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariableValue()
-	 * @generated
-	 */
-	int METRIC_VARIABLE_VALUE = 23;
-
-	/**
-	 * The feature id for the '<em><b>Variable</b></em>' reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int METRIC_VARIABLE_VALUE__VARIABLE = 0;
-
-	/**
-	 * The feature id for the '<em><b>Value</b></em>' containment reference.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int METRIC_VARIABLE_VALUE__VALUE = 1;
-
-	/**
-	 * The number of structural features of the '<em>Metric Variable Value</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int METRIC_VARIABLE_VALUE_FEATURE_COUNT = 2;
-
-	/**
-	 * The number of operations of the '<em>Metric Variable Value</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int METRIC_VARIABLE_VALUE_OPERATION_COUNT = 0;
+	int CP_VARIABLE_VALUE_OPERATION_COUNT = 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.ParameterImpl <em>Parameter</em>}' class.
@@ -1367,7 +1276,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getParameter()
 	 * @generated
 	 */
-	int PARAMETER = 24;
+	int PARAMETER = 23;
 
 	/**
 	 * The feature id for the '<em><b>Solution</b></em>' reference.
@@ -1406,14 +1315,14 @@ public interface CpPackage extends EPackage {
 	int PARAMETER_OPERATION_COUNT = 0;
 
 	/**
-	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl <em>Function</em>}' class.
+	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl <em>Function</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see eu.paasage.upperware.metamodel.cp.impl.FunctionImpl
-	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getFunction()
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl
+	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpFunction()
 	 * @generated
 	 */
-	int FUNCTION = 26;
+	int CP_FUNCTION = 25;
 
 	/**
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -1422,7 +1331,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__ID = COMPOSED_EXPRESSION__ID;
+	int CP_FUNCTION__ID = COMPOSED_EXPRESSION__ID;
 
 	/**
 	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
@@ -1431,7 +1340,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__EXPRESSIONS = COMPOSED_EXPRESSION__EXPRESSIONS;
+	int CP_FUNCTION__EXPRESSIONS = COMPOSED_EXPRESSION__EXPRESSIONS;
 
 	/**
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
@@ -1440,7 +1349,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__OPERATOR = COMPOSED_EXPRESSION__OPERATOR;
+	int CP_FUNCTION__OPERATOR = COMPOSED_EXPRESSION__OPERATOR;
 
 	/**
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
@@ -1449,7 +1358,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION__VALUE = COMPOSED_EXPRESSION_FEATURE_COUNT + 0;
+	int CP_FUNCTION__VALUE = COMPOSED_EXPRESSION_FEATURE_COUNT + 0;
 
 	/**
 	 * The number of structural features of the '<em>Function</em>' class.
@@ -1458,7 +1367,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION_FEATURE_COUNT = COMPOSED_EXPRESSION_FEATURE_COUNT + 1;
+	int CP_FUNCTION_FEATURE_COUNT = COMPOSED_EXPRESSION_FEATURE_COUNT + 1;
 
 	/**
 	 * The number of operations of the '<em>Function</em>' class.
@@ -1467,7 +1376,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int FUNCTION_OPERATION_COUNT = COMPOSED_EXPRESSION_OPERATION_COUNT + 0;
+	int CP_FUNCTION_OPERATION_COUNT = COMPOSED_EXPRESSION_OPERATION_COUNT + 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.NormalisedUtilityDimensionImpl <em>Normalised Utility Dimension</em>}' class.
@@ -1477,7 +1386,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getNormalisedUtilityDimension()
 	 * @generated
 	 */
-	int NORMALISED_UTILITY_DIMENSION = 25;
+	int NORMALISED_UTILITY_DIMENSION = 24;
 
 	/**
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -1486,7 +1395,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__ID = FUNCTION__ID;
+	int NORMALISED_UTILITY_DIMENSION__ID = CP_FUNCTION__ID;
 
 	/**
 	 * The feature id for the '<em><b>Expressions</b></em>' reference list.
@@ -1495,7 +1404,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__EXPRESSIONS = FUNCTION__EXPRESSIONS;
+	int NORMALISED_UTILITY_DIMENSION__EXPRESSIONS = CP_FUNCTION__EXPRESSIONS;
 
 	/**
 	 * The feature id for the '<em><b>Operator</b></em>' attribute.
@@ -1504,7 +1413,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__OPERATOR = FUNCTION__OPERATOR;
+	int NORMALISED_UTILITY_DIMENSION__OPERATOR = CP_FUNCTION__OPERATOR;
 
 	/**
 	 * The feature id for the '<em><b>Value</b></em>' containment reference.
@@ -1513,7 +1422,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__VALUE = FUNCTION__VALUE;
+	int NORMALISED_UTILITY_DIMENSION__VALUE = CP_FUNCTION__VALUE;
 
 	/**
 	 * The feature id for the '<em><b>Solutions</b></em>' reference list.
@@ -1522,7 +1431,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__SOLUTIONS = FUNCTION_FEATURE_COUNT + 0;
+	int NORMALISED_UTILITY_DIMENSION__SOLUTIONS = CP_FUNCTION_FEATURE_COUNT + 0;
 
 	/**
 	 * The feature id for the '<em><b>Goal</b></em>' reference.
@@ -1531,7 +1440,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION__GOAL = FUNCTION_FEATURE_COUNT + 1;
+	int NORMALISED_UTILITY_DIMENSION__GOAL = CP_FUNCTION_FEATURE_COUNT + 1;
 
 	/**
 	 * The number of structural features of the '<em>Normalised Utility Dimension</em>' class.
@@ -1540,7 +1449,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION_FEATURE_COUNT = FUNCTION_FEATURE_COUNT + 2;
+	int NORMALISED_UTILITY_DIMENSION_FEATURE_COUNT = CP_FUNCTION_FEATURE_COUNT + 2;
 
 	/**
 	 * The number of operations of the '<em>Normalised Utility Dimension</em>' class.
@@ -1549,7 +1458,7 @@ public interface CpPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int NORMALISED_UTILITY_DIMENSION_OPERATION_COUNT = FUNCTION_OPERATION_COUNT + 0;
+	int NORMALISED_UTILITY_DIMENSION_OPERATION_COUNT = CP_FUNCTION_OPERATION_COUNT + 0;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl <em>Configuration Upperware</em>}' class.
@@ -1559,7 +1468,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getConfigurationUpperware()
 	 * @generated
 	 */
-	int CONFIGURATION_UPPERWARE = 27;
+	int CONFIGURATION_UPPERWARE = 26;
 
 	/**
 	 * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -1623,7 +1532,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getOperatorEnum()
 	 * @generated
 	 */
-	int OPERATOR_ENUM = 28;
+	int OPERATOR_ENUM = 27;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.GoalOperatorEnum <em>Goal Operator Enum</em>}' enum.
@@ -1633,7 +1542,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getGoalOperatorEnum()
 	 * @generated
 	 */
-	int GOAL_OPERATOR_ENUM = 29;
+	int GOAL_OPERATOR_ENUM = 28;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.ComparatorEnum <em>Comparator Enum</em>}' enum.
@@ -1643,7 +1552,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComparatorEnum()
 	 * @generated
 	 */
-	int COMPARATOR_ENUM = 30;
+	int COMPARATOR_ENUM = 29;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum <em>Simple Unary Operator Enum</em>}' enum.
@@ -1653,7 +1562,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getSimpleUnaryOperatorEnum()
 	 * @generated
 	 */
-	int SIMPLE_UNARY_OPERATOR_ENUM = 31;
+	int SIMPLE_UNARY_OPERATOR_ENUM = 30;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum <em>Composed Unary Operator Enum</em>}' enum.
@@ -1663,7 +1572,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getComposedUnaryOperatorEnum()
 	 * @generated
 	 */
-	int COMPOSED_UNARY_OPERATOR_ENUM = 32;
+	int COMPOSED_UNARY_OPERATOR_ENUM = 31;
 
 	/**
 	 * The meta object id for the '{@link eu.paasage.upperware.metamodel.cp.VariableType <em>Variable Type</em>}' enum.
@@ -1673,7 +1582,7 @@ public interface CpPackage extends EPackage {
 	 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariableType()
 	 * @generated
 	 */
-	int VARIABLE_TYPE = 33;
+	int VARIABLE_TYPE = 32;
 
 
 	/**
@@ -1741,15 +1650,15 @@ public interface CpPackage extends EPackage {
 	EReference getConstraintProblem_Constants();
 
 	/**
-	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getVariables <em>Variables</em>}'.
+	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCpVariables <em>Cp Variables</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Variables</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getVariables()
+	 * @return the meta object for the containment reference list '<em>Cp Variables</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCpVariables()
 	 * @see #getConstraintProblem()
 	 * @generated
 	 */
-	EReference getConstraintProblem_Variables();
+	EReference getConstraintProblem_CpVariables();
 
 	/**
 	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getConstraints <em>Constraints</em>}'.
@@ -1774,15 +1683,15 @@ public interface CpPackage extends EPackage {
 	EReference getConstraintProblem_AuxExpressions();
 
 	/**
-	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables <em>Metric Variables</em>}'.
+	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCpMetrics <em>Cp Metrics</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Metric Variables</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getMetricVariables()
+	 * @return the meta object for the containment reference list '<em>Cp Metrics</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.ConstraintProblem#getCpMetrics()
 	 * @see #getConstraintProblem()
 	 * @generated
 	 */
-	EReference getConstraintProblem_MetricVariables();
+	EReference getConstraintProblem_CpMetrics();
 
 	/**
 	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.ConstraintProblem#getSolution <em>Solution</em>}'.
@@ -1838,102 +1747,47 @@ public interface CpPackage extends EPackage {
 	EClass getNumericExpression();
 
 	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Variable <em>Variable</em>}'.
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.CpVariable <em>Variable</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Variable</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariable
 	 * @generated
 	 */
-	EClass getVariable();
+	EClass getCpVariable();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.Variable#getDomain <em>Domain</em>}'.
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.CpVariable#getDomain <em>Domain</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the containment reference '<em>Domain</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getDomain()
-	 * @see #getVariable()
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariable#getDomain()
+	 * @see #getCpVariable()
 	 * @generated
 	 */
-	EReference getVariable_Domain();
+	EReference getCpVariable_Domain();
 
 	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getLocationId <em>Location Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Location Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getLocationId()
-	 * @see #getVariable()
-	 * @generated
-	 */
-	EAttribute getVariable_LocationId();
-
-	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getProviderId <em>Provider Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Provider Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getProviderId()
-	 * @see #getVariable()
-	 * @generated
-	 */
-	EAttribute getVariable_ProviderId();
-
-	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getVmId <em>Vm Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Vm Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getVmId()
-	 * @see #getVariable()
-	 * @generated
-	 */
-	EAttribute getVariable_VmId();
-
-	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getOsImageId <em>Os Image Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Os Image Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getOsImageId()
-	 * @see #getVariable()
-	 * @generated
-	 */
-	EAttribute getVariable_OsImageId();
-
-	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getHardwareId <em>Hardware Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Hardware Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getHardwareId()
-	 * @see #getVariable()
-	 * @generated
-	 */
-	EAttribute getVariable_HardwareId();
-
-	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getVariableType <em>Variable Type</em>}'.
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.CpVariable#getVariableType <em>Variable Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the attribute '<em>Variable Type</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getVariableType()
-	 * @see #getVariable()
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariable#getVariableType()
+	 * @see #getCpVariable()
 	 * @generated
 	 */
-	EAttribute getVariable_VariableType();
+	EAttribute getCpVariable_VariableType();
 
 	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.Variable#getComponentId <em>Component Id</em>}'.
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.CpVariable#getComponentId <em>Component Id</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the attribute '<em>Component Id</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Variable#getComponentId()
-	 * @see #getVariable()
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariable#getComponentId()
+	 * @see #getCpVariable()
 	 * @generated
 	 */
-	EAttribute getVariable_ComponentId();
+	EAttribute getCpVariable_ComponentId();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Domain <em>Domain</em>}'.
@@ -2328,25 +2182,36 @@ public interface CpPackage extends EPackage {
 	EClass getBooleanDomain();
 
 	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.MetricVariable <em>Metric Variable</em>}'.
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.CpMetric <em>Metric</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Metric Variable</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariable
+	 * @return the meta object for class '<em>Metric</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.CpMetric
 	 * @generated
 	 */
-	EClass getMetricVariable();
+	EClass getCpMetric();
 
 	/**
-	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.MetricVariable#getType <em>Type</em>}'.
+	 * Returns the meta object for the attribute '{@link eu.paasage.upperware.metamodel.cp.CpMetric#getType <em>Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the attribute '<em>Type</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariable#getType()
-	 * @see #getMetricVariable()
+	 * @see eu.paasage.upperware.metamodel.cp.CpMetric#getType()
+	 * @see #getCpMetric()
 	 * @generated
 	 */
-	EAttribute getMetricVariable_Type();
+	EAttribute getCpMetric_Type();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.CpMetric#getValue <em>Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Value</em>'.
+	 * @see eu.paasage.upperware.metamodel.cp.CpMetric#getValue()
+	 * @see #getCpMetric()
+	 * @generated
+	 */
+	EReference getCpMetric_Value();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Solution <em>Solution</em>}'.
@@ -2381,17 +2246,6 @@ public interface CpPackage extends EPackage {
 	EReference getSolution_VariableValue();
 
 	/**
-	 * Returns the meta object for the containment reference list '{@link eu.paasage.upperware.metamodel.cp.Solution#getMetricVariableValue <em>Metric Variable Value</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Metric Variable Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Solution#getMetricVariableValue()
-	 * @see #getSolution()
-	 * @generated
-	 */
-	EReference getSolution_MetricVariableValue();
-
-	/**
 	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.Solution#getUtilityValue <em>Utility Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2403,68 +2257,36 @@ public interface CpPackage extends EPackage {
 	EReference getSolution_UtilityValue();
 
 	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.VariableValue <em>Variable Value</em>}'.
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.CpVariableValue <em>Variable Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Variable Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.VariableValue
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariableValue
 	 * @generated
 	 */
-	EClass getVariableValue();
+	EClass getCpVariableValue();
 
 	/**
-	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.VariableValue#getVariable <em>Variable</em>}'.
+	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.CpVariableValue#getVariable <em>Variable</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the reference '<em>Variable</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.VariableValue#getVariable()
-	 * @see #getVariableValue()
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariableValue#getVariable()
+	 * @see #getCpVariableValue()
 	 * @generated
 	 */
-	EReference getVariableValue_Variable();
+	EReference getCpVariableValue_Variable();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.VariableValue#getValue <em>Value</em>}'.
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.CpVariableValue#getValue <em>Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the containment reference '<em>Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.VariableValue#getValue()
-	 * @see #getVariableValue()
+	 * @see eu.paasage.upperware.metamodel.cp.CpVariableValue#getValue()
+	 * @see #getCpVariableValue()
 	 * @generated
 	 */
-	EReference getVariableValue_Value();
-
-	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.MetricVariableValue <em>Metric Variable Value</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Metric Variable Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue
-	 * @generated
-	 */
-	EClass getMetricVariableValue();
-
-	/**
-	 * Returns the meta object for the reference '{@link eu.paasage.upperware.metamodel.cp.MetricVariableValue#getVariable <em>Variable</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the reference '<em>Variable</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue#getVariable()
-	 * @see #getMetricVariableValue()
-	 * @generated
-	 */
-	EReference getMetricVariableValue_Variable();
-
-	/**
-	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.MetricVariableValue#getValue <em>Value</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference '<em>Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.MetricVariableValue#getValue()
-	 * @see #getMetricVariableValue()
-	 * @generated
-	 */
-	EReference getMetricVariableValue_Value();
+	EReference getCpVariableValue_Value();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Parameter <em>Parameter</em>}'.
@@ -2531,25 +2353,25 @@ public interface CpPackage extends EPackage {
 	EReference getNormalisedUtilityDimension_Goal();
 
 	/**
-	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.Function <em>Function</em>}'.
+	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.CpFunction <em>Function</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for class '<em>Function</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Function
+	 * @see eu.paasage.upperware.metamodel.cp.CpFunction
 	 * @generated
 	 */
-	EClass getFunction();
+	EClass getCpFunction();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.Function#getValue <em>Value</em>}'.
+	 * Returns the meta object for the containment reference '{@link eu.paasage.upperware.metamodel.cp.CpFunction#getValue <em>Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the containment reference '<em>Value</em>'.
-	 * @see eu.paasage.upperware.metamodel.cp.Function#getValue()
-	 * @see #getFunction()
+	 * @see eu.paasage.upperware.metamodel.cp.CpFunction#getValue()
+	 * @see #getCpFunction()
 	 * @generated
 	 */
-	EReference getFunction_Value();
+	EReference getCpFunction_Value();
 
 	/**
 	 * Returns the meta object for class '{@link eu.paasage.upperware.metamodel.cp.ConfigurationUpperware <em>Configuration Upperware</em>}'.
@@ -2730,12 +2552,12 @@ public interface CpPackage extends EPackage {
 		EReference CONSTRAINT_PROBLEM__CONSTANTS = eINSTANCE.getConstraintProblem_Constants();
 
 		/**
-		 * The meta object literal for the '<em><b>Variables</b></em>' containment reference list feature.
+		 * The meta object literal for the '<em><b>Cp Variables</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference CONSTRAINT_PROBLEM__VARIABLES = eINSTANCE.getConstraintProblem_Variables();
+		EReference CONSTRAINT_PROBLEM__CP_VARIABLES = eINSTANCE.getConstraintProblem_CpVariables();
 
 		/**
 		 * The meta object literal for the '<em><b>Constraints</b></em>' containment reference list feature.
@@ -2754,12 +2576,12 @@ public interface CpPackage extends EPackage {
 		EReference CONSTRAINT_PROBLEM__AUX_EXPRESSIONS = eINSTANCE.getConstraintProblem_AuxExpressions();
 
 		/**
-		 * The meta object literal for the '<em><b>Metric Variables</b></em>' containment reference list feature.
+		 * The meta object literal for the '<em><b>Cp Metrics</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference CONSTRAINT_PROBLEM__METRIC_VARIABLES = eINSTANCE.getConstraintProblem_MetricVariables();
+		EReference CONSTRAINT_PROBLEM__CP_METRICS = eINSTANCE.getConstraintProblem_CpMetrics();
 
 		/**
 		 * The meta object literal for the '<em><b>Solution</b></em>' containment reference list feature.
@@ -2806,14 +2628,14 @@ public interface CpPackage extends EPackage {
 		EClass NUMERIC_EXPRESSION = eINSTANCE.getNumericExpression();
 
 		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.VariableImpl <em>Variable</em>}' class.
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpVariableImpl <em>Variable</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.VariableImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariable()
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpVariableImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpVariable()
 		 * @generated
 		 */
-		EClass VARIABLE = eINSTANCE.getVariable();
+		EClass CP_VARIABLE = eINSTANCE.getCpVariable();
 
 		/**
 		 * The meta object literal for the '<em><b>Domain</b></em>' containment reference feature.
@@ -2821,47 +2643,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference VARIABLE__DOMAIN = eINSTANCE.getVariable_Domain();
-
-		/**
-		 * The meta object literal for the '<em><b>Location Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute VARIABLE__LOCATION_ID = eINSTANCE.getVariable_LocationId();
-
-		/**
-		 * The meta object literal for the '<em><b>Provider Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute VARIABLE__PROVIDER_ID = eINSTANCE.getVariable_ProviderId();
-
-		/**
-		 * The meta object literal for the '<em><b>Vm Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute VARIABLE__VM_ID = eINSTANCE.getVariable_VmId();
-
-		/**
-		 * The meta object literal for the '<em><b>Os Image Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute VARIABLE__OS_IMAGE_ID = eINSTANCE.getVariable_OsImageId();
-
-		/**
-		 * The meta object literal for the '<em><b>Hardware Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute VARIABLE__HARDWARE_ID = eINSTANCE.getVariable_HardwareId();
+		EReference CP_VARIABLE__DOMAIN = eINSTANCE.getCpVariable_Domain();
 
 		/**
 		 * The meta object literal for the '<em><b>Variable Type</b></em>' attribute feature.
@@ -2869,7 +2651,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute VARIABLE__VARIABLE_TYPE = eINSTANCE.getVariable_VariableType();
+		EAttribute CP_VARIABLE__VARIABLE_TYPE = eINSTANCE.getCpVariable_VariableType();
 
 		/**
 		 * The meta object literal for the '<em><b>Component Id</b></em>' attribute feature.
@@ -2877,7 +2659,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute VARIABLE__COMPONENT_ID = eINSTANCE.getVariable_ComponentId();
+		EAttribute CP_VARIABLE__COMPONENT_ID = eINSTANCE.getCpVariable_ComponentId();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.DomainImpl <em>Domain</em>}' class.
@@ -3206,14 +2988,14 @@ public interface CpPackage extends EPackage {
 		EClass BOOLEAN_DOMAIN = eINSTANCE.getBooleanDomain();
 
 		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableImpl <em>Metric Variable</em>}' class.
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpMetricImpl <em>Metric</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariable()
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpMetricImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpMetric()
 		 * @generated
 		 */
-		EClass METRIC_VARIABLE = eINSTANCE.getMetricVariable();
+		EClass CP_METRIC = eINSTANCE.getCpMetric();
 
 		/**
 		 * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
@@ -3221,7 +3003,15 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute METRIC_VARIABLE__TYPE = eINSTANCE.getMetricVariable_Type();
+		EAttribute CP_METRIC__TYPE = eINSTANCE.getCpMetric_Type();
+
+		/**
+		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference CP_METRIC__VALUE = eINSTANCE.getCpMetric_Value();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.SolutionImpl <em>Solution</em>}' class.
@@ -3250,14 +3040,6 @@ public interface CpPackage extends EPackage {
 		EReference SOLUTION__VARIABLE_VALUE = eINSTANCE.getSolution_VariableValue();
 
 		/**
-		 * The meta object literal for the '<em><b>Metric Variable Value</b></em>' containment reference list feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference SOLUTION__METRIC_VARIABLE_VALUE = eINSTANCE.getSolution_MetricVariableValue();
-
-		/**
 		 * The meta object literal for the '<em><b>Utility Value</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -3266,14 +3048,14 @@ public interface CpPackage extends EPackage {
 		EReference SOLUTION__UTILITY_VALUE = eINSTANCE.getSolution_UtilityValue();
 
 		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl <em>Variable Value</em>}' class.
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpVariableValueImpl <em>Variable Value</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.VariableValueImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getVariableValue()
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpVariableValueImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpVariableValue()
 		 * @generated
 		 */
-		EClass VARIABLE_VALUE = eINSTANCE.getVariableValue();
+		EClass CP_VARIABLE_VALUE = eINSTANCE.getCpVariableValue();
 
 		/**
 		 * The meta object literal for the '<em><b>Variable</b></em>' reference feature.
@@ -3281,7 +3063,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference VARIABLE_VALUE__VARIABLE = eINSTANCE.getVariableValue_Variable();
+		EReference CP_VARIABLE_VALUE__VARIABLE = eINSTANCE.getCpVariableValue_Variable();
 
 		/**
 		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
@@ -3289,33 +3071,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference VARIABLE_VALUE__VALUE = eINSTANCE.getVariableValue_Value();
-
-		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl <em>Metric Variable Value</em>}' class.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.MetricVariableValueImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getMetricVariableValue()
-		 * @generated
-		 */
-		EClass METRIC_VARIABLE_VALUE = eINSTANCE.getMetricVariableValue();
-
-		/**
-		 * The meta object literal for the '<em><b>Variable</b></em>' reference feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference METRIC_VARIABLE_VALUE__VARIABLE = eINSTANCE.getMetricVariableValue_Variable();
-
-		/**
-		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference METRIC_VARIABLE_VALUE__VALUE = eINSTANCE.getMetricVariableValue_Value();
+		EReference CP_VARIABLE_VALUE__VALUE = eINSTANCE.getCpVariableValue_Value();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ParameterImpl <em>Parameter</em>}' class.
@@ -3370,14 +3126,14 @@ public interface CpPackage extends EPackage {
 		EReference NORMALISED_UTILITY_DIMENSION__GOAL = eINSTANCE.getNormalisedUtilityDimension_Goal();
 
 		/**
-		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.FunctionImpl <em>Function</em>}' class.
+		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl <em>Function</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see eu.paasage.upperware.metamodel.cp.impl.FunctionImpl
-		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getFunction()
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpFunctionImpl
+		 * @see eu.paasage.upperware.metamodel.cp.impl.CpPackageImpl#getCpFunction()
 		 * @generated
 		 */
-		EClass FUNCTION = eINSTANCE.getFunction();
+		EClass CP_FUNCTION = eINSTANCE.getCpFunction();
 
 		/**
 		 * The meta object literal for the '<em><b>Value</b></em>' containment reference feature.
@@ -3385,7 +3141,7 @@ public interface CpPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference FUNCTION__VALUE = eINSTANCE.getFunction_Value();
+		EReference CP_FUNCTION__VALUE = eINSTANCE.getCpFunction_Value();
 
 		/**
 		 * The meta object literal for the '{@link eu.paasage.upperware.metamodel.cp.impl.ConfigurationUpperwareImpl <em>Configuration Upperware</em>}' class.

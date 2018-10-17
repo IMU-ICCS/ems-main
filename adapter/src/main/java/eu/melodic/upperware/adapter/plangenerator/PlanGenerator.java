@@ -9,12 +9,13 @@
 
 package eu.melodic.upperware.adapter.plangenerator;
 
-import eu.paasage.camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentInstanceModel;
+import lombok.NonNull;
 
 public interface PlanGenerator {
 
-  Plan buildConfigurationPlan(DeploymentModel model);
+  Plan buildConfigurationPlan(DeploymentInstanceModel model);
 
-  Plan buildReconfigurationPlan(DeploymentModel oldModel, DeploymentModel newModel);
+  Plan buildReconfigurationPlan(@NonNull DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel);
 
 }

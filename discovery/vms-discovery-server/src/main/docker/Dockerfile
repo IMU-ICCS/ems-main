@@ -9,6 +9,12 @@ ADD https://archive.apache.org/dist/activemq/5.15.0/apache-activemq-5.15.0-bin.t
 ADD https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/3.9.0/mule-standalone-3.9.0.zip /tmp
 # ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper_app.zip
 ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/2ndLevelEsper2outs_app.zip?at=refs%2Fheads%2Fesper-demo /tmp/2ndLevelEsper2outs_app.zip
+ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CEtrafficmodifiedApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CEtrafficmodifiedApp.zip
+ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/CASMuleEsperApp.zip?at=refs%2Fheads%2Fesper-demo /tmp/CAS_app.zip
+
+
+
+
 # ADD https://bitbucket.7bulls.eu/projects/TST/repos/melodic/raw/esper-demo/vms-discovery-server.zip?at=refs%2Fheads%2Fesper-demo /tmp/vms-discovery-server.zip
 ADD vms-discovery-server-docker.zip /tmp/vms-discovery-server.zip
 
@@ -24,12 +30,14 @@ RUN mkdir -p /opt
 RUN tar xvzf apache-activemq-5.15.0-bin.tar.gz -C /opt 
 RUN unzip mule-standalone-3.9.0.zip -d /opt
 # RUN cp 2ndLevelEsper_app.zip /opt/mule-standalone-3.9.0/apps
-RUN cp 2ndLevelEsper2outs_app.zip /opt/mule-standalone-3.9.0/apps
+RUN cp 2ndLevelEsper2outs_app.zip /opt
+RUN cp CEtrafficmodifiedApp.zip /opt
+RUN cp CAS_app.zip /opt
 RUN unzip vms-discovery-server.zip -d /opt
 
 # ======== Remove archives ========
 # RUN rm -f apache-activemq-5.15.0-bin.tar.gz mule-standalone-3.9.0.zip 2ndLevelEsper_app.zip vms-discovery-server.zip
-RUN rm -f apache-activemq-5.15.0-bin.tar.gz mule-standalone-3.9.0.zip 2ndLevelEsper2outs_app.zip vms-discovery-server.zip
+RUN rm -f apache-activemq-5.15.0-bin.tar.gz mule-standalone-3.9.0.zip vms-discovery-server.zip
 
 # ======== Create symbolic links and /logs/ directory ========
 RUN mkdir -p /logs
