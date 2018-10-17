@@ -19,33 +19,35 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
 
     <modules>
         <module>upperware_metamodel</module>
+        <module>jwt-commons</module>
+        <module>jwt-server</module>
         <module>melodic-commons</module>
         <module>melodic-cache</module>
-        <module>cdo_client</module>
-        <module>cdo_server</module>
         <module>adapter</module>
         <module>cp_generator</module>
         <module>meta_solver</module>
         <module>solver_to_deployment</module>
-        <module>srl-adapter</module>
         <module>utility-generator</module>
         <module>cp_solver</module>
         <module>la_converter</module>
         <module>dlms</module>
-        <module>metrics_collector</module>
+        <module>discovery</module>
     </modules>
+
 
     <properties>
         <!-- version for all paasage components-->
+        <camel.version>2018.6.1-SNAPSHOT</camel.version>
+
         <paasage.version.old>2015.9.1-SNAPSHOT</paasage.version.old>
-        <interfaces.version>1.0-SNAPSHOT</interfaces.version>
+        <interfaces.version>2.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -65,8 +67,10 @@
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
         <!--DOCKER plugin properties-->
-        <docker.push>false</docker.push>
-        <docker.repository/>
+        <!--<docker.push>false</docker.push>-->
+        <!--<docker.repository/>-->
+        <docker.push>true</docker.push>
+        <docker.repository>172.31.1.100:5000/</docker.repository>
         <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
@@ -102,12 +106,24 @@
                 <version>${paasage.version.old}</version>
             </dependency>
             <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>jwt-commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.ow2.paasage.mddb.cdo</groupId>
                 <artifactId>client</artifactId>
                 <!-- This may be strange but is necessary -
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
-                <version>${parent.version}</version>
+                <!--<version>${parent.version}</version>-->
+                <version>2.1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.melodic.cdo</groupId>
+                <artifactId>client</artifactId>
+                <version>2.1.0-SNAPSHOT</version>
+                <classifier>repackaged</classifier>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -124,44 +140,19 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>camel</groupId>
+                <artifactId>camel</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>camel</groupId>
+                <artifactId>camel.dsl</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>docker-remote</id>
-            <properties>
-                <docker.push>true</docker.push>
-                <docker.repository>172.31.1.100:5000/</docker.repository>
-            </properties>
-            <activation>
-                <property>
-                    <name>!useLocalDocker</name>
-                </property>
-            </activation>
-        </profile>
-
-        <profile>
-            <id>doclint-java8-disable</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <properties>
-                <javadoc.opts>-Xdoclint:none</javadoc.opts>
-            </properties>
-        </profile>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <build>
         <pluginManagement>
@@ -229,24 +220,25 @@
                     <groupId>com.spotify</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.4.10</version>
-                    <configuration>
-                        <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.imageName}</imageName>
-                        <pushImage>${docker.push}</pushImage>
-                        <resources>
-                            <resource>
-                                <targetPath>/</targetPath>
-                                <directory>${project.build.directory}</directory>
-                                <include>${docker.jarToInclude}</include>
-                            </resource>
-                        </resources>
-                    </configuration>
                     <executions>
                         <execution>
+                            <id>execution</id>
                             <phase>install</phase>
                             <goals>
                                 <goal>build</goal>
                             </goals>
+                            <configuration>
+                                <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                                <imageName>${docker.imageName}-rc2.0</imageName>
+                                <pushImage>${docker.push}</pushImage>
+                                <resources>
+                                    <resource>
+                                        <targetPath>/</targetPath>
+                                        <directory>${project.build.directory}</directory>
+                                        <include>${docker.jarToInclude}</include>
+                                    </resource>
+                                </resources>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
@@ -268,30 +260,32 @@
     </build>
     <repositories>
         <repository>
-            <id>eu.7bulls.snapshot</id>
+            <id>eu.7bulls</id>
             <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
+
         <repository>
-            <id>eu.7bulls.release</id>
-            <name>Melodic 7bulls repository - RELEASES</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+            <id>maven-central</id>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
+
         <repository>
-            <id>ow2.release</id>
+            <id>ow2</id>
             <name>OW2 repository</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
-        </repository>
-        <repository>
-            <id>ow2.snapshot</id>
-            <name>OW2 repository</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <!--TODO to remove-->
-        <repository>
-            <id>gforge.inria.fr-release</id>
-            <name>Maven Repository for Saloon</name>
-            <url>http://saloon.gforge.inria.fr/repositories/releases/</url>
+            <url>http://repository.ow2.org/nexus/content/repositories/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>paasage.repo</id>
@@ -309,12 +303,16 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>choco.repos</id>
+            <url>http://www.emn.fr/z-info/choco-repo/mvn/repository/</url>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>
-            <id>ow2.release</id>
-            <name>Internal Releases</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
             <id>eu.7bulls</id>
@@ -324,8 +322,41 @@
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:https://mprzesmycki@bitbucket.7bulls.eu/scm/mel/upperware.git</connection>
-        <developerConnection>scm:git:https://mprzesmycki@bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
+        <connection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</connection>
+        <developerConnection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
     </scm>
+
+    <profiles>
+        <profile>
+            <id>without-docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>execution</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>docker-local</id>
+            <properties>
+                <docker.push>false</docker.push>
+                <docker.repository>127.0.0.1:5000/</docker.repository>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>docker-remote</id>
+        </profile>
+
+    </profiles>
 
 </project>
