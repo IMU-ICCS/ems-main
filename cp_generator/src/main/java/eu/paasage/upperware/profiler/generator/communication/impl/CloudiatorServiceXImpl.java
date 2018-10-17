@@ -42,26 +42,27 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     public CloudiatorServiceXImpl(GeneratorProperties generatorProperties) {
         this.matchmakingApi = new MatchmakingApi();
+        this.matchmakingApi.getApiClient().setReadTimeout((int) generatorProperties.getCloudiatorV2().getHttpReadTimeout());
         this.matchmakingApi.getApiClient().setBasePath(generatorProperties.getCloudiatorV2().getUrl());
         this.matchmakingApi.getApiClient().setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
     }
 
     @Override
-    public List<NodeCandidate> findNodeCandidates(NodeRequirements nodeRequirements) throws ApiException {
-        List<NodeCandidate> nodeCandidates = matchmakingApi.findNodeCandidates(nodeRequirements);
+    public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
+        List<NodeCandidate> nodeCandidates = matchmakingApi.findNodeCandidates(requirements);
         removeCredentials(nodeCandidates);
         log.debug("Credentials in the Node Candidate List has been removed.");
         return nodeCandidates;
     }
 
     @Override
-    public NodeRequirements createNodeRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String imageId){
+    public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String imageId) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
         requirements.addAll(createImageRequirement(imageId));
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
-        return new NodeRequirements().requirements(requirements);
+        return requirements;
     }
 
     private Collection<? extends Requirement> createResourceRequirement(ResourceRequirement resourceRequirement) {
