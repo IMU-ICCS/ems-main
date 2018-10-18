@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import eu.melodic.dlms.algorithms.dbModel.DataCenter;
 import eu.melodic.dlms.algorithms.dbModel.DataCenterLatencyBandwidth;
 import eu.melodic.dlms.algorithms.model.Distance;
@@ -17,15 +15,19 @@ import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepositor
 import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
 
 public class Algo_AverageWeight {
-	@Autowired
+
 	private DataCenterRepository dataCenterRepository;
-	@Autowired
 	private DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository;
 	// list of paired dataset with historical data to get latency and bandwidth
 	private List<String> dcPairListWithData = new ArrayList<>();
 	// latency and bandwidth between two data centers. String in Map is in the form
 	// of {dc1},{dc2}
 	private Map<String, Distance> dcDistanceMap = new HashMap<String, Distance>();
+
+	public Algo_AverageWeight(DataCenterRepository dataCenterRepository, DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository) {
+		this.dataCenterRepository = dataCenterRepository;
+		this.dataCenterLatencyBandwidthRepository = dataCenterLatencyBandwidthRepository;
+	}
 
 	// use algorithm to find latency and bandwidth based on historical data
 	public int computeAvgAndStore() {

@@ -1,5 +1,7 @@
 package eu.melodic.dlms;
 
+import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
+import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
 import eu.melodic.dlms.utilitygenerator.Algorithm;
 import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 import org.slf4j.Logger;
@@ -31,6 +33,11 @@ public class DlmsControllerApplication {
 	@Autowired
 	private DlmsRestController restController;
 
+	@Autowired
+	private DataCenterRepository dataCenterRepository;
+	@Autowired
+	private DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository;
+
 	/**
 	 * Main method for starting. No arguments needed for normal use.
 	 */
@@ -50,6 +57,8 @@ public class DlmsControllerApplication {
 				AlgorithmRunner runnerInstance = prepareRunnerInstance(algo);
 
 				restController.registerAlgorithm(algo, runnerInstance);
+
+				runnerInstance.initialize(this);
 
 				TimerTask timerTask = setupTimerTask(algo, runnerInstance);
 
@@ -85,4 +94,11 @@ public class DlmsControllerApplication {
 		};
 	}
 
+	public DataCenterRepository getDataCenterRepository() {
+		return dataCenterRepository;
+	}
+
+	public DataCenterLatencyBandwidthRepository getDataCenterLatencyBandwidthRepository() {
+		return dataCenterLatencyBandwidthRepository;
+	}
 }

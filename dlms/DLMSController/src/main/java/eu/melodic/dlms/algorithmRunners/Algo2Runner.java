@@ -1,5 +1,6 @@
 package eu.melodic.dlms.algorithmRunners;
 
+import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,11 @@ public class Algo2Runner implements AlgorithmRunner {
 
 	private Map<Date, Double> results = new HashMap<>();
 	private int counter = 0;
+
+	@Override
+	public void initialize(DlmsControllerApplication application) {
+
+	}
 
 	@Override
 	public double queryResults() {
