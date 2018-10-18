@@ -23,9 +23,9 @@ public class DataCenterLatencyBandwidth {
 	@Column(name = "id")
 	private Long id;
 	@Column(name = "dc1", nullable = false)
-	private String dc1;
+	private Long dc1;
 	@Column(name = "dc2", nullable = false)
-	private String dc2;
+	private Long dc2;
 	@Column(name = "timestamp", nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 //	@CreatedDate
@@ -35,7 +35,7 @@ public class DataCenterLatencyBandwidth {
 	@Column(name = "latency", nullable = false)
 	private int latency;
 
-	public DataCenterLatencyBandwidth(String dc1, String dc2, Date timestamp, int latency, int bandwidth) {
+	public DataCenterLatencyBandwidth(Long dc1, Long dc2, Date timestamp, int latency, int bandwidth) {
 		super();
 		this.dc1 = dc1;
 		this.dc2 = dc2;
@@ -56,19 +56,19 @@ public class DataCenterLatencyBandwidth {
 		this.id = id;
 	}
 
-	public String getDc1() {
+	public Long getDc1() {
 		return dc1;
 	}
 
-	public void setDc1(String dc1) {
+	public void setDc1(Long dc1) {
 		this.dc1 = dc1;
 	}
 
-	public String getDc2() {
+	public Long getDc2() {
 		return dc2;
 	}
 
-	public void setDc2(String dc2) {
+	public void setDc2(Long dc2) {
 		this.dc2 = dc2;
 	}
 

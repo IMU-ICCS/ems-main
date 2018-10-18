@@ -46,7 +46,7 @@ public class Algo_LatestHigherWeight {
 			for (int j = i + 1; j < dataCenterList.size(); j++) {
 				DataCenter dc2 = dataCenterList.get(j);
 
-				boolean found = computeLatestHigher(dc1.getName(), dc2.getName());
+				boolean found = computeLatestHigher(dc1.getId(), dc2.getId());
 				// atleast two data centers must exist
 				if (!hasFound)
 					hasFound = found;
@@ -59,24 +59,23 @@ public class Algo_LatestHigherWeight {
 
 	// compute lat and bandwid for dc1 and dc2, latest data are give higher wts
 	// it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1
-	public boolean computeLatestHigher(String dc1Name, String dc2Name) {
+	public boolean computeLatestHigher(Long dc1Id, Long dc2Id) {
 		LocalDateTime localDateTime = LocalDateTime.now();
 		localDateTime = localDateTime.minusSeconds(this.paraTimeInterval);
 		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository
-				.findByLatestRecordsOrdered(dc1Name, dc2Name, date);
+				.findByLatestRecordsOrdered(dc1Id, dc2Id, date);
 
 		if (dataCenterList.size() == 0) { // if no record exists
 			return false;
 		} else {
-			algoLatestHigherWeight(dataCenterList, dc1Name, dc2Name);
+			algoLatestHigherWeight(dataCenterList, dc1Id, dc2Id);
 			return true;
 		}
 
 	}
 
-	public void algoLatestHigherWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1Name,
-			String dc2Name) {
+	public void algoLatestHigherWeight(List<DataCenterLatencyBandwidth> dataCenterList, Long dc1Id, Long dc2Id) {
 		double latency = 0, bandwidth = 0;
 		int numberRecords = dataCenterList.size();
 
@@ -95,7 +94,7 @@ public class Algo_LatestHigherWeight {
 		bandwidth = bandwidth / denom;
 
 		Distance distanceNew = new Distance(latency, bandwidth);
-		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1Name, dc2Name);
+		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1Id, dc2Id);
 		dcDistanceMap.put(twoDataCenComb, distanceNew);
 	}
 

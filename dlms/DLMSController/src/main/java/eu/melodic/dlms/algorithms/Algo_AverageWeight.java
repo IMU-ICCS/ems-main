@@ -45,7 +45,7 @@ public class Algo_AverageWeight {
 			for (int j = i + 1; j < dataCenterList.size(); j++) {
 				DataCenter dc2 = dataCenterList.get(j);
 
-				boolean found = computeAverage(dc1.getName(), dc2.getName());
+				boolean found = computeAverage(dc1.getId(), dc2.getId());
 				// atleast two data centers must exist
 				if (!hasFound)
 					hasFound = found;
@@ -58,24 +58,24 @@ public class Algo_AverageWeight {
 
 	// compute the average for latency and bandwidth for dc1 and dc2
 	// it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1
-	private boolean computeAverage(String dc1Name, String dc2Name) {
+	private boolean computeAverage(Long dc1Id, Long dc2Id) {
 		LocalDateTime localDateTime = LocalDateTime.now();
 		// read from the configuration file
 		// testing with manual value currently
 		localDateTime = localDateTime.minusSeconds(this.paraTimeInterval);
 		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository
-				.findByLatestRecords(dc1Name, dc2Name, date);
+				.findByLatestRecords(dc1Id, dc2Id, date);
 
 		if (dataCenterList.size() == 0) { // if no record exists
 			return false;
 		} else {
-			computeEqualWeight(dataCenterList, dc1Name, dc2Name);
+			computeEqualWeight(dataCenterList, dc1Id, dc2Id);
 			return true;
 		}
 	}
 
-	private void computeEqualWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1Name, String dc2Name) {
+	private void computeEqualWeight(List<DataCenterLatencyBandwidth> dataCenterList, Long dc1Id, Long dc2Id) {
 		double latency = 0, bandwidth = 0;
 		for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
 			latency += dcLatencyBandwidthItem.getLatency();
@@ -85,7 +85,7 @@ public class Algo_AverageWeight {
 		bandwidth = bandwidth / dataCenterList.size();
 
 		Distance distanceNew = new Distance(latency, bandwidth);
-		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1Name, dc2Name);
+		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1Id, dc2Id);
 		dcDistanceMap.put(twoDataCenComb, distanceNew);
 	}
 
