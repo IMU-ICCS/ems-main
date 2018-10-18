@@ -7,13 +7,14 @@ import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 /**
  * Demo implementation of a simple algorithm.
  */
-public class Algo1Runner implements AlgorithmRunner {
+public class Algo_AverageWeightRunner implements AlgorithmRunner {
 
 	private Algo_AverageWeight algo1;
 
 	@Override
 	public void initialize(DlmsControllerApplication application) {
-		 algo1 = new Algo_AverageWeight(application.getDataCenterRepository(), application.getDataCenterLatencyBandwidthRepository());
+		algo1 = new Algo_AverageWeight(application.getDataCenterRepository(),
+				application.getDataCenterLatencyBandwidthRepository());
 	}
 
 	@Override
@@ -23,6 +24,8 @@ public class Algo1Runner implements AlgorithmRunner {
 
 	@Override
 	public int update(Object... parameters) {
+		int paraTimeInterval = Integer.parseInt(parameters[0].toString());
+		algo1.setParaTimeInterval(paraTimeInterval);
 		return (algo1.computeAvgAndStore());
 	}
 

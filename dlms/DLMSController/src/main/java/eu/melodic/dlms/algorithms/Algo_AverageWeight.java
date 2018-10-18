@@ -11,20 +11,22 @@ import java.util.Map;
 import eu.melodic.dlms.algorithms.dbModel.DataCenter;
 import eu.melodic.dlms.algorithms.dbModel.DataCenterLatencyBandwidth;
 import eu.melodic.dlms.algorithms.model.Distance;
+import eu.melodic.dlms.algorithms.model.TwoDataCenComb;
 import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
 import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
 
 public class Algo_AverageWeight {
-
+//	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsControllerApplication.class);
 	private DataCenterRepository dataCenterRepository;
 	private DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository;
-	// list of paired dataset with historical data to get latency and bandwidth
-	private List<String> dcPairListWithData = new ArrayList<>();
+
 	// latency and bandwidth between two data centers. String in Map is in the form
 	// of {dc1},{dc2}
-	private Map<String, Distance> dcDistanceMap = new HashMap<String, Distance>();
+	private Map<TwoDataCenComb, Distance> dcDistanceMap = new HashMap<TwoDataCenComb, Distance>();
+	private int paraTimeInterval;
 
-	public Algo_AverageWeight(DataCenterRepository dataCenterRepository, DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository) {
+	public Algo_AverageWeight(DataCenterRepository dataCenterRepository,
+			DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository) {
 		this.dataCenterRepository = dataCenterRepository;
 		this.dataCenterLatencyBandwidthRepository = dataCenterLatencyBandwidthRepository;
 	}
@@ -45,10 +47,10 @@ public class Algo_AverageWeight {
 					hasFound = found;
 			}
 		}
-		if (hasFound)
-			return 0;
-		else
-			return 1;
+		System.out.println("All done two data centers found");
+		if (!hasFound)
+			System.out.println("No two data centers found");
+		return 0;
 	}
 
 	// compute the average for latency and bandwidth for dc1 and dc2
@@ -57,7 +59,7 @@ public class Algo_AverageWeight {
 		LocalDateTime localDateTime = LocalDateTime.now();
 		// read from the configuration file
 		// testing with manual value currently
-		localDateTime = localDateTime.minusSeconds(3000);
+		localDateTime = localDateTime.minusSeconds(this.paraTimeInterval);
 		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository.findByLatestRecords(dc1,
 				dc2, date);
@@ -66,7 +68,6 @@ public class Algo_AverageWeight {
 			return false;
 		} else {
 			computeEqualWeight(dataCenterList, dc1, dc2);
-			dcPairListWithData.add(dc1 + "," + dc2);
 			return true;
 		}
 	}
@@ -81,7 +82,16 @@ public class Algo_AverageWeight {
 		bandwidth = bandwidth / dataCenterList.size();
 
 		Distance distanceNew = new Distance(latency, bandwidth);
-		dcDistanceMap.put(dc1 + "," + dc2, distanceNew);
+		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1, dc2);
+		dcDistanceMap.put(twoDataCenComb, distanceNew);
+	}
+
+	public int getParaTimeInterval() {
+		return paraTimeInterval;
+	}
+
+	public void setParaTimeInterval(int paraTimeInterval) {
+		this.paraTimeInterval = paraTimeInterval;
 	}
 
 }
