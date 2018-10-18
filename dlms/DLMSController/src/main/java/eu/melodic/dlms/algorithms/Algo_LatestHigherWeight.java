@@ -19,17 +19,18 @@ import eu.melodic.dlms.algorithms.model.TwoDataCenComb;
 import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
 import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
 
-public class Algo_AverageWeight {
+public class Algo_LatestHigherWeight {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsRestController.class);
 	private DataCenterRepository dataCenterRepository;
 	private DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository;
 
 	// latency and bandwidth between two data centers. String in Map is in the form
 	// of {dc1},{dc2}
+	// probably save this to the database or access it using rest
 	private Map<TwoDataCenComb, Distance> dcDistanceMap = new HashMap<TwoDataCenComb, Distance>();
 	private int paraTimeInterval;
 
-	public Algo_AverageWeight(DataCenterRepository dataCenterRepository,
+	public Algo_LatestHigherWeight(DataCenterRepository dataCenterRepository,
 			DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository) {
 		this.dataCenterRepository = dataCenterRepository;
 		this.dataCenterLatencyBandwidthRepository = dataCenterLatencyBandwidthRepository;
@@ -45,7 +46,7 @@ public class Algo_AverageWeight {
 			for (int j = i + 1; j < dataCenterList.size(); j++) {
 				DataCenter dc2 = dataCenterList.get(j);
 
-				boolean found = computeAverage(dc1.getName(), dc2.getName());
+				boolean found = computeLatestHigher(dc1.getName(), dc2.getName());
 				// atleast two data centers must exist
 				if (!hasFound)
 					hasFound = found;
@@ -56,33 +57,42 @@ public class Algo_AverageWeight {
 		return 0;
 	}
 
-	// compute the average for latency and bandwidth for dc1 and dc2
+	// compute lat and bandwid for dc1 and dc2, latest data are give higher wts
 	// it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1
-	private boolean computeAverage(String dc1Name, String dc2Name) {
+	public boolean computeLatestHigher(String dc1Name, String dc2Name) {
 		LocalDateTime localDateTime = LocalDateTime.now();
-		// read from the configuration file
-		// testing with manual value currently
 		localDateTime = localDateTime.minusSeconds(this.paraTimeInterval);
 		Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 		List<DataCenterLatencyBandwidth> dataCenterList = dataCenterLatencyBandwidthRepository
-				.findByLatestRecords(dc1Name, dc2Name, date);
+				.findByLatestRecordsOrdered(dc1Name, dc2Name, date);
 
 		if (dataCenterList.size() == 0) { // if no record exists
 			return false;
 		} else {
-			computeEqualWeight(dataCenterList, dc1Name, dc2Name);
+			algoLatestHigherWeight(dataCenterList, dc1Name, dc2Name);
 			return true;
 		}
+
 	}
 
-	private void computeEqualWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1Name, String dc2Name) {
+	public void algoLatestHigherWeight(List<DataCenterLatencyBandwidth> dataCenterList, String dc1Name,
+			String dc2Name) {
 		double latency = 0, bandwidth = 0;
+		int numberRecords = dataCenterList.size();
+
+		double multiply = 0;
+		int numCounter = 1; // to multiply with
+		double denom = 0;// to divide
 		for (DataCenterLatencyBandwidth dcLatencyBandwidthItem : dataCenterList) {
-			latency += dcLatencyBandwidthItem.getLatency();
-			bandwidth += dcLatencyBandwidthItem.getBandwidth();
+			multiply = (numberRecords - numCounter + 1.0) / (double) numberRecords;
+			latency += dcLatencyBandwidthItem.getLatency() * multiply;
+			bandwidth += dcLatencyBandwidthItem.getBandwidth() * multiply;
+
+			denom += multiply;
+			numCounter++;
 		}
-		latency = latency / dataCenterList.size();
-		bandwidth = bandwidth / dataCenterList.size();
+		latency = latency / denom;
+		bandwidth = bandwidth / denom;
 
 		Distance distanceNew = new Distance(latency, bandwidth);
 		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1Name, dc2Name);
