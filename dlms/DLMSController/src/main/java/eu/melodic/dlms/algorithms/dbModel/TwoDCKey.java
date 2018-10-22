@@ -1,11 +1,26 @@
-package eu.melodic.dlms.algorithms.model;
+package eu.melodic.dlms.algorithms.dbModel;
 
-// store the name 
-public class TwoDataCenComb {
-	private Long dc1Id = 0L;
-	private Long dc2Id = 0L;
+import java.io.Serializable;
 
-	public TwoDataCenComb(Long dc1Id, Long dc2Id) {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.validation.constraints.NotNull;
+
+@Embeddable
+public class TwoDCKey implements Serializable {
+
+	@NotNull
+	@Column(name = "dc1_Id", nullable = false)
+	private Long dc1Id;
+	@NotNull
+	@Column(name = "dc2_Id", nullable = false)
+	private Long dc2Id;
+
+	public TwoDCKey() {
+
+	}
+
+	public TwoDCKey(Long dc1Id, Long dc2Id) {
 		this.dc1Id = dc1Id;
 		this.dc2Id = dc2Id;
 	}
@@ -31,7 +46,6 @@ public class TwoDataCenComb {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((dc1Id == null) ? 0 : dc1Id.hashCode());
-		result = prime * result + ((dc2Id == null) ? 0 : dc2Id.hashCode());
 		return result;
 	}
 
@@ -43,7 +57,7 @@ public class TwoDataCenComb {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TwoDataCenComb other = (TwoDataCenComb) obj;
+		TwoDCKey other = (TwoDCKey) obj;
 		if (dc1Id == null) {
 			if (other.dc1Id != null)
 				return false;

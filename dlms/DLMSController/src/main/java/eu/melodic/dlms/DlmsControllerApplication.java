@@ -1,9 +1,10 @@
 package eu.melodic.dlms;
 
-import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
-import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
-import eu.melodic.dlms.utilitygenerator.Algorithm;
-import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
+import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
+import eu.melodic.dlms.algorithms.repository.TwoDataCenterCombinationRepository;
+import eu.melodic.dlms.utilitygenerator.Algorithm;
+import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 
 /**
  * Application class for the DLMS controller.
@@ -37,6 +39,8 @@ public class DlmsControllerApplication {
 	private DataCenterRepository dataCenterRepository;
 	@Autowired
 	private DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository;
+	@Autowired
+	private TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
 
 	/**
 	 * Main method for starting. No arguments needed for normal use.
@@ -46,14 +50,15 @@ public class DlmsControllerApplication {
 	}
 
 	/**
-	 * CommandLineRunner to start a timer for every algorithm in the configuration directly after startup.
+	 * CommandLineRunner to start a timer for every algorithm in the configuration
+	 * directly after startup.
 	 */
 	@Bean
 	public CommandLineRunner run() {
 		return (String... args) -> {
 			List<Algorithm> algorithms = dlmsProperties.getAlgorithms();
 
-			for(Algorithm algo : algorithms) {
+			for (Algorithm algo : algorithms) {
 				AlgorithmRunner runnerInstance = prepareRunnerInstance(algo);
 
 				restController.registerAlgorithm(algo, runnerInstance);
@@ -64,17 +69,19 @@ public class DlmsControllerApplication {
 
 				Timer timer = new Timer();
 				timer.schedule(timerTask, DELAY_AFTER_CREATION, (long) (algo.getInterval() * 1000));
-				LOGGER.info("Started timer with delay=" + DELAY_AFTER_CREATION / 1000 + " sec. and interval={} sec.", algo.getInterval());
+				LOGGER.info("Started timer with delay=" + DELAY_AFTER_CREATION / 1000 + " sec. and interval={} sec.",
+						algo.getInterval());
 			}
 		};
 	}
 
-	private AlgorithmRunner prepareRunnerInstance(Algorithm algo)
-			throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+	private AlgorithmRunner prepareRunnerInstance(Algorithm algo) throws ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
 		LOGGER.info("preparing algorithm {}", algo.getName());
 
-		@SuppressWarnings("unchecked") Class<AlgorithmRunner> runnerClass = (Class<AlgorithmRunner>) Class.forName(algo.getClassName());
+		@SuppressWarnings("unchecked")
+		Class<AlgorithmRunner> runnerClass = (Class<AlgorithmRunner>) Class.forName(algo.getClassName());
 		algo.setRunnerClass(runnerClass);
 
 		return runnerClass.getDeclaredConstructor().newInstance();
@@ -87,7 +94,7 @@ public class DlmsControllerApplication {
 				LOGGER.info("running algorithm {}", algo.getName());
 				int result = runnerInstance.update(algo.getArguments());
 
-				if(result != 0) {
+				if (result != 0) {
 					LOGGER.info("error occured in algorithm {} ", algo.getName());
 				}
 			}
@@ -101,4 +108,9 @@ public class DlmsControllerApplication {
 	public DataCenterLatencyBandwidthRepository getDataCenterLatencyBandwidthRepository() {
 		return dataCenterLatencyBandwidthRepository;
 	}
+
+	public TwoDataCenterCombinationRepository getTwoDataCenterCombinationRepository() {
+		return twoDataCenterCombinationRepository;
+	}
+
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,8 @@ import eu.melodic.dlms.algorithms.dbModel.DataCenterLatencyBandwidth;
 @Repository
 public interface DataCenterLatencyBandwidthRepository extends JpaRepository<DataCenterLatencyBandwidth, Long> {
 	String databaseName = "datacenter_latency_bandwidth";
+
+	List<DataCenterLatencyBandwidth> findByDc1AndDc2OrderByIdDesc(Long dc1, Long dc2, Pageable pageable);
 
 	@Query(value = "select * from " + databaseName
 			+ " where dc1 = :dc1 and dc2 = :dc2 and timestamp > :timestamp", nativeQuery = true)

@@ -13,8 +13,8 @@ public class Algo_LatestHigherWeightRunner implements AlgorithmRunner {
 
 	@Override
 	public void initialize(DlmsControllerApplication application) {
-		algo1 = new Algo_AverageWeight(application.getDataCenterRepository(),
-				application.getDataCenterLatencyBandwidthRepository());
+//		algo1 = new Algo_AverageWeight(application.getDataCenterRepository(),
+//				application.getDataCenterLatencyBandwidthRepository());
 	}
 
 	@Override
