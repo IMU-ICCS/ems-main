@@ -1,4 +1,4 @@
-package eu.melodic.dlms.utilitygenerator;
+package eu.melodic.dlms;
 
 import java.util.Date;
 import java.util.Objects;

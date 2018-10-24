@@ -16,8 +16,6 @@ import org.springframework.context.annotation.Bean;
 import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterLatencyBandwidthRepository;
 import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterRepository;
 import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.TwoDataCenterCombinationRepository;
-import eu.melodic.dlms.utilitygenerator.Algorithm;
-import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 
 /**
  * Application class for the DLMS controller.

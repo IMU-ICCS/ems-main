@@ -1,4 +1,4 @@
-package eu.melodic.dlms.utilitygenerator;
+package eu.melodic.dlms.utility;
 
 import java.util.HashMap;
 import java.util.Map;

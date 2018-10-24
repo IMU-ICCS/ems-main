@@ -1,4 +1,4 @@
-package eu.melodic.dlms.utilitygenerator;
+package eu.melodic.dlms.utility;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;

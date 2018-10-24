@@ -1,7 +1,7 @@
 package eu.melodic.dlms.algorithmRunners;
 
+import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
-import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,4 @@
-package eu.melodic.dlms.utilitygenerator;
-
-import eu.melodic.dlms.DlmsControllerApplication;
+package eu.melodic.dlms;
 
 /**
  * Interface for algorithm runner classes.

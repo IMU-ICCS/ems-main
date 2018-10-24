@@ -1,13 +1,12 @@
 package eu.melodic.dlms;
 
-import eu.melodic.dlms.utilitygenerator.Algorithm;
-import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
-import eu.melodic.dlms.utilitygenerator.UtilityMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import eu.melodic.dlms.utility.UtilityMetrics;
 
 import java.util.HashMap;
 import java.util.Map;
