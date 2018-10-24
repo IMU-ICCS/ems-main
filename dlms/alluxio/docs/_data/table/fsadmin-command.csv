@@ -1,3 +1,0 @@
-operation,syntax
-report,"report"
-ufs,"ufs --mode <noAccess/readOnly/readWrite> ""ufsPath"""
