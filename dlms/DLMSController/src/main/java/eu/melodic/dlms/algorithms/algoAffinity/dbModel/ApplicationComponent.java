@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel;
+package eu.melodic.dlms.algorithms.algoAffinity.dbModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,17 +11,15 @@ import javax.persistence.Table;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "region")
+@Table(name = "applicationcomponent")
 @EntityListeners(AuditingEntityListener.class)
-public class Region {
+public class ApplicationComponent {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
-	@Column(name = "location")
-	private String location;
-	@Column(name = "cloudprovider_id")
-	private int cloudprovider_id;
+	@Column(name = "name")
+	private String name;
 
 	public Long getId() {
 		return id;
@@ -31,20 +29,12 @@ public class Region {
 		this.id = id;
 	}
 
-	public String getLocation() {
-		return location;
+	public String getName() {
+		return name;
 	}
 
-	public void setLocation(String location) {
-		this.location = location;
-	}
-
-	public int getCloudProvider_id() {
-		return cloudprovider_id;
-	}
-
-	public void setCloudProvider_id(int cloudprovider_id) {
-		this.cloudprovider_id = cloudprovider_id;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.model;
+package eu.melodic.dlms.algorithms.algoLatencyBandwidth.model;
 
 // store the name 
 public class TwoDataCenComb {
