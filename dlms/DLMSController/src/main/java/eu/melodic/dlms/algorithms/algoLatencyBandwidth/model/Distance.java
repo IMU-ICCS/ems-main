@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.model;
+package eu.melodic.dlms.algorithms.algoLatencyBandwidth.model;
 
 public class Distance {
 

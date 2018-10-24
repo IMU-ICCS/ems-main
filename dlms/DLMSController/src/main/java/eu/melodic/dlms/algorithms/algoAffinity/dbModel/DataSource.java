@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.dbModel;
+package eu.melodic.dlms.algorithms.algoAffinity.dbModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,19 +11,15 @@ import javax.persistence.Table;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "datacenter")
+@Table(name = "datasource")
 @EntityListeners(AuditingEntityListener.class)
-public class DataCenter {
+public class DataSource {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
 	@Column(name = "name")
 	private String name;
-	@Column(name = "availability_zone", nullable = true)
-	private String availabilityZone;
-	@Column(name = "region_id")
-	private Long regionId;
 
 	public Long getId() {
 		return id;
@@ -39,22 +35,6 @@ public class DataCenter {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getAvailabilityZone() {
-		return availabilityZone;
-	}
-
-	public void setAvailabilityZone(String availabilityZone) {
-		this.availabilityZone = availabilityZone;
-	}
-
-	public Long getRegionId() {
-		return regionId;
-	}
-
-	public void setRegionId(Long regionId) {
-		this.regionId = regionId;
 	}
 
 }

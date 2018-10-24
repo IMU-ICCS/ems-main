@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms;
+package eu.melodic.dlms.algorithms.algoLatencyBandwidth;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,17 +13,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 
 import eu.melodic.dlms.DlmsRestController;
-import eu.melodic.dlms.algorithms.dbModel.DataCenter;
-import eu.melodic.dlms.algorithms.dbModel.DataCenterLatencyBandwidth;
-import eu.melodic.dlms.algorithms.dbModel.TwoDCKey;
-import eu.melodic.dlms.algorithms.dbModel.TwoDataCenterCombination;
-import eu.melodic.dlms.algorithms.model.Distance;
-import eu.melodic.dlms.algorithms.model.TwoDataCenComb;
-import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
-import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
-import eu.melodic.dlms.algorithms.repository.TwoDataCenterCombinationRepository;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenter;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenterLatencyBandwidth;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.TwoDCKey;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.TwoDataCenterCombination;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.model.Distance;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.model.TwoDataCenComb;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterLatencyBandwidthRepository;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterRepository;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.TwoDataCenterCombinationRepository;
 
-public class Algo_AverageWeight {
+public class AlgoAvgWtLatBand {
 	// set default; maybe modify just for experiments
 	private final double WT_LATENCY = 0.5;
 
@@ -46,7 +46,7 @@ public class Algo_AverageWeight {
 	// of {dc1},{dc2}
 	private Map<TwoDataCenComb, Distance> dcDistanceMap = new HashMap<TwoDataCenComb, Distance>();
 
-	public Algo_AverageWeight(DataCenterRepository dataCenterRepository,
+	public AlgoAvgWtLatBand(DataCenterRepository dataCenterRepository,
 			DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository,
 			TwoDataCenterCombinationRepository twoDataCenterCombinationRepository) {
 		this.dataCenterRepository = dataCenterRepository;
@@ -74,7 +74,7 @@ public class Algo_AverageWeight {
 			LOGGER.info("No two data centers were found");
 		// combine latency and bandwidth into one for each pair of data center
 		saveinDatabase();
-		LOGGER.info("Algorithm 1 has successfully executed");
+		LOGGER.info("Algorithm AlgoAvgWtLatBand has successfully executed");
 		return 0;
 	}
 

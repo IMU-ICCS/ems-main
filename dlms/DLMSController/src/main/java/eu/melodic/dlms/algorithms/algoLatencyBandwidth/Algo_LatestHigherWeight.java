@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms;
+package eu.melodic.dlms.algorithms.algoLatencyBandwidth;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.melodic.dlms.DlmsRestController;
-import eu.melodic.dlms.algorithms.dbModel.DataCenter;
-import eu.melodic.dlms.algorithms.dbModel.DataCenterLatencyBandwidth;
-import eu.melodic.dlms.algorithms.model.Distance;
-import eu.melodic.dlms.algorithms.model.TwoDataCenComb;
-import eu.melodic.dlms.algorithms.repository.DataCenterLatencyBandwidthRepository;
-import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenter;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenterLatencyBandwidth;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.model.Distance;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.model.TwoDataCenComb;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterLatencyBandwidthRepository;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterRepository;
 
 public class Algo_LatestHigherWeight {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsRestController.class);

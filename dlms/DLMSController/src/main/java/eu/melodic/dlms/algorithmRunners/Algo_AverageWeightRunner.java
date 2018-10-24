@@ -1,7 +1,7 @@
 package eu.melodic.dlms.algorithmRunners;
 
 import eu.melodic.dlms.DlmsControllerApplication;
-import eu.melodic.dlms.algorithms.Algo_AverageWeight;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.AlgoAvgWtLatBand;
 import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
 
 /**
@@ -9,11 +9,11 @@ import eu.melodic.dlms.utilitygenerator.AlgorithmRunner;
  */
 public class Algo_AverageWeightRunner implements AlgorithmRunner {
 
-	private Algo_AverageWeight algo1;
+	private AlgoAvgWtLatBand algo1;
 
 	@Override
 	public void initialize(DlmsControllerApplication application) {
-		algo1 = new Algo_AverageWeight(application.getDataCenterRepository(),
+		algo1 = new AlgoAvgWtLatBand(application.getDataCenterRepository(),
 				application.getDataCenterLatencyBandwidthRepository(),
 				application.getTwoDataCenterCombinationRepository());
 	}

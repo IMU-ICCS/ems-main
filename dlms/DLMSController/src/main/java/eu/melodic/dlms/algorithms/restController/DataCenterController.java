@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import eu.melodic.dlms.algorithms.dbModel.DataCenter;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenter;
+import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterRepository;
 import eu.melodic.dlms.algorithms.exception.ResourceNotFoundException;
-import eu.melodic.dlms.algorithms.repository.DataCenterRepository;
 
 @RestController
 @RequestMapping("/api")

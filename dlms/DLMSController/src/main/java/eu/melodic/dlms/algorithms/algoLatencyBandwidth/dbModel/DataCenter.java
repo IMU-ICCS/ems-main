@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.dbModel;
+package eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,25 +8,22 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "cloudprovider")
+@Table(name = "datacenter")
 @EntityListeners(AuditingEntityListener.class)
-public class CloudProvider {
+public class DataCenter {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
 	@Column(name = "name")
 	private String name;
-	@Column(name = "is_public", nullable = true)
-	@Type(type = "org.hibernate.type.NumericBooleanType")
-	private boolean isPublic = true;
-
-	@Column(name = "notes")
-	private String notes;
+	@Column(name = "availability_zone", nullable = true)
+	private String availabilityZone;
+	@Column(name = "region_id")
+	private Long regionId;
 
 	public Long getId() {
 		return id;
@@ -44,20 +41,20 @@ public class CloudProvider {
 		this.name = name;
 	}
 
-	public boolean isPublic() {
-		return isPublic;
+	public String getAvailabilityZone() {
+		return availabilityZone;
 	}
 
-	public void setPublic(boolean isPublic) {
-		this.isPublic = isPublic;
+	public void setAvailabilityZone(String availabilityZone) {
+		this.availabilityZone = availabilityZone;
 	}
 
-	public String getNotes() {
-		return notes;
+	public Long getRegionId() {
+		return regionId;
 	}
 
-	public void setNotes(String notes) {
-		this.notes = notes;
+	public void setRegionId(Long regionId) {
+		this.regionId = regionId;
 	}
 
 }
