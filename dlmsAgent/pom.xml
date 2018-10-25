@@ -9,7 +9,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Metrics</name>
+	<name>DLMS Agent</name>
 	<description>DLMS Agent Project</description>
 
 	<parent>
@@ -103,6 +103,19 @@
 
 		</plugins>
 	</build>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>eu.7bulls</id>
+			<name>Melodic 7bulls repository</name>
+			<url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>eu.7bulls</id>
+			<name>Melodic 7bulls repository</name>
+			<url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+		</repository>
+	</distributionManagement>
 
 
 </project>
