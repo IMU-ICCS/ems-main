@@ -63,11 +63,22 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>alluxio.client</groupId>
-			<artifactId>alluxio.client</artifactId>
-			<version>1.8.0</version>
-
-    
+			<groupId>org.alluxio</groupId>
+			<artifactId>alluxio-core-client</artifactId>
+			<version>1.8.1</version>
+			<type>pom</type>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.alluxio/alluxio-shell -->
+		<dependency>
+			<groupId>org.alluxio</groupId>
+			<artifactId>alluxio-shell</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>3.0.1</version>
 		</dependency>
 	</dependencies>
 	<build>
