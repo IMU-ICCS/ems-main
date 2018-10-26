@@ -3,6 +3,7 @@ package eu.melodic.dlms.algorithmRunners;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.algoLatencyBandwidth.AlgoAvgWtLatBand;
+import eu.melodic.dlms.utility.DlmsDiffBundle;
 
 /**
  * Demo implementation of a simple algorithm.
@@ -19,7 +20,7 @@ public class Algo_AverageWeightRunner implements AlgorithmRunner {
 	}
 
 	@Override
-	public double queryResults() {
+	public double queryResults(DlmsDiffBundle diffBundle) {
 		return -5;
 	}
 

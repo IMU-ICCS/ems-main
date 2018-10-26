@@ -5,8 +5,6 @@ import java.util.Map;
 
 /**
  * Bean used as data interface between UtilityGenerator and DlmsController to exchange algorithm results.
- *
- * <p><b>TODO: The redundant version in the current DlmsController project is to be removed on integration!</b>
  */
 public class UtilityMetrics {
 

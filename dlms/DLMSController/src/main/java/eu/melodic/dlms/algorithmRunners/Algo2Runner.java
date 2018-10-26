@@ -2,6 +2,7 @@ package eu.melodic.dlms.algorithmRunners;
 
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
+import eu.melodic.dlms.utility.DlmsDiffBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class Algo2Runner implements AlgorithmRunner {
 	}
 
 	@Override
-	public double queryResults() {
+	public double queryResults(DlmsDiffBundle diffBundle) {
 		double value = 0;
 		for(Double result : results.values()) {
 			value += result;

@@ -1,12 +1,13 @@
 package eu.melodic.dlms;
 
+import eu.melodic.dlms.utility.DlmsDiffBundle;
+import eu.melodic.dlms.utility.UtilityMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import eu.melodic.dlms.utility.UtilityMetrics;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,15 +32,13 @@ public class DlmsRestController {
 
 	/**
 	 * Returns a map of all active algorithms with the value their runner class produced from the call of queryResults().
-	 *
-	 * <p><b>TODO: Signature will change as soon as Diff-class is created (needs to be passed in here; see DlmsControllerClient.getUtilityValues())</b>
 	 */
-	@RequestMapping(value = "/dlmsController/utilityValue", method = RequestMethod.GET)
-	public UtilityMetrics getUtilityValue() {
+	@RequestMapping(value = "/dlmsController/utilityValue", method = RequestMethod.POST)
+	public UtilityMetrics getUtilityValue(@RequestBody DlmsDiffBundle diffs) {
 		Map<String, Double> utilityValueMap = new HashMap<>(algorithms.size());
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
-			double algorithmResult = runner.queryResults();
+			double algorithmResult = runner.queryResults(diffs);
 			LOGGER.info("result for algorithm {}: {}", key.getName(), algorithmResult);
 			utilityValueMap.put(key.getCamelId(), algorithmResult);
 		});
