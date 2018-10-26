@@ -24,8 +24,20 @@ public class DlmsControllerClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsControllerClient.class);
 
-	// TODO should move to some config file --> UG's application.properties?
-	private static final String DATASOURCE_SERVER_URL = "http://localhost:8094/dlmsController/utilityValue";
+	private static final String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
+
+	private final String datasourceServerUrl;
+
+	public DlmsControllerClient(String datasource_server_url) {
+		datasourceServerUrl = datasource_server_url;
+	}
+
+	/**
+	 * Constructor for unit tests etc.
+	 */
+	protected DlmsControllerClient() {
+		datasourceServerUrl = "";
+	}
 
 	/**
 	 * Main method just for stand-alone testing.
@@ -33,7 +45,7 @@ public class DlmsControllerClient {
 	 * <p><b>TODO: May be removed on integration.</b>
 	 */
 	public static void main(String args[]) {
-		UtilityMetrics result = new DlmsControllerClient().getUtilityValues(Collections.emptyList(), Collections.emptyList());
+		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING).getUtilityValues(Collections.emptyList(), Collections.emptyList());
 		for(String key : result.getResults().keySet()) {
 			LOGGER.info("{} --> {}", key, result.getResults().get(key));
 		}
@@ -46,7 +58,7 @@ public class DlmsControllerClient {
 	public UtilityMetrics getUtilityValues(Collection<DlmsConfigurationElement> deployed, Collection<DlmsConfigurationElement> proposed) {
 		try {
 			RestTemplate restTemplate = new RestTemplate();
-			URI uri = new URI(DATASOURCE_SERVER_URL);
+			URI uri = new URI(datasourceServerUrl);
 			HttpHeaders headers = createHeaders();
 
 			DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
@@ -89,7 +101,7 @@ public class DlmsControllerClient {
 
 	private void checkElementsForDiff(DlmsDiffBundle diffBundle, DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
 		if(hasCardinalityDiff(deployedElement, proposedElement)) {
-			LOGGER.info("diff found for {}", proposedElement.getId());
+			LOGGER.info("diff found for {} in cardinality", proposedElement.getId());
 			registerDiff(diffBundle, deployedElement, proposedElement);
 		}
 		else if(hasValidNodeCandidates(deployedElement, proposedElement)) {
@@ -97,11 +109,11 @@ public class DlmsControllerClient {
 			NodeCandidate proposedCandidate = proposedElement.getNodeCandidate();
 
 			if(hasLocationDiff(deployedCandidate, proposedCandidate)) {
-				LOGGER.info("diff found for {}", proposedElement.getId());
+				LOGGER.info("diff found for {} in location", proposedElement.getId());
 				registerDiff(diffBundle, deployedElement, proposedElement);
 			}
 			else if(hasHardwareDiff(deployedCandidate, proposedCandidate)) {
-				LOGGER.info("diff found for {}", proposedElement.getId());
+				LOGGER.info("diff found for {} in hardware", proposedElement.getId());
 				registerDiff(diffBundle, deployedElement, proposedElement);
 			}
 		}
@@ -114,11 +126,11 @@ public class DlmsControllerClient {
 		return deployedElement.getId() != null && deployedElement.getId().equals(proposedElement.getId());
 	}
 
-	private boolean hasCardinalityDiff(DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
+	protected boolean hasCardinalityDiff(DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
 		return deployedElement.getCardinality() != proposedElement.getCardinality();
 	}
 
-	private boolean hasValidNodeCandidates(DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
+	protected boolean hasValidNodeCandidates(DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
 		return deployedElement.getNodeCandidate() != null && proposedElement.getNodeCandidate() != null;
 	}
 
