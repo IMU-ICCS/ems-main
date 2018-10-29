@@ -122,7 +122,7 @@ public class DlmsControllerClient {
 		}
 	}
 
-	private boolean hasSameId(DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
+	protected boolean hasSameId(DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
 		return deployedElement.getId() != null && deployedElement.getId().equals(proposedElement.getId());
 	}
 
@@ -142,7 +142,7 @@ public class DlmsControllerClient {
 		return deployedCandidate.getHardware() != null && !deployedCandidate.getHardware().equals(proposedCandidate.getHardware());
 	}
 
-	private void registerDiff(DlmsDiffBundle diffBundle, DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
+	protected void registerDiff(DlmsDiffBundle diffBundle, DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
 		DlmsConfigurationDiff diff = new DlmsConfigurationDiff(deployedElement, proposedElement);
 		diffBundle.addConfigurationDiff(diff);
 	}
