@@ -11,6 +11,15 @@ public class DlmsConfigurationElement {
 	private NodeCandidate nodeCandidate;
 	private int cardinality;
 
+	public DlmsConfigurationElement() {
+	}
+
+	public DlmsConfigurationElement(String id, NodeCandidate nodeCandidate, int cardinality) {
+		this.id = id;
+		this.nodeCandidate = nodeCandidate;
+		this.cardinality = cardinality;
+	}
+
 	public String getId() {
 		return id;
 	}
