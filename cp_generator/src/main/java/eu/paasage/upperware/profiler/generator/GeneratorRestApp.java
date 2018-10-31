@@ -2,6 +2,7 @@ package eu.paasage.upperware.profiler.generator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -12,6 +13,7 @@ import java.util.TimeZone;
 @Slf4j
 @EnableAsync
 @ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache"})
+@SpringBootApplication
 public class GeneratorRestApp {
 
 
