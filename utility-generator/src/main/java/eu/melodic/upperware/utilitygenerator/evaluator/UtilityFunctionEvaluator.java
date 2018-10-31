@@ -9,6 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.converter.DLMSConverter;
 import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.converter.VariableConverter;
@@ -19,11 +20,13 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.utils.Printer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,6 +39,7 @@ public class UtilityFunctionEvaluator {
 
     private UtilityFunction function;
     private NodeCandidatesConverter nodeCandidatesConverter;
+    private DLMSConverter dlmsConverter;
     private VariableConverter variableConverter;
     private Collection<String> unmoveableComponents;
     private Collection<ConfigurationElement> deployedConfiguration;
@@ -43,7 +47,7 @@ public class UtilityFunctionEvaluator {
     private Printer printer;
 
     public UtilityFunctionEvaluator(String camelModelFilePath, boolean readFromFile, Collection<VariableDTO> variablesFromConstraintProblem,
-            Collection<MetricDTO> metricsFromConstraintProblem, Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
+            Collection<MetricDTO> metricsFromConstraintProblem, Collection<Element> deployedSolution, UtilityGeneratorProperties properties, NodeCandidates nodeCandidates) {
 
         Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
         Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
@@ -52,9 +56,12 @@ public class UtilityFunctionEvaluator {
 
         this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
 
+
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of the utility function: {}", formula);
+
+        this.dlmsConverter = new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelConverter.getListOfDlmsUtilityAttributes());
 
         this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", unmoveableComponents.toString());
@@ -84,7 +91,7 @@ public class UtilityFunctionEvaluator {
 
             allConstants.addAll(currentConfigAttributesOfNodeCandidates);
         } else {
-            deployedConfiguration = null;
+            deployedConfiguration = Collections.emptyList();
             log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
             allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
         }
@@ -108,10 +115,11 @@ public class UtilityFunctionEvaluator {
             log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
+        Collection<Element> dlmsUtilityAttributes = dlmsConverter.convertDLMSUtilityAttributes(deployedConfiguration, newConfiguration);
 
         Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributes(newConfiguration);
         Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
 
-        return function.evaluateFunction(Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream()).collect(Collectors.toList()));
+        return function.evaluateFunction(Stream.concat(convertToArgument(dlmsUtilityAttributes).stream(), Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream())).collect(Collectors.toList()));
     }
 }

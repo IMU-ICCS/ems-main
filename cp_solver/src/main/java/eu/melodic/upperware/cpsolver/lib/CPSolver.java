@@ -84,9 +84,9 @@ public class CPSolver {
             camelModelFilePath = applicationId;
         }
         if (isReconfig) {
-            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, deployedSolution, nodeCandidates);
+            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, deployedSolution, utilityGeneratorProperties, nodeCandidates);
         } else {
-            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, nodeCandidates);
+            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, utilityGeneratorProperties, nodeCandidates);
         }
     }
 

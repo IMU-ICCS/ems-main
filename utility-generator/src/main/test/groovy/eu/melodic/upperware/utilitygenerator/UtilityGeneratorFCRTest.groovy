@@ -7,6 +7,7 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO
 import eu.melodic.upperware.utilitygenerator.model.function.Element
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Specification
@@ -16,6 +17,8 @@ class UtilityGeneratorFCRTest extends Specification{
 
     Collection<MetricDTO> metrics = new ArrayList<>()
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
+
+    UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
 
     String cardinalityName = "AppCardinality"
     String actCardinalityName = "AppActCardinality"
@@ -27,7 +30,7 @@ class UtilityGeneratorFCRTest extends Specification{
     String dbProviderName = "providerNameDB"
     String dbCardinalityName = "DBCardinality"
 
-    String path = "/Users/mrozanska/FCRnew.xmi"
+    String path = "src/main/test/resources/FCR.xmi"
 
 
     Collection<VariableDTO> variables = new ArrayList<>()
@@ -58,6 +61,9 @@ class UtilityGeneratorFCRTest extends Specification{
         intSolution.add(new IntElement(dbProviderName, 0))
         metrics.add(new IntMetricDTO(metricName, 40))
         metrics.add(new IntMetricDTO(actCardinalityName, 1))
+
+        properties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
+        properties.getUtilityGenerator().setDlmsControllerUrl("")
     }
 
     def "FCR initial deployment"() {
@@ -68,7 +74,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntElement(dbCardinalityName, 1))
         newConfiguration.add(new IntElement(dbProviderName, 0))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, properties, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -88,7 +94,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntElement(dbCardinalityName, 1))
         newConfiguration.add(new IntElement(dbProviderName, 0))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -109,7 +115,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntElement(dbProviderName, 0))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -128,8 +134,28 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntElement(dbCardinalityName, 2))
         newConfiguration.add(new IntElement(dbProviderName, 0))
 
-        path = "/Users/mrozanska/FCRcti.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, mockNodeCandidates)
+        path = "src/main/test/resources/FCRWithoutUnmoveable.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+
+        when:
+        double result = utilityGenerator.evaluate(newConfiguration)
+
+        then:
+        noExceptionThrown()
+        result != 0
+    }
+
+    def "FCR with dlms utility - test"() {
+
+        given:
+        newConfiguration.add(new IntElement(cardinalityName, 2))
+        newConfiguration.add(new IntElement(providerName, 1))
+        newConfiguration.add(new IntElement(dbCardinalityName, 1))
+        newConfiguration.add(new IntElement(dbProviderName, 0))
+
+        path = "src/main/test/resources/FCRwithDLMS.xmi"
+
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

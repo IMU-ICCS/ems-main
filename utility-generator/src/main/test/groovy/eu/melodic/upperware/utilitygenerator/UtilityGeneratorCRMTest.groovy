@@ -6,6 +6,7 @@ import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO
 import eu.melodic.upperware.utilitygenerator.model.function.Element
 import eu.melodic.upperware.utilitygenerator.model.function.IntElement
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Specification
@@ -16,6 +17,9 @@ class UtilityGeneratorCRMTest extends Specification {
     Collection<MetricDTO> metrics = new ArrayList<>()
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
 
+    UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
+
+
     def setup() {
         NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
         nodeCandidate.getPrice() >> 10.0
@@ -25,6 +29,9 @@ class UtilityGeneratorCRMTest extends Specification {
         nodeCandidatesMap.put(1, list)
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
+
+        properties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
+        properties.getUtilityGenerator().setDlmsControllerUrl("")
     }
 
     def "CRMnew test"() {
@@ -46,8 +53,8 @@ class UtilityGeneratorCRMTest extends Specification {
         newConfiguration.add(new IntElement(providerCRMName, 1))
 
 
-        String path = "/Users/mrozanska/CRMNewCamelModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, mockNodeCandidates)
+        String path = "src/main/test/resources/CRM.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

@@ -27,7 +27,7 @@ public class UtilityGeneratorProperties {
     @Getter
     @Setter
     public static class UtilityGenerator {
-        private String suffixNotReconfigurableComponent;
+        private String dlmsControllerUrl;
 
     }
 }
