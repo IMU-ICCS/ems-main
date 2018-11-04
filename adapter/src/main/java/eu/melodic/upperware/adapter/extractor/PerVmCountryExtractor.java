@@ -24,6 +24,6 @@ public class PerVmCountryExtractor extends PerVmAbstractExtractor<String> {
 				vmCountry = geoLoc.getCountry();
 			}
 		}
-		return vmCountry;
+		return vmCountry!=null ? vmCountry : "";
     }
 }
