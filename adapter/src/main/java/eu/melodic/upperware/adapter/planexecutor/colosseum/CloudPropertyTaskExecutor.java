@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class CloudPropertyTaskExecutor extends ColosseumTaskExecutor<CloudProperty> {
 
@@ -62,36 +63,6 @@ public class CloudPropertyTaskExecutor extends ColosseumTaskExecutor<CloudProper
     }
 
     log.info("Cloud Property {} was successfully created", name);
-  }
-
-  @Override
-  public void update(CloudProperty cloudProperty) {
-    String name = cloudProperty.getName();
-    checkNotNull(name);
-    String cloudName = cloudProperty.getCloudName();
-    checkNotNull(cloudName);
-
-    log.info("Executing Update Cloud Property task {}", name);
-
-    Map<String, String> filters = cloudProperty.getFilters();
-    if (filters != null) {
-      Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
-        format("Cloud %s was not configured in Colosseum - Cloud Property cannot be updated", cloudName)));
-
-      Long cloudId = cloudEntity.getId();
-      checkNotNull(cloudId);
-
-      filters.forEach((key, value) -> {
-        de.uniulm.omi.cloudiator.colosseum.client.entities.CloudProperty cloudPropertyEntity
-          = context.getCloudProperty(cloudId, key).orElseThrow(() -> new IllegalStateException(
-          format("Cloud Property %s of Cloud %s was not configured in Colosseum - cannot be updated", key, cloudName)));
-
-        cloudPropertyEntity.setValue(value);
-        api.updateCloudProperty(cloudPropertyEntity);
-      });
-    }
-
-    log.info("Cloud Property {} was successfully updated", name);
   }
 
   @Override

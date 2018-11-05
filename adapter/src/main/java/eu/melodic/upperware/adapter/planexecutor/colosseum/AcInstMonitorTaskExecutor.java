@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<ApplicationComponentInstanceMonitor> {
 
@@ -33,11 +34,6 @@ public class AcInstMonitorTaskExecutor extends ColosseumTaskExecutor<Application
   @Override
   public void create(ApplicationComponentInstanceMonitor acInstMonitor) {
     monitor(acInstMonitor);
-  }
-
-  @Override
-  public void update(ApplicationComponentInstanceMonitor acInstMonitor) {
-    throw new UnsupportedOperationException("Cannot update AC instance monitor - this method should not be run at all");
   }
 
   @Override

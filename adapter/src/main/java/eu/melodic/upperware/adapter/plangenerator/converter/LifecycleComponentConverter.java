@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import static java.util.stream.Collectors.*;
 
+@Deprecated
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))

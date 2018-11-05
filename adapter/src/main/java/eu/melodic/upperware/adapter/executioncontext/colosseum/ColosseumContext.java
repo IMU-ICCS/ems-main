@@ -9,32 +9,58 @@
 
 package eu.melodic.upperware.adapter.executioncontext.colosseum;
 
-import com.google.common.collect.Lists;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
-import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Api;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Communication;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
+import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.api.JobApi;
+import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Process;
+import io.github.cloudiator.rest.model.Schedule;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
 @Slf4j
 @Service
-public class ColosseumContext implements ContextOperations {
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+public class ColosseumContext extends ContextUtils implements ContextOperations {
 
-  private ColosseumApi api;
+  private final ColosseumApi api;
+  private final JobApi jobApi;
+  private final NodeApi nodeApi;
+
+  private final List<Node> nodes = synchronizedList();
+  private final List<NodeGroup> nodeGroups = synchronizedList();
+  private final List<Schedule> schedules = synchronizedList();
+  private final List<Process> processes = synchronizedList();
+  private final List<Job> jobs = synchronizedList();
 
   private final List<Api> cloudApis = synchronizedList();
   private final List<Cloud> clouds = synchronizedList();
@@ -57,10 +83,84 @@ public class ColosseumContext implements ContextOperations {
   private final List<Communication> communications = synchronizedList();
 
   private boolean loaded;
+//
+//  @Autowired
+//  public ColosseumContext(ColosseumApi api) {
+//    this.api = api;
+//  }
 
-  @Autowired
-  public ColosseumContext(ColosseumApi api) {
-    this.api = api;
+  public void addNode(@NonNull Node node) {
+    nodes.add(node);
+  }
+
+  public Optional<Node> getNode(String name) {
+    return getElement(nodes, node -> name.equals(node.getNodeId()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one node with the same name=%s", name)));
+  }
+
+  public void addNodeGroup(@NonNull NodeGroup nodeGroup) {
+    nodeGroups.add(nodeGroup);
+  }
+
+  public Optional<NodeGroup> getNodeGroup(String name) {
+    return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one node with the same name=%s", name)));
+  }
+
+  public Optional<NodeGroup> getNodeGroupByNodeName(String name) {
+    return getElement(nodeGroups, nodeGroup -> nodeGroup.getNodes().stream().map(Node::getName).anyMatch(nodeName -> nodeName.endsWith(name)),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one node with the same name=%s", name)));
+  }
+
+  public void addSchedule(@NonNull Schedule schedule) {
+    schedules.add(schedule);
+  }
+
+  public Optional<Schedule> getSchedule(String name) {
+    return getElement(schedules, schedule -> name.equals(schedule.getId()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one schedules with the same name=%s", name)));
+  }
+
+  public void addProcess(@NonNull Process process) {
+    processes.add(process);
+  }
+
+  public Optional<Process> getProcess(String name) {
+    return getElement(processes, process -> name.equals(process.getId()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one process with the same name=%s", name)));
+  }
+
+  public void addJob(@NonNull Job job) {
+    jobs.add(job);
+  }
+
+  public Optional<Job> getJob(String name) {
+    return getElement(jobs, job -> name.equals(job.getId()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", name)));
+  }
+
+
+  private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<IllegalStateException> exceptionSupplier) {
+    synchronized (collection) {
+      return collection.stream()
+              .filter(predicate)
+              .collect(toSingleton(exceptionSupplier));
+    }
+  }
+
+  private <T> Collector<T, ?, Optional<T>> toSingleton(Supplier<IllegalStateException> exceptionSupplier) {
+    return Collectors.collectingAndThen(
+            Collectors.toList(),
+            list -> {
+              if (list.size() > 1) {
+                throw exceptionSupplier.get();
+              }
+              if (list.size() == 0) {
+                return Optional.empty();
+              }
+              return Optional.ofNullable(list.get(0));
+            }
+    );
   }
 
   public void addCloudApi(@NonNull Api api) {
@@ -372,50 +472,64 @@ public class ColosseumContext implements ContextOperations {
 
   @Override
   @Synchronized
-  public void refreshContext() {
+  public void refreshContext() throws ApiException {
     log.info("Refreshing Colosseum context");
 
-    cloudApis.clear();
-    cloudApis.addAll(api.getApis());
+    nodes.clear();
+    nodes.addAll(nodeApi.findNodes());
 
-    clouds.clear();
-    clouds.addAll(api.getClouds());
+    schedules.clear();
+    schedules.addAll(jobApi.getSchedules());
 
-    cloudProperties.clear();
-    cloudProperties.addAll(api.getCloudProperties());
+    processes.clear();
+    if (CollectionUtils.isNotEmpty(schedules)){
+        processes.addAll(jobApi.getProcesses(schedules.get(0).getId()));
+    }
 
-    cloudCredentials.clear();
-    cloudCredentials.addAll(api.getCloudCredentials());
-
-    applications.clear();
-    applications.addAll(api.getApplications());
-
-    applicationInstances.clear();
-    applicationInstances.addAll(api.getApplicationInstances());
-
-    virtualMachines.clear();
-    virtualMachines.addAll(api.getVirtualMachines());
-
-    virtualMachineInstances.clear();
-    virtualMachineInstances.addAll(api.getVirtualMachineInstances());
-
-    lifecycleComponents.clear();
-    lifecycleComponents.addAll(api.getLifecycleComponents());
-
-    applicationComponents.clear();
-    applicationComponents.addAll(api.getApplicationComponents());
-
-    applicationComponentInstances.clear();
-    applicationComponentInstances.addAll(api.getApplicationComponentInstances());
-
-    portsProvided.clear();
-    portsProvided.addAll(api.getPortsProvided());
-
-    portsRequired.clear();
-    portsRequired.addAll(api.getPortsRequired());
-
-    communications.clear();
-    communications.addAll(api.getCommunications());
+    jobs.clear();
+    jobs.addAll(jobApi.findJobs());
+//
+//    cloudApis.clear();
+//    cloudApis.addAll(api.getApis());
+//
+//    clouds.clear();
+//    clouds.addAll(api.getClouds());
+//
+//    cloudProperties.clear();
+//    cloudProperties.addAll(api.getCloudProperties());
+//
+//    cloudCredentials.clear();
+//    cloudCredentials.addAll(api.getCloudCredentials());
+//
+//    applications.clear();
+//    applications.addAll(api.getApplications());
+//
+//    applicationInstances.clear();
+//    applicationInstances.addAll(api.getApplicationInstances());
+//
+//    virtualMachines.clear();
+//    virtualMachines.addAll(api.getVirtualMachines());
+//
+//    virtualMachineInstances.clear();
+//    virtualMachineInstances.addAll(api.getVirtualMachineInstances());
+//
+//    lifecycleComponents.clear();
+//    lifecycleComponents.addAll(api.getLifecycleComponents());
+//
+//    applicationComponents.clear();
+//    applicationComponents.addAll(api.getApplicationComponents());
+//
+//    applicationComponentInstances.clear();
+//    applicationComponentInstances.addAll(api.getApplicationComponentInstances());
+//
+//    portsProvided.clear();
+//    portsProvided.addAll(api.getPortsProvided());
+//
+//    portsRequired.clear();
+//    portsRequired.addAll(api.getPortsRequired());
+//
+//    communications.clear();
+//    communications.addAll(api.getCommunications());
 
     loaded = true;
   }
@@ -423,10 +537,6 @@ public class ColosseumContext implements ContextOperations {
   @Override
   public boolean isLoaded() {
     return loaded;
-  }
-
-  private <E> List<E> synchronizedList() {
-    return Collections.synchronizedList(Lists.newLinkedList());
   }
 
     private void printInstances(String text, List<Instance> instances) {

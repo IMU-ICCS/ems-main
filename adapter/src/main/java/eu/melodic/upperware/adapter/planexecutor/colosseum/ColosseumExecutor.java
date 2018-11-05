@@ -10,7 +10,6 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -62,11 +62,7 @@ public class ColosseumExecutor implements PlanExecutor {
   }
 
   private Set<Future> getDependentFeatures(Map<Task, Future> taskToFeatureMap, Set<Task> predecessors) {
-    Set<Future> futures = Sets.newHashSet();
-    for (Task predecessor : predecessors) {
-      futures.add(taskToFeatureMap.get(predecessor));
-    }
-    return futures;
+    return predecessors.stream().map(taskToFeatureMap::get).collect(Collectors.toSet());
   }
 
   private Future submitTask(Task task, Set<Future> predecessors) {

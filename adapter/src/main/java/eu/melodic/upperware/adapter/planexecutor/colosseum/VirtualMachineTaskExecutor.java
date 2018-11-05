@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMachine> {
 
@@ -96,11 +97,6 @@ public class VirtualMachineTaskExecutor extends ColosseumTaskExecutor<VirtualMac
     context.addVirtualMachine(vmEntity);
 
     log.info("Virtual Machine {} was successfully created at {}", name, vmEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(VirtualMachine vm) {
-    throw new UnsupportedOperationException("Cannot update Virtual Machine - this method should not be run at all");
   }
 
   @Override

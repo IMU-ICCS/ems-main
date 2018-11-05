@@ -10,10 +10,59 @@
 package eu.melodic.upperware.adapter.communication.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Api;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Communication;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Hardware;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Image;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Location;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.OperatingSystem;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Process;
+import io.github.cloudiator.rest.model.Schedule;
+import lombok.NonNull;
 
 import java.util.List;
 
 public interface ColosseumApi {
+
+  Queue findQueuedTask(String taskId) throws ApiException;
+
+
+  Queue addSchedule(ScheduleNew scheduleNew) throws ApiException;
+
+  Schedule getSchedule(String scheduleId) throws ApiException;
+
+  List<Schedule> getSchedules() throws ApiException;
+
+
+  Queue addProcess(ProcessNew processNew) throws ApiException;
+
+  Process getProcess(String scheduleId, String processId) throws ApiException;
+
+  List<Process> getProcessess(String scheduleId) throws ApiException;
+
+
+  Job addJob(JobNew jobNew) throws ApiException;
+
+  Job getJob(String jobId) throws ApiException;
+
+  List<Job> getJobs() throws ApiException;
+
+
+  Queue addNode(NodeRequest nodeRequest) throws ApiException;
+
+  Node getNode(String id) throws ApiException;
+
+  List<Node> getNodes() throws ApiException;
+
+
+  NodeGroup getNodeGroup(String nodeGroupId) throws ApiException;
 
   Api createApi(Api api);
 

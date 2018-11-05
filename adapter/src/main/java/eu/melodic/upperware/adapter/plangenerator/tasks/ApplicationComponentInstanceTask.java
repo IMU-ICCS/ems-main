@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter.plangenerator.tasks;
 import eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponentInstance;
 import lombok.ToString;
 
+@Deprecated
 @ToString(callSuper = true)
 public class ApplicationComponentInstanceTask extends ConfigurationTask<ApplicationComponentInstance> {
 

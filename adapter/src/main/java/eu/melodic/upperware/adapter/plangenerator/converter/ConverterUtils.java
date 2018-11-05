@@ -132,4 +132,16 @@ public class ConverterUtils {
     return getAncesstor(eObject.eContainer(), clazz);
   }
 
+  public static String getJobName(DeploymentInstanceModel deploymentInstanceModel){
+    return getDeploymentTypeName(deploymentInstanceModel) + "_JOB";
+  }
+
+  public static String getScheduleName(DeploymentInstanceModel deploymentInstanceModel) {
+    return getDeploymentTypeName(deploymentInstanceModel) + "_SCHEDULE";
+  }
+
+  private static String getDeploymentTypeName(DeploymentInstanceModel deploymentInstanceModel) {
+    return deploymentInstanceModel.getType().getName();
+  }
+
 }

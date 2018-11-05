@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class CloudCredentialTaskExecutor extends ColosseumTaskExecutor<CloudCredential> {
 
@@ -62,39 +63,6 @@ public class CloudCredentialTaskExecutor extends ColosseumTaskExecutor<CloudCred
     context.addCloudCredential(cloudCredentialEntity);
 
     log.info("Cloud Credential {} was successfully created", name);
-  }
-
-  @Override
-  public void update(CloudCredential cloudCredential) {
-    String name = cloudCredential.getName();
-    checkNotNull(name);
-    String cloudName = cloudCredential.getCloudName();
-    checkNotNull(cloudName);
-
-    String login = cloudCredential.getLogin();
-    checkNotNull(login);
-    String password = cloudCredential.getPassword();
-    checkNotNull(password);
-    Long tenant = cloudCredential.getTenant();
-    checkNotNull(tenant);
-
-    log.info("Executing Update Cloud Credential task {}", name);
-
-    Cloud cloudEntity = context.getCloud(cloudName).orElseThrow(() -> new IllegalStateException(
-      format("Cloud %s was not configured in Colosseum - Cloud Credential cannot be created", cloudName)));
-
-    Long cloudId = cloudEntity.getId();
-    checkNotNull(cloudId);
-
-    de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential cloudCredentialEntity
-      = context.getCloudCredential(cloudId).orElseThrow(() -> new IllegalStateException(
-        format("Cloud Credential %s does not exist in Colosseum - cannot be updated", name)));
-    cloudCredentialEntity.setUser(login);
-    cloudCredentialEntity.setSecret(password);
-    cloudCredentialEntity.setTenant(tenant);
-    api.updateCloudCredential(cloudCredentialEntity);
-
-    log.info("Cloud Credential {} was successfully updated", name);
   }
 
   @Override

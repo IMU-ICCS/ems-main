@@ -40,9 +40,6 @@ public abstract class RunnableTaskExecutor<T extends Data> implements TaskExecut
         case CREATE:
           create(data);
           break;
-        case UPDATE:
-          update(data);
-          break;
         case DELETE:
           delete(data);
           break;

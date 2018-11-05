@@ -10,21 +10,35 @@
 package eu.melodic.upperware.adapter.communication.colosseum;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Api;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.Application;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationComponent;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.ApplicationInstance;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Communication;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.LifecycleComponent;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Hardware;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Image;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Location;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.OperatingSystem;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.api.JobApi;
+import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.QueueApi;
+import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Process;
+import io.github.cloudiator.rest.model.Schedule;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
-import static de.uniulm.omi.cloudiator.colosseum.client.entities.enums.RemoteState.*;
+import static de.uniulm.omi.cloudiator.colosseum.client.entities.enums.RemoteState.OK;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Service
@@ -41,6 +55,87 @@ public class ColosseumClientApi implements ColosseumApi {
    */
 
   private Client client;
+
+  private JobApi jobApi;
+  private NodeApi nodeApi;
+  private QueueApi queueApi;
+
+  @Override
+  public Queue findQueuedTask(String taskId) throws ApiException {
+    return queueApi.findQueuedTask(taskId);
+  }
+  @Override
+  public Queue addSchedule(@NonNull ScheduleNew scheduleNew) throws ApiException {
+    return jobApi.addSchedule(scheduleNew);
+  }
+
+  @Override
+  public Schedule getSchedule(String scheduleId) throws ApiException {
+    return CollectionUtils.emptyIfNull(jobApi.getSchedules())
+            .stream()
+            .filter(schedule -> scheduleId.equals(schedule.getId()))
+            .findFirst()
+            .orElse(null);
+  }
+
+  @Override
+  public List<Schedule> getSchedules() throws ApiException {
+    return jobApi.getSchedules();
+  }
+
+  @Override
+  public Queue addProcess(@NotNull ProcessNew processNew) throws ApiException {
+    return jobApi.createProcess(processNew);
+  }
+
+  @Override
+  public Process getProcess(String scheduleId, String processId) throws ApiException {
+    return CollectionUtils.emptyIfNull(jobApi.getProcesses(scheduleId))
+            .stream()
+            .filter(process -> processId.equals(process.getId()))
+            .findFirst()
+            .orElse(null);
+  }
+
+  @Override
+  public List<Process> getProcessess(String scheduleId) throws ApiException {
+    return jobApi.getProcesses(scheduleId);
+  }
+
+  @Override
+  public Job addJob(@NonNull JobNew jobNew) throws ApiException {
+    return jobApi.addJob(jobNew);
+  }
+
+  @Override
+  public Job getJob(@NonNull String jobId) throws ApiException {
+    return jobApi.findJob(jobId);
+  }
+
+  @Override
+  public List<Job> getJobs() throws ApiException {
+    return jobApi.findJobs();
+  }
+
+  @Override
+  public Queue addNode(@NonNull NodeRequest nodeRequest) throws ApiException {
+      return nodeApi.addNode(nodeRequest);
+  }
+
+  @Override
+  public Node getNode(String id) throws ApiException {
+    return nodeApi.getNode(id);
+  }
+
+  @Override
+  public List<Node> getNodes() throws ApiException {
+    return nodeApi.findNodes();
+  }
+
+  @Override
+  public NodeGroup getNodeGroup(String nodeGroupId) throws ApiException {
+    return nodeApi.getNodeGroup(nodeGroupId);
+  }
 
   @Override
   public Api createApi(@NonNull Api api) {

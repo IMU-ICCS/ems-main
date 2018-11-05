@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Deprecated
 @Slf4j
 public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<LifecycleComponent> {
 
@@ -68,11 +69,6 @@ public class LifecycleComponentTaskExecutor extends ColosseumTaskExecutor<Lifecy
     context.addLifecycleComponent(lcEntity);
 
     log.info("Lifecycle Component {} was successfully created at {}", name, lcEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(LifecycleComponent lc) {
-    throw new UnsupportedOperationException("Cannot update Lifecycle Component - this method should not be run at all");
   }
 
   @Override

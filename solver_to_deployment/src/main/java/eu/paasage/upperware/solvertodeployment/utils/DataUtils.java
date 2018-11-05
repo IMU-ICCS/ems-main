@@ -42,6 +42,9 @@ public class DataUtils {
                                                     NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
                                                     CDOTransaction transaction
     ) {
+
+        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
+
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
         Map<String, Integer> localComponentGroups = new HashMap<>();
@@ -145,6 +148,11 @@ public class DataUtils {
                     log.info("Found Node Candidate: {}", nodeCandidate);
 
                     EList<SoftwareComponentInstance> softwareComponentInstances = SolverToDeploymentHelper.createSoftwareComponentInstance(componentName, deploymentTypeModel, cardinality);
+
+                    softwareComponentInstances
+                            .forEach(softwareComponentInstance -> providerEnricherService.enrichSoftwareComponentInstance(softwareComponentInstance,
+                                    nodeCandidate, constraintProblem.getId(), camelModel));
+
                     dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
 
                     //create VM Instance
@@ -174,10 +182,9 @@ public class DataUtils {
                             deploymentTypeModel.getVms().forEach(vm1 -> log.info(vm1.getName()));
                         }
 
-                        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
-
                         vmInstanceToRegisters = SolverToDeploymentHelper.searchAndCreateVMInstance(vm, cardinality);
                         vmInstanceToRegisters.forEach(vmInstance -> {
+                            //TODO - enrich SoftwareComponentInstancees TO REMOVE IN THE FUTURE
                             providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
                             log.info("VmInstance: {}", vmInstance.getName());
                         });

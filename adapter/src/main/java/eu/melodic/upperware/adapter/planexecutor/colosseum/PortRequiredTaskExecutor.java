@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<eu.melodic.upperware.adapter.plangenerator.model.PortRequired> {
 
@@ -119,11 +120,6 @@ public class PortRequiredTaskExecutor extends ColosseumTaskExecutor<eu.melodic.u
     context.addPortRequired(portReqEntity);
 
     log.info("Port Required {} was successfully created at {}", name, portReqEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(eu.melodic.upperware.adapter.plangenerator.model.PortRequired portReq) {
-    throw new UnsupportedOperationException("Cannot update port required - this method should not be run at all");
   }
 
   @Override

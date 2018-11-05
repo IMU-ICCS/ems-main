@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter.plangenerator.tasks;
 import eu.melodic.upperware.adapter.plangenerator.model.CloudProperty;
 import lombok.ToString;
 
+@Deprecated
 @ToString(callSuper = true)
 public class CloudPropertyTask extends ConfigurationTask<CloudProperty> {
 

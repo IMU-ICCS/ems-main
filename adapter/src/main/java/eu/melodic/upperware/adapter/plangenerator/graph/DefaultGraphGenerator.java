@@ -25,10 +25,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
@@ -49,47 +46,95 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, CONFIG);
 
-    Collection<CloudApiTask> cloudApiTasks = genCloudApiConfigTasks(
-      graph, model.getCloudApis());
-    Collection<CloudTask> cloudTasks = genCloudConfigTasks(
-      graph, cloudApiTasks, model.getClouds());
-    Collection<CloudPropertyTask> cloudPropertyTasks = genCloudPropertyConfigTasks(
-      graph, cloudTasks,model.getCloudProperties());
-    Collection<CloudCredentialTask> cloudCredentialTasks = genCloudCredentialConfigTasks(
-      graph, cloudTasks, model.getCloudCredentials());
+    JobTask jobTask = genJobCreateTask(graph, model.getAdapterJob());
 
-    ApplicationTask appTask = genAppConfigTask(graph, model.getApplication());
-    ApplicationInstanceTask appInstTask = genAppInstConfigTask(graph, appTask, model.getApplicationInstance());
+    ScheduleTask scheduleTask = genScheduleCreateTask(graph, jobTask, model.getAdapterSchedule());
 
-    Collection<LifecycleComponentTask> lcTasks = genLcConfigTasks(graph, model.getLifecycleComponents());
+    Collection<NodeTask> nodeTasks = genNodeCreateTasks(graph, model.getAdapterRequirements());
 
-    Collection<VirtualMachineTask> vmTasks = genVmConfigTasks(
-      graph, cloudTasks, model.getVirtualMachines());
+    Collection<ProcessTask> processTasks = genProcessTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
 
-    Collection<ApplicationComponentTask> acTasks = genAcConfigTasks(
-      graph, appTask, lcTasks, vmTasks, model.getApplicationComponents());
-
-    Collection<PortProvidedTask> portProvTasks = genPortProvConfigTasks(
-            graph, acTasks, model.getPortsProvided());
-    Collection<PortRequiredTask> portReqTasks = genPortReqConfigTasks(
-            graph, acTasks, model.getPortsRequired());
-    Collection<CommunicationTask> commTasks = genCommConfigTasks(
-            graph, portProvTasks, portReqTasks, model.getCommunications());
-
-    Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstConfigTasks(
-            graph, vmTasks, commTasks, model.getVirtualMachineInstances());
-
-    Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstConfigTasks(
-      graph, appInstTask, acTasks, vmInstTasks, commTasks, model.getApplicationComponentInstances());
-
-    genVmInstMonitorConfigTasks(graph, vmInstTasks, model.getVirtualMachineInstanceMonitors());
-    genAcInstMonitorConfigTasks(graph, acInstTasks, model.getApplicationComponentInstanceMonitors());
-
-    setSequentiallyVirtualMachineTasks(graph, vmTasks);
+//    Collection<CloudApiTask> cloudApiTasks = genCloudApiConfigTasks(graph, model.getCloudApis());
+//    Collection<CloudTask> cloudTasks = genCloudConfigTasks(graph, cloudApiTasks, model.getClouds());
+//    Collection<CloudPropertyTask> cloudPropertyTasks = genCloudPropertyConfigTasks(graph, cloudTasks,model.getCloudProperties());
+//    Collection<CloudCredentialTask> cloudCredentialTasks = genCloudCredentialConfigTasks(graph, cloudTasks, model.getCloudCredentials());
+//
+//    ApplicationTask appTask = genAppConfigTask(graph, model.getApplication());
+//    ApplicationInstanceTask appInstTask = genAppInstConfigTask(graph, appTask, model.getApplicationInstance());
+//
+//    Collection<LifecycleComponentTask> lcTasks = genLcConfigTasks(graph, model.getLifecycleComponents());
+//
+//    Collection<VirtualMachineTask> vmTasks = genVmConfigTasks(graph, cloudTasks, model.getVirtualMachines());
+//
+//    Collection<ApplicationComponentTask> acTasks = genAcConfigTasks(graph, appTask, lcTasks, vmTasks, model.getApplicationComponents());
+//
+//    Collection<PortProvidedTask> portProvTasks = genPortProvConfigTasks(graph, acTasks, model.getPortsProvided());
+//    Collection<PortRequiredTask> portReqTasks = genPortReqConfigTasks(graph, acTasks, model.getPortsRequired());
+//    Collection<CommunicationTask> commTasks = genCommConfigTasks(graph, portProvTasks, portReqTasks, model.getCommunications());
+//
+//    Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstConfigTasks(graph, vmTasks, commTasks, model.getVirtualMachineInstances());
+//
+//    Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstConfigTasks(graph, appInstTask, acTasks, vmInstTasks, commTasks, model.getApplicationComponentInstances());
+//
+//    genVmInstMonitorConfigTasks(graph, vmInstTasks, model.getVirtualMachineInstanceMonitors());
+//    genAcInstMonitorConfigTasks(graph, acInstTasks, model.getApplicationComponentInstanceMonitors());
+//
+//    setSequentiallyVirtualMachineTasks(graph, vmTasks);
 
     log.info("Built graph: {}", graph);
 
     return graph;
+  }
+
+  private Collection<ProcessTask> genProcessTasks(MelodicGraph<Task, DefaultEdge> graph, ScheduleTask scheduleTask, JobTask jobTask, Collection<NodeTask> nodeTasks, Collection<AdapterProcess> adapterProcesses) {
+
+    List<ProcessTask> processTasks = adapterProcesses.stream()
+            .map(adapterRequirement -> new ProcessTask(CREATE, adapterRequirement))
+            .collect(toList());
+
+    processTasks.forEach(processTask -> {
+      addVertex(graph, processTask);
+
+      findAndSetNodeDependencies(graph, processTask, processTask.getData().getNodeName(), nodeTasks, CREATE);
+
+      setDependencies(graph, CREATE, scheduleTask, processTask);
+      setDependencies(graph, CREATE, jobTask, processTask);
+    });
+
+    return processTasks;
+  }
+
+  private Collection<NodeTask> genNodeCreateTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterRequirement> adapterNodeRequirements) {
+
+    List<NodeTask> nodeTasks = adapterNodeRequirements.stream()
+            .map(adapterRequirement -> new NodeTask(CREATE, adapterRequirement))
+            .collect(toList());
+
+    nodeTasks.forEach(nodeTask -> {
+      addVertex(graph, nodeTask);
+    });
+
+    return nodeTasks;
+  }
+
+  private ScheduleTask genScheduleCreateTask(MelodicGraph<Task, DefaultEdge> graph, JobTask jobTask, AdapterSchedule adapterSchedule) {
+    ScheduleTask scheduleTask = new ScheduleTask(CREATE, adapterSchedule);
+
+    addVertex(graph, scheduleTask);
+
+    if (jobTask != null) {
+      setDependencies(graph, CREATE, jobTask, scheduleTask);
+    }
+
+    return scheduleTask;
+  }
+
+  private JobTask genJobCreateTask(MelodicGraph<Task, DefaultEdge> graph, AdapterJob adapterJob) {
+    JobTask appTask = new JobTask(CREATE, adapterJob);
+
+    addVertex(graph, appTask);
+
+    return appTask;
   }
 
   @Override
@@ -97,6 +142,11 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     log.info("Building reconfiguration graph from prepared models");
 
     MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, RECONFIG);
+
+
+
+
+
     Collection<CloudTask> cloudTasks = Collections.emptyList();
     ApplicationTask appTask = genReconfigAppTask(graph, oldModel.getApplication(), newModel.getApplication());
 
@@ -193,10 +243,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
           Collection<CloudTask> cloudTasks, Collection<VirtualMachine> oldVms, Collection<VirtualMachine> newVms) {
     Collection<VirtualMachineTask> vmTasks = Lists.newArrayList();
 
-    vmTasks.addAll(genVmTasks(graph, CREATE, cloudTasks,
-      newVms.stream().filter(newVm -> !oldVms.contains(newVm)).collect(toList())));
-    vmTasks.addAll(genVmTasks(graph, DELETE, cloudTasks,
-      oldVms.stream().filter(oldVm -> !newVms.contains(oldVm)).collect(toList())));
+    vmTasks.addAll(genVmTasks(graph, CREATE, cloudTasks, newVms.stream().filter(newVm -> !oldVms.contains(newVm)).collect(toList())));
+    vmTasks.addAll(genVmTasks(graph, DELETE, cloudTasks, oldVms.stream().filter(oldVm -> !newVms.contains(oldVm)).collect(toList())));
 
     return vmTasks;
   }

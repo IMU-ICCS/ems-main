@@ -9,9 +9,11 @@
 
 package eu.melodic.upperware.adapter.executioncontext;
 
+import io.github.cloudiator.rest.ApiException;
+
 public interface ContextOperations {
 
-  void refreshContext();
+  void refreshContext() throws ApiException;
 
   boolean isLoaded();
 

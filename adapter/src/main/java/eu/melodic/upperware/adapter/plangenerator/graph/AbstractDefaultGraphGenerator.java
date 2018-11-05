@@ -295,7 +295,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     graph.addVertex(task);
   }
 
-  private void findAndSetDependencies(MelodicGraph<Task, DefaultEdge> graph, Task task, String depName,
+  protected void findAndSetDependencies(MelodicGraph<Task, DefaultEdge> graph, Task task, String depName,
                                       Collection<? extends Task> depTasks, Type type) {
     boolean wasSet = false;
     for (Task depTask : depTasks) {
@@ -310,4 +310,21 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
           depName, task.getData().getName()));
     }
   }
+
+  protected void findAndSetNodeDependencies(MelodicGraph<Task, DefaultEdge> graph, ProcessTask processTask, String depName,
+                                        Collection<NodeTask> nodeTasks, Type type) {
+    boolean wasSet = false;
+    for (NodeTask nodeTask : nodeTasks) {
+      if (nodeTask.getData().getNodeName().equals(depName) && nodeTask.getType().equals(processTask.getType())) {
+        setDependencies(graph, type, nodeTask, processTask);
+        wasSet = true;
+      }
+    }
+    if (CONFIG.equals(graph.getType()) && !wasSet) {
+      throw new IllegalStateException(
+              format("Missing obligatory node of graph - dependency between %s and %s was not set",
+                      depName, processTask.getData().getName()));
+    }
+  }
+
 }

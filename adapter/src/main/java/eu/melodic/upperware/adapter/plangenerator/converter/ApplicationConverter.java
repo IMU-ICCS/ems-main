@@ -20,6 +20,7 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Deprecated
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))

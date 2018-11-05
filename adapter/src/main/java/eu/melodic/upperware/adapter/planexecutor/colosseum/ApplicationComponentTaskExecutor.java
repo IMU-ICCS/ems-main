@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponent> {
 
@@ -100,11 +101,6 @@ public class ApplicationComponentTaskExecutor extends ColosseumTaskExecutor<eu.m
     context.addApplicationComponent(acEntity);
 
     log.info("Application Component {} was successfully created at {}", name, acEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(eu.melodic.upperware.adapter.plangenerator.model.ApplicationComponent ac) {
-    throw new UnsupportedOperationException("Cannot update application component - this method should not be run at all");
   }
 
   @Override

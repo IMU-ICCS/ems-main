@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communication> {
 
@@ -68,11 +69,6 @@ public class CommunicationTaskExecutor extends ColosseumTaskExecutor<Communicati
     context.addCommunication(commEntity);
 
     log.info("Communication {} was successfully created at {}", name, commEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(Communication comm) {
-    throw new UnsupportedOperationException("Cannot update communication - this method should not be run at all");
   }
 
   @Override

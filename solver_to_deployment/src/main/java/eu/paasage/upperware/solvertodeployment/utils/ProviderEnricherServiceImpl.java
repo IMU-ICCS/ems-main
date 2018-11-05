@@ -3,6 +3,7 @@ package eu.paasage.upperware.solvertodeployment.utils;
 import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.CoreFactory;
+import camel.deployment.SoftwareComponentInstance;
 import camel.deployment.VMInstance;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
@@ -48,8 +49,29 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
         attributes.add(createAttribute("credentialsName", extractCredentialsName(nodeCandidate)));
         attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
         attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
-        attributes.add(createAttribute("nodeCandidate",gson.toJson(nodeCandidate)));
+        attributes.add(createAttribute("nodeCandidate", gson.toJson(nodeCandidate)));
+        attributes.add(createAttribute("nodeCandidateId", nodeCandidate.getId()));
     }
+
+    @Override
+    public void enrichSoftwareComponentInstance(SoftwareComponentInstance softwareComponentInstance, NodeCandidate nodeCandidate, String constraintProblemId, CamelModel camelModel) {
+        EList<Attribute> attributes = softwareComponentInstance.getAttributes();
+        attributes.add(createAttribute("cloudName", extractCloudName(nodeCandidate, softwareComponentInstance.getName(), constraintProblemId)));
+        attributes.add(createAttribute("providerName", createProviderName(nodeCandidate, softwareComponentInstance.getName(), constraintProblemId)));
+        attributes.add(createAttribute("location", extractLocation(nodeCandidate)));
+        attributes.add(createAttribute("image", extractImage(nodeCandidate)));
+        attributes.add(createAttribute("machineType", extractMachineType(nodeCandidate)));
+        attributes.add(createAttribute("driver", extractDriver(nodeCandidate)));
+        attributes.add(createAttribute("name", extractName(nodeCandidate)));
+        attributes.add(createAttribute("apiName", extractApiName(nodeCandidate)));
+        attributes.add(createAttribute("credentialsName", extractCredentialsName(nodeCandidate)));
+        attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
+        attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
+        attributes.add(createAttribute("nodeCandidate", gson.toJson(nodeCandidate)));
+        attributes.add(createAttribute("nodeCandidateId", nodeCandidate.getId()));
+    }
+
+
 
     private Attribute createAttribute(String attributeName, String attributeValue) {
         Attribute strAttribute = CoreFactory.eINSTANCE.createAttribute();

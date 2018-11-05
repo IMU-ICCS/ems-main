@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class VmInstMonitorTaskExecutor extends ColosseumTaskExecutor<VirtualMachineInstanceMonitor> {
 
@@ -33,11 +34,6 @@ public class VmInstMonitorTaskExecutor extends ColosseumTaskExecutor<VirtualMach
   @Override
   public void create(VirtualMachineInstanceMonitor vmInstMonitor) {
     monitor(vmInstMonitor);
-  }
-
-  @Override
-  public void update(VirtualMachineInstanceMonitor vmInstMonitor) {
-    throw new UnsupportedOperationException("Cannot update VM Instance Monitor - this method should not be run at all");
   }
 
   @Override

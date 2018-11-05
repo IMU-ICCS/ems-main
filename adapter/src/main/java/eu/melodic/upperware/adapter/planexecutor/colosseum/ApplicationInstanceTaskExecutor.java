@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class ApplicationInstanceTaskExecutor extends ColosseumTaskExecutor<ApplicationInstance> {
 
@@ -57,11 +58,6 @@ public class ApplicationInstanceTaskExecutor extends ColosseumTaskExecutor<Appli
     context.addApplicationInstance(appInstEntity);
 
     log.info("Application Instance {} of application {} was successfully created at {}", name, appName, appInstEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(ApplicationInstance appInst) {
-    throw new UnsupportedOperationException("Cannot update instance of any component - this method should not be run at all");
   }
 
   @Override

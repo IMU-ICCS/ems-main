@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided> {
 
@@ -120,11 +121,6 @@ public class PortProvidedTaskExecutor extends ColosseumTaskExecutor<PortProvided
     context.addPortProvided(portProvEntity);
 
     log.info("Port Provided {} was successfully created at {}", name, portProvEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(PortProvided portProv) {
-    throw new UnsupportedOperationException("Cannot update port provided - this method should not be run at all");
   }
 
   @Override

@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class CloudApiTaskExecutor extends ColosseumTaskExecutor<CloudApi> {
 
@@ -49,24 +50,6 @@ public class CloudApiTaskExecutor extends ColosseumTaskExecutor<CloudApi> {
     context.addCloudApi(cloudApiEntity);
 
     log.info("Cloud Api {} was successfully created", name);
-  }
-
-  @Override
-  public void update(CloudApi cloudApi) {
-    String name = cloudApi.getName();
-    checkNotNull(name);
-
-    String driver = cloudApi.getDriver();
-    checkNotNull(driver);
-
-    log.info("Executing Update Cloud Api task {}", name);
-
-    Api cloudApiEntity = context.getCloudApi(name).orElseThrow(() -> new IllegalStateException(
-      format("Cloud Api %s does not exist in Colosseum - cannot be updated", name)));
-    cloudApiEntity.setInternalProviderName(driver);
-    api.updateApi(cloudApiEntity);
-
-    log.info("Cloud Api {} was successfully updated", name);
   }
 
   @Override

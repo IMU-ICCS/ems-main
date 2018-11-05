@@ -50,6 +50,10 @@ public class AdapterProperties {
 
   private TaskExecutor taskExecutor;
 
+  @Valid
+  @NotNull
+  private CloudiatorV2 cloudiatorV2;
+
   @Getter
   @Setter
   public static class Esb {
@@ -188,5 +192,19 @@ public class AdapterProperties {
     private Integer maxPoolSize;
     private Integer queueCapacity;
 
+  }
+
+  //TODO - uwspolnic z Generatorem !!!!
+  @Getter
+  @Setter
+  public static class CloudiatorV2 {
+
+    @NotBlank
+    private String url;
+
+    @NotBlank
+    private String apiKey;
+
+    private int httpReadTimeout = 50;
   }
 }

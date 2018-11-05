@@ -10,10 +10,12 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.DeploymentInstanceModel;
-import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
+import eu.melodic.upperware.adapter.plangenerator.model.*;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -42,6 +44,11 @@ public class CamelModelConverter implements ModelConverter<DeploymentInstanceMod
   private VirtualMachineInstanceMonitorConverter virtualMachineInstanceMonitorConverter;
   private ApplicationComponentInstanceMonitorConverter applicationComponentInstanceMonitorConverter;
 
+  private JobConverter jobConverter;
+  private ProcessesConverter processesConverter;
+  private RequirementsConverter requirementsConverter;
+  private ScheduleConverter scheduleConverter;
+
   @Override
   public ComparableModel toComparableModel(DeploymentInstanceModel deploymentModel) {
     return ComparableModel.builder()
@@ -61,6 +68,11 @@ public class CamelModelConverter implements ModelConverter<DeploymentInstanceMod
       .portsRequired(portRequiredConverter.toComparableModel(deploymentModel))
       .virtualMachineInstanceMonitors(virtualMachineInstanceMonitorConverter.toComparableModel(deploymentModel))
       .applicationComponentInstanceMonitors(applicationComponentInstanceMonitorConverter.toComparableModel(deploymentModel))
+            //TODO
+      .adapterJob(jobConverter.toComparableModel(deploymentModel))
+      .adapterSchedule(scheduleConverter.toComparableModel(deploymentModel))
+      .adapterRequirements(requirementsConverter.toComparableModel(deploymentModel))
+      .adapterProcesses(processesConverter.toComparableModel(deploymentModel))
       .build();
   }
 }

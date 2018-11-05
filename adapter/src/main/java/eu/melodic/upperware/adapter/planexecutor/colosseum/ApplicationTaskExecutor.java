@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class ApplicationTaskExecutor extends ColosseumTaskExecutor<Application> {
 
@@ -47,23 +48,6 @@ public class ApplicationTaskExecutor extends ColosseumTaskExecutor<Application> 
     context.addApplication(appEntity);
 
     log.info("Application {} was successfully created at {}", name, appEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(Application app) {
-    String name = app.getName();
-    checkNotNull(name);
-    String oldName = app.getOldName();
-    checkNotNull(oldName);
-
-    log.info("Executing Update Application task for application {} -> {}", oldName, name);
-
-    de.uniulm.omi.cloudiator.colosseum.client.entities.Application appEntity = context.getApplication(oldName)
-      .orElseThrow(() -> new IllegalStateException(format("Application %s does not exist in Colosseum - cannot be updated", oldName)));
-    appEntity.setName(name);
-    api.updateApplication(appEntity);
-
-    log.info("Application {} was successfully updated at {}", name, appEntity.getSelfLink());
   }
 
   @Override

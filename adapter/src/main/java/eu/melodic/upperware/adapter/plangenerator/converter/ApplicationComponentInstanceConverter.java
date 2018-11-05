@@ -28,6 +28,7 @@ import static eu.melodic.upperware.adapter.plangenerator.converter.ConverterUtil
 import static eu.melodic.upperware.adapter.plangenerator.converter.ConverterUtils.extractConfiguration;
 import static java.util.stream.Collectors.toSet;
 
+@Deprecated
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))

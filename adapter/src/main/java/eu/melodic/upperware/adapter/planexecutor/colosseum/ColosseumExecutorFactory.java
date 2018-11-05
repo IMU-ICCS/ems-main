@@ -9,15 +9,18 @@
 
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
-import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
-import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
+import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
+import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import static java.lang.String.format;
@@ -27,6 +30,8 @@ import static java.lang.String.format;
 public class ColosseumExecutorFactory {
 
   private ColosseumApi api;
+  private ThreadPoolTaskExecutor executor;
+  private ShelveContext shelveContext;
 
   private ColosseumContext context;
 
@@ -79,6 +84,26 @@ public class ColosseumExecutorFactory {
     if (task instanceof ApplicationComponentInstanceMonitorTask) {
       return new AcInstMonitorTaskExecutor((ApplicationComponentInstanceMonitorTask) task, predecessors, api, context);
     }
-    throw new IllegalArgumentException(format("Task %s is not supported", task.getClass()));
+    if (task instanceof JobTask) {
+    return new JobTaskExecutor((JobTask) task, predecessors, api, context, executor, this, shelveContext);
+    }
+    if (task instanceof ScheduleTask) {
+      return new ScheduleTaskExecutor((ScheduleTask) task, predecessors, api, context, executor, this, shelveContext);
+    }
+    if (task instanceof NodeTask) {
+      return new NodeTaskExecutor((NodeTask) task, predecessors, api, context, executor, this, shelveContext);
+    }
+    if (task instanceof ProcessTask) {
+      return new ProcessTaskExecutor((ProcessTask) task, predecessors, api, context, executor, this, shelveContext);
+    }
+    throw new IllegalArgumentException(format("Task %s is not supported as RunnableTask", task.getClass().getName()));
   }
+
+  Callable createTaskExecutor(Task task) {
+    if (task instanceof CheckFinishTask) {
+      return new CheckFinishTaskExecutor((CheckFinishTask) task, api);
+    }
+    throw new IllegalArgumentException(format("Task %s is not supported as CallableTask", task.getClass().getName()));
+  }
+
 }

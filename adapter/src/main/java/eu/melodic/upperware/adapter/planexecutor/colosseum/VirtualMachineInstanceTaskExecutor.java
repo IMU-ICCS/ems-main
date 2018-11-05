@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+@Deprecated
 @Slf4j
 public class VirtualMachineInstanceTaskExecutor extends ColosseumTaskExecutor<VirtualMachineInstance> {
 
@@ -91,11 +92,6 @@ public class VirtualMachineInstanceTaskExecutor extends ColosseumTaskExecutor<Vi
     context.addVirtualMachineInstance(vmEntity);
 
     log.info("Virtual Machine Instance {} was successfully created at {}", name, vmEntity.getSelfLink());
-  }
-
-  @Override
-  public void update(VirtualMachineInstance vmInst) {
-    throw new UnsupportedOperationException("Cannot update instance of any component - this method should not be run at all");
   }
 
   @Override
