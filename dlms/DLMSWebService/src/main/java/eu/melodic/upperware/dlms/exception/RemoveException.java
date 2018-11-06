@@ -1,4 +1,4 @@
-package e.melodic.upperware.dlms.exception;
+package eu.melodic.upperware.dlms.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

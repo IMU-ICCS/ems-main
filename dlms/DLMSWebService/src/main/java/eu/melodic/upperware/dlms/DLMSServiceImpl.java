@@ -5,15 +5,13 @@
  * @author: ferox
  */
 
-package e.melodic.upperware.dlms;
+package eu.melodic.upperware.dlms;
 
-import alluxio.Constants;
-import alluxio.PropertyKey;
-import alluxio.cli.fs.command.*;
-import alluxio.client.file.FileSystem;
-import alluxio.exception.AlluxioException;
-import alluxio.util.ConfigurationUtils;
-import e.melodic.upperware.dlms.exception.*;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.cli.CommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +20,27 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
+import alluxio.Constants;
+import alluxio.PropertyKey;
+import alluxio.cli.fs.command.CpCommand;
+import alluxio.cli.fs.command.LsCommand;
+import alluxio.cli.fs.command.MkdirCommand;
+import alluxio.cli.fs.command.MountCommand;
+import alluxio.cli.fs.command.MvCommand;
+import alluxio.cli.fs.command.PersistCommand;
+import alluxio.cli.fs.command.RmCommand;
+import alluxio.cli.fs.command.UnmountCommand;
+import alluxio.client.file.FileSystem;
+import alluxio.exception.AlluxioException;
+import alluxio.util.ConfigurationUtils;
+import eu.melodic.upperware.dlms.exception.CopyException;
+import eu.melodic.upperware.dlms.exception.CreateDatasourceException;
+import eu.melodic.upperware.dlms.exception.IdNotFoundException;
+import eu.melodic.upperware.dlms.exception.InvalidParameterException;
+import eu.melodic.upperware.dlms.exception.NameNotFoundException;
+import eu.melodic.upperware.dlms.exception.PersistException;
+import eu.melodic.upperware.dlms.exception.RemoveException;
+import eu.melodic.upperware.dlms.exception.UnmountException;
 
 /**
  * Implementation of DLMSService.
@@ -37,17 +52,27 @@ public class DLMSServiceImpl implements DLMSService {
 
 	@Autowired
 	DataSourceRepository dsRepository;
-	
+
 	@Override
 	public DataSource getDataSourceById(long id) {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
-		if(dsRepository.existsById(id)) {
+		if (dsRepository.existsById(id)) {
 			return dsRepository.findById(id).get();
-		}
-		else {
+		} else {
 			throw new IdNotFoundException(id);
+		}
+	}
+
+	@Override
+	public DataSource getDataSourceByName(String name) {
+		ensureConfiguration();
+
+		if (dsRepository.existsByName(name)) {
+			return dsRepository.findByName(name);
+		} else {
+			throw new NameNotFoundException(name);
 		}
 	}
 
@@ -61,12 +86,23 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
-		if(dsRepository.existsById(id)) {
+		if (dsRepository.existsById(id)) {
 			ensureUnmount(id);
 			dsRepository.deleteById(id);
-		}
-		else {
+		} else {
 			throw new IdNotFoundException(id);
+		}
+	}
+
+	@Override
+	public void deleteByName(String name) {
+		ensureConfiguration();
+
+		if (dsRepository.existsByName(name)) {
+			ensureUnmount(name);
+			dsRepository.deleteByName(name);
+		} else {
+			throw new NameNotFoundException(name);
 		}
 	}
 
@@ -79,7 +115,8 @@ public class DLMSServiceImpl implements DLMSService {
 
 		DataSource newDataSource = dsRepository.save(ds);
 
-		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDataSource.getId()).toUri();
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(newDataSource.getName()).toUri();
 		return location;
 	}
 
@@ -88,14 +125,13 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
-		if(dsRepository.existsById(id)) {
+		if (dsRepository.existsById(id)) {
 			ensureUnmount(id);
 			ensureMountPoint(ds);
 
 			ds.setId(id);
 			dsRepository.save(ds);
-		}
-		else {
+		} else {
 			throw new IdNotFoundException(id);
 		}
 
@@ -107,15 +143,15 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureConfiguration();
 
 		String result = runCopyCommand(pathFrom, pathTo);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new CopyException(result);
 		}
 		result = runRemoveCommand(pathFrom);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new RemoveException(result);
 		}
 		result = runPersistCommand(pathTo);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new PersistException(result);
 		}
 	}
@@ -125,15 +161,15 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureConfiguration();
 
 		String result = runCopyCommand("-R", pathFrom, pathTo);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new CopyException(result);
 		}
 		result = runRemoveCommand("-R", pathFrom);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new RemoveException(result);
 		}
 		result = runPersistCommand(pathTo);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new PersistException(result);
 		}
 	}
@@ -142,22 +178,22 @@ public class DLMSServiceImpl implements DLMSService {
 	public void migrateDatasource(long id, String pathTo) {
 		ensureConfiguration();
 
-		if(!dsRepository.existsById(id)) {
+		if (!dsRepository.existsById(id)) {
 			throw new IdNotFoundException(id);
 		}
 
 		DataSource ds = dsRepository.findById(id).get();
 
 		String result = runCopyCommand("-R", ds.getMountPoint(), pathTo);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new CopyException(result);
 		}
 		result = runUnmountCommand(ds.getMountPoint());
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new UnmountException(result);
 		}
 		result = runPersistCommand(pathTo);
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
 			throw new PersistException(result);
 		}
 
@@ -167,7 +203,15 @@ public class DLMSServiceImpl implements DLMSService {
 	private void ensureUnmount(long id) {
 		DataSource ds = dsRepository.getOne(id);
 		String result = runUnmountCommand(ds.getMountPoint());
-		if(!result.isEmpty()) {
+		if (!result.isEmpty()) {
+			throw new UnmountException("Unmount failed: " + result);
+		}
+	}
+
+	private void ensureUnmount(String name) {
+		DataSource ds = dsRepository.findByName(name);
+		String result = runUnmountCommand(ds.getMountPoint());
+		if (!result.isEmpty()) {
 			throw new UnmountException("Unmount failed: " + result);
 		}
 	}
@@ -175,20 +219,21 @@ public class DLMSServiceImpl implements DLMSService {
 	private void ensureDataSourceNameIsUnused(DataSource ds) {
 		DataSource findMe = new DataSource(ds.getName(), null, null, null);
 		Example<DataSource> example = Example.of(findMe);
-		if(dsRepository.findOne(example).isPresent()) {
+		if (dsRepository.findOne(example).isPresent()) {
 			throw new CreateDatasourceException("Datasource with this name already exists");
 		}
 	}
 
 	private void ensureMountPoint(DataSource ds) {
 		String result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI());
-		if(!result.isEmpty() && !result.endsWith(" already exists")) {
+		if (!result.isEmpty() && !result.endsWith(" already exists")) {
 			throw new CreateDatasourceException("Create Datasource " + ds.getName() + " failed: " + result);
 		}
 	}
 
 	/**
-	 * Runs the Alluxio LS command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio LS command. Returns an empty String on success or the error
+	 * message from Alluxio if anything went wrong.
 	 */
 	protected String runLsCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -200,15 +245,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			lsCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio MKDIR command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio MKDIR command. Returns an empty String on success or the
+	 * error message from Alluxio if anything went wrong.
 	 */
 	protected String runMkDirCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -220,15 +265,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			mkdirCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio MOUNT command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio MOUNT command. Returns an empty String on success or the
+	 * error message from Alluxio if anything went wrong.
 	 */
 	protected String runMountCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -240,15 +285,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			mountCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio UNMOUNT command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio UNMOUNT command. Returns an empty String on success or the
+	 * error message from Alluxio if anything went wrong.
 	 */
 	protected String runUnmountCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -260,15 +305,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			unmountCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio MV (move) command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio MV (move) command. Returns an empty String on success or the
+	 * error message from Alluxio if anything went wrong.
 	 */
 	protected String runMoveCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -280,15 +325,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			mvCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio CP (copy) command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio CP (copy) command. Returns an empty String on success or the
+	 * error message from Alluxio if anything went wrong.
 	 */
 	protected String runCopyCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -300,15 +345,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			cpCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio RM (remove) command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio RM (remove) command. Returns an empty String on success or
+	 * the error message from Alluxio if anything went wrong.
 	 */
 	protected String runRemoveCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -320,15 +365,15 @@ public class DLMSServiceImpl implements DLMSService {
 
 			rmCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	/**
-	 * Runs the Alluxio PERSIST command. Returns an empty String on success or the error message from Alluxio if anything went wrong.
+	 * Runs the Alluxio PERSIST command. Returns an empty String on success or the
+	 * error message from Alluxio if anything went wrong.
 	 */
 	protected String runPersistCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
@@ -340,8 +385,7 @@ public class DLMSServiceImpl implements DLMSService {
 
 			persistCommand.run(commandLine);
 			return "";
-		}
-		catch(IOException | AlluxioException e) {
+		} catch (IOException | AlluxioException e) {
 			LOGGER.error(e.getMessage(), e);
 			return e.getMessage();
 		}
@@ -361,15 +405,35 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureIdParameterNotNegative(long id) {
-		if(id < 0) {
+		if (id < 0) {
 			throw new InvalidParameterException("Parameter must be >= 0");
 		}
 	}
 
 	private void ensureCommandParameterNotEmpty(String[] args) {
-		if(args == null || args.length == 0) {
+		if (args == null || args.length == 0) {
 			throw new InvalidParameterException("Parameter must not be empty");
 		}
+	}
+
+	@Override
+	public DataSource updateDataSource(DataSource ds, String name) {
+		ensureConfiguration();
+
+		if (dsRepository.existsByName(name)) {
+			ensureUnmount(name);
+			ensureMountPoint(ds);
+
+			// get old data source and update it
+			DataSource dsOrig = dsRepository.findByName(name);
+			dsOrig.setMountPoint(ds.getMountPoint());
+			dsOrig.setUfsURI(ds.getUfsURI());
+			dsRepository.save(dsOrig);
+		} else {
+			throw new NameNotFoundException(name);
+		}
+
+		return null;
 	}
 
 }
