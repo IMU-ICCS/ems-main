@@ -16,6 +16,9 @@ import eu.melodic.security.authorization.util.properties.AuthorizationServiceCli
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -32,6 +35,7 @@ import javax.servlet.Filter;
 public class ApplicationContext {
 
   private AdapterProperties adapterProperties;
+  private org.springframework.context.ApplicationContext applicationContext;
 
   @Bean
   public Filter loggingFilter() {
@@ -86,13 +90,20 @@ public class ApplicationContext {
   }
 
   @Bean
-  public AuthorizationServiceClient getAuthorizationServiceClient(AuthorizationServiceClientProperties authorizationServiceClientProperties) {
+  public AuthorizationServiceClient getAuthorizationServiceClient() {
+    AuthorizationServiceClientProperties authorizationServiceClientProperties = applicationContext.getBean(AuthorizationServiceClientProperties.class);
     return new AuthorizationServiceClient(authorizationServiceClientProperties);
   }
 
+
   @Bean
   @ConfigurationProperties
-  public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
-    return new AuthorizationServiceClientProperties();
+  public MelodicSecurityProperties melodicSecurityProperties() {
+    return new MelodicSecurityProperties();
+  }
+
+  @Bean
+  public JWTService jWTService() {
+    return new JWTServiceImpl(melodicSecurityProperties());
   }
 }

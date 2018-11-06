@@ -18,8 +18,11 @@ This provides application with the properties (in that way can be provided exter
 
 package eu.melodic.upperware.cpsolver;
 
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -28,6 +31,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 @ComponentScan(basePackages = {"eu.melodic.upperware.cpsolver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator"})
 @SpringBootApplication
+@EnableConfigurationProperties({UtilityGeneratorProperties.class, MelodicSecurityProperties.class})
 public class CPSolverApplication {
 
   public static void main(String[] args) {

@@ -2,13 +2,13 @@ package eu.paasage.upperware.profiler.generator;
 
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @EnableWebSecurity
@@ -19,7 +19,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
 
-    @Autowired(required = false)
+    @Autowired
     public WebSecurity(JWTService jwtService) {
         this.jwtService = jwtService;
     }

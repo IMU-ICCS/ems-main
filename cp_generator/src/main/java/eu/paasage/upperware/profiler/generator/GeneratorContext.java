@@ -12,11 +12,13 @@ import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +32,7 @@ import java.util.Collections;
 
 @Slf4j
 @Configuration
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@AllArgsConstructor
 public class GeneratorContext {
 
     private ApplicationContext applicationContext;
@@ -84,13 +86,8 @@ public class GeneratorContext {
     }
 
     @Bean
-    @ConfigurationProperties
-    public CacheProperties cacheProperties(){
-        return new CacheProperties();
-    }
-
-    @Bean
-    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+    public MemcachedClient memcachedClient() throws IOException {
+        CacheProperties cacheProperties = applicationContext.getBean(CacheProperties.class);
         String host = cacheProperties.getCache().getHost();
         Integer port = cacheProperties.getCache().getPort();
         return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
@@ -101,4 +98,14 @@ public class GeneratorContext {
         return new CDOClientXImpl(Collections.emptyList());
     }
 
+    @Bean
+    @ConfigurationProperties
+    public MelodicSecurityProperties melodicSecurityProperties() {
+        return new MelodicSecurityProperties();
+    }
+
+    @Bean
+    public JWTService jWTService() {
+        return new JWTServiceImpl(melodicSecurityProperties());
+    }
 }
