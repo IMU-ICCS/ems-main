@@ -170,12 +170,12 @@ public class DLMSServiceController {
 	}
 
 	// test the notification request, uncomment this later
-	@PostMapping("/notification/msg")
-	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
-		System.out.println("Test message");
-		System.out.println(dataModelNotificationRequest.getResult().getErrorCode() + " : "
-				+ dataModelNotificationRequest.getResult().getErrorDescription());
-	}
+//	@PostMapping("/notification/msg")
+//	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
+//		System.out.println("Test message");
+//		System.out.println(dataModelNotificationRequest.getResult().getErrorCode() + " : "
+//				+ dataModelNotificationRequest.getResult().getErrorDescription());
+//	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the
