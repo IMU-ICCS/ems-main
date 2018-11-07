@@ -3,10 +3,10 @@ package eu.melodic.upperware.adapter.extractor;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.VMInstance;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service

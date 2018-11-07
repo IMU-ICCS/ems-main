@@ -4,27 +4,29 @@ import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-public abstract class PerVmAbstractExtractor<T> extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Map<String,T>> {
+public class RamSetExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Set<Long>> {
     @Override
-    public Map<String,T> getValue(DeploymentInstanceModel deploymentModel) {
-        Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
-        return nodeCandidateForDeployment
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-					Map.Entry::getKey,
-					entry -> extractInfo(entry.getValue())
-				));
+    public String getKey() {
+        return "set-of-ram";
     }
-	
-	protected abstract T extractInfo(NodeCandidate nodeCandidate);
 
     @Override
-    public Map<String,Map<String,T>> getValueMap(DeploymentInstanceModel deploymentModel) {
-		return null;
+    public Set<Long> getValue(DeploymentInstanceModel deploymentModel) {
+        Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
+        return nodeCandidateForDeployment
+                .values()
+                .stream()
+                .map(value -> new Long(value.getHardware().getRam()))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<String,Set<Long>> getValueMap(DeploymentInstanceModel deploymentModel) {
+        return null;
     }
 }

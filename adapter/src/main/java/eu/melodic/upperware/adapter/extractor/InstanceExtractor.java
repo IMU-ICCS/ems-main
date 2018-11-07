@@ -3,9 +3,8 @@ package eu.melodic.upperware.adapter.extractor;
 import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import org.springframework.stereotype.Service;
-
 import java.util.Map;
+import org.springframework.stereotype.Service;
 
 @Service
 public class InstanceExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Integer> {
@@ -18,8 +17,7 @@ public class InstanceExtractor extends NodeCandidateSupport implements DataExtra
     @Override
     public Integer getValue(DeploymentInstanceModel deploymentModel) {
         Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
-        return (int)nodeCandidateForDeployment
-                .values()
+        return (int)deploymentModel.getVmInstances()
                 .stream()
                 .count();
     }
