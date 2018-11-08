@@ -2,6 +2,7 @@ package eu.paasage.upperware.profiler.generator;
 
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,17 +13,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Slf4j
 @EnableWebSecurity
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
-    private JWTService jwtService;
+    private final JWTService jwtService;
 
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
-
-    @Autowired
-    public WebSecurity(JWTService jwtService) {
-        this.jwtService = jwtService;
-    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

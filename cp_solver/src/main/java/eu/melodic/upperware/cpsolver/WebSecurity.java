@@ -1,10 +1,11 @@
 package eu.melodic.upperware.cpsolver;
 
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
-import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,23 +14,17 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.beans.factory.annotation.Value;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @EnableWebSecurity
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
-    private JWTService jwtService;
+    private final JWTService jwtService;
 
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
-
-    @Autowired(required = false)
-    public WebSecurity(JWTService jwtService) {
-        this.jwtService = jwtService;
-    }
-
+    
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -47,7 +42,6 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                     .antMatchers("/**").permitAll()
                     .anyRequest().authenticated();
         }
-
 
 
     }

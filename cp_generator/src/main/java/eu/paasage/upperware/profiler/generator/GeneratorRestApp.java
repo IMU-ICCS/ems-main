@@ -1,5 +1,6 @@
 package eu.paasage.upperware.profiler.generator;
 
+import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +17,7 @@ import java.util.TimeZone;
 @Slf4j
 @EnableAsync
 @ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache"})
-@EnableConfigurationProperties({MelodicSecurityProperties.class})
+@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class GeneratorRestApp {
 
 

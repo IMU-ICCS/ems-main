@@ -19,7 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +36,9 @@ public class GeneratorContext {
 
     private ApplicationContext applicationContext;
 
-    private static final String CONSTRAINT_PREFIX= "c_";
-    private static final String AUX_EXPRESSION_PREFIX= "aux_expression_";
-    private static final String CONSTANT_PREFIX ="constant_";
+    private static final String CONSTRAINT_PREFIX = "c_";
+    private static final String AUX_EXPRESSION_PREFIX = "aux_expression_";
+    private static final String CONSTANT_PREFIX = "constant_";
 
     @Bean(name = "constraintIdGenerator")
     public IdGenerator constraintIdGenerator() {
@@ -86,8 +85,7 @@ public class GeneratorContext {
     }
 
     @Bean
-    public MemcachedClient memcachedClient() throws IOException {
-        CacheProperties cacheProperties = applicationContext.getBean(CacheProperties.class);
+    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
         String host = cacheProperties.getCache().getHost();
         Integer port = cacheProperties.getCache().getPort();
         return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
@@ -99,13 +97,7 @@ public class GeneratorContext {
     }
 
     @Bean
-    @ConfigurationProperties
-    public MelodicSecurityProperties melodicSecurityProperties() {
-        return new MelodicSecurityProperties();
-    }
-
-    @Bean
-    public JWTService jWTService() {
-        return new JWTServiceImpl(melodicSecurityProperties());
+    public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
+        return new JWTServiceImpl(melodicSecurityProperties);
     }
 }

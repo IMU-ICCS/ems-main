@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,27 +32,20 @@ public class SolverToDeploymentContext {
 
     ApplicationContext applicationContext;
 
-  @Bean
-  public RestTemplate getRestTemplate() {
-    return new RestTemplate();
-  }
-
-  @Bean
-  public MemcachedClient memcachedClient() throws IOException {
-      CacheProperties cacheProperties = applicationContext.getBean(CacheProperties.class);
-    String host = cacheProperties.getCache().getHost();
-    Integer port = cacheProperties.getCache().getPort();
-    return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
-  }
-
     @Bean
-    @ConfigurationProperties
-    public MelodicSecurityProperties melodicSecurityProperties() {
-        return new MelodicSecurityProperties();
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
     }
 
     @Bean
-    public JWTService jWTService() {
-        return new JWTServiceImpl(melodicSecurityProperties());
+    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+        String host = cacheProperties.getCache().getHost();
+        Integer port = cacheProperties.getCache().getPort();
+        return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
+    }
+
+    @Bean
+    public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
+        return new JWTServiceImpl(melodicSecurityProperties);
     }
 }
