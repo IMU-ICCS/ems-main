@@ -10,12 +10,14 @@
 package eu.melodic.upperware.cpsolver;
 
 import eu.melodic.cache.properties.CacheProperties;
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -28,26 +30,22 @@ import java.util.Collections;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CpSolverContext {
 
-  @Bean
-  public RestTemplate getRestTemplate() {
-    return new RestTemplate();
-  }
+    ApplicationContext applicationContext;
 
-  @Bean
-  @ConfigurationProperties
-  public CacheProperties cacheProperties(){
-    return new CacheProperties();
-  }
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 
-  @Bean
-  @ConfigurationProperties
-  public UtilityGeneratorProperties utilityGeneratorProperties() {return new UtilityGeneratorProperties();}
+    @Bean
+    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+        String host = cacheProperties.getCache().getHost();
+        Integer port = cacheProperties.getCache().getPort();
+        return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
+    }
 
-
-  @Bean
-  public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
-    String host = cacheProperties.getCache().getHost();
-    Integer port = cacheProperties.getCache().getPort();
-    return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
-  }
+    @Bean
+    public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
+        return new JWTServiceImpl(melodicSecurityProperties);
+    }
 }
