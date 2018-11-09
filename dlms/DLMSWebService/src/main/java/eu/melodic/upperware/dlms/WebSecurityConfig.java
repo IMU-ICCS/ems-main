@@ -1,4 +1,4 @@
-package e.melodic.upperware.dlms;
+package eu.melodic.upperware.dlms;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

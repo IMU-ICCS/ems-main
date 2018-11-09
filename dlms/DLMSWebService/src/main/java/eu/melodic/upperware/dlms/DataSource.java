@@ -5,39 +5,41 @@
  * @author: ferox
  */
 
+package eu.melodic.upperware.dlms;
 
-package e.melodic.upperware.dlms;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+
+
 
 /**
  * Entity representing one datasource.
  */
 @Entity
 public class DataSource {
-	
+
 	@Id
 	@GeneratedValue
 	private Long id;
+	@Column(unique = true)
 	private String name;
 	private DataSourceType type;
 	private String ufsURI; /* underlying file system uri */
 	private String mountPoint; /* mount point in alluxio */
-	
+
 	public DataSource() {
 		super();
 	}
 
-	public DataSource(String name,DataSourceType type, String ufsURI,String mountPoint) {
+	public DataSource(String name, DataSourceType type, String ufsURI, String mountPoint) {
 		super();
 		this.name = name;
 		this.type = type;
 		this.ufsURI = ufsURI;
-		this.mountPoint = mountPoint;		
+		this.mountPoint = mountPoint;
 	}
-
 
 	public Long getId() {
 		return id;
@@ -62,6 +64,7 @@ public class DataSource {
 	public void setDataSourceType(DataSourceType type) {
 		this.type = type;
 	}
+
 	public String getUfsURI() {
 		return ufsURI;
 	}
@@ -69,6 +72,7 @@ public class DataSource {
 	public void setUfsURI(String ufsURI) {
 		this.ufsURI = ufsURI;
 	}
+
 	public String getMountPoint() {
 		return mountPoint;
 	}
@@ -76,5 +80,5 @@ public class DataSource {
 	public void setMountPoint(String mountPoint) {
 		this.mountPoint = mountPoint;
 	}
-	
+
 }

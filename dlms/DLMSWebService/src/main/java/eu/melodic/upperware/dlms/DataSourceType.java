@@ -5,7 +5,7 @@
  * @author: ferox
  */
 
-package e.melodic.upperware.dlms;
+package eu.melodic.upperware.dlms;
 
 /**
  * Represents a type of datasource.

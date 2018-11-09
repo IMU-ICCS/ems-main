@@ -1,6 +1,6 @@
 
 
-package eu.melodic.dlms.alluxio;
+package eu.melodic.upperware.dlms.alluxio;
 
 import alluxio.AlluxioURI;
 import alluxio.Configuration;
