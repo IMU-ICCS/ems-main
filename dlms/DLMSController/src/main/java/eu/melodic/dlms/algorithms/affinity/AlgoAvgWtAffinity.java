@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoAffinity;
+package eu.melodic.dlms.algorithms.affinity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,13 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.melodic.dlms.DlmsRestController;
-import eu.melodic.dlms.algorithms.algoAffinity.dbModel.ApplicationComponent;
-import eu.melodic.dlms.algorithms.algoAffinity.dbModel.ApplicationComponentDataSourceData;
-import eu.melodic.dlms.algorithms.algoAffinity.dbModel.DataSource;
-import eu.melodic.dlms.algorithms.algoAffinity.model.AppComDataSrc;
-import eu.melodic.dlms.algorithms.algoAffinity.repository.ApplicationComponentDataSourceDataRepository;
-import eu.melodic.dlms.algorithms.algoAffinity.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.algorithms.algoAffinity.repository.DataSourceRepository;
+import eu.melodic.dlms.algorithms.affinity.dbModel.ApplicationComponent;
+import eu.melodic.dlms.algorithms.affinity.dbModel.ApplicationComponentDataSourceData;
+import eu.melodic.dlms.algorithms.affinity.dbModel.DataSource;
+import eu.melodic.dlms.algorithms.affinity.model.AppComDataSrc;
+import eu.melodic.dlms.algorithms.affinity.repository.ApplicationComponentDataSourceDataRepository;
+import eu.melodic.dlms.algorithms.affinity.repository.ApplicationComponentRepository;
+import eu.melodic.dlms.algorithms.affinity.repository.DataSourceRepository;
 
 public class AlgoAvgWtAffinity {
 	// set default; maybe modify just for experiments

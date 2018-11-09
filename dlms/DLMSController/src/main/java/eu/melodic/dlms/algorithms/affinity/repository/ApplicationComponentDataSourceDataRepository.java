@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoAffinity.repository;
+package eu.melodic.dlms.algorithms.affinity.repository;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import eu.melodic.dlms.algorithms.algoAffinity.dbModel.ApplicationComponentDataSourceData;
+import eu.melodic.dlms.algorithms.affinity.dbModel.ApplicationComponentDataSourceData;
 
 @Repository
 public interface ApplicationComponentDataSourceDataRepository

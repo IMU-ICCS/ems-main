@@ -8,7 +8,7 @@ import eu.melodic.dlms.utility.DlmsDiffBundle;
 /**
  * Demo implementation of a simple algorithm.
  */
-public class Algo_AverageWeightRunner implements AlgorithmRunner {
+public class Algo_DlmsMetricReceiverRunner implements AlgorithmRunner {
 
 	private AlgoAvgWtLatBand algo1;
 

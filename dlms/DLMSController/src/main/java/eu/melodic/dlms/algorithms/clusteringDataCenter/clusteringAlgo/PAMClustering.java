@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoClusteringDataCenter.clusteringAlgo;
+package eu.melodic.dlms.algorithms.clusteringDataCenter.clusteringAlgo;
 
 import java.util.ArrayList;
 import java.util.HashMap;

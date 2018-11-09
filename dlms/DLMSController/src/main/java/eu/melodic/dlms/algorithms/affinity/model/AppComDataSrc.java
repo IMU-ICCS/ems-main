@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoAffinity.model;
+package eu.melodic.dlms.algorithms.affinity.model;
 
 public class AppComDataSrc {
 	private long appCompId; // application component

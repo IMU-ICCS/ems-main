@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoLatencyBandwidth;
+package eu.melodic.dlms.algorithms.latencyBandwidth;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,15 +13,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 
 import eu.melodic.dlms.DlmsRestController;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenter;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenterLatencyBandwidth;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.TwoDCKey;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.TwoDataCenterCombination;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.model.Distance;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.model.TwoDataCenComb;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterLatencyBandwidthRepository;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.DataCenterRepository;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.TwoDataCenterCombinationRepository;
+import eu.melodic.dlms.algorithms.latencyBandwidth.dbModel.DataCenter;
+import eu.melodic.dlms.algorithms.latencyBandwidth.dbModel.DataCenterLatencyBandwidth;
+import eu.melodic.dlms.algorithms.latencyBandwidth.dbModel.TwoDCKey;
+import eu.melodic.dlms.algorithms.latencyBandwidth.dbModel.TwoDataCenterCombination;
+import eu.melodic.dlms.algorithms.latencyBandwidth.model.Distance;
+import eu.melodic.dlms.algorithms.latencyBandwidth.model.TwoDataCenComb;
+import eu.melodic.dlms.algorithms.latencyBandwidth.repository.DataCenterLatencyBandwidthRepository;
+import eu.melodic.dlms.algorithms.latencyBandwidth.repository.DataCenterRepository;
+import eu.melodic.dlms.algorithms.latencyBandwidth.repository.TwoDataCenterCombinationRepository;
 
 public class AlgoAvgWtLatBand {
 	// set default; maybe modify just for experiments

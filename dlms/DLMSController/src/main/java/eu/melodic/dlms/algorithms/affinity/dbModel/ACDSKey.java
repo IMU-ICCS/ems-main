@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoAffinity.dbModel;
+package eu.melodic.dlms.algorithms.affinity.dbModel;
 
 import java.io.Serializable;
 

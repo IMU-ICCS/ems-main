@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel;
+package eu.melodic.dlms.algorithms.latencyBandwidth.dbModel;
 
 import java.io.Serializable;
 

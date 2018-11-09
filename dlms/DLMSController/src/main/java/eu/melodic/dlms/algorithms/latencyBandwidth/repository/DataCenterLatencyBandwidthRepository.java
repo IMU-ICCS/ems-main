@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository;
+package eu.melodic.dlms.algorithms.latencyBandwidth.repository;
 
 import java.util.Date;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.DataCenterLatencyBandwidth;
+import eu.melodic.dlms.algorithms.latencyBandwidth.dbModel.DataCenterLatencyBandwidth;
 
 @Repository
 public interface DataCenterLatencyBandwidthRepository extends JpaRepository<DataCenterLatencyBandwidth, Long> {

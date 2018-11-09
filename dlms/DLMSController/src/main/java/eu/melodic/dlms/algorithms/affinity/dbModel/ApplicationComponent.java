@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoAffinity.dbModel;
+package eu.melodic.dlms.algorithms.affinity.dbModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

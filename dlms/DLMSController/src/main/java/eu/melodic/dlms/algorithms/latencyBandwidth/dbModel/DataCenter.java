@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel;
+package eu.melodic.dlms.algorithms.latencyBandwidth.dbModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
