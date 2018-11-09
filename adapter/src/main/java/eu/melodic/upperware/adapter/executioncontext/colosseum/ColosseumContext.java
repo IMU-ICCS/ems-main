@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.client.Entity;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -441,6 +442,7 @@ public class ColosseumContext implements ContextOperations {
             log.error("Problem with json", e);
         }
         log.info("{} Instances: {}\n{}", text, array.length(), result);
+
     }
 
     private JSONObject createJsonRepresentation(Instance instance) throws JSONException {
