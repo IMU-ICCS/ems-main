@@ -118,8 +118,7 @@ public class DLMSServiceController {
 			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
 			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
 			for (DataSource datasource : dataSourceList) {
-				DataSource dsContained = dlmsService.getDataSourceByName(datasource.getName());
-				if (dsContained != null) {
+				if (dlmsService.hasDataSourceByName(datasource.getName())) {
 					try {
 						// if data source already exists, update if necessary
 						dlmsService.updateDataSource(datasource, datasource.getName());
@@ -169,7 +168,7 @@ public class DLMSServiceController {
 		}
 	}
 
-	// test the notification request, uncomment this later
+	// test the notification request, uncomment this when actual url exists
 //	@PostMapping("/notification/msg")
 //	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
 //		System.out.println("Test message");

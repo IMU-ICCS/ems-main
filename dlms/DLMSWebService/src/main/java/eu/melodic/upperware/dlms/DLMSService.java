@@ -22,10 +22,15 @@ public interface DLMSService {
 	DataSource getDataSourceById(long id);
 
 	/**
-	 * Returns one datasource matching the given name. Throws an IdNotFoundException
-	 * if no datasource with this name exists.
+	 * Returns one datasource matching the given name. Throws a
+	 * NameNotFoundException if no datasource with this name exists.
 	 */
 	DataSource getDataSourceByName(String name);
+
+	/**
+	 * Check if datasource matching the given name exists.
+	 */
+	boolean hasDataSourceByName(String name);
 
 	/**
 	 * Returns all datasources in the database.

@@ -77,6 +77,17 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	@Override
+	public boolean hasDataSourceByName(String name) {
+		ensureConfiguration();
+
+		if (dsRepository.existsByName(name)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
 	public List<DataSource> getAllDataSources() {
 		return dsRepository.findAll();
 	}
