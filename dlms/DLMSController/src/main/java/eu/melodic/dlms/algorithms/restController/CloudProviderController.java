@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.dbModel.CloudProvider;
-import eu.melodic.dlms.algorithms.algoLatencyBandwidth.repository.CloudProviderRepository;
 import eu.melodic.dlms.algorithms.exception.ResourceNotFoundException;
+import eu.melodic.dlms.algorithms.latencyBandwidth.dbModel.CloudProvider;
+import eu.melodic.dlms.algorithms.latencyBandwidth.repository.CloudProviderRepository;
 
 @RestController
 @RequestMapping("/api")

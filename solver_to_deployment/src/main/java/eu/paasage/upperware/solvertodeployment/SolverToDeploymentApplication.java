@@ -18,7 +18,11 @@ This provides application with the properties (in that way can be provided exter
 
 package eu.paasage.upperware.solvertodeployment;
 
+import eu.melodic.cache.properties.CacheProperties;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -26,6 +30,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @Configuration
 @ComponentScan(basePackages = {"eu.paasage.upperware.solvertodeployment", "eu.melodic.cache"})
+@SpringBootApplication
+@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class SolverToDeploymentApplication {
 
   public static void main(String[] args) {
