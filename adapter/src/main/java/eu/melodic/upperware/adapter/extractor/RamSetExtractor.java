@@ -4,27 +4,29 @@ import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RamExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Long> {
+public class RamSetExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Set<Long>> {
     @Override
     public String getKey() {
-        return "total-ram";
+        return "set-of-ram";
     }
 
     @Override
-    public Long getValue(DeploymentInstanceModel deploymentModel) {
+    public Set<Long> getValue(DeploymentInstanceModel deploymentModel) {
         Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
         return nodeCandidateForDeployment
                 .values()
                 .stream()
-                .mapToLong(value -> value.getHardware().getRam())
-                .sum();
+                .map(value -> value.getHardware().getRam())
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public Map<String,Long> getValueMap(DeploymentInstanceModel deploymentModel) {
+    public Map<String,Set<Long>> getValueMap(DeploymentInstanceModel deploymentModel) {
         return null;
     }
 }
