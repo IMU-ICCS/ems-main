@@ -1,6 +1,5 @@
 package eu.melodic.upperware.adapter.extractor;
 
-import camel.deployment.DeploymentInstanceModel;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 

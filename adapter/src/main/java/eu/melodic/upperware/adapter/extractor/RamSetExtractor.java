@@ -21,7 +21,7 @@ public class RamSetExtractor extends NodeCandidateSupport implements DataExtract
         return nodeCandidateForDeployment
                 .values()
                 .stream()
-                .map(value -> new Long(value.getHardware().getRam()))
+                .map(value -> value.getHardware().getRam())
                 .collect(Collectors.toSet());
     }
 

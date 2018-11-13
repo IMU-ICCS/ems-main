@@ -1,6 +1,5 @@
 package eu.melodic.upperware.adapter.extractor;
 
-import camel.deployment.DeploymentInstanceModel;
 import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
@@ -24,6 +23,6 @@ public class PerVmCountryExtractor extends PerVmAbstractExtractor<String> {
 				vmCountry = geoLoc.getCountry();
 			}
 		}
-		return vmCountry!=null ? vmCountry : "";
+		return com.google.common.base.Strings.nullToEmpty(vmCountry);
     }
 }

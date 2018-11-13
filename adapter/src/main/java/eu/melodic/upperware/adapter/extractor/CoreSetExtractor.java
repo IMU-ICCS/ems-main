@@ -22,7 +22,7 @@ public class CoreSetExtractor extends NodeCandidateSupport implements DataExtrac
         return nodeCandidateForDeployment
                 .values()
                 .stream()
-                .map(value -> new Integer(value.getHardware().getCores()))
+                .map(value -> value.getHardware().getCores())
                 .collect(Collectors.toSet());
     }
 

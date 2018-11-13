@@ -1,8 +1,8 @@
 package eu.melodic.upperware.adapter.extractor;
 
 import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.VMInstance;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,13 +18,12 @@ public class InstanceSetExtractor extends NodeCandidateSupport implements DataEx
 
     @Override
     public Set<Integer> getValue(DeploymentInstanceModel deploymentModel) {
-        Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
         return deploymentModel.getVmInstances()
                 .stream()
-				.collect(Collectors.groupingBy(vmi -> vmi.getType(), Collectors.counting()))
+				.collect(Collectors.groupingBy(VMInstance::getType, Collectors.counting()))
 				.values()
 				.stream()
-				.map(c -> new Integer((int)c.longValue()))
+				.map(c -> (int)c.longValue())
                 .collect(Collectors.toSet());
     }
 

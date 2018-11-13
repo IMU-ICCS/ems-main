@@ -3,10 +3,8 @@ package eu.melodic.upperware.adapter.extractor;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.VMInstance;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,8 +19,7 @@ public class PerVmInstanceExtractor extends NodeCandidateSupport implements Data
         Map<String, Integer> vmInstanceCount = new HashMap<>();
 		for (VMInstance vmi : deploymentModel.getVmInstances()) {
 			String vmType = vmi.getType().getName();
-			if (vmInstanceCount.containsKey(vmType)) vmInstanceCount.put(vmType, vmInstanceCount.get(vmType)+1);
-			else vmInstanceCount.put(vmType, 1);
+			vmInstanceCount.merge(vmType, 1, Integer::sum);
 		}
         return vmInstanceCount;
     }

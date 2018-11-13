@@ -22,7 +22,7 @@ public class StorageSetExtractor extends NodeCandidateSupport implements DataExt
         return nodeCandidateForDeployment
                 .values()
                 .stream()
-                .map(value -> new Double(value.getHardware().getDisk()))
+                .map(value -> value.getHardware().getDisk())
                 .collect(Collectors.toSet());
     }
 
