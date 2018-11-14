@@ -1,6 +1,5 @@
 package eu.paasage.upperware.solvertodeployment.utils;
 
-import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
@@ -8,7 +7,6 @@ import camel.execution.ExecutionModel;
 import camel.location.GeographicalRegion;
 import camel.location.LocationModel;
 import camel.location.impl.LocationFactoryImpl;
-import camel.type.StringValue;
 import com.google.common.collect.Sets;
 import eu.melodic.cache.NodeCandidatePredicates;
 import eu.melodic.cache.NodeCandidates;
@@ -82,35 +80,6 @@ public class DataUtils {
                 }));
 
 
-        // Merging sets
-//        for (Communication communication : deploymentTypeModel.getCommunications()) {
-//            String provName = CloudMLHelper.findProvidedComponentFromCommunication(communication).getName();
-//            int provId = localComponentGroups.get(provName);
-//            String reqName = CloudMLHelper.findRequiredComponentFromCommunication(communication).getName();
-//            int reqId = localComponentGroups.get(reqName);
-//            if (provId == reqId) continue; // already merge
-//            if (provId < reqId) {
-//                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
-//                    if (entry.getValue() == reqId)
-//                        entry.setValue(provId);
-//                }
-//                // merge all elements of reqId into provId
-//                localGroups.get(provId).addAll(localGroups.get(reqId));
-//                // reqId & provId use the same set
-//                localGroups.put(reqId, localGroups.get(provId));
-//            } else {
-//                for (Map.Entry<String, Integer> entry : localComponentGroups.entrySet()) {
-//                    if (entry.getValue() == provId)
-//                        entry.setValue(reqId);
-//                }
-//                // merge all elements of reqId into provId
-//                localGroups.get(provId).addAll(localGroups.get(reqId));
-//                // reqId & provId use the same set
-//                localGroups.put(reqId, localGroups.get(provId));
-//            }
-//
-//        }
-
         // Preparing VMInstance memory
         int key = 0;
         for (SoftwareComponent sc : softwareComponents) {
@@ -122,7 +91,6 @@ public class DataUtils {
         }
 
         // Memory of instances
-        Map<Integer, EList<VMInstance>> localGroupVMInstances = new HashMap<>();
         Map<String, List<CpVariableValue>> vvByComponentName = CPModelTool.groupVariableValuesByAppName(solution.getVariableValue());
 
         try {
@@ -154,56 +122,6 @@ public class DataUtils {
                                     nodeCandidate, constraintProblem.getId(), camelModel));
 
                     dataHolder.getComponentInstancesToRegister().addAll(softwareComponentInstances);
-
-                    //create VM Instance
-                    localComponentGroups.forEach((name, index) -> log.info("componentGroups: <{}, {}>", name, index));
-
-                    localGroupVMInstances.forEach((integer, vmInstances) -> vmInstances
-                            .forEach(vmInstance -> log.info("key: {}, vmInstance: {}", integer, vmInstance.getName())));
-
-                    int myKey = localComponentGroups.get(componentName);
-                    EList<VMInstance> vmInstanceToRegisters = localGroupVMInstances.get(myKey);
-                    log.info("LocalGroupVMInstances:");
-                    log.info("VMs for key {}: {}", myKey, vmInstanceToRegisters);
-                    log.info("Creating VmInstances for component: {} with key: {}", componentName, myKey);
-
-                    if (vmInstanceToRegisters != null) {
-                        log.info("vmInstanceToRegisters list: ");
-                        vmInstanceToRegisters.forEach(vmInstance -> log.info("Instance: {}", vmInstance.getName()));
-                    } else {
-                        log.info("Creating new VM Instances for component: {} ...", componentName);
-                        VM vm = findVMByComponentName(deploymentTypeModel, componentName);
-
-                        if (vm == null) {
-                            log.info("Vm does not exist");
-                            log.info("Component name: {}", componentName);
-                            log.info("Number of VMs in list: {}, vm names: ", deploymentTypeModel.getVms().size());
-
-                            deploymentTypeModel.getVms().forEach(vm1 -> log.info(vm1.getName()));
-                        }
-
-                        vmInstanceToRegisters = SolverToDeploymentHelper.searchAndCreateVMInstance(vm, cardinality);
-                        vmInstanceToRegisters.forEach(vmInstance -> {
-                            //TODO - enrich SoftwareComponentInstancees TO REMOVE IN THE FUTURE
-                            providerEnricherService.enrichVMInstance(vmInstance, nodeCandidate, constraintProblem.getId(), camelModel);
-                            log.info("VmInstance: {}", vmInstance.getName());
-                        });
-
-                        GeographicalRegion location = getOrCreateRegion(dataHolder, nodeCandidate, camelModel);
-                        vmInstanceToRegisters.forEach(vmInstance -> vmInstance.setLocation(location));
-
-
-                        dataHolder.getVmInstancesToRegister().addAll(vmInstanceToRegisters);
-                        // memorize
-                        localGroupVMInstances.put(myKey, vmInstanceToRegisters);
-                        log.info("**NEW** VMs for key {}", myKey);
-                    }
-                    // Create Hosting
-                    for (int i = 0; i < cardinality; i++) {
-                        SoftwareComponentInstance iCI = softwareComponentInstances.get(i);
-                        VMInstance vmI = vmInstanceToRegisters.get(i);
-                        dataHolder.getHostingInstancesToRegister().addAll(SolverToDeploymentHelper.createHostingInstance(vmI, iCI, deploymentTypeModel));
-                    }
                 }
             }
 
@@ -284,24 +202,9 @@ public class DataUtils {
         }
 
         CdoTool.getCurrentlyInstalledModel(executionModel.get()).ifPresent(deploymentInstanceModel -> {
-            //1. VMInstances
-            changeNames(result.getVmInstancesToRegister(), deploymentInstanceModel.getVmInstances(), VMKey::getInstance);
-
-            //2. Component
+            //1. Component
             changeNames(result.getComponentInstancesToRegister(), deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::getInstance);
         });
-    }
-
-    private static VM findVMByComponentName(DeploymentTypeModel deploymentTypeModel, String componentName) {
-        for (Hosting hosting : deploymentTypeModel.getHostings()) {
-            for (RequiredHost requiredHost : hosting.getRequiredHosts()) {
-                String scName = ((SoftwareComponent) requiredHost.eContainer()).getName();
-                if (componentName.equals(scName)) {
-                    return (VM) hosting.getProvidedHost().eContainer();
-                }
-            }
-        }
-        return null;
     }
 
     private static <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, DataUtils.VMKey> function) {
@@ -343,27 +246,10 @@ public class DataUtils {
     static class VMKey {
 
         private String name;
-        private String type;
-
-        private static VMKey getInstance(VMInstance vmInstance) {
-
-            String vmType = vmInstance.getAttributes()
-                    .stream()
-                    .filter(att -> att.getName().equals("machineType"))
-                    .findFirst()
-                    .map(Attribute::getValue)
-                    .map(value -> (StringValue) value)
-                    .map(StringValue::getValue)
-                    .orElseThrow(() -> new IllegalStateException("Could not find machineType attribute for VMInstance: " + vmInstance.getName()));
-
-            String name = removeSuffixFromInstance(vmInstance.getName());
-
-            return new VMKey(name, vmType);
-        }
 
         private static VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
             String name = removeSuffixFromInstance(softwareComponentInstance.getName());
-            return new VMKey(name, "");
+            return new VMKey(name);
         }
         private static String removeSuffixFromInstance(String vmName) {
             return removeSuffix(removeSuffix(vmName));
@@ -381,18 +267,14 @@ public class DataUtils {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
-            DataUtils.VMKey vmKey = (DataUtils.VMKey) o;
-
-            if (name != null ? !name.equals(vmKey.name) : vmKey.name != null) return false;
-            return type != null ? type.equals(vmKey.type) : vmKey.type == null;
+            VMKey vmKey = (VMKey) o;
+            return Objects.equals(name, vmKey.name);
         }
 
         @Override
         public int hashCode() {
-            int result = name != null ? name.hashCode() : 0;
-            result = 31 * result + (type != null ? type.hashCode() : 0);
-            return result;
+
+            return Objects.hash(name);
         }
     }
 

@@ -9,8 +9,6 @@
 
 package eu.melodic.upperware.adapter;
 
-import de.uniulm.omi.cloudiator.colosseum.client.Client;
-import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
@@ -56,16 +54,6 @@ public class ApplicationContext {
   @Bean
   public CDOClientX getCdoClient() {
     return new CDOClientXImpl();
-  }
-
-  @Bean
-  public Client getClient() {
-    AdapterProperties.Colosseum colosseum = adapterProperties.getColosseum();
-    AdapterProperties.Colosseum.Auth colosseumAuth = colosseum.getAuth();
-    return ClientBuilder.getNew()
-      .url(colosseum.getUrl())
-      .credentials(colosseumAuth.getEmail(), colosseumAuth.getTenant(), colosseumAuth.getPassword())
-      .build();
   }
 
   @Bean

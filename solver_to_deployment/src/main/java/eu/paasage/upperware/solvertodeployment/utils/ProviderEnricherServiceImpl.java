@@ -4,7 +4,6 @@ import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.CoreFactory;
 import camel.deployment.SoftwareComponentInstance;
-import camel.deployment.VMInstance;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
 import com.google.gson.Gson;
@@ -12,7 +11,6 @@ import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProp
 import io.github.cloudiator.rest.model.CloudType;
 import io.github.cloudiator.rest.model.Image;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,24 +31,6 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
     @Autowired
     public ProviderEnricherServiceImpl(SolverToDeploymentProperties solverToDeploymentProperties) {
         this.solverToDeploymentProperties = solverToDeploymentProperties;
-    }
-
-    @Override
-    public void enrichVMInstance(@NonNull VMInstance vmInstance, @NonNull NodeCandidate nodeCandidate, @NonNull String constraintProblemId, @NonNull CamelModel camelModel) {
-        EList<Attribute> attributes = vmInstance.getAttributes();
-        attributes.add(createAttribute("cloudName", extractCloudName(nodeCandidate, vmInstance.getName(), constraintProblemId)));
-        attributes.add(createAttribute("providerName", createProviderName(nodeCandidate, vmInstance.getName(), constraintProblemId)));
-        attributes.add(createAttribute("location", extractLocation(nodeCandidate)));
-        attributes.add(createAttribute("image", extractImage(nodeCandidate)));
-        attributes.add(createAttribute("machineType", extractMachineType(nodeCandidate)));
-        attributes.add(createAttribute("driver", extractDriver(nodeCandidate)));
-        attributes.add(createAttribute("name", extractName(nodeCandidate)));
-        attributes.add(createAttribute("apiName", extractApiName(nodeCandidate)));
-        attributes.add(createAttribute("credentialsName", extractCredentialsName(nodeCandidate)));
-        attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
-        attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
-        attributes.add(createAttribute("nodeCandidate", gson.toJson(nodeCandidate)));
-        attributes.add(createAttribute("nodeCandidateId", nodeCandidate.getId()));
     }
 
     @Override

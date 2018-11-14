@@ -72,27 +72,6 @@ public class CloudMLHelper {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-    // VM Instance
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    public static VMInstance createVMInstance(VM vm) {
-        // Create VMi
-        VMInstance vmInstance = DeploymentFactory.eINSTANCE.createVMInstance();
-        vmInstance.setType(vm);
-        vmInstance.setName(vm.getName() + "VMInstance_" + getGlobalSuffix());
-
-        // Create ProviderHostInstance
-        for (ProvidedHost providedHost : vm.getProvidedHosts()) {
-            ProvidedHostInstance providedHostInstance = DeploymentFactory.eINSTANCE.createProvidedHostInstance();
-            providedHostInstance.setName(providedHost.getName() + "ProvidedHostInstance_" + getGlobalCount());
-            providedHostInstance.setType(providedHost);
-            vmInstance.getProvidedHostInstances().add(providedHostInstance);
-        }
-
-        return vmInstance;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////
     // Hosting Instance
     //////////////////////////////////////////////////////////////////////////////////////
 
