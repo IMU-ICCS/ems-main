@@ -17,6 +17,7 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.api.QueueApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +102,11 @@ public class ApplicationContext {
   @Bean
   public QueueApi queueApi(ApiClient apiClient) {
     return new QueueApi(apiClient);
+  }
+
+  @Bean
+  public ProcessApi processApi(ApiClient apiClient) {
+    return new ProcessApi(apiClient);
   }
 
   @Bean
