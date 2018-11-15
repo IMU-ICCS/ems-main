@@ -9,10 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.converter.DLMSConverter;
-import eu.melodic.upperware.utilitygenerator.converter.MetricsConverter;
-import eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter;
-import eu.melodic.upperware.utilitygenerator.converter.VariableConverter;
+import eu.melodic.upperware.utilitygenerator.converter.*;
 import eu.melodic.upperware.utilitygenerator.converter.camel.FromCamelModelConverter;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
@@ -28,40 +25,39 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToArgument;
 import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToConstants;
+import static eu.melodic.upperware.utilitygenerator.converter.NodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertDeployedSolutionToNodeCandidates;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolutionToNodeCandidates;
 
 @Slf4j
 public class UtilityFunctionEvaluator {
 
     private UtilityFunction function;
-    private NodeCandidatesConverter nodeCandidatesConverter;
-    private DLMSConverter dlmsConverter;
-    private VariableConverter variableConverter;
     private Collection<String> unmoveableComponents;
     private Collection<ConfigurationElement> deployedConfiguration;
+    private Collection<VariableDTO> variablesFromConstraintProblem;
+    private NodeCandidates nodeCandidates;
+
+    private Collection<ArgumentConverter> converters;
 
     private Printer printer;
 
     public UtilityFunctionEvaluator(String camelModelFilePath, boolean readFromFile, Collection<VariableDTO> variablesFromConstraintProblem,
             Collection<MetricDTO> metricsFromConstraintProblem, Collection<Element> deployedSolution, UtilityGeneratorProperties properties, NodeCandidates nodeCandidates) {
 
-        Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
-        Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
+        this.variablesFromConstraintProblem = Objects.requireNonNull(variablesFromConstraintProblem, "List of Variables could not be null");
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         Objects.requireNonNull(metricsFromConstraintProblem, "List of Metrics could not be null");
         variablesFromConstraintProblem.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
-
-        this.variableConverter = new VariableConverter(variablesFromConstraintProblem);
-
 
         FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
         String formula = fromCamelModelConverter.getUtilityFunctionFormula();
         log.info("Formula of the utility function: {}", formula);
 
-        this.dlmsConverter = new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelConverter.getListOfDlmsUtilityAttributes());
+        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, deployedSolution);
 
         this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", unmoveableComponents.toString());
@@ -75,28 +71,12 @@ public class UtilityFunctionEvaluator {
         if (!listOfAttributesOfNodeCandidates.isEmpty()) {
             log.warn("Flag on candidates is not supported in Utility Generator");
         }
+        converters = new ArrayList<>();
+        converters.add(new VariableConverter(variablesFromConstraintProblem, formula));
+        converters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelConverter.getListOfDlmsUtilityAttributes(), deployedConfiguration));
+        converters.add(new NodeCandidatesConverter(attributesOfNodeCandidates, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem));
 
-        this.nodeCandidatesConverter = new NodeCandidatesConverter(attributesOfNodeCandidates, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem);
-
-        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem);
-        Collection<Element> metrics = metricsConverter.convertMetrics(formula);
-        log.info("metrics: {}", metrics);
-
-        Collection<Element> allConstants = new ArrayList<>(metrics);
-
-        if (deployedSolution != null) { // for configuration? how to get values of current config arguments?
-            deployedConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(deployedSolution);
-            Collection<Element> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedConfiguration);
-            log.info("CurrentConfigAttributesOfNodeCandidates {}", currentConfigAttributesOfNodeCandidates);
-
-            allConstants.addAll(currentConfigAttributesOfNodeCandidates);
-        } else {
-            deployedConfiguration = Collections.emptyList();
-            log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
-            allConstants.addAll(nodeCandidatesConverter.setDefaultValuesOfAttributes(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates()));
-        }
-
-        this.function = new UtilityFunction(formula, convertToConstants(allConstants));
+        this.function = new UtilityFunction(formula, convertToConstants(createConstants(fromCamelModelConverter, metricsFromConstraintProblem, formula)));
 
         this.printer = new Printer(variablesFromConstraintProblem);
         printer.printVariablesFromConstraintProblem();
@@ -106,7 +86,7 @@ public class UtilityFunctionEvaluator {
 
     public double evaluate(Collection<Element> solution) {
         printer.printSolution(solution);
-        Collection<ConfigurationElement> newConfiguration = nodeCandidatesConverter.convertSolutionToNodeCandidates(solution);
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, solution);
 
         if (newConfiguration == null) {
             log.info("No Node Candidate for the evaluated solution, returning 0");
@@ -115,11 +95,22 @@ public class UtilityFunctionEvaluator {
             log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
-        Collection<Element> dlmsUtilityAttributes = dlmsConverter.convertDLMSUtilityAttributes(deployedConfiguration, newConfiguration);
 
-        Collection<Element> attributeNodeCandidates = nodeCandidatesConverter.convertAttributes(newConfiguration);
-        Collection<Element> variablesForFunction = variableConverter.convertVariablesForFunction(solution, function.getFormula());
-
-        return function.evaluateFunction(Stream.concat(convertToArgument(dlmsUtilityAttributes).stream(), Stream.concat(convertToArgument(attributeNodeCandidates).stream(), convertToArgument(variablesForFunction).stream())).collect(Collectors.toList()));
+        Collection<Element> allArguments = new ArrayList<>();
+        converters.forEach(converter -> allArguments.addAll(converter.convertToElements(solution, newConfiguration)));
+        return function.evaluateFunction(convertToArgument(allArguments));
     }
+
+    private Collection<Element> createConstants(FromCamelModelConverter fromCamelModelConverter, Collection<MetricDTO> metricsFromConstraintProblem, String formula) {
+        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem, formula);
+        Collection<Element> metrics = metricsConverter.convertToElements(Collections.emptyList(), deployedConfiguration);
+        log.info("Metrics: {}", metrics);
+
+        Collection<Element> currentConfigAttributesOfNodeCandidates = convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(), deployedConfiguration);
+        log.info("Current config attributes of Node Candidates: {}", currentConfigAttributesOfNodeCandidates);
+        Collection<Element> allConstants = new ArrayList<>(metrics);
+        allConstants.addAll(currentConfigAttributesOfNodeCandidates);
+        return allConstants;
+    }
+
 }

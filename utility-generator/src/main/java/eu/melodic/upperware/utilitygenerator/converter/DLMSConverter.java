@@ -23,14 +23,15 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 
-public class DLMSConverter {
+public class DLMSConverter extends ArgumentConverter{
 
 
     private DLMSService dlmsUtilityService;
     private Collection<DLMSUtilityAttribute> dlmsUtilityAttributes;
+    private Collection<ConfigurationElement> actConfiguration;
 
 
-    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes){
+    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration){
         if (dlmsControllerUrl.isEmpty()){
             this.dlmsUtilityService = new DLMSServiceMock();
         }
@@ -38,10 +39,15 @@ public class DLMSConverter {
             this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
         }
         this.dlmsUtilityAttributes = dlmsUtilityAttributes;
+        this.actConfiguration = actConfiguration;
     }
 
-    public Collection<Element> convertDLMSUtilityAttributes(Collection<ConfigurationElement> actConfiguration,
-            Collection<ConfigurationElement> newConfiguration) {
+    @Override
+    public Collection<Element> convertToElements(Collection<Element> solution, Collection<ConfigurationElement> newConfiguration) {
+        return convertDLMSUtilityAttributes(newConfiguration);
+    }
+
+    private Collection<Element> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
 
         if (dlmsUtilityAttributes.isEmpty()){ //way to not call dlms library if not used
             return Collections.emptyList();

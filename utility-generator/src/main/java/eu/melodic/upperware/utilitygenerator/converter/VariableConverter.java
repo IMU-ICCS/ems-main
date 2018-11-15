@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.converter;
 
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import lombok.AllArgsConstructor;
@@ -20,15 +21,25 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 
 @Slf4j
 @AllArgsConstructor
-public class VariableConverter {
+public class VariableConverter extends ArgumentConverter{
 
     private Collection<VariableDTO> variablesFromConstraintProblem;
+    private String formula;
 
-    public Collection<Element> convertVariablesForFunction(Collection<Element> solution, String formula) {
+    @Override
+    public Collection<Element> convertToElements(Collection<Element> solution, Collection<ConfigurationElement> newConfiguration) {
+        return convertVariablesForFunction(solution);
+    }
+
+    private Collection<Element> convertVariablesForFunction(Collection<Element> solution) {
         return solution.stream().filter(element -> isInFormula(formula, element.getName()) && isVariable(element)).collect(Collectors.toList());
     }
 
     private boolean isVariable(Element element) {
         return variablesFromConstraintProblem.stream().anyMatch(v -> v.getId().equals(element.getName()));
     }
+
+
+
+
 }

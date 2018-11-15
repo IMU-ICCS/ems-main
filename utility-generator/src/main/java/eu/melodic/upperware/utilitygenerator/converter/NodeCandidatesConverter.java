@@ -19,21 +19,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadata.PRICE;
-import static java.util.Objects.isNull;
 
 @Slf4j
 @AllArgsConstructor
 @Getter
-public class NodeCandidatesConverter {
+public class NodeCandidatesConverter extends ArgumentConverter{
 
 
     private Collection<NodeCandidateAttribute> attributes;
@@ -42,43 +37,27 @@ public class NodeCandidatesConverter {
     private Collection<VariableDTO> variables;
 
 
-    public Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
-            Collection<ConfigurationElement> newConfiguration) {
-        return convertAttributes(nodeCandidateAttributes, newConfiguration);
+    @Override
+    public Collection<Element> convertToElements(Collection<Element> solution, Collection<ConfigurationElement> newConfiguration) {
+        return convertAttributes(this.attributes, newConfiguration);
     }
 
-    public Collection<Element> convertAttributes(Collection<ConfigurationElement> newConfiguration) {
-        return convertAttributes(attributes, newConfiguration);
+    public static Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
+            Collection<ConfigurationElement> configuration) {
+        if (configuration.isEmpty()){
+            log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
+            return setDefaultValuesOfAttributes(nodeCandidateAttributes);
+        }
+        else {
+            return convertAttributes(nodeCandidateAttributes, configuration);
+        }
     }
 
-    public Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
+    private static Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
         return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());
     }
 
-    public Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<Element> solution) {
-        log.debug("Converting solution to Node Candidates");
-
-        Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
-        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(solution, variables);
-
-        for (String componentId : cardinalitiesForComponent.keySet()) {
-            log.debug("Converting solution for component {}", componentId);
-            int provider = getProviderValue(componentId, variables, solution);
-            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, solution, variables);
-            NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
-
-            if (isNull(theCheapest)) {
-                log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
-                return null;
-            }
-            log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
-
-            newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
-        }
-        return newConfiguration;
-    }
-
-    private Collection<Element> convertAttributes(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
+    private static Collection<Element> convertAttributes(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
             Collection<ConfigurationElement> newConfiguration) {
         return nodeCandidateAttributes.stream()
                 .map(a -> createElement(a.getName(),
@@ -100,4 +79,6 @@ public class NodeCandidatesConverter {
         else
             throw new IllegalArgumentException("Illegal type of Node Candidate attribute: " + type);
     }
+
+
 }
