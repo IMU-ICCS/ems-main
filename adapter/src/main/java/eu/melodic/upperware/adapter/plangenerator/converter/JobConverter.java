@@ -1,8 +1,9 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.*;
-import eu.melodic.upperware.adapter.plangenerator.converter.job.JobDockerConverter;
-import eu.melodic.upperware.adapter.plangenerator.converter.job.JobSparkConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.DockerInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.LanceInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.SparkInterfaceConverter;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
@@ -22,8 +23,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class JobConverter implements ModelConverter<DeploymentInstanceModel, AdapterJob> {
 
-    private JobSparkConverter jobSparkConverter;
-    private JobDockerConverter jobDockerConverter;
+    private LanceInterfaceConverter lanceInterfaceConverter;
+    private SparkInterfaceConverter sparkInterfaceConverter;
+    private DockerInterfaceConverter dockerInterfaceConverter;
 
     private static final String PORT_PROVIDED = "PortProvided";
     private static final String PORT_REQUIRED = "PortRequired";
@@ -62,49 +64,17 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
 
         AdapterTaskInterface result;
         if (isLanceComponent(configuration)) {
-            result = createLanceInterface((ScriptConfiguration) configuration);
+            result = lanceInterfaceConverter.convert((ScriptConfiguration) configuration);
         } else if (isDockerComponent(configuration)) {
-            result = createDockerInterface((ServerlessConfiguration) configuration);
+            result = dockerInterfaceConverter.convert((ServerlessConfiguration) configuration);
         } else if (isSparkComponent(configuration)) {
-            result = createSparkInterface((ClusterConfiguration) configuration);
+            result = sparkInterfaceConverter.convert((ClusterConfiguration) configuration);
         } else if (isPlatformComponent(configuration)) {
             result = new AdapterTaskInterface();
         } else {
             throw new IllegalStateException("Unknown Interface");
         }
         return Collections.singletonList(result);
-    }
-
-    private AdapterLanceInterface createLanceInterface(ScriptConfiguration configuration) {
-        return AdapterLanceInterface
-                .builder()
-                .containterType("NATIVE") //TODO - do it in better way
-                .preInstall(configuration.getDownloadCommand())
-                .install(configuration.getInstallCommand())
-                .postInstall(configuration.getConfigureCommand())
-                .start(configuration.getStartCommand())
-                .startDetection(configuration.getUploadCommand())
-                .stop(configuration.getStopCommand())
-                .build();
-    }
-
-    private AdapterSparkInterface createSparkInterface(ClusterConfiguration configuration) {
-        return AdapterSparkInterface
-                .builder()
-                .file(configuration.getDownloadURL())
-                .className(jobSparkConverter.findClassName(configuration))
-                .arguments(jobSparkConverter.findAppArguments(configuration))
-                .sparkArguments(jobSparkConverter.findSparkArguments(configuration))
-                .sparkConfiguration(jobSparkConverter.findSparkConfiguration(configuration))
-                .build();
-    }
-
-    private AdapterTaskInterface createDockerInterface(ServerlessConfiguration configuration) {
-        return AdapterDockerInterface
-                .builder()
-                .dockerImage(jobDockerConverter.findDockerImage(configuration))
-                .environment(jobDockerConverter.findEnvironment(configuration))
-                .build();
     }
 
     private boolean isLanceComponent(Configuration configuration) {

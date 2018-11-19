@@ -4,27 +4,24 @@ import camel.core.Attribute;
 import camel.core.Feature;
 import camel.type.StringValue;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CamelMetadataToolForTaskInterfaces {
+
+    private static final String SPLIT_ATTRIBUTE_PATTERN = "\\s+";
+    private static final String ATTRIBUTE_PREFIX = "--";
 
     public static Optional<Attribute> findAttributeByAnnotation(EList<Attribute> attributes, String annotation) {
         return attributes.stream()
                 .filter(attribute -> attribute.getAnnotations()
                         .stream()
                         .anyMatch(mmsObject -> mmsObject.getId().equals(annotation)))
-                .findFirst();
-    }
-
-    public static Optional<Attribute> findAttributeByName(EList<Attribute> attributes, String attributeName) {
-        return attributes.stream()
-                .filter(attribute -> attribute.getName().equals(attributeName))
                 .findFirst();
     }
 
@@ -36,20 +33,15 @@ public class CamelMetadataToolForTaskInterfaces {
     }
 
     public static Map<String, String> createStringAttributesMapForFeature(Feature feature) {
-        Map<String, String> result = new HashMap<>();
-        feature.getAttributes().forEach(attribute -> {
-            ImmutablePair<String, String> pairAttribute = parseAttributeToPair(((StringValue) attribute.getValue()).getValue());
-            result.put(pairAttribute.getKey(), pairAttribute.getValue());
-        });
-        return result;
+        return feature.getAttributes().stream()
+                .map(attribute -> parseAttributeToPair(((StringValue) attribute.getValue()).getValue()))
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
     // e.g. --executor-memory 6G => key:executor-memory, value:6G
-    private static ImmutablePair<String, String> parseAttributeToPair(String attribute) {
-        String splitAttributePattern = "\\s+";
-        String attributePrefix = "--";
-        String[] split = attribute.trim().split(splitAttributePattern);
-        String key = split[0].trim().replace(attributePrefix, ""); //cut prefix
-        return new ImmutablePair<>(key, split[1].trim());
+    private static Pair<String, String> parseAttributeToPair(String attribute) {
+        String[] split = attribute.trim().split(SPLIT_ATTRIBUTE_PATTERN);
+        String key = split[0].trim().replace(ATTRIBUTE_PREFIX, ""); //cut prefix
+        return Pair.of(key, split[1].trim());
     }
 }

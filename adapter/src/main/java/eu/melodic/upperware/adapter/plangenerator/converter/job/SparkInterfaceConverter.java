@@ -4,6 +4,7 @@ import camel.core.Attribute;
 import camel.core.Feature;
 import camel.deployment.ClusterConfiguration;
 import camel.type.StringValue;
+import eu.melodic.upperware.adapter.plangenerator.model.AdapterSparkInterface;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import lombok.extern.slf4j.Slf4j;
@@ -16,23 +17,35 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class JobSparkConverter {
+public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfiguration, AdapterSparkInterface> {
 
-    public String findClassName(ClusterConfiguration configuration) {
+    @Override
+    public AdapterSparkInterface convert(ClusterConfiguration configuration) {
+        return AdapterSparkInterface
+                .builder()
+                .file(configuration.getDownloadURL())
+                .className(findClassName(configuration))
+                .arguments(findAppArguments(configuration))
+                .sparkArguments(findSparkArguments(configuration))
+                .sparkConfiguration(findSparkConfiguration(configuration))
+                .build();
+    }
+
+    private String findClassName(ClusterConfiguration configuration) {
         Attribute attribute = findAttribute(configuration, CamelMetadataForTaskInterfaces.SPARK_CLASS_NAME.camelName);
         return attribute == null ? null : ((StringValue) attribute.getValue()).getValue();
     }
 
-    public List<String> findAppArguments(ClusterConfiguration configuration) {
+    private List<String> findAppArguments(ClusterConfiguration configuration) {
         Attribute attribute = findAttribute(configuration, CamelMetadataForTaskInterfaces.APP_ARGUMENTS.camelName);
         return attribute == null ? Collections.emptyList() : parseApplicationArguments(((StringValue) attribute.getValue()).getValue());
     }
 
-    public Map<String, String> findSparkArguments(ClusterConfiguration configuration) {
+    private Map<String, String> findSparkArguments(ClusterConfiguration configuration) {
         return createMapConfigurationForAnnotation(configuration, CamelMetadataForTaskInterfaces.SPARK_ARGUMENTS.camelName);
     }
 
-    public Map<String, String> findSparkConfiguration(ClusterConfiguration configuration) {
+    private Map<String, String> findSparkConfiguration(ClusterConfiguration configuration) {
         return createMapConfigurationForAnnotation(configuration, CamelMetadataForTaskInterfaces.SPARK_CONFIGURATION.camelName);
     }
 

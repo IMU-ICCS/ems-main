@@ -1,6 +1,7 @@
 package eu.melodic.upperware.adapter.plangenerator.converter.job;
 
 import camel.deployment.ServerlessConfiguration;
+import eu.melodic.upperware.adapter.plangenerator.model.AdapterDockerInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +10,16 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class JobDockerConverter {
+public class DockerInterfaceConverter implements InterfaceConverter<ServerlessConfiguration, AdapterDockerInterface> {
+
+    @Override
+    public AdapterDockerInterface convert(ServerlessConfiguration configuration) {
+        return AdapterDockerInterface
+                .builder()
+                .dockerImage(findDockerImage(configuration))
+                .environment(findEnvironment(configuration))
+                .build();
+    }
 
     // todo with annotation for Docker
     public String findDockerImage(ServerlessConfiguration configuration) {
@@ -21,4 +31,6 @@ public class JobDockerConverter {
     public Map<String, String> findEnvironment(ServerlessConfiguration configuration) {
         return Collections.emptyMap();
     }
+
+
 }
