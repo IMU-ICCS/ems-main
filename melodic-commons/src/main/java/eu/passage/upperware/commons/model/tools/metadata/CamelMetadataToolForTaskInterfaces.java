@@ -4,14 +4,16 @@ import camel.core.Attribute;
 import camel.core.Feature;
 import camel.type.StringValue;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.eclipse.emf.common.util.EList;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
-public class CamelMetadataToolForSpark {
+public class CamelMetadataToolForTaskInterfaces {
 
-    //todo spytać Marty czy to co jest dla adnotacji w camelu to jej id, czy name? W CamelMetaDataTool porównują po id
     public static Optional<Attribute> findAttributeByAnnotation(EList<Attribute> attributes, String annotation) {
         return attributes.stream()
                 .filter(attribute -> attribute.getAnnotations()
@@ -33,23 +35,21 @@ public class CamelMetadataToolForSpark {
                 .findFirst();
     }
 
-    //todo spytać Marty - czy klucz to nazwa z camela i wartość to wartość?
     public static Map<String, String> createStringAttributesMapForFeature(Feature feature) {
         Map<String, String> result = new HashMap<>();
-        feature.getAttributes().forEach(attribute ->
-                result.put(attribute.getName(), ((StringValue) attribute.getValue()).getValue()));
+        feature.getAttributes().forEach(attribute -> {
+            ImmutablePair<String, String> pairAttribute = parseAttributeToPair(((StringValue) attribute.getValue()).getValue());
+            result.put(pairAttribute.getKey(), pairAttribute.getValue());
+        });
         return result;
     }
 
-    //to tests
-    public static List<String> parseApplicationArguments(String arguments) {
-        List<String> result = new ArrayList<>();
-        String argumentSign = "--";
-        String[] splitArgs = arguments.split(argumentSign);
-        for (String arg : splitArgs) {
-            result.add(argumentSign + arg.trim());
-        }
-
-        return result;
+    // e.g. --executor-memory 6G => key:executor-memory, value:6G
+    private static ImmutablePair<String, String> parseAttributeToPair(String attribute) {
+        String splitAttributePattern = "\\s+";
+        String attributePrefix = "--";
+        String[] split = attribute.trim().split(splitAttributePattern);
+        String key = split[0].trim().replace(attributePrefix, ""); //cut prefix
+        return new ImmutablePair<>(key, split[1].trim());
     }
 }

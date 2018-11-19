@@ -20,13 +20,8 @@ public enum CamelMetadata {
 
     PRICE("Cost", null, true),
 
-    UNMOVEABLE("Unmoveable", null, false),
+    UNMOVEABLE("Unmoveable", null, false);
 
-
-    SPARK_CLASS_NAME("ClassName", null, false),
-    APP_ARGUMENTS("ApplicationArguments", null, false), //todo w Camelu nie ma adnotacji a w MMS jest taka, spytać Marty
-    SPARK_ARGUMENTS("SPARKArguments", null, false),
-    SPARK_CONFIGURATION("SPARKConfiguration", null, false);
 
     public String camelName;
     public VariableType variableType;

@@ -1,27 +1,29 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
-import camel.core.Feature;
 import camel.deployment.*;
-import camel.type.StringValue;
-import camel.type.Value;
-import eu.melodic.upperware.adapter.exception.AdapterException;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.JobDockerConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.JobSparkConverter;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.passage.upperware.commons.model.tools.CdoTool;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForSpark;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class JobConverter implements ModelConverter<DeploymentInstanceModel, AdapterJob> {
+
+    private JobSparkConverter jobSparkConverter;
+    private JobDockerConverter jobDockerConverter;
 
     private static final String PORT_PROVIDED = "PortProvided";
     private static final String PORT_REQUIRED = "PortRequired";
@@ -59,14 +61,14 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
         Configuration configuration = getConfiguration(softwareComponent);
 
         AdapterTaskInterface result;
-        if (isLanceComponent(configuration)){
+        if (isLanceComponent(configuration)) {
             result = createLanceInterface((ScriptConfiguration) configuration);
         } else if (isDockerComponent(configuration)) {
-            result = new AdapterDockerInterface();
-        } else if (isPlatformComponent(configuration)) {
-            result = new AdapterTaskInterface();
+            result = createDockerInterface((ServerlessConfiguration) configuration);
         } else if (isSparkComponent(configuration)) {
             result = createSparkInterface((ClusterConfiguration) configuration);
+        } else if (isPlatformComponent(configuration)) {
+            result = new AdapterTaskInterface();
         } else {
             throw new IllegalStateException("Unknown Interface");
         }
@@ -87,12 +89,21 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     }
 
     private AdapterSparkInterface createSparkInterface(ClusterConfiguration configuration) {
-        return AdapterSparkInterface.builder()
+        return AdapterSparkInterface
+                .builder()
                 .file(configuration.getDownloadURL())
-                .className(findClassName(configuration))
-                .arguments(findAppArguments(configuration))
-                .sparkArguments(findSparkArguments(configuration))
-                .sparkConfiguration(findSparkConfiguration(configuration))
+                .className(jobSparkConverter.findClassName(configuration))
+                .arguments(jobSparkConverter.findAppArguments(configuration))
+                .sparkArguments(jobSparkConverter.findSparkArguments(configuration))
+                .sparkConfiguration(jobSparkConverter.findSparkConfiguration(configuration))
+                .build();
+    }
+
+    private AdapterTaskInterface createDockerInterface(ServerlessConfiguration configuration) {
+        return AdapterDockerInterface
+                .builder()
+                .dockerImage(jobDockerConverter.findDockerImage(configuration))
+                .environment(jobDockerConverter.findEnvironment(configuration))
                 .build();
     }
 
@@ -105,8 +116,7 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     }
 
     private boolean isDockerComponent(Configuration configuration) {
-        // return configuration instanceof ServerlessConfiguration; //todo spytać Marty jaki typ configuration dla Dockera
-        throw new UnsupportedOperationException("Method not implemented yet");
+        return configuration instanceof ServerlessConfiguration;
     }
 
     private boolean isPlatformComponent(Configuration configuration) {
@@ -154,45 +164,4 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
                 .portRequired(communication.getRequiredCommunication().getName())
                 .build();
     }
-
-    private String findClassName(ClusterConfiguration configuration) {
-
-        Value value = CamelMetadataToolForSpark.findAttributeByAnnotation(configuration.getAttributes(), CamelMetadata.SPARK_CLASS_NAME.camelName)
-                .orElseThrow(() -> new AdapterException("Attribute className for SparkInterface not found"))
-                .getValue();
-
-        StringValue stringValue = (StringValue) value;
-        log.info("Found className: {}", stringValue.getValue());
-
-        return stringValue.getValue();
-    }
-
-    private List<String> findAppArguments(ClusterConfiguration configuration) {
-
-        Value value = CamelMetadataToolForSpark.findAttributeByAnnotation(configuration.getAttributes(), CamelMetadata.APP_ARGUMENTS.camelName)
-                .orElseThrow(() -> new AdapterException("App arguments for SparkInterface not found"))
-                .getValue();
-
-        StringValue stringValue = (StringValue) value;
-        log.info("Found appArguments: {}", stringValue.getValue());
-
-        //todo spytać Marty chyba parsować tego stringa i zrobić z niego listę
-        return CamelMetadataToolForSpark.parseApplicationArguments(stringValue.getValue());
-
-    }
-
-    private Map<String, String> findSparkArguments(ClusterConfiguration configuration) {
-
-        Feature feature = CamelMetadataToolForSpark.findFeatureByAnnotation(configuration.getSubFeatures(), CamelMetadata.SPARK_ARGUMENTS.camelName)
-                .orElseThrow(() -> new AdapterException("SparkArguments for SparkInterface not found"));
-        return CamelMetadataToolForSpark.createStringAttributesMapForFeature(feature);
-    }
-
-    private Map<String, String> findSparkConfiguration(ClusterConfiguration configuration) {
-
-        Feature feature = CamelMetadataToolForSpark.findFeatureByAnnotation(configuration.getSubFeatures(), CamelMetadata.SPARK_CONFIGURATION.camelName)
-                .orElseThrow(() -> new AdapterException("SparkConfiguration for SparkInterface not found"));
-        return CamelMetadataToolForSpark.createStringAttributesMapForFeature(feature);
-    }
-
 }
