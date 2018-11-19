@@ -23,6 +23,7 @@ import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
 import io.github.cloudiator.rest.model.Schedule;
@@ -55,6 +56,7 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   private final ColosseumApi api;
   private final JobApi jobApi;
   private final NodeApi nodeApi;
+  private final ProcessApi processApi;
 
   private final List<Node> nodes = synchronizedList();
   private final List<NodeGroup> nodeGroups = synchronizedList();
@@ -479,12 +481,12 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
     nodes.addAll(nodeApi.findNodes());
 
     schedules.clear();
-    schedules.addAll(jobApi.getSchedules());
+    schedules.addAll(processApi.getSchedules());
 
     processes.clear();
     if (CollectionUtils.isNotEmpty(schedules)){
-        processes.addAll(jobApi.getProcesses(schedules.get(0).getId()));
-    }
+        processes.addAll(processApi.getProcesses(schedules.get(0).getId()));
+  }
 
     jobs.clear();
     jobs.addAll(jobApi.findJobs());

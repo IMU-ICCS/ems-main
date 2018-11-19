@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter.communication.colosseum;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.api.QueueApi;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
@@ -40,6 +41,7 @@ public class ColosseumClientApi implements ColosseumApi {
   private JobApi jobApi;
   private NodeApi nodeApi;
   private QueueApi queueApi;
+  private ProcessApi processApi;
 
   @Override
   public Queue findQueuedTask(String taskId) throws ApiException {
@@ -47,12 +49,12 @@ public class ColosseumClientApi implements ColosseumApi {
   }
   @Override
   public Queue addSchedule(@NonNull ScheduleNew scheduleNew) throws ApiException {
-    return jobApi.addSchedule(scheduleNew);
+    return processApi.addSchedule(scheduleNew);
   }
 
   @Override
   public Schedule getSchedule(String scheduleId) throws ApiException {
-    return CollectionUtils.emptyIfNull(jobApi.getSchedules())
+    return CollectionUtils.emptyIfNull(processApi.getSchedules())
             .stream()
             .filter(schedule -> scheduleId.equals(schedule.getId()))
             .findFirst()
@@ -61,17 +63,17 @@ public class ColosseumClientApi implements ColosseumApi {
 
   @Override
   public List<Schedule> getSchedules() throws ApiException {
-    return jobApi.getSchedules();
+    return processApi.getSchedules();
   }
 
   @Override
   public Queue addProcess(@NotNull ProcessNew processNew) throws ApiException {
-    return jobApi.createProcess(processNew);
+    return processApi.createProcess(processNew);
   }
 
   @Override
   public Process getProcess(String scheduleId, String processId) throws ApiException {
-    return CollectionUtils.emptyIfNull(jobApi.getProcesses(scheduleId))
+    return CollectionUtils.emptyIfNull(processApi.getProcesses(scheduleId))
             .stream()
             .filter(process -> processId.equals(process.getId()))
             .findFirst()
@@ -80,7 +82,7 @@ public class ColosseumClientApi implements ColosseumApi {
 
   @Override
   public List<Process> getProcessess(String scheduleId) throws ApiException {
-    return jobApi.getProcesses(scheduleId);
+    return processApi.getProcesses(scheduleId);
   }
 
   @Override
