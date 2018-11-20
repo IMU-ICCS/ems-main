@@ -22,13 +22,13 @@ public class DockerInterfaceConverter implements InterfaceConverter<ServerlessCo
     }
 
     // todo with annotation for Docker
-    public String findDockerImage(ServerlessConfiguration configuration) {
+    private String findDockerImage(ServerlessConfiguration configuration) {
         return configuration.getBinaryCodeURL();
     }
 
 
     //todo
-    public Map<String, String> findEnvironment(ServerlessConfiguration configuration) {
+    private Map<String, String> findEnvironment(ServerlessConfiguration configuration) {
         return Collections.emptyMap();
     }
 
