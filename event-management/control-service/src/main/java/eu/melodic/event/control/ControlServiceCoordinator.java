@@ -1,0 +1,588 @@
+/*
+ * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.event.control;
+
+import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.brokercep.cep.StatementSubscriber;
+import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.translate.CamelToEplTranslator;
+import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.Translator;
+
+import eu.melodic.models.commons.NotificationResult;
+import eu.melodic.models.commons.NotificationResultImpl;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.interfaces.ems.Monitor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Slf4j
+@Service
+public class ControlServiceCoordinator {
+	
+	@Autowired
+	private ApplicationContext applicationContext;
+	@Autowired
+	private ControlServiceProperties properties;
+	@Autowired
+	private BaguetteServer baguette;
+	//@Autowired
+	private BrokerCepService brokerCep;
+	@Autowired
+    private RestTemplate restTemplate;
+	
+	private AtomicBoolean inUse = new AtomicBoolean();
+	private Map<String,TranslationContext> camelToTcCache = new HashMap<>();
+	private String cpModelId = null;
+	
+/*	@PostConstruct
+	public void postConstruct() {
+		log.trace("ControlServiceCoordinator: 'postConstruct()' invoked");
+	}
+	
+	@PreDestroy
+	public void preDestroy() {
+		log.info("ControlServiceCoordinator: 'preDestroy()' invoked");
+	}*/
+	
+	@Async
+	public void processCpModelId(String cpModelId, String notificationUri) {
+		notificationUri = (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) ? notificationUri : null;
+		
+		// Acquire lock of this coordinator
+		if (! inUse.compareAndSet(false, true)) {
+			String mesg = "ControlServiceCoordinator.processCpModelId(): ERROR: Coordinator is in use. Method exits immediately";
+			log.warn(mesg);
+			if (! properties.isSkipEsbNotification()) {
+				sendErrorNotification(notificationUri, mesg, mesg);
+			} else {
+				log.warn("ControlServiceCoordinator.processCpModelId(): Skipping ESB notification due to configuration");
+			}
+			return;
+		}
+		
+		try {
+			// Call '_processCpModelIds()' to do actual processing
+			//_processCpModelIds(cpModelId, notificationUri);
+			
+			this.cpModelId = cpModelId;
+			
+			// Notify ESB, if 'notificationUri' is provided
+			if (! properties.isSkipEsbNotification()) {
+				if (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) {
+					log.info("ControlServiceCoordinator.processCpModelId(): Notifying ESB: {}", notificationUri);
+					sendSuccessNotification(notificationUri);
+					log.info("ControlServiceCoordinator.processCpModelId(): ESB notified: {}", notificationUri);
+				}
+			} else {
+				log.warn("ControlServiceCoordinator.processCpModelId(): Skipping ESB notification due to configuration");
+			}
+			
+		} catch (Exception ex) {
+			String mesg = "ControlServiceCoordinator.processCpModelId(): EXCEPTION: "+ex;
+			log.error(mesg, ex);
+			if (! properties.isSkipEsbNotification()) {
+				sendErrorNotification(notificationUri, mesg, mesg);
+			} else {
+				log.warn("ControlServiceCoordinator.processCpModelId(): Skipping ESB notification due to configuration");
+			}
+		} finally {
+			// Release lock of this coordinator
+			inUse.compareAndSet(true, false);
+		}
+	}
+	
+	@Async
+	public void processNewModel(String camelModelId, String notificationUri) {
+		processNewModel(camelModelId, null, notificationUri);
+	}
+	
+	@Async
+	public void processNewModel(String camelModelId, String cpModelId, String notificationUri) {
+		notificationUri = (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) ? notificationUri : null;
+		
+		// Acquire lock of this coordinator
+		if (! inUse.compareAndSet(false, true)) {
+			String mesg = "ControlServiceCoordinator.processNewModel(): ERROR: Coordinator is in use. Method exits immediately";
+			log.warn(mesg);
+			if (! properties.isSkipEsbNotification()) {
+				sendErrorNotification(notificationUri, mesg, mesg);
+			} else {
+				log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
+			}
+			return;
+		}
+		
+		if (cpModelId!=null) {
+			this.cpModelId = cpModelId;
+		}
+		
+		try {
+			// Call '_processNewModels()' to do actual processing
+			_processNewModels(camelModelId, notificationUri);
+		} catch (Exception ex) {
+			String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: "+ex;
+			log.error(mesg, ex);
+			if (! properties.isSkipEsbNotification()) {
+				sendErrorNotification(notificationUri, mesg, mesg);
+			} else {
+				log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
+			}
+		} finally {
+			// Release lock of this coordinator
+			inUse.compareAndSet(true, false);
+		}
+	}
+	
+	protected void _processNewModels(String camelModelId, String notificationUri) {
+		log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, notification-uri={}", camelModelId, notificationUri);
+		
+		// Translate models into EPL rules etc
+		TranslationContext _TC = null;
+		if (! properties.isSkipTranslation()) {
+			log.info("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: camel-model-id={}", camelModelId);
+			CamelToEplTranslator translator = 
+				applicationContext.getBean(CamelToEplTranslator.class);
+			_TC = translator.translate(camelModelId);
+			log.debug("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: RESULTS: {}", _TC);
+			
+			// serialize 'TranslationContext' to file
+			String fileName = properties.getTcSaveFile();
+			if (fileName!=null && !(fileName=fileName.trim()).isEmpty()) {
+				try {
+					log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
+					java.io.Writer writer = new java.io.FileWriter(fileName);
+					com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
+					// clone _TC
+					TranslationContext _cloneTC = new TranslationContext();
+					_cloneTC.DAG.clearDag();
+					_cloneTC.G2R.putAll( _TC.G2R );
+					_cloneTC.G2T.putAll( _TC.G2T );
+					gson.toJson(_cloneTC, writer);
+					writer.close();
+					log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
+				} catch (java.io.IOException ex) {
+					log.error("ControlServiceCoordinator.processNewModel(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
+				}
+			}
+			
+		} else {
+			log.warn("ControlServiceCoordinator.processNewModel(): Skipping CAMEL-to-EPL rule translation due to configuration");
+			_TC = new TranslationContext();
+			
+			// unserialize 'TranslationContext' from file
+			String fileName = properties.getTcLoadFile();
+			if (fileName!=null && !(fileName=fileName.trim()).isEmpty()) {
+				try {
+					log.info("ControlServiceCoordinator.processNewModel(): Start unserializing _TC data from file: {}", fileName);
+					java.io.Reader reader = new java.io.FileReader(fileName);
+					com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
+					_TC = gson.fromJson(reader, TranslationContext.class);
+					reader.close();
+					log.info("ControlServiceCoordinator.processNewModel(): Unserialized _TC data from file: {}", fileName);
+					
+					CamelToEplTranslator translator = 
+						applicationContext.getBean(CamelToEplTranslator.class);
+					translator.printAnalysisResults(_TC, null);
+				} catch (java.io.IOException ex) {
+					log.error("ControlServiceCoordinator.processNewModel(): FAILED to unserialize _TC from file: {} : Exception: ", fileName, ex);
+				}
+			}
+		}
+		
+		// Signal Event Processing Network and/or User Application to stop/pause
+//XXX: TODO: +++++++++++++++++++++
+// e.g.  cloudiatorHelper.stopApplication();
+// -AND- baguette.signalEPN(STOP);
+		
+		// Retrieve Metric Variable Values (MVV) from CP model
+		Map<String,Double> constants = new HashMap<>();
+		if (! properties.isSkipMvvRetrieve()) {
+			if (cpModelId!=null && !cpModelId.trim().isEmpty()) {
+				try {
+					log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
+					
+					// Retrieve constant names from '_TC.MVV' and values from a given CP model
+					eu.melodic.event.control.util.CpModelHelper helper = new eu.melodic.event.control.util.CpModelHelper();
+					constants.putAll( helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)) );
+					log.info("ControlServiceCoordinator.processNewModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
+					
+				} catch (Exception ex) {
+					log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
+					//return;
+				}
+			} else {
+				log.error("ControlServiceCoordinator.processNewModel(): No CP model have been provided");
+				//return;
+			}
+		} else {
+			log.warn("ControlServiceCoordinator.processNewModel(): Skipping MVV retrieval due to configuration");
+		}
+
+		// (Re-)Configure Broker and CEP
+		String upperwareGrouping = properties.getUpperwareGrouping();
+		if (! properties.isSkipBrokerCep()) {
+			try {
+				// Initializing Broker-CEP module if necessary
+				if (brokerCep==null) {
+					log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Initializing...");
+					brokerCep = applicationContext.getBean(BrokerCepService.class);
+					log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Initializing...ok");
+				}
+				
+				// Get event types for GLOBAL grouping (i.e. that of Upperware)
+				log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Upperware grouping: {}", upperwareGrouping);
+				Set<String> eventTypeNames = _TC.getG2T().get( upperwareGrouping );
+				log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Configuration of Event Types: {}", eventTypeNames);
+				if (eventTypeNames==null || eventTypeNames.size()==0) throw new RuntimeException("Broker-CEP: No event types for GLOBAL grouping"); 
+				
+				// Clear any previous event types, statements or function definitions and register the new ones
+				brokerCep.clearState();
+				brokerCep.addEventTypes( eventTypeNames, EventMap.getPropertyNames(), EventMap.getPropertyClasses() );
+				//brokerCep.addEventTypes( eventTypeNames, eu.melodic.event.brokercep.event.MetricEvent.class );
+				
+				log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Constants: {}", constants);
+				brokerCep.setConstants( constants );
+				
+				log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Function definitions: {}", _TC.getFunctionDefinitions());
+				brokerCep.addFunctionDefinitions( _TC.getFunctionDefinitions() );
+				
+				Map<String,Set<String>> ruleStatements = _TC.getG2R().get( upperwareGrouping );
+				log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Configuration of EPL statements: {}", ruleStatements);
+				int cnt = 0;
+				for (Map.Entry<String,Set<String>> topicRules : ruleStatements.entrySet()) {
+					String topicName = topicRules.getKey();
+					for (String rule : topicRules.getValue()) {
+						brokerCep.getCepService().addStatementSubscriber(
+							new CscStatementSubscriber().setNameTopicAndStatement("Subscriber_"+cnt++, topicName, rule, brokerCep)
+						);
+					}
+				}
+			} catch (Exception ex) {
+				log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", camelModelId, ex);
+				//return;
+			}
+		} else {
+			log.warn("ControlServiceCoordinator.processNewModel(): Skipping Broker-CEP setup due to configuration");
+		}
+		
+		// (Re-)Configure Baguette server
+		if (! properties.isSkipBaguette()) {
+			log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
+			try {
+				baguette.setTopologyConfiguration( _TC.getG2T(), _TC.getG2R(), _TC.getTopicConnections(), constants, _TC.getFunctionDefinitions(), upperwareGrouping );
+			} catch (Exception ex) {
+				log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
+				//return;
+			}
+		} else {
+			log.warn("ControlServiceCoordinator.processNewModel(): Skipping Baguette Server setup due to configuration");
+		}
+		
+		// (Re-)Configure MetaSolver
+		if (! properties.isSkipMetasolver()) {
+			// Get scaling event and SLO topics from _TC
+			Set<String> scalingTopics = new HashSet<>();
+			scalingTopics.addAll( _TC.E2A.keySet() );
+			scalingTopics.addAll( _TC.SLO );
+			log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: scaling-topics: {}", scalingTopics);
+			
+			// Get top-level metric topics from _TC
+			Set<String> metricTopics = new HashSet<>();
+			metricTopics.addAll( _TC.DAG.getTopLevelNodes().stream().filter(node -> ! scalingTopics.contains(node.getName())).map(node -> node.getName()).collect(Collectors.toSet()) );
+			log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
+			
+			// Prepare subscription configurations
+			String upperwareBrokerUrl = brokerCep!=null ? brokerCep.getBrokerCepProperties().getBrokerUrl() : null;
+			if (upperwareBrokerUrl==null || upperwareBrokerUrl.trim().isEmpty()) {
+				log.warn("ControlServiceCoordinator.processNewModel(): No Broker URL has been specified or Broker-CEP module is deactivated");
+			}
+			List<Map> subscriptionConfigs = new ArrayList<>();
+			for (String t : scalingTopics) subscriptionConfigs.add( _prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "SCALE") );
+			for (String t : metricTopics) subscriptionConfigs.add( _prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "MVV") );
+			log.info("ControlServiceCoordinator.processNewModel(): MetaSolver subscription configuration: {}", subscriptionConfigs);
+			
+			// POST subscription configurations to MetaSolver
+			String metaSolverEndpoint = properties.getMetasolverConfigurationUrl();
+			com.google.gson.Gson gson = new com.google.gson.Gson();
+			String json = gson.toJson(subscriptionConfigs);
+			log.info("ControlServiceCoordinator.processNewModel(): MetaSolver subscription configuration in JSON: {}", json);
+			try {
+				log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
+				String metaSolverResponse = new RestTemplate().postForObject(metaSolverEndpoint, json, String.class);
+				log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
+			} catch (Exception ex) {
+				log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+				//return;
+			}
+			
+		} else {
+			log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver subscription setup due to configuration");
+		}
+		
+		// (Re-)Configure LA Solver
+//XXX: TODO: +++++++++++++++++++++
+// e.g.  metaSolver.unsubscribe(); metaSolver.setConfiguration(...); metaSolver.subscribe();
+		/*if (! properties.isSkipLASolver()) {
+			//log.info("ControlServiceCoordinator.processNewModel(): Re-configuring MetaSolver: ???????????????");
+		} else {
+			//log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver setup due to configuration");
+		}*/
+		
+		// Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
+		log.info("ControlServiceCoordinator.processNewModel(): Cache translation results: camel-model-id={}", camelModelId);
+		camelToTcCache.put(camelModelId, _TC);
+		
+		// Signal Event Processing Network and/or User Application to start/resume
+//XXX: TODO: +++++++++++++++++++++
+// e.g.  baguette.signalEPN(START);
+// -AND- cloudiatorHelper.startApplication();
+		
+		// Notify ESB, if 'notificationUri' is provided
+		if (! properties.isSkipEsbNotification()) {
+			if (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) {
+				log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
+				sendSuccessNotification(notificationUri);
+				log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
+			}
+		} else {
+			log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
+		}
+		
+		log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
+	}
+	
+	protected Map<String,String> _prepareSubscriptionConfig(String url, String topic, String clientId, String type) {
+		Map<String,String> map = new HashMap<>();
+		map.put("url", url);
+		map.put("topic", topic);
+		map.put("client-id", clientId);
+		map.put("type", type);
+		return map;
+	}
+	
+	public static class CscStatementSubscriber implements StatementSubscriber {
+		private String name;
+		private String topic;
+		private String statement;
+		private BrokerCepService brokerCep;
+		
+		public String getName() { return name; }
+		public String getTopic() { return topic; }
+		public String getStatement() { return statement; }
+		
+		public StatementSubscriber setNameTopicAndStatement(String n, String t, String s, BrokerCepService bc) {
+			name = n;
+			topic = t;
+			statement = s;
+			brokerCep = bc;
+			return this;
+		}
+		
+		public void update(java.util.Map<String, Object> eventMap) {
+			try {
+				log.info("- New event: subscriber={}, topic={}, payload={}", name, topic, eventMap);
+				
+				// Publish new event to Local Broker topic
+				String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrl();
+				log.info("- Publishing event to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
+						name, localBrokerUrl, topic, eventMap);
+				brokerCep.publishEvent( localBrokerUrl, topic, eventMap );
+				log.info("- Event published to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
+						name, localBrokerUrl, topic, eventMap);
+				
+			} catch (Exception ex) {
+				log.error("- New event: ERROR: subscriber={}, topic={}, exception={}", name, topic, ex);
+			}
+		}
+	}
+	
+	// ------------------------------------------------------------------------------------------------------------
+	// Translation information query methods
+	// ------------------------------------------------------------------------------------------------------------
+	public TranslationContext getTranslationContextOfCamelModel(String camelModelId) {
+		return camelToTcCache.get(camelModelId);
+	}
+	
+	public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
+		TranslationContext _tc = camelToTcCache.get(camelModelId);
+		List<Monitor> sensors = new ArrayList<>( _tc.MON );
+		Watermark watermark = prepareWatermark();
+		sensors.stream().forEach(s -> s.setWatermark(watermark));
+		return sensors;
+	}
+	
+	protected Watermark prepareWatermark() {
+		Watermark watermark = new WatermarkImpl();
+		watermark.setUser("EMS");
+		watermark.setSystem("EMS");
+		watermark.setDate(new java.util.Date());
+		String uuid = java.util.UUID.randomUUID().toString().toLowerCase();
+		watermark.setUuid(uuid);
+		return watermark;
+	}
+	
+	// ------------------------------------------------------------------------------------------------------------
+	// Baguette control methods
+	// ------------------------------------------------------------------------------------------------------------
+	@Async
+	public void stopBaguette() {
+		// Acquire lock of this coordinator
+		if (! inUse.compareAndSet(false, true)) {
+			log.warn("ControlServiceCoordinator.stopBaguette(): ERROR: Coordinator is in use. Method exits immediately");
+			return;
+		}
+		
+		try {
+			// Stop Baguette server
+			log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server...");
+			baguette.stopServer();
+			log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server... done");
+		} catch (Exception ex) {
+			log.error("ControlServiceCoordinator.stopBaguette(): EXCEPTION while stopping Baguette server: ", ex);
+		} finally {
+			// Release lock of this coordinator
+			inUse.compareAndSet(true, false);
+		}
+	}
+	
+	// ------------------------------------------------------------------------------------------------------------
+	// ESB notification methods
+	// ------------------------------------------------------------------------------------------------------------
+	private void sendSuccessNotification(String notificationUri) {
+		NotificationResultImpl result = new NotificationResultImpl();
+		result.setStatus( NotificationResult.StatusType.SUCCESS );
+		sendNotification(result, notificationUri);
+	}
+	
+	private void sendErrorNotification(String notificationUri, String errorCode, String errorDescription) {
+		NotificationResultImpl result = new NotificationResultImpl();
+		result.setStatus( NotificationResult.StatusType.ERROR );
+		result.setErrorCode(errorCode);
+		result.setErrorDescription(errorDescription);
+		sendNotification(result, notificationUri);
+	}
+	
+	private void sendNotification(NotificationResultImpl notification, String notificationUri) {
+		// Get ESB url from control-service configuration
+		String esbUrl = properties.getEsbUrl();
+		if (esbUrl==null || (esbUrl=esbUrl.trim()).isEmpty()) {
+			log.warn("ControlServiceCoordinator.sendNotification(): esb-url property is empty. No notification will be sent to ESB.");
+			return;
+		}
+		
+		// Fixing ESB url
+		if (esbUrl.endsWith("/")) {
+			esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
+		}
+		if (notificationUri.startsWith("/")) {
+			notificationUri = notificationUri.substring(1);
+		}
+		
+		// Call ESB endpoint
+		String url = esbUrl + "/" + notificationUri;
+		log.info("ControlServiceCoordinator.sendNotification(): Invoking ESB endpoint: {}", url);
+		String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
+		log.info("ControlServiceCoordinator.sendNotification(): ESB endpoint invoked: {}, response={}", url, responseStatus);
+	}
+	
+	// ------------------------------------------------------------------------------------------------------------
+	// Event Generation and Debugging methods
+	// ------------------------------------------------------------------------------------------------------------
+	private final static String EVENT_DEBUG_OK = "OK";
+	private final static String EVENT_DEBUG_ERROR = "ERROR";
+	private final static String EVENT_DEBUG_DISABLED = "EVENT DEBUGGING IS DISABLED";
+	private final static String BAGUETTE_DISABLED = "BAGUETTE SERVER IS DISABLED";
+	private final static String BAGUETTE_NOT_RUNNING = "BAGUETTE SERVER IS NOT RUNNING";
+	
+	private String eventLogEnd(String method, String result) {
+		log.debug("ControlServiceCoordinator.{}(): END: result={}", method, result);
+		return result;
+	}
+	private String eventSendCommandToClient(String method, String clientId, String command) {
+		// Check status
+		if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
+		if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
+		if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
+		
+		// Send command
+		if (clientId.equals("0")) {
+			if (command.startsWith("SEND-")) {
+				try {
+					String[] part = command.split(" ");
+					String topicName = part[1].trim();
+					String value = part[2].trim();
+					eu.melodic.event.brokercep.event.EventMap event = new eu.melodic.event.brokercep.event.EventMap( Double.parseDouble(value), 3, System.currentTimeMillis() );
+					brokerCep.publishEvent(null, topicName, event);
+				} catch (Exception ex) {
+					log.debug("ControlServiceCoordinator.{}(): EXCEPTION: command: {}, exception: ", method, command, ex);
+					// Log error
+					return eventLogEnd(method, EVENT_DEBUG_ERROR);
+				}
+			} else {
+				log.debug("ControlServiceCoordinator.{}(): ERROR: Unsupported command for client-id=0 : {}", method, command);
+				// Log error
+				return eventLogEnd(method, EVENT_DEBUG_ERROR);
+			}
+		}
+		else if (clientId.equals("*")) baguette.sendToActiveClients(command);
+		else baguette.sendToClient(clientId, command);
+		
+		// Log success
+		return eventLogEnd(method, EVENT_DEBUG_OK);
+	}
+
+	
+	// Public API for event debugging
+	public String eventGenerationStart(String clientId, String topicName, long interval, double lowerValue, double upperValue) {
+		log.debug("ControlServiceCoordinator.eventGenerationStart(): client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
+		String command = String.format(java.util.Locale.ROOT, "GENERATE-EVENTS-START %s %d %f %f", topicName, interval, lowerValue, upperValue);
+		return eventSendCommandToClient("eventGenerationStart", clientId, command);
+	}
+	
+	public String eventGenerationStop(String clientId, String topicName) {
+		log.debug("ControlServiceCoordinator.eventGenerationStop(): client={}, topic={}", clientId, topicName);
+		String command = String.format(java.util.Locale.ROOT, "GENERATE-EVENTS-STOP %s", topicName);
+		return eventSendCommandToClient("eventGenerationStop", clientId, command);
+	}
+	
+	public String eventLocalSend(String clientId, String topicName, double value) {
+		log.debug("ControlServiceCoordinator.eventLocalSend(): BEGIN: client={}, topic={}, value={}", clientId, topicName, value);
+		String command = String.format(java.util.Locale.ROOT, "SEND-LOCAL-EVENT %s %f", topicName, value);
+		return eventSendCommandToClient("eventLocalSend", clientId, command);
+	}
+	
+	public String eventRemoteSend(String clientId, String brokerUrl, String topicName, double value) {
+		log.debug("ControlServiceCoordinator.eventRemoteSend(): BEGIN: client={}, broker-url={}, topic={}, value={}", clientId, brokerUrl, topicName, value);
+		String command = String.format(java.util.Locale.ROOT, "SEND-EVENT %s %s %f", brokerUrl, topicName, value);
+		return eventSendCommandToClient("eventRemoteSend", clientId, command);
+	}
+	// ------------------------------------------------------------------------------------------------------------
+}

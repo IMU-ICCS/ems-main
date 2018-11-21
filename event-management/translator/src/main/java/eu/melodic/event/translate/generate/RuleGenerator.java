@@ -1,0 +1,518 @@
+/*
+ * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.event.translate.generate;
+
+import camel.constraint.Constraint;
+import camel.constraint.MetricConstraint;
+import camel.core.NamedElement;
+import camel.data.Data;
+import camel.deployment.Component;
+import camel.requirement.OptimisationRequirement;
+import camel.requirement.ServiceLevelObjective;
+import camel.scalability.BinaryEventPattern;
+import camel.scalability.UnaryEventPattern;
+import camel.scalability.NonFunctionalEvent;
+import camel.metric.MetricContext;
+import camel.metric.CompositeMetricContext;
+import camel.metric.RawMetricContext;
+import camel.metric.Metric;
+import camel.metric.CompositeMetric;
+import camel.metric.RawMetric;
+import camel.metric.MetricTemplate;
+import camel.metric.MetricVariable;
+import camel.metric.Sensor;
+import camel.metric.Window;
+import camel.metric.Schedule;
+import camel.metric.ObjectContext;
+
+import org.eclipse.emf.common.util.EList;
+
+import eu.melodic.event.brokercep.cep.MathUtil;
+import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.translate.properties.RuleTemplateProperties;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring4.SpringTemplateEngine;
+import org.thymeleaf.spring4.dialect.SpringStandardDialect;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.StringTemplateResolver;
+
+@Slf4j
+@Service
+public class RuleGenerator {
+	
+	@Autowired
+	private RuleTemplateProperties ruleTemplatesRegistry;
+	
+	private SpringTemplateEngine templateEngine;
+	
+	public RuleGenerator(RuleTemplateProperties ruleTemplatesRegistry) {
+		this.ruleTemplatesRegistry = ruleTemplatesRegistry;
+		initTemplateEngine();
+	}
+	
+	// ================================================================================================================
+	// Public API
+	
+	public void generateRules(TranslationContext _TC) {
+		_generateRules(_TC);
+		_TC.getTopicConnections();	// force topicConnections population
+	}
+	
+	// ================================================================================================================
+	// Rule generation methods
+	
+	protected static enum MapType { OPERATOR, UNIT }
+	protected static enum ElemType { BEP, UEP, NFE, FE, CONSTR, CMC, RCM, CM, RM, MT, SENSOR, TIME, EVENT }
+	
+	protected String camelToRule(MapType mapType, ElemType elemType, String camelStr) {
+		if (MapType.OPERATOR==mapType && ElemType.CONSTR==elemType) {
+			if (camelStr.equalsIgnoreCase("GREATER_THAN")) return ">";
+			if (camelStr.equalsIgnoreCase("GREATER_EQUAL_THAN")) return ">=";
+			if (camelStr.equalsIgnoreCase("LESS_THAN")) return "<";
+			if (camelStr.equalsIgnoreCase("LESS_EQUAL_THAN")) return "<=";
+			if (camelStr.equalsIgnoreCase("EQUAL")) return "=";
+			if (camelStr.equalsIgnoreCase("NOT_EQUAL")) return "<>";
+			throw new IllegalArgumentException(String.format("Illegal argument in 'camelStr': MapType=%s, ElemType=%s, camel-str=%s", mapType, elemType, camelStr));
+		}
+		return camelStr.toUpperCase().trim();
+	}
+	
+	protected void _generateRule(TranslationContext _TC, String type, String grouping, String elemName, Context context) {
+		log.info("RuleGenerator._generateRule():      Generating rules for Graph node: {} {} @ Grouping: {}", type, elemName, grouping!=null?grouping:"-");
+		String[] groupingLabels = { grouping, "__ANY__" };
+		for (int i=0; i<groupingLabels.length; i++) {
+			for (String ruleTpl : ruleTemplatesRegistry.getTemplatesFor(type, groupingLabels[i])) {
+				if (ruleTpl!=null) {
+					// Use template engine to process the selected rule template
+					context.setVariable("outputStream", elemName);
+					String ruleStr = templateEngine.process(ruleTpl.trim(), context);
+					
+					// Store the generated rule in _TC
+					_TC.addGroupingRulePair(grouping, elemName, ruleStr);
+					log.info("RuleGenerator._generateRule():      + Added rule at Grouping {}: {}", grouping, ruleStr);
+				} else {
+					log.warn("RuleGenerator._generateRule():      - No rule template found for '{}' at Grouping '{}': node={}", type, grouping, elemName);
+				}
+			}
+		}
+	}
+	
+	protected String _generateWindowClause(Window win) {
+		if (win==null) return "";
+		
+		String winType = win.getWindowType().toString();	// FIXED, SLIDING
+		String winSizeType = win.getSizeType().toString();	// MEASUREMENTS_ONLY, TIME_ONLY, FIRST_MATCH, BOTH_MATCH
+		long winMeasurementSize = win.getMeasurementSize();
+		long winTimeSize = win.getTimeSize();
+		String winTimeUnit = win.getTimeUnit()!=null ? win.getTimeUnit().getName() : null;
+		
+//XXX: TODO: Incomplete implementation - Missing size-type handling: FIRST_MATCH & BOTH_MATCH implementation
+		boolean isTimeWin = winSizeType.equalsIgnoreCase("TIME_ONLY");
+		boolean isEventWin = winSizeType.equalsIgnoreCase("MEASUREMENTS_ONLY");
+		String func = isTimeWin ? "#time" : "#length";
+		if (winType.equals("FIXED")) func += "_batch";
+		long size = isTimeWin ? winTimeSize : winMeasurementSize;
+		String unit = isTimeWin ? winTimeUnit : "";
+		unit = camelToRule(MapType.UNIT, ElemType.TIME, unit);
+		
+		return String.format("%s(%d %s)", func, size, unit);
+	}
+	
+	protected String _generateScheduleClause(Schedule sched) {
+		if (sched==null) return "";
+		
+		String schedTimeUnit = sched.getTimeUnit().getName();
+		schedTimeUnit = camelToRule(MapType.UNIT, ElemType.TIME, schedTimeUnit);
+		int schedRepetitions = sched.getRepetitions();
+		long schedInterval = sched.getInterval();
+		//XXX: ASK: Do we need schedule 'start' and 'end' (dates) ??
+		
+//XXX: TODO: Incomplete implementation - Missing repetitions
+		
+//XXX:		return String.format(" OUTPUT LAST EVERY %d %s", schedInterval, schedTimeUnit);
+		return String.format(" OUTPUT EVERY %d %s", schedInterval, schedTimeUnit);
+	}
+	
+	protected void _generateRules(TranslationContext _TC) {
+		// traverse DAG and generate EPL rules
+		log.info("RuleGenerator.generateRules(): Traversing DAG...");
+		_TC.DAG.traverseDAG(node -> {
+			String grouping = node.getGrouping()!=null ? node.getGrouping().toString() : null;
+			NamedElement elem = node.getElement();
+			String elemName = elem!=null ? elem.getName() : null;
+			Class elemClass = elem!=null ? elem.getClass() : null;
+			log.warn("RuleGenerator.generateRules():  node: {}, grouping={}, elem-name={}, elem-class={}", node, grouping, elemName, elemClass);
+			
+			// Generate rules depending on the type of element
+			boolean providesTopic = true;
+			if (elem==null) {
+				// ignore this element
+				log.warn("RuleGenerator.generateRules():      IGNORE NODE. No element specified: node={}", node);
+				providesTopic = false;
+			} else
+			// Generate rules for Events and Event Patterns (and Metric Constraints)
+			if (camel.scalability.BinaryEventPattern.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Binary-Event-Pattern element: node={}, elem-name={}", node, elemName);
+				BinaryEventPattern bep = (BinaryEventPattern)elem;
+				
+				// Get event pattern operator
+				String camelOp = bep.getOperator().toString();
+				String ruleOp = camelToRule(MapType.OPERATOR, ElemType.BEP, camelOp);
+				
+				// Get event pattern composing events (just the names)
+				String leName = bep.getLeftEvent().getName();
+				String reName = bep.getRightEvent().getName();
+				log.warn("RuleGenerator.generateRules():      Binary-Event-Pattern: node={}, elem-name={}, operator={}->{}, left-event={}, right-event={}", node, elemName, camelOp, ruleOp, leName, reName);
+				
+				//XXX: ASK: Do we need 'lowOccurrenceBound', 'upperOccurrenceBound' and 'timer' ??
+				
+				// Write rule for BEP
+				Context context = new Context();
+				context.setVariable("operator", ruleOp);
+				context.setVariable("leftEvent", leName);
+				context.setVariable("rightEvent", reName);
+				_generateRule(_TC, "BEP-"+ruleOp, grouping, elemName, context);
+			} else
+			if (camel.scalability.UnaryEventPattern.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Unary-Event-Pattern element: node={}, elem-name={}", node, elemName);
+				UnaryEventPattern uep = (UnaryEventPattern)elem;
+				
+				// Get event pattern operator
+				String camelOp = uep.getOperator().toString();
+				String ruleOp = camelToRule(MapType.OPERATOR, ElemType.UEP, camelOp);
+				
+				// Get event pattern composing event (just the name)
+				String eventName = uep.getEvent().getName();
+				log.warn("RuleGenerator.generateRules():      Unary-Event-Pattern: node={}, elem-name={}, operator={}->{}, event={}", node, elemName, camelOp, ruleOp, eventName);
+				
+				//XXX: ASK: Do we need 'occurrenceNum' and 'timer' ??
+				
+				// Write rule for UEP
+				Context context = new Context();
+				context.setVariable("operator", ruleOp);
+				context.setVariable("event", eventName);
+				_generateRule(_TC, "UEP-"+ruleOp, grouping, elemName, context);
+			} else
+			if (camel.scalability.NonFunctionalEvent.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Non-Functional-Event element: node={}, elem-name={}", node, elemName);
+				NonFunctionalEvent nfe = (NonFunctionalEvent)elem;
+				
+				// Get event is-violation
+				boolean isViolation = nfe.isIsViolation();
+				
+				// Get event's metric constraint (just the name)
+				MetricConstraint constr = nfe.getMetricConstraint();
+				log.warn("RuleGenerator.generateRules():      Non-Functional-Event: node={}, elem-name={}, is-violation={}, metric-constraint={}", node, elemName, isViolation, constr.getName());
+				
+				// Write rule for NFE
+				Context context = new Context();
+				context.setVariable("metricConstraint", constr.getName());
+				_generateRule(_TC, "NFE", grouping, elemName, context);
+			} else
+			
+			// Generate rules for Constraints
+			if (camel.constraint.MetricConstraint.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Metric-Constraint element: node={}, elem-name={}", node, elemName);
+				MetricConstraint constr = (MetricConstraint)elem;
+				
+				// Get metric constraint operator and threshold
+				String camelOp = constr.getComparisonOperator().toString();
+				String ruleOp = camelToRule(MapType.OPERATOR, ElemType.CONSTR, camelOp);
+				double threshold = constr.getThreshold();
+				
+				// Get constraint's metric context (just the name)
+				MetricContext mc = constr.getMetricContext();
+				log.warn("RuleGenerator.generateRules():      Metric-Constraint: node={}, elem-name={}, operator={}->{}, threshold={}, metric-context={}", node, elemName, camelOp, ruleOp, threshold, mc.getName());
+				
+				// Require context topic in this level
+				_TC.requireGroupingTopicPair(grouping, mc.getName());
+				
+				// Write rule for CONSTR
+				Context context = new Context();
+				context.setVariable("metricContext", mc.getName());
+				context.setVariable("operator", ruleOp);
+				context.setVariable("threshold", threshold);
+				_generateRule(_TC, "CONSTR-MET", grouping, elemName, context);
+			} else
+			if (camel.constraint.IfThenConstraint.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found an If-Then-Constraint element: node={}, elem-name={}", node, elemName);
+//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+			} else
+			if (camel.constraint.MetricVariableConstraint.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element: node={}, elem-name={}", node, elemName);
+//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+			} else
+			if (camel.constraint.LogicalConstraint.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found an Logical-Constraint element: node={}, elem-name={}", node, elemName);
+//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+			} else
+			
+			// Generate rules for Metrics Contexts
+			if (camel.metric.CompositeMetricContext.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Composite-Metric-Context element: node={}, elem-name={}", node, elemName);
+				CompositeMetricContext cmc = (CompositeMetricContext)elem;
+				
+				// Get composite metric context's metric parameters
+				CompositeMetric metric = (CompositeMetric)cmc.getMetric();
+				String formula = metric.getFormula();
+				EList<Metric> components = metric.getComponentMetrics();
+				List<String> componentNames = components.stream().map(item -> item.getName()).collect(Collectors.toList());
+				
+				// Get composite metric context's window and schedule parameters
+				Window win = cmc.getWindow();
+				String winClause = _generateWindowClause(win);
+				Schedule sched = cmc.getSchedule();
+				String schedClause = _generateScheduleClause(sched);
+				
+				// Get composite metric context's component or data parameters
+				String compName = null;
+				String dataName = null;
+				if (cmc!=null) {
+					ObjectContext objCtx = cmc.getObjectContext();
+					if (objCtx!=null) {
+						Component comp = objCtx.getComponent();
+						Data data = objCtx.getData();
+						compName = comp!=null ? comp.getName() : null;
+						dataName = data!=null ? data.getName() : null;
+					}
+				}
+				
+				// Get composite metric context's composing metric contexts (just the names)
+				EList<MetricContext> composingCtxList = cmc.getComposingMetricContexts();
+				List<String> composingMetricNamesList  = composingCtxList.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
+				List<String> composingCtxNamesList = composingCtxList.stream().map(item -> item.getName()).collect(Collectors.toList());
+				
+				// Check that component metrics' names (from composite metric) and metric names from component contexts match
+				if (checkIfListsAreEqual(componentNames, composingCtxNamesList)) {
+					log.error("RuleGenerator.generateRules():      Component metrics of composite metric '{}' do not match to component contexts of Composite-Metric-Context '{}': component-metrics={}, component-context-metrics={}", metric.getName(), cmc.getName(), componentNames, composingCtxNamesList);
+					throw new RuntimeException( String.format("Component metrics of composite metric '%s' do not match to component contexts of Composite-Metric-Context: %s", metric.getName(), cmc.getName()) );
+				}
+				
+				log.warn("RuleGenerator.generateRules():      Composite-Metric-Context: node={}, elem-name={}, metric={}, formula={}, components={}, win={}, sched={}, component={}, data={}, composing-metrics={}, composing-metric-contexts={}",
+					node, elemName, metric.getName(), formula, componentNames, winClause, schedClause, compName, dataName, composingMetricNamesList, composingCtxNamesList);
+				
+				// Require topics in this level
+				_TC.requireGroupingTopicPairs(grouping, composingCtxNamesList);
+				
+				// Select rule tag, depending on whether an Aggregator function is used in formula
+				// (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
+				String ruleTag = "COMP-CTX";
+				if (MathUtil.containsAggregator(formula)) ruleTag = "COMP-CTX-AGG";
+				log.warn("RuleGenerator.generateRules():      CMC-tag={}", ruleTag);
+				
+				// Write rule for CMC or CMC-AGG
+				Context context = new Context();
+				context.setVariable("formula", formula);
+				context.setVariable("metric", metric.getName());
+				context.setVariable("components", composingMetricNamesList);	//XXX: backup-CHECK: componentNames);
+				context.setVariable("contexts", composingCtxNamesList);
+				context.setVariable("windowClause", winClause);
+				context.setVariable("scheduleClause", schedClause);
+				_generateRule(_TC, ruleTag, grouping, elemName, context);
+			} else
+			if (camel.metric.RawMetricContext.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Raw-Metric-Context element: node={}, elem-name={}", node, elemName);
+				RawMetricContext rmc = (RawMetricContext)elem;
+				
+				// Get raw metric context's metric parameters
+				RawMetric metric = (RawMetric)rmc.getMetric();
+				Sensor sensor = rmc.getSensor();
+				String sensorName = sensor!=null ? sensor.getName() : null;
+				
+				// Get raw metric context's schedule parameters
+				Schedule sched = rmc.getSchedule();
+				String schedClause = _generateScheduleClause(sched);
+				
+				// Get raw metric context's component or data parameters
+				String compName = null;
+				String dataName = null;
+				if (rmc!=null) {
+					ObjectContext objCtx = rmc.getObjectContext();
+					if (objCtx!=null) {
+						Component comp = objCtx.getComponent();
+						Data data = objCtx.getData();
+						compName = comp!=null ? comp.getName() : null;
+						dataName = data!=null ? data.getName() : null;
+					}
+				}
+				
+				log.warn("RuleGenerator.generateRules():      Raw-Metric-Context: node={}, elem-name={}, metric={}, sensor={}, sched={}, component={}, data={}",
+					node, elemName, metric.getName(), sensorName, schedClause, compName, dataName);
+				
+				// Write rule for RMC
+				Context context = new Context();
+				context.setVariable("metric", metric.getName());
+				context.setVariable("sensor", sensorName);
+				context.setVariable("scheduleClause", schedClause);
+				_generateRule(_TC, "RAW-CTX", grouping, elemName, context);
+			} else
+			
+			// Generate rules for Metrics and Metric Variables
+			if (camel.metric.CompositeMetric.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Composite-Metric element: node={}, elem-name={}", node, elemName);
+				CompositeMetric mc = (CompositeMetric)elem;
+				providesTopic = false;
+//XXX:TODO: Do we need to do something here??
+			} else
+			if (camel.metric.RawMetric.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Raw-Metric element: node={}, elem-name={}", node, elemName);
+				RawMetric rc = (RawMetric)elem;
+				providesTopic = false;
+//XXX:TODO: Do we need to do something here??
+			} else
+			if (camel.metric.MetricVariable.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Metric-Variable element: node={}, elem-name={}", node, elemName);
+				MetricVariable mvar = (MetricVariable)elem;
+				boolean isCurrConfig = mvar.isCurrentConfiguration();
+				boolean isOnNodeCand = mvar.isOnNodeCandidates();
+				Component comp = mvar.getComponent();
+				String compName = comp!=null ? comp.getName() : null;
+				String formula = mvar.getFormula();
+				EList<Metric> componentMetrics = mvar.getComponentMetrics();
+				List<String> componentMetricNames = componentMetrics.stream().map(item -> item.getName()).collect(Collectors.toList());
+				boolean containsMetrics = (componentMetrics!=null && componentMetrics.size()>0);
+				
+				log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
+					node, elemName, isCurrConfig, isOnNodeCand, compName, formula, componentMetricNames, containsMetrics);
+				
+				// Select rule tag, depending on whether an Aggregator function is used in formula
+				// (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
+				String ruleTag = "VAR";
+				if (MathUtil.containsAggregator(formula)) ruleTag = "VAR-AGG";
+				log.warn("RuleGenerator.generateRules():      VAR-tag={}", ruleTag);
+				
+				if (componentMetrics.size()>0) {
+					// Write rule for VAR
+					List<MetricContext> contexts = componentMetrics.stream().map( item -> _TC.getMetricContextForMetric(item) ).filter(item -> item!=null).collect(Collectors.toList());
+					List<String> metricNames  = contexts.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
+					List<String> contextNames = contexts.stream().map(item -> item.getName()).collect(Collectors.toList());
+					log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, component-metrics={}, component-metric-contexts={}",
+						node, elemName, metricNames, contextNames);
+					
+					// Check that component metrics' names (from composite metric) and metric names from component contexts match
+					if (checkIfListsAreEqual(componentMetricNames, metricNames)) {
+						log.error("RuleGenerator.generateRules():      Component metrics of metric variable '{}' do not match to component contexts' metrics: component-metrics={}, component-context-metrics={}", mvar.getName(), componentMetricNames, metricNames);
+						throw new RuntimeException( String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics: %s", mvar.getName()) );
+					}
+					
+					if (contexts.size()>0) {
+						// Require topics in this level
+						_TC.requireGroupingTopicPairs(grouping, contextNames);
+						
+						// Write rule for VAR
+						Context context = new Context();
+						context.setVariable("formula", formula);
+						context.setVariable("variable", mvar.getName());
+						context.setVariable("components", metricNames);  //XXX: backup-CHECK: componentMetricNames);
+						context.setVariable("contexts", contextNames);
+						_generateRule(_TC, ruleTag, grouping, elemName, context);
+					} else {
+						// All component metrics for this metric variable do not have related metric contexts (i.e. the metric variable is MVV)
+						// No rules will be generated
+						log.info("RuleGenerator.generateRules():      Metric-Variable has no metric contexts related to its component metrics. No rules will be generated: node={}, elem-name={}", node, elemName);
+					}
+				} else {
+					// No component metrics for this metric variable (i.e. it is a MVV)
+					// No rules will be generated
+					log.info("RuleGenerator.generateRules():      Metric-Variable has no component metrics. No rules will be generated: node={}, elem-name={}", node, elemName);
+				}
+			} else
+			
+			// Generate rules for Templates and Sensors
+			if (camel.metric.MetricTemplate.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Metric-Template element: node={}, elem-name={}", node, elemName);
+				MetricTemplate template = (MetricTemplate)elem;
+			} else
+			if (camel.metric.Sensor.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Sensor element: node={}, elem-name={}", node, elemName);
+				Sensor sensor = (Sensor)elem;
+//XXX:TODO: Do we need to do something here??
+			} else
+			
+			// Generate rules for Optimisation Requirements and SLO's
+			if (camel.requirement.OptimisationRequirement.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found an Optimisation-Requirement element: node={}, elem-name={}", node, elemName);
+				OptimisationRequirement optr = (OptimisationRequirement)elem;
+				MetricContext  mc = optr.getMetricContext();
+				MetricVariable mv = optr.getMetricVariable();
+				
+				// Write rules for OPT-REQ
+				if (mc!=null) {
+					Context context = new Context();
+					context.setVariable("context", mc.getName());
+					_generateRule(_TC, "OPT-REQ-CTX", grouping, elemName, context);
+				}
+				if (mv!=null) {
+					Context context = new Context();
+					context.setVariable("variable", mv.getName());
+					_generateRule(_TC, "OPT-REQ-VAR", grouping, elemName, context);
+				}
+			} else
+			if (camel.requirement.ServiceLevelObjective.class.isInstance(elem)) {
+				log.warn("RuleGenerator.generateRules():      Found a Service-Level-Objective element: node={}, elem-name={}", node, elemName);
+				ServiceLevelObjective slo = (ServiceLevelObjective)elem;
+				Constraint constr = slo.getConstraint();
+				
+				// Write rule for SLO
+				Context context = new Context();
+				context.setVariable("constraint", constr.getName());
+				_generateRule(_TC, "SLO", grouping, elemName, context);
+			} else
+			
+			{
+				log.warn("RuleGenerator.generateRules():      ERROR in NODE. Unsupported element type: node={}, elem-name={}, elem-class={}", node, elemName, elemClass);
+				providesTopic = false;
+			}
+			
+			// Add provided topic (i.e. this node generates the rule(s) that will create the events to be published in topic)
+			if (providesTopic && elem!=null) {
+				_TC.provideGroupingTopicPair(grouping, elem.getName());
+			}
+		});
+		log.info("RuleGenerator.generateRules(): Traversing DAG... done");
+	}
+	
+	// ================================================================================================================
+	// Helper methods
+	
+	protected boolean checkIfListsAreEqual(List<String> list1, List<String> list2) {
+		if (list1==null && list2==null) return true;
+		else if ((list1!=null && list2==null) || (list1==null && list2!=null) || (list1.size()!=list2.size())) return false;
+		//else
+		List<String> sorted1 = new java.util.ArrayList(list1);
+		List<String> sorted2 = new java.util.ArrayList(list2);
+		java.util.Collections.sort(sorted1);
+		java.util.Collections.sort(sorted2);
+		return sorted1.equals(sorted2);
+	}
+	
+	protected void initTemplateEngine() {
+		StringTemplateResolver templateResolver = new StringTemplateResolver();
+		templateResolver.setTemplateMode(TemplateMode.TEXT);
+		SpringStandardDialect dialect = new SpringStandardDialect();
+		dialect.setEnableSpringELCompiler(true);
+		
+		SpringTemplateEngine engine = new SpringTemplateEngine();
+		engine.setDialect(dialect);
+		engine.setEnableSpringELCompiler(true);
+		engine.setTemplateResolver(templateResolver);
+		
+		this.templateEngine = engine;
+		log.info("RuleGenerator.initTemplateEngine(): Template engine initialized: {}", engine.getClass().getName());
+	}
+}

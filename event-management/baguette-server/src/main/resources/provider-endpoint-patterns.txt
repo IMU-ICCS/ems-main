@@ -1,0 +1,3 @@
+# Provider Endpoints v20180323
+
+.+amazonaws.+	AWS
