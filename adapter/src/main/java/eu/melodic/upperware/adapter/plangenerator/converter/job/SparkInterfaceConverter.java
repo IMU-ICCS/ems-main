@@ -10,10 +10,11 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTas
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -69,15 +70,12 @@ public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfig
     // todo tests, maybe list with only one element - arguments will be ok for cloudiator
     private static List<String> parseApplicationArguments(String arguments) {
         log.debug("Parsing application arguments: {}", arguments);
-        List<String> result = new ArrayList<>();
         String argumentSign = "--";
-        String[] splitArgs = arguments.split(argumentSign);
-        for (String arg : splitArgs) {
-            if (!arg.trim().equals("")) { //omit empty string (if arguments starts from argumentSign)
-                result.add(argumentSign + arg.trim());
-                log.debug("arg: {}", argumentSign + arg.trim());
-            }
-        }
-        return result;
+        List<String> collect = Stream.of(arguments.split(argumentSign))
+                .map(String::trim)
+                .filter(s -> !s.equals(""))
+                .collect(Collectors.toList());
+        collect.forEach(s -> log.debug("arg: {}", s));
+        return collect;
     }
 }

@@ -38,10 +38,11 @@ public class CamelMetadataToolForTaskInterfaces {
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
-    // e.g. --executor-memory 6G => key:executor-memory, value:6G
+    // e.g. --executor-memory 6G => key:executor-memory, value:6G or key:executor-memory, value:6G
     private static Pair<String, String> parseAttributeToPair(String attribute) {
         String[] split = attribute.trim().split(SPLIT_ATTRIBUTE_PATTERN);
         String key = split[0].trim().replace(ATTRIBUTE_PREFIX, ""); //cut prefix
+        log.debug("Attr from feature: key:{} value:{}", key, split[1].trim());
         return Pair.of(key, split[1].trim());
     }
 }
