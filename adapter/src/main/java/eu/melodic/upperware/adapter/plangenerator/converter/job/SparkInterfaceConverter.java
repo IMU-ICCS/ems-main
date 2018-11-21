@@ -50,7 +50,7 @@ public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfig
     }
 
     private Attribute findAttribute(ClusterConfiguration configuration, String camelAnnotation) {
-        return CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(configuration.getAttributes(), camelAnnotation)
+        return CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(configuration.getConfigParameters(), camelAnnotation)
                 .orElseGet(() -> {
                     log.warn("Attribute with annotation: {} not found in camel model configuration", camelAnnotation);
                     return null;
@@ -66,14 +66,17 @@ public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfig
         return feature == null ? Collections.emptyMap() : CamelMetadataToolForTaskInterfaces.createStringAttributesMapForFeature(feature);
     }
 
-    // todo tests
+    // todo tests, maybe list with only one element - arguments will be ok for cloudiator
     private static List<String> parseApplicationArguments(String arguments) {
         log.debug("Parsing application arguments: {}", arguments);
         List<String> result = new ArrayList<>();
         String argumentSign = "--";
         String[] splitArgs = arguments.split(argumentSign);
         for (String arg : splitArgs) {
-            result.add(argumentSign + arg.trim());
+            if (!arg.trim().equals("")) { //omit empty string (if arguments starts from argumentSign)
+                result.add(argumentSign + arg.trim());
+                log.debug("arg: {}", argumentSign + arg.trim());
+            }
         }
         return result;
     }
