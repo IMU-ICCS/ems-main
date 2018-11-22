@@ -1,6 +1,10 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.*;
+import camel.deployment.Communication;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.DockerInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.LanceInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.SparkInterfaceConverter;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
@@ -9,16 +13,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static eu.passage.upperware.commons.extensions.OptionalUtils.peek;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class JobConverter implements ModelConverter<DeploymentInstanceModel, AdapterJob> {
+
+    private LanceInterfaceConverter lanceInterfaceConverter;
+    private SparkInterfaceConverter sparkInterfaceConverter;
+    private DockerInterfaceConverter dockerInterfaceConverter;
 
     private static final String PORT_PROVIDED = "PortProvided";
     private static final String PORT_REQUIRED = "PortRequired";
@@ -34,67 +41,61 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     }
 
     private List<AdapterTask> toAdapterTasks(DeploymentTypeModel model) {
+        List<Communication> communications = model.getCommunications();
         return model
                 .getSoftwareComponents()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(this::convertToTaks)
+                .map(softwareComponent -> convertToTask(softwareComponent, communications))
                 .collect(Collectors.toList());
     }
 
-    private AdapterTask convertToTaks(SoftwareComponent softwareComponent) {
+    private AdapterTask convertToTask(SoftwareComponent softwareComponent, List<Communication> communications) {
         return AdapterTask.builder()
                 .name(softwareComponent.getName())
                 .taskType(AdapterTaskType.SERVICE)
                 .interfaces(convertToInterfaces(softwareComponent))
-                .ports(convertToPorts(softwareComponent))
+                .ports(convertToPorts(softwareComponent, communications))
                 .build();
     }
+
 
     private List<AdapterTaskInterface> convertToInterfaces(SoftwareComponent softwareComponent) {
         Configuration configuration = getConfiguration(softwareComponent);
 
         AdapterTaskInterface result;
-        if (isLanceComponent(configuration)){
-            result = createLanceInterface((ScriptConfiguration) configuration);
+        if (isLanceComponent(configuration)) {
+            result = lanceInterfaceConverter.convert((ScriptConfiguration) configuration);
         } else if (isDockerComponent(configuration)) {
-            result = new AdapterDockerInterface();
+            result = dockerInterfaceConverter.convert((ServerlessConfiguration) configuration);
+        } else if (isSparkComponent(configuration)) {
+            result = sparkInterfaceConverter.convert((ClusterConfiguration) configuration);
         } else if (isPlatformComponent(configuration)) {
             result = new AdapterTaskInterface();
         } else {
             throw new IllegalStateException("Unknown Interface");
         }
+        log.info("Configuration {} for {} converted to: {}", configuration.getName(), softwareComponent.getName(), result);
         return Collections.singletonList(result);
-    }
-
-    private AdapterLanceInterface createLanceInterface(ScriptConfiguration configuration) {
-        return AdapterLanceInterface
-                .builder()
-                .containterType("NATIVE") //TODO - do it in better way
-                .preInstall(configuration.getDownloadCommand())
-                .install(configuration.getInstallCommand())
-                .postInstall(configuration.getConfigureCommand())
-                .start(configuration.getStartCommand())
-                .startDetection(configuration.getUploadCommand())
-                .stop(configuration.getStopCommand())
-                .build();
     }
 
     private boolean isLanceComponent(Configuration configuration) {
         return configuration instanceof ScriptConfiguration;
     }
 
+    private boolean isSparkComponent(Configuration configuration) {
+        return configuration instanceof ClusterConfiguration;
+    }
+
     private boolean isDockerComponent(Configuration configuration) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        return configuration instanceof ServerlessConfiguration;
     }
 
     private boolean isPlatformComponent(Configuration configuration) {
         throw new UnsupportedOperationException("Method not implemented yet");
     }
 
-    private List<AdapterPort> convertToPorts(SoftwareComponent softwareComponent) {
-        Configuration configuration = getConfiguration(softwareComponent);
-
+    private List<AdapterPort> convertToPorts(SoftwareComponent softwareComponent, List<Communication> communications) {
         List<AdapterPort> result = new ArrayList<>();
         for (ProvidedCommunication providedCommunication : softwareComponent.getProvidedCommunications()) {
             result.add(AdapterPortProvided.builder()
@@ -109,10 +110,28 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
                     .name(requiredCommunication.getName())
                     .type(PORT_REQUIRED)
                     .isMandatory(requiredCommunication.isIsMandatory())
-                    .updateAction(((ScriptConfiguration) configuration).getStartCommand())
+                    .updateAction(getUpdateActionCommand(requiredCommunication.getName(), communications))
                     .build());
         }
         return result;
+    }
+
+    private String getUpdateActionCommand(String requiredCommunicationName, List<Communication> communications){
+        return getCommunicationForRequiredPort(requiredCommunicationName, communications)
+                .map(ScriptConfiguration::getStartCommand)
+                .orElse(null);
+    }
+
+    private Optional<ScriptConfiguration> getCommunicationForRequiredPort(String requiredCommunicationName, List<Communication> communications) {
+        return communications.stream()
+                .filter(communication -> communication.getRequiredCommunication().getName().equals(requiredCommunicationName))
+                .findFirst()
+                .map(peek(communication -> log.info("Communication {} found for requiredCommunicationName {}", communication.getName(), requiredCommunicationName)))
+                .map(Communication::getRequiredPortConfiguration)
+                .map(peek(configuration -> log.info("Found RequiredPortConfiguration {}", configuration.getName())))
+                .filter(configuration1 -> configuration1 instanceof ScriptConfiguration)
+                .map(peek(configuration -> log.info("Found RequiredPortConfiguration {} is instance of ScriptConfiguration", configuration.getName())))
+                .map(configuration1 -> (ScriptConfiguration) configuration1);
     }
 
     private Configuration getConfiguration(@NonNull SoftwareComponent softwareComponent) {
@@ -133,5 +152,4 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
                 .portRequired(communication.getRequiredCommunication().getName())
                 .build();
     }
-
 }

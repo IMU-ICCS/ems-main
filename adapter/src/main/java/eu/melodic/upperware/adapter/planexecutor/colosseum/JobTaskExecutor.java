@@ -5,12 +5,11 @@ import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
-import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Communication;
+import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.PortProvided;
 import io.github.cloudiator.rest.model.PortRequired;
 import lombok.extern.slf4j.Slf4j;
@@ -118,9 +117,19 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .stop(((AdapterLanceInterface) adapterTaskInterface).getStop())
                     .type(LanceInterface.class.getSimpleName());
 
+        } else if (adapterTaskInterface instanceof AdapterSparkInterface) {
+            return new SparkInterface()
+                    .file(((AdapterSparkInterface) adapterTaskInterface).getFile())
+                    .className(((AdapterSparkInterface) adapterTaskInterface).getClassName())
+                    .arguments(((AdapterSparkInterface) adapterTaskInterface).getArguments())
+                    .sparkArguments(((AdapterSparkInterface) adapterTaskInterface).getSparkArguments())
+                    .sparkConfiguration(((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration())
+                    .type(SparkInterface.class.getSimpleName());
+
         } else if (adapterTaskInterface instanceof AdapterDockerInterface) {
             return new DockerInterface()
                     .dockerImage(((AdapterDockerInterface) adapterTaskInterface).getDockerImage())
+                    .environment(((AdapterDockerInterface) adapterTaskInterface).getEnvironment())
                     .type(DockerInterface.class.getSimpleName());
         }
         throw new AdapterException(format("Unknown TaskInterface type: %s", adapterTaskInterface.getClass().getSimpleName()));

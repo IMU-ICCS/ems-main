@@ -14,13 +14,14 @@ public enum CamelMetadata {
     CORES("CPU", VariableType.CORES, false),
     RAM("RAM", VariableType.RAM, false),
     STORAGE("Storage", VariableType.STORAGE, false),
-    CARDINALITY("m_cardinality", VariableType.CARDINALITY, false),
+    CARDINALITY("Cardinality", VariableType.CARDINALITY, false),
 
     PROVIDER("", VariableType.PROVIDER, false),
 
-    PRICE("m_price", null, true),
+    PRICE("Cost", null, true),
 
-    UNMOVEABLE("m_unmoveable", null, false);
+    UNMOVEABLE("Unmoveable", null, false);
+
 
     public String camelName;
     public VariableType variableType;

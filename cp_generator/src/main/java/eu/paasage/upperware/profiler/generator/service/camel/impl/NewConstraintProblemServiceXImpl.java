@@ -6,6 +6,7 @@ import camel.constraint.impl.MetricConstraintImpl;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
+import camel.deployment.Configuration;
 import camel.deployment.RequirementSet;
 import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
@@ -439,7 +440,11 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     private String getImageId(SoftwareComponent softwareComponent) {
-        return ((ScriptConfigurationImpl) softwareComponent.getConfigurations().get(0)).getImageId();
+        Configuration configuration = softwareComponent.getConfigurations().get(0);
+        if (configuration instanceof ScriptConfigurationImpl) {
+            return ((ScriptConfigurationImpl) configuration).getImageId();
+        }
+        return null;
     }
 
     private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String imageId) {
