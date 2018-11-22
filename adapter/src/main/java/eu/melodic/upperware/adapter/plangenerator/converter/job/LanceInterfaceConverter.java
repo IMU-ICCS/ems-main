@@ -12,7 +12,7 @@ public class LanceInterfaceConverter implements InterfaceConverter<ScriptConfigu
     public AdapterLanceInterface convert(ScriptConfiguration configuration) {
         return AdapterLanceInterface
                 .builder()
-                .containterType("NATIVE") //TODO - do it in better way
+                .containterType("NATIVE")
                 .preInstall(configuration.getDownloadCommand())
                 .install(configuration.getInstallCommand())
                 .postInstall(configuration.getConfigureCommand())

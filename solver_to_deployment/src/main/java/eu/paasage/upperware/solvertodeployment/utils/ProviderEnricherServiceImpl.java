@@ -36,6 +36,7 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
     @Override
     public void enrichSoftwareComponentInstance(SoftwareComponentInstance softwareComponentInstance, NodeCandidate nodeCandidate, String constraintProblemId, CamelModel camelModel) {
         EList<Attribute> attributes = softwareComponentInstance.getAttributes();
+        log.info("Start enriching SoftwareComponentInstance: {}", softwareComponentInstance.getName());
         attributes.add(createAttribute("cloudName", extractCloudName(nodeCandidate, softwareComponentInstance.getName(), constraintProblemId)));
         attributes.add(createAttribute("providerName", createProviderName(nodeCandidate, softwareComponentInstance.getName(), constraintProblemId)));
         attributes.add(createAttribute("location", extractLocation(nodeCandidate)));
@@ -49,11 +50,13 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
         attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
         attributes.add(createAttribute("nodeCandidate", gson.toJson(nodeCandidate)));
         attributes.add(createAttribute("nodeCandidateId", nodeCandidate.getId()));
+        log.info("Finish enriching SoftwareComponentInstance: {}", softwareComponentInstance.getName());
     }
 
 
 
     private Attribute createAttribute(String attributeName, String attributeValue) {
+        log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
         Attribute strAttribute = CoreFactory.eINSTANCE.createAttribute();
         strAttribute.setName(attributeName);
         strAttribute.setValue(createStringValue(attributeValue));
