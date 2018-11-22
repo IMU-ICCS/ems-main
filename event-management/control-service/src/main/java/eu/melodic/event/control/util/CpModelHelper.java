@@ -27,13 +27,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-//import eu.paasage.upperware.metamodel.cp.DeltaUtility;
-//import eu.paasage.upperware.metamodel.cp.*;
-//import eu.paasage.upperware.metamodel.types.*;
-// From: eu.paasage.mddb.cdo.client.CDOClient
-//import eu.paasage.camel.dsl.CamelDslStandaloneSetup;
-//import eu.paasage.camel.deployment.Component;
-
 @Component
 @Slf4j
 public class CpModelHelper {
@@ -45,13 +38,48 @@ public class CpModelHelper {
 	private int id;
     private CDOClientXImpl cdoClient;
 	
+	public static void main(String[] args) throws Exception {
+		CpModelHelper helper = new CpModelHelper();
+		helper.loadCpModel(args[0], args[1]);
+	}
+	
 	public CpModelHelper() {
 		id = ++counter;
         this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
 		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
 	}
 	
-	public Map<String,Double> getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
+	public void loadCpModel(String pathName, String cpModelPath) {
+        CDOSessionX session = null;
+		CDOTransaction transaction = null;
+		try {
+			log.info("CpModelHelper.loadCpModel(): BEGIN: helper-id={}, cp-model-file={}, cdo-path={}", id, pathName, cpModelPath);
+			
+			final org.eclipse.emf.ecore.resource.ResourceSet rs = new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl();
+			rs.getPackageRegistry().put(TypesPackage.eNS_URI, TypesPackage.eINSTANCE);
+			rs.getPackageRegistry().put(CpPackage.eNS_URI, CpPackage.eINSTANCE);
+			org.eclipse.emf.ecore.resource.Resource res = rs.getResource(org.eclipse.emf.common.util.URI.createFileURI(pathName), true);
+			EList<org.eclipse.emf.ecore.EObject> contents = res.getContents();
+			
+			session = cdoClient.getSession();
+            transaction = session.openTransaction();
+			
+			CDOResource resource = transaction.getOrCreateResource(cpModelPath);
+			resource.getContents().addAll(contents);
+			
+			transaction.commit();
+			log.info("CpModelHelper.loadCpModel(): END: helper-id={}", id);
+			
+		} catch (Exception ex) {
+			log.error("CpModelHelper.loadCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+			throw new RuntimeException("helper-id="+id, ex);
+		} finally {
+			if (transaction!=null) transaction.close();
+			if (session!=null) session.getSession().close();
+		}
+	}
+	
+	public Map<String,Double> ZZZ___getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
 		log.debug("CpModelHelper.getMetricVariableValues(): BEGIN: helper-id={}, cp-model-path={}, variables={}", id, cpModelPath, variableNames);
 		
 		// lock resource
@@ -115,7 +143,7 @@ log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = 
 		return results;
 	}
 		
-	public Map<String,Double> ZZZ___getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
+	public Map<String,Double> getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
 		log.debug("CpModelHelper.getMetricVariableValues(): BEGIN: helper-id={}, cp-model-path={}, variables={}", id, cpModelPath, variableNames);
 		
 		// lock resource

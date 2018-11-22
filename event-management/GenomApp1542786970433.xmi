@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types" id="GenomApp1542786970433">
+  <constants id="0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="1">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="cardinality_ComponentSparkWorker_min">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </constants>
+  <constants id="cardinality_ComponentSparkWorker_max">
+    <value xsi:type="types:IntegerValueUpperware" value="10"/>
+  </constants>
+  <constants id="provider_ComponentSparkWorker_min">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="provider_ComponentSparkWorker_max">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="cores_ComponentSparkWorker_min">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </constants>
+  <constants id="cores_ComponentSparkWorker_max">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </constants>
+  <constants id="provider_ComponentSparkWorker_0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="cores_ComponentSparkWorker_min_p_0">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </constants>
+  <constants id="cores_ComponentSparkWorker_max_p_0">
+    <value xsi:type="types:IntegerValueUpperware" value="2"/>
+  </constants>
+  <constants id="constant_0" type="Double">
+    <value xsi:type="types:DoubleValueUpperware"/>
+  </constants>
+  <cpVariables id="WorkerCardinality" variableType="cardinality" componentId="ComponentSparkWorker">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="2"/>
+      <to xsi:type="types:IntegerValueUpperware" value="10"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="provider_ComponentSparkWorker" variableType="provider" componentId="ComponentSparkWorker">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="WorkerCores" variableType="cores" componentId="ComponentSparkWorker">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+    </domain>
+  </cpVariables>
+  <constraints id="c_0" exp1="//@cpVariables.0" exp2="//@constants.2" comparator="greaterOrEqualTo"/>
+  <constraints id="c_1" exp1="//@cpVariables.0" exp2="//@constants.3" comparator="lessOrEqualTo"/>
+  <constraints id="c_2" exp1="//@cpVariables.1" exp2="//@constants.4" comparator="greaterOrEqualTo"/>
+  <constraints id="c_3" exp1="//@cpVariables.1" exp2="//@constants.5" comparator="lessOrEqualTo"/>
+  <constraints id="c_4" exp1="//@cpVariables.2" exp2="//@constants.6" comparator="greaterOrEqualTo"/>
+  <constraints id="c_5" exp1="//@cpVariables.2" exp2="//@constants.7" comparator="lessOrEqualTo"/>
+  <constraints id="c_6" exp1="//@auxExpressions.2" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+  <constraints id="c_7" exp1="//@auxExpressions.4" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+  <constraints id="c_8" exp1="//@auxExpressions.6" exp2="//@constants.11"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_0" expressions="//@cpVariables.2 //@constants.9" operator="minus"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_1" expressions="//@cpVariables.1 //@constants.8" operator="eq"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_2" expressions="//@cpVariables.0 //@auxExpressions.1 //@auxExpressions.0" operator="times"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_3" expressions="//@constants.10 //@cpVariables.2" operator="minus"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_4" expressions="//@cpVariables.0 //@auxExpressions.1 //@auxExpressions.3" operator="times"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="TotalCores" expressions="//@cpVariables.0 //@cpVariables.2" operator="times"/>
+  <auxExpressions xsi:type="cp:ComposedExpression" id="WorkerCoresGreaterThanMinimumCores" expressions="//@auxExpressions.5 //@cpMetrics.3" operator="minus"/>
+  <cpMetrics id="SimulationLeftNumber">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </cpMetrics>
+  <cpMetrics id="RemainingSimulationTime" type="Float">
+    <value xsi:type="types:FloatValueUpperware" value="1.0"/>
+  </cpMetrics>
+  <cpMetrics id="ETPercentile" type="Float">
+    <value xsi:type="types:FloatValueUpperware" value="1.0"/>
+  </cpMetrics>
+  <cpMetrics id="MinimumCores">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </cpMetrics>
+</cp:ConstraintProblem>
