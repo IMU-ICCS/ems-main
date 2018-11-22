@@ -23,9 +23,20 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Slf4j
 public class ControlServiceApplication {
 	public static void main(String[] args) throws Exception {
+		if (args.length>0 && args[0].trim().equalsIgnoreCase("--cp2cdo")) {
+			String[] newArgs = java.util.Arrays.copyOfRange(args, 1, args.length);
+			log.info("cp2cdo: args: {}", java.util.Arrays.asList(newArgs));
+			eu.melodic.event.control.util.CpModelHelper.main( newArgs );
+			return;
+		}
+		
+		emsMain(args);
+	}
+	
+	protected static void emsMain(String[] args) throws Exception {
 		ConfigurableApplicationContext ctx = SpringApplication.run(ControlServiceApplication.class, args);
 		
-//XXX:DEL: after development
+//XXX:DEL: after development -or- replace with a coordinator call for preloading model
 		ControlServiceApplication app = ctx.getBean(ControlServiceApplication.class);
 		if (app.camelModel!=null && !app.camelModel.trim().isEmpty()) {
 			app.camelModel = app.camelModel.trim();

@@ -38,9 +38,12 @@ public class CpModelHelper {
 	private int id;
     private CDOClientXImpl cdoClient;
 	
+//XXX:DEL??: after development
 	public static void main(String[] args) throws Exception {
 		CpModelHelper helper = new CpModelHelper();
-		helper.loadCpModel(args[0], args[1]);
+		if (args[0].equalsIgnoreCase("load")) helper.loadCpModel(args[1], args[2]);
+		else if (args[0].equalsIgnoreCase("barebones")) helper.createBarebonesCpModel(args[1], args[2], java.util.Arrays.copyOfRange(args,3,args.length));
+		else log.error("CpModelHelper.main(): Unknown command: {}", args[0]);
 	}
 	
 	public CpModelHelper() {
@@ -49,6 +52,7 @@ public class CpModelHelper {
 		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
 	}
 	
+//XXX:DEL??: after development
 	public void loadCpModel(String pathName, String cpModelPath) {
         CDOSessionX session = null;
 		CDOTransaction transaction = null;
@@ -72,6 +76,64 @@ public class CpModelHelper {
 			
 		} catch (Exception ex) {
 			log.error("CpModelHelper.loadCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+			throw new RuntimeException("helper-id="+id, ex);
+		} finally {
+			if (transaction!=null) transaction.close();
+			if (session!=null) session.getSession().close();
+		}
+	}
+	
+//XXX:DEL: after development
+	public void createBarebonesCpModel(String cpModelPath, String cpModelId, String... elements) {
+        CDOSessionX session = null;
+		CDOTransaction transaction = null;
+		try {
+			log.info("CpModelHelper.createBarebonesCpModel(): BEGIN: helper-id={}, cp-model-path={}, cp-model-id={}", id, cpModelPath, cpModelId);
+			
+			session = cdoClient.getSession();
+            transaction = session.openTransaction();
+			
+			ConstraintProblem cpModel = CpFactory.eINSTANCE.createConstraintProblem();
+			cpModel.setId(cpModelId);
+			
+			if (elements.length>0) {
+				Solution sol = CpFactory.eINSTANCE.createSolution();
+				sol.setTimestamp( System.currentTimeMillis() );
+				cpModel.getSolution().add(sol);
+				
+				RangeDomain domain = CpFactory.eINSTANCE.createRangeDomain();
+				DoubleValueUpperware from = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+				DoubleValueUpperware to = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+				from.setValue(0);
+				to.setValue(Double.MAX_VALUE);
+				domain.setFrom(from);
+				domain.setTo(to);
+				
+				for (String el : elements) {
+					CpVariable var = CpFactory.eINSTANCE.createCpVariable();
+					var.setId(el);
+					var.setDomain(domain);
+					var.setVariableType(VariableType.CARDINALITY);
+					cpModel.getCpVariables().add(var);
+					
+					DoubleValueUpperware vv = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+					vv.setValue(0);
+					
+					CpVariableValue cvv = CpFactory.eINSTANCE.createCpVariableValue();
+					cvv.setVariable(var);
+					cvv.setValue(vv);
+					sol.getVariableValue().add(cvv);
+				}
+			}
+			
+			CDOResource resource = transaction.getOrCreateResource(cpModelPath);
+			resource.getContents().add(cpModel);
+			
+			transaction.commit();
+			log.info("CpModelHelper.createBarebonesCpModel(): END: helper-id={}", id);
+			
+		} catch (Exception ex) {
+			log.error("CpModelHelper.createBarebonesCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
 			throw new RuntimeException("helper-id="+id, ex);
 		} finally {
 			if (transaction!=null) transaction.close();
