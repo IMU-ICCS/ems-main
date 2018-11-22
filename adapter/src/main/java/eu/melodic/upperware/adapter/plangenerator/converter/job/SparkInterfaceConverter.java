@@ -8,6 +8,7 @@ import eu.melodic.upperware.adapter.plangenerator.model.AdapterSparkInterface;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -70,12 +71,11 @@ public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfig
     // todo tests, maybe list with only one element - arguments will be ok for cloudiator
     private static List<String> parseApplicationArguments(String arguments) {
         log.debug("Parsing application arguments: {}", arguments);
-        String argumentSign = "--";
-        List<String> collect = Stream.of(arguments.split(argumentSign))
+        String argumentSign = "\\s+";
+        return Stream.of(arguments.split(argumentSign))
                 .map(String::trim)
-                .filter(s -> !s.equals(""))
+                .filter(StringUtils::isNotBlank)
+                .peek(s -> log.debug("arg: {}", s))
                 .collect(Collectors.toList());
-        collect.forEach(s -> log.debug("arg: {}", s));
-        return collect;
     }
 }
