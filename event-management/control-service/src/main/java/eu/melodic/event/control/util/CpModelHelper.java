@@ -38,173 +38,12 @@ public class CpModelHelper {
 	private int id;
     private CDOClientXImpl cdoClient;
 	
-//XXX:DEL??: after development
-	public static void main(String[] args) throws Exception {
-		CpModelHelper helper = new CpModelHelper();
-		if (args[0].equalsIgnoreCase("load")) helper.loadCpModel(args[1], args[2]);
-		else if (args[0].equalsIgnoreCase("barebones")) helper.createBarebonesCpModel(args[1], args[2], java.util.Arrays.copyOfRange(args,3,args.length));
-		else log.error("CpModelHelper.main(): Unknown command: {}", args[0]);
-	}
-	
 	public CpModelHelper() {
 		id = ++counter;
         this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
 		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
 	}
 	
-//XXX:DEL??: after development
-	public void loadCpModel(String pathName, String cpModelPath) {
-        CDOSessionX session = null;
-		CDOTransaction transaction = null;
-		try {
-			log.info("CpModelHelper.loadCpModel(): BEGIN: helper-id={}, cp-model-file={}, cdo-path={}", id, pathName, cpModelPath);
-			
-			final org.eclipse.emf.ecore.resource.ResourceSet rs = new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl();
-			rs.getPackageRegistry().put(TypesPackage.eNS_URI, TypesPackage.eINSTANCE);
-			rs.getPackageRegistry().put(CpPackage.eNS_URI, CpPackage.eINSTANCE);
-			org.eclipse.emf.ecore.resource.Resource res = rs.getResource(org.eclipse.emf.common.util.URI.createFileURI(pathName), true);
-			EList<org.eclipse.emf.ecore.EObject> contents = res.getContents();
-			
-			session = cdoClient.getSession();
-            transaction = session.openTransaction();
-			
-			CDOResource resource = transaction.getOrCreateResource(cpModelPath);
-			resource.getContents().addAll(contents);
-			
-			transaction.commit();
-			log.info("CpModelHelper.loadCpModel(): END: helper-id={}", id);
-			
-		} catch (Exception ex) {
-			log.error("CpModelHelper.loadCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			throw new RuntimeException("helper-id="+id, ex);
-		} finally {
-			if (transaction!=null) transaction.close();
-			if (session!=null) session.getSession().close();
-		}
-	}
-	
-//XXX:DEL: after development
-	public void createBarebonesCpModel(String cpModelPath, String cpModelId, String... elements) {
-        CDOSessionX session = null;
-		CDOTransaction transaction = null;
-		try {
-			log.info("CpModelHelper.createBarebonesCpModel(): BEGIN: helper-id={}, cp-model-path={}, cp-model-id={}", id, cpModelPath, cpModelId);
-			
-			session = cdoClient.getSession();
-            transaction = session.openTransaction();
-			
-			ConstraintProblem cpModel = CpFactory.eINSTANCE.createConstraintProblem();
-			cpModel.setId(cpModelId);
-			
-			if (elements.length>0) {
-				Solution sol = CpFactory.eINSTANCE.createSolution();
-				sol.setTimestamp( System.currentTimeMillis() );
-				cpModel.getSolution().add(sol);
-				
-				RangeDomain domain = CpFactory.eINSTANCE.createRangeDomain();
-				DoubleValueUpperware from = TypesFactory.eINSTANCE.createDoubleValueUpperware();
-				DoubleValueUpperware to = TypesFactory.eINSTANCE.createDoubleValueUpperware();
-				from.setValue(0);
-				to.setValue(Double.MAX_VALUE);
-				domain.setFrom(from);
-				domain.setTo(to);
-				
-				for (String el : elements) {
-					CpVariable var = CpFactory.eINSTANCE.createCpVariable();
-					var.setId(el);
-					var.setDomain(domain);
-					var.setVariableType(VariableType.CARDINALITY);
-					cpModel.getCpVariables().add(var);
-					
-					DoubleValueUpperware vv = TypesFactory.eINSTANCE.createDoubleValueUpperware();
-					vv.setValue(0);
-					
-					CpVariableValue cvv = CpFactory.eINSTANCE.createCpVariableValue();
-					cvv.setVariable(var);
-					cvv.setValue(vv);
-					sol.getVariableValue().add(cvv);
-				}
-			}
-			
-			CDOResource resource = transaction.getOrCreateResource(cpModelPath);
-			resource.getContents().add(cpModel);
-			
-			transaction.commit();
-			log.info("CpModelHelper.createBarebonesCpModel(): END: helper-id={}", id);
-			
-		} catch (Exception ex) {
-			log.error("CpModelHelper.createBarebonesCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			throw new RuntimeException("helper-id="+id, ex);
-		} finally {
-			if (transaction!=null) transaction.close();
-			if (session!=null) session.getSession().close();
-		}
-	}
-	
-	public Map<String,Double> ZZZ___getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
-		log.debug("CpModelHelper.getMetricVariableValues(): BEGIN: helper-id={}, cp-model-path={}, variables={}", id, cpModelPath, variableNames);
-		
-		// lock resource
-		lockCpModel(cpModelPath, "getMetricVariableValues()");
-
-        CDOSessionX session = null;
-		CDOTransaction transaction = null;
-		
-		Map<String,Double> results = new HashMap<>();
-		try {
-			// retrieve CP model (open transaction)
-            session = cdoClient.getSession();
-            transaction = session.openTransaction();
-			CDOResource resource = transaction.getResource(cpModelPath);
-//XXX:TEMP:			ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);	// one element in list - 0: ConstraintProblem  (see cp_generator, class :
-																							// eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator)
-camel.core.CamelModel cpModel = (camel.core.CamelModel) resource.getContents().get(0);
-			
-			// check if all metric variable names in CP model exist in 'metricValues' map
-//XXX:TEMP:			EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
-cpModel.getAttributes().stream().filter(att -> camel.core.MeasurableAttribute.class.isAssignableFrom(att.getClass())).map(att -> (camel.core.MeasurableAttribute)att).forEach(mv -> {
-//}) });
-//XXX:TEMP:			for (MetricVariable mv : cpMetricVarList) {
-//XXX:TEMP:				log.info("CpModelHelper.getMetricVariableValues():  Metric Variable: id={}, type={}", mv.getId(), mv.getType());
-log.info("CpModelHelper.getMetricVariableValues():  Metric Variable: name={}, type={}", mv.getName(), "-----");
-//XXX:TEMP:				if (variableNames.contains(mv.getId())) {
-if (variableNames.contains(mv.getName())) {
-//XXX:TEMP:					log.debug("CpModelHelper.getMetricVariableValues():  Found Metric Variable: {}", mv.getId());
-log.info("CpModelHelper.getMetricVariableValues():  Found Metric Variable: {}", mv.getName());
-camel.type.Value value = mv.getValue();
-double doubleVal;
-if (camel.type.BooleanValue.class.isAssignableFrom(value.getClass())) results.put(mv.getName(), new Double(doubleVal = ((camel.type.BooleanValue)value).isValue()?1d:0d));
-else if (camel.type.IntValue.class.isAssignableFrom(value.getClass())) results.put(mv.getName(), new Double(doubleVal = ((camel.type.IntValue)value).getValue()));
-else if (camel.type.FloatValue.class.isAssignableFrom(value.getClass())) results.put(mv.getName(), new Double(doubleVal = ((camel.type.FloatValue)value).getValue()));
-else if (camel.type.DoubleValue.class.isAssignableFrom(value.getClass())) results.put(mv.getName(), new Double(doubleVal = ((camel.type.DoubleValue)value).getValue()));
-else throw new IllegalArgumentException("Encountered non-numeric metric variable: "+mv.getName());
-log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = {}", mv.getName(), doubleVal);
-				}
-//XXX:TEMP:			}
-});
-			if (results.keySet().size()!=variableNames.size()) {
-				HashSet<String> missingVars = new HashSet<String>(variableNames);
-				missingVars.removeAll(results.keySet());
-				log.debug("CpModelHelper.getMetricVariableValues(): ERROR: Not found values for all Metric Variables: {}", missingVars);
-				throw new IllegalArgumentException("Not found values for all Metric Variables: "+missingVars);
-			}
-
-		} catch (Exception ex) {
-			log.error("CpModelHelper.getMetricVariableValues(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			throw new RuntimeException("helper-id="+id, ex);
-		} finally {
-			if (transaction!=null) transaction.close();
-			if (session!=null) session.getSession().close();
-
-			// release resource
-			releaseCpModel(cpModelPath, "getMetricVariableValues()");
-		}
-		
-		// return timestamp
-		log.debug("CpModelHelper.getMetricVariableValues(): END: Metric Variable Values: {}", results);
-		return results;
-	}
-		
 	public Map<String,Double> getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
 		log.debug("CpModelHelper.getMetricVariableValues(): BEGIN: helper-id={}, cp-model-path={}, variables={}", id, cpModelPath, variableNames);
 		
@@ -228,18 +67,19 @@ log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = 
 			int solId = cpModel.getDeployedSolutionId();
 			if (solutions.size()>0 && solId>=0) {
 				solutions.get(solId).getVariableValue().stream().forEach(cvv -> {
-					log.info("CpModelHelper.getMetricVariableValues():  Got Metric Variable Value (MVV) from CP model: {}", cvv);
+					log.debug("CpModelHelper.getMetricVariableValues():  Got Metric Variable Value (MVV) from CP model: {}", cvv);
 					String varId = cvv.getVariable().getId();
-					log.info("CpModelHelper.getMetricVariableValues():  Metric Variable: id={}, type={}", varId, cvv.getVariable().getVariableType());
+					log.debug("CpModelHelper.getMetricVariableValues():  Metric Variable: id={}, type={}", varId, cvv.getVariable().getVariableType());
 					if (variableNames.contains(varId)) {
-						log.debug("CpModelHelper.getMetricVariableValues():  Found Metric Variable: {}", varId);
+						log.debug("CpModelHelper.getMetricVariableValues():  Found Metric Variable: id={}, class={}", varId, cvv.getClass().getName());
+						NumericValueUpperware value = cvv.getValue();
 						double doubleVal;
-						if (BooleanValueUpperware.class.isAssignableFrom(cvv.getClass())) results.put(varId, new Double(doubleVal = ((BooleanValueUpperware)cvv).isValue()?1d:0d));
-						else if (IntegerValueUpperware.class.isAssignableFrom(cvv.getClass())) results.put(varId, new Double(doubleVal = ((IntegerValueUpperware)cvv).getValue()));
-						else if (LongValueUpperware.class.isAssignableFrom(cvv.getClass())) results.put(varId, new Double(doubleVal = ((LongValueUpperware)cvv).getValue()));
-						else if (FloatValueUpperware.class.isAssignableFrom(cvv.getClass())) results.put(varId, new Double(doubleVal = ((FloatValueUpperware)cvv).getValue()));
-						else if (DoubleValueUpperware.class.isAssignableFrom(cvv.getClass())) results.put(varId, new Double(doubleVal = ((DoubleValueUpperware)cvv).getValue()));
-						else throw new IllegalArgumentException("Encountered Non-numeric Metric Variable: "+varId);
+						if (BooleanValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((BooleanValueUpperware)value).isValue()?1d:0d));
+						else if (IntegerValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((IntegerValueUpperware)value).getValue()));
+						else if (LongValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((LongValueUpperware)value).getValue()));
+						else if (FloatValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((FloatValueUpperware)value).getValue()));
+						else if (DoubleValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((DoubleValueUpperware)value).getValue()));
+						else throw new IllegalArgumentException("Encountered Non-numeric Metric Variable: "+varId+", class="+value.getClass().getName());
 						log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = {}", varId, doubleVal);
 					}
 				});
@@ -250,7 +90,7 @@ log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = 
 					throw new IllegalArgumentException("Not found values for all Metric Variables: "+missingVars);
 				}
 			} else {
-				log.warn("CpModelHelper.getMetricVariableValues(): CP model does not contain any solutions or no solution have been deployed: cp-model-path={}, deployeed-solution-id={}", cpModelPath, solId);
+				log.warn("CpModelHelper.getMetricVariableValues(): CP model does not contain any solutions or no solution have been deployed: cp-model-path={}, deployed-solution-id={}", cpModelPath, solId);
 			}
 
 		} catch (Exception ex) {
@@ -288,5 +128,44 @@ log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = 
 			LOCKS.remove(cpModelPath);
 		}
 		log.debug("CpModelHelper.{}->releaseCpModel(): RELEASED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
+	}
+	
+	// ------------------------------------------------------------------------
+	
+//XXX:DEL??: after development
+	public static void main(String[] args) throws Exception {
+		CpModelHelper helper = new CpModelHelper();
+		helper.loadCpModel(args[0], args[1]);
+	}
+	
+//XXX:DEL??: after development
+	public void loadCpModel(String pathName, String cpModelPath) {
+        CDOSessionX session = null;
+		CDOTransaction transaction = null;
+		try {
+			log.info("CpModelHelper.loadCpModel(): BEGIN: helper-id={}, cp-model-file={}, cdo-path={}", id, pathName, cpModelPath);
+			
+			final org.eclipse.emf.ecore.resource.ResourceSet rs = new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl();
+			rs.getPackageRegistry().put(TypesPackage.eNS_URI, TypesPackage.eINSTANCE);
+			rs.getPackageRegistry().put(CpPackage.eNS_URI, CpPackage.eINSTANCE);
+			org.eclipse.emf.ecore.resource.Resource res = rs.getResource(org.eclipse.emf.common.util.URI.createFileURI(pathName), true);
+			EList<org.eclipse.emf.ecore.EObject> contents = res.getContents();
+			
+			session = cdoClient.getSession();
+            transaction = session.openTransaction();
+			
+			CDOResource resource = transaction.getOrCreateResource(cpModelPath);
+			resource.getContents().addAll(contents);
+			
+			transaction.commit();
+			log.info("CpModelHelper.loadCpModel(): END: helper-id={}", id);
+			
+		} catch (Exception ex) {
+			log.error("CpModelHelper.loadCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+			throw new RuntimeException("helper-id="+id, ex);
+		} finally {
+			if (transaction!=null) transaction.close();
+			if (session!=null) session.getSession().close();
+		}
 	}
 }

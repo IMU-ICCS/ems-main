@@ -1,2 +1,3 @@
 @echo off
-java -jar control-service\target\control-service.jar --cp2cdo %*
+java -classpath control-service/target/classes;control-service/target/dependency/* eu.melodic.event.control.util.CpModelHelper %*
+rem Usage: cp2cdo <file> <cdo-resource>
