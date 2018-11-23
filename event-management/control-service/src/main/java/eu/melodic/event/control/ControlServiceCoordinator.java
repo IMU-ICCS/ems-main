@@ -58,19 +58,41 @@ public class ControlServiceCoordinator {
 	@Autowired
     private RestTemplate restTemplate;
 	
+	@org.springframework.beans.factory.annotation.Value("${control.preload.camel-model}")
+	private String preloadCamelModel;
+	@org.springframework.beans.factory.annotation.Value("${control.preload.cp-model}")
+	private String preloadCpModel;
+	
 	private AtomicBoolean inUse = new AtomicBoolean();
 	private Map<String,TranslationContext> camelToTcCache = new HashMap<>();
 	private String cpModelId = null;
 	
+	@org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+	public void applicationReady() {
+		log.debug("ControlServiceCoordinator.applicationReady(): invoked");
+		preloadModels();
+	}
+
 /*	@PostConstruct
 	public void postConstruct() {
-		log.trace("ControlServiceCoordinator: 'postConstruct()' invoked");
+		log.info("ControlServiceCoordinator: 'postConstruct()' invoked");
 	}
 	
 	@PreDestroy
 	public void preDestroy() {
 		log.info("ControlServiceCoordinator: 'preDestroy()' invoked");
 	}*/
+	
+	@Async
+	public void preloadModels() {
+		if (preloadCamelModel!=null && !preloadCamelModel.trim().isEmpty()) {
+			log.info("===================================================================================================");
+			log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}", preloadCamelModel, preloadCpModel);
+			processNewModel(preloadCamelModel, preloadCpModel, null);
+		} else {
+			log.info("ControlServiceCoordinator.preloadModels(): No CAMEL model to preload");
+		}
+	}
 	
 	@Async
 	public void processCpModelId(String cpModelId, String notificationUri) {
