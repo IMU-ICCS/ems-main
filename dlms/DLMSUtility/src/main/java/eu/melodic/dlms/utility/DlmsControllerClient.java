@@ -1,9 +1,12 @@
 package eu.melodic.dlms.utility;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -11,19 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Collections;
+import io.github.cloudiator.rest.model.NodeCandidate;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Client interface to call DlmsController from the UtilityGenerator.
  */
+@Slf4j
 public class DlmsControllerClient {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsControllerClient.class);
-
+	// below url is just for testing, will be changed later once actual utility is available
 	private static final String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
 
 	private final String datasourceServerUrl;
@@ -47,7 +46,7 @@ public class DlmsControllerClient {
 	public static void main(String args[]) {
 		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING).getUtilityValues(Collections.emptyList(), Collections.emptyList());
 		for(String key : result.getResults().keySet()) {
-			LOGGER.info("{} --> {}", key, result.getResults().get(key));
+			log.info("{} --> {}", key, result.getResults().get(key));
 		}
 	}
 
@@ -64,7 +63,7 @@ public class DlmsControllerClient {
 			DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
 
 			if(diffBundle.isEmpty()) {
-				LOGGER.info("no diffs found");
+				log.info("no diffs found");
 				return new UtilityMetrics(Collections.emptyMap());
 			}
 
@@ -75,7 +74,7 @@ public class DlmsControllerClient {
 			return result;
 		}
 		catch(URISyntaxException | RestClientException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 
 		return new UtilityMetrics(Collections.emptyMap());
@@ -85,13 +84,13 @@ public class DlmsControllerClient {
 		DlmsDiffBundle diffBundle = new DlmsDiffBundle();
 
 		for(DlmsConfigurationElement deployedElement : deployed) {
-			LOGGER.info("handling deployed element: {}", deployedElement.getId());
+			log.info("handling deployed element: {}", deployedElement.getId());
 
 			for(DlmsConfigurationElement proposedElement : proposed) {
-				LOGGER.info("comparing proposed element: {}", proposedElement.getId());
+				log.info("comparing proposed element: {}", proposedElement.getId());
 
 				if(hasSameId(deployedElement, proposedElement)) {
-					LOGGER.info("match found for {}", proposedElement.getId());
+					log.info("match found for {}", proposedElement.getId());
 					checkElementsForDiff(diffBundle, deployedElement, proposedElement);
 				}
 			}
@@ -101,7 +100,7 @@ public class DlmsControllerClient {
 
 	private void checkElementsForDiff(DlmsDiffBundle diffBundle, DlmsConfigurationElement deployedElement, DlmsConfigurationElement proposedElement) {
 		if(hasCardinalityDiff(deployedElement, proposedElement)) {
-			LOGGER.info("diff found for {} in cardinality", proposedElement.getId());
+			log.info("diff found for {} in cardinality", proposedElement.getId());
 			registerDiff(diffBundle, deployedElement, proposedElement);
 		}
 		else if(hasValidNodeCandidates(deployedElement, proposedElement)) {
@@ -109,16 +108,16 @@ public class DlmsControllerClient {
 			NodeCandidate proposedCandidate = proposedElement.getNodeCandidate();
 
 			if(hasLocationDiff(deployedCandidate, proposedCandidate)) {
-				LOGGER.info("diff found for {} in location", proposedElement.getId());
+				log.info("diff found for {} in location", proposedElement.getId());
 				registerDiff(diffBundle, deployedElement, proposedElement);
 			}
 			else if(hasHardwareDiff(deployedCandidate, proposedCandidate)) {
-				LOGGER.info("diff found for {} in hardware", proposedElement.getId());
+				log.info("diff found for {} in hardware", proposedElement.getId());
 				registerDiff(diffBundle, deployedElement, proposedElement);
 			}
 		}
 		else {
-			LOGGER.info("node candidate(s) null for {}", proposedElement.getId());
+			log.info("node candidate(s) null for {}", proposedElement.getId());
 		}
 	}
 
@@ -149,6 +148,8 @@ public class DlmsControllerClient {
 
 	/**
 	 * Creates the HTTPHeaders with the security information.
+	 * This will be changed in production
+	 * After we get actual utility
 	 */
 	private HttpHeaders createHeaders() {
 		return new HttpHeaders() {{
