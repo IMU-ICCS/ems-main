@@ -23,6 +23,7 @@ import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -136,6 +137,7 @@ public class Coordinator implements ApplicationContextAware {
 		// check if a solution is deployed. If no solution is deployed accept new solution
 		if (solUv[0]<0) {
 			log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
+			notifyEMS(cpModelPath);
 			return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
 		}
 		
@@ -145,6 +147,7 @@ public class Coordinator implements ApplicationContextAware {
 		double newSolUv = solUv[1];
 		if (newSolUv > uvThresholdFactor * depSolUv) {
 			log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+			notifyEMS(cpModelPath);
 			return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
 		} else {
 			log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
@@ -231,5 +234,29 @@ public class Coordinator implements ApplicationContextAware {
 		watermark.setDate(new Date());
 		watermark.setUuid(uuid);
 		return watermark;
+	}
+	
+	private void notifyEMS(String cpModelPath) {
+		String emsUrl = properties.getEmsUrl();
+		if (emsUrl==null || emsUrl.trim().isEmpty()) {
+			log.debug("MetaSolver.Coordinator: notifyEMS(): EMS-URL has not been set");
+			return;
+		}
+		
+		if (emsUrl.endsWith("/")) {
+			emsUrl = emsUrl.substring(0, emsUrl.length() - 1);
+		}
+		log.debug("MetaSolver.Coordinator: notifyEMS(): Request to EMS-URL: {}", emsUrl);
+		log.debug("MetaSolver.Coordinator: notifyEMS(): restTemplate: {}", restTemplate);
+		log.debug("MetaSolver.Coordinator: notifyEMS(): cp-model-path: {}", cpModelPath);
+		
+		HashMap<String,String> notification = new HashMap<>();
+		notification.put("cp-model-id", cpModelPath);
+		ResponseEntity<String> response = 
+			restTemplate.postForEntity(emsUrl, notification, String.class);
+		
+		log.debug("MetaSolver.Coordinator: notifyEMS(): Response: {}", response);
+		log.debug("MetaSolver.Coordinator: notifyEMS(): Response Body: {}", response.getBody());
+		log.debug("MetaSolver.Coordinator: notifyEMS(): Response Status: {}", response.getStatusCode());
 	}
 }

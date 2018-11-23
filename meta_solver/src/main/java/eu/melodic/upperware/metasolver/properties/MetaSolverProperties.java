@@ -92,4 +92,7 @@ public class MetaSolverProperties {
 	@Valid
 	@NotNull
 	private double utilityThresholdFactor;
+
+	@Valid
+	private String emsUrl;
 }
