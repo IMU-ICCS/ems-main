@@ -5,10 +5,17 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 /**
  * Entity class representing events.
  */
 @Entity
+@NoArgsConstructor
+@Getter
+@Setter
 public class Event {
 
 	@Id
@@ -32,42 +39,8 @@ public class Event {
 	 */
 	private EventStatus status = EventStatus.IDLE;
 
-	public Event() {
-	}
-
 	public Event(String name) {
 		this.name = name;
 	}
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getCommand() {
-		return command;
-	}
-
-	public void setCommand(String command) {
-		this.command = command;
-	}
-
-	public EventStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(EventStatus status) {
-		this.status = status;
-	}
 }
