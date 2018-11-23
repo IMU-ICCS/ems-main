@@ -211,6 +211,10 @@ public class BaguetteServer
 		server.sendToClient(clientId, command);
 	}
 	
+	public void sendConstants(Map<String,Double> constants) {
+		server.sendConstants(constants);
+	}
+	
 //XXX: TODO: change 'main()' to make use of 'setTopologyConfiguration()'
 /*	public static void main( String[] args ) throws IOException
 	{

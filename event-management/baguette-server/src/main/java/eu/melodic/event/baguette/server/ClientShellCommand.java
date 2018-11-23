@@ -253,6 +253,20 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 			}
 		}
 	}
+	public void sendConstants(Map<String,Double> constants) {
+		log.debug("sendConstants: constants={}", constants);
+		HashMap<String,Object> all = new HashMap<>();
+		all.put("constants", constants);
+		
+		try {
+			String allStr = serializeToString(all);
+			log.info("sendConstants: Serialization of Constants: {}", allStr);
+			sendToClient("SET-CONSTANTS "+allStr);
+		} catch (IOException ex) {
+			log.error("sendConstants: Exception while serializing Constants: ", ex);
+			log.error("sendConstants: SET-CONSTANTS command *NOT* sent to client");
+		}
+	}
 	
 	public void setClientId(String id) { if (id!=null && !id.trim().isEmpty()) sendToClient("SET-ID "+id.trim()); }
 	public void setRole(String role) { if (role!=null && !role.trim().isEmpty()) sendToClient("SET-ROLE "+role.trim().toUpperCase()); }

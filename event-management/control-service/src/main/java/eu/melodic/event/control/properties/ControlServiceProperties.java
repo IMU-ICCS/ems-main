@@ -39,6 +39,11 @@ public class ControlServiceProperties {
 	@Value("${control.esb-url}")
 	private String esbUrl;
 	
+	@Value("${control.preload.camel-model:}")
+	private String preloadCamelModel;
+	@Value("${control.preload.cp-model:}")
+	private String preloadCpModel;
+	
 	@Value("${control.skip-translation:false}")
 	private boolean skipTranslation;
 	@Value("${control.skip-mvv-retrieve:false}")

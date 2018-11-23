@@ -110,6 +110,8 @@ public class CpModelHelper {
 	}
 	
 	// ------------------------------------------------------------------------
+	// Locking a CP model among instances of thsi class
+	// ------------------------------------------------------------------------
 
 	protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
 		synchronized (LOCKS) {
@@ -130,6 +132,8 @@ public class CpModelHelper {
 		log.debug("CpModelHelper.{}->releaseCpModel(): RELEASED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
 	}
 	
+	// ------------------------------------------------------------------------
+	// Helper methods for uploading a CP model from an XMI file to CDO
 	// ------------------------------------------------------------------------
 	
 //XXX:DEL??: after development

@@ -188,4 +188,11 @@ public class Sshd
 			}
 		}
 	}
+	
+	public void sendConstants(Map<String,Double> constants) {
+		for (ClientShellCommand csc : ClientShellCommand.getActive()) {
+			log.info("SSH server: Sending constants to client {} : {}", csc.getId(), constants);
+			csc.sendConstants(constants);
+		}
+	}
 }

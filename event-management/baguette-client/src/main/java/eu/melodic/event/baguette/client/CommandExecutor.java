@@ -154,6 +154,12 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			log.trace("grouping-config-base64: {}", configStr);
 			setGroupingConfiguration(configStr);
 		} else
+		if ("SET-CONSTANTS".equals(cmd)) {
+			if (args.length<2) return false;
+			String configStr = String.join(" ", args).trim();
+			log.trace("constants-base64: {}", configStr);
+			setConstants(configStr);
+		} else
 		if ("SET-ACTIVE-GROUPING".equals(cmd)) {
 			if (args.length<2) return false;
 			String newGrouping = String.join(" ", args).trim();
@@ -325,8 +331,8 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			Set<FunctionDefinition> functionDefs = (Set<FunctionDefinition>) all.get("function-definitions");
 			Map<String,Double> constants = (Map<String,Double>) all.get("constants");
 			
-			log.info("SETTING GROUPING CONFIGURATION: grouping={}, configuration={}, event-types={}, rules={}, connections={}, function-definitions={}",
-				groupingName, eventTypes, config, rules, connections, functionDefs);
+			log.info("SETTING GROUPING CONFIGURATION: grouping={}, configuration={}, event-types={}, rules={}, connections={}, constants={}, function-definitions={}",
+				groupingName, eventTypes, config, rules, connections, constants, functionDefs);
 			Grouping grouping = groupings.get(groupingName);
 			if (grouping==null) {
 				grouping = new Grouping(groupingName); 
@@ -346,6 +352,27 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			
 		} catch (Exception ex) {
 			log.error("Exception while unserializing received Grouping configuration: ", ex);
+		}
+	}
+	
+	protected synchronized void setConstants(String configStr) {
+		try {
+			log.debug("Received serialization of Constants: {}", configStr);
+			HashMap all = (HashMap)unserializeFromString(configStr);
+			Map<String,Double> constants = (Map<String,Double>) all.get("constants");
+			log.debug("Received Constants: {}", constants);
+			
+			if (activeGrouping!=null) {
+				log.info("SETTING CONSTANTS: {}", constants);
+				activeGrouping.setConstants(constants);
+				brokerCepService.setConstants( constants );
+				log.debug("New constants set: {}", constants);
+			} else {
+				log.warn("No active grouping. Constants will be ignored");
+			}
+			
+		} catch (Exception ex) {
+			log.error("Exception while unserializing received Constants: ", ex);
 		}
 	}
 	

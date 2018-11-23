@@ -51,7 +51,7 @@ public class ControlServiceController {
 	private ControlServiceProperties properties;
 	
 	// ------------------------------------------------------------------------------------------------------------
-	// ESB interfacing methods
+	// ESB and Upperware interfacing methods
 	// ------------------------------------------------------------------------------------------------------------
 	
 	@RequestMapping(value = "/camelModel", method = POST)
@@ -66,7 +66,7 @@ public class ControlServiceController {
 		
 		// Start translation and reconfiguration in a worker thread
 		String camelModelId = applicationId;
-		coordinator.processNewModel( camelModelId, notificationUri );
+		coordinator.processNewModel( camelModelId, null, notificationUri );
 		log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 		
 		return "OK";
@@ -92,7 +92,8 @@ public class ControlServiceController {
 		return "OK";
 	}
 	
-//XXX:NEW: Keep it??
+	// ------------------------------------------------------------------------------------------------------------
+	
 	@RequestMapping(value = "/cpModelJson", method = POST,
 		consumes=MediaType.APPLICATION_JSON_UTF8_VALUE, 
 		produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -105,11 +106,13 @@ public class ControlServiceController {
 		log.info("ControlServiceController.newCpModel(): CP model id from request: {}", cpModelId);
 		
 		// Start CP model processing in a worker thread
-		coordinator.processCpModelId( cpModelId, null );
+		coordinator.processCpModel( cpModelId, null );
 		log.debug("ControlServiceController.newCpModel(): CP Model processing dispatched to a worker thread");
 		
 		return "OK";
 	}
+	
+	// ------------------------------------------------------------------------------------------------------------
 	
 	@RequestMapping(value = "/monitors", method = POST)
 	public MonitorsDataResponse getSensors(@RequestBody MonitorsDataRequestImpl request) throws ConcurrentAccessException {

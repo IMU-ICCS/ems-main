@@ -58,33 +58,26 @@ public class ControlServiceCoordinator {
 	@Autowired
     private RestTemplate restTemplate;
 	
-	@org.springframework.beans.factory.annotation.Value("${control.preload.camel-model}")
-	private String preloadCamelModel;
-	@org.springframework.beans.factory.annotation.Value("${control.preload.cp-model}")
-	private String preloadCpModel;
-	
 	private AtomicBoolean inUse = new AtomicBoolean();
 	private Map<String,TranslationContext> camelToTcCache = new HashMap<>();
-	private String cpModelId = null;
+	
+	private String currentCamelModelId;
+	private String currentCpModelId;
+	private TranslationContext currentTC;
+	
+	
+	// ------------------------------------------------------------------------------------------------------------
 	
 	@org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
 	public void applicationReady() {
 		log.debug("ControlServiceCoordinator.applicationReady(): invoked");
 		preloadModels();
 	}
-
-/*	@PostConstruct
-	public void postConstruct() {
-		log.info("ControlServiceCoordinator: 'postConstruct()' invoked");
-	}
-	
-	@PreDestroy
-	public void preDestroy() {
-		log.info("ControlServiceCoordinator: 'preDestroy()' invoked");
-	}*/
 	
 	@Async
 	public void preloadModels() {
+		String preloadCamelModel = properties.getPreloadCamelModel();
+		String preloadCpModel = properties.getPreloadCpModel();
 		if (preloadCamelModel!=null && !preloadCamelModel.trim().isEmpty()) {
 			log.info("===================================================================================================");
 			log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}", preloadCamelModel, preloadCpModel);
@@ -94,57 +87,7 @@ public class ControlServiceCoordinator {
 		}
 	}
 	
-	@Async
-	public void processCpModelId(String cpModelId, String notificationUri) {
-		notificationUri = (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) ? notificationUri : null;
-		
-		// Acquire lock of this coordinator
-		if (! inUse.compareAndSet(false, true)) {
-			String mesg = "ControlServiceCoordinator.processCpModelId(): ERROR: Coordinator is in use. Method exits immediately";
-			log.warn(mesg);
-			if (! properties.isSkipEsbNotification()) {
-				sendErrorNotification(notificationUri, mesg, mesg);
-			} else {
-				log.warn("ControlServiceCoordinator.processCpModelId(): Skipping ESB notification due to configuration");
-			}
-			return;
-		}
-		
-		try {
-			// Call '_processCpModelIds()' to do actual processing
-			//_processCpModelIds(cpModelId, notificationUri);
-			
-			this.cpModelId = cpModelId;
-			
-			// Notify ESB, if 'notificationUri' is provided
-			if (! properties.isSkipEsbNotification()) {
-				if (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) {
-					log.info("ControlServiceCoordinator.processCpModelId(): Notifying ESB: {}", notificationUri);
-					sendSuccessNotification(notificationUri);
-					log.info("ControlServiceCoordinator.processCpModelId(): ESB notified: {}", notificationUri);
-				}
-			} else {
-				log.warn("ControlServiceCoordinator.processCpModelId(): Skipping ESB notification due to configuration");
-			}
-			
-		} catch (Exception ex) {
-			String mesg = "ControlServiceCoordinator.processCpModelId(): EXCEPTION: "+ex;
-			log.error(mesg, ex);
-			if (! properties.isSkipEsbNotification()) {
-				sendErrorNotification(notificationUri, mesg, mesg);
-			} else {
-				log.warn("ControlServiceCoordinator.processCpModelId(): Skipping ESB notification due to configuration");
-			}
-		} finally {
-			// Release lock of this coordinator
-			inUse.compareAndSet(true, false);
-		}
-	}
-	
-	@Async
-	public void processNewModel(String camelModelId, String notificationUri) {
-		processNewModel(camelModelId, null, notificationUri);
-	}
+	// ------------------------------------------------------------------------------------------------------------
 	
 	@Async
 	public void processNewModel(String camelModelId, String cpModelId, String notificationUri) {
@@ -162,13 +105,11 @@ public class ControlServiceCoordinator {
 			return;
 		}
 		
-		if (cpModelId!=null) {
-			this.cpModelId = cpModelId;
-		}
-		
 		try {
 			// Call '_processNewModels()' to do actual processing
-			_processNewModels(camelModelId, notificationUri);
+			_processNewModels(camelModelId, cpModelId, notificationUri);
+			this.currentCamelModelId = camelModelId;
+			this.currentCpModelId = cpModelId;
 		} catch (Exception ex) {
 			String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: "+ex;
 			log.error(mesg, ex);
@@ -183,8 +124,44 @@ public class ControlServiceCoordinator {
 		}
 	}
 	
-	protected void _processNewModels(String camelModelId, String notificationUri) {
-		log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, notification-uri={}", camelModelId, notificationUri);
+	@Async
+	public void processCpModel(String cpModelId, String notificationUri) {
+		notificationUri = (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) ? notificationUri : null;
+		
+		// Acquire lock of this coordinator
+		if (! inUse.compareAndSet(false, true)) {
+			String mesg = "ControlServiceCoordinator.processCpModel(): ERROR: Coordinator is in use. Method exits immediately";
+			log.warn(mesg);
+			if (! properties.isSkipEsbNotification()) {
+				sendErrorNotification(notificationUri, mesg, mesg);
+			} else {
+				log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
+			}
+			return;
+		}
+		
+		try {
+			// Call '_processCpModel()' to do actual processing
+			_processCpModel(cpModelId, notificationUri);
+			this.currentCpModelId = cpModelId;
+		} catch (Exception ex) {
+			String mesg = "ControlServiceCoordinator.processCpModel(): EXCEPTION: "+ex;
+			log.error(mesg, ex);
+			if (! properties.isSkipEsbNotification()) {
+				sendErrorNotification(notificationUri, mesg, mesg);
+			} else {
+				log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
+			}
+		} finally {
+			// Release lock of this coordinator
+			inUse.compareAndSet(true, false);
+		}
+	}
+	
+	// ------------------------------------------------------------------------------------------------------------
+	
+	protected void _processNewModels(String camelModelId, String cpModelId, String notificationUri) {
+		log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, cp-model-id={}, notification-uri={}", camelModelId, cpModelId, notificationUri);
 		
 		// Translate models into EPL rules etc
 		TranslationContext _TC = null;
@@ -398,8 +375,88 @@ public class ControlServiceCoordinator {
 			log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
 		}
 		
+		this.currentTC = _TC;
 		log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
 	}
+	
+	protected void _processCpModel(String cpModelId, String notificationUri) {
+		log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, notification-uri={}", cpModelId, notificationUri);
+		log.info("ControlServiceCoordinator._processCpModel(): Current camel-model-id={}", currentCamelModelId);
+		TranslationContext _TC = this.currentTC;
+		
+		// Retrieve Metric Variable Values (MVV) from CP model
+		Map<String,Double> constants = new HashMap<>();
+		if (! properties.isSkipMvvRetrieve()) {
+			if (cpModelId!=null && !cpModelId.trim().isEmpty()) {
+				try {
+					log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
+					
+					// Retrieve constant names from '_TC.MVV' and values from a given CP model
+					eu.melodic.event.control.util.CpModelHelper helper = new eu.melodic.event.control.util.CpModelHelper();
+					constants.putAll( helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)) );
+					log.info("ControlServiceCoordinator._processCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
+					
+				} catch (Exception ex) {
+					log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
+					//return;
+				}
+			} else {
+				log.error("ControlServiceCoordinator._processCpModel(): No CP model have been provided");
+				//return;
+			}
+		} else {
+			log.warn("ControlServiceCoordinator._processCpModel(): Skipping MVV retrieval due to configuration");
+		}
+
+		// (Re-)Configure Broker and CEP
+		String upperwareGrouping = properties.getUpperwareGrouping();
+		if (! properties.isSkipBrokerCep()) {
+			try {
+				// Initializing Broker-CEP module if necessary
+				if (brokerCep==null) {
+					log.info("ControlServiceCoordinator._processCpModel(): Broker-CEP: Initializing...");
+					brokerCep = applicationContext.getBean(BrokerCepService.class);
+					log.info("ControlServiceCoordinator._processCpModel(): Broker-CEP: Initializing...ok");
+				}
+				
+				log.info("ControlServiceCoordinator._processCpModel(): Passing constants to Broker-CEP: {}", constants);
+				brokerCep.setConstants( constants );
+			} catch (Exception ex) {
+				log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", cpModelId, ex);
+				//return;
+			}
+		} else {
+			log.warn("ControlServiceCoordinator._processCpModel(): Skipping Broker-CEP setup due to configuration");
+		}
+		
+		// (Re-)Configure Baguette server
+		if (! properties.isSkipBaguette()) {
+			log.info("ControlServiceCoordinator._processCpModel(): Re-configuring Baguette Server with constants: {}", constants);
+			try {
+				baguette.sendConstants( constants );
+			} catch (Exception ex) {
+				log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while configuring Baguette server: cp-model-id={}", cpModelId, ex);
+				//return;
+			}
+		} else {
+			log.warn("ControlServiceCoordinator._processCpModel(): Skipping Baguette Server setup due to configuration");
+		}
+		
+		// Notify ESB, if 'notificationUri' is provided
+		if (! properties.isSkipEsbNotification()) {
+			if (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) {
+				log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
+				sendSuccessNotification(notificationUri);
+				log.info("ControlServiceCoordinator._processCpModel(): ESB notified: {}", notificationUri);
+			}
+		} else {
+			log.warn("ControlServiceCoordinator._processCpModel(): Skipping ESB notification due to configuration");
+		}
+		
+		log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
+	}
+	
+	// ------------------------------------------------------------------------------------------------------------
 	
 	protected Map<String,String> _prepareSubscriptionConfig(String url, String topic, String clientId, String type) {
 		Map<String,String> map = new HashMap<>();
@@ -446,9 +503,11 @@ public class ControlServiceCoordinator {
 		}
 	}
 	
+	
 	// ------------------------------------------------------------------------------------------------------------
 	// Translation information query methods
 	// ------------------------------------------------------------------------------------------------------------
+	
 	public TranslationContext getTranslationContextOfCamelModel(String camelModelId) {
 		return camelToTcCache.get(camelModelId);
 	}
@@ -471,9 +530,11 @@ public class ControlServiceCoordinator {
 		return watermark;
 	}
 	
+	
 	// ------------------------------------------------------------------------------------------------------------
 	// Baguette control methods
 	// ------------------------------------------------------------------------------------------------------------
+	
 	@Async
 	public void stopBaguette() {
 		// Acquire lock of this coordinator
@@ -495,9 +556,11 @@ public class ControlServiceCoordinator {
 		}
 	}
 	
+	
 	// ------------------------------------------------------------------------------------------------------------
 	// ESB notification methods
 	// ------------------------------------------------------------------------------------------------------------
+	
 	private void sendSuccessNotification(String notificationUri) {
 		NotificationResultImpl result = new NotificationResultImpl();
 		result.setStatus( NotificationResult.StatusType.SUCCESS );
@@ -535,9 +598,11 @@ public class ControlServiceCoordinator {
 		log.info("ControlServiceCoordinator.sendNotification(): ESB endpoint invoked: {}, response={}", url, responseStatus);
 	}
 	
+	
 	// ------------------------------------------------------------------------------------------------------------
 	// Event Generation and Debugging methods
 	// ------------------------------------------------------------------------------------------------------------
+	
 	private final static String EVENT_DEBUG_OK = "OK";
 	private final static String EVENT_DEBUG_ERROR = "ERROR";
 	private final static String EVENT_DEBUG_DISABLED = "EVENT DEBUGGING IS DISABLED";
@@ -548,6 +613,7 @@ public class ControlServiceCoordinator {
 		log.debug("ControlServiceCoordinator.{}(): END: result={}", method, result);
 		return result;
 	}
+	
 	private String eventSendCommandToClient(String method, String clientId, String command) {
 		// Check status
 		if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
@@ -606,5 +672,6 @@ public class ControlServiceCoordinator {
 		String command = String.format(java.util.Locale.ROOT, "SEND-EVENT %s %s %f", brokerUrl, topicName, value);
 		return eventSendCommandToClient("eventRemoteSend", clientId, command);
 	}
+	
 	// ------------------------------------------------------------------------------------------------------------
 }

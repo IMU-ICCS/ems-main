@@ -149,6 +149,9 @@ public class MathUtil {
 		//e.setVerboseMode();
 		log.debug("MathUtil: formula={}", e.getExpressionString());
 		
+		// Add constants
+		e.addConstants(new ArrayList(constants.values()));
+		
 		// Add functions
 		for (Function f : functions) e.addFunctions(f);
 		
