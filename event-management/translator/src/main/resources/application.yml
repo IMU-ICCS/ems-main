@@ -12,6 +12,11 @@
 generator:
   language: EPL
   rule-templates:
+    # SCHEDULE (i.e. IUTPUT) CLAUSE
+    SCHEDULE:
+      __ANY__:
+        - | 
+          OUTPUT LAST EVERY [(${period})] [(${unit})]
     # Binary-Event-Pattern templates
     BEP-AND:
       GLOBAL:
@@ -82,24 +87,24 @@ generator:
       __ANY__:
         - |
           /* CONSTR-MET-GLOBAL */ /*INSERT INTO [(${outputStream})]*/ 
-          SELECT DISTINCT * FROM [(${metricContext})] HAVING [(${metricContext})].metricValue [(${operator})] [(${threshold})]
+          SELECT * FROM [(${metricContext})] HAVING [(${metricContext})].metricValue [(${operator})] [(${threshold})]
           
     # Context templates
     COMP-CTX:
       __ANY__:
         - |
           /* COMP-CTX-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
+          SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
           [(${scheduleClause})]
           
-    COMP-CTX-AGG:
+    AGG-COMP-CTX:
       __ANY__:
         - |
           /* COMP-CTX-AGG-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
+          SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
@@ -109,23 +114,23 @@ generator:
       PER_INSTANCE:
         - |
           /* RAW-CTX-PER_INSTANCE */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT * FROM [(${sensor})][(${scheduleClause})]
+          SELECT * FROM [(${sensor})] [(${scheduleClause})]
           
     # Metric Variable templates
     VAR:
       __ANY__:
         - |
           /* VAR-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
+          SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
           
-    VAR-AGG:
+    AGG-VAR:
       __ANY__:
         - |
           /* VAR-AGG-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
+          SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
@@ -135,20 +140,20 @@ generator:
       __ANY__:
         - |
           /* OPT-REQ-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT * FROM [(${context})]
+          SELECT * FROM [(${context})]
           
     OPT-REQ-VAR:
       __ANY__:
         - |
           /* OPT-REQ-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT * FROM [(${variable})]
+          SELECT * FROM [(${variable})]
           
     # SLO templates
     SLO:
       __ANY__:
         - |
           /* SLO-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT DISTINCT * FROM [(${constraint})]
+          SELECT * FROM [(${constraint})]
           
 #XXX:DEL:...remove next rule
   XXX-extra-rule-templates:

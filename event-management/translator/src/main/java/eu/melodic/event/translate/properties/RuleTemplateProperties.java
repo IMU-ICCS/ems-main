@@ -47,11 +47,14 @@ public class RuleTemplateProperties {
     }
 
     public void setRuleTemplates(Map<String,Map<String,List<String>>> map) {
+		log.debug("RuleTemplateProperties.setRuleTemplates: {}", ruleTemplates);
         this.ruleTemplates = map;
     }
 	
 	public List<String> getTemplatesFor(String type, String grouping) {
+		log.trace("RuleTemplateProperties.getTemplatesFor: type={}, grouping={}", type, grouping);
 		List<String> list = Optional.ofNullable( ruleTemplates.get(type) ).map(groupings -> groupings.get(grouping)).orElse(null);
+		log.trace("RuleTemplateProperties.getTemplatesFor: results={}", list);
 		if (list==null) list = new ArrayList<>();
 		return list;
 	}

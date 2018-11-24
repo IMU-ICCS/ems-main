@@ -69,6 +69,7 @@ public class RuleGenerator {
 	// Public API
 	
 	public void generateRules(TranslationContext _TC) {
+		log.debug("RuleGenerator.ruleTemplates:\n{}", ruleTemplatesRegistry.getRuleTemplates());
 		_generateRules(_TC);
 		_TC.getTopicConnections();	// force topicConnections population
 	}
@@ -93,10 +94,12 @@ public class RuleGenerator {
 	}
 	
 	protected void _generateRule(TranslationContext _TC, String type, String grouping, String elemName, Context context) {
-		log.info("RuleGenerator._generateRule():      Generating rules for Graph node: {} {} @ Grouping: {}", type, elemName, grouping!=null?grouping:"-");
+		log.info("RuleGenerator._generateRule():      Generating rules for Graph node: {} {} at Grouping: {}", type, elemName, grouping!=null?grouping:"-");
 		String[] groupingLabels = { grouping, "__ANY__" };
-		for (int i=0; i<groupingLabels.length; i++) {
-			for (String ruleTpl : ruleTemplatesRegistry.getTemplatesFor(type, groupingLabels[i])) {
+		for (String label : groupingLabels) {
+			log.debug("RuleGenerator._generateRule():      Getting rule templates for: type={}, grouping={}", type, label);
+			for (String ruleTpl : ruleTemplatesRegistry.getTemplatesFor(type, label)) {
+				log.debug("RuleGenerator._generateRule():      Rule template for: type={}, grouping={} => {}", type, label, ruleTpl);
 				if (ruleTpl!=null) {
 					// Use template engine to process the selected rule template
 					context.setVariable("outputStream", elemName);
@@ -116,36 +119,90 @@ public class RuleGenerator {
 		if (win==null) return "";
 		
 		String winType = win.getWindowType().toString();	// FIXED, SLIDING
+		if (winType.equalsIgnoreCase("FIXED")) winType = "_batch"; else winType = "";
+		
 		String winSizeType = win.getSizeType().toString();	// MEASUREMENTS_ONLY, TIME_ONLY, FIRST_MATCH, BOTH_MATCH
-		long winMeasurementSize = win.getMeasurementSize();
+		boolean isFirstMatch = "FIRST_MATCH".equalsIgnoreCase(winSizeType);
+		boolean isBothMatch  = "BOTH_MATCH".equalsIgnoreCase(winSizeType);
+		boolean isTimeOnly   = "TIME_ONLY".equalsIgnoreCase(winSizeType);
+		boolean isEventsOnly = "MEASUREMENTS_ONLY".equalsIgnoreCase(winSizeType);
+		
 		long winTimeSize = win.getTimeSize();
-		String winTimeUnit = win.getTimeUnit()!=null ? win.getTimeUnit().getName() : null;
+		String winTimeUnit = null;
+		if (isFirstMatch || isTimeOnly) {
+			winTimeUnit = win.getTimeUnit()!=null ? win.getTimeUnit().getName() : null;
+			if (winTimeUnit==null || winTimeSize<=0) {
+				log.error("RuleGenerator._generateWindowClause(): ERROR: Invalid or missing window-time-size or window-time-unit: window={}, window-time-size={}, window-time-unit={}", win.getName(), winTimeSize, winTimeUnit);
+				throw new IllegalArgumentException(String.format("ERROR: Invalid or missing window-time-size or window-time-unit: window=%s, window-time-size=%d, window-time-unit=%s", win.getName(), winTimeSize, winTimeUnit));
+			}
+			winTimeUnit = camelToRule(MapType.UNIT, ElemType.TIME, winTimeUnit);
+		}
 		
-//XXX: TODO: Incomplete implementation - Missing size-type handling: FIRST_MATCH & BOTH_MATCH implementation
-		boolean isTimeWin = winSizeType.equalsIgnoreCase("TIME_ONLY");
-		boolean isEventWin = winSizeType.equalsIgnoreCase("MEASUREMENTS_ONLY");
-		String func = isTimeWin ? "#time" : "#length";
-		if (winType.equals("FIXED")) func += "_batch";
-		long size = isTimeWin ? winTimeSize : winMeasurementSize;
-		String unit = isTimeWin ? winTimeUnit : "";
-		unit = camelToRule(MapType.UNIT, ElemType.TIME, unit);
+		long winMeasurementSize = win.getMeasurementSize();
+		if (isFirstMatch || isEventsOnly) {
+			if (winMeasurementSize<=0) {
+				log.error("RuleGenerator._generateWindowClause(): ERROR: Invalid window-measurement-size: window={}, window-measurement-size={}", win.getName(), winMeasurementSize);
+				throw new IllegalArgumentException(String.format("ERROR: Invalid window-measurement-size: window=%s, window-measurement-size=%s", win.getName(), winMeasurementSize));
+			}
+		}
 		
-		return String.format("%s(%d %s)", func, size, unit);
+//XXX: TODO: Incomplete implementation - Missing size-type handling: FIRST_MATCH sliding & BOTH_MATCH implementation
+		if (isFirstMatch) {
+			log.warn("RuleGenerator._generateWindowClause(): IMPORTANT: FIRST_MATCH window-size-type is ALWAYS BATCH: window={}", win.getName());
+			return String.format("#time_length_batch(%d %s, %d)", winTimeSize, winTimeUnit, winMeasurementSize);
+		} else
+		if (isBothMatch) {
+			log.error("RuleGenerator._generateWindowClause(): ERROR: BOTH_MATCH window-size-type is NOT SUPPORTED: window={}", win.getName());
+			throw new IllegalArgumentException(String.format("ERROR: BOTH_MATCH window-size-type is NOT SUPPORTED: window=%s", win.getName()));
+		} else
+		if (isTimeOnly) {
+			return String.format("#time%s(%d %s)", winType, winTimeSize, winTimeUnit);
+		} else
+		if (isEventsOnly) {
+			return String.format("#length%s(%d)", winType, winMeasurementSize);
+		} else {
+			log.error("RuleGenerator._generateWindowClause(): ERROR: Invalid or Unsupported window-size-type: window={}, window-size-type={}", win.getName(), winSizeType);
+			throw new IllegalArgumentException(String.format("ERROR: Invalid or Unsupported window-size-type: window=%s, window-size-type=%s", win.getName(), winSizeType));
+		}
 	}
 	
 	protected String _generateScheduleClause(Schedule sched) {
 		if (sched==null) return "";
 		
-		String schedTimeUnit = sched.getTimeUnit().getName();
-		schedTimeUnit = camelToRule(MapType.UNIT, ElemType.TIME, schedTimeUnit);
 		int schedRepetitions = sched.getRepetitions();
 		long schedInterval = sched.getInterval();
-		//XXX: ASK: Do we need schedule 'start' and 'end' (dates) ??
+		if (schedRepetitions<=0 && schedInterval<=0) return "";
 		
-//XXX: TODO: Incomplete implementation - Missing repetitions
+		if (schedRepetitions>0 && schedInterval>0) {
+			log.error("RuleGenerator._generateScheduleClause(): ERROR: Schedule has both 'repetitions' and 'interval' properties non-zero: repetitions={}, interval={}", schedRepetitions, schedInterval);
+			throw new IllegalArgumentException(String.format("ERROR: Schedule has both 'repetitions' and 'interval' properties non-zero: repetitions=%s, interval=%s", schedRepetitions, schedInterval));
+		}
 		
-//XXX:		return String.format(" OUTPUT LAST EVERY %d %s", schedInterval, schedTimeUnit);
-		return String.format(" OUTPUT EVERY %d %s", schedInterval, schedTimeUnit);
+		long schedPeriod = -1;
+		String schedUnit = "";
+		if (schedInterval>0) {
+			schedPeriod = schedInterval;
+			schedUnit = sched.getTimeUnit().getName();
+			schedUnit = camelToRule(MapType.UNIT, ElemType.TIME, schedUnit);
+		} else
+		if (schedRepetitions>0) {
+			schedPeriod = schedRepetitions;
+			schedUnit = "EVENTS";
+		}
+		
+		String schedTpl = ruleTemplatesRegistry.getTemplatesFor("SCHEDULE", "__ANY__").stream().findFirst().orElse(null);
+		log.trace("RuleGenerator._generateScheduleClause(): schedule-tpl: {}", schedTpl);
+		if (schedTpl!=null) {
+			// Use template engine to process the selected schedule template
+			Context context = new Context();
+			context.setVariable("period", schedPeriod);
+			context.setVariable("unit", schedUnit);
+			String schedStr = templateEngine.process(schedTpl.trim(), context);
+			log.debug("RuleGenerator._generateScheduleClause(): schedule-clause: {}", schedStr);
+			return schedStr;
+		} else {
+			return String.format("\nOUTPUT LAST EVERY %d %s", schedPeriod, schedUnit);
+		}
 	}
 	
 	protected void _generateRules(TranslationContext _TC) {
@@ -300,7 +357,7 @@ public class RuleGenerator {
 				// Check that component metrics' names (from composite metric) and metric names from component contexts match
 				if (checkIfListsAreEqual(componentNames, composingCtxNamesList)) {
 					log.error("RuleGenerator.generateRules():      Component metrics of composite metric '{}' do not match to component contexts of Composite-Metric-Context '{}': component-metrics={}, component-context-metrics={}", metric.getName(), cmc.getName(), componentNames, composingCtxNamesList);
-					throw new RuntimeException( String.format("Component metrics of composite metric '%s' do not match to component contexts of Composite-Metric-Context: %s", metric.getName(), cmc.getName()) );
+					throw new IllegalArgumentException( String.format("Component metrics of composite metric '%s' do not match to component contexts of Composite-Metric-Context: %s", metric.getName(), cmc.getName()) );
 				}
 				
 				log.warn("RuleGenerator.generateRules():      Composite-Metric-Context: node={}, elem-name={}, metric={}, formula={}, components={}, win={}, sched={}, component={}, data={}, composing-metrics={}, composing-metric-contexts={}",
@@ -312,7 +369,7 @@ public class RuleGenerator {
 				// Select rule tag, depending on whether an Aggregator function is used in formula
 				// (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
 				String ruleTag = "COMP-CTX";
-				if (MathUtil.containsAggregator(formula)) ruleTag = "COMP-CTX-AGG";
+				if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-COMP-CTX";
 				log.warn("RuleGenerator.generateRules():      CMC-tag={}", ruleTag);
 				
 				// Write rule for CMC or CMC-AGG
@@ -393,7 +450,7 @@ public class RuleGenerator {
 				// Select rule tag, depending on whether an Aggregator function is used in formula
 				// (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
 				String ruleTag = "VAR";
-				if (MathUtil.containsAggregator(formula)) ruleTag = "VAR-AGG";
+				if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-VAR";
 				log.warn("RuleGenerator.generateRules():      VAR-tag={}", ruleTag);
 				
 				if (componentMetrics.size()>0) {
@@ -407,7 +464,7 @@ public class RuleGenerator {
 					// Check that component metrics' names (from composite metric) and metric names from component contexts match
 					if (checkIfListsAreEqual(componentMetricNames, metricNames)) {
 						log.error("RuleGenerator.generateRules():      Component metrics of metric variable '{}' do not match to component contexts' metrics: component-metrics={}, component-context-metrics={}", mvar.getName(), componentMetricNames, metricNames);
-						throw new RuntimeException( String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics: %s", mvar.getName()) );
+						throw new IllegalArgumentException( String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics: %s", mvar.getName()) );
 					}
 					
 					if (contexts.size()>0) {

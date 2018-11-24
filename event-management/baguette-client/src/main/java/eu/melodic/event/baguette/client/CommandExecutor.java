@@ -382,7 +382,7 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			log.error("Grouping specified does not exist: {}", newGroupingName);
 		} else {
 			// Clear actions of "old" active grouping
-			String oldGroupingName = "[]";
+			String oldGroupingName = "()";
 			if (activeGrouping!=null) {
 				oldGroupingName = activeGrouping.getName();
 				log.info("Old active grouping: {}", oldGroupingName);
