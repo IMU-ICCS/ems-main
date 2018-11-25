@@ -28,6 +28,8 @@ public class MathUtil {
 	private static Set<Function> functions = new HashSet<>();
 	private static Map<String,Constant> constants = new HashMap<>();
 	
+	// ------------------------------------------------------------------------
+	
 	public static void addFunctionDefinition(FunctionDefinition functionDef) {
 		log.debug("MathUtil: Add new function definition: {}", functionDef);
 		String argsStr = String.join(", ", functionDef.getArguments());
@@ -42,6 +44,8 @@ public class MathUtil {
 		log.debug("MathUtil: Clear function definitions");
 		functions.clear();
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public static void setConstant(String constantName, double constantValue) {
 		log.debug("MathUtil: Set constant: name={}, value={}", constantName, constantValue);
@@ -58,6 +62,50 @@ public class MathUtil {
 		log.debug("MathUtil: Clear constants");
 		constants.clear();
 	}
+	
+	// ------------------------------------------------------------------------
+	
+	public static List<String> getFormulaArguments(String formula) {
+		log.debug("MathUtil: getFormulaArguments: formula={}", formula);
+		if (formula==null || formula.trim().isEmpty()) {
+			log.debug("MathUtil: getFormulaArguments: Formula is null or empty");
+			return null;
+		}
+		
+		// Create MathParser expression
+		Expression e = new Expression(formula);
+		//e.setVerboseMode();
+		log.trace("MathUtil: getFormulaArguments: expression={}", e.getExpressionString());
+		
+		// Add constants
+		e.addConstants(new ArrayList(constants.values()));
+		
+		// Add functions
+		for (Function f : functions) e.addFunctions(f);
+		
+		// Get argument names
+		boolean lexSyntax = e.checkLexSyntax();
+		boolean genSyntax = e.checkSyntax();
+		if (log.isTraceEnabled()) { 
+			log.trace("MathUtil: getFormulaArguments: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
+			log.trace("MathUtil: getFormulaArguments: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
+		}
+		
+		List<Token> initTokens = e.getCopyOfInitialTokens();
+		log.trace("MathUtil: getFormulaArguments: initial-tokens={}", initTokens);
+		if (log.isTraceEnabled()) { mXparser.consolePrintTokens( initTokens ); }
+		
+		List<String> argNames = initTokens.stream()
+				.filter(t -> t.tokenTypeId == Token.NOT_MATCHED)
+				.filter(t -> t.looksLike.equals("argument"))
+				.map(t -> t.tokenStr)
+				.collect(Collectors.toList());
+		log.debug("MathUtil: getFormulaArguments: arguments={}", argNames);
+		
+		return argNames;
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	public static boolean containsAggregator(String formula) {
 		log.debug("MathUtil: containsAggregator: formula={}", formula);
@@ -98,6 +146,8 @@ public class MathUtil {
 		return containsAgg;
 	}
 	
+	// ------------------------------------------------------------------------
+	
 	protected final static String[] aggregatorNames = { "iff", "min", "max", "ConFrac", "ConPol", "gcd", "lcm", "add", "multi", "mean", "var", "std", "rList" };
 	
 	public static boolean containsAggregatorRegexp(String formula) {
@@ -123,6 +173,8 @@ public class MathUtil {
 		Pattern pat = Pattern.compile( String.format("[^a-zA-Z]%s[^a-zA-Z]", aggregatorName), flags );
 		return pat.matcher(formula).find();
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	public static double evalAgg(String formula, Map<String,List<Double>> argsMap) {
 		log.debug("MathUtil: evalAgg: input: formula={}, arg-map={}", formula, argsMap);

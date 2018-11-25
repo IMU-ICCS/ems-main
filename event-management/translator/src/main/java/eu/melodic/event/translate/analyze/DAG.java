@@ -39,14 +39,16 @@ public class DAG {
 	private Map<NamedElement,DAGNode> _namedElementToNodesMapping;
 	private Map<String,DAGNode> _nameToNodesMapping;
 	private Map<NamedElement,String> _namedElementToNamesMapping;
+	private Map<Integer,String> _namedElementHashToNamesMapping;
 	
-	public DAG(Map<NamedElement,String> _tc_e2n) {
+	public DAG(Map<NamedElement,String> _tc_e2n, Map<Integer,String> _tc_e2n2) {
 		_graph = new DirectedAcyclicGraph<>(DAGEdge.class);
 		_root = new DAGNode();
 		_graph.addVertex(_root);
 		_namedElementToNodesMapping = new HashMap<>();
 		_nameToNodesMapping = new HashMap<>();
 		_namedElementToNamesMapping = _tc_e2n;
+		_namedElementHashToNamesMapping = _tc_e2n2;
 	}
 	
 	public void clearDag() {
@@ -56,7 +58,7 @@ public class DAG {
 		_nameToNodesMapping = null;
 	}
 	
-	DAGNode getRootNode() {
+	public DAGNode getRootNode() {
 		return _root;
 	}
 	
@@ -67,7 +69,7 @@ public class DAG {
 		return children;
 	}
 	
-	Set<DAGNode> getLeafNodes() {
+	public Set<DAGNode> getLeafNodes() {
 		Iterator<DAGNode> it = _graph.iterator();
 		Set<DAGNode> leafs = new HashSet<DAGNode>();
 		it.forEachRemaining(node -> {
@@ -78,26 +80,44 @@ public class DAG {
 		return leafs;
 	}
 	
-	Set<DAGNode> getParentNodes(DAGNode node) {
+	public Set<DAGNode> getParentNodes(DAGNode node) {
 		Set<DAGEdge> edges = _graph.incomingEdgesOf(node);
 		return edges.stream().map(edge -> edge.getSource()).collect(Collectors.toSet());
 	}
 	
+	public Set<DAGNode> getNodeChildren(DAGNode node) {
+		try {
+			//log.info("DAG.getNodeChildren(): node={}", node);
+			Set<DAGNode> children = _graph.outgoingEdgesOf(node).stream().map(edge -> edge.getTarget()).collect(java.util.stream.Collectors.toSet());
+			//log.info("DAG.getNodeChildren(): parent={}, children={}", node, children);
+			return children;
+		} catch (IllegalArgumentException iae) {
+			log.warn("DAG.getNodeChildren(): Node not in DAG: node={}", node);
+			return null;
+		}
+	}
+	
 	// ====================================================================================================================================================
-	// Add node methods
+	// Add node and edge methods
 	
 	public DAGNode addTopLevelNode(NamedElement elem) {
 		if (elem==null) throw new IllegalArgumentException("DAG.addTopLevelNode(): Argument cannot be null");
 		
+		log.debug("DAG.addTopLevelNode(): top-level-element={}", elem.getName());
 		DAGNode node = _namedElementToNodesMapping.get(elem);
+		log.debug("DAG.addTopLevelNode(): cached-node={}", node);
 		boolean newNode = false;
 		if (node==null) {
-//XXX: TODO: Restore fullName to the commented version. ALSO fix the rest of the code to use the FULL NAMES
 			String fullName = _namedElementToNamesMapping.get(elem);
-//String fullName = elem.getName();
 			if (fullName==null) {
-				fullName = elem.getName();
-				log.warn("DAG.addTopLevelNode(): Element has no full-name: {}", elem.getName());
+				log.warn("DAG.addTopLevelNode(): Element has no full-name: name={}, element={}", elem.getName(), elem);
+				fullName = _namedElementHashToNamesMapping.get(elem.getName().hashCode());
+				if (fullName==null) {
+					log.warn("DAG.addTopLevelNode(): E2N2: Element has no full-name. Using simple name: name={}, element={}", elem.getName(), elem);
+					fullName = elem.getName();
+				} else {
+					log.info("DAG.addTopLevelNode(): E2N2: Element has a hash-to-full-name entry: name={}, full-name={}", elem.getName(), fullName);
+				}
 			}
 			
 			if (! _nameToNodesMapping.containsKey(fullName)) {
@@ -137,15 +157,21 @@ public class DAG {
 		if (parent==null) throw new IllegalArgumentException("DAG.addNode(): Argument #1 'parent' cannot be null");
 		if (elem==null) throw new IllegalArgumentException("DAG.addNode(): Argument #2 'elem' cannot be null");
 		
+		log.debug("DAG.addNode(): parent={}, element={}", parent.getName(), elem.getName());
 		DAGNode node = _namedElementToNodesMapping.get(elem);
+		log.debug("DAG.addNode(): cached-node={}", node);
 		boolean newNode = false;
 		if (node==null) {
-//XXX: TODO: Restore fullName to the commented version. ALSO fix the rest of the code to use the FULL NAMES
 			String fullName = _namedElementToNamesMapping.get(elem);
-//String fullName = elem.getName();
 			if (fullName==null) {
-				fullName = elem.getName();
-				log.warn("DAG.addNode(): Element has no full-name: {}", elem.getName());
+				log.warn("DAG.addNode(): Element has no full-name: name={}, element={}", elem.getName(), elem);
+				fullName = _namedElementHashToNamesMapping.get(elem.getName().hashCode());
+				if (fullName==null) {
+					log.warn("DAG.addNode(): E2N2: Element has no full-name. Using simple name: name={}, element={}", elem.getName(), elem);
+					fullName = elem.getName();
+				} else {
+					log.info("DAG.addNode(): E2N2: Element has a hash-to-full-name entry: name={}, full-name={}", elem.getName(), fullName);
+				}
 			}
 			
 			if (! _nameToNodesMapping.containsKey(fullName)) {
@@ -164,8 +190,8 @@ public class DAG {
 			} else {
 				node = _nameToNodesMapping.get(fullName);
 				newNode = _graph.addVertex(node);
-				if (newNode) log.info("DAG.addTopLevelNode()-2: Element added in DAG: {}", node.getName());
-				else log.info("DAG.addTopLevelNode()-2: Element already in DAG and replaced: {}", node.getName());
+				if (newNode) log.info("DAG.addNode()-2: Element added in DAG: {}", node.getName());
+				else log.info("DAG.addNode()-2: Element already in DAG and replaced: {}", node.getName());
 				
 				_namedElementToNodesMapping.put(elem, node);
 			}
@@ -182,6 +208,30 @@ public class DAG {
 		return node;
 	}
 	
+	/*public DAGEdge addEdge(NamedElement elemFrom, NamedElement elemTo) {
+		if (elemFrom==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #1 'elemFrom' cannot be null");
+		if (elemTo==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #2 'elemTo' cannot be null");
+		
+		Iterator<DAGNode> it = _graph.iterator();
+		DAGNode nodeFrom = null;
+		DAGNode nodeTo = null;
+		while (it.hasNext() && (nodeFrom==null || nodeTo==null)) {
+			DAGNode node = it.next();
+			if (node.getElement()==elemFrom) nodeFrom = node;
+			if (node.getElement()==elemTo) nodeTo = node;
+		}
+		if (nodeFrom!=null && nodeTo!=null) {
+			DAGEdge edge = new DAGEdge();
+			boolean newEdge = _graph.addEdge(nodeFrom, nodeTo, edge);
+			if (newEdge) log.info("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
+			else log.info("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
+			return edge;
+		} else {
+			throw new RuntimeException( String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
+				elemFrom.getName(), elemTo.getName(), (nodeFrom!=null ? nodeFrom.getName() : null), (nodeTo!=null ? nodeTo.getName() : null)) );
+		}
+	}*/
+	
 	// ====================================================================================================================================================
 	// Remove node method
 	
@@ -190,6 +240,10 @@ public class DAG {
 		
 		// check if children nodes exist
 		DAGNode node = _namedElementToNodesMapping.get(elem);
+		if (node==null) {
+			log.warn("DAG.removeNode(): Element not found (_namedElementToNodesMapping): {}", elem.getName());
+			return null;
+		}
 		Set<DAGEdge> edges = _graph.outgoingEdgesOf(node);
 		if (edges!=null && edges.size()>0) throw new RuntimeException("Element being removed has children: "+node.getName());
 		
@@ -212,13 +266,6 @@ public class DAG {
 		log.info("DAG.traverseDAG(): Traversing graph: Begin");
 		_graph.iterator().forEachRemaining(action);
 		log.info("DAG.traverseDAG(): Traversing graph: End");
-	}
-	
-	public Set<DAGNode> getNodeChildren(DAGNode node) {
-		log.info("DAG.getNodeChildren(): node={}", node);
-		Set<DAGNode> children = _graph.outgoingEdgesOf(node).stream().map(edge -> edge.getTarget()).collect(java.util.stream.Collectors.toSet());
-		log.info("DAG.getNodeChildren(): parent={}, children={}", node, children);
-		return children;
 	}
 	
 	// ====================================================================================================================================================

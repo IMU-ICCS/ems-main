@@ -38,9 +38,10 @@ import lombok.ToString;
 public class TranslationContext {
 	// Element-to-Name map
 	public final Map<NamedElement,String> E2N = new HashMap<>();
+	public final Map<Integer,String> E2N2 = new HashMap<>();
 	
 	// Decomposition DAG
-	public final DAG DAG = new DAG(E2N);
+	public final DAG DAG = new DAG(E2N, E2N2);
 	
 	// Event-to-Action map
 	public final Map<String,Set<String>> E2A = new HashMap<>();
@@ -74,7 +75,9 @@ public class TranslationContext {
 	// Metric-to-Metric Context map
 	public final Map<Metric,Set<MetricContext>> M2MC = new HashMap<>();
 	
-	// Metric Variable Values set
+	// Composite Metric Variables set
+	public final Set<String> CMVAR = new HashSet<>();
+	// Metric Variable Values set (i.e. non-composite metric variable)
 	public final Set<String> MVV = new HashSet<>();
 	
 	// Function set
@@ -168,8 +171,9 @@ public class TranslationContext {
 	
 	public void addMetricMetricContextPairs(Metric m, List<MetricContext> mcs) { _addPair(M2MC, m, mcs); }
 	
-	/*public void addMVV(MetricVariable mvv) { MVV.add(mvv); }
-	public void addMVVs(List<MetricVariable> mvvs) { MVV.addAll(mvvs); }*/
+	public void addCompositeMetricVariable(MetricVariable mv) { CMVAR.add(mv.getName()); }
+	public void addCompositeMetricVariables(List<MetricVariable> mvs) { mvs.stream().forEach(this::addCompositeMetricVariable); }
+	
 	public void addMVV(MetricVariable mvv) { MVV.add(mvv.getName()); }
 	public void addMVVs(List<MetricVariable> mvvs) { mvvs.stream().forEach(this::addMVV); }
 	
@@ -180,7 +184,9 @@ public class TranslationContext {
 	
 	public void addElementName(NamedElement element, String fullName) {
 		if (E2N.containsKey(element)) throw new CamelToEplTranslationException("Element name already exists: "+fullName);
+		if (E2N2.containsKey(element.getName().hashCode())) throw new CamelToEplTranslationException("Element name hash already exists: "+fullName);
 		E2N.put(element, fullName);
+		E2N2.put(element.getName().hashCode(), fullName);
 	}
 	
 	// ====================================================================================================================================================

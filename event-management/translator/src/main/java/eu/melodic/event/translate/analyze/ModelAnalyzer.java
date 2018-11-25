@@ -104,7 +104,8 @@ public class ModelAnalyzer {
 		this.properties = properties;
 		
 		// building Element-to-Name map
-		_buildElementNamesMap(_TC, camelModel);
+		_buildElementNamesMapWithPath(_TC, camelModel);
+		//_buildElementNamesMap(_TC, camelModel);	// alternative implementation
 		log.debug("ModelAnalyzer.analyzeModel():  Populating Element-to-Names map completed");
 		
 		// building Metric-to-Metric Context map
@@ -112,8 +113,8 @@ public class ModelAnalyzer {
 		log.debug("ModelAnalyzer.analyzeModel():  Populating Metric-to-Metric Context map completed");
 		
 		// building MVV set
-		_buildMVVSet(_TC, camelModel);
-		log.debug("ModelAnalyzer.analyzeModel():  Populating MVV set completed");
+		_buildMetricVariableSets(_TC, camelModel);
+		log.debug("ModelAnalyzer.analyzeModel():  Populating MVV and Composite Metric Variable sets completed");
 		
 		// extract Functions
 		_extractFunctions(_TC, camelModel);
@@ -152,7 +153,8 @@ public class ModelAnalyzer {
 	protected void _buildElementNamesMap(TranslationContext _TC, CamelModel camelModel) {
 		log.info("_buildElementNamesMap():  Extracting element names from all Models of CAMEL model...");
 		
-		java.util.Iterator it = camelModel.eResource().getAllContents();
+		String fullNamePattern = properties.getFullNamePattern();
+		
 		List<Class> searchClasses = java.util.Arrays.asList(
 			camel.scalability.ScalabilityRule.class, camel.scalability.EventPattern.class, camel.scalability.EventInstance.class,
 			camel.scalability.Event.class, camel.scalability.ScalingAction.class, camel.scalability.Timer.class,
@@ -162,8 +164,9 @@ public class ModelAnalyzer {
 			camel.metric.MetricTemplate.class, camel.metric.MetricObjectBinding.class,
 			camel.metric.MetricInstance.class, camel.metric.Metric.class
 		);
-		log.warn("_buildElementNamesMap():  Search classes: {}", searchClasses);
+		log.debug("_buildElementNamesMap():  Search classes: {}", searchClasses);
 		
+		java.util.Iterator it = camelModel.eResource().getAllContents();
 		elementCounter = 0;
 		while (it.hasNext()) {
 			org.eclipse.emf.ecore.EObject item = (org.eclipse.emf.ecore.EObject) it.next();
@@ -191,7 +194,8 @@ public class ModelAnalyzer {
 					}
 					if (found) {
 						String elemType = _getElementType(elem);
-						String fullName = String.format("%s__%s__%s__%d", elemType, camelModel.getName(), elem.getName(), elementCounter++);
+						//String fullName = String.format("%s__%s__%s__%d", elemType, camelModel.getName(), elem.getName(), elementCounter++);
+						String fullName = _prepareFullName(fullNamePattern, elemType, camelModel.getName(), "", elem.getName(), elem.getName().hashCode(), elementCounter++);
 						_TC.addElementName(elem, fullName);
 						log.debug("_buildElementNamesMap():  named-element={}, type={}, full-name={}", elemName, elemType, fullName);
 					} else {
@@ -204,6 +208,62 @@ public class ModelAnalyzer {
 		}
 		
 		log.info("_buildElementNamesMap():  Element-to-Names map: {}", _TC.E2N);
+	}
+	
+	protected void _buildElementNamesMapWithPath(TranslationContext _TC, CamelModel camelModel) {
+		log.info("_buildElementNamesMapWithPath():  Extracting element names from all Models of CAMEL model...");
+		
+		String fullNamePattern = properties.getFullNamePattern();
+		
+		// for all relevant CAMEL models...
+		String camelName = camelModel.getName();
+		elementCounter = 0;
+		java.util.stream.Stream.of(
+			camelModel.getMetricModels(), 
+			camelModel.getRequirementModels(), 
+			camelModel.getScalabilityModels(), 
+			camelModel.getConstraintModels()
+		)
+		.flatMap(java.util.Collection::stream)
+		.forEach(model -> {
+			String modelName = model.getName();
+			log.debug("_buildElementNamesMapWithPath():  Processing model: name={}, class={}", modelName, model.getClass().getSimpleName());
+			
+			//elementCounter = 0;		// uncomment to reset element counting per model
+//XXX:POSSIBLE BUG: eAllContents() possibly returns a different object than that returned from the proper model getter methods (e.g. MetricModel.getMetricContexts())
+			java.util.Iterator<EObject> it = model.eAllContents();
+			while (it.hasNext()) {
+				EObject item = it.next();
+				if (item!=null) {
+					if (item instanceof NamedElement) {
+						NamedElement elem = (NamedElement) item;
+						String elemName = elem.getName();
+						Class elemClass = elem.getClass();
+						String elemClassName = elem.getClass().getName();
+						log.trace("_buildElementNamesMapWithPath():  named-element={}, class={}", elemName, elemClassName);
+						
+						String elemType = _getElementType(elem);
+						//String fullName = String.format("%s__%s__%s__%s__%d", elemType, camelName, modelName, elemName, elementCounter++);
+						String fullName = _prepareFullName(fullNamePattern, elemType, camelName, modelName, elemName, elem.getName().hashCode(), elementCounter++);
+						_TC.addElementName(elem, fullName);
+						log.debug("_buildElementNamesMapWithPath():  named-element={}, type={}, full-name={}", elemName, elemType, fullName);
+					}
+				}
+			}
+		});
+		
+		log.info("_buildElementNamesMapWithPath():  Element-to-Names map: {}", _TC.E2N);
+	}
+	
+	protected String _prepareFullName(String pattern, String type, String camel, String model, String elem, int hash, long count) {
+		return pattern
+			.replace("{TYPE}", type)
+			.replace("{CAMEL}", camel)
+			.replace("{MODEL}", model)
+			.replace("{ELEM}", elem)
+			.replace("{HASH}", Integer.toString(hash))
+			.replace("{COUNT}", count>=0 ? Long.toString(count) : "")
+			;
 	}
 	
 	protected String _getElementType(NamedElement e) {
@@ -259,9 +319,11 @@ public class ModelAnalyzer {
 				_TC.addMetricMetricContextPair(metric, mc);
 			});
 		});
+		log.info("_buildMetricToMetricContextMap(): M2MC={}", getMapSetElementNames(_TC.M2MC));
+		//log.info("_buildMetricToMetricContextMap(): M2MC={}", getMapSetFullNames(_TC, _TC.M2MC));
 	}
 	
-	protected void _buildMVVSet(TranslationContext _TC, CamelModel camelModel) {
+	protected void _buildMetricVariableSets(TranslationContext _TC, CamelModel camelModel) {
 		// extract metric models
 		log.info("  Extracting Metric Type Models from CAMEL model...");
 		List<MetricTypeModel> metricModels = camelModel.getMetricModels().stream()
@@ -291,6 +353,10 @@ public class ModelAnalyzer {
 				if (componentMetrics.size()==0) {
 					log.info("  Found MVV: {}.{}.{}", camelModel.getName(), mm.getName(), mv.getName());
 					_TC.addMVV(mv);
+				} else
+				// ...else update _TC.CMVAR set
+				{
+					_TC.addCompositeMetricVariable(mv);
 				}
 			});
 		});
@@ -488,6 +554,8 @@ public class ModelAnalyzer {
 					log.warn("  Metric Variable has NO component metrics: name={}, formula={}", mvName, formula);
 				}
 				
+				_checkFormulaAndComponents(_TC, formula, componentMetrics);
+				
 				if (componentMetrics.size()>0) {
 					// add metric variable to DAG as top-level node
 					_TC.DAG.addTopLevelNode( mv ).setGrouping( getGrouping(mv) );
@@ -640,12 +708,14 @@ public class ModelAnalyzer {
 		_decomposeMetricVariable(_TC, mvar);
 	}
 	
-	protected void _decomposeMetricVariable(TranslationContext _TC, MetricVariable mvar) {
-		boolean hasMetricsWithCtx = ___decomposeMetricVariable(_TC, mvar);
-		if (! hasMetricsWithCtx) {
+	protected boolean _decomposeMetricVariable(TranslationContext _TC, MetricVariable mvar) {
+		boolean hasNonMVVComponents = ___decomposeMetricVariable(_TC, mvar);
+		/*if (! hasNonMVVComponents && properties.isPruneMvv()) {
 			log.warn("  _decomposeMetricVariable(): Pruning from DAG metric variable with no measurable component metrics: name={}", mvar.getName());
 			_TC.DAG.removeNode(mvar);
-		}
+		}*/
+		// MVVs can be pruned later (if property 'translator.prune-mmv' is true)
+		return hasNonMVVComponents;
 	}
 	
 	protected boolean ___decomposeMetricVariable(TranslationContext _TC, MetricVariable mvar) {
@@ -659,25 +729,57 @@ public class ModelAnalyzer {
 		String formula = mvar.getFormula();
 		EList<Metric> metrics = mvar.getComponentMetrics();
 		log.info("  _decomposeMetricVariable(): {} :: template={}, current-config={}, on-node-candidates={}, component={}, formula={}, component-metrics={}",
-			mvar.getName(), template.getName(), currentConfig, nodeCandidates, getElementName(component), formula, metrics);
+			mvar.getName(), template.getName(), currentConfig, nodeCandidates, getElementName(component), formula, getListElementNames(metrics));
+		
+		_checkFormulaAndComponents(_TC, formula, metrics);
 		
 		// for each component Metric...
-		boolean hasMetricWithCtx = false;
+		boolean hasNonMVVComponents = false;	// ?? does any measurable metric exist in component metric??
 		for (Metric m : metrics) {
-			// find metric context
-			Set<MetricContext> contexts = _TC.M2MC.get(m);
-			//if (contexts==null) throw new ModelAnalysisException("Metric not found in M2MC map: "+m.getName());
-			if (contexts==null) { log.warn("  _decomposeMetricVariable(): Metric not found in M2MC map. Ignoring: name={}", m.getName()); return false; }
-			if (contexts.size()>1) throw new ModelAnalysisException("Metric has >1 metric contexts in M2MC map: "+m.getName()+" : contexts: "+contexts);
-			hasMetricWithCtx = true;
-			
-			// add metric context as mvar's child and decompose metric context
-			MetricContext mc = contexts.iterator().next();
-			_TC.DAG.addNode(mvar, mc).setGrouping( getGrouping(mc) );
-			_decomposeMetricContext(_TC, mc);
+			// check if it is a composite or raw metric
+			if (CompositeMetric.class.isAssignableFrom(m.getClass()) || RawMetric.class.isAssignableFrom(m.getClass())) {
+				Set<MetricContext> contexts = _TC.M2MC.get(m);
+				if (contexts==null) throw new ModelAnalysisException( String.format("Metric variable %s: Component metric not found in M2MC map: %s", mvar.getName(), m.getName()) );
+				//if (contexts==null) { log.warn("  _decomposeMetricVariable(): Metric not found in M2MC map. Ignoring: name={}", m.getName()); return false; }
+				if (contexts.size()>1) throw new ModelAnalysisException( String.format("Metric variable %s: Component metric has >1 metric contexts in M2MC map: metric=%s, contexts=%s", mvar.getName(), m.getName(), contexts) );
+				if (contexts.size()==1) {
+					hasNonMVVComponents = true;
+					
+					// add metric context as mvar's child and decompose metric context
+					MetricContext mc = contexts.iterator().next();
+					log.debug("  _decomposeMetricVariable(): {} :: Component metric with exactly one metric context found: metric={}, context={}", mvar.getName(), m.getName(), mc.getName());
+					_TC.DAG.addNode(mvar, mc).setGrouping( getGrouping(mc) );
+					_decomposeMetricContext(_TC, mc);
+				}
+			} else
+			// check if it is metric variable
+			if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+				// check if it is a composite metric variable
+				if (_TC.CMVAR.contains(m.getName())) {
+					hasNonMVVComponents = true;
+					
+					// add metric variable 'm' as mvar's child and decompose it
+					MetricVariable mv = (MetricVariable)m;
+					log.debug("  _decomposeMetricVariable(): {} :: Component composite metric variable found: {}", mvar.getName(), mv.getName());
+					_TC.DAG.addNode(mvar, mv).setGrouping( getGrouping(mv) );
+					if (_decomposeMetricVariable(_TC, mv)) hasNonMVVComponents = true;
+				} else
+				// check if it is an MVV
+				if (_TC.MVV.contains(m.getName())) {
+					log.debug("  _decomposeMetricVariable(): {} :: Component MVV found: {}", mvar.getName(), m.getName());
+					_TC.DAG.addNode(mvar, m).setGrouping( getGrouping(m) );
+					// MVV can be pruned later (if property 'translator.prune-mmv' is true)
+				} else
+				{
+					throw new ModelAnalysisException( String.format("INTERNAL ERROR: Metric Variable not found in CMVAR or in MVV sets: %s, class=%s", m.getName(), m.getClass().getName()) );
+				}
+			} else
+			{
+				throw new ModelAnalysisException( String.format("Invalid Metric type occurred: %s, class=%s", m.getName(), m.getClass().getName()) );
+			}
 		}
 		
-		return hasMetricWithCtx;
+		return hasNonMVVComponents;
 	}
 	
 	protected void _decomposeMetricContext(TranslationContext _TC, MetricContext context) {
@@ -740,6 +842,9 @@ public class ModelAnalyzer {
 			EList<Metric> componentMetrics = cm.getComponentMetrics();
 			log.info("  _decomposeMetric(): CompositeMetric: {} :: formula={}, component-metrics={}", 
 				cm.getName(), formula, getListElementNames(componentMetrics));
+			
+			_checkFormulaAndComponents(_TC, formula, componentMetrics);
+			
 			for (Metric m : componentMetrics) {
 				_TC.DAG.addNode(metric, m).setGrouping( getGrouping(m) );
 				
@@ -936,6 +1041,89 @@ public class ModelAnalyzer {
 		
 		return results;
 	}
+
+	protected void _checkFormulaAndComponents(TranslationContext _TC, String formula, List<Metric> componentMetrics) {
+		if (! properties.isFormulaCheckEnabled()) return;
+		
+		if (componentMetrics==null) componentMetrics = new ArrayList<>();
+		List<String> metricNames = getListElementNames(componentMetrics);
+		log.debug("    _checkFormulaAndComponents(): formula={}, component-metrics={}", formula, metricNames);
+		List<String> argNames = eu.melodic.event.brokercep.cep.MathUtil.getFormulaArguments(formula);
+		log.debug("    _checkFormulaAndComponents(): formula={}, arguments={}", formula, argNames);
+		
+		// check if all arguments are found in component metrics - Detailed report
+		Set<String> diff1 = new HashSet<>(argNames);
+		diff1.removeAll(metricNames);
+		log.debug("    _checkFormulaAndComponents(): diff1={}", diff1);
+		if (diff1.size()>0) {
+			log.error("    _checkFormulaAndComponents(): ERROR: Formula arguments not found in component metrics: formula={}, arguments-not-found={}, component-metrics={}", formula, diff1, metricNames);
+		}
+		
+		// check if all component metrics are found in arguments - Detailed report
+		Set<String> diff2 = new HashSet<>(metricNames);
+		diff2.removeAll(argNames);
+		log.debug("    _checkFormulaAndComponents(): diff2={}", diff2);
+		if (diff2.size()>0) {
+			log.error("    _checkFormulaAndComponents(): ERROR: Formula component metrics not found in formula arguments: formula={}, metrics-not-found={}, arguments={}", formula, diff2, argNames);
+		}
+		
+		// if there are differences throw an exception
+		if (diff1.size()>0 || diff2.size()>0) {
+			String message = String.format("Formula arguments and component metrics do not match: formula=%s, component-metrics=%s, arguments=%s", formula, metricNames, argNames);
+			log.error("    _checkFormulaAndComponents(): ERROR: {}", message);
+			throw new ModelAnalysisException(message);
+		}
+		
+		// check metrics against contexts
+		for (Metric m : componentMetrics) {
+			log.trace("    _checkFormulaAndComponents(): Checking formula component metric: formula={}, metric={}", formula, m.getName());
+			
+			// check if it is a composite or raw metric
+			if (CompositeMetric.class.isAssignableFrom(m.getClass()) || RawMetric.class.isAssignableFrom(m.getClass())) {
+				Set<MetricContext> contexts = _TC.M2MC.get(m);
+				String message = null;
+				if (contexts==null) message = String.format("Formula component metric does not have a metric context in M2MC map: formula=%s, metric=%s", formula, m.getName());
+				else if (contexts.size()>1) message = String.format("Formula component metric has >1 metric contexts in M2MC map: formula=%s, metric=%s, contexts=%s", formula, m.getName(), contexts);
+				if (message!=null) {
+					log.error("    _checkFormulaAndComponents(): ERROR: {}", message);
+					log.debug("    _checkFormulaAndComponents(): ERROR: metric: {}, hash: {}", m, m.hashCode());
+					log.debug("    _checkFormulaAndComponents(): ERROR: M2MC: {}", _TC.M2MC);
+					throw new ModelAnalysisException(message);
+				}
+				
+				if (log.isTraceEnabled()) {
+					log.trace("    _checkFormulaAndComponents(): Formula component metric has exactly 1 metric context in M2MC map: formula={}, metric={}, context={}", formula, m.getName(), contexts.iterator().next());
+				}
+			} else
+			// check if it is metric variable
+			if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+				// check if it is a composite metric variable
+				if (_TC.CMVAR.contains(m.getName())) {
+					if (log.isTraceEnabled()) {
+						log.trace("    _checkFormulaAndComponents(): Formula composite component metric variable found: formula={}, metric-variable={}", formula, m.getName());
+					}
+				} else
+				// check if it is an MVV
+				if (_TC.MVV.contains(m.getName())) {
+					if (log.isTraceEnabled()) {
+						log.trace("    _checkFormulaAndComponents(): Formula component MVV found: formula={}, mvv={}", formula, m.getName());
+					}
+				} else
+				{
+					String message = String.format("INTERNAL ERROR: Formula component metric variable not found in CMVAR or in MVV sets: formula=%s, metric-variable=%s", formula, m.getName());
+					log.error("    _checkFormulaAndComponents(): {}", message);
+					throw new ModelAnalysisException(message);
+				}
+			} else
+			{
+				String message = String.format("INTERNAL ERROR: Invalid formula component metric: formula=%s, metric=%s, metric-class=%s", formula, m.getName(), m.getClass().getName());
+				log.error("    _checkFormulaAndComponents(): {}", message);
+				throw new ModelAnalysisException(message);
+			}
+		}
+		
+		log.trace("    _checkFormulaAndComponents(): Formula arguments and component metrics match: formula={}, arguments={}, component-metric={}", formula, argNames, metricNames);
+	}
 	
 	// ================================================================================================================
 	// Helper methods
@@ -965,6 +1153,37 @@ public class ModelAnalyzer {
 			}
 		}
 		return names;
+	}
+	
+	protected Map<String,Set<String>> getMapSetElementNames(Map map) {
+		if (map==null) return null;
+		HashMap<String,Set<String>> results = new HashMap<>();
+		for (Object key : map.keySet()) {
+			Object value = map.get(key); //entry.getValue();
+			if (key instanceof NamedElement && value instanceof Set) {
+				results.put( ((NamedElement)key).getName(), getSetElementNames((Set)value) );
+			}
+		}
+		return results;
+	}
+	
+	protected Map<String,Set<String>> getMapSetFullNames(TranslationContext _TC, Map map) {
+		if (map==null) return null;
+		HashMap<String,Set<String>> results = new HashMap<>();
+		for (Object key : map.keySet()) {
+			Object value = map.get(key); //entry.getValue();
+			if (key instanceof NamedElement && value instanceof Set) {
+				String keyStr = _TC.E2N.get((NamedElement)key);
+				Set<String> newSet = new HashSet<>();
+				for (Object item : (Set)value) {
+					if (item instanceof NamedElement) {
+						newSet.add( _TC.E2N.get((NamedElement)item) );
+					}
+				}
+				results.put(keyStr, newSet);
+			}
+		}
+		return results;
 	}
 	
 	protected String getComponentName(ObjectContext objContext) {

@@ -39,6 +39,12 @@ public class CamelToEplTranslatorProperties {
 	private long sensorMinInterval;
 	@Value("${translator.sensor-default-interval}")
 	private long sensorDefaultInterval;
+	@Value("${translator.prune-mvv}")
+	private boolean pruneMvv;
+	@Value("${translator.full-name-pattern}")
+	private String fullNamePattern;
+	@Value("${translator.formula-check-enabled:true}")
+	private boolean formulaCheckEnabled;
 	
 	// Graph rendering parameters
 	@Value("${dag.export.path:}")

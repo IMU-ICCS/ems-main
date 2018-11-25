@@ -9,42 +9,56 @@
 
 package eu.melodic.event.translate.transform;
 
+import camel.metric.MetricVariable;
 import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GraphTransformer {
+	private CamelToEplTranslatorProperties properties;
+	
 	public void transformGraph(DAG dag, CamelToEplTranslatorProperties properties) {
 		log.debug("GraphTransformer.transformGraph():  Transforming DAG...");
-		//XXX: TODO
-		//removeMVV( dag.getRootNode() );
+		if (properties.isPruneMvv()) removeMVV( dag, dag.getRootNode() ); else log.debug("GraphTransformer.transformGraph():  MVV pruning from DAG is disabled");
 		log.debug("GraphTransformer.transformGraph():  Transforming DAG... done");
 	}
 	
-//XXX: TODO: implement branch pruning when all nodes in branch are MVVs or Metric Variables calculated using exclusively MVVs or other Metric Variables calculated using MVVs
-	/*protected boolean removeMVV(DAGNode node) {
-		Set<DAGNode> children = node.getNodeChildren();
-		boolean foundMVV = false;
-		for (DAGNode child : children) {
-			boolean isMVV = removeMVV(child);
-			foundMVV = foundMVV || wasMVV;
-			if (isMVV) {
-				// remove 'child' from DAG
+	// Branch pruning when all nodes in branch are MVVs or Metric Variables calculated using exclusively MVVs or other Metric Variables calculated using MVVs
+	protected boolean removeMVV(DAG dag, DAGNode node) {
+		log.debug("GraphTransformer.removeMVV():  Checking node {}...", node);
+		
+		// first process children (i.e. first prune child MVV's)
+		Set<DAGNode> children = dag.getNodeChildren(node);
+		log.debug("GraphTransformer.removeMVV():  Initial node children: node={}, children: {}", node, children);
+		if (children!=null) {
+			for (DAGNode child : children) {
+				boolean isMVV = removeMVV(dag, child);
 			}
 		}
+		
+		children = dag.getNodeChildren(node);
+		log.debug("GraphTransformer.removeMVV():  Node children after pruning: node={}, children: {}", node, children);
+		
+		// check if this node is MVV (i.e. has no child MVV's and is Metric Variable)
 		if (node.getElement()!=null) {
-			if (children.size()==0 && node.getElement()!=null) {
+			if (children==null || children.size()==0) {
 				if (MetricVariable.class.isAssignableFrom(node.getElement().getClass())) {
 					MetricVariable mv = (MetricVariable)node.getElement();
 					String formula = mv.getFormula();
-					if (formula==null || formula.trim().isEmpty()) {
-						return true;
-					}
+					
+					// remove from DAG
+					log.debug("GraphTransformer.removeMVV():  Node is MVV: node={}", node);
+					dag.removeNode(node.getElement());
+					log.debug("GraphTransformer.removeMVV():  MVV node pruned: node={}", node);
+					return true;
 				}
 			}
 		}
+		// i.e. 'node' is not Metric variable or it has children that are not MVVs
+		log.debug("GraphTransformer.removeMVV():  Node is not MVV: node={}", node);
 		return false;
-	}*/
+	}
 }

@@ -116,7 +116,7 @@ public class RuleGenerator {
 	}
 	
 	protected String _generateWindowClause(Window win) {
-		if (win==null) return "";
+		if (win==null) return ".std:lastevent()";
 		
 		String winType = win.getWindowType().toString();	// FIXED, SLIDING
 		if (winType.equalsIgnoreCase("FIXED")) winType = "_batch"; else winType = "";
