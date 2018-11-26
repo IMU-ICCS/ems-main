@@ -10,10 +10,7 @@
 package eu.melodic.upperware.adapter.communication.colosseum;
 
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.api.JobApi;
-import io.github.cloudiator.rest.api.NodeApi;
-import io.github.cloudiator.rest.api.ProcessApi;
-import io.github.cloudiator.rest.api.QueueApi;
+import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
 import lombok.AllArgsConstructor;
@@ -42,6 +39,8 @@ public class ColosseumClientApi implements ColosseumApi {
   private NodeApi nodeApi;
   private QueueApi queueApi;
   private ProcessApi processApi;
+  private MonitoringApi monitoringApi;
+
 
   @Override
   public Queue findQueuedTask(String taskId) throws ApiException {
@@ -118,6 +117,11 @@ public class ColosseumClientApi implements ColosseumApi {
   @Override
   public NodeGroup getNodeGroup(String nodeGroupId) throws ApiException {
     return nodeApi.getNodeGroup(nodeGroupId);
+  }
+
+  @Override
+  public Monitor addMonitor(Monitor monitor) throws ApiException{
+    return monitoringApi.addMonitor(monitor);
   }
 
 }

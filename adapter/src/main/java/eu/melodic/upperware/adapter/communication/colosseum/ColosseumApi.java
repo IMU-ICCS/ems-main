@@ -50,4 +50,8 @@ public interface ColosseumApi {
 
   NodeGroup getNodeGroup(String nodeGroupId) throws ApiException;
 
+  Monitor addMonitor(Monitor monitor) throws ApiException;
+
+
+
 }

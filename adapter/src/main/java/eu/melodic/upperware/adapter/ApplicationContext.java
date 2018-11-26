@@ -11,14 +11,13 @@ package eu.melodic.upperware.adapter;
 
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
+import eu.melodic.upperware.adapter.communication.ems.EmsApi;
+import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import io.github.cloudiator.rest.ApiClient;
-import io.github.cloudiator.rest.api.JobApi;
-import io.github.cloudiator.rest.api.NodeApi;
-import io.github.cloudiator.rest.api.ProcessApi;
-import io.github.cloudiator.rest.api.QueueApi;
+import io.github.cloudiator.rest.api.*;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -110,12 +109,23 @@ public class ApplicationContext {
   }
 
   @Bean
+  public MonitoringApi monitoringApi(ApiClient apiClient) {
+    return new MonitoringApi(apiClient);
+  }
+
+
+  @Bean
   public ApiClient apiClient() {
     ApiClient apiClient = new ApiClient();
     apiClient.setBasePath(adapterProperties.getCloudiatorV2().getUrl());
     apiClient.setApiKey(adapterProperties.getCloudiatorV2().getApiKey());
     apiClient.setReadTimeout(adapterProperties.getCloudiatorV2().getHttpReadTimeout());
     return apiClient;
+  }
+
+  @Bean
+  public EmsApi emsApi(RestTemplate restTemplate) {
+    return new EmsClientApi(restTemplate);
   }
 
 }

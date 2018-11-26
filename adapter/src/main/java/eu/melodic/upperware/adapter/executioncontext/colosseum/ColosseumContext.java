@@ -22,6 +22,7 @@ import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
+import io.github.cloudiator.rest.api.MonitoringApi;
 import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.model.*;
@@ -53,16 +54,18 @@ import static java.lang.String.format;
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class ColosseumContext extends ContextUtils implements ContextOperations {
 
-  private final ColosseumApi api;
+//  private final ColosseumApi api;
   private final JobApi jobApi;
   private final NodeApi nodeApi;
   private final ProcessApi processApi;
+  private final MonitoringApi monitoringApi;
 
   private final List<Node> nodes = synchronizedList();
   private final List<NodeGroup> nodeGroups = synchronizedList();
   private final List<Schedule> schedules = synchronizedList();
   private final List<Process> processes = synchronizedList();
   private final List<Job> jobs = synchronizedList();
+  private final List<Monitor> monitors = synchronizedList();
 
   private final List<Api> cloudApis = synchronizedList();
   private final List<Cloud> clouds = synchronizedList();
@@ -141,6 +144,14 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
             () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", name)));
   }
 
+  public Optional<Monitor> getMonitors(String metricName){
+    return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
+  }
+
+  public void addMonitor(@NonNull Monitor monitor) {
+    monitors.add(monitor);
+  }
 
   private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<IllegalStateException> exceptionSupplier) {
     synchronized (collection) {
@@ -490,6 +501,10 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
 
     jobs.clear();
     jobs.addAll(jobApi.findJobs());
+
+    monitors.clear();
+    monitors.addAll(monitoringApi.findMonitors());
+
 //
 //    cloudApis.clear();
 //    cloudApis.addAll(api.getApis());

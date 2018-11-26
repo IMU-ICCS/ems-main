@@ -10,14 +10,12 @@
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
-import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
-import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
-import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
-import eu.melodic.upperware.adapter.plangenerator.tasks.Type;
+import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.DefaultEdge;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
@@ -42,10 +40,10 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
   }
 
   protected void findAndSetDependencies(MelodicGraph<Task, DefaultEdge> graph, Task task, String depName,
-                                      Collection<? extends Task> depTasks, Type type) {
+                                        Collection<? extends Task> depTasks, Type type, Predicate<Task> predicate) {
     boolean wasSet = false;
     for (Task depTask : depTasks) {
-      if (depTask.getData().getName().equals(depName) && depTask.getType().equals(task.getType())) {
+      if (predicate.test(depTask) && depTask.getType().equals(task.getType())) {
         setDependencies(graph, type, depTask, task);
         wasSet = true;
       }
@@ -72,5 +70,23 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
                       depName, processTask.getData().getName()));
     }
   }
+
+  protected void findAndSetProcessDependencies(MelodicGraph<Task, DefaultEdge> graph, MonitorTask monitorTask, String taskName,
+                                          Collection<ProcessTask> processTasks, Type type) {
+    boolean wasSet = false;
+    for (ProcessTask processTask : processTasks) {
+      if (processTask.getData().getTaskName().equals(taskName) && processTask.getType().equals(monitorTask.getType())) {
+        setDependencies(graph, type, processTask, monitorTask);
+        wasSet = true;
+      }
+    }
+    if (CONFIG.equals(graph.getType()) && !wasSet) {
+      throw new IllegalStateException(
+              format("Missing obligatory node of graph - dependency between %s and %s was not set",
+                      taskName, monitorTask.getData().getName()));
+    }
+  }
+
+
 
 }

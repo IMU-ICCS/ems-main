@@ -23,6 +23,7 @@ public class CamelModelConverter implements ModelConverter<DeploymentInstanceMod
   private ProcessesConverter processesConverter;
   private RequirementsConverter requirementsConverter;
   private ScheduleConverter scheduleConverter;
+  private MonitorConverter monitorConverter;
 
   @Override
   public ComparableModel toComparableModel(DeploymentInstanceModel deploymentModel) {
@@ -31,6 +32,7 @@ public class CamelModelConverter implements ModelConverter<DeploymentInstanceMod
       .adapterSchedule(scheduleConverter.toComparableModel(deploymentModel))
       .adapterRequirements(requirementsConverter.toComparableModel(deploymentModel))
       .adapterProcesses(processesConverter.toComparableModel(deploymentModel))
+      .adapterMonitors(monitorConverter.toComparableModel(deploymentModel))
       .build();
   }
 }

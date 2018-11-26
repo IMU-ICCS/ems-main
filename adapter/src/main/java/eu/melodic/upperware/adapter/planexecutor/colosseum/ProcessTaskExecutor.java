@@ -28,12 +28,6 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
     @Override
     public void create(AdapterProcess taskBody) {
 
-//        ShelveNode shelveNode = shelveContext.getShelveNodeByName(taskBody.getNodeName())
-//                .orElseThrow(() -> new AdapterException(format("Could not find ShelveNode with name %s", taskBody.getNodeName())));
-//
-//        Node node = context.getNode(shelveNode.getId())
-//                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", shelveNode.getId())));
-
         NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 

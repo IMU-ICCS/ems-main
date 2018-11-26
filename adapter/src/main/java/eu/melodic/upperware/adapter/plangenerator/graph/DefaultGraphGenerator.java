@@ -49,9 +49,30 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     Collection<ProcessTask> processTasks = genProcessTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
 
+    Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
+
     log.info("Built graph: {}", graph);
 
     return graph;
+  }
+
+  private Collection<MonitorTask> getMonitorsTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<ProcessTask> processTasks, Collection<AdapterMonitor> adapterMonitors) {
+
+    List<MonitorTask> monitorTasks = adapterMonitors.stream()
+            .map(monitor -> new MonitorTask(CREATE, monitor))
+            .collect(toList());
+
+    monitorTasks.forEach(monitorTask -> {
+      addVertex(graph, monitorTask);
+
+//      findAndSetDependencies(graph, monitorTask, monitorTask.getData().getName(), processTasks, CREATE,
+//              task -> ((ProcessTask) task).getData().getTaskName().equals(monitorTask.getData().getTaskName())
+//      );
+
+      findAndSetProcessDependencies(graph, monitorTask, monitorTask.getData().getTaskName(), processTasks, CREATE);
+    });
+
+    return monitorTasks;
   }
 
   private Collection<ProcessTask> genProcessTasks(MelodicGraph<Task, DefaultEdge> graph, ScheduleTask scheduleTask, JobTask jobTask, Collection<NodeTask> nodeTasks, Collection<AdapterProcess> adapterProcesses) {
