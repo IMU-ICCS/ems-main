@@ -236,7 +236,7 @@ public class RuleGenerator {
 				String reName = bep.getRightEvent().getName();
 				log.warn("RuleGenerator.generateRules():      Binary-Event-Pattern: node={}, elem-name={}, operator={}->{}, left-event={}, right-event={}", node, elemName, camelOp, ruleOp, leName, reName);
 				
-				//XXX: ASK: Do we need 'lowOccurrenceBound', 'upperOccurrenceBound' and 'timer' ??
+//XXX: ASK: Do we need 'lowOccurrenceBound', 'upperOccurrenceBound' and 'timer' ??
 				
 				// Write rule for BEP
 				Context context = new Context();
@@ -257,7 +257,7 @@ public class RuleGenerator {
 				String eventName = uep.getEvent().getName();
 				log.warn("RuleGenerator.generateRules():      Unary-Event-Pattern: node={}, elem-name={}, operator={}->{}, event={}", node, elemName, camelOp, ruleOp, eventName);
 				
-				//XXX: ASK: Do we need 'occurrenceNum' and 'timer' ??
+//XXX: ASK: Do we need 'occurrenceNum' and 'timer' ??
 				
 				// Write rule for UEP
 				Context context = new Context();
@@ -376,7 +376,7 @@ public class RuleGenerator {
 				Context context = new Context();
 				context.setVariable("formula", formula);
 				context.setVariable("metric", metric.getName());
-				context.setVariable("components", composingMetricNamesList);	//XXX: backup-CHECK: componentNames);
+				context.setVariable("components", composingMetricNamesList);
 				context.setVariable("contexts", composingCtxNamesList);
 				context.setVariable("windowClause", winClause);
 				context.setVariable("scheduleClause", schedClause);
@@ -424,13 +424,13 @@ public class RuleGenerator {
 				log.warn("RuleGenerator.generateRules():      Found a Composite-Metric element: node={}, elem-name={}", node, elemName);
 				CompositeMetric mc = (CompositeMetric)elem;
 				providesTopic = false;
-//XXX:TODO: Do we need to do something here??
+				// Nothing to do here
 			} else
 			if (camel.metric.RawMetric.class.isInstance(elem)) {
 				log.warn("RuleGenerator.generateRules():      Found a Raw-Metric element: node={}, elem-name={}", node, elemName);
 				RawMetric rc = (RawMetric)elem;
 				providesTopic = false;
-//XXX:TODO: Do we need to do something here??
+				// Nothing to do here
 			} else
 			if (camel.metric.MetricVariable.class.isInstance(elem)) {
 				log.warn("RuleGenerator.generateRules():      Found a Metric-Variable element: node={}, elem-name={}", node, elemName);
@@ -475,7 +475,7 @@ public class RuleGenerator {
 						Context context = new Context();
 						context.setVariable("formula", formula);
 						context.setVariable("variable", mvar.getName());
-						context.setVariable("components", metricNames);  //XXX: backup-CHECK: componentMetricNames);
+						context.setVariable("components", metricNames);
 						context.setVariable("contexts", contextNames);
 						_generateRule(_TC, ruleTag, grouping, elemName, context);
 					} else {
