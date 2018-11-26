@@ -210,17 +210,19 @@ public class MathUtil {
 		// Get argument names
 		boolean lexSyntax = e.checkLexSyntax();
 		boolean genSyntax = e.checkSyntax();
-		log.debug("MathUtil: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
-		log.debug("MathUtil: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
+		if (log.isTraceEnabled()) {
+			log.trace("MathUtil: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
+			log.trace("MathUtil: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
+		}
 		
 		List<Token> initTokens = e.getCopyOfInitialTokens();
 		log.debug("MathUtil: initial-tokens={}", initTokens);
 		if (log.isTraceEnabled()) { mXparser.consolePrintTokens( initTokens ); }
-		List<String> argNames = initTokens.stream()
+		Set<String> argNames = initTokens.stream()
 				.filter(t -> t.tokenTypeId == Token.NOT_MATCHED)
 				.filter(t -> t.looksLike.equals("argument"))
 				.map(t -> t.tokenStr)
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 		log.debug("MathUtil: initial-token-names: {}", argNames);
 		
 		// Define expression arguments with user provided values

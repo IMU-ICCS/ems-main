@@ -10,6 +10,7 @@
 package eu.melodic.event.translate.analyze;
 
 import camel.core.NamedElement;
+import eu.melodic.event.translate.TranslationContext;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
@@ -34,28 +35,23 @@ import org.jgrapht.io.DOTExporter;
 @Slf4j
 public class DAG {
 	// Graph-related fields
+	private TranslationContext _TC;
 	private DirectedAcyclicGraph<DAGNode,DAGEdge> _graph;
 	private DAGNode _root;
 	private Map<NamedElement,DAGNode> _namedElementToNodesMapping;
 	private Map<String,DAGNode> _nameToNodesMapping;
-	private Map<NamedElement,String> _namedElementToNamesMapping;
-	private Map<Integer,String> _namedElementHashToNamesMapping;
 	
-	public DAG(Map<NamedElement,String> _tc_e2n, Map<Integer,String> _tc_e2n2) {
+	public DAG() {
+		// let everything 'null'
+	}
+	
+	public DAG(TranslationContext _TC) {
+		this._TC = _TC;
 		_graph = new DirectedAcyclicGraph<>(DAGEdge.class);
 		_root = new DAGNode();
 		_graph.addVertex(_root);
 		_namedElementToNodesMapping = new HashMap<>();
 		_nameToNodesMapping = new HashMap<>();
-		_namedElementToNamesMapping = _tc_e2n;
-		_namedElementHashToNamesMapping = _tc_e2n2;
-	}
-	
-	public void clearDag() {
-		_graph = null;
-		_root = null;
-		_namedElementToNodesMapping = null;
-		_nameToNodesMapping = null;
 	}
 	
 	public DAGNode getRootNode() {
@@ -98,7 +94,7 @@ public class DAG {
 	}
 	
 	// ====================================================================================================================================================
-	// Add node and edge methods
+	// Add node methods
 	
 	public DAGNode addTopLevelNode(NamedElement elem) {
 		if (elem==null) throw new IllegalArgumentException("DAG.addTopLevelNode(): Argument cannot be null");
@@ -108,17 +104,7 @@ public class DAG {
 		log.debug("DAG.addTopLevelNode(): cached-node={}", node);
 		boolean newNode = false;
 		if (node==null) {
-			String fullName = _namedElementToNamesMapping.get(elem);
-			if (fullName==null) {
-				log.warn("DAG.addTopLevelNode(): Element has no full-name: name={}, element={}", elem.getName(), elem);
-				fullName = _namedElementHashToNamesMapping.get(elem.getName().hashCode());
-				if (fullName==null) {
-					log.warn("DAG.addTopLevelNode(): E2N2: Element has no full-name. Using simple name: name={}, element={}", elem.getName(), elem);
-					fullName = elem.getName();
-				} else {
-					log.info("DAG.addTopLevelNode(): E2N2: Element has a hash-to-full-name entry: name={}, full-name={}", elem.getName(), fullName);
-				}
-			}
+			String fullName = _TC.getFullName(elem);
 			
 			if (! _nameToNodesMapping.containsKey(fullName)) {
 			
@@ -162,17 +148,7 @@ public class DAG {
 		log.debug("DAG.addNode(): cached-node={}", node);
 		boolean newNode = false;
 		if (node==null) {
-			String fullName = _namedElementToNamesMapping.get(elem);
-			if (fullName==null) {
-				log.warn("DAG.addNode(): Element has no full-name: name={}, element={}", elem.getName(), elem);
-				fullName = _namedElementHashToNamesMapping.get(elem.getName().hashCode());
-				if (fullName==null) {
-					log.warn("DAG.addNode(): E2N2: Element has no full-name. Using simple name: name={}, element={}", elem.getName(), elem);
-					fullName = elem.getName();
-				} else {
-					log.info("DAG.addNode(): E2N2: Element has a hash-to-full-name entry: name={}, full-name={}", elem.getName(), fullName);
-				}
-			}
+			String fullName = _TC.getFullName(elem);
 			
 			if (! _nameToNodesMapping.containsKey(fullName)) {
 				

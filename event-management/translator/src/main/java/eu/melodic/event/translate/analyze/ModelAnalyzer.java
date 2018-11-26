@@ -103,10 +103,8 @@ public class ModelAnalyzer {
 		
 		this.properties = properties;
 		
-		// building Element-to-Name map
-		_buildElementNamesMapWithPath(_TC, camelModel);
-		//_buildElementNamesMap(_TC, camelModel);	// alternative implementation
-		log.debug("ModelAnalyzer.analyzeModel():  Populating Element-to-Names map completed");
+		// set full-name pattern in _TC, for full-name generation
+		_TC.setFullNamePattern( properties.getFullNamePattern() );
 		
 		// building Metric-to-Metric Context map
 		_buildMetricToMetricContextMap(_TC, camelModel);
@@ -140,157 +138,15 @@ public class ModelAnalyzer {
 		_inferGroupings(_TC, leafGrouping);
 		log.debug("ModelAnalyzer._inferGroupings():  Grouping inferencing completed");
 		
-		_TC.DAG.traverseDAG(node -> {
-			log.trace("------------> DAG node:{}, grouping:{}, id:{}, hash:{}", node, node.getGrouping(), node.getId(), node.hashCode());
-		});
+		if (log.isTraceEnabled()) {
+			_TC.DAG.traverseDAG(node -> {
+				log.trace("------------> DAG node:{}, grouping:{}, id:{}, hash:{}", node, node.getGrouping(), node.getId(), node.hashCode());
+			});
+		}
 	}
 	
 	// ================================================================================================================
 	// Model analysis methods
-	
-	private long elementCounter;
-	
-	protected void _buildElementNamesMap(TranslationContext _TC, CamelModel camelModel) {
-		log.info("_buildElementNamesMap():  Extracting element names from all Models of CAMEL model...");
-		
-		String fullNamePattern = properties.getFullNamePattern();
-		
-		List<Class> searchClasses = java.util.Arrays.asList(
-			camel.scalability.ScalabilityRule.class, camel.scalability.EventPattern.class, camel.scalability.EventInstance.class,
-			camel.scalability.Event.class, camel.scalability.ScalingAction.class, camel.scalability.Timer.class,
-			camel.requirement.Requirement.class, camel.constraint.Constraint.class, 
-			camel.metric.MetricContext.class, camel.metric.AttributeContext.class, camel.metric.ObjectContext.class, 
-			camel.metric.Window.class, camel.metric.Schedule.class, camel.metric.Sensor.class, camel.metric.Function.class, 
-			camel.metric.MetricTemplate.class, camel.metric.MetricObjectBinding.class,
-			camel.metric.MetricInstance.class, camel.metric.Metric.class
-		);
-		log.debug("_buildElementNamesMap():  Search classes: {}", searchClasses);
-		
-		java.util.Iterator it = camelModel.eResource().getAllContents();
-		elementCounter = 0;
-		while (it.hasNext()) {
-			org.eclipse.emf.ecore.EObject item = (org.eclipse.emf.ecore.EObject) it.next();
-			if (item!=null) {
-				if (item instanceof NamedElement) {
-					NamedElement elem = (NamedElement) item;
-					String elemName = elem.getName();
-					Class elemClass = elem.getClass();
-					String elemClassName = elem.getClass().getName();
-					log.trace("_buildElementNamesMap():  named-element={}, class={}", elemName, elemClassName);
-					
-					boolean found = false;
-					Class foundClass = null;
-					for (Class c : searchClasses) {
-						if (c.isAssignableFrom(elemClass)) {
-							log.trace("_buildElementNamesMap():  Found Named-Element: {}, class={}", elemName, c.getSimpleName());
-							if (found) {
-								log.error("_buildElementNamesMap():  More than one search classes match to Named-Element: {}, class-1: {}, class-2: {}", elemName, foundClass.getName(), c.getName());
-								//throw new ModelAnalysisException( String.format("More than one search classes match to Named-Element: %s, class-1: %s, class-2: %s", elemName, foundClass.getName(), c.getName()) );
-							} else {
-								found = true;
-								foundClass = c;
-							}
-						}
-					}
-					if (found) {
-						String elemType = _getElementType(elem);
-						//String fullName = String.format("%s__%s__%s__%d", elemType, camelModel.getName(), elem.getName(), elementCounter++);
-						String fullName = _prepareFullName(fullNamePattern, elemType, camelModel.getName(), "", elem.getName(), elem.getName().hashCode(), elementCounter++);
-						_TC.addElementName(elem, fullName);
-						log.debug("_buildElementNamesMap():  named-element={}, type={}, full-name={}", elemName, elemType, fullName);
-					} else {
-						log.trace("_buildElementNamesMap():  No search classes matches to Named-Element: {}, element-class: {}", elemName, elemClassName);
-					}
-				}
-				//else { log.trace("_buildElementNamesMap():  item-class={}, item={}", item.getClass().getName(), item); }
-			}
-			//else { log.trace("_buildElementNamesMap():  item: NULL"); }
-		}
-		
-		log.info("_buildElementNamesMap():  Element-to-Names map: {}", _TC.E2N);
-	}
-	
-	protected void _buildElementNamesMapWithPath(TranslationContext _TC, CamelModel camelModel) {
-		log.info("_buildElementNamesMapWithPath():  Extracting element names from all Models of CAMEL model...");
-		
-		String fullNamePattern = properties.getFullNamePattern();
-		
-		// for all relevant CAMEL models...
-		String camelName = camelModel.getName();
-		elementCounter = 0;
-		java.util.stream.Stream.of(
-			camelModel.getMetricModels(), 
-			camelModel.getRequirementModels(), 
-			camelModel.getScalabilityModels(), 
-			camelModel.getConstraintModels()
-		)
-		.flatMap(java.util.Collection::stream)
-		.forEach(model -> {
-			String modelName = model.getName();
-			log.debug("_buildElementNamesMapWithPath():  Processing model: name={}, class={}", modelName, model.getClass().getSimpleName());
-			
-			//elementCounter = 0;		// uncomment to reset element counting per model
-//XXX:POSSIBLE BUG: eAllContents() possibly returns a different object than that returned from the proper model getter methods (e.g. MetricModel.getMetricContexts())
-			java.util.Iterator<EObject> it = model.eAllContents();
-			while (it.hasNext()) {
-				EObject item = it.next();
-				if (item!=null) {
-					if (item instanceof NamedElement) {
-						NamedElement elem = (NamedElement) item;
-						String elemName = elem.getName();
-						Class elemClass = elem.getClass();
-						String elemClassName = elem.getClass().getName();
-						log.trace("_buildElementNamesMapWithPath():  named-element={}, class={}", elemName, elemClassName);
-						
-						String elemType = _getElementType(elem);
-						//String fullName = String.format("%s__%s__%s__%s__%d", elemType, camelName, modelName, elemName, elementCounter++);
-						String fullName = _prepareFullName(fullNamePattern, elemType, camelName, modelName, elemName, elem.getName().hashCode(), elementCounter++);
-						_TC.addElementName(elem, fullName);
-						log.debug("_buildElementNamesMapWithPath():  named-element={}, type={}, full-name={}", elemName, elemType, fullName);
-					}
-				}
-			}
-		});
-		
-		log.info("_buildElementNamesMapWithPath():  Element-to-Names map: {}", _TC.E2N);
-	}
-	
-	protected String _prepareFullName(String pattern, String type, String camel, String model, String elem, int hash, long count) {
-		return pattern
-			.replace("{TYPE}", type)
-			.replace("{CAMEL}", camel)
-			.replace("{MODEL}", model)
-			.replace("{ELEM}", elem)
-			.replace("{HASH}", Integer.toString(hash))
-			.replace("{COUNT}", count>=0 ? Long.toString(count) : "")
-			;
-	}
-	
-	protected String _getElementType(NamedElement e) {
-		Class c = e.getClass();
-		if (false) ;
-		else if (ScalabilityRule.class.isAssignableFrom(c)) return "RUL";
-		else if (Event.class.isAssignableFrom(c)) return "EVT";
-		else if (Constraint.class.isAssignableFrom(c)) return "CON";
-		else if (MetricVariable.class.isAssignableFrom(c)) return "VAR";
-		else if (MetricContext.class.isAssignableFrom(c)) return "CTX";
-		else if (Metric.class.isAssignableFrom(c)) return "MET";
-		else if (MetricTemplate.class.isAssignableFrom(c)) return "TMP";
-		else if (OptimisationRequirement.class.isAssignableFrom(c)) return "OPT";
-		else if (ServiceLevelObjective.class.isAssignableFrom(c)) return "SLO";
-		else if (Requirement.class.isAssignableFrom(c)) return "REQ";
-		else if (ObjectContext.class.isAssignableFrom(c)) return "OBJ";
-		else if (Sensor.class.isAssignableFrom(c)) return "SNR";
-		else if (Function.class.isAssignableFrom(c)) return "FUN";
-		else if (Schedule.class.isAssignableFrom(c)) return "CTX";
-		else if (Window.class.isAssignableFrom(c)) return "CTX";
-		else if (ScalingAction.class.isAssignableFrom(c)) return "ACT";
-		else {
-			//throw new ModelAnalysisException( String.format("Unknown element type: %s  class=%s", e.getName(), e.getClass().getName()) );
-			log.error("Unknown element type: {}  class={}", e.getName(), e.getClass().getName());
-		}
-		return "XXX";
-	}
 	
 	protected void _buildMetricToMetricContextMap(TranslationContext _TC, CamelModel camelModel) {
 		// extract metric models
@@ -1044,6 +900,7 @@ public class ModelAnalyzer {
 
 	protected void _checkFormulaAndComponents(TranslationContext _TC, String formula, List<Metric> componentMetrics) {
 		if (! properties.isFormulaCheckEnabled()) return;
+		if (formula==null || formula.trim().isEmpty()) return;
 		
 		if (componentMetrics==null) componentMetrics = new ArrayList<>();
 		List<String> metricNames = getListElementNames(componentMetrics);
@@ -1167,7 +1024,7 @@ public class ModelAnalyzer {
 		return results;
 	}
 	
-	protected Map<String,Set<String>> getMapSetFullNames(TranslationContext _TC, Map map) {
+	/*protected Map<String,Set<String>> getMapSetFullNames(TranslationContext _TC, Map map) {
 		if (map==null) return null;
 		HashMap<String,Set<String>> results = new HashMap<>();
 		for (Object key : map.keySet()) {
@@ -1184,7 +1041,7 @@ public class ModelAnalyzer {
 			}
 		}
 		return results;
-	}
+	}*/
 	
 	protected String getComponentName(ObjectContext objContext) {
 		if (objContext==null) return null;

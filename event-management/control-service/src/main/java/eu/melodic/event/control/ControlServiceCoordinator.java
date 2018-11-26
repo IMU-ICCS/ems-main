@@ -180,11 +180,10 @@ public class ControlServiceCoordinator {
 					java.io.Writer writer = new java.io.FileWriter(fileName);
 					com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
 					// clone _TC
-					TranslationContext _cloneTC = new TranslationContext();
-					_cloneTC.DAG.clearDag();
-					_cloneTC.G2R.putAll( _TC.G2R );
-					_cloneTC.G2T.putAll( _TC.G2T );
-					gson.toJson(_cloneTC, writer);
+					TranslationContext _copyTC = new TranslationContext(false);
+					_copyTC.G2R.putAll( _TC.G2R );
+					_copyTC.G2T.putAll( _TC.G2T );
+					gson.toJson(_copyTC, writer);
 					writer.close();
 					log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
 				} catch (java.io.IOException ex) {

@@ -31,58 +31,97 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @ToString
+@Slf4j
 public class TranslationContext {
-	// Element-to-Name map
-	public final Map<NamedElement,String> E2N = new HashMap<>();
-	public final Map<Integer,String> E2N2 = new HashMap<>();
-	
 	// Decomposition DAG
-	public final DAG DAG = new DAG(E2N, E2N2);
+	public final DAG DAG;
 	
 	// Event-to-Action map
-	public final Map<String,Set<String>> E2A = new HashMap<>();
+	public final Map<String,Set<String>> E2A;
 	
 	// SLO set
-	public final Set<String> SLO = new HashSet<>();
+	public final Set<String> SLO;
 	
 	// Component-to-Sensor map
-	public final Map<Component,Set<Sensor>> C2S = new HashMap<>();
+	public final Map<Component,Set<Sensor>> C2S;		//XXX:TODO-LOW: Convert to strings
 	
 	// Data-to-Sensor map
-	public final Map<Data,Set<Sensor>> D2S = new HashMap<>();
+	public final Map<Data,Set<Sensor>> D2S;				//XXX:TODO-LOW: Convert to strings
 	
 	// Sensor Monitors set
-	public final Set<Monitor> MON = new HashSet<>();
-	public final Set<String> MONS = new HashSet<>();
+	public final Set<Monitor> MON;						//XXX:TODO-LOW: Remove ??
+	public final Set<String> MONS;
 	
 	// Grouping-to-EPL Rule map
-	//public final Map<String,Set<String>> G2R = new HashMap<>();
-	public final Map<String,Map<String,Set<String>>> G2R = new HashMap<>();
+	public final Map<String,Map<String,Set<String>>> G2R;
 	
 	// Grouping-to-Topics map
-	public final Map<String,Set<String>> G2T = new HashMap<>();
+	public final Map<String,Set<String>> G2T;
 	
 	// Topics-Connections-per-Grouping
-	protected Map<String,String> providedTopics = new HashMap<>();						// topic-grouping where this topic is provided
-	protected Map<String,Set<String>> requiredTopics = new HashMap<>();					// topic-set of groupins where this topic is required
-	protected Map<String,Map<String,Set<String>>> topicConnections = new HashMap<>();	// grouping-provided topic in grouping-groupings that require provided topic
+	protected Map<String,String> providedTopics;						// topic-grouping where this topic is provided
+	protected Map<String,Set<String>> requiredTopics;					// topic-set of groupins where this topic is required
+	protected Map<String,Map<String,Set<String>>> topicConnections;		// grouping-provided topic in grouping-groupings that require provided topic
 	protected boolean needsRefresh;
 	
 	// Metric-to-Metric Context map
-	public final Map<Metric,Set<MetricContext>> M2MC = new HashMap<>();
+	public final Map<Metric,Set<MetricContext>> M2MC;
 	
 	// Composite Metric Variables set
-	public final Set<String> CMVAR = new HashSet<>();
+	public final Set<String> CMVAR;
 	// Metric Variable Values set (i.e. non-composite metric variable)
-	public final Set<String> MVV = new HashSet<>();
+	public final Set<String> MVV;
 	
 	// Function set
-	public final Set<FunctionDefinition> FUNC = new HashSet<>();
+	public final Set<FunctionDefinition> FUNC;
 	
+	// Element-to-Full-Name cache, pattern and count
+	private transient final Map<NamedElement,String> E2N;			//XXX:TODO-LOW: Clear after translation
+	private transient final AtomicLong elementsCount;
+	private transient String fullNamePattern = "{ELEM}";					// all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
+	
+	
+	// ====================================================================================================================================================
+	// Constructors
+	
+	public TranslationContext() {
+		this(true);
+	}
+	
+	public TranslationContext(boolean initializeDag) {
+		// Public staff
+		this.DAG = initializeDag ? new DAG(this) : new DAG();
+		this.E2A = new HashMap<>();
+		this.SLO = new HashSet<>();
+		this.C2S = new HashMap<>();
+		this.D2S = new HashMap<>();
+		this.MON = new HashSet<>();
+		this.MONS = new HashSet<>();
+		this.G2R = new HashMap<>();
+		this.G2T = new HashMap<>();
+		
+		this.M2MC = new HashMap<>();
+		this.CMVAR = new HashSet<>();
+		this.MVV = new HashSet<>();
+		this.FUNC = new HashSet<>();
+		
+		// Topics-Connections-per-Grouping staff
+		this.providedTopics = new HashMap<>();
+		this.requiredTopics = new HashMap<>();
+		this.topicConnections = new HashMap<>();
+		this.needsRefresh = false;
+		
+		// Element-to-Full-Name staff
+		this.E2N = new HashMap<>();
+		this.elementsCount = new AtomicLong(0);
+		this.fullNamePattern = "{ELEM}";
+	}
 	
 	// ====================================================================================================================================================
 	// Copy/Getter methods
@@ -182,13 +221,6 @@ public class TranslationContext {
 		FUNC.add(fdef);
 	}
 	
-	public void addElementName(NamedElement element, String fullName) {
-		if (E2N.containsKey(element)) throw new CamelToEplTranslationException("Element name already exists: "+fullName);
-		if (E2N2.containsKey(element.getName().hashCode())) throw new CamelToEplTranslationException("Element name hash already exists: "+fullName);
-		E2N.put(element, fullName);
-		E2N2.put(element.getName().hashCode(), fullName);
-	}
-	
 	// ====================================================================================================================================================
 	// Topic-Connections-per-Grouping-related helper methods
 	// Auto-fill of Topic connections between Groupings.... (use provide/require methods below)
@@ -246,6 +278,66 @@ public class TranslationContext {
 	}
 	public Map<String,Set<String>> getTopicConnectionsForGrouping(String grouping) {
 		return getTopicConnections().get(grouping);
+	}
+	
+	// ====================================================================================================================================================
+	// Element full name generation methods
+	
+	public String getFullNamePattern() { return fullNamePattern; }
+	
+	public void setFullNamePattern(String pattern) { fullNamePattern = pattern; }
+	
+	public String getFullName(NamedElement elem) {
+		if (elem==null) return null;
+		
+		// return cached full-name for element
+		String fullName = E2N.get(elem);
+		if (fullName!=null) return fullName;
+		
+		// else generate full-name for element (and cache it)
+		String elemName = elem.getName();
+		String elemType = _getElementType(elem);
+		String modelName = ((NamedElement)elem.eContainer()).getName();
+		String camelName = ((NamedElement)elem.eContainer().eContainer()).getName();
+		
+		fullName = fullNamePattern
+			.replace("{TYPE}", elemType)
+			.replace("{CAMEL}", camelName)
+			.replace("{MODEL}", modelName)
+			.replace("{ELEM}", elemName)
+			.replace("{HASH}", Integer.toString(elemName.hashCode()))
+			.replace("{COUNT}", Long.toString( elementsCount.getAndIncrement() ))
+			;
+		
+		E2N.put(elem, fullName);
+		
+		return fullName;
+	}
+	
+	protected String _getElementType(NamedElement e) {
+		Class c = e.getClass();
+		if (false) ;
+		else if (camel.scalability.ScalabilityRule.class.isAssignableFrom(c)) return "RUL";
+		else if (camel.scalability.Event.class.isAssignableFrom(c)) return "EVT";
+		else if (camel.constraint.Constraint.class.isAssignableFrom(c)) return "CON";
+		else if (camel.metric.MetricVariable.class.isAssignableFrom(c)) return "VAR";
+		else if (camel.metric.MetricContext.class.isAssignableFrom(c)) return "CTX";
+		else if (camel.metric.Metric.class.isAssignableFrom(c)) return "MET";
+		else if (camel.metric.MetricTemplate.class.isAssignableFrom(c)) return "TMP";
+		else if (camel.requirement.OptimisationRequirement.class.isAssignableFrom(c)) return "OPT";
+		else if (camel.requirement.ServiceLevelObjective.class.isAssignableFrom(c)) return "SLO";
+		else if (camel.requirement.Requirement.class.isAssignableFrom(c)) return "REQ";
+		else if (camel.metric.ObjectContext.class.isAssignableFrom(c)) return "OBJ";
+		else if (camel.metric.Sensor.class.isAssignableFrom(c)) return "SNR";
+		else if (camel.metric.Function.class.isAssignableFrom(c)) return "FUN";
+		else if (camel.metric.Schedule.class.isAssignableFrom(c)) return "CTX";
+		else if (camel.metric.Window.class.isAssignableFrom(c)) return "CTX";
+		else if (camel.scalability.ScalingAction.class.isAssignableFrom(c)) return "ACT";
+		else {
+			//throw new ModelAnalysisException( String.format("Unknown element type: %s  class=%s", e.getName(), e.getClass().getName()) );
+			log.error("Unknown element type: {}  class={}", e.getName(), e.getClass().getName());
+		}
+		return "XXX";
 	}
 	
 	// ====================================================================================================================================================
