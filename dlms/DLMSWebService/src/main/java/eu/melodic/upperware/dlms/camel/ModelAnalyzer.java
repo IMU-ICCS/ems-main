@@ -1,15 +1,13 @@
 package eu.melodic.upperware.dlms.camel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import camel.core.Attribute;
@@ -22,26 +20,27 @@ import camel.data.DataTypeModel;
 import camel.type.StringValue;
 import camel.type.Value;
 import camel.type.impl.StringValueImpl;
-import eu.melodic.upperware.dlms.DLMSServiceImpl;
 import eu.melodic.upperware.dlms.DataSource;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class to read the camel model
  */
 @Component
+@Slf4j
 public class ModelAnalyzer {
 	private CDOClientX cdoClient;
 	private List<DataSource> dataSourceList;
-	private static final Logger LOGGER = LoggerFactory.getLogger(DLMSServiceImpl.class);
 
 	/**
 	 * Read the camel model to get a list of datasource(s) to update and/or create
 	 */
 	public void readModel(String modelId) {
-		cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE));
+//		cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE));
+		cdoClient = new CDOClientXImpl(Collections.singletonList(CorePackage.eINSTANCE));
 		translateModel(modelId);
 	}
 
@@ -62,7 +61,7 @@ public class ModelAnalyzer {
 				CDOResource camelModelRes = view.getResource(camelId);
 				EList<EObject> contents = camelModelRes.getContents();
 				camelModel = (CamelModel) contents.get(contents.size() - 1);
-				LOGGER.info("CamelModel was loaded succesfuly: " + camelModel);
+				log.info("CamelModel was loaded succesfuly: " + camelModel);
 
 				EList<DataModel> dataModelList = camelModel.getDataModels();
 				for (DataModel dataModel : dataModelList) {
@@ -96,10 +95,10 @@ public class ModelAnalyzer {
 					}
 				}
 			} else {
-				LOGGER.info("Camel id is missing");
+				log.info("Camel id is missing");
 			}
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			throw new RuntimeException(e);
 		} finally {
 			if (view != null)

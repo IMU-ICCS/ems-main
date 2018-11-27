@@ -6,6 +6,6 @@ package eu.melodic.dlms;
  */
 public enum MetricsRange {
 
-	ALLUXIO, MY_SQL, ALL;
+	ALLUXIO, MY_SQL, ALL
 
 }

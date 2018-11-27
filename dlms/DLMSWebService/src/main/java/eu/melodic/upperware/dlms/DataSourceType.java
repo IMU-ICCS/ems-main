@@ -12,4 +12,5 @@ package eu.melodic.upperware.dlms;
  */
 public enum DataSourceType {
 		HDFS,S3
+		// other datasources needs to be added as they are supported in the future
 }

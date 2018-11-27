@@ -9,60 +9,50 @@ package eu.melodic.upperware.dlms;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.validation.Valid;
 
-import org.apache.commons.net.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import alluxio.cli.fs.FileSystemShell;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequestImpl;
 import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
-import eu.melodic.upperware.dlms.client.DLMSWebServiceClient;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Webservice controller for the DLMS service.
  */
 @RestController
+@Slf4j
+@AllArgsConstructor
 public class DLMSServiceController {
 
-	private FileSystemShell mFsShell;
-	private static final Logger LOGGER = LoggerFactory.getLogger(DLMSWebServiceClient.class);
-	@Autowired
-	private DLMSService dlmsService;
-	@Autowired
-	ModelAnalyzer modelAnalyzer;
-
-	public DLMSServiceController() {
-		mFsShell = new FileSystemShell();
-	}
+//    private FileSystemShell mFsShell;
+	private final DLMSService dlmsService;
+	private final ModelAnalyzer modelAnalyzer;
+	private final RestTemplate restTemplate;
 
 	/**
 	 * Returns all datasources in the database.
 	 */
-	@RequestMapping(value = "/ds", method = RequestMethod.GET)
+	@GetMapping(value = "/ds")
 	public List<DataSource> getDataSources() {
 		return dlmsService.getAllDataSources();
 	}
@@ -70,7 +60,7 @@ public class DLMSServiceController {
 	/**
 	 * Returns one datasource matching the given id.
 	 */
-	@RequestMapping(value = "/ds/id/{id}", method = RequestMethod.GET)
+	@GetMapping(value = "/ds/id/{id}")
 	public DataSource getDataSource(@PathVariable("id") Long id) {
 		return dlmsService.getDataSourceById(id);
 	}
@@ -78,7 +68,7 @@ public class DLMSServiceController {
 	/**
 	 * Returns one datasource matching the given name.
 	 */
-	@RequestMapping(value = "/ds/name/{name}", method = RequestMethod.GET)
+	@GetMapping(value = "/ds/name/{name}")
 	public DataSource getDataSource(@PathVariable("name") String name) {
 		return dlmsService.getDataSourceByName(name);
 	}
@@ -89,7 +79,6 @@ public class DLMSServiceController {
 	@DeleteMapping("/ds/id/{id}")
 	public void deleteDataSource(@PathVariable Long id) {
 		dlmsService.deleteById(id);
-		;
 	}
 
 	/**
@@ -104,10 +93,10 @@ public class DLMSServiceController {
 	 * Adds/updates the datasource from the camel model to the database and mounts
 	 * the mount point
 	 */
-	@PostMapping("/datamodel")
+	@PostMapping("/dataModel")
 	public ResponseEntity<Object> addUpdateDataSources(@Valid @RequestBody DataModelRequest dataModelRequest) {
 		ResponseEntity<Object> retResponse = null;
-		LOGGER.info("The name of the camel model is " + dataModelRequest.getApplicationId());
+		log.info("The name of the camel model is " + dataModelRequest.getApplicationId());
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
@@ -124,7 +113,7 @@ public class DLMSServiceController {
 						dlmsService.updateDataSource(datasource, datasource.getName());
 						retResponse = ResponseEntity.noContent().build();
 					} catch (Exception e) {
-						LOGGER.error(e.getMessage(), e);
+						log.error(e.getMessage(), e);
 						notificationResult.setErrorDescription(e.getMessage());
 						throw new RuntimeException(e);
 					}
@@ -132,10 +121,10 @@ public class DLMSServiceController {
 					try {
 						// add new data source if it does not exist
 						URI location = dlmsService.addDataSource(datasource);
-						LOGGER.info(datasource.getName() + " was added");
+						log.info(datasource.getName() + " was added");
 						retResponse = ResponseEntity.created(location).build();
 					} catch (Exception e) {
-						LOGGER.error(e.getMessage(), e);
+						log.error(e.getMessage(), e);
 						notificationResult.setErrorDescription(e.getMessage());
 						throw new RuntimeException(e);
 					}
@@ -146,7 +135,7 @@ public class DLMSServiceController {
 		} catch (Exception e) {
 			notificationResult.setErrorCode("1");
 			notificationResult.setErrorDescription("The model could not be read");
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 		dataModelNotificationRequest.setResult(notificationResult);
 		sendNotificationMessage(dataModelRequest.getNotificationURI(), dataModelNotificationRequest);
@@ -158,23 +147,23 @@ public class DLMSServiceController {
 	 */
 	public void sendNotificationMessage(String url, DataModelNotificationRequest dataModelNotificationRequest) {
 		try {
-			RestTemplate restTemplate = new RestTemplate();
+			
 			URI uri = new URI(url);
-			HttpHeaders headers = createHeaders();
+			HttpHeaders headers = new HttpHeaders();
 			HttpEntity<DataModelNotificationRequest> entity = new HttpEntity<>(dataModelNotificationRequest, headers);
 			restTemplate.exchange(uri, HttpMethod.POST, entity, DataModelNotificationRequest.class);
 		} catch (URISyntaxException | RestClientException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 	}
 
 	// test the notification request, uncomment this when actual url exists
-//	@PostMapping("/notification/msg")
-//	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
-//		System.out.println("Test message");
-//		System.out.println(dataModelNotificationRequest.getResult().getErrorCode() + " : "
-//				+ dataModelNotificationRequest.getResult().getErrorDescription());
-//	}
+	@PostMapping("/notification/msg")
+	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
+		System.out.println("Test message");
+		System.out.println(dataModelNotificationRequest.getResult().getErrorCode() + " : "
+				+ dataModelNotificationRequest.getResult().getErrorDescription());
+	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the
@@ -223,17 +212,5 @@ public class DLMSServiceController {
 		dlmsService.migrateDatasource(migrationData.getId(), migrationData.getPathTo());
 	}
 
-	/**
-	 * Creates the HTTPHeaders with the security information.
-	 */
-	private HttpHeaders createHeaders() {
-		return new HttpHeaders() {
-			{
-				String auth = "user" + ":" + "9687831d-a0bd-4d7a-993d-5d31e740749b";
-				byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
-				String authHeader = "Basic " + new String(encodedAuth);
-				set("Authorization", authHeader);
-			}
-		};
-	}
+
 }

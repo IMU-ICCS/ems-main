@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class IdNotFoundException extends RuntimeException {
 
-    /**
-     * Creates an instance using the given datasource ID.
-     */
-    public IdNotFoundException(long id) {
-        super("Datasource with ID " + id + " does not exist");
-    }
+	/**
+	 * Creates an instance using the given datasource ID.
+	 */
+	public IdNotFoundException(long id) {
+		super("Datasource with ID " + id + " does not exist");
+	}
 }

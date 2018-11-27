@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class InvalidParameterException extends RuntimeException {
 
-    /**
-     * Creates an instance using the given message.
-     */
-    public InvalidParameterException(String message) {
-        super(message);
-    }
+	/**
+	 * Creates an instance using the given message.
+	 */
+	public InvalidParameterException(String message) {
+		super(message);
+	}
 }

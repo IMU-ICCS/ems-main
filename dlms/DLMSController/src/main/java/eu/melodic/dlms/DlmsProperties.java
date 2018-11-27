@@ -3,6 +3,9 @@ package eu.melodic.dlms;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,15 +14,10 @@ import java.util.List;
  */
 @Component
 @ConfigurationProperties(prefix = "dlms")
+@Getter
+@Setter
 public class DlmsProperties {
 
 	private List<Algorithm> algorithms = new ArrayList<>();
 
-	public List<Algorithm> getAlgorithms() {
-		return algorithms;
-	}
-
-	public void setAlgorithms(List<Algorithm> algorithms) {
-		this.algorithms = algorithms;
-	}
 }

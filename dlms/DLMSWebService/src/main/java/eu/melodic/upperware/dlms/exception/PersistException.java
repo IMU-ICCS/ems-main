@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class PersistException extends RuntimeException {
 
-    /**
-     * Creates an instance using the given message.
-     */
-    public PersistException(String message) {
-        super(message);
-    }
+	/**
+	 * Creates an instance using the given message.
+	 */
+	public PersistException(String message) {
+		super(message);
+	}
 }

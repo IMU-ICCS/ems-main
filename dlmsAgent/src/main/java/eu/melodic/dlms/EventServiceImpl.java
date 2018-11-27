@@ -1,30 +1,28 @@
 package eu.melodic.dlms;
 
-import eu.melodic.dlms.exception.EventNotFoundException;
-import eu.melodic.dlms.exception.IdNotFoundException;
-import eu.melodic.dlms.exception.InvalidEventStatusException;
-import eu.melodic.dlms.exception.InvalidParameterException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.net.URI;
+import java.util.List;
+
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Optional;
+import eu.melodic.dlms.exception.EventNotFoundException;
+import eu.melodic.dlms.exception.IdNotFoundException;
+import eu.melodic.dlms.exception.InvalidEventStatusException;
+import eu.melodic.dlms.exception.InvalidParameterException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of EventService.
  */
 @Service("eventService")
+@AllArgsConstructor
+@Slf4j
 public class EventServiceImpl implements EventService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EventServiceImpl.class);
-
-	@Autowired
-	EventRepository eventRepository;
+	private final EventRepository eventRepository;
 
 	@Override
 	public URI addEvent(Event event) {
@@ -59,12 +57,9 @@ public class EventServiceImpl implements EventService {
 
 		Event findMe = new Event(eventName);
 		findMe.setStatus(null); // EventStatus is set to IDLE on default, so we have to reset it to find any status...
-		Optional<Event> result = eventRepository.findOne(Example.of(findMe));
-		if(result != null && result.isPresent()) {
-			return result.get();
-		}
-
-		throw new EventNotFoundException(eventName);
+		
+		return eventRepository.findOne(Example.of(findMe))
+				.orElseThrow(() -> new EventNotFoundException(eventName));
 	}
 
 	@Override
@@ -85,7 +80,7 @@ public class EventServiceImpl implements EventService {
 
 	private void ensureEventStatusNotRunning(Event event) {
 		if(EventStatus.RUNNING == event.getStatus()) {
-			LOGGER.error("Event {} has running status", event.getName());
+			log.error("Event {} has running status", event.getName());
 			throw new InvalidEventStatusException(event);
 		}
 	}

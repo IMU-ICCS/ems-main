@@ -1,33 +1,24 @@
 package eu.melodic.dlms.utility;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 /**
- * Bean used as data interface between UtilityGenerator and DlmsController to exchange algorithm results.
+ * Bean used as data interface between UtilityGenerator and DlmsController to
+ * exchange algorithm results.
  */
+
+@NoArgsConstructor // Exclusive constructor for mapping by the Spring RestTemplate.
+@AllArgsConstructor // Constructor taking a map of Strings (CAMEL IDs) and double values (returned
+					// by the algorithms).
+@Getter
+@Setter
 public class UtilityMetrics {
 
 	private Map<String, Double> results = null;
 
-	/**
-	 * Exclusive constructor for mapping by the Spring RestTemplate.
-	 */
-	private UtilityMetrics() {
-	}
-
-	/**
-	 * Constructor taking a map of Strings (CAMEL IDs) and double values (returned by the algorithms).
-	 */
-	public UtilityMetrics(Map<String, Double> results) {
-		this.results = new HashMap<>(results);
-	}
-
-	public Double getResult(String key) {
-		return results.get(key);
-	}
-
-	public Map<String, Double> getResults() {
-		return new HashMap<>(results);
-	}
 }

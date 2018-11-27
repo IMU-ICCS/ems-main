@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class RemoveException extends RuntimeException {
 
-    /**
-     * Creates an instance using the given message.
-     */
-    public RemoveException(String message) {
-        super(message);
-    }
+	/**
+	 * Creates an instance using the given message.
+	 */
+	public RemoveException(String message) {
+		super(message);
+	}
 }

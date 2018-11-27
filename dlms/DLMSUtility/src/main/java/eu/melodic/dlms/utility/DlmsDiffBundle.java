@@ -1,35 +1,27 @@
 package eu.melodic.dlms.utility;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Bundles a list of DlmsConfigurationDiff objects.
  */
+@NoArgsConstructor
+@Getter
+@Setter
 public class DlmsDiffBundle {
 
 	private List<DlmsConfigurationDiff> configurationDiffs;
 
-	/**
-	 * Default constructor.
-	 */
-	public DlmsDiffBundle() {
-		configurationDiffs  = new ArrayList<>();
-	}
-
-	public List<DlmsConfigurationDiff> getConfigurationDiffs() {
-		return configurationDiffs;
-	}
 
 	/**
 	 * Add the given DlmsConfigurationDiff to the bundle.
 	 */
 	public void addConfigurationDiff(DlmsConfigurationDiff configurationDiff) {
 		configurationDiffs.add(configurationDiff);
-	}
-
-	public void setConfigurationDiffs(List<DlmsConfigurationDiff> configurationDiffs) {
-		this.configurationDiffs = configurationDiffs;
 	}
 
 	/**

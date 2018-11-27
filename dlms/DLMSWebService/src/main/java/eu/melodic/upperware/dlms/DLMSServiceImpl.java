@@ -13,9 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -41,50 +38,40 @@ import eu.melodic.upperware.dlms.exception.NameNotFoundException;
 import eu.melodic.upperware.dlms.exception.PersistException;
 import eu.melodic.upperware.dlms.exception.RemoveException;
 import eu.melodic.upperware.dlms.exception.UnmountException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of DLMSService.
  */
 @Service("dlmsService")
+@Slf4j
+@AllArgsConstructor
 public class DLMSServiceImpl implements DLMSService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DLMSServiceImpl.class);
-
-	@Autowired
-	DataSourceRepository dsRepository;
+	private final DataSourceRepository dsRepository;
 
 	@Override
 	public DataSource getDataSourceById(long id) {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
-		if (dsRepository.existsById(id)) {
-			return dsRepository.findById(id).get();
-		} else {
-			throw new IdNotFoundException(id);
-		}
+		return dsRepository.findById(id).orElseThrow(() -> new IdNotFoundException(id));
 	}
 
 	@Override
 	public DataSource getDataSourceByName(String name) {
 		ensureConfiguration();
 
-		if (dsRepository.existsByName(name)) {
-			return dsRepository.findByName(name);
-		} else {
-			throw new NameNotFoundException(name);
-		}
+		checkName(name);
+		return dsRepository.findByName(name);
 	}
 
 	@Override
 	public boolean hasDataSourceByName(String name) {
 		ensureConfiguration();
 
-		if (dsRepository.existsByName(name)) {
-			return true;
-		} else {
-			return false;
-		}
+		return dsRepository.existsByName(name);
 	}
 
 	@Override
@@ -97,24 +84,18 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
-		if (dsRepository.existsById(id)) {
-			ensureUnmount(id);
-			dsRepository.deleteById(id);
-		} else {
-			throw new IdNotFoundException(id);
-		}
+		checkId(id);
+		ensureUnmount(id);
+		dsRepository.deleteById(id);
 	}
 
 	@Override
 	public void deleteByName(String name) {
 		ensureConfiguration();
 
-		if (dsRepository.existsByName(name)) {
-			ensureUnmount(name);
-			dsRepository.deleteByName(name);
-		} else {
-			throw new NameNotFoundException(name);
-		}
+		checkName(name);
+		ensureUnmount(name);
+		dsRepository.deleteByName(name);
 	}
 
 	@Override
@@ -125,7 +106,6 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureMountPoint(ds);
 
 		DataSource newDataSource = dsRepository.save(ds);
-
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(newDataSource.getName()).toUri();
 		return location;
@@ -136,15 +116,12 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
-		if (dsRepository.existsById(id)) {
-			ensureUnmount(id);
-			ensureMountPoint(ds);
+		checkId(id);
+		ensureUnmount(id);
+		ensureMountPoint(ds);
 
-			ds.setId(id);
-			dsRepository.save(ds);
-		} else {
-			throw new IdNotFoundException(id);
-		}
+		ds.setId(id);
+		dsRepository.save(ds);
 
 		return null;
 	}
@@ -153,78 +130,45 @@ public class DLMSServiceImpl implements DLMSService {
 	public void migrateFile(String pathFrom, String pathTo) {
 		ensureConfiguration();
 
-		String result = runCopyCommand(pathFrom, pathTo);
-		if (!result.isEmpty()) {
-			throw new CopyException(result);
-		}
-		result = runRemoveCommand(pathFrom);
-		if (!result.isEmpty()) {
-			throw new RemoveException(result);
-		}
-		result = runPersistCommand(pathTo);
-		if (!result.isEmpty()) {
-			throw new PersistException(result);
-		}
+		runCopy(pathFrom, pathTo);
+		runRemove(pathFrom);
+		runPersist(pathTo);
 	}
 
 	@Override
 	public void migrateDirectory(String pathFrom, String pathTo) {
 		ensureConfiguration();
 
-		String result = runCopyCommand("-R", pathFrom, pathTo);
-		if (!result.isEmpty()) {
-			throw new CopyException(result);
-		}
-		result = runRemoveCommand("-R", pathFrom);
-		if (!result.isEmpty()) {
-			throw new RemoveException(result);
-		}
-		result = runPersistCommand(pathTo);
-		if (!result.isEmpty()) {
-			throw new PersistException(result);
-		}
+		runCopy("-R", pathFrom, pathTo);
+		runRemove("-R", pathFrom);
+		runPersist(pathTo);
 	}
 
 	@Override
 	public void migrateDatasource(long id, String pathTo) {
 		ensureConfiguration();
 
-		if (!dsRepository.existsById(id)) {
-			throw new IdNotFoundException(id);
-		}
-
+		checkId(id);
 		DataSource ds = dsRepository.findById(id).get();
 
 		String result = runCopyCommand("-R", ds.getMountPoint(), pathTo);
 		if (!result.isEmpty()) {
 			throw new CopyException(result);
 		}
-		result = runUnmountCommand(ds.getMountPoint());
-		if (!result.isEmpty()) {
-			throw new UnmountException(result);
-		}
-		result = runPersistCommand(pathTo);
-		if (!result.isEmpty()) {
-			throw new PersistException(result);
-		}
+		runUnmount(ds);
+		runPersist(pathTo);
 
 		dsRepository.delete(ds);
 	}
 
 	private void ensureUnmount(long id) {
 		DataSource ds = dsRepository.getOne(id);
-		String result = runUnmountCommand(ds.getMountPoint());
-		if (!result.isEmpty()) {
-			throw new UnmountException("Unmount failed: " + result);
-		}
+		runUnmount(ds);
 	}
 
 	private void ensureUnmount(String name) {
 		DataSource ds = dsRepository.findByName(name);
-		String result = runUnmountCommand(ds.getMountPoint());
-		if (!result.isEmpty()) {
-			throw new UnmountException("Unmount failed: " + result);
-		}
+		runUnmount(ds);
 	}
 
 	private void ensureDataSourceNameIsUnused(DataSource ds) {
@@ -252,12 +196,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			LsCommand lsCommand = new LsCommand(FileSystem.Factory.get());
 			CommandLine commandLine = lsCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running LS command with parameter(s): " + Arrays.toString(args));
+			log.info("Running LS command with parameter(s): " + Arrays.toString(args));
 
 			lsCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -272,12 +216,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			MkdirCommand mkdirCommand = new MkdirCommand(FileSystem.Factory.get());
 			CommandLine commandLine = mkdirCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running MKDIR command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MKDIR command with parameter(s): " + Arrays.toString(args));
 
 			mkdirCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -292,12 +236,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			MountCommand mountCommand = new MountCommand(FileSystem.Factory.get());
 			CommandLine commandLine = mountCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
 
 			mountCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -312,12 +256,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			UnmountCommand unmountCommand = new UnmountCommand(FileSystem.Factory.get());
 			CommandLine commandLine = unmountCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running UNMOUNT command with parameter(s): " + Arrays.toString(args));
+			log.info("Running UNMOUNT command with parameter(s): " + Arrays.toString(args));
 
 			unmountCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -332,12 +276,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			MvCommand mvCommand = new MvCommand(FileSystem.Factory.get());
 			CommandLine commandLine = mvCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running MOVE command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MOVE command with parameter(s): " + Arrays.toString(args));
 
 			mvCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -352,12 +296,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			CpCommand cpCommand = new CpCommand(FileSystem.Factory.get());
 			CommandLine commandLine = cpCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running COPY command with parameter(s): " + Arrays.toString(args));
+			log.info("Running COPY command with parameter(s): " + Arrays.toString(args));
 
 			cpCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -372,12 +316,12 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			RmCommand rmCommand = new RmCommand(FileSystem.Factory.get());
 			CommandLine commandLine = rmCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running REMOVE command with parameter(s): " + Arrays.toString(args));
+			log.info("Running REMOVE command with parameter(s): " + Arrays.toString(args));
 
 			rmCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
@@ -392,19 +336,19 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			PersistCommand persistCommand = new PersistCommand(FileSystem.Factory.get());
 			CommandLine commandLine = persistCommand.parseAndValidateArgs(args);
-			LOGGER.info("Running PERSIST command with parameter(s): " + Arrays.toString(args));
+			log.info("Running PERSIST command with parameter(s): " + Arrays.toString(args));
 
 			persistCommand.run(commandLine);
 			return "";
 		} catch (IOException | AlluxioException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return e.getMessage();
 		}
 	}
 
 	private void ensureConfiguration() {
 		if (!ConfigurationUtils.masterHostConfigured()) {
-			LOGGER.error(String.format(
+			log.error(String.format(
 					"Cannot run alluxio shell; master hostname is not "
 							+ "configured. Please modify %s to either set %s or configure zookeeper with "
 							+ "%s=true and %s=[comma-separated zookeeper master addresses]",
@@ -412,7 +356,7 @@ public class DLMSServiceImpl implements DLMSService {
 					PropertyKey.ZOOKEEPER_ENABLED.toString(), PropertyKey.ZOOKEEPER_ADDRESS.toString()));
 			System.exit(1);
 		}
-		LOGGER.info("Master host configuration OK");
+		log.info("Master host configuration OK");
 	}
 
 	private void ensureIdParameterNotNegative(long id) {
@@ -431,20 +375,57 @@ public class DLMSServiceImpl implements DLMSService {
 	public DataSource updateDataSource(DataSource ds, String name) {
 		ensureConfiguration();
 
-		if (dsRepository.existsByName(name)) {
-			ensureUnmount(name);
-			ensureMountPoint(ds);
+		checkName(name);
 
-			// get old data source and update it
-			DataSource dsOrig = dsRepository.findByName(name);
-			dsOrig.setMountPoint(ds.getMountPoint());
-			dsOrig.setUfsURI(ds.getUfsURI());
-			dsRepository.save(dsOrig);
-		} else {
-			throw new NameNotFoundException(name);
-		}
+		ensureUnmount(name);
+		ensureMountPoint(ds);
+
+		// get old data source and update it
+		DataSource dsOrig = dsRepository.findByName(name);
+		dsOrig.setMountPoint(ds.getMountPoint());
+		dsOrig.setUfsURI(ds.getUfsURI());
+		dsRepository.save(dsOrig);
 
 		return null;
+	}
+
+	private void runUnmount(DataSource ds) {
+		String result = runUnmountCommand(ds.getMountPoint());
+		if (!result.isEmpty())
+			throw new UnmountException("Unmount failed: " + result);
+
+	}
+
+	private void runPersist(String pathTo) {
+		String result = runPersistCommand(pathTo);
+		if (!result.isEmpty())
+			throw new PersistException(result);
+
+	}
+
+	private void runRemove(String... args) {
+		String result = runRemoveCommand(args);
+		if (!result.isEmpty())
+			throw new RemoveException(result);
+
+	}
+
+	private void runCopy(String... args) {
+		String result = runCopyCommand(args);
+		if (!result.isEmpty())
+			throw new CopyException(result);
+
+	}
+
+	private void checkId(long id) {
+		if (!dsRepository.existsById(id))
+			throw new IdNotFoundException(id);
+
+	}
+
+	private void checkName(String name) {
+		if (!dsRepository.existsByName(name))
+			throw new NameNotFoundException(name);
 	}
 
 }

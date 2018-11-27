@@ -19,12 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository("dataSourceRepository")
 public interface DataSourceRepository extends JpaRepository<DataSource, Long> {
 
-	public DataSource findByName(String name);
+	DataSource findByName(String name);
 
 	@Transactional
 	void deleteByName(String name);
 
 	@Query("SELECT CASE WHEN COUNT(ds) > 0 THEN true ELSE false END from DataSource ds WHERE ds.name =:name")
-	public boolean existsByName(@Param("name") String name);
-
+	boolean existsByName(@Param("name") String name);
 }

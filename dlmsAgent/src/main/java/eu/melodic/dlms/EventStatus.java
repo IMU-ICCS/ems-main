@@ -6,6 +6,6 @@ package eu.melodic.dlms;
  */
 public enum EventStatus {
 
-	IDLE, RUNNING, FINISHED, ERROR;
+	IDLE, RUNNING, FINISHED, ERROR
 
 }

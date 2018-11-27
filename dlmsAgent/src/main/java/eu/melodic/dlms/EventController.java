@@ -1,15 +1,5 @@
 package eu.melodic.dlms;
 
-import eu.melodic.dlms.exception.InvalidEventStatusException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,22 +7,32 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import eu.melodic.dlms.exception.InvalidEventStatusException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Webservice controller for the event service.
  */
 @RestController
+@Slf4j
+@AllArgsConstructor
 public class EventController {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EventController.class);
-
-	@Autowired
-	private EventService eventService;
+	private final EventService eventService;
 
 	/**
 	 * Registers a new event and makes it ready to be called.
 	 * The event name must be unique among the other registered events.
 	 */
-	@RequestMapping(value = "/event", method = RequestMethod.POST)
+	@PostMapping(value = "/event")
 	public ResponseEntity<Event> registerEvent(@RequestBody Event event) {
 		URI location = eventService.addEvent(event);
 		return ResponseEntity.created(location).build();
@@ -42,7 +42,7 @@ public class EventController {
 	 * Unregisters the event with the given name.
 	 * Throws an EventNotFoundException if no event with this name could be found. Note that the search for event names is NOT case sensitive.
 	 */
-	@RequestMapping(value = "/event", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/event")
 	public void unregisterEvent(String eventName) {
 		Event event = eventService.getEventByName(eventName);
 		eventService.deleteEventById(event.getId());
@@ -51,7 +51,7 @@ public class EventController {
 	/**
 	 * Removes all events from the database.
 	 */
-	@RequestMapping(value = "/event/all", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/event/all")
 	public void unregisterAllEvents() {
 		eventService.deleteAllEvents();
 	}
@@ -59,7 +59,7 @@ public class EventController {
 	/**
 	 * Returns all events in the database.
 	 */
-	@RequestMapping(value = "/event/all", method = RequestMethod.GET)
+	@GetMapping(value = "/event/all")
 	public List<Event> getAllEvents() {
 		return eventService.getAllEvents();
 	}
@@ -68,7 +68,7 @@ public class EventController {
 	 * Returns the event with the given name.
 	 * Throws an EventNotFoundException if no event with this name could be found. Note that the search for event names is NOT case sensitive.
 	 */
-	@RequestMapping(value = "/event", method = RequestMethod.GET)
+	@GetMapping(value = "/event")
 	public Event getEvent(String eventName) {
 		return eventService.getEventByName(eventName);
 	}
@@ -77,7 +77,7 @@ public class EventController {
 	 * Returns the current status of the event with the given name.
 	 * Throws an EventNotFoundException if no event with this name could be found. Note that the search for event names is NOT case sensitive.
 	 */
-	@RequestMapping(value = "/event/status", method = RequestMethod.GET)
+	@GetMapping(value = "/event/status")
 	public EventStatus getEventStatus(String eventName) {
 		Event event = eventService.getEventByName(eventName);
 		return event.getStatus();
@@ -93,24 +93,24 @@ public class EventController {
 	 * Throws an EventNotFoundException if no event with this name could be found. Note that the search for event names is NOT case sensitive.<p>
 	 * Throws an InvalidEventStatusException if the event's current status is RUNNING, as an event can only be running once at a time.
 	 */
-	@RequestMapping(value = "/event/send", method = RequestMethod.GET)
+	@GetMapping(value = "/event/send")
 	public String triggerEvent(String eventName) {
 		Event event = eventService.getEventByName(eventName);
 
 		ensureEventStatusIsNotRunning(event);
-		LOGGER.info("Executing event {} with command {}", eventName, event.getCommand());
+		log.info("Executing event {} with command {}", eventName, event.getCommand());
 
 		String result = "";
 		try {
 			ProcessBuilder processBuilder = configureProcessBuilder(event);
 
 			updateEventStatus(event, EventStatus.RUNNING);
-			LOGGER.info("Event {} is starting now", eventName);
+			log.info("Event {} is starting now", eventName);
 			Process process = processBuilder.start();
 
 			StringBuilder output = new StringBuilder(100);
 			int exitCode = process.waitFor();
-			LOGGER.info("Event {} finished with code {}", eventName, exitCode);
+			log.info("Event {} finished with code {}", eventName, exitCode);
 
 			if(exitCode == 0) {
 				updateEventStatus(event, EventStatus.FINISHED);
@@ -122,10 +122,10 @@ public class EventController {
 			}
 
 			result = output.toString();
-			LOGGER.info(result);
+			log.info(result);
 		}
 		catch(IOException | InterruptedException e) {
-			LOGGER.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 
 		return result;
@@ -133,7 +133,7 @@ public class EventController {
 
 	private void ensureEventStatusIsNotRunning(Event event) {
 		if(EventStatus.RUNNING == event.getStatus()) {
-			LOGGER.error("Event {} is currently running", event.getName());
+			log.error("Event {} is currently running", event.getName());
 			throw new InvalidEventStatusException(event);
 		}
 	}
@@ -159,9 +159,9 @@ public class EventController {
 	 */
 	private void extractProcessOutput(StringBuilder output, InputStream stream) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-		String line = "";
+		String line;
 		while((line = reader.readLine()) != null) {
-			output.append(line + '\n');
+			output.append(line).append('\n');
 		}
 	}
 

@@ -1,28 +1,38 @@
 package eu.melodic.dlms.algorithms.clusteringDataCenter.clusteringAlgo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.stream.Collectors;
 
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Need to manually enter the number of clusters
+ */
+@Getter
+@Setter
 public class PAMClustering {
 
 	private int numCluster;
 	private List<String> centroidList = new ArrayList<>(); // list of centers
-//	private List<String> oldCentroidList = new ArrayList<>(); // list of old centers
 	private Map<String, Map<String, Double>> dataSetToOtherValuesMap = new HashMap<>();
-
 	// map of clusters
 	private Map<Integer, Cluster> clusterMap = new HashMap<>();
 
+	
+	/**
+	 * primary method
+	 */
 	public List<Cluster> run() {
 		boolean isChanged = true;
 		// build phase
 		init(this.dataSetToOtherValuesMap);
 		while (isChanged) {
-			// build phase
 			this.clusterMap = new HashMap<>();
 			assignCluster(this.dataSetToOtherValuesMap);
 			// change phase
@@ -32,15 +42,16 @@ public class PAMClustering {
 		return getClusters(this.clusterMap);
 	}
 
-	// return this clusters
+	/**
+	 * return this clusters
+	 */
 	public List<Cluster> getClusters(Map<Integer, Cluster> clusterMap) {
-		List<Cluster> clusterList = new ArrayList<Cluster>();
-		for (Cluster cluster : clusterMap.values())
-			clusterList.add(cluster);
-
-		return clusterList;
+		return new ArrayList<>(clusterMap.values());
 	}
 
+	/**
+	 * change cluster center
+	 */
 	public boolean changeCenter() {
 		boolean isChanged = false;
 		List<String> newCentroidList = new ArrayList<String>();
@@ -58,6 +69,9 @@ public class PAMClustering {
 		return new HashSet<>(list1).equals(new HashSet<>(list2));
 	}
 
+	/**
+	 * assign datacenter to cluster
+	 */
 	public int assignToCluster(Cluster cluster) {
 		int bestCenter = 0;
 		double similarity = 0;
@@ -78,19 +92,27 @@ public class PAMClustering {
 		return bestCenter;
 	}
 
+	/**
+	 * distance between two points
+	 */
 	public double calculateDistance(String center, String to) {
 		double distance = 0;
 		Map<String, Double> dcFromCenter = dataSetToOtherValuesMap.get(center);
 		if (dcFromCenter.containsKey(to)) {
 			distance = dcFromCenter.get(to);
 		} else { // if dist from cent to cluster does not exist but only other way
-			dcFromCenter = dataSetToOtherValuesMap.get(to);
-			distance = dcFromCenter.get(center);
+			if (dataSetToOtherValuesMap.containsKey(to)) {
+				dcFromCenter = dataSetToOtherValuesMap.get(to);
+				// if not enough data then distance cannot be found
+				if (dcFromCenter.containsKey(center))
+					distance = dcFromCenter.get(center);
+			}
 		}
 		return distance;
 	}
-
-	// distribute datacenters to different clusters
+	/**
+	 * distribute datacenters to different clusters
+	 */
 	public void assignCluster(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
 		double max = Double.MAX_VALUE;
 		double min = max;
@@ -107,13 +129,11 @@ public class PAMClustering {
 					break;
 				} else {
 					// compute distance from cluster center
-
 					distance = calculateDistance(centroidList.get(i), entry.getKey());
 					if (distance < min) {
 						min = distance;
 						addToCluster = i;
 					}
-//					System.out.println(i);
 				}
 			}
 			Cluster cluster = new Cluster();
@@ -129,64 +149,29 @@ public class PAMClustering {
 
 	}
 
-	// set random datacenter as centers
+	/**
+	 * initialization
+	 */
 	public void init(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
 		List<String> keysAsArray = new ArrayList<String>(dataSetToOtherValuesMap.keySet());
-		Random r = new Random();
 
-		String key;
-
-		for (int i = 0; i < numCluster; i++) {
-			do {
-				key = keysAsArray.get(r.nextInt(keysAsArray.size()));
-			} while (this.centroidList.contains(key));
-			this.centroidList.add(key);
-		}
-
+		// add unique datacenter name to centroidlist
+		Collections.shuffle(keysAsArray);
+		this.centroidList = keysAsArray.stream().limit(numCluster).collect(Collectors.toList());
 	}
 
+	@Getter
+	@Setter
 	public class Cluster {
 		private List<String> dataCenterList;
 
-		public List<String> getDataCenterList() {
-			return dataCenterList;
-		}
-
-		public void setDataCenterList(List<String> dataCenterList) {
-			this.dataCenterList = dataCenterList;
-		}
-
 		@Override
+		// to debug later
 		public String toString() {
 			String text = "";
 			text += this.dataCenterList + " ";
 			return text;
 		}
-
-	}
-
-	public int getNumCluster() {
-		return numCluster;
-	}
-
-	public void setNumCluster(int numCluster) {
-		this.numCluster = numCluster;
-	}
-
-	public List<String> getCentroidList() {
-		return centroidList;
-	}
-
-	public void setCentroidList(List<String> centroidList) {
-		this.centroidList = centroidList;
-	}
-
-	public Map<String, Map<String, Double>> getDataSetToOtherValuesMap() {
-		return dataSetToOtherValuesMap;
-	}
-
-	public void setDataSetToOtherValuesMap(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
-		this.dataSetToOtherValuesMap = dataSetToOtherValuesMap;
 	}
 
 }

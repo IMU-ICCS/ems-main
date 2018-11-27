@@ -6,8 +6,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// from elki
-//https://github.com/elki-project/elki/
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * from elki
+ * https://github.com/elki-project/elki/
+ * Clustering without specifying number of clusters 'k'
+ */
 public class AffinityPropagation {
 	private int numberOfDataPoints;
 	private double[][] s; // similarity matrix
@@ -21,14 +28,10 @@ public class AffinityPropagation {
 
 	private int[] assignment;
 
-	public int[] getAssignment() {
-		return assignment;
-	}
 
-	public void setAssignment(int[] assignment) {
-		this.assignment = assignment;
-	}
-
+	/**
+	 * primary method
+	 */
 	public List<ClusterIds> run() {
 		// compute preferences before;
 		updatePreferences();
@@ -95,7 +98,6 @@ public class AffinityPropagation {
 			}
 			inactive = (changed > 0) ? 0 : (inactive + 1);
 		}
-
 		// store similar ids to cluster
 		Map<Integer, List<Integer>> idClusteredMap = new HashMap<>();
 		int position = 0;
@@ -107,14 +109,12 @@ public class AffinityPropagation {
 			idClusteredMap.put(item, valList);
 			position++;
 		}
-
 		List<ClusterIds> clusterIdList = new ArrayList<ClusterIds>();
 		for (Map.Entry<Integer, List<Integer>> entry : idClusteredMap.entrySet()) {
 			ClusterIds clusterId = new ClusterIds(entry.getValue());
 			clusterIdList.add(clusterId);
 		}
 		return clusterIdList;
-
 	}
 
 	public AffinityPropagation(double[][] matrix) {
@@ -146,10 +146,11 @@ public class AffinityPropagation {
 		assignment = new int[numberOfDataPoints];
 		this.s = matrix;
 	}
-
-	// compute preferences for all data points
+	
+	/**
+	 * compute preferences for all data points
+	 */
 	public void updatePreferences() {
-//		for (int i=0;)
 		if (this.median == 0.)
 			computeMedian(this.s);
 		// if some similarity are empty fill it with the median
@@ -159,7 +160,9 @@ public class AffinityPropagation {
 			this.s[i][i] = this.median;
 	}
 
-	// fill empty similarity with the provided value
+	/**
+	 * fill empty similarity with the provided value
+	 */
 	public double[][] fillSimilarityMatrix(double[][] matrix, double val) {
 		double[][] ret = matrix;
 		for (int i = 0; i < matrix.length; i++) {
@@ -172,7 +175,9 @@ public class AffinityPropagation {
 		return ret;
 	}
 
-	// compute median if it was not provided
+	/**
+	 * compute median if it was not provided
+	 */
 	public void computeMedian(double[][] s) {
 		double ret = 0;
 		List<Double> valList = new ArrayList<Double>(); // to compute median
@@ -191,21 +196,18 @@ public class AffinityPropagation {
 		this.median = ret;
 	}
 
+	@Getter
+	@Setter
+	@AllArgsConstructor
 	public class ClusterIds {
 		private List<Integer> dataCenterIdList;
+	}
+	public int[] getAssignment() {
+		return assignment;
+	}
 
-		public ClusterIds(List<Integer> dataCenterIdList) {
-			this.dataCenterIdList = dataCenterIdList;
-		}
-
-		public List<Integer> getDataCenterIdList() {
-			return dataCenterIdList;
-		}
-
-		public void setDataCenterIdList(List<Integer> dataCenterIdList) {
-			this.dataCenterIdList = dataCenterIdList;
-		}
-
+	public void setAssignment(int[] assignment) {
+		this.assignment = assignment;
 	}
 
 }

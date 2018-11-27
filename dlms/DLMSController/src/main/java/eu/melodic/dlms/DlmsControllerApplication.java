@@ -5,41 +5,50 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
-import eu.melodic.dlms.algorithms.latencyBandwidth.repository.DataCenterLatencyBandwidthRepository;
-import eu.melodic.dlms.algorithms.latencyBandwidth.repository.DataCenterRepository;
-import eu.melodic.dlms.algorithms.latencyBandwidth.repository.TwoDataCenterCombinationRepository;
-
+import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
+import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
+import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
+import eu.melodic.dlms.db.repository.DataCenterClusterRepository;
+import eu.melodic.dlms.db.repository.DataCenterRepository;
+import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
+import eu.melodic.dlms.db.repository.DataSourceRepository;
+import eu.melodic.dlms.db.repository.TwoDataCenterCombinationRepository;
+import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 /**
  * Application class for the DLMS controller.
  */
 @SpringBootApplication
+@EnableConfigurationProperties(MelodicSecurityProperties.class)
+@Slf4j
+@AllArgsConstructor
+@Getter
 public class DlmsControllerApplication {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsControllerApplication.class);
-
+	@Getter(AccessLevel.NONE) 
 	private static final int DELAY_AFTER_CREATION = 1000;
 
-	@Autowired
-	private DlmsProperties dlmsProperties;
-
-	@Autowired
-	private DlmsRestController restController;
-
-	@Autowired
-	private DataCenterRepository dataCenterRepository;
-	@Autowired
-	private DataCenterLatencyBandwidthRepository dataCenterLatencyBandwidthRepository;
-	@Autowired
-	private TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
-
+	private final DlmsProperties dlmsProperties;
+	private final DlmsRestController restController;
+	private final DataCenterRepository dataCenterRepository;
+	private final TwoDataCentersRepository twoDataCentersRepository;
+	private final TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
+	private final DataCenterClusterRepository dataCenterClusterRepository;
+	private final DataCenterZoneRepository dataCenterZoneRepository;
+	private final ApplicationComponentRepository acRepository;
+	private final DataSourceRepository dsRepository;
+	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
+	private final ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository;
+	
 	/**
 	 * Main method for starting. No arguments needed for normal use.
 	 */
@@ -58,7 +67,7 @@ public class DlmsControllerApplication {
 
 			for (Algorithm algo : algorithms) {
 				AlgorithmRunner runnerInstance = prepareRunnerInstance(algo);
-
+//				Thread.sleep(2000);
 				restController.registerAlgorithm(algo, runnerInstance);
 
 				runnerInstance.initialize(this);
@@ -67,7 +76,7 @@ public class DlmsControllerApplication {
 
 				Timer timer = new Timer();
 				timer.schedule(timerTask, DELAY_AFTER_CREATION, (long) (algo.getInterval() * 1000));
-				LOGGER.info("Started timer with delay=" + DELAY_AFTER_CREATION / 1000 + " sec. and interval={} sec.",
+				log.info("Started timer with delay = {} sec. and interval = {} sec.", DELAY_AFTER_CREATION / 1000,
 						algo.getInterval());
 			}
 		};
@@ -76,7 +85,7 @@ public class DlmsControllerApplication {
 	private AlgorithmRunner prepareRunnerInstance(Algorithm algo) throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
-		LOGGER.info("preparing algorithm {}", algo.getName());
+		log.info("preparing algorithm {}", algo.getName());
 
 		@SuppressWarnings("unchecked")
 		Class<AlgorithmRunner> runnerClass = (Class<AlgorithmRunner>) Class.forName(algo.getClassName());
@@ -89,26 +98,14 @@ public class DlmsControllerApplication {
 		return new TimerTask() {
 			@Override
 			public void run() {
-				LOGGER.info("running algorithm {}", algo.getName());
+				log.info("running algorithm {}", algo.getName());
 				int result = runnerInstance.update(algo.getArguments());
 
 				if (result != 0) {
-					LOGGER.info("error occured in algorithm {} ", algo.getName());
+					log.info("error occured in algorithm {} ", algo.getName());
 				}
 			}
 		};
-	}
-
-	public DataCenterRepository getDataCenterRepository() {
-		return dataCenterRepository;
-	}
-
-	public DataCenterLatencyBandwidthRepository getDataCenterLatencyBandwidthRepository() {
-		return dataCenterLatencyBandwidthRepository;
-	}
-
-	public TwoDataCenterCombinationRepository getTwoDataCenterCombinationRepository() {
-		return twoDataCenterCombinationRepository;
 	}
 
 }
