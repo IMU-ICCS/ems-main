@@ -3,10 +3,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveSchedule;
-import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterSchedule;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScheduleTask;
 import io.github.cloudiator.rest.ApiException;
@@ -15,11 +11,9 @@ import io.github.cloudiator.rest.model.Queue;
 import io.github.cloudiator.rest.model.Schedule;
 import io.github.cloudiator.rest.model.ScheduleNew;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -29,20 +23,17 @@ import static java.lang.String.format;
 public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterSchedule> {
 
     ScheduleTaskExecutor(ScheduleTask task, Collection<Future> predecessors, ColosseumApi api,
-                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
     public void create(AdapterSchedule taskBody) {
         String jobName = checkNotNull(taskBody.getJobName());
 
-        ShelveJob shelveJob = shelveContext.getShelveJobByName(jobName)
-                .orElseThrow(() -> new IllegalArgumentException(format("Job with name %s could not be found in shelve", jobName)));
-
-        Job job = context.getJob(shelveJob.getId())
+        Job job = context.getJobByName(taskBody.getJobName())
                 .orElseThrow(() -> new IllegalStateException(
-                        format("Job %s was not configured in Colosseum - schedule cannot be created", shelveJob.getId())));
+                        format("Job with name %s was not configured in Colosseum - schedule cannot be created", taskBody.getJobName())));
 
         ScheduleNew scheduleNew = new ScheduleNew()
                 .job(job.getId())
@@ -68,14 +59,6 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
             log.info("New schedule is created: {}", schedule.getId());
             log.debug("Schedule details: {}", schedule);
             context.addSchedule(schedule);
-
-            shelveContext.addShelveSchedule(new ShelveSchedule(schedule.getId(), watch.getId(), job.getId()));
-
-
-
-
-
-
 
         } catch (ApiException e) {
             log.error("Could not add Schedule. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());

@@ -2,13 +2,12 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.*;
-import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
+import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
+import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -21,34 +20,21 @@ import static java.lang.String.format;
 public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProcess> {
 
     ProcessTaskExecutor(ProcessTask task, Collection<Future> predecessors, ColosseumApi api,
-                        ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                        ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
     public void create(AdapterProcess taskBody) {
 
-//        ShelveNode shelveNode = shelveContext.getShelveNodeByName(taskBody.getNodeName())
-//                .orElseThrow(() -> new AdapterException(format("Could not find ShelveNode with name %s", taskBody.getNodeName())));
-//
-//        Node node = context.getNode(shelveNode.getId())
-//                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", shelveNode.getId())));
-
         NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
-        ShelveJob shelveJob = shelveContext.getShelveJobByName(taskBody.getJobName())
-                .orElseThrow(() -> new AdapterException(format("Could not find ShelveJob with name %s", taskBody.getJobName())));
+        Job job = context.getJobByName(taskBody.getJobName())
+                .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
 
-        Job job = context.getJob(shelveJob.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find Job with id %s", shelveJob.getId())));
-
-
-        ShelveSchedule shelveSchedule = shelveContext.getShelveScheduleByJobId(job.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find ShelveSchedule with job %s", job.getId())));
-
-        Schedule schedule = context.getSchedule(shelveSchedule.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with id %s", shelveSchedule.getId())));
+        Schedule schedule = context.getScheduleByJobId(job.getId())
+                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
 
         Task task = job.getTasks()
                 .stream()

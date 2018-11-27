@@ -9,7 +9,7 @@
 
 package eu.melodic.upperware.adapter.executioncontext.colosseum;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import com.google.common.collect.Lists;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Api;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.CloudCredential;
@@ -17,16 +17,15 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.Communication;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.PortProvided;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.PortRequired;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
-import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
-import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
-import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
 import io.github.cloudiator.rest.model.Schedule;
+import io.github.cloudiator.rest.model.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
@@ -38,6 +37,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -51,9 +51,8 @@ import static java.lang.String.format;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
-public class ColosseumContext extends ContextUtils implements ContextOperations {
+public class ColosseumContext implements ContextOperations {
 
-  private final ColosseumApi api;
   private final JobApi jobApi;
   private final NodeApi nodeApi;
   private final ProcessApi processApi;
@@ -85,11 +84,6 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   private final List<Communication> communications = synchronizedList();
 
   private boolean loaded;
-//
-//  @Autowired
-//  public ColosseumContext(ColosseumApi api) {
-//    this.api = api;
-//  }
 
   public void addNode(@NonNull Node node) {
     nodes.add(node);
@@ -123,6 +117,11 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
             () -> new IllegalStateException(format("Ambiguous search result - there are more than one schedules with the same name=%s", name)));
   }
 
+  public Optional<Schedule> getScheduleByJobId(String jobId) {
+    return getElement(schedules, schedule -> jobId.equals(schedule.getJob()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one schedules with the same jobId=%s", jobId)));
+  }
+
   public void addProcess(@NonNull Process process) {
     processes.add(process);
   }
@@ -136,11 +135,15 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
     jobs.add(job);
   }
 
-  public Optional<Job> getJob(String name) {
-    return getElement(jobs, job -> name.equals(job.getId()),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", name)));
+  public Optional<Job> getJobById(String id) {
+    return getElement(jobs, job -> id.equals(job.getId()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same id=%s", id)));
   }
 
+  public Optional<Job> getJobByName(String name) {
+    return getElement(jobs, job -> name.equals(job.getName()),
+            () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", name)));
+  }
 
   private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<IllegalStateException> exceptionSupplier) {
     synchronized (collection) {
@@ -563,4 +566,10 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
         result.put("virtualMachine", instance.getVirtualMachine());
         return result;
     }
+
+
+  protected  <E> List<E> synchronizedList() {
+    return Collections.synchronizedList(Lists.newLinkedList());
+  }
+
 }

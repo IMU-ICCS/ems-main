@@ -3,8 +3,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveNode;
 import eu.melodic.upperware.adapter.planexecutor.TaskWatchDog;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
@@ -15,18 +13,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
 
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
@@ -55,17 +50,6 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                             .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() +"}")
                             .collect(Collectors.joining(", ", "[", "]")));
 
-//            Node node = nodeGroup
-//                    .getNodes()
-//                    .stream()
-//                    .filter(_node -> _node.getName().endsWith(taskBody.getNodeName()))
-//                    .findFirst()
-//                    .orElseThrow(() -> new AdapterException(format("Could not find Node with name ends with: %s ", taskBody.getNodeName())));
-
-//            log.info("New node is created: name: {}, nodeId: {}", node.getName(), node.getNodeId());
-
-//            shelveContext.addShelveNode(new ShelveNode(node.getNodeId(), getId(watch.getLocation()), taskBody.getNodeName()));
-//            context.addNode(node);
             context.addNodeGroup(nodeGroup);
         } catch (ApiException e) {
             log.error("Could not add NodeGroup: ", e);
