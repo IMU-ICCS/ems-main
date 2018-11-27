@@ -21,10 +21,12 @@ public class DAGNode {
 	private final String _name;
 	private final String _toString;
 	final NamedElement element;
+	final String elementName;
 	private Grouping grouping;
 	
 	DAGNode() {
 		element = null;
+		elementName = null;
 		_name = null;
 		_toString = "NODE <ROOT>";
 	}
@@ -32,7 +34,7 @@ public class DAGNode {
 	public DAGNode(NamedElement elem, String fullName) {
 		if (elem==null) throw new IllegalArgumentException("Argument cannot be null");
 		element = elem;
-		//_name = element.getName();
+		elementName = element.getName();
 		_name = fullName;
 		_toString = String.format("NODE %s", _name);
 	}
@@ -59,7 +61,8 @@ public class DAGNode {
 	}
 	
 	public String getElementName() {
-		return element!=null? element.getName() : null;
+		//return element!=null? element.getName() : null;
+		return elementName;
 	}
 	
 	public int hashCode() {

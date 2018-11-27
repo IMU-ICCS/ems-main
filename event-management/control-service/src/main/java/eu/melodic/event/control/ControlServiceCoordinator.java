@@ -314,7 +314,7 @@ public class ControlServiceCoordinator {
 			
 			// Get top-level metric topics from _TC
 			Set<String> metricTopics = new HashSet<>();
-			metricTopics.addAll( _TC.DAG.getTopLevelNodes().stream().filter(node -> ! scalingTopics.contains(node.getName())).map(node -> node.getName()).collect(Collectors.toSet()) );
+			metricTopics.addAll( _TC.DAG.getTopLevelNodes().stream().filter(node -> ! scalingTopics.contains(node.getElementName())).map(node -> node.getElementName()).collect(Collectors.toSet()) );
 			log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
 			
 			// Prepare subscription configurations
