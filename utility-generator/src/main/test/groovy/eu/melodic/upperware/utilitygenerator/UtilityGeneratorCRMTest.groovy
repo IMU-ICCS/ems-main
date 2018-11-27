@@ -64,4 +64,37 @@ class UtilityGeneratorCRMTest extends Specification {
         noExceptionThrown()
         result != 0
     }
+
+
+    def "CRM2 test" (){
+
+        given:
+        String cardinalityCRMName = "SmartDesignCardinality"
+        String providerCRMName = "providerName"
+        String componentCRMId = "SmartDesign"
+        Collection<VariableDTO> variables = new ArrayList<>()
+        variables.add(new VariableDTO(cardinalityCRMName, componentCRMId, VariableType.CARDINALITY))
+        variables.add(new VariableDTO(providerCRMName, componentCRMId, VariableType.PROVIDER))
+
+        Collection<Element> intSolution = new ArrayList<>()
+        intSolution.add(new IntElement(cardinalityCRMName, 3))
+        intSolution.add(new IntElement(providerCRMName, 2))
+
+        Collection<Element> newConfiguration = new ArrayList<>()
+        newConfiguration.add(new IntElement(cardinalityCRMName, 2))
+        newConfiguration.add(new IntElement(providerCRMName, 1))
+
+
+        String path = "src/main/test/resources/CRM2.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+
+        when:
+        double result = utilityGenerator.evaluate(newConfiguration)
+
+
+        then:
+        noExceptionThrown()
+        result != 0
+
+    }
 }
