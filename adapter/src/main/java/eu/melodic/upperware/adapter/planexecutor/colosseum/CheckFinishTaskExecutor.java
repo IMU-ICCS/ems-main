@@ -24,7 +24,8 @@ public class CheckFinishTaskExecutor implements Callable<Queue> {
         Queue queuedTask;
         do {
             queuedTask = api.findQueuedTask(checkFinishTask.getData().getQueueName());
-            log.debug("Result of queuedTask {} with queueId {} is {}", checkFinishTask.getData().getName(), checkFinishTask.getData().getQueueName(), queuedTask.toString());
+            log.debug("Result of queuedTask {} with queueId {} is {}",
+                    checkFinishTask.getData().getName(), checkFinishTask.getData().getQueueName(), queuedTask.toString());
 
             if (isInStatus(QueueStatus.FAILED, queuedTask)) {
                 throw new AdapterException(format("Result of task %s failed, reason: %s", queuedTask.getId(), queuedTask.getDiagnosis()));

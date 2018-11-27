@@ -28,10 +28,6 @@ public class ShelveContext extends ContextUtils {
         return getShelveNode(shelveNode -> shelveNode.getNodeName().endsWith(name));
     }
 
-//    public Optional<ShelveNode> getShelveNodeByQueuedTaskId(String queuedTaskId){
-//        return getShelveNode(shelveNode -> queuedTaskId.equals(shelveNode.getQueuedTaskId()));
-//    }
-
     private Optional<ShelveNode> getShelveNode(Predicate<ShelveNode> predicate) {
         return shelveNodes
                 .stream()

@@ -2,13 +2,15 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.*;
-import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
+import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
+import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
+import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveSchedule;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
+import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -27,12 +29,6 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
 
     @Override
     public void create(AdapterProcess taskBody) {
-
-//        ShelveNode shelveNode = shelveContext.getShelveNodeByName(taskBody.getNodeName())
-//                .orElseThrow(() -> new AdapterException(format("Could not find ShelveNode with name %s", taskBody.getNodeName())));
-//
-//        Node node = context.getNode(shelveNode.getId())
-//                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", shelveNode.getId())));
 
         NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));

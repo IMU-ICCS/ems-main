@@ -53,7 +53,6 @@ import static java.lang.String.format;
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class ColosseumContext extends ContextUtils implements ContextOperations {
 
-  private final ColosseumApi api;
   private final JobApi jobApi;
   private final NodeApi nodeApi;
   private final ProcessApi processApi;
@@ -85,11 +84,6 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   private final List<Communication> communications = synchronizedList();
 
   private boolean loaded;
-//
-//  @Autowired
-//  public ColosseumContext(ColosseumApi api) {
-//    this.api = api;
-//  }
 
   public void addNode(@NonNull Node node) {
     nodes.add(node);
@@ -490,48 +484,6 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
 
     jobs.clear();
     jobs.addAll(jobApi.findJobs());
-//
-//    cloudApis.clear();
-//    cloudApis.addAll(api.getApis());
-//
-//    clouds.clear();
-//    clouds.addAll(api.getClouds());
-//
-//    cloudProperties.clear();
-//    cloudProperties.addAll(api.getCloudProperties());
-//
-//    cloudCredentials.clear();
-//    cloudCredentials.addAll(api.getCloudCredentials());
-//
-//    applications.clear();
-//    applications.addAll(api.getApplications());
-//
-//    applicationInstances.clear();
-//    applicationInstances.addAll(api.getApplicationInstances());
-//
-//    virtualMachines.clear();
-//    virtualMachines.addAll(api.getVirtualMachines());
-//
-//    virtualMachineInstances.clear();
-//    virtualMachineInstances.addAll(api.getVirtualMachineInstances());
-//
-//    lifecycleComponents.clear();
-//    lifecycleComponents.addAll(api.getLifecycleComponents());
-//
-//    applicationComponents.clear();
-//    applicationComponents.addAll(api.getApplicationComponents());
-//
-//    applicationComponentInstances.clear();
-//    applicationComponentInstances.addAll(api.getApplicationComponentInstances());
-//
-//    portsProvided.clear();
-//    portsProvided.addAll(api.getPortsProvided());
-//
-//    portsRequired.clear();
-//    portsRequired.addAll(api.getPortsRequired());
-//
-//    communications.clear();
-//    communications.addAll(api.getCommunications());
 
     loaded = true;
   }

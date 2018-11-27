@@ -55,17 +55,6 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                             .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() +"}")
                             .collect(Collectors.joining(", ", "[", "]")));
 
-//            Node node = nodeGroup
-//                    .getNodes()
-//                    .stream()
-//                    .filter(_node -> _node.getName().endsWith(taskBody.getNodeName()))
-//                    .findFirst()
-//                    .orElseThrow(() -> new AdapterException(format("Could not find Node with name ends with: %s ", taskBody.getNodeName())));
-
-//            log.info("New node is created: name: {}, nodeId: {}", node.getName(), node.getNodeId());
-
-//            shelveContext.addShelveNode(new ShelveNode(node.getNodeId(), getId(watch.getLocation()), taskBody.getNodeName()));
-//            context.addNode(node);
             context.addNodeGroup(nodeGroup);
         } catch (ApiException e) {
             log.error("Could not add NodeGroup: ", e);
