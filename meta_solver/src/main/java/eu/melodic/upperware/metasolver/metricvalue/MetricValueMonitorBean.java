@@ -31,9 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @Slf4j
 public class MetricValueMonitorBean implements ApplicationContextAware {
 	
@@ -64,20 +64,22 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		
 		// Subscribe to configured topics
 		log.debug("Subscribing to topics: ");
-		for (MetaSolverProperties.Pubsub.Topic pst : properties.getPubsub().getTopics()) {
-			// Get topic configuration
-			String url = pst.getUrl();
-			String topicName = pst.getName();
-			String clientId = pst.getClientId();
-			TopicType type = pst.getType();
-			if (url==null || url.trim().isEmpty() || url.trim().equalsIgnoreCase("DEFAULT_BROKER_URL")) url = ActiveMQConnection.DEFAULT_BROKER_URL; else url = url.trim();
-			if (topicName==null || topicName.trim().isEmpty()) topicName.toString();	// Cause exception to be thrown if topicName is missing
-			if (clientId==null || clientId.trim().isEmpty()) clientId = ""; else clientId = clientId.trim(); 
-			if (type==null) type = TopicType.UNKNOWN;
-			log.debug("Topic : {}", pst);
-			
-			// Subscribe to topic
-			_do_subscribe(url, topicName, clientId, type);
+		if (properties.getPubsub()!=null && properties.getPubsub().getTopics()!=null) {
+			for (MetaSolverProperties.Pubsub.Topic pst : properties.getPubsub().getTopics()) {
+				// Get topic configuration
+				String url = pst.getUrl();
+				String topicName = pst.getName();
+				String clientId = pst.getClientId();
+				TopicType type = pst.getType();
+				if (url==null || url.trim().isEmpty() || url.trim().equalsIgnoreCase("DEFAULT_BROKER_URL")) url = ActiveMQConnection.DEFAULT_BROKER_URL; else url = url.trim();
+				if (topicName==null || topicName.trim().isEmpty()) topicName.toString();	// Cause exception to be thrown if topicName is missing
+				if (clientId==null || clientId.trim().isEmpty()) clientId = ""; else clientId = clientId.trim(); 
+				if (type==null) type = TopicType.UNKNOWN;
+				log.debug("Topic : {}", pst);
+				
+				// Subscribe to topic
+				_do_subscribe(url, topicName, clientId, type);
+			}
 		}
 		log.debug("Subscribing to topics: ok");
 	}

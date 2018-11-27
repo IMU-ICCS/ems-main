@@ -19,12 +19,14 @@ import eu.melodic.models.services.metaSolver.DeploymentProcessResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl;
 
 import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
+import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 //import lombok.AllArgsConstructor;
@@ -234,6 +236,32 @@ public class Coordinator implements ApplicationContextAware {
 		watermark.setDate(new Date());
 		watermark.setUuid(uuid);
 		return watermark;
+	}
+	
+	// --------------------------------------------------------------------------
+	public void updateSubscriptions(Set<Map> subscriptions) {
+		log.info("MetaSolver.Coordinator: updateSubscriptions(): subscriptions={}", subscriptions);
+		
+		// get metric value registry
+		MetricValueMonitorBean metricValueMonitorBean = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
+		
+		// unsubscribe from previous topics
+		log.info("MetaSolver.Coordinator: updateSubscriptions(): Unsubscribing from old topics...");
+		metricValueMonitorBean.unsubscribe();
+		log.info("MetaSolver.Coordinator: updateSubscriptions(): Unsubscribing from old topics... ok");
+		
+		// subscribe to new topics
+		log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics...");
+		subscriptions.stream().forEach(p -> {
+			String url = (String)p.get("url");
+			String topicName = (String)p.get("topic");
+			String clientId = (String)p.get("client-id");
+			TopicType type = TopicType.valueOf( (String)p.get("type") );
+			log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, topic={}, client-id={}, type={}", url, topicName, clientId, type);
+			metricValueMonitorBean.subscribe(url, topicName, clientId, type);
+			log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
+		});
+		log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");
 	}
 	
 	private void notifyEMS(String cpModelPath) {

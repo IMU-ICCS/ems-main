@@ -51,7 +51,6 @@ public class MetricValueListener implements MessageListener {
 				TextMessage textMessage = (TextMessage) message; 
 				//String metricName = textMessage.getStringProperty("topic_name");
 				String metricName = topicName;
-				//String metricName = "TR_AVG";		//XXX: Dirty hack to let hackaton continue :)
 				String payload = textMessage.getText();
 				log.debug("Metric: {}", metricName);
 				log.debug("Type:   {}", type);

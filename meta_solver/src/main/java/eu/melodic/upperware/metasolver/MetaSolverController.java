@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 import javax.ws.rs.BadRequestException;
 
 import static java.lang.String.format;
@@ -124,6 +126,21 @@ public class MetaSolverController {
 		response.setWatermark( coordinator.prepareWatermark(requestUuid) );
 		
 		return response;
+	}
+
+	@RequestMapping(value = "/updateSubscriptions", method = POST)
+	public String updateSubscriptions(@RequestBody String subscrConfig) throws ConcurrentAccessException {
+		log.info("updateSubscriptions: json={}", subscrConfig);
+		
+		// Unserialize subscription configurations from JSON
+		com.google.gson.Gson gson = new com.google.gson.Gson();
+		Set<Map> subscriptions = gson.fromJson(subscrConfig, Set.class);
+		log.info("updateSubscriptions: subscriptions={}", subscriptions);
+		
+		// Update MetaSolver subscriptions
+		coordinator.updateSubscriptions(subscriptions);
+		
+		return "OK";
 	}
 
 	@RequestMapping(value = "/health", method = GET)
