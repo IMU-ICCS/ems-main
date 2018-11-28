@@ -94,7 +94,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
         List<Requirement> result = new ArrayList<>();
         camel.requirement.CloudType cloudType = providerRequirement.getCloudType();
-        if (cloudType != null) {
+        if (cloudType != null && !camel.requirement.CloudType.ANY.equals(cloudType)) {
             result.add(createRequirement(CLOUD_CLASS, "type", RequirementOperator.EQ, prepareCloudTypeValue(cloudType.getName())));
         }
 
