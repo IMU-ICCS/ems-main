@@ -9,12 +9,16 @@ import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
+import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
 import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImpl;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import io.github.cloudiator.rest.ApiClient;
+import io.github.cloudiator.rest.api.MatchmakingApi;
+import io.github.cloudiator.rest.api.ProcessApi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
@@ -100,4 +104,19 @@ public class GeneratorContext {
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);
     }
+
+    @Bean
+    public MatchmakingApi matchmakingApi(ApiClient apiClient) {
+        return new MatchmakingApi(apiClient);
+    }
+
+    @Bean
+    public ApiClient apiClient(GeneratorProperties generatorProperties) {
+        ApiClient apiClient = new ApiClient();
+        apiClient.setBasePath(generatorProperties.getCloudiatorV2().getUrl());
+        apiClient.setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
+        apiClient.setReadTimeout(generatorProperties.getCloudiatorV2().getHttpReadTimeout());
+        return apiClient;
+    }
+
 }
