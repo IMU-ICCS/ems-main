@@ -22,7 +22,6 @@ public enum CamelMetadata {
 
     UNMOVEABLE("Unmoveable", null, false);
 
-
     public String camelName;
     public VariableType variableType;
     public boolean onNodeCandidate;

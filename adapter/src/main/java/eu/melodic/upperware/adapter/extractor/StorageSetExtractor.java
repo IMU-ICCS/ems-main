@@ -4,28 +4,30 @@ import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.security.authorization.client.extractor.DataExtractor;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CoreExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Integer> {
+public class StorageSetExtractor extends NodeCandidateSupport implements DataExtractor<DeploymentInstanceModel,Set<Double>> {
 
     @Override
     public String getKey() {
-        return "total-number-of-cores";
+        return "set-of-storage";
     }
 
     @Override
-    public Integer getValue(DeploymentInstanceModel deploymentModel) {
+    public Set<Double> getValue(DeploymentInstanceModel deploymentModel) {
         Map<String, NodeCandidate> nodeCandidateForDeployment = getNodeCandidateForDeployment(deploymentModel);
         return nodeCandidateForDeployment
                 .values()
                 .stream()
-                .mapToInt(value -> value.getHardware().getCores())
-                .sum();
+                .map(value -> value.getHardware().getDisk())
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public Map<String,Integer> getValueMap(DeploymentInstanceModel deploymentModel) {
+    public Map<String,Set<Double>> getValueMap(DeploymentInstanceModel deploymentModel) {
         return null;
     }
 }

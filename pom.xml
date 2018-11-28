@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.4.RELEASE</version>
+        <version>2.1.0.RELEASE</version>
     </parent>
 
     <groupId>org.ow2.paasage</groupId>
@@ -37,7 +37,7 @@
         <module>utility-generator</module>
         <module>cp_solver</module>
         <module>la_converter</module>
-        <module>dlms</module>
+        <!--<module>dlms</module>-->
         <module>discovery</module>
     </modules>
 
@@ -76,6 +76,7 @@
 
 
     </properties>
+
 
     <dependencyManagement>
         <dependencies>
