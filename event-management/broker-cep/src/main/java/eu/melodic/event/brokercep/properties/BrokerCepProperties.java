@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.properties;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Data
+@ToString(exclude={"truststorePassword","keystorePassword"})
 @Configuration
 @ConfigurationProperties(prefix = "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
@@ -24,8 +26,35 @@ import org.springframework.context.annotation.PropertySource;
 public class BrokerCepProperties {
 	@Value("${broker-name:broker}")
 	private String brokerName;
-	@Value("${broker-url:tcp://localhost:61616}")
+	@Value("${broker-url:ssl://localhost:61616}")
 	private String brokerUrl;
+	@Value("${broker-url-properties:}")
+	private String brokerUrlProperties;
 	@Value("${connector-port:-1}")
 	private int connectorPort;
+	@Value("${bypass-local-broker:false}")
+	private boolean bypassLocalBroker;
+	
+	@Value("${brokercep.ssl.enable:true}")
+	private boolean sslEnabled;
+	@Value("${brokercep.ssl.truststore.file}")
+	private String truststoreFile;
+	@Value("${brokercep.ssl.truststore.type}")
+	private String truststoreType;
+	@Value("${brokercep.ssl.truststore.password}")
+	private String truststorePassword;
+	@Value("${brokercep.ssl.keystore.file}")
+	private String keystoreFile;
+	@Value("${brokercep.ssl.keystore.type}")
+	private String keystoreType;
+	@Value("${brokercep.ssl.keystore.password}")
+	private String keystorePassword;
+//XXX:DEL-IF: not really needed in client authentication
+	@Value("${brokercep.ssl.client-auth.required}")
+	private boolean clientAuthRequired;
+	
+	@Value("${brokercep.usage.memory.jvm-heap-percentage:-1}")
+	private int memoryJvmHeapPercentage;
+	@Value("${brokercep.usage.memory.size:-1}")
+	private long memorySize;
 }

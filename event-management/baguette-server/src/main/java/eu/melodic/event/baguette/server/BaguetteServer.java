@@ -51,6 +51,7 @@ public class BaguetteServer
 	private Map<String,Double> constants;
 	private Set<FunctionDefinition> functionDefinitions;
 	private String upperwareGrouping;
+	private String upperwareBrokerUrl;
 	
 	// Configuration getter methods
 	public Set<String> getGroupingNames() {
@@ -58,7 +59,7 @@ public class BaguetteServer
 		groupings.addAll( groupingTopicsMap.keySet() );
 		groupings.addAll( groupingRulesMap.keySet() );
 		groupings.addAll( topicConnections.keySet() );
-		// remove upperware grouping (e.g. GLOBAL)
+		// remove upperware grouping (i.e. GLOBAL)
 		groupings.remove(upperwareGrouping);
 		return groupings;
 	}
@@ -80,6 +81,9 @@ public class BaguetteServer
 	}
 	public Set<FunctionDefinition> getFunctionDefinitions() {
 		return functionDefinitions;
+	}
+	public String getUpperwareBrokerUrl() {
+		return upperwareBrokerUrl;
 	}
 	
 	public BaguetteServerCredentials getCredentials() {
@@ -126,7 +130,8 @@ public class BaguetteServer
 				Map<String,Map<String,Set<String>>> topicConnections, 
 				Map<String,Double> constants,
 				Set<FunctionDefinition> functionDefinitions,
-				String upperwareGrouping ) 
+				String upperwareGrouping,
+				String upperwareBrokerUrl ) 
 	throws IOException 
 	{
 		log.info("BaguetteServer.setTopologyConfiguration(): BEGIN");
@@ -136,6 +141,7 @@ public class BaguetteServer
 		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Constants: {}", constants);
 		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Function-Definitions: {}", functionDefinitions);
 		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
+		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
 		
 		// Stop any running instance of SSH server
 		stopServer();
@@ -147,6 +153,7 @@ public class BaguetteServer
 		this.constants = constants;
 		this.functionDefinitions = functionDefinitions;
 		this.upperwareGrouping = upperwareGrouping;
+		this.upperwareBrokerUrl = upperwareBrokerUrl;
 		
 		// load credentials
 //XXX: TODO: read using Spring-boot properties

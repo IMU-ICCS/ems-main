@@ -295,7 +295,8 @@ public class ControlServiceCoordinator {
 		if (! properties.isSkipBaguette()) {
 			log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
 			try {
-				baguette.setTopologyConfiguration( _TC.getG2T(), _TC.getG2R(), _TC.getTopicConnections(), constants, _TC.getFunctionDefinitions(), upperwareGrouping );
+				baguette.setTopologyConfiguration( _TC.getG2T(), _TC.getG2R(), _TC.getTopicConnections(), constants, 
+						_TC.getFunctionDefinitions(), upperwareGrouping, brokerCep.getBrokerCepProperties().getBrokerUrl() );
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
 				//return;

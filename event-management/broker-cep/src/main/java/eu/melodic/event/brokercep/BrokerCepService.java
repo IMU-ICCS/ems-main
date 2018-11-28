@@ -153,6 +153,7 @@ public class BrokerCepService {
 	}
 	
 	public synchronized void publishEvent(String connectionString, String destinationName, Map<String,Object> eventMap) throws JMSException {
+		if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap))) return;
 		_publishEvent(connectionString, destinationName, new EventMap(eventMap));
 	}
 	
@@ -160,37 +161,65 @@ public class BrokerCepService {
 		_publishEvent(connectionString, destinationName, event);
 	}*/
 	
+	// When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
+	private final static java.util.regex.Pattern urlPattern = java.util.regex.Pattern.compile("^([a-z]+://[a-zA-Z0-9_\\.\\-]+:[0-9]+)([/#\\?].*)?$");
+	
+	protected synchronized boolean _publishLocalEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+		java.util.regex.Matcher matcher = urlPattern.matcher(connectionString);
+		String connBrokerUrl = matcher.matches() ? matcher.group(1) : connectionString;
+		log.debug("BrokerCepService._publishLocalEvent(): Check if event is published to the local broker: local-broker-url={}, connection-broker-url={}, connection={}, destination={}, payload={}",
+			properties.getBrokerUrl(), connBrokerUrl, connectionString, destinationName, event);
+		if (! connBrokerUrl.equals( properties.getBrokerUrl() )) return false;
+		
+		Class eventClass = event.getClass();
+		log.debug("BrokerCepService._publishLocalEvent(): It is local event. Skipping publish through broker: connection={}, destination={}, payload-class={}, payload={}",
+				connectionString, destinationName, eventClass.getName(), event);
+		if (String.class.isAssignableFrom(eventClass)) {
+			log.debug("BrokerCepService._publishLocalEvent(): String event...");
+			cepService.handleEvent((String)event, destinationName);
+		} else 
+		if (Map.class.isAssignableFrom(eventClass)) {
+			log.debug("BrokerCepService._publishLocalEvent(): Map event...");
+			cepService.handleEvent((Map)event, destinationName);
+		} else {
+			log.debug("BrokerCepService._publishLocalEvent(): Object event...");
+			cepService.handleEvent(event);
+		}
+		return true;
+	}
+	
 //XXX:TODO: Optimize this method
 	protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
-		// Create a ConnectionFactory
+		// Clone connection factory
 		if (connectionString==null) connectionString = properties.getBrokerUrl();
-		ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory( connectionString );
-
+		ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
+		connectionFactory.setBrokerURL(connectionString);
+		
 		// Create a Connection
 		Connection connection = connectionFactory.createConnection();
 		connection.start();
-
+		
 		// Create a Session
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
+		
 		// Create the destination (Topic or Queue)
 		//Destination destination = session.createQueue( destinationName );
 		Destination destination = session.createTopic( destinationName );
-
+		
 		// Create a MessageProducer from the Session to the Topic or Queue
 		MessageProducer producer = session.createProducer(destination);
 		producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
-
+		
 		// Create a messages
 		//ObjectMessage message = session.createObjectMessage(event);
 		TextMessage message = session.createTextMessage(event.toString());
-
+		
 		// Tell the producer to send the message
 		long hash = message.hashCode();
 		log.info("BrokerCepService.publishEvent(): Sending message: connection={}, destination={}, hash={}, payload={}", connectionString, destinationName, hash, event);
 		producer.send(message);
 		log.info("BrokerCepService.publishEvent(): Message sent: connection={}, destination={}, hash={}, payload={}", connectionString, destinationName, hash, event);
-
+		
 		// Clean up
 		session.close();
 		connection.close();

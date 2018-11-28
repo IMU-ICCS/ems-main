@@ -70,8 +70,8 @@ public class NoopCoordinator implements ServerCoordinator {
 //XXX:DEL: TEST....
 		// prepare configuration
 		java.util.Properties cfg = new java.util.Properties();
-		cfg.setProperty("GLOBAL", "tcp://localhost:61616");
-		cfg.setProperty("PER_CLOUD", "tcp://localhost:61614");
+		cfg.setProperty("GLOBAL", server.getUpperwareBrokerUrl());	// <-- XXX:SOS: check SCHEME (ssl, tcp) in Upperware Broker-CEP configuration
+		cfg.setProperty("PER_CLOUD", "ssl://localhost:61614");		// <-- XXX:SOS: check SCHEME (ssl, tcp)
 		
 		// prepare Broker-CEP configuration
 		log.info("NoopCoordinator.test(): --------------------------------------------------");
