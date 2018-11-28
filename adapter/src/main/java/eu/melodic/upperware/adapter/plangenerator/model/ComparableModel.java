@@ -20,6 +20,11 @@ import java.util.Collection;
 @EqualsAndHashCode
 public class ComparableModel {
 
+  private AdapterJob adapterJob;
+  private AdapterSchedule adapterSchedule;
+  private Collection<AdapterRequirement> adapterRequirements;
+  private Collection<AdapterProcess> adapterProcesses;
+
   private Collection<CloudApi> cloudApis;
   private Collection<Cloud> clouds;
   private Collection<CloudProperty> cloudProperties;

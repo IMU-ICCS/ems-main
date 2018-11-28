@@ -9,18 +9,19 @@
 
 package eu.melodic.upperware.adapter;
 
-import de.uniulm.omi.cloudiator.colosseum.client.Client;
-import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.paasage.upperware.security.authapi.token.JWTService;
-import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import io.github.cloudiator.rest.ApiClient;
+import io.github.cloudiator.rest.api.JobApi;
+import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.ProcessApi;
+import io.github.cloudiator.rest.api.QueueApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -33,67 +34,88 @@ import javax.servlet.Filter;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
 
-    private AdapterProperties adapterProperties;
+  private AdapterProperties adapterProperties;
 
-    @Bean
-    public Filter loggingFilter() {
-        CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
-        filter.setIncludeClientInfo(true);
-        filter.setIncludeHeaders(true);
-        filter.setIncludePayload(true);
-        filter.setIncludeQueryString(true);
-        filter.setMaxPayloadLength(10000);
-        return filter;
-    }
+  @Bean
+  public Filter loggingFilter() {
+    CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
+    filter.setIncludeClientInfo(true);
+    filter.setIncludeHeaders(true);
+    filter.setIncludePayload(true);
+    filter.setIncludeQueryString(true);
+    filter.setMaxPayloadLength(10000);
+    return filter;
+  }
 
-    @Bean
-    public RestTemplate getRestTemplate() {
-        return new RestTemplate();
-    }
+  @Bean
+  public RestTemplate getRestTemplate() {
+    return new RestTemplate();
+  }
 
-    @Bean
-    public CDOClientX getCdoClient() {
-        return new CDOClientXImpl();
-    }
+  @Bean
+  public CDOClientX getCdoClient() {
+    return new CDOClientXImpl();
+  }
 
-    @Bean
-    public Client getClient() {
-        AdapterProperties.Colosseum colosseum = adapterProperties.getColosseum();
-        AdapterProperties.Colosseum.Auth colosseumAuth = colosseum.getAuth();
-        return ClientBuilder.getNew()
-                .url(colosseum.getUrl())
-                .credentials(colosseumAuth.getEmail(), colosseumAuth.getTenant(), colosseumAuth.getPassword())
-                .build();
+  @Bean
+  public ThreadPoolTaskExecutor getTaskExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    AdapterProperties.TaskExecutor taskExecutor = adapterProperties.getTaskExecutor();
+    if (taskExecutor != null) {
+      Integer corePoolSize = taskExecutor.getCorePoolSize();
+      Integer maxPoolSize = taskExecutor.getMaxPoolSize();
+      Integer queueCapacity = taskExecutor.getQueueCapacity();
+      if (corePoolSize != null) {
+        executor.setCorePoolSize(corePoolSize);
+      }
+      if (maxPoolSize != null) {
+        executor.setMaxPoolSize(maxPoolSize);
+      }
+      if (queueCapacity != null) {
+        executor.setQueueCapacity(queueCapacity);
+      }
     }
+    return executor;
+  }
 
-    @Bean
-    public ThreadPoolTaskExecutor getTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        AdapterProperties.TaskExecutor taskExecutor = adapterProperties.getTaskExecutor();
-        if (taskExecutor != null) {
-            Integer corePoolSize = taskExecutor.getCorePoolSize();
-            Integer maxPoolSize = taskExecutor.getMaxPoolSize();
-            Integer queueCapacity = taskExecutor.getQueueCapacity();
-            if (corePoolSize != null) {
-                executor.setCorePoolSize(corePoolSize);
-            }
-            if (maxPoolSize != null) {
-                executor.setMaxPoolSize(maxPoolSize);
-            }
-            if (queueCapacity != null) {
-                executor.setQueueCapacity(queueCapacity);
-            }
-        }
-        return executor;
-    }
+  @Bean
+  public AuthorizationServiceClient getAuthorizationServiceClient(AuthorizationServiceClientProperties authorizationServiceClientProperties) {
+    return new AuthorizationServiceClient(authorizationServiceClientProperties);
+  }
 
-    @Bean
-    public AuthorizationServiceClient getAuthorizationServiceClient(AuthorizationServiceClientProperties authorizationServiceClientProperties) {
-        return new AuthorizationServiceClient(authorizationServiceClientProperties);
-    }
+  @Bean
+  @ConfigurationProperties
+  public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
+    return new AuthorizationServiceClientProperties();
+  }
 
-    @Bean
-    public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
-        return new JWTServiceImpl(melodicSecurityProperties);
-    }
+  @Bean
+  public JobApi jobApi(ApiClient apiClient) {
+    return new JobApi(apiClient);
+  }
+
+  @Bean
+  public NodeApi nodeApi(ApiClient apiClient) {
+    return new NodeApi(apiClient);
+  }
+
+  @Bean
+  public QueueApi queueApi(ApiClient apiClient) {
+    return new QueueApi(apiClient);
+  }
+
+  @Bean
+  public ProcessApi processApi(ApiClient apiClient) {
+    return new ProcessApi(apiClient);
+  }
+
+  @Bean
+  public ApiClient apiClient() {
+    ApiClient apiClient = new ApiClient();
+    apiClient.setBasePath(adapterProperties.getCloudiatorV2().getUrl());
+    apiClient.setApiKey(adapterProperties.getCloudiatorV2().getApiKey());
+    apiClient.setReadTimeout(adapterProperties.getCloudiatorV2().getHttpReadTimeout());
+    return apiClient;
+  }
+
 }

@@ -13,8 +13,6 @@ public interface TaskExecutor<T> {
 
   void create(T taskBody);
 
-  void update(T taskBody);
-
   void delete(T taskBody);
 
 }

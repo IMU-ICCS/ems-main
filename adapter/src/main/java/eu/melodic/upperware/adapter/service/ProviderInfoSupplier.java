@@ -4,6 +4,7 @@ import camel.core.Attribute;
 import camel.core.Feature;
 import camel.type.StringValue;
 import camel.type.Value;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.NonNull;
 
 public interface ProviderInfoSupplier {
@@ -19,6 +20,7 @@ public interface ProviderInfoSupplier {
     String getCredentialsName(Feature feature);
     String getPropertyName(Feature feature);
     String getEndpoint(Feature feature);
+    NodeCandidate getNodeCandidate(Feature feature);
 
     default String getAttribute(@NonNull String name, Feature feature) {
         Attribute attribute =

@@ -76,12 +76,6 @@ public class CDODatabaseProxy2 {
             transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
                     .getCommunicationInstances().addAll(dataHolder.getCommunicationInstances());
 
-            transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
-                    .getVmInstances().addAll(dataHolder.getVmInstancesToRegister());
-
-            transactionManager.deploymentInstanceModels.get(transactionManager.dmId - 1)
-                    .getHostingInstances().addAll(dataHolder.getHostingInstancesToRegister());
-
             transactionManager.commit();
         }
 

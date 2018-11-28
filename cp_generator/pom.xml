@@ -78,6 +78,10 @@
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-collections4</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>io.github.cloudiator.client</groupId>
+                    <artifactId>java-rest</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

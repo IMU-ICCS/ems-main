@@ -3,7 +3,7 @@ package eu.paasage.upperware.solvertodeployment.utils;
 import camel.core.Attribute;
 import camel.core.CamelModel;
 import camel.core.CoreFactory;
-import camel.deployment.VMInstance;
+import camel.deployment.SoftwareComponentInstance;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
 import com.google.gson.Gson;
@@ -11,7 +11,6 @@ import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProp
 import io.github.cloudiator.rest.model.CloudType;
 import io.github.cloudiator.rest.model.Image;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +34,11 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
     }
 
     @Override
-    public void enrichVMInstance(@NonNull VMInstance vmInstance, @NonNull NodeCandidate nodeCandidate, @NonNull String constraintProblemId, @NonNull CamelModel camelModel) {
-        EList<Attribute> attributes = vmInstance.getAttributes();
-        attributes.add(createAttribute("cloudName", extractCloudName(nodeCandidate, vmInstance.getName(), constraintProblemId)));
-        attributes.add(createAttribute("providerName", createProviderName(nodeCandidate, vmInstance.getName(), constraintProblemId)));
+    public void enrichSoftwareComponentInstance(SoftwareComponentInstance softwareComponentInstance, NodeCandidate nodeCandidate, String constraintProblemId, CamelModel camelModel) {
+        EList<Attribute> attributes = softwareComponentInstance.getAttributes();
+        log.info("Start enriching SoftwareComponentInstance: {}", softwareComponentInstance.getName());
+        attributes.add(createAttribute("cloudName", extractCloudName(nodeCandidate, softwareComponentInstance.getName(), constraintProblemId)));
+        attributes.add(createAttribute("providerName", createProviderName(nodeCandidate, softwareComponentInstance.getName(), constraintProblemId)));
         attributes.add(createAttribute("location", extractLocation(nodeCandidate)));
         attributes.add(createAttribute("image", extractImage(nodeCandidate)));
         attributes.add(createAttribute("machineType", extractMachineType(nodeCandidate)));
@@ -48,10 +48,15 @@ public class ProviderEnricherServiceImpl implements ProviderEnricherService {
         attributes.add(createAttribute("credentialsName", extractCredentialsName(nodeCandidate)));
         attributes.add(createAttribute("propertyName", extractPropertyName(nodeCandidate)));
         attributes.add(createAttribute("endpoint", extractEndpoint(nodeCandidate)));
-        attributes.add(createAttribute("nodeCandidate",gson.toJson(nodeCandidate)));
+        attributes.add(createAttribute("nodeCandidate", gson.toJson(nodeCandidate)));
+        attributes.add(createAttribute("nodeCandidateId", nodeCandidate.getId()));
+        log.info("Finish enriching SoftwareComponentInstance: {}", softwareComponentInstance.getName());
     }
 
+
+
     private Attribute createAttribute(String attributeName, String attributeValue) {
+        log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
         Attribute strAttribute = CoreFactory.eINSTANCE.createAttribute();
         strAttribute.setName(attributeName);
         strAttribute.setValue(createStringValue(attributeValue));

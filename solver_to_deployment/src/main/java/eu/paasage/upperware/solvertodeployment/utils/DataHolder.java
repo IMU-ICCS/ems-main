@@ -21,10 +21,6 @@ public class DataHolder {
 
     private List<CommunicationInstance> communicationInstances = new ArrayList<>();
 
-    private List<VMInstance> vmInstancesToRegister = new ArrayList<>();
-
-    private List<HostingInstance> hostingInstancesToRegister = new ArrayList<>();
-
     private List<GeographicalRegion> locationsToRegister = new ArrayList<>();
 
 }
