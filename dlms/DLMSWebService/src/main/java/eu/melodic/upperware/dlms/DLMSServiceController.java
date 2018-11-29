@@ -158,12 +158,10 @@ public class DLMSServiceController {
 	}
 
 	// test the notification request, uncomment this when actual url exists
-	@PostMapping("/notification/msg")
-	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
-		System.out.println("Test message");
-		System.out.println(dataModelNotificationRequest.getResult().getErrorCode() + " : "
-				+ dataModelNotificationRequest.getResult().getErrorDescription());
-	}
+//	@PostMapping("/notification/msg")
+//	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
+//		log.info("Test message");
+//	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the

@@ -18,7 +18,9 @@ import eu.melodic.dlms.db.model.TwoDataCenters;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
 import eu.melodic.dlms.db.repository.TwoDataCenterCombinationRepository;
 import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -35,9 +37,13 @@ public class Algo_CombineValSelectedRecords {
 	/**
 		configuration parameters
 	 */
+	@Getter	@Setter
 	private int paraTimeInterval;
+	@Getter	@Setter
 	private int paraNumRecords;
+	@Getter	@Setter
 	private String paraUpdateWith;
+	@Getter	@Setter
 	private String weightData;
 	
 	// latency and bandwidth between two data centers. String in Map is in the form of {dc1},{dc2}
@@ -48,7 +54,7 @@ public class Algo_CombineValSelectedRecords {
 	private final TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
 
 	/**
-	 * use algorithm to find latency and bandwidth based on historical data
+	 * Compute latency and bandwidth based on historical data
 	 */
 	public int computeAvgAndStore() {
 		boolean hasFound = false;
@@ -59,6 +65,7 @@ public class Algo_CombineValSelectedRecords {
 			for (int j = i + 1; j < dataCenterList.size(); j++) {
 				DataCenter dc2 = dataCenterList.get(j);
 				boolean found = false;
+				// other functions can be added
 				switch (weightData) {
 				case "averageWeight":
 					found = computeAverage(dc1.getId(), dc2.getId());
@@ -67,7 +74,7 @@ public class Algo_CombineValSelectedRecords {
 					found = computeLatestHigher(dc1.getId(), dc2.getId());
 					break;
 				default:
-					log.debug("Invalid function selected");
+					log.error("Invalid function selected");
 				}
 				// atleast two data centers must exist
 				if (!hasFound)
@@ -83,7 +90,7 @@ public class Algo_CombineValSelectedRecords {
 	}
 
 	/**
-	 * compute average for lat and bandwidth for dc1 and dc2 based on time interval
+	 * Compute average for lat and bandwidth for dc1 and dc2 based on time interval
 	 * it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1.
 	 */
 	private boolean computeAverage(Long dc1Id, Long dc2Id) {
@@ -100,7 +107,7 @@ public class Algo_CombineValSelectedRecords {
 					PageRequest.of(0, this.paraNumRecords));
 			break;
 		default:
-			log.debug("The function has not been implemented yet!");
+			log.error("The function has not been implemented yet!");
 		}
 		if (dataCenterList.size() == 0) { // if no record exists
 			return false;
@@ -111,7 +118,7 @@ public class Algo_CombineValSelectedRecords {
 	}
 
 	/**
-	 * compute average for lat and bandwidth for dc1 and dc2 based on time intervals
+	 * Compute latency and bandwidth for dc1 and dc2 based on time intervals: latest higher weight
 	 * it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1.
 	 */
 	private boolean computeLatestHigher(Long dc1Id, Long dc2Id) {
@@ -139,6 +146,9 @@ public class Algo_CombineValSelectedRecords {
 		}
 	}
 
+	/**
+	 * Latest records have higher weights
+	 */
 	private void computeLatestHigherWeight(List<TwoDataCenters> dataCenterList, Long dc1Id, Long dc2Id) {
 		double latency = 0, bandwidth = 0;
 		int numberRecords = dataCenterList.size();
@@ -154,15 +164,8 @@ public class Algo_CombineValSelectedRecords {
 			denom += multiply;
 			numCounter++;
 
-			this.minLatency = this.minLatency < dcLatencyBandwidthItem.getLatency() ? this.minLatency
-					: dcLatencyBandwidthItem.getLatency();
-			this.maxLatency = this.maxLatency > dcLatencyBandwidthItem.getLatency() ? this.maxLatency
-					: dcLatencyBandwidthItem.getLatency();
-
-			this.minBandWidth = this.minBandWidth < dcLatencyBandwidthItem.getLatency() ? this.minBandWidth
-					: dcLatencyBandwidthItem.getLatency();
-			this.maxBandWidth = this.maxBandWidth > dcLatencyBandwidthItem.getLatency() ? this.maxBandWidth
-					: dcLatencyBandwidthItem.getLatency();
+			setMinMaxLatency(dcLatencyBandwidthItem);
+			setMinMaxBandwidth(dcLatencyBandwidthItem);
 		}
 		latency = latency / denom;
 		bandwidth = bandwidth / denom;
@@ -171,22 +174,39 @@ public class Algo_CombineValSelectedRecords {
 		TwoDataCenComb twoDataCenComb = new TwoDataCenComb(dc1Id, dc2Id);
 		this.dcDistanceMap.put(twoDataCenComb, distanceNew);
 	}
+	
+	/**
+	 * Store min and max latency
+	 */
+	private void setMinMaxLatency(TwoDataCenters dcLatencyBandwidthItem) {
+		this.minLatency = this.minLatency < dcLatencyBandwidthItem.getLatency() ? this.minLatency
+				: dcLatencyBandwidthItem.getLatency();
+		this.maxLatency = this.maxLatency > dcLatencyBandwidthItem.getLatency() ? this.maxLatency
+				: dcLatencyBandwidthItem.getLatency();
+	}
+	
+	/**
+	 * Store min and max bandwidth
+	 */
+	private void setMinMaxBandwidth(TwoDataCenters dcLatencyBandwidthItem) {
+		this.minBandWidth = this.minBandWidth < dcLatencyBandwidthItem.getLatency() ? this.minBandWidth
+				: dcLatencyBandwidthItem.getLatency();
+		this.maxBandWidth = this.maxBandWidth > dcLatencyBandwidthItem.getLatency() ? this.maxBandWidth
+				: dcLatencyBandwidthItem.getLatency();
+	}
 
+	
+	/**
+	 * All the records have equal weight
+	 */
 	private void computeEqualWeight(List<TwoDataCenters> dataCenterList, Long dc1Id, Long dc2Id) {
 		double latency = 0, bandwidth = 0;
 		for (TwoDataCenters dcLatencyBandwidthItem : dataCenterList) {
 			latency += dcLatencyBandwidthItem.getLatency();
 			bandwidth += dcLatencyBandwidthItem.getBandwidth();
 
-			this.minLatency = this.minLatency < dcLatencyBandwidthItem.getLatency() ? this.minLatency
-					: dcLatencyBandwidthItem.getLatency();
-			this.maxLatency = this.maxLatency > dcLatencyBandwidthItem.getLatency() ? this.maxLatency
-					: dcLatencyBandwidthItem.getLatency();
-
-			this.minBandWidth = this.minBandWidth < dcLatencyBandwidthItem.getLatency() ? this.minBandWidth
-					: dcLatencyBandwidthItem.getLatency();
-			this.maxBandWidth = this.maxBandWidth > dcLatencyBandwidthItem.getLatency() ? this.maxBandWidth
-					: dcLatencyBandwidthItem.getLatency();
+			setMinMaxLatency(dcLatencyBandwidthItem);
+			setMinMaxBandwidth(dcLatencyBandwidthItem);
 		}
 		latency = latency / dataCenterList.size();
 		bandwidth = bandwidth / dataCenterList.size();
@@ -200,7 +220,6 @@ public class Algo_CombineValSelectedRecords {
 	 * combine latency and bandwidth into one value
 	 */
 	public void saveinDatabase() {
-//		deleteFirst();
 		List<TwoDataCenterCombination> dataList = new ArrayList<TwoDataCenterCombination>();
 		for (Map.Entry<TwoDataCenComb, Distance> entry : this.dcDistanceMap.entrySet()) {
 			double norLatency = norLatency(entry.getValue().getLatency());
@@ -241,38 +260,6 @@ public class Algo_CombineValSelectedRecords {
 		double retVal = 0;
 		retVal = (bandwidth - this.minBandWidth) / (this.maxBandWidth - this.minBandWidth) * 1.;
 		return retVal;
-	}
-
-	public int getParaTimeInterval() {
-		return paraTimeInterval;
-	}
-
-	public void setParaTimeInterval(int paraTimeInterval) {
-		this.paraTimeInterval = paraTimeInterval;
-	}
-
-	public int getParaNumRecords() {
-		return paraNumRecords;
-	}
-
-	public void setParaNumRecords(int paraNumRecords) {
-		this.paraNumRecords = paraNumRecords;
-	}
-
-	public String getParaUpdateWith() {
-		return paraUpdateWith;
-	}
-
-	public void setParaUpdateWith(String paraUpdateWith) {
-		this.paraUpdateWith = paraUpdateWith;
-	}
-
-	public String getWeightData() {
-		return weightData;
-	}
-
-	public void setWeightData(String weightData) {
-		this.weightData = weightData;
 	}
 
 }

@@ -4,23 +4,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.melodic.dlms.utility.DlmsDiffBundle;
 import eu.melodic.dlms.utility.UtilityMetrics;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Webservice controller for algorithms.
  */
 @RestController
+@Slf4j
 public class DlmsRestController {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(DlmsRestController.class);
-
 	private Map<Algorithm, AlgorithmRunner> algorithms = new ConcurrentHashMap<>();
 
 	/**
@@ -41,7 +38,7 @@ public class DlmsRestController {
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
 			double algorithmResult = runner.queryResults(diffs);
-			LOGGER.info("result for algorithm {}: {}", key.getName(), algorithmResult);
+			log.info("result for algorithm {}: {}", key.getName(), algorithmResult);
 			utilityValueMap.put(key.getCamelId(), algorithmResult);
 		});
 

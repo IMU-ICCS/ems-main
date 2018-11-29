@@ -56,25 +56,24 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
 	private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
 
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		// this.applicationContext = applicationContext;
-		this.properties = (DlmsMetricProperties) applicationContext.getBean(DlmsMetricProperties.class);
+		this.properties = applicationContext.getBean(DlmsMetricProperties.class);
 		log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
 
-		this.cpRepository = (CloudProviderRepository) applicationContext.getBean(CloudProviderRepository.class);
-		this.dcRepository = (DataCenterRepository) applicationContext.getBean(DataCenterRepository.class);
-		this.regionRepository = (RegionRepository) applicationContext.getBean(RegionRepository.class);
-		this.twoDcRepository = (TwoDataCentersRepository) applicationContext.getBean(TwoDataCentersRepository.class);
-		this.acRepository = (ApplicationComponentRepository) applicationContext.getBean(ApplicationComponentRepository.class);
-		this.dsRepository = (DataSourceRepository) applicationContext.getBean(DataSourceRepository.class);
-		this.acDsDataRepository = (ApplicationComponentDataSourceDataRepository) applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
+		this.cpRepository = applicationContext.getBean(CloudProviderRepository.class);
+		this.dcRepository = applicationContext.getBean(DataCenterRepository.class);
+		this.regionRepository = applicationContext.getBean(RegionRepository.class);
+		this.twoDcRepository = applicationContext.getBean(TwoDataCentersRepository.class);
+		this.acRepository = applicationContext.getBean(ApplicationComponentRepository.class);
+		this.dsRepository = applicationContext.getBean(DataSourceRepository.class);
+		this.acDsDataRepository = applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
 	}
 
 	public void subscribe() {
 		// Check if Pub/Sub should be activated
-		if (properties.getPubsub().isOn() == false) {
+		if (!properties.getPubsub().isOn()) {
 			log.info("*****   Pub/Sub is SWITCHED OFF");
 			return;
 		}
@@ -108,7 +107,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
 	public void subscribe(String url, String topicName, String clientId, TopicType type) {
 		// Check if Pub/Sub should be activated
-		if (properties.getPubsub().isOn() == false) {
+		if (!properties.getPubsub().isOn()) {
 			log.info("*****   Pub/Sub is SWITCHED OFF");
 			return;
 		}
@@ -166,7 +165,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 			sconf.getTopics().add(tconf);
 
 			// Add message listener to receive incoming messages
-			MessageListener lsnr = getListener(consumer, topic, type);
+			MessageListener lsnr = getListener(topic, type);
 			consumer.setMessageListener(lsnr);
 			log.trace("*****   SUBSCRIBE: listener added");
 
@@ -181,16 +180,17 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		}
 	}
 
-	private MessageListener getListener(MessageConsumer consumer, Topic topic, TopicType type) throws JMSException {
-		MessageListener listener = new MetricValueListener(consumer, topic, type, this.cpRepository,
-				this.dcRepository, this.regionRepository, this.twoDcRepository, this.acRepository, this.dsRepository, this.acDsDataRepository);
+	private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
+		MessageListener listener = new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
+				this.regionRepository, this.twoDcRepository, this.acRepository, this.dsRepository,
+				this.acDsDataRepository);
 		return listener;
 	}
 
 	public void unsubscribe() {
 		try {
 			// Check if Pub/Sub should be activated
-			if (properties.getPubsub().isOn() == false) {
+			if (!properties.getPubsub().isOn()) {
 				log.debug("*****   Pub/Sub is SWITCHED OFF");
 				return;
 			}

@@ -2,6 +2,7 @@ package eu.melodic.dlms.algorithms.affinity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import eu.melodic.dlms.db.model.AcDsKey;
 import eu.melodic.dlms.db.model.ApplicationComponent;
@@ -46,7 +47,7 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Save the affinities
 	 */
-	public void saveAffinity(List<AppComDataSrc> appComDataSrcList) {
+	private void saveAffinity(List<AppComDataSrc> appComDataSrcList) {
 		List<ApplicationComponentDataSourceAffinity> acDsAffinityList = new ArrayList<>();
 		for (AppComDataSrc appComDataSrc : appComDataSrcList) {
 			ApplicationComponentDataSourceAffinity acDsAffinity = new ApplicationComponentDataSourceAffinity(
@@ -60,7 +61,7 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Prediction of data transfer
 	 */
-	public List<AppComDataSrc> computePrediction() {
+	private List<AppComDataSrc> computePrediction() {
 		List<ApplicationComponent> acList = acRepository.findAll();
 		List<DataSource> dsList = dsRepository.findAll();
 
@@ -87,20 +88,24 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Calculate the sum of data transfers
 	 */
-	public long dataPrediction(List<ApplicationComponentDataSourceData> acDSDataList) {
+	private long dataPrediction(List<ApplicationComponentDataSourceData> acDSDataList) {
 		long predVal = (long) (WT_READ * sumRecordsDataReadEqWt(acDSDataList))
 				+ (long) ((1 - WT_READ) * sumRecordsDataWriteEqWt(acDSDataList));
 		this.maxDataTransPrediction = this.maxDataTransPrediction > predVal ? this.maxDataTransPrediction : predVal;
 		this.minDataTransPrediction = this.minDataTransPrediction < predVal ? this.minDataTransPrediction : predVal;
 		return predVal;
 	}
-
+	
+	// predicate to check data read is positive
+	private Predicate<ApplicationComponentDataSourceData> HAS_DATA_TO_READ = acDSData -> acDSData.getDataRead() != null && acDSData.getDataRead() > 0;
+	// predicate to check data write is positive
+	private Predicate<ApplicationComponentDataSourceData> HAS_DATA_TO_WRITE = acDSData -> acDSData.getDataWrite() != null && acDSData.getDataWrite() > 0;
 	/**
 	 * Sum records higher than 0 for data read
 	 */
-	public long sumRecordsDataReadEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
+	private long sumRecordsDataReadEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
 		long retTotal = acDSDataList.stream()
-				.filter(dataRead->dataRead.getDataRead()!=null && dataRead.getDataRead()>0)
+				.filter(HAS_DATA_TO_READ)
 				.map(ApplicationComponentDataSourceData::getDataRead)
 				.mapToLong(val -> WT_AI * val)
 				.sum();
@@ -110,9 +115,9 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Sum records higher than 0 for data write
 	 */
-	public long sumRecordsDataWriteEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
+	private long sumRecordsDataWriteEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
 		long retTotal = acDSDataList.stream()
-				.filter(dataWrite->dataWrite.getDataWrite()!=null && dataWrite.getDataWrite()>0)
+				.filter(HAS_DATA_TO_WRITE)
 				.map(ApplicationComponentDataSourceData::getDataWrite)
 				.mapToLong(dataWrite -> WT_AI * dataWrite)
 				.sum();
@@ -122,7 +127,7 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Calculate sum of number of transfer
 	 */
-	public long numTransferPrediction(List<ApplicationComponentDataSourceData> acDSDataList) {
+	private long numTransferPrediction(List<ApplicationComponentDataSourceData> acDSDataList) {
 		long predVal = 0L;
 		predVal = (long) (WT_READ * sumNumTransferRead(acDSDataList))
 				+ (long) ((1 - WT_READ) * sumNumTransferWrite(acDSDataList));
@@ -134,9 +139,9 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Calculate the sum of data transfers for read
 	 */
-	public long sumNumTransferRead(List<ApplicationComponentDataSourceData> acDSDataList) {
+	private long sumNumTransferRead(List<ApplicationComponentDataSourceData> acDSDataList) {
 		long retTotal = acDSDataList.stream()
-				.filter(acDSData -> acDSData.getDataRead()!=null &&  acDSData.getDataRead() > 0)
+				.filter(HAS_DATA_TO_READ)
 				.mapToLong(applicationComponentDataSourceData -> WT_AI)
 				.sum();
 		return retTotal;
@@ -147,7 +152,7 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	 */
 	public long sumNumTransferWrite(List<ApplicationComponentDataSourceData> acDSDataList) {
 		long retTotal = acDSDataList.stream()
-				.filter(acDSData -> acDSData.getDataWrite()!=null && acDSData.getDataWrite() > 0)
+				.filter(HAS_DATA_TO_WRITE)
 				.mapToLong(applicationComponentDataSourceData -> WT_AI)
 				.sum();
 		return retTotal;
@@ -184,7 +189,7 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Normalize the value for number of transfer
 	 */
-	public double normalizeNumTransfer(long val) {
+	private double normalizeNumTransfer(long val) {
 		double retVal = (val - this.minNumTransPrediction)
 				* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxNumTransPrediction - this.minNumTransPrediction))
 				+ MIN_RANGE;
@@ -194,7 +199,7 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Calculate the final couplet value
 	 */
-	public double calculateCouplet(double dataTransferVal, double numTransferVal) {
+	private double calculateCouplet(double dataTransferVal, double numTransferVal) {
 		double retVal = 0;
 		retVal = WT_DATA_TRANSFER * dataTransferVal + (1 - WT_DATA_TRANSFER) * numTransferVal;
 		return retVal;

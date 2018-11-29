@@ -22,22 +22,21 @@ public class DlmsControllerApplicationListener implements ApplicationListener<Ap
     private DlmsMetricProperties properties;
     private ApplicationContext applicationContext;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-		this.metricValueMonitorBean = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+		this.metricValueMonitorBean = applicationContext.getBean(MetricValueMonitorBean.class);
 		this.metricValueMonitorBean.subscribe();
-		this.properties = (DlmsMetricProperties) applicationContext.getBean(DlmsMetricProperties.class);
-    }
-    
+		this.properties = applicationContext.getBean(DlmsMetricProperties.class);
+	}
+
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
 		log.trace("** Application Event Received : "+event.getClass().getName());
 		if (event instanceof org.springframework.context.event.ContextClosedEvent) {
 			log.debug("** Application Event Received : Context Closed");
 			metricValueMonitorBean.unsubscribe();
-		} else
-		{
+		} else{
 			log.trace("** Application Event Received : Other...");
 		}
     }

@@ -11,10 +11,12 @@ package eu.melodic.dlms.metric.receiver.metricvalue;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
+//import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
@@ -43,7 +45,7 @@ public class MetricValueListener implements MessageListener {
 	private TopicType type;
 	private Gson gson;
 
-	public MetricValueListener(MessageConsumer consumer, Topic topic, TopicType type,
+	public MetricValueListener( Topic topic, TopicType type,
 			CloudProviderRepository cpRepository,
 			DataCenterRepository dcRepository, RegionRepository regionRepository,
 			TwoDataCentersRepository twoDcRepository, ApplicationComponentRepository acRepository, DataSourceRepository dsRepository, ApplicationComponentDataSourceDataRepository acDsDataRepository) throws JMSException {
@@ -88,7 +90,7 @@ public class MetricValueListener implements MessageListener {
 					processMetricValueEventAcDsDataWrite(metricName, payload);
 					break;
 				default:
-					log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
+					log.warn("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
 				}
 			} else {
 				log.warn("Unsupported message type: {}", message.getClass().getName());
@@ -99,10 +101,10 @@ public class MetricValueListener implements MessageListener {
 	}
 
 	/**
-	 * Betweeen two datacenters
+	 * Between two datacenters
 	 */
 	protected void processMetricValueEventDataCenter(String metricName, String payload) {
-		if (metricName != null && !(metricName = metricName.trim()).isEmpty()) {
+		if (StringUtils.isNotBlank(metricName)) {
 			// Extract key-value pairs from message payload
 			// using MetricValueEvent
 			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
@@ -118,7 +120,7 @@ public class MetricValueListener implements MessageListener {
 	 * Data read between application component and datasource
 	 */
 	protected void processMetricValueEventAcDsDataRead(String metricName, String payload) {
-		if (metricName != null && !(metricName = metricName.trim()).isEmpty()) {
+		if (StringUtils.isNotBlank(metricName)) {
 			// Extract key-value pairs from message payload
 			// using MetricValueEvent
 			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
@@ -136,7 +138,7 @@ public class MetricValueListener implements MessageListener {
 	 * Data write between application component and data source
 	 */
 	protected void processMetricValueEventAcDsDataWrite(String metricName, String payload) {
-		if (metricName != null && !(metricName = metricName.trim()).isEmpty()) {
+		if (StringUtils.isNotBlank(metricName)) {
 			// Extract key-value pairs from message payload
 			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
 			MetricValueEventAcDsDataWrite eventWrite = gson.fromJson(payload, MetricValueEventAcDsDataWrite.class);

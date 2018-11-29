@@ -4,7 +4,9 @@ import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepos
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.DataSourceRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -16,12 +18,14 @@ public class Algo_CalculateCouplet {
 	protected final ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository;
 
 	// configuration parameter
+	@Getter	@Setter
 	protected int paraNumRecords;
+	@Getter	@Setter
 	private String functionName;
 
 	// can be modified to tune the best parameter settings
 	protected int MIN_RANGE = 0;
-	protected int MAX_RANGE = 1; 
+	protected int MAX_RANGE = 1;
 	protected double WT_READ = 0.5;
 	protected int WT_AI = 1;
 	protected double WT_DATA_TRANSFER = 0.5;
@@ -44,22 +48,6 @@ public class Algo_CalculateCouplet {
 			return -1;
 		}
 		return 0;
-	}
-
-	public int getParaNumRecords() {
-		return paraNumRecords;
-	}
-
-	public void setParaNumRecords(int paraNumRecords) {
-		this.paraNumRecords = paraNumRecords;
-	}
-
-	public String getFunctionName() {
-		return functionName;
-	}
-
-	public void setFunctionName(String functionName) {
-		this.functionName = functionName;
 	}
 
 }

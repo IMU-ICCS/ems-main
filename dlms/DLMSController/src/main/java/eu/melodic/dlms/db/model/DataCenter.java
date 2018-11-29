@@ -24,9 +24,17 @@ public class DataCenter {
 	@Column(unique = true)
 	private String name;
 	private Long regionId;
+	private Long cloudProviderId;
 
 	public DataCenter(String name, Long regionId) {
 		this.name = name;
 		this.regionId = regionId;
 	}
+
+	public DataCenter(String name, Long regionId, Long cloudProviderId) {
+		this.name = name;
+		this.regionId = regionId;
+		this.cloudProviderId = cloudProviderId;
+	}
+
 }

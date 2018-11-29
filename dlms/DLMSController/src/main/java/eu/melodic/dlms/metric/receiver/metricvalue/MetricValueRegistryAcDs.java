@@ -8,14 +8,20 @@ import eu.melodic.dlms.db.model.DataSource;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.DataSourceRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 public class MetricValueRegistryAcDs<T> {
 	private final ApplicationComponentRepository acRepository;
 	private final DataSourceRepository dsRepository;
 	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
+	@Getter
+	@Setter
 	private MetricValueEventAcDsDataRead eventRead;
+	@Getter
+	@Setter
 	private MetricValueEventAcDsDataWrite eventWrite;
 
 	/**
@@ -66,22 +72,6 @@ public class MetricValueRegistryAcDs<T> {
 				isDataRead);
 		acDsDataRepository.save(acDs);
 
-	}
-
-	public MetricValueEventAcDsDataRead getEventRead() {
-		return eventRead;
-	}
-
-	public void setEventRead(MetricValueEventAcDsDataRead eventRead) {
-		this.eventRead = eventRead;
-	}
-
-	public MetricValueEventAcDsDataWrite getEventWrite() {
-		return eventWrite;
-	}
-
-	public void setEventWrite(MetricValueEventAcDsDataWrite eventWrite) {
-		this.eventWrite = eventWrite;
 	}
 
 }

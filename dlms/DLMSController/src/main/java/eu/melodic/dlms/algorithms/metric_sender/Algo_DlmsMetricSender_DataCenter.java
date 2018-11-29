@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -14,7 +13,6 @@ import javax.jms.Topic;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import eu.melodic.dlms.algorithms.utility.RandomGenerator;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,19 +25,17 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class Algo_DlmsMetricSender_DataCenter {
-	// configuration parameter
-	private String jmsServerAddress;
-	private String jmsServerPort;
+public class Algo_DlmsMetricSender_DataCenter extends Algo_DlmsMetricSender {
+	// Configuration parameter
 	private int bestLatency;
 	private int worstLatency;
 	private int bestBandwidth;
 	private int worstBandwidth;
-//	private int numRecordGenerate = 0;
 
-	@Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
-	private ActiveMQConnectionFactory activeMQConnectionFactory;
+	// Pattern how the message should be sent
+	private final String PATTERN = "{\"cloudProvider1\":\"%s\" , \"isCp1Public\":\"%b\" , \"dataCenter1\":\"%s\" , \"region1\":\"%s\", \"cloudProvider2\":\"%s\", \"isCp2Public\":\"%b\" , \"dataCenter2\":\"%s\" , \"region2\":\"%s\" , \"latencyVal\":\"%d\" , \"bandwidthVal\":\"%d\" , \"timeStamp\":\"%d\"}";
 
+	@Override
 	public int run() throws Exception {
 		int latencyVal = RandomGenerator.generateNum(worstLatency, bestLatency);
 		int bandwidthVal = RandomGenerator.generateNum(worstBandwidth, bestBandwidth);
@@ -49,35 +45,34 @@ public class Algo_DlmsMetricSender_DataCenter {
 
 		String dataCenter2;
 		do {
-			// choose datacenter different than datacenter1
+			// Choose datacenter different than datacenter1
 			dataCenter2 = dcKeysList.get(RandomGenerator.randNumFromSize(dcKeysList.size()));
 		} while (dataCenter1.equals(dataCenter2));
 		String region2 = DC_Region.MYHASH.get(dataCenter2);
 
-		String cloudProvider1 = "AWS"; // use default value currently
-		String cloudProvider2 = "AWS"; // use default value currently
+		// use default value currently
+		String cloudProvider1 = "AWS";
+		String cloudProvider2 = "AWS";
+		boolean cp1Public = true;
+		boolean cp2Public = true;
 
 		this.activeMQConnectionFactory = new ActiveMQConnectionFactory(
 				this.jmsServerAddress + ":" + this.jmsServerPort);
-		sendOneMessage(cloudProvider1, dataCenter1, region1, cloudProvider2, dataCenter2, region2, latencyVal,
-				bandwidthVal);
+		sendOneMessage(cloudProvider1, cp1Public, dataCenter1, region1, cloudProvider2, cp2Public, dataCenter2, region2,
+				latencyVal, bandwidthVal);
 		log.info("Algo_DlmsMetricSender has successfully executed");
 		return 0;
 	}
 
-	private void sendOneMessage(String cloudProvider1, String dataCenter1, String region1, String cloudProvider2,
-			String dataCenter2, String region2, int latencyVal, int bandwidthVal) throws Exception {
+	@Override
+	protected void sendOneMessage(Object... parameters) throws Exception {
 		Connection connection = startConnection();
 		connection.start();
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 		long timestamp = new Date().getTime();
 		String topicStr = "dataCenterConnection";
-		String message = "{\"cloudProvider1\":\"" + cloudProvider1 + "\" ,  \"dataCenter1\": \"" + dataCenter1
-				+ "\", \"region1\":\"" + region1 + "\",\"cloudProvider2\":\"" + cloudProvider2
-				+ "\" , \"dataCenter2\": \"" + dataCenter2 + "\", \"region2\":\"" + region2 + "\", \"latencyVal\": \""
-				+ latencyVal + "\", \"bandwidthVal\": \"" + bandwidthVal + "\",  \"timeStamp\": \"" + timestamp
-				+ "\" }";
+		String message = String.format(PATTERN, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], parameters[5], parameters[6], parameters[7], parameters[8], parameters[9], timestamp);
 		Topic topic = session.createTopic(topicStr);
 		log.debug("Message: {}", message);
 		Message msg = session.createTextMessage(message);
@@ -85,20 +80,6 @@ public class Algo_DlmsMetricSender_DataCenter {
 		producer.send(msg);
 
 		stopConnection(connection);
-	}
-
-	private Connection startConnection() throws JMSException {
-		Connection connection = activeMQConnectionFactory.createConnection();
-		connection.start();
-		log.debug("Connection started");
-		return connection;
-	}
-
-	private void stopConnection(Connection connection) throws Exception {
-		if (connection != null) {
-			connection.close();
-		}
-		log.debug("Connection closed");
 	}
 
 }

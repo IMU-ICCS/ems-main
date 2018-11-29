@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.exception;
+package eu.melodic.dlms.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

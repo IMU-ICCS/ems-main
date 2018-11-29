@@ -150,7 +150,7 @@ public class AffinityPropagation {
 	/**
 	 * compute preferences for all data points
 	 */
-	public void updatePreferences() {
+	private void updatePreferences() {
 		if (this.median == 0.)
 			computeMedian(this.s);
 		// if some similarity are empty fill it with the median
@@ -163,7 +163,7 @@ public class AffinityPropagation {
 	/**
 	 * fill empty similarity with the provided value
 	 */
-	public double[][] fillSimilarityMatrix(double[][] matrix, double val) {
+	private double[][] fillSimilarityMatrix(double[][] matrix, double val) {
 		double[][] ret = matrix;
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix.length; j++) {
@@ -178,7 +178,7 @@ public class AffinityPropagation {
 	/**
 	 * compute median if it was not provided
 	 */
-	public void computeMedian(double[][] s) {
+	private void computeMedian(double[][] s) {
 		double ret = 0;
 		List<Double> valList = new ArrayList<Double>(); // to compute median
 		for (int i = 0; i < s.length; i++) {
@@ -201,13 +201,6 @@ public class AffinityPropagation {
 	@AllArgsConstructor
 	public class ClusterIds {
 		private List<Integer> dataCenterIdList;
-	}
-	public int[] getAssignment() {
-		return assignment;
-	}
-
-	public void setAssignment(int[] assignment) {
-		this.assignment = assignment;
 	}
 
 }

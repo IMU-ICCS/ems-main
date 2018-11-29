@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ClusterPAMClustering extends Algo_ClusterDataCenters {
 	private final int numCluster; // configuration parameter
 
-	Map<String, Map<String, Double>> dcValMap;
+	private Map<String, Map<String, Double>> dcValMap;
 	
 	public ClusterPAMClustering(TwoDataCenterCombinationRepository twoDataCenterCombinationRepository,
 			DataCenterZoneRepository dataCenterZoneRepository, Map<String, Map<String, Double>> dcValMap,
