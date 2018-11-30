@@ -58,13 +58,13 @@ public class NodeCandidates implements Serializable {
         log.debug("Looking for cheapest nodeCandidates - vmName: {}, providerIndex: {}, predicates: {}", vmName, providerIndex, predicates);
 
         List<NodeCandidate> nodeCandidates = get(vmName, providerIndex, predicates);
-        boolean hasOnlyIaas = checkIfOnlyVmTypes(nodeCandidates, IAAS);
-        boolean hasOnlyFaas = checkIfOnlyVmTypes(nodeCandidates, FAAS);
+        boolean iaasOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS);
+        boolean faasOnly = checkIfOnlyVmTypes(nodeCandidates, FAAS);
 
         BinaryOperator<NodeCandidate> nodeCandidateSortOperator;
-        if (hasOnlyIaas && !hasOnlyFaas) {
+        if (iaasOnly && !faasOnly) {
             nodeCandidateSortOperator = IAAS_NODE_CANDIDATE_SORT_OPERATOR;
-        } else if (hasOnlyFaas && !hasOnlyIaas) {
+        } else if (faasOnly && !iaasOnly) {
             nodeCandidateSortOperator = FAAS_NODE_CANDIDATE_SORT_OPERATOR;
         } else {
             throw new CacheException("List contains both FAAS and IAAS NodeCandidates");
