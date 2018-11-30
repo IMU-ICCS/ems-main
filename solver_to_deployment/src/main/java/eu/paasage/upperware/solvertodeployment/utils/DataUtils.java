@@ -74,7 +74,7 @@ public class DataUtils {
                         try {
                             throw new S2DException(String.format("Port number %d required by %s is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName()));
                         } catch (S2DException e) {
-                            e.printStackTrace();
+                            log.error("Problem with S2D: ", e);
                         }
                     }
                 }));
@@ -84,7 +84,7 @@ public class DataUtils {
         int key = 0;
         for (SoftwareComponent sc : softwareComponents) {
             if (localComponentGroups.get(sc.getName()) == key) {
-                String msg = localGroups.get(key).stream().collect(Collectors.joining(" "));
+                String msg = String.join(" ", localGroups.get(key));
                 log.info("Group {}: {}", key, msg);
             }
             key++;
@@ -142,6 +142,7 @@ public class DataUtils {
         return null;
     }
 
+    //TODO - to remove
     private static GeographicalRegion getOrCreateRegion(DataHolder dataHolder, @NonNull NodeCandidate nodeCandidate, @NonNull CamelModel camelModel) {
 
         String regionName = nodeCandidate.getLocation().getName();

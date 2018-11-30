@@ -53,14 +53,26 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     }
 
     @Override
-    public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String imageId) {
+    public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
+                                                List<LocationModel> locationModels, String imageId, NodeType nodeType) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
         requirements.addAll(createImageRequirement(imageId));
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createProviderRequirement(getProviderRequirement(globalRequirementSet, localRequirementSet)));
+        requirements.addAll(createNodeTypeRequirement(nodeType));
         return requirements;
+    }
+
+    private Collection<? extends Requirement> createNodeTypeRequirement(NodeType nodeType) {
+        if (nodeType == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(
+                new OclRequirement()
+                        .constraint(String.format("nodes->forAll(type = NodeType::%s)", nodeType.name()))
+                        .type("OclRequirement"));
     }
 
     private Collection<? extends Requirement> createResourceRequirement(ResourceRequirement resourceRequirement) {
