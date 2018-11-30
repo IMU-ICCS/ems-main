@@ -311,8 +311,8 @@ public class RuleGenerator {
 //XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
 			} else
 			if (camel.constraint.MetricVariableConstraint.class.isInstance(elem)) {
-				log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element: node={}, elem-name={}", node, elemName);
-//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+				// Not used in EMS
+				log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element and ignoring it: node={}, elem-name={}", node, elemName);
 			} else
 			if (camel.constraint.LogicalConstraint.class.isInstance(elem)) {
 				log.warn("RuleGenerator.generateRules():      Found an Logical-Constraint element: node={}, elem-name={}", node, elemName);
@@ -411,6 +411,10 @@ public class RuleGenerator {
 				log.warn("RuleGenerator.generateRules():      Raw-Metric-Context: node={}, elem-name={}, metric={}, sensor={}, sched={}, component={}, data={}",
 					node, elemName, metric.getName(), sensorName, schedClause, compName, dataName);
 				
+				// Require topics in this level
+//XXX:2018-11-30:
+				_TC.requireGroupingTopicPair(grouping, rmc.getName());
+				
 				// Write rule for RMC
 				Context context = new Context();
 				context.setVariable("metric", metric.getName());
@@ -498,7 +502,7 @@ public class RuleGenerator {
 			if (camel.metric.Sensor.class.isInstance(elem)) {
 				log.warn("RuleGenerator.generateRules():      Found a Sensor element: node={}, elem-name={}", node, elemName);
 				Sensor sensor = (Sensor)elem;
-//XXX:TODO: Do we need to do something here??
+//XXX:TODO: Do we need to do something here?? (e.g. create schema??)
 			} else
 			
 			// Generate rules for Optimisation Requirements and SLO's

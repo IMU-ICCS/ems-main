@@ -56,6 +56,7 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 
+import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
@@ -131,8 +132,8 @@ public class ModelAnalyzer {
 		log.debug("ModelAnalyzer.analyzeModel():  Service Level Objectives analysis completed");
 		
 		// analyze metric variables
-		_analyzeMetricVariables(_TC, camelModel);
-		log.debug("ModelAnalyzer.analyzeModel():  Metric Variables analysis completed");
+//		_analyzeMetricVariables(_TC, camelModel);
+//		log.debug("ModelAnalyzer.analyzeModel():  Metric Variables analysis completed");
 		
 		// infer groupings
 		_inferGroupings(_TC, leafGrouping);
@@ -300,27 +301,88 @@ public class ModelAnalyzer {
 				MetricContext mc = optr.getMetricContext();
 				MetricVariable mv = optr.getMetricVariable();
 				log.info("  Processing Optimisation Requirement {} from Requirements model {}: metric-context={}, metric-variable={}...",
-						optr.getName(), rm.getName(), getElementName(mc), getElementName(mv));
+						reqName, rm.getName(), getElementName(mc), getElementName(mv));
 				
-				// update DAG and decompose metric context
+				// Optimisation Goal's metric context's component metrics
+				Set<Metric> formulaMetrics = new HashSet<>();
+				ObjectContext objCtx = null;
 				if (mc!=null) {
-					// add metric context to DAG as top-level node
-					_TC.DAG.addTopLevelNode( mc ).setGrouping( getGrouping(mc) );
-					
-					// decompose metric context
-					_decomposeMetricContext(_TC, mc);
+					Metric m = mc.getMetric();
+					objCtx = mc.getObjectContext();
+					log.trace("    Extracting metrics of metric context: metric={}, metric-class={}, component={}", m.getName(), m.getClass().getName(), getComponentName(objCtx));
+					if (RawMetric.class.isAssignableFrom(m.getClass())) {
+						formulaMetrics.add(m);
+					} else
+					if (CompositeMetric.class.isAssignableFrom(m.getClass())) {
+						formulaMetrics.addAll( _extractMetricsFromFormula( _TC, ((CompositeMetric)m).getFormula(), true ) );
+					} else
+					if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+						formulaMetrics.addAll( _extractMetricsFromFormula( _TC, ((MetricVariable)m).getFormula(), true ) );
+					}
 				}
 				
-				// update DAG and decompose metric variable
+				// Optimisation Goal's metric variable's component metrics
 				if (mv!=null) {
-					// add metric variable to DAG as top-level node
-					_TC.DAG.addTopLevelNode( mv ).setGrouping( getGrouping(mv) );
-					
-					// decompose metric variable
-					_decomposeMetricVariable(_TC, mv);
+					log.trace("    Extracting metrics of metric variable: variable={}", mv.getName());
+					formulaMetrics.addAll( _extractMetricsFromFormula( _TC, mv.getFormula(), true ) );
+				}
+				
+				// update DAG and decompose metrics and variables
+				for (Metric m : formulaMetrics) {
+					if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+						log.trace("    Processing component metric variable of opt. goal formula: goal={}, variable={}, formula={}", reqName, m.getName(), ((MetricVariable)m).getFormula());
+						
+						// add variable to DAG as top-level node
+						_TC.DAG.addTopLevelNode( m ).setGrouping( Grouping.GLOBAL );
+						
+						// decompose metric
+						_decomposeMetricVariable(_TC, (MetricVariable)m);
+					} else {
+						String formula = (m instanceof CompositeMetric) ? ((CompositeMetric)m).getFormula() : null;
+						log.trace("    Processing component metric context of opt. goal formula: goal={}, context={}, formula={}", reqName, mv.getName(), formula);
+						
+						// get metric context for metric
+						Set<MetricContext> mctx = _TC.M2MC.get(m);
+						if (mctx.size()!=1) {
+							String mesg = String.format("Metric in formula has 0 or more than one metric contexts: metric=%s, formula=%s, contexts=%s", m.getName(), formula, getSetElementNames(mctx));
+							log.error("    Error while processing Optimisation Goal: opt-goal={}, req-model={}: {}", reqName, rm.getName(), mesg);
+							throw new ModelAnalysisException( mesg );
+						}
+						MetricContext mc_1 = mctx.iterator().next();
+						
+						// add metric context to DAG as top-level node
+						_TC.DAG.addTopLevelNode( mc_1 ).setGrouping( Grouping.GLOBAL );
+						
+						// decompose metric context
+						_decomposeMetricContext(_TC, mc_1);
+					}
 				}
 			});
 		});
+	}
+	
+	protected Set<Metric> _extractMetricsFromFormula(TranslationContext _TC, String formula, boolean includeMetricVariables) {
+		log.debug("    Extracting metrics from formula: {}, include-metric-variables={}", formula, includeMetricVariables);
+		List<String> argNames = MathUtil.getFormulaArguments(formula);
+		log.debug("    Formula arguments: {}", argNames);
+		
+		// find formula component metrics
+		Set<Metric> formulaMetrics = _TC.M2MC.keySet().stream()
+				.filter(m -> argNames.contains(m.getName()))
+				.collect(Collectors.toSet());
+		log.debug("    Formula metrics: {}", getSetElementNames(formulaMetrics));
+		
+		// find formula component metric variables
+		Set<Metric> formulaVars = _TC.CMVAR_1.stream()
+				.filter(mv -> argNames.contains(mv.getName()))
+				.collect(Collectors.toSet());
+		log.debug("    Formula variables: {}", getSetElementNames(formulaVars));
+		
+		// merge results
+		formulaMetrics.addAll(formulaVars);
+		log.debug("    Formula metrics and variables: {}", getSetElementNames(formulaMetrics));
+		
+		return formulaMetrics;
 	}
 	
 	protected void _analyzeServiceLevelObjectives(TranslationContext _TC, CamelModel camelModel) {
@@ -528,7 +590,8 @@ public class ModelAnalyzer {
 			throw new ModelAnalysisException("FEATURE NOT IMPLEMENTED");	//XXX: TODO: ++++++++++++++++
 		} else
 		if (MetricVariableConstraint.class.isAssignableFrom(constraint.getClass())) {
-			_decomposeMetricVariableConstraint(_TC, (MetricVariableConstraint)constraint);
+			// Not used in EMS
+			//_decomposeMetricVariableConstraint(_TC, (MetricVariableConstraint)constraint);
 		} else
 		if (LogicalConstraint.class.isAssignableFrom(constraint.getClass())) {
 			throw new ModelAnalysisException("FEATURE NOT IMPLEMENTED");	//XXX: TODO: ++++++++++++++++
@@ -682,11 +745,11 @@ public class ModelAnalyzer {
 	}
 	
 	protected void _decomposeMetric(TranslationContext _TC, Metric metric, ObjectContext objContext) {
-		log.info("  _decomposeMetric(): {} :: {} for {}", metric.getName(), metric.getClass().getName(), getComponentName(objContext));
+		log.info("  _decomposeMetric(): metric={}, metric-class={}, component={}", metric.getName(), metric.getClass().getName(), getComponentName(objContext));
 		
 		// Get common Metric parameters
 		MetricTemplate template = metric.getMetricTemplate();
-		log.info("  _decomposeMetric(): common fields: {} :: template={}", metric.getName(), template.getName());
+		log.info("  _decomposeMetric(): Common fields of metric {}: template={}", metric.getName(), template.getName());
 		
 		// Uncomment to include templates in the DAG and Topics set
 		//_TC.DAG.addNode(metric, template).setGrouping( getGrouping(template) );
@@ -696,7 +759,7 @@ public class ModelAnalyzer {
 			CompositeMetric cm = (CompositeMetric) metric;
 			String formula = cm.getFormula();
 			EList<Metric> componentMetrics = cm.getComponentMetrics();
-			log.info("  _decomposeMetric(): CompositeMetric: {} :: formula={}, component-metrics={}", 
+			log.info("  _decomposeMetric(): CompositeMetric: metric={}, formula={}, component-metrics={}", 
 				cm.getName(), formula, getListElementNames(componentMetrics));
 			
 			_checkFormulaAndComponents(_TC, formula, componentMetrics);
@@ -709,11 +772,11 @@ public class ModelAnalyzer {
 		} else
 		if (RawMetric.class.isInstance(metric)) {
 			RawMetric rm = (RawMetric) metric;
-			log.info("  _decomposeMetric(): RawMetric: {} ::", rm.getName());
+			log.info("  _decomposeMetric(): RawMetric: metric={}", rm.getName());
 		} else
 		if (MetricVariable.class.isInstance(metric)) {
 			MetricVariable mv = (MetricVariable) metric;
-			log.info("  _decomposeMetric(): MetricVariable: {} ::", mv.getName());
+			log.info("  _decomposeMetric(): MetricVariable: variable={}", mv.getName());
 			
 			_decomposeMetricVariable(_TC, mv);
 		} else
@@ -905,7 +968,7 @@ public class ModelAnalyzer {
 		if (componentMetrics==null) componentMetrics = new ArrayList<>();
 		List<String> metricNames = getListElementNames(componentMetrics);
 		log.debug("    _checkFormulaAndComponents(): formula={}, component-metrics={}", formula, metricNames);
-		List<String> argNames = eu.melodic.event.brokercep.cep.MathUtil.getFormulaArguments(formula);
+		List<String> argNames = MathUtil.getFormulaArguments(formula);
 		log.debug("    _checkFormulaAndComponents(): formula={}, arguments={}", formula, argNames);
 		
 		// check if all arguments are found in component metrics - Detailed report

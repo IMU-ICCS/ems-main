@@ -14,6 +14,7 @@ import camel.core.NamedElement;
 import camel.data.Data;
 import camel.deployment.Component;
 import camel.metric.Function;
+import camel.metric.GroupingType;
 import camel.metric.Metric;
 import camel.metric.MetricContext;
 import camel.metric.MetricVariable;
@@ -75,6 +76,7 @@ public class TranslationContext {
 	
 	// Composite Metric Variables set
 	public final Set<String> CMVAR;
+	public final Set<MetricVariable> CMVAR_1;
 	// Metric Variable Values set (i.e. non-composite metric variable)
 	public final Set<String> MVV;
 	
@@ -108,6 +110,7 @@ public class TranslationContext {
 		
 		this.M2MC = new HashMap<>();
 		this.CMVAR = new HashSet<>();
+		this.CMVAR_1 = new HashSet<>();
 		this.MVV = new HashSet<>();
 		this.FUNC = new HashSet<>();
 		
@@ -210,7 +213,7 @@ public class TranslationContext {
 	
 	public void addMetricMetricContextPairs(Metric m, List<MetricContext> mcs) { _addPair(M2MC, m, mcs); }
 	
-	public void addCompositeMetricVariable(MetricVariable mv) { CMVAR.add(mv.getName()); }
+	public void addCompositeMetricVariable(MetricVariable mv) { CMVAR.add(mv.getName()); CMVAR_1.add(mv); }
 	public void addCompositeMetricVariables(List<MetricVariable> mvs) { mvs.stream().forEach(this::addCompositeMetricVariable); }
 	
 	public void addMVV(MetricVariable mvv) { MVV.add(mvv.getName()); }
@@ -236,12 +239,17 @@ public class TranslationContext {
 		needsRefresh = true;
 	}
 	public void requireGroupingTopicPair(String grouping, String topic) {
+		log.warn("------------> requireGroupingTopicPair: grouping={}, topic={}", grouping, topic);
 		if (isMVV(topic)) return;
+		log.warn("------------> requireGroupingTopicPair: Not an MVV. Good: grouping={}, topic={}", grouping, topic);
+		log.warn("------------> requireGroupingTopicPair: requiredTopics BEFORE: {}", requiredTopics);
 		addGroupingTopicPair(grouping, topic);
 		Set<String> groupings = requiredTopics.get(topic);
 		if (groupings==null) requiredTopics.put(topic, groupings = new HashSet<>());
 		groupings.add(grouping);
 		needsRefresh = true;
+		log.warn("------------> requireGroupingTopicPair: requiredTopics AFTER: {}", requiredTopics);
+		log.error("------------> requireGroupingTopicPair: stacktrace: {}", new Exception("zzzzzzzz"));
 	}
 	public void requireGroupingTopicPairs(String grouping, List<String> topics) {
 		topics.stream().forEach(t -> { requireGroupingTopicPair(grouping, t); });
@@ -250,6 +258,22 @@ public class TranslationContext {
 	public Map<String,Map<String,Set<String>>> getTopicConnections() {
 		if (needsRefresh) {
 			topicConnections.clear();
+			
+//XXX:2018-11-30:
+			log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): required-topics: {}", requiredTopics);
+			log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): provided-topics: {}", providedTopics);
+//XXX:2018-11-30:
+			if (requiredTopics.size()==0) {
+				for (Map.Entry<String,String> entry : providedTopics.entrySet()) {
+					Set<String> topicGroupings = requiredTopics.get(entry.getKey());
+					if (topicGroupings==null) {
+						topicGroupings = new HashSet<>();
+						requiredTopics.put(entry.getKey(), topicGroupings);
+					}
+					topicGroupings.add(entry.getValue());
+				}
+				log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): required-topics was empty and populated with data from provided-topics: {}", requiredTopics);
+			}
 			
 			// for every required topic...
 			for (Map.Entry<String,Set<String>> pair : requiredTopics.entrySet()) {
@@ -271,6 +295,24 @@ public class TranslationContext {
 					groupingTopics.put(requiredTopic, consumerGroupings);
 				}
 			}
+//XXX:2018-11-30:
+	/*		log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): intermediate-results: {}", topicConnections);
+			
+			// if GLOBAL is empty...
+			Map<String,Set<String>> globalGrouping = topicConnections.get("GLOBAL");
+			if (globalGrouping==null || globalGrouping.size()==0) {
+				// copy the topics of the higher underlying grouping with topics
+				GroupingType[] groupingArr = GroupingType.values();
+				for (int i=groupingArr.length-2; i>=0; i--) {
+					Map<String,Set<String>> underlyingGrouping = topicConnections.get(groupingArr[i].getName());
+					log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): checking grouping: name={}, connections={}", groupingArr[i].getName(), underlyingGrouping);
+					if (underlyingGrouping!=null && underlyingGrouping.size()>0) {
+						log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): Topics found in grouping: name={}, connections={}", groupingArr[i].getName(), underlyingGrouping);
+						globalGrouping.putAll( underlyingGrouping );
+					}
+				}
+			}
+			log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): results: {}", topicConnections);*/
 			
 			needsRefresh = false;
 		}
