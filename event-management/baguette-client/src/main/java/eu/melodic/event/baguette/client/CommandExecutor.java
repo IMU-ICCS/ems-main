@@ -330,6 +330,8 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			Map<String,Set<String>> connections = (Map<String,Set<String>>) all.get("connections");
 			Set<FunctionDefinition> functionDefs = (Set<FunctionDefinition>) all.get("function-definitions");
 			Map<String,Double> constants = (Map<String,Double>) all.get("constants");
+			String username = (String) all.get("common-broker-username");
+			String password = (String) all.get("common-broker-password");
 			
 			log.info("SETTING GROUPING CONFIGURATION: grouping={}, configuration={}, event-types={}, rules={}, connections={}, constants={}, function-definitions={}",
 				groupingName, eventTypes, config, rules, connections, constants, functionDefs);
@@ -348,6 +350,8 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			grouping.setConnections(connections);
 			grouping.setConstants(constants);
 			grouping.setFunctionDefinitions(functionDefs);
+			grouping.setBrokerUsername(username);
+			grouping.setBrokerPassword(password);
 			log.debug("New grouping config.: {}", grouping);
 			
 		} catch (Exception ex) {
@@ -394,8 +398,13 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			activeGrouping = newGrouping;
 			log.info("New active grouping: {}", newGrouping.getName());
 			
+			String activeGroupingName = newGrouping.getName();
 			Properties config = activeGrouping.getConfig();
 			
+			log.info("Setting broker credentials: username={}, password=****", activeGrouping.getBrokerUsername());
+			brokerCepService.setBrokerCredentials(activeGrouping.getBrokerUsername(), activeGrouping.getBrokerPassword());
+			
+			log.info("Setting event types: {}", activeGrouping.getConstants());
 			brokerCepService.clearState();
 			brokerCepService.addEventTypes( activeGrouping.getEventTypeNames(), EventMap.getPropertyNames(), EventMap.getPropertyClasses() );
 			//brokerCepService.addEventTypes( activeGrouping.getEventTypeNames(), eu.melodic.event.brokercep.event.MetricEvent.class );
@@ -531,6 +540,8 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 		private Map<String,Set<String>> connections;
 		private Set<FunctionDefinition> functionDefinitions;
 		private Map<String,Double> constants;
+		private String brokerUsername;
+		private String brokerPassword;
 		
 		public Grouping(String name) { this.name = name; }
 	}

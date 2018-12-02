@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep;
 
+import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 
 import java.util.HashSet;
@@ -43,6 +44,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
 	@Autowired
+	private BrokerConfig brokerConfig;
+	@Autowired
 	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
 	@Autowired
 	private ActiveMQConnectionFactory connectionFactory;
@@ -61,7 +64,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 	protected void initialize() {
 		log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance...");
 		try {
-			connection = connectionFactory.createConnection();
+			connection = (brokerConfig.getBrokerUsername()!=null)
+					? connectionFactory.createConnection( brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword() )
+					: connectionFactory.createConnection();
 			connection.start();
 			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance... done");

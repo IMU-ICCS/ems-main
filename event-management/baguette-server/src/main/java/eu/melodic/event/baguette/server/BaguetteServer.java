@@ -52,6 +52,8 @@ public class BaguetteServer
 	private Set<FunctionDefinition> functionDefinitions;
 	private String upperwareGrouping;
 	private String upperwareBrokerUrl;
+	private String brokerUsername;
+	private String brokerPassword;
 	
 	// Configuration getter methods
 	public Set<String> getGroupingNames() {
@@ -84,6 +86,12 @@ public class BaguetteServer
 	}
 	public String getUpperwareBrokerUrl() {
 		return upperwareBrokerUrl;
+	}
+	public String getBrokerUsername() {
+		return brokerUsername;
+	}
+	public String getBrokerPassword() {
+		return brokerPassword;
 	}
 	
 	public BaguetteServerCredentials getCredentials() {
@@ -131,7 +139,9 @@ public class BaguetteServer
 				Map<String,Double> constants,
 				Set<FunctionDefinition> functionDefinitions,
 				String upperwareGrouping,
-				String upperwareBrokerUrl ) 
+				String upperwareBrokerUrl,
+				String brokerUsername,
+				String brokerPassword ) 
 	throws IOException 
 	{
 		log.info("BaguetteServer.setTopologyConfiguration(): BEGIN");
@@ -142,6 +152,7 @@ public class BaguetteServer
 		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Function-Definitions: {}", functionDefinitions);
 		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
 		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
+		log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password=****", brokerUsername);
 		
 		// Stop any running instance of SSH server
 		stopServer();
@@ -154,6 +165,8 @@ public class BaguetteServer
 		this.functionDefinitions = functionDefinitions;
 		this.upperwareGrouping = upperwareGrouping;
 		this.upperwareBrokerUrl = upperwareBrokerUrl;
+		this.brokerUsername = brokerUsername;
+		this.brokerPassword = brokerPassword;
 		
 		// load credentials
 //XXX: TODO: read using Spring-boot properties

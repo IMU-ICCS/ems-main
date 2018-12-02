@@ -9,7 +9,6 @@
 
 package eu.melodic.event.baguette.server;
 
-import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import java.util.Map;
 import java.util.Set;
@@ -28,13 +27,8 @@ public interface ServerCoordinator {
 	
 	default public void sendGroupingConfigurations(Properties cfg, ClientShellCommand c, BaguetteServer server) {
 		for (String grouping : server.getGroupingNames()) {
-			Set<String> eventTypes = server.getTopicsForGrouping(grouping);
-			Map<String,Set<String>> rules = server.getRulesForGrouping(grouping);
-			Map<String,Set<String>> connections = server.getTopicConnectionsForGrouping(grouping);
-			Map<String,Double> constants = server.getConstants();
-			Set<FunctionDefinition> functionDefs = server.getFunctionDefinitions();
-			
-			c.sendGroupingConfiguration(grouping, cfg, eventTypes, rules, connections, constants, functionDefs);
+			GroupingConfiguration gc = new GroupingConfiguration(grouping, cfg, server);
+			c.sendGroupingConfiguration(grouping, gc);
 		}
 	}
 }

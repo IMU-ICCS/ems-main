@@ -223,24 +223,14 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 		return o;
 	}
 	public void sendGroupingConfiguration(String grouping, Properties config, BaguetteServer server) {
-		Set<String> eventTypeNames = server.getTopicsForGrouping(grouping);
-		Map<String,Set<String>> rules = server.getRulesForGrouping(grouping);
-		Map<String,Set<String>> connections = server.getTopicConnectionsForGrouping(grouping);
-		Map<String,Double> constants = server.getConstants();
-		Set<FunctionDefinition> functionDefs = server.getFunctionDefinitions();
-		sendGroupingConfiguration(grouping, config, eventTypeNames, rules, connections, constants, functionDefs);
+		GroupingConfiguration gc = new GroupingConfiguration(grouping, config, server);
+		sendGroupingConfiguration(grouping, gc);
 	}
-	public void sendGroupingConfiguration(String grouping, Properties config, Set<String> eventTypeNames, Map<String,Set<String>> rules, Map<String,Set<String>> connections, Map<String,Double> constants, Set<FunctionDefinition> functionDefs) {
-		log.debug("sendGroupingConfiguration: id={}, grouping={}, configuration={}, rules={}", id, grouping, config, rules);
+	public void sendGroupingConfiguration(String grouping, GroupingConfiguration gc) {
+		log.debug("sendGroupingConfiguration: id={}, grouping={}, grouping-config={}", id, grouping, gc);
 		if (grouping!=null && !grouping.trim().isEmpty()) {
 			HashMap<String,Object> all = new HashMap<>();
-			all.put("grouping", grouping);
-			all.put("config", config);
-			all.put("eventTypes", eventTypeNames);
-			all.put("rules", rules);
-			all.put("connections", connections);
-			all.put("constants", constants);
-			all.put("function-definitions", functionDefs);
+			all.putAll( gc.getConfigurationMap() );
 			log.debug("sendGroupingConfiguration: Grouping configuration for {}: {}", grouping, all);
 			
 			try {

@@ -17,16 +17,14 @@
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<layout class="ch.qos.logback.classic.PatternLayout">
 			<!--<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</Pattern>-->
-			<Pattern>EMS> %msg%n</Pattern>
+			<Pattern>BC> %msg%n</Pattern>
 		</layout>
 	</appender>
 	
 	<logger name="root" level="ERROR"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="org.springframework" level="INFO"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.control" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.baguette.server" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="eu.melodic.event.baguette" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.translate" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 </configuration>

@@ -37,21 +37,37 @@ public class BrokerCepProperties {
 	
 	@Value("${brokercep.ssl.enable:true}")
 	private boolean sslEnabled;
-	@Value("${brokercep.ssl.truststore.file}")
+	@Value("${brokercep.ssl.truststore.file:}")
 	private String truststoreFile;
-	@Value("${brokercep.ssl.truststore.type}")
+	@Value("${brokercep.ssl.truststore.type:}")
 	private String truststoreType;
-	@Value("${brokercep.ssl.truststore.password}")
+	@Value("${brokercep.ssl.truststore.password:}")
 	private String truststorePassword;
-	@Value("${brokercep.ssl.keystore.file}")
+	@Value("${brokercep.ssl.keystore.file:}")
 	private String keystoreFile;
-	@Value("${brokercep.ssl.keystore.type}")
+	@Value("${brokercep.ssl.keystore.type:}")
 	private String keystoreType;
-	@Value("${brokercep.ssl.keystore.password}")
+	@Value("${brokercep.ssl.keystore.password:}")
 	private String keystorePassword;
 //XXX:DEL-IF: not really needed in client authentication
-	@Value("${brokercep.ssl.client-auth.required}")
+	@Value("${brokercep.ssl.client-auth.required:false}")
 	private boolean clientAuthRequired;
+	
+	@Value("${authentication-enabled:false}")
+	private boolean authenticationEnabled;
+	@Value("${additional-broker-credentials:}")
+	private String additionalBrokerCredentials;
+	@Value("${authorization-enabled:false}")
+	private boolean authorizationEnabled;
+	
+	@Value("${broker-persistence-enabled:false}")
+	private boolean brokerPersistenceEnabled;
+	@Value("${broker-using-jmx:false}")
+	private boolean brokerUsingJmx;
+	@Value("${broker-advisory-support-enabled:false}")
+	private boolean brokerAdvisorySupportEnabled;
+	@Value("${broker-using-shutdown-hook:false}")
+	private boolean brokerUsingShutdownHook;
 	
 	@Value("${brokercep.usage.memory.jvm-heap-percentage:-1}")
 	private int memoryJvmHeapPercentage;

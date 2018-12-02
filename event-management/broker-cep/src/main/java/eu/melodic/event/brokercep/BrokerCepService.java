@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep;
 
 //import eu.melodic.event.brokercep.broker.BrokerAdvisoryWatcher;
+import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
@@ -51,6 +52,8 @@ import org.springframework.stereotype.Service;
 public class BrokerCepService {
 	@Autowired
 	private BrokerCepProperties properties;
+	@Autowired
+	private BrokerConfig brokerConfig;
 	@Autowired
 	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
 	@Autowired
@@ -158,6 +161,7 @@ public class BrokerCepService {
 	}
 	
 	/*public synchronized void publishEvent(String connectionString, String destinationName, MetricEvent event) throws JMSException {
+		if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event)) return;
 		_publishEvent(connectionString, destinationName, event);
 	}*/
 	
@@ -196,7 +200,9 @@ public class BrokerCepService {
 		connectionFactory.setBrokerURL(connectionString);
 		
 		// Create a Connection
-		Connection connection = connectionFactory.createConnection();
+		Connection connection = (brokerConfig.getBrokerUsername()==null) 
+				? connectionFactory.createConnection() 
+				: connectionFactory.createConnection(brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword());
 		connection.start();
 		
 		// Create a Session
@@ -216,12 +222,21 @@ public class BrokerCepService {
 		
 		// Tell the producer to send the message
 		long hash = message.hashCode();
-		log.info("BrokerCepService.publishEvent(): Sending message: connection={}, destination={}, hash={}, payload={}", connectionString, destinationName, hash, event);
+		log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, getBrokerUsername(), destinationName, hash, event);
 		producer.send(message);
-		log.info("BrokerCepService.publishEvent(): Message sent: connection={}, destination={}, hash={}, payload={}", connectionString, destinationName, hash, event);
+		log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, getBrokerUsername(), destinationName, hash, event);
 		
 		// Clean up
 		session.close();
 		connection.close();
 	}
+	
+	public void setBrokerCredentials(String u, String p) {
+		brokerConfig.setBrokerUsername(u);
+		brokerConfig.setBrokerPassword(p);
+		log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password=****", u);
+	}
+	
+	public String getBrokerUsername() { return brokerConfig.getBrokerUsername(); }
+	public String getBrokerPassword() { return brokerConfig.getBrokerPassword(); }
 }
