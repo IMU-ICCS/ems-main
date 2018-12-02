@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+  ~
+  ~ This Source Code Form is subject to the terms of the
+  ~ Mozilla Public License, v. 2.0. If a copy of the MPL
+  ~ was not distributed with this file, You can obtain one at
+  ~ http://mozilla.org/MPL/2.0/.
+  -->
+
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/base.xml"/>
+	
+	<!-- NOTE: Use this appender for simpler logging messages (only level and message) during development -->
+	<!-- Change ref="CONSOLE" to ref="STDOUT" in the logger entries -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<!--<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</Pattern>-->
+			<Pattern>BC> %msg%n</Pattern>
+		</layout>
+	</appender>
+	
+	<logger name="root" level="ERROR"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="org.springframework" level="INFO"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="eu.melodic.event" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="eu.melodic.event.baguette" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+</configuration>

@@ -1,0 +1,26 @@
+#
+# Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+#
+# This Source Code Form is subject to the terms of the
+# Mozilla Public License, v. 2.0. If a copy of the MPL
+# was not distributed with this file, You can obtain one at
+# http://mozilla.org/MPL/2.0/.
+#
+
+# Translator configuration
+translator.leaf-node-grouping = PER_INSTANCE
+translator.prune-mvv=false
+# pattern must yield valid EPL identifiers
+translator.full-name-pattern={TYPE}__{CAMEL}__{MODEL}__{ELEM}__{COUNT}
+translator.formula-check-enabled=true
+
+#XXX:TODO: put the correct MMS annotation (Ask Marcin and Kyriakos)
+translator.sensor-config-annotation=ApplicationPlacementModel.iaas.processing
+translator.sensor-min-interval=1
+translator.sensor-default-interval=60
+
+# Graph rendering parameters
+dag.export.path=${MELODIC_CONFIG_DIR}/exports
+dag.export.formats=png,svg,xdot
+#dag.export.formats=png,svg,xdot,ps,json,plain,plain_ext
+dag.export.image-width=600
