@@ -239,17 +239,16 @@ public class TranslationContext {
 		needsRefresh = true;
 	}
 	public void requireGroupingTopicPair(String grouping, String topic) {
-		log.warn("------------> requireGroupingTopicPair: grouping={}, topic={}", grouping, topic);
+		log.debug("requireGroupingTopicPair: grouping={}, topic={}", grouping, topic);
 		if (isMVV(topic)) return;
-		log.warn("------------> requireGroupingTopicPair: Not an MVV. Good: grouping={}, topic={}", grouping, topic);
-		log.warn("------------> requireGroupingTopicPair: requiredTopics BEFORE: {}", requiredTopics);
+		log.trace("requireGroupingTopicPair: Not an MVV. Good: grouping={}, topic={}", grouping, topic);
+		log.trace("requireGroupingTopicPair: requiredTopics BEFORE: {}", requiredTopics);
 		addGroupingTopicPair(grouping, topic);
 		Set<String> groupings = requiredTopics.get(topic);
 		if (groupings==null) requiredTopics.put(topic, groupings = new HashSet<>());
 		groupings.add(grouping);
 		needsRefresh = true;
-		log.warn("------------> requireGroupingTopicPair: requiredTopics AFTER: {}", requiredTopics);
-		log.error("------------> requireGroupingTopicPair: stacktrace: {}", new Exception("zzzzzzzz"));
+		log.trace("requireGroupingTopicPair: requiredTopics AFTER: {}", requiredTopics);
 	}
 	public void requireGroupingTopicPairs(String grouping, List<String> topics) {
 		topics.stream().forEach(t -> { requireGroupingTopicPair(grouping, t); });
@@ -257,23 +256,10 @@ public class TranslationContext {
 	
 	public Map<String,Map<String,Set<String>>> getTopicConnections() {
 		if (needsRefresh) {
+			log.debug("TranslationContext.getTopicConnections(): Topic connections need refresh");
 			topicConnections.clear();
 			
-//XXX:2018-11-30:
-			log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): required-topics: {}", requiredTopics);
-			log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): provided-topics: {}", providedTopics);
-//XXX:2018-11-30:
-			if (requiredTopics.size()==0) {
-				for (Map.Entry<String,String> entry : providedTopics.entrySet()) {
-					Set<String> topicGroupings = requiredTopics.get(entry.getKey());
-					if (topicGroupings==null) {
-						topicGroupings = new HashSet<>();
-						requiredTopics.put(entry.getKey(), topicGroupings);
-					}
-					topicGroupings.add(entry.getValue());
-				}
-				log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): required-topics was empty and populated with data from provided-topics: {}", requiredTopics);
-			}
+			log.debug("TranslationContext.getTopicConnections(): required-topics={}, provided-topics={}", requiredTopics, providedTopics);
 			
 			// for every required topic...
 			for (Map.Entry<String,Set<String>> pair : requiredTopics.entrySet()) {
@@ -295,26 +281,11 @@ public class TranslationContext {
 					groupingTopics.put(requiredTopic, consumerGroupings);
 				}
 			}
-//XXX:2018-11-30:
-	/*		log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): intermediate-results: {}", topicConnections);
-			
-			// if GLOBAL is empty...
-			Map<String,Set<String>> globalGrouping = topicConnections.get("GLOBAL");
-			if (globalGrouping==null || globalGrouping.size()==0) {
-				// copy the topics of the higher underlying grouping with topics
-				GroupingType[] groupingArr = GroupingType.values();
-				for (int i=groupingArr.length-2; i>=0; i--) {
-					Map<String,Set<String>> underlyingGrouping = topicConnections.get(groupingArr[i].getName());
-					log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): checking grouping: name={}, connections={}", groupingArr[i].getName(), underlyingGrouping);
-					if (underlyingGrouping!=null && underlyingGrouping.size()>0) {
-						log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): Topics found in grouping: name={}, connections={}", groupingArr[i].getName(), underlyingGrouping);
-						globalGrouping.putAll( underlyingGrouping );
-					}
-				}
-			}
-			log.warn(">>>>>>>>>>>>  TranslationContext.getTopicConnections(): results: {}", topicConnections);*/
 			
 			needsRefresh = false;
+			log.debug("TranslationContext.getTopicConnections(): Topic connections refreshed: {}", topicConnections);
+		} else {
+			log.debug("TranslationContext.getTopicConnections(): No need to refresh Topic connections. Returning from cache: {}", topicConnections);
 		}
 		return topicConnections;
 	}

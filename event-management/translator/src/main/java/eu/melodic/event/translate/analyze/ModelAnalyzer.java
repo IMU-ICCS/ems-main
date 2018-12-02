@@ -314,17 +314,17 @@ public class ModelAnalyzer {
 						formulaMetrics.add(m);
 					} else
 					if (CompositeMetric.class.isAssignableFrom(m.getClass())) {
-						formulaMetrics.addAll( _extractMetricsFromFormula( _TC, ((CompositeMetric)m).getFormula(), true ) );
+						formulaMetrics.addAll( _extractMetricsFromFormula( _TC, ((CompositeMetric)m).getFormula() ) );
 					} else
 					if (MetricVariable.class.isAssignableFrom(m.getClass())) {
-						formulaMetrics.addAll( _extractMetricsFromFormula( _TC, ((MetricVariable)m).getFormula(), true ) );
+						formulaMetrics.addAll( _extractMetricsFromFormula( _TC, ((MetricVariable)m).getFormula() ) );
 					}
 				}
 				
 				// Optimisation Goal's metric variable's component metrics
 				if (mv!=null) {
 					log.trace("    Extracting metrics of metric variable: variable={}", mv.getName());
-					formulaMetrics.addAll( _extractMetricsFromFormula( _TC, mv.getFormula(), true ) );
+					formulaMetrics.addAll( _extractMetricsFromFormula( _TC, mv.getFormula() ) );
 				}
 				
 				// update DAG and decompose metrics and variables
@@ -333,7 +333,7 @@ public class ModelAnalyzer {
 						log.trace("    Processing component metric variable of opt. goal formula: goal={}, variable={}, formula={}", reqName, m.getName(), ((MetricVariable)m).getFormula());
 						
 						// add variable to DAG as top-level node
-						_TC.DAG.addTopLevelNode( m ).setGrouping( Grouping.GLOBAL );
+						_TC.DAG.addTopLevelNode( m ).setGrouping( getGrouping(m) );
 						
 						// decompose metric
 						_decomposeMetricVariable(_TC, (MetricVariable)m);
@@ -351,7 +351,7 @@ public class ModelAnalyzer {
 						MetricContext mc_1 = mctx.iterator().next();
 						
 						// add metric context to DAG as top-level node
-						_TC.DAG.addTopLevelNode( mc_1 ).setGrouping( Grouping.GLOBAL );
+						_TC.DAG.addTopLevelNode( mc_1 ).setGrouping( getGrouping(mc_1) );
 						
 						// decompose metric context
 						_decomposeMetricContext(_TC, mc_1);
@@ -361,8 +361,8 @@ public class ModelAnalyzer {
 		});
 	}
 	
-	protected Set<Metric> _extractMetricsFromFormula(TranslationContext _TC, String formula, boolean includeMetricVariables) {
-		log.debug("    Extracting metrics from formula: {}, include-metric-variables={}", formula, includeMetricVariables);
+	protected Set<Metric> _extractMetricsFromFormula(TranslationContext _TC, String formula) {
+		log.debug("    Extracting metrics from formula: {}", formula);
 		List<String> argNames = MathUtil.getFormulaArguments(formula);
 		log.debug("    Formula arguments: {}", argNames);
 		
@@ -1182,7 +1182,17 @@ public class ModelAnalyzer {
 		DAGNode _root = _TC.DAG.getRootNode();
 		for (DAGNode parent : parents) {
 			// exclude DAG root from further processing
-			if (parent==_root) continue;
+			if (parent==_root) {
+				// ...unless it is top-level node and its grouping is not GLOBAL
+				if (childGrouping!=Grouping.GLOBAL) {
+					// ...then add to it a (new) top-level, parent node with GLOBAL grouping
+					NamedElement elem = node.getElement();
+					DAGNode newParent = _TC.DAG.addTopLevelNode(elem, "DUPL_"+node.getName()).setGrouping( Grouping.GLOBAL );
+					_TC.DAG.addEdge(newParent.getName(), node.getName());
+					_TC.DAG.removeEdge(_root, node);
+				}
+				continue;
+			}
 			
 			Grouping parentGrouping = parent.getGrouping();
 			log.info("    ----> parent: {} with grouping: {} lower-than-child-grouping={}", parent, parentGrouping, parentGrouping!=null ? parentGrouping.lowerThan( Grouping.UNSPECIFIED ) : "n/a");

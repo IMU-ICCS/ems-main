@@ -274,14 +274,18 @@ public class ControlServiceCoordinator {
 				
 				Map<String,Set<String>> ruleStatements = _TC.getG2R().get( upperwareGrouping );
 				log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Configuration of EPL statements: {}", ruleStatements);
-				int cnt = 0;
-				for (Map.Entry<String,Set<String>> topicRules : ruleStatements.entrySet()) {
-					String topicName = topicRules.getKey();
-					for (String rule : topicRules.getValue()) {
-						brokerCep.getCepService().addStatementSubscriber(
-							new CscStatementSubscriber().setNameTopicAndStatement("Subscriber_"+cnt++, topicName, rule, brokerCep)
-						);
+				if (ruleStatements!=null) {
+					int cnt = 0;
+					for (Map.Entry<String,Set<String>> topicRules : ruleStatements.entrySet()) {
+						String topicName = topicRules.getKey();
+						for (String rule : topicRules.getValue()) {
+							brokerCep.getCepService().addStatementSubscriber(
+								new CscStatementSubscriber().setNameTopicAndStatement("Subscriber_"+cnt++, topicName, rule, brokerCep)
+							);
+						}
 					}
+				} else {
+					log.warn("ControlServiceCoordinator.processNewModel(): Broker-CEP: No EPL statements found for GLOBAL grouping");
 				}
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", camelModelId, ex);

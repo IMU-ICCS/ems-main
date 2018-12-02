@@ -142,7 +142,7 @@
 			</plugin>-->
 
 			<!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
-			<plugin>
+			<!--<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
@@ -157,7 +157,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 
 			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
 			<!--<plugin>

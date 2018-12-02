@@ -65,6 +65,15 @@ public class DAG {
 		return children;
 	}
 	
+	public boolean isTopLevelNode(DAGNode node) {
+		Set<DAGNode> parents = getParentNodes(node);
+		Iterator<DAGNode> it = parents.iterator();
+		while (it.hasNext()) {
+			if (it.next()==_root) return true;
+		}
+		return false;
+	}
+	
 	public Set<DAGNode> getLeafNodes() {
 		Iterator<DAGNode> it = _graph.iterator();
 		Set<DAGNode> leafs = new HashSet<DAGNode>();
@@ -97,14 +106,22 @@ public class DAG {
 	// Add node methods
 	
 	public DAGNode addTopLevelNode(NamedElement elem) {
-		if (elem==null) throw new IllegalArgumentException("DAG.addTopLevelNode(): Argument cannot be null");
+		return addTopLevelNode(elem, null);
+	}
+	
+	public DAGNode addTopLevelNode(NamedElement elem, String effectiveFullName) {
+		if (elem==null) throw new IllegalArgumentException("DAG.addTopLevelNode(): Argument #1 cannot be null");
 		
-		log.debug("DAG.addTopLevelNode(): top-level-element={}", elem.getName());
+		log.debug("DAG.addTopLevelNode(): top-level-element={}, effective-full-name={}", elem.getName(), effectiveFullName);
 		DAGNode node = _namedElementToNodesMapping.get(elem);
 		log.debug("DAG.addTopLevelNode(): cached-node={}", node);
+		if (node!=null && effectiveFullName!=null && !effectiveFullName.trim().isEmpty() && !node.getName().equals(effectiveFullName)) {
+			log.debug("DAG.addTopLevelNode(): Cached-node has different full-name than effective-full-name. A new node will be created: {} != {}", node.getName(), effectiveFullName);
+			node = null;
+		}
 		boolean newNode = false;
 		if (node==null) {
-			String fullName = _TC.getFullName(elem);
+			String fullName = (effectiveFullName==null || effectiveFullName.trim().isEmpty()) ? _TC.getFullName(elem) : effectiveFullName.trim();
 			
 			if (! _nameToNodesMapping.containsKey(fullName)) {
 			
@@ -184,30 +201,6 @@ public class DAG {
 		return node;
 	}
 	
-	/*public DAGEdge addEdge(NamedElement elemFrom, NamedElement elemTo) {
-		if (elemFrom==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #1 'elemFrom' cannot be null");
-		if (elemTo==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #2 'elemTo' cannot be null");
-		
-		Iterator<DAGNode> it = _graph.iterator();
-		DAGNode nodeFrom = null;
-		DAGNode nodeTo = null;
-		while (it.hasNext() && (nodeFrom==null || nodeTo==null)) {
-			DAGNode node = it.next();
-			if (node.getElement()==elemFrom) nodeFrom = node;
-			if (node.getElement()==elemTo) nodeTo = node;
-		}
-		if (nodeFrom!=null && nodeTo!=null) {
-			DAGEdge edge = new DAGEdge();
-			boolean newEdge = _graph.addEdge(nodeFrom, nodeTo, edge);
-			if (newEdge) log.info("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
-			else log.info("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
-			return edge;
-		} else {
-			throw new RuntimeException( String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
-				elemFrom.getName(), elemTo.getName(), (nodeFrom!=null ? nodeFrom.getName() : null), (nodeTo!=null ? nodeTo.getName() : null)) );
-		}
-	}*/
-	
 	// ====================================================================================================================================================
 	// Remove node method
 	
@@ -233,6 +226,91 @@ public class DAG {
 		}
 		
 		return node;
+	}
+	
+	// ====================================================================================================================================================
+	// Add/Remove edge methods
+	
+	public DAGEdge addEdge(NamedElement elemFrom, NamedElement elemTo) {
+		if (elemFrom==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #1 'elemFrom' cannot be null");
+		if (elemTo==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #2 'elemTo' cannot be null");
+		
+		Iterator<DAGNode> it = _graph.iterator();
+		DAGNode nodeFrom = null;
+		DAGNode nodeTo = null;
+		while (it.hasNext() && (nodeFrom==null || nodeTo==null)) {
+			DAGNode node = it.next();
+			if (node.getElement()==elemFrom) nodeFrom = node;
+			if (node.getElement()==elemTo) nodeTo = node;
+		}
+		if (nodeFrom!=null && nodeTo!=null) {
+			DAGEdge edge = new DAGEdge();
+			boolean newEdge = _graph.addEdge(nodeFrom, nodeTo, edge);
+			if (newEdge) log.info("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
+			else log.info("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
+			return edge;
+		} else {
+			throw new RuntimeException( String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
+				elemFrom.getName(), elemTo.getName(), (nodeFrom!=null ? nodeFrom.getName() : null), (nodeTo!=null ? nodeTo.getName() : null)) );
+		}
+	}
+	
+	public DAGEdge addEdge(String elemFrom, String elemTo) {
+		if (elemFrom==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #1 'elemFrom' cannot be null");
+		if (elemTo==null) throw new IllegalArgumentException("DAG.addEdge(): Argument #2 'elemTo' cannot be null");
+		log.info("DAG.addEdge(): Adding edge in DAG: {} --> {} ", elemFrom, elemTo);
+		
+		Iterator<DAGNode> it = _graph.iterator();
+		DAGNode nodeFrom = null;
+		DAGNode nodeTo = null;
+		while (it.hasNext() && (nodeFrom==null || nodeTo==null)) {
+			DAGNode node = it.next();
+			if (elemFrom.equals(node.getName())) nodeFrom = node;
+			if (elemTo.equals(node.getName())) nodeTo = node;
+		}
+		if (nodeFrom!=null && nodeTo!=null) {
+			DAGEdge edge = new DAGEdge();
+			boolean newEdge = _graph.addEdge(nodeFrom, nodeTo, edge);
+			if (newEdge) log.info("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom, elemTo);
+			else log.info("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom, elemTo);
+			return edge;
+		} else {
+			throw new RuntimeException( String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
+				elemFrom, elemTo, (nodeFrom!=null ? nodeFrom.getName() : null), (nodeTo!=null ? nodeTo.getName() : null)) );
+		}
+	}
+	
+	public DAGEdge removeEdge(NamedElement elemFrom, NamedElement elemTo) {
+		if (elemFrom==null) throw new IllegalArgumentException("DAG.removeEdge(): Argument #1 'elemFrom' cannot be null");
+		if (elemTo==null) throw new IllegalArgumentException("DAG.removeEdge(): Argument #2 'elemTo' cannot be null");
+		
+		Iterator<DAGNode> it = _graph.iterator();
+		DAGNode nodeFrom = null;
+		DAGNode nodeTo = null;
+		while (it.hasNext() && (nodeFrom==null || nodeTo==null)) {
+			DAGNode node = it.next();
+			if (node.getElement()==elemFrom) nodeFrom = node;
+			if (node.getElement()==elemTo) nodeTo = node;
+		}
+		if (nodeFrom!=null && nodeTo!=null) {
+			DAGEdge deletedEdge = _graph.removeEdge(nodeFrom, nodeTo);
+			if (deletedEdge!=null) log.info("DAG.removeEdge(): Edge removed from DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
+			else log.info("DAG.removeEdge(): Edge not found in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
+			return deletedEdge;
+		} else {
+			throw new RuntimeException( String.format("Removing edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
+				elemFrom.getName(), elemTo.getName(), (nodeFrom!=null ? nodeFrom.getName() : null), (nodeTo!=null ? nodeTo.getName() : null)) );
+		}
+	}
+	
+	public DAGEdge removeEdge(DAGNode nodeFrom, DAGNode nodeTo) {
+		if (nodeFrom==null) throw new IllegalArgumentException("DAG.removeEdge(): Argument #1 'nodeFrom' cannot be null");
+		if (nodeTo==null) throw new IllegalArgumentException("DAG.removeEdge(): Argument #2 'nodeTo' cannot be null");
+		
+		DAGEdge deletedEdge = _graph.removeEdge(nodeFrom, nodeTo);
+		if (deletedEdge!=null) log.info("DAG.removeEdge(): Edge removed from DAG: {} --> {} ", nodeFrom.getElementName(), nodeTo.getElementName());
+		else log.info("DAG.removeEdge(): Edge not found in DAG: {} --> {}", nodeFrom.getElementName(), nodeTo.getElementName());
+		return deletedEdge;
 	}
 	
 	// ====================================================================================================================================================

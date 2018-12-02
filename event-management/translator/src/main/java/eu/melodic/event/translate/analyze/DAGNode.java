@@ -32,7 +32,8 @@ public class DAGNode {
 	}
 	
 	public DAGNode(NamedElement elem, String fullName) {
-		if (elem==null) throw new IllegalArgumentException("Argument cannot be null");
+		if (elem==null) throw new IllegalArgumentException("Argument #1 cannot be null");
+		if (fullName==null) throw new IllegalArgumentException("Argument #2 cannot be null");
 		element = elem;
 		elementName = element.getName();
 		_name = fullName;

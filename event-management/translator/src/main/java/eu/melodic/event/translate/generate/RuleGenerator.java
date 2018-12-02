@@ -412,7 +412,6 @@ public class RuleGenerator {
 					node, elemName, metric.getName(), sensorName, schedClause, compName, dataName);
 				
 				// Require topics in this level
-//XXX:2018-11-30:
 				_TC.requireGroupingTopicPair(grouping, rmc.getName());
 				
 				// Write rule for RMC

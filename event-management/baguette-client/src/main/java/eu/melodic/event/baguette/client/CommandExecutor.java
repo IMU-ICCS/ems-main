@@ -415,30 +415,34 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			log.info("Setting function definitions: {}", activeGrouping.getFunctionDefinitions());
 			brokerCepService.addFunctionDefinitions( activeGrouping.getFunctionDefinitions() );
 			
-			log.info("Adding level EPL statements: {}", activeGrouping.getRules());
-			int cnt = 0;
-			for (Map.Entry<String,Set<String>> topicRules : activeGrouping.getRules().entrySet()) {
-				String topic = topicRules.getKey();
-				log.info(" + Adding EPL statements for topic: {}", topic);
-				for (String rule : topicRules.getValue()) {
-					// Build forward-to-groupings set for current EPL statement
-					Set<String> forwardToGroupings = new HashSet<>();
-					if (activeGrouping.getConnections()!=null) {
-						log.info(" + Connections for topic: {} --> {}", topic, activeGrouping.getConnections().get(topic));
-						if (activeGrouping.getConnections()!=null && activeGrouping.getConnections().get(topic)!=null) {
-							for (String fwdToGrouping : activeGrouping.getConnections().get(topic)) {
-								forwardToGroupings.add( config.getProperty(fwdToGrouping) );
+			if (activeGrouping.getRules()!=null) {
+				log.info("Adding level EPL statements: {}", activeGrouping.getRules());
+				int cnt = 0;
+				for (Map.Entry<String,Set<String>> topicRules : activeGrouping.getRules().entrySet()) {
+					String topic = topicRules.getKey();
+					log.info(" + Adding EPL statements for topic: {}", topic);
+					for (String rule : topicRules.getValue()) {
+						// Build forward-to-groupings set for current EPL statement
+						Set<String> forwardToGroupings = new HashSet<>();
+						if (activeGrouping.getConnections()!=null) {
+							log.info(" + Connections for topic: {} --> {}", topic, activeGrouping.getConnections().get(topic));
+							if (activeGrouping.getConnections()!=null && activeGrouping.getConnections().get(topic)!=null) {
+								for (String fwdToGrouping : activeGrouping.getConnections().get(topic)) {
+									forwardToGroupings.add( config.getProperty(fwdToGrouping) );
+								}
 							}
 						}
+						
+						// Add EPL statement subscriber
+						String subscriberName = "Subscriber_"+cnt++;
+						log.info(" + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}, forward-to-groupings={}", subscriberName, topic, rule, forwardToGroupings);
+						brokerCepService.getCepService().addStatementSubscriber(
+							new ClientStatementSubscriber().setNameAndStatement(subscriberName, topic, rule, forwardToGroupings, brokerCepService)
+						);
 					}
-					
-					// Add EPL statement subscriber
-					String subscriberName = "Subscriber_"+cnt++;
-					log.info(" + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}, forward-to-groupings={}", subscriberName, topic, rule, forwardToGroupings);
-					brokerCepService.getCepService().addStatementSubscriber(
-						new ClientStatementSubscriber().setNameAndStatement(subscriberName, topic, rule, forwardToGroupings, brokerCepService)
-					);
 				}
+			} else {
+				log.warn("No EPL statements found for active grouping: {}", activeGrouping);
 			}
 			
 			log.info("Active grouping switch completed: {} -> {}", oldGroupingName, newGroupingName);
