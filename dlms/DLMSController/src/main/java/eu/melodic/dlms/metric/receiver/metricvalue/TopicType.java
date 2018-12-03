@@ -10,5 +10,5 @@
 package eu.melodic.dlms.metric.receiver.metricvalue;
 
 public enum TopicType {
-	UNKNOWN, BYTES_READ , BYTES_WRITTEN, LATENCY_BANDWIDTH
+	LATENCY_BANDWIDTH, BYTES_READ , BYTES_WRITTEN, UNKNOWN
 }

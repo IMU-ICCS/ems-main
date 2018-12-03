@@ -103,11 +103,11 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Sum records higher than 0 for data read
 	 */
-	private long sumRecordsDataReadEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
-		long retTotal = acDSDataList.stream()
+	private double sumRecordsDataReadEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
+		double retTotal = acDSDataList.stream()
 				.filter(HAS_DATA_TO_READ)
 				.map(ApplicationComponentDataSourceData::getDataRead)
-				.mapToLong(val -> WT_AI * val)
+				.mapToDouble(val -> WT_AI * val)
 				.sum();
 		return retTotal;
 	}
@@ -115,11 +115,11 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Sum records higher than 0 for data write
 	 */
-	private long sumRecordsDataWriteEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
-		long retTotal = acDSDataList.stream()
+	private double sumRecordsDataWriteEqWt(List<ApplicationComponentDataSourceData> acDSDataList) {
+		double retTotal = acDSDataList.stream()
 				.filter(HAS_DATA_TO_WRITE)
 				.map(ApplicationComponentDataSourceData::getDataWrite)
-				.mapToLong(dataWrite -> WT_AI * dataWrite)
+				.mapToDouble(dataWrite -> WT_AI * dataWrite)
 				.sum();
 		return retTotal;
 	}
@@ -139,10 +139,10 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Calculate the sum of data transfers for read
 	 */
-	private long sumNumTransferRead(List<ApplicationComponentDataSourceData> acDSDataList) {
-		long retTotal = acDSDataList.stream()
+	private double sumNumTransferRead(List<ApplicationComponentDataSourceData> acDSDataList) {
+		double retTotal = acDSDataList.stream()
 				.filter(HAS_DATA_TO_READ)
-				.mapToLong(applicationComponentDataSourceData -> WT_AI)
+				.mapToDouble(applicationComponentDataSourceData -> WT_AI)
 				.sum();
 		return retTotal;
 	}
@@ -150,10 +150,10 @@ public class CalculateAvgCouplet extends Algo_CalculateCouplet {
 	/**
 	 * Calculate the sum of data transfers for write
 	 */
-	public long sumNumTransferWrite(List<ApplicationComponentDataSourceData> acDSDataList) {
-		long retTotal = acDSDataList.stream()
+	public double sumNumTransferWrite(List<ApplicationComponentDataSourceData> acDSDataList) {
+		double retTotal = acDSDataList.stream()
 				.filter(HAS_DATA_TO_WRITE)
-				.mapToLong(applicationComponentDataSourceData -> WT_AI)
+				.mapToDouble(applicationComponentDataSourceData -> WT_AI)
 				.sum();
 		return retTotal;
 	}

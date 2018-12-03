@@ -27,7 +27,7 @@ public class Algo_CalculateCouplet {
 	protected int MIN_RANGE = 0;
 	protected int MAX_RANGE = 1;
 	protected double WT_READ = 0.5;
-	protected int WT_AI = 1;
+	protected double WT_AI = 1;
 	protected double WT_DATA_TRANSFER = 0.5;
 
 	public int computeAffinity() {
