@@ -123,15 +123,28 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return Collections.emptyList();
         }
 
-        List<GeographicalRegion> requiredGeographicalRegions = locationRequirement.getLocations().stream().filter(location -> location instanceof GeographicalRegion).map(location -> (GeographicalRegion) location).collect(Collectors.toList());
-        List<GeographicalRegion> allGeographicalRegions = locationModels.stream().map(LocationModel::getRegions).flatMap(Collection::stream).collect(Collectors.toList());
+        List<GeographicalRegion> requiredGeographicalRegions = locationRequirement
+                .getLocations()
+                .stream()
+                .filter(location -> location instanceof GeographicalRegion)
+                .map(location -> (GeographicalRegion) location)
+                .collect(Collectors.toList());
+
+        List<GeographicalRegion> allGeographicalRegions = locationModels
+                .stream()
+                .map(LocationModel::getRegions)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
 
         Set<GeographicalRegion> result = new HashSet<>();
         requiredGeographicalRegions.forEach(geographicalRegion -> addRegion(geographicalRegion, allGeographicalRegions, result));
 
-        String requirementValue = result.stream().map(NamedElement::getName).collect(Collectors.joining(", "));
+        String requirementValue = result
+                .stream()
+                .map(GeographicalRegion::getId)
+                .collect(Collectors.joining(", "));
 
-        return Collections.singletonList(createRequirement(LOCATION_CLASS, "name", RequirementOperator.IN, requirementValue));
+        return Collections.singletonList(createRequirement(LOCATION_CLASS, "geoLocation.country", RequirementOperator.IN, requirementValue));
     }
 
     private void addRegion(GeographicalRegion geographicalRegion, List<GeographicalRegion> locationModels, Set<GeographicalRegion> result) {
@@ -143,11 +156,16 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     }
 
     private List<GeographicalRegion> getChildRegions(GeographicalRegion parentRegion, List<GeographicalRegion> locationModels) {
-        return locationModels.stream().filter(geographicalRegion -> isChildOf(geographicalRegion, parentRegion)).collect(Collectors.toList());
+        return locationModels
+                .stream()
+                .filter(geographicalRegion -> isChildOf(geographicalRegion, parentRegion))
+                .collect(Collectors.toList());
     }
 
     private boolean isChildOf(GeographicalRegion childRegion, GeographicalRegion parentRegion) {
-        return childRegion.getParentRegions().stream().anyMatch(geographicalRegion -> geographicalRegion.equals(parentRegion));
+        return childRegion.getParentRegions()
+                .stream()
+                .anyMatch(geographicalRegion -> geographicalRegion.equals(parentRegion));
     }
 
     private Collection<? extends Requirement> createImageRequirement(String imageId) {
@@ -179,7 +197,9 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             }
         }
         if (CollectionUtils.isNotEmpty(errors)) {
-            throw new GeneratorException(errors.stream().collect(Collectors.joining(", ", "Duplicate requirements for: [", "]")));
+            throw new GeneratorException(errors
+                    .stream()
+                    .collect(Collectors.joining(", ", "Duplicate requirements for: [", "]")));
         }
     }
 
