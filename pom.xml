@@ -37,12 +37,14 @@
         <module>utility-generator</module>
         <module>cp_solver</module>
         <module>la_converter</module>
-        <!--<module>dlms</module>-->
+        <module>dlms</module>
         <module>discovery</module>
     </modules>
 
 
     <properties>
+        <melodic.version>2.1.0-SNAPSHOT</melodic.version>
+
         <!-- version for all paasage components-->
         <camel.version>2018.6.1-SNAPSHOT</camel.version>
 
@@ -74,7 +76,6 @@
         <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 
-
     </properties>
 
 
@@ -94,12 +95,12 @@
             <dependency>
                 <groupId>org.ow2.paasage</groupId>
                 <artifactId>melodic-commons</artifactId>
-                <version>${project.version}</version>
+                <version>${melodic.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.paasage</groupId>
                 <artifactId>upperware-metamodel</artifactId>
-                <version>${project.version}</version>
+                <version>${melodic.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.paasage</groupId>
@@ -109,7 +110,7 @@
             <dependency>
                 <groupId>org.ow2.paasage</groupId>
                 <artifactId>jwt-commons</artifactId>
-                <version>${project.version}</version>
+                <version>${melodic.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.paasage.mddb.cdo</groupId>
@@ -152,6 +153,14 @@
                 <artifactId>camel.dsl</artifactId>
                 <version>${camel.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.github.cloudiator.client</groupId>
+                <artifactId>java-rest</artifactId>
+                <version>0.3.0-SNAPSHOT</version>
+                <scope>compile</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
