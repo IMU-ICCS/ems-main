@@ -12,9 +12,11 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @RequiredArgsConstructor
+@ToString
 public class DLMSUtilityAttribute {
 
     private final String name;
@@ -22,10 +24,4 @@ public class DLMSUtilityAttribute {
     private final CamelMetadata type;
     @Setter
     double value;
-
-    @Override
-    public String toString() {
-        return "DLMSUtilityAttribute: " + this.name + " , component = " + this.componentId + " type = " + this.type;
-    }
-
 }
