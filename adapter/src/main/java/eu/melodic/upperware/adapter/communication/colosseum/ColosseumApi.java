@@ -11,7 +11,6 @@ package eu.melodic.upperware.adapter.communication.colosseum;
 
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Process;
 
 import java.util.List;
 
@@ -27,11 +26,11 @@ public interface ColosseumApi {
   List<Schedule> getSchedules() throws ApiException;
 
 
-  Queue addProcess(ProcessNew processNew) throws ApiException;
+  Queue addProcess(CloudiatorProcessNew cloudiatorProcessNew) throws ApiException;
 
-  Process getProcess(String scheduleId, String processId) throws ApiException;
+  CloudiatorProcess getProcess(String scheduleId, String processId) throws ApiException;
 
-  List<Process> getProcessess(String scheduleId) throws ApiException;
+  List<CloudiatorProcess> getProcessess(String scheduleId) throws ApiException;
 
 
   Job addJob(JobNew jobNew) throws ApiException;
