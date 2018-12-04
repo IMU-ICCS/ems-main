@@ -20,6 +20,7 @@ import camel.requirement.impl.OptimisationRequirementImpl;
 import eu.melodic.upperware.utilitygenerator.communication.CDOService;
 import eu.melodic.upperware.utilitygenerator.communication.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.communication.CDOServiceImpl;
+import eu.melodic.upperware.utilitygenerator.model.function.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
 
 @Slf4j
 @Getter
@@ -87,6 +89,13 @@ public class FromCamelModelConverter {
         return createNodeCandidatesAttributes(metricVariables.stream()
                 .filter(this::isListOfAttributesOfNodeCandidates)
                 .collect(Collectors.toList()), true);
+    }
+
+    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes(){
+        return metricVariables.stream()
+                .filter(this::isDlmsUtilityAttribute)
+                .map(variable -> new DLMSUtilityAttribute(variable.getName(), variable.getComponent().getName(), findDlmsUtilityAttributeType(variable)))
+                .collect(Collectors.toList());
     }
 
     /* software components with unmoveable annotation */
@@ -144,5 +153,10 @@ public class FromCamelModelConverter {
                 && isInFormula(utilityFunctionFormula, variable.getName())
                 && !variable.isOnNodeCandidates()
                 && !variable.isCurrentConfiguration();
+    }
+
+    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable){
+        return CamelMetadataTool.isFromDlmsUtility(variable)
+                && isInFormula(utilityFunctionFormula, variable.getName());
     }
 }

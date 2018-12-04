@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
@@ -21,12 +22,50 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.cache.NodeCandidatePredicates.*;
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 @Slf4j
 public class EvaluatingUtils {
 
 
-    public static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
+    static Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<Element> solution) {
+        log.debug("Converting solution to Node Candidates");
+
+        Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
+        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(solution, variables);
+
+        for (String componentId : cardinalitiesForComponent.keySet()) {
+            log.debug("Converting solution for component {}", componentId);
+            int provider = getProviderValue(componentId, variables, solution);
+            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, solution, variables);
+            NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
+
+            if (isNull(theCheapest)) {
+                log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
+                return Collections.emptyList();
+            }
+            log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
+
+            newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
+        }
+        return newConfiguration;
+    }
+
+    static Collection<ConfigurationElement> convertDeployedSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<Element> solution) {
+        if (solution == null) {
+            return Collections.emptyList();
+        }
+        return convertSolutionToNodeCandidates(variables, nodeCandidates, solution);
+    }
+
+    public static boolean areUnmoveableComponentsMoved(Collection<String> unmoveableComponents, Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
+        return !newConfiguration.stream()
+                .filter(component -> unmoveableComponents.contains(component.getId()))
+                .allMatch(component -> actConfiguration.stream()
+                        .anyMatch(actComponent -> actComponent.equals(component)));
+    }
+
+    private static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
         Collection<VariableDTO> cardinalities = variables.stream()
@@ -42,7 +81,7 @@ public class EvaluatingUtils {
     }
 
     //provider value is always int
-    public static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<Element> newConfigurationInt) {
+    private static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<Element> newConfigurationInt) {
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return (int) newConfigurationInt.stream()
                 .filter(intVar -> provider.equals(intVar.getName()))
@@ -51,7 +90,7 @@ public class EvaluatingUtils {
                 .getValue();
     }
 
-    public static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
+    private static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
         List<Element> variablesForComponent = solution.stream()
@@ -94,12 +133,6 @@ public class EvaluatingUtils {
         return predicates.toArray(new Predicate[predicates.size()]);
     }
 
-    public static boolean areUnmoveableComponentsMoved(Collection<String> unmoveableComponents, Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
-        return !newConfiguration.stream()
-                .filter(component -> unmoveableComponents.contains(component.getId()))
-                .allMatch(component -> actConfiguration.stream()
-                        .anyMatch(actComponent -> actComponent.equals(component)));
-    }
 
     private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {
         return variables.stream()

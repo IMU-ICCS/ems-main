@@ -31,12 +31,20 @@ public class CamelMetadataTool {
         return isVariableFromGroup(metricVariable, CamelMetadata.NC_LIST);
     }
 
+    public static boolean isFromDlmsUtility(MetricVariableImpl metricVariable) {
+        return isVariableFromGroup(metricVariable, CamelMetadata.DLMS_LIST);
+    }
+
     public static CamelMetadata findVariableType(MetricVariableImpl metricVariable) {
         return findCamelMetaDataType(metricVariable, CamelMetadata.VM_LIST);
     }
 
     public static CamelMetadata findNodeCandidateAttributeType(MetricVariableImpl metricVariable) {
         return findCamelMetaDataType(metricVariable, CamelMetadata.NC_LIST);
+    }
+
+    public static CamelMetadata findDlmsUtilityAttributeType(MetricVariableImpl metricVariable){
+        return findCamelMetaDataType(metricVariable, CamelMetadata.DLMS_LIST);
     }
 
     private static CamelMetadata findCamelMetaDataType(MetricVariableImpl metricVariable, List<CamelMetadata> metadataList) {
