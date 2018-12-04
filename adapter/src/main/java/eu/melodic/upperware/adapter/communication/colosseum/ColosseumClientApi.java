@@ -12,9 +12,9 @@ package eu.melodic.upperware.adapter.communication.colosseum;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Process;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
+@Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ColosseumClientApi implements ColosseumApi {
@@ -48,6 +49,7 @@ public class ColosseumClientApi implements ColosseumApi {
   }
   @Override
   public Queue addSchedule(@NonNull ScheduleNew scheduleNew) throws ApiException {
+    log.info("Adding ScheduleNew: {}", scheduleNew);
     return processApi.addSchedule(scheduleNew);
   }
 
@@ -66,12 +68,13 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public Queue addProcess(@NotNull ProcessNew processNew) throws ApiException {
-    return processApi.createProcess(processNew);
+  public Queue addProcess(@NotNull CloudiatorProcessNew cloudiatorProcessNew) throws ApiException {
+    log.info("Adding CloudiatorProcessNew: {}", cloudiatorProcessNew);
+    return processApi.createProcess(cloudiatorProcessNew);
   }
 
   @Override
-  public Process getProcess(String scheduleId, String processId) throws ApiException {
+  public CloudiatorProcess getProcess(String scheduleId, String processId) throws ApiException {
     return CollectionUtils.emptyIfNull(processApi.getProcesses(scheduleId))
             .stream()
             .filter(process -> processId.equals(process.getId()))
@@ -80,12 +83,13 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public List<Process> getProcessess(String scheduleId) throws ApiException {
+  public List<CloudiatorProcess> getProcessess(String scheduleId) throws ApiException {
     return processApi.getProcesses(scheduleId);
   }
 
   @Override
   public Job addJob(@NonNull JobNew jobNew) throws ApiException {
+    log.info("Adding JobNew: {}", jobNew);
     return jobApi.addJob(jobNew);
   }
 
@@ -101,6 +105,7 @@ public class ColosseumClientApi implements ColosseumApi {
 
   @Override
   public Queue addNode(@NonNull NodeRequest nodeRequest) throws ApiException {
+      log.info("Adding NodeRequest: {}", nodeRequest);
       return nodeApi.addNode(nodeRequest);
   }
 

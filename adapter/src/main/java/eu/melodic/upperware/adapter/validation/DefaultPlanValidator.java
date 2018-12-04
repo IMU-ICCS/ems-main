@@ -13,8 +13,6 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 import org.springframework.stereotype.Service;
 
 @Service
-@Deprecated
-//TODO - to remove ???
 public class DefaultPlanValidator implements PlanValidator {
 
   @Override

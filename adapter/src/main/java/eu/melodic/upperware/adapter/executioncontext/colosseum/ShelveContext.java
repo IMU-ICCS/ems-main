@@ -12,39 +12,12 @@ import java.util.function.Predicate;
 @Service
 public class ShelveContext extends ContextUtils {
 
-    private List<ShelveNode> shelveNodes = synchronizedList();
     private List<ShelveJob> shelveJobs = synchronizedList();
     private List<ShelveSchedule> shelveSchedules = synchronizedList();
 
-    public void addShelveNode(ShelveNode shelveNode){
-        shelveNodes.add(shelveNode);
-    }
-
-    public Optional<ShelveNode> getShelveNodeById(String id){
-      return getShelveNode(shelveNode -> id.equals(shelveNode.getId()));
-    }
-
-    public Optional<ShelveNode> getShelveNodeByName(String name){
-        return getShelveNode(shelveNode -> shelveNode.getNodeName().endsWith(name));
-    }
-
-//    public Optional<ShelveNode> getShelveNodeByQueuedTaskId(String queuedTaskId){
-//        return getShelveNode(shelveNode -> queuedTaskId.equals(shelveNode.getQueuedTaskId()));
-//    }
-
-    private Optional<ShelveNode> getShelveNode(Predicate<ShelveNode> predicate) {
-        return shelveNodes
-                .stream()
-                .filter(predicate)
-                .findFirst();
-    }
 
     public void addShelveJob(ShelveJob shelveJob){
         shelveJobs.add(shelveJob);
-    }
-
-    public Optional<ShelveJob> getShelveJobById(String id){
-        return getShelveJob(shelveJob -> id.equals(shelveJob.getId()));
     }
 
     public Optional<ShelveJob> getShelveJobByName(String name){
@@ -61,11 +34,6 @@ public class ShelveContext extends ContextUtils {
     public void addShelveSchedule(ShelveSchedule shelveSchedule){
         shelveSchedules.add(shelveSchedule);
     }
-
-    public Optional<ShelveSchedule> getShelveScheduleById(String id){
-        return getShelveSchedule(shelveSchedule -> id.equals(shelveSchedule.getId()));
-    }
-
 
     public Optional<ShelveSchedule> getShelveScheduleByJobId(String jobId){
         return getShelveSchedule(shelveSchedule -> jobId.equals(shelveSchedule.getJobId()));

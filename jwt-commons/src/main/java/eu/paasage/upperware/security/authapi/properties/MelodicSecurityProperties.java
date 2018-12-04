@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Validated
-@Configuration
+@Component
 @ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.security.properties")
 public class MelodicSecurityProperties {

@@ -48,9 +48,7 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
                 .job(job.getId())
                 .instantiation(ScheduleNew.InstantiationEnum.fromValue(taskBody.getInstantiation().name()));
 
-
-        //TODO - is it correct???
-        if (jobName.equals(scheduleNew.getJob()) && taskBody.getInstantiation().name().equals(taskBody.getInstantiation().name())) {
+        if (jobName.equals(scheduleNew.getJob())) {
             log.info("Schedule with job {} and instantiation {} already created", jobName, taskBody.getInstantiation());
             return;
         }
@@ -70,12 +68,6 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
             context.addSchedule(schedule);
 
             shelveContext.addShelveSchedule(new ShelveSchedule(schedule.getId(), watch.getId(), job.getId()));
-
-
-
-
-
-
 
         } catch (ApiException e) {
             log.error("Could not add Schedule. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());

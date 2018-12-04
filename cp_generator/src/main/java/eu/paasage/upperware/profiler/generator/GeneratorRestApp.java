@@ -1,7 +1,11 @@
 package eu.paasage.upperware.profiler.generator;
 
+import eu.melodic.cache.properties.CacheProperties;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -9,9 +13,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+@SpringBootApplication
 @Slf4j
 @EnableAsync
 @ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache"})
+@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class GeneratorRestApp {
 
 

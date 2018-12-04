@@ -109,7 +109,6 @@ public class AdapterProperties {
 
   }
 
-  //TODO - uwspolnic z Generatorem !!!!
   @Getter
   @Setter
   public static class CloudiatorV2 {

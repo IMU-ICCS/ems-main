@@ -24,11 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 
-@Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GenerationOrchestrator {
