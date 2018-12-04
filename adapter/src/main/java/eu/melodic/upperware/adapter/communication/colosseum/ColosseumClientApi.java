@@ -15,7 +15,6 @@ import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.api.QueueApi;
 import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Process;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -70,13 +69,13 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public Queue addProcess(@NotNull ProcessNew processNew) throws ApiException {
-    log.info("Adding ProcessNew: {}", processNew);
-    return processApi.createProcess(processNew);
+  public Queue addProcess(@NotNull CloudiatorProcessNew cloudiatorProcessNew) throws ApiException {
+    log.info("Adding CloudiatorProcessNew: {}", cloudiatorProcessNew);
+    return processApi.createProcess(cloudiatorProcessNew);
   }
 
   @Override
-  public Process getProcess(String scheduleId, String processId) throws ApiException {
+  public CloudiatorProcess getProcess(String scheduleId, String processId) throws ApiException {
     return CollectionUtils.emptyIfNull(processApi.getProcesses(scheduleId))
             .stream()
             .filter(process -> processId.equals(process.getId()))
@@ -85,7 +84,7 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public List<Process> getProcessess(String scheduleId) throws ApiException {
+  public List<CloudiatorProcess> getProcessess(String scheduleId) throws ApiException {
     return processApi.getProcesses(scheduleId);
   }
 
