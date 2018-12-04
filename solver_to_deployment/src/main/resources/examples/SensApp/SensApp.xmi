@@ -364,7 +364,7 @@
     <rootFeature
         name="VM">
       <attributes
-          name="vmType">
+          name="nodeType">
         <valueType
             xsi:type="type:Enumeration">
           <values

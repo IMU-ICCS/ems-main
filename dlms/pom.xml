@@ -31,14 +31,31 @@
 		<maven.test.skip>true</maven.test.skip>
 	</properties>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>eu.melodic.dlms</groupId>
+				<artifactId>DLMSUtility</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
+			<dependency>
+				<groupId>eu.melodic.dlms</groupId>
+				<artifactId>DLMSUtilityController</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.melodic.dlms</groupId>
+				<artifactId>DLMSController</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>eu.melodic.dlms</groupId>
+				<artifactId>DLMSWebService</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>
