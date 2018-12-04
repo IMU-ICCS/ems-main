@@ -37,8 +37,6 @@ class UtilityGeneratorFCRTest extends Specification{
     Collection<Element> intSolution = new ArrayList<>()
     Collection<IntElement> newConfiguration = new ArrayList<>()
 
-
-
     def setup() {
         NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
         nodeCandidate.getPrice() >> 10.0

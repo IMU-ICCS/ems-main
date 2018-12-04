@@ -1,21 +1,21 @@
+/* * Copyright (C) 2018 7bulls.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+
 package eu.melodic.upperware.utilitygenerator.communication;
 
-import eu.melodic.dlms.utility.DlmsConfigurationElement;
 import eu.melodic.dlms.utility.UtilityMetrics;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
-public abstract class DLMSService {
+public interface DLMSService {
 
-
-    abstract public UtilityMetrics getDLMSUtility(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration);
-
-    static Collection<DlmsConfigurationElement> convertToDlmsConfigurationElement(Collection<ConfigurationElement> configuration){
-        return configuration.stream()
-                .map(element -> new DlmsConfigurationElement(element.getId(), element.getNodeCandidate(), element.getCardinality()))
-                .collect(Collectors.toList());
-    }
+    UtilityMetrics getDLMSUtility(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration);
 
 }

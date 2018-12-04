@@ -42,7 +42,7 @@ public class EvaluatingUtils {
 
             if (isNull(theCheapest)) {
                 log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
-                return null;
+                return Collections.emptyList();
             }
             log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
 
@@ -51,13 +51,11 @@ public class EvaluatingUtils {
         return newConfiguration;
     }
 
-    static Collection<ConfigurationElement> convertDeployedSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<Element> solution){
+    static Collection<ConfigurationElement> convertDeployedSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<Element> solution) {
         if (solution == null) {
             return Collections.emptyList();
         }
-        else{
-            return convertSolutionToNodeCandidates(variables, nodeCandidates, solution);
-        }
+        return convertSolutionToNodeCandidates(variables, nodeCandidates, solution);
     }
 
     public static boolean areUnmoveableComponentsMoved(Collection<String> unmoveableComponents, Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
@@ -134,7 +132,6 @@ public class EvaluatingUtils {
 
         return predicates.toArray(new Predicate[predicates.size()]);
     }
-
 
 
     private static VariableType getVariableType(String name, Collection<VariableDTO> variables) {

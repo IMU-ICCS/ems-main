@@ -39,7 +39,4 @@ public class VariableConverter extends ArgumentConverter{
         return variablesFromConstraintProblem.stream().anyMatch(v -> v.getId().equals(element.getName()));
     }
 
-
-
-
 }

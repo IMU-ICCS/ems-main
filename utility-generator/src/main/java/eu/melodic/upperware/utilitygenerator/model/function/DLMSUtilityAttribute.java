@@ -10,27 +10,22 @@ package eu.melodic.upperware.utilitygenerator.model.function;
 
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
+@RequiredArgsConstructor
 public class DLMSUtilityAttribute {
 
-    private String name;
-    private String componentId;
-    private CamelMetadata type;
+    private final String name;
+    private final String componentId;
+    private final CamelMetadata type;
     @Setter
     double value;
 
-
-    public DLMSUtilityAttribute(String name, String componentId, CamelMetadata type) {
-        this.name = name;
-        this.componentId = componentId;
-        this.type = type;
-    }
-
     @Override
     public String toString() {
-        return this.name + " , component = " + this.componentId + " type = " + this.type;
+        return "DLMSUtilityAttribute: " + this.name + " , component = " + this.componentId + " type = " + this.type;
     }
 
 }

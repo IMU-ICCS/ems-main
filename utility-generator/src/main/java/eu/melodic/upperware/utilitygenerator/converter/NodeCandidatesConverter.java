@@ -31,21 +31,20 @@ import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadata.PR
 public class NodeCandidatesConverter extends ArgumentConverter{
 
 
-    private Collection<NodeCandidateAttribute> attributes;
-    private Collection<NodeCandidateAttribute> listOfAttributes;
+    private Collection<NodeCandidateAttribute> oneNodeCandidateAttributes;
+    private Collection<NodeCandidateAttribute> allNodeCandidatesListAttributes;
     private NodeCandidates nodeCandidates;
     private Collection<VariableDTO> variables;
 
 
     @Override
     public Collection<Element> convertToElements(Collection<Element> solution, Collection<ConfigurationElement> newConfiguration) {
-        return convertAttributes(this.attributes, newConfiguration);
+        return convertAttributes(this.oneNodeCandidateAttributes, newConfiguration);
     }
 
     public static Collection<Element> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
             Collection<ConfigurationElement> configuration) {
         if (configuration.isEmpty()){
-            log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
             return setDefaultValuesOfAttributes(nodeCandidateAttributes);
         }
         else {
@@ -54,6 +53,7 @@ public class NodeCandidatesConverter extends ArgumentConverter{
     }
 
     private static Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
+        log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
         return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());
     }
 

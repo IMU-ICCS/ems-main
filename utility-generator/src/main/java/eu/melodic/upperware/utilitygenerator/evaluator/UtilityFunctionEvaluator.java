@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToArgument;
 import static eu.melodic.upperware.utilitygenerator.converter.ConvertingUtils.convertToConstants;
@@ -88,16 +89,19 @@ public class UtilityFunctionEvaluator {
         printer.printSolution(solution);
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, solution);
 
-        if (newConfiguration == null) {
+        if (newConfiguration.isEmpty()) {
             log.info("No Node Candidate for the evaluated solution, returning 0");
             return 0;
-        } else if (deployedConfiguration != null && EvaluatingUtils.areUnmoveableComponentsMoved(unmoveableComponents, deployedConfiguration, newConfiguration)) {
+        } else if (!deployedConfiguration.isEmpty() && EvaluatingUtils.areUnmoveableComponentsMoved(unmoveableComponents, deployedConfiguration, newConfiguration)) {
             log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
 
-        Collection<Element> allArguments = new ArrayList<>();
-        converters.forEach(converter -> allArguments.addAll(converter.convertToElements(solution, newConfiguration)));
+        Collection<Element> allArguments = converters.stream()
+                .map(converter -> converter.convertToElements(solution, newConfiguration))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
         return function.evaluateFunction(convertToArgument(allArguments));
     }
 

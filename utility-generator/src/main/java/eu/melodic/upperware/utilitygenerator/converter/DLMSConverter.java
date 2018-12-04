@@ -11,11 +11,11 @@ package eu.melodic.upperware.utilitygenerator.converter;
 import eu.melodic.dlms.utility.UtilityMetrics;
 import eu.melodic.upperware.utilitygenerator.communication.DLMSService;
 import eu.melodic.upperware.utilitygenerator.communication.DLMSServiceImpl;
-import eu.melodic.upperware.utilitygenerator.communication.DLMSServiceMock;
 import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.function.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
+import lombok.AllArgsConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 
+@AllArgsConstructor
 public class DLMSConverter extends ArgumentConverter{
-
 
     private DLMSService dlmsUtilityService;
     private Collection<DLMSUtilityAttribute> dlmsUtilityAttributes;
@@ -32,15 +32,11 @@ public class DLMSConverter extends ArgumentConverter{
 
 
     public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration){
-        if (dlmsControllerUrl.isEmpty()){
-            this.dlmsUtilityService = new DLMSServiceMock();
-        }
-        else {
-            this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
-        }
+        this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
         this.dlmsUtilityAttributes = dlmsUtilityAttributes;
         this.actConfiguration = actConfiguration;
     }
+
 
     @Override
     public Collection<Element> convertToElements(Collection<Element> solution, Collection<ConfigurationElement> newConfiguration) {
@@ -49,7 +45,7 @@ public class DLMSConverter extends ArgumentConverter{
 
     private Collection<Element> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
 
-        if (dlmsUtilityAttributes.isEmpty()){ //way to not call dlms library if not used
+        if (dlmsUtilityAttributes.isEmpty()){ //way to not call dlms library if not needed
             return Collections.emptyList();
         }
         UtilityMetrics dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
@@ -63,13 +59,13 @@ public class DLMSConverter extends ArgumentConverter{
     private static Number getDLMSUtilityAttributeValue(UtilityMetrics dlmsUtility, CamelMetadata type) {
         switch (type) {
             case AFFINITY_AWARENESS:
-                return dlmsUtility.getResult(CamelMetadata.AFFINITY_AWARENESS.camelName);
+                return dlmsUtility.getResults().get(CamelMetadata.AFFINITY_AWARENESS.camelName);
             case DATA_CENTRE_AWARENESS:
-                return dlmsUtility.getResult(CamelMetadata.DATA_CENTRE_AWARENESS.camelName);
+                return dlmsUtility.getResults().get(CamelMetadata.DATA_CENTRE_AWARENESS.camelName);
             case SOURCE_AWARENESS:
-                return dlmsUtility.getResult(CamelMetadata.SOURCE_AWARENESS.camelName);
+                return dlmsUtility.getResults().get(CamelMetadata.SOURCE_AWARENESS.camelName);
             case DLMS_TOTAL_UTILITY:
-                return dlmsUtility.getResult(CamelMetadata.DLMS_TOTAL_UTILITY.camelName);
+                return dlmsUtility.getResults().get(CamelMetadata.DLMS_TOTAL_UTILITY.camelName);
             default:
                 throw new IllegalArgumentException("Illegal type of DLMS utility attribute: " + type);
         }
