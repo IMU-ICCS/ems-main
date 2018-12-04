@@ -23,7 +23,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
@@ -42,13 +41,13 @@ public class AdapterProperties {
 
   @Valid
   @NotNull
-  private Colosseum colosseum;
-
-  @Valid
-  @NotNull
   private Clouds clouds;
 
   private TaskExecutor taskExecutor;
+
+  @Valid
+  @NotNull
+  private CloudiatorV2 cloudiatorV2;
 
   @Getter
   @Setter
@@ -57,59 +56,6 @@ public class AdapterProperties {
     @NotBlank
     private String url;
 
-  }
-
-  @Getter
-  @Setter
-  public static class Colosseum {
-
-    @NotBlank
-    private String url;
-
-    @Valid
-    @NotNull
-    private Auth auth;
-
-    @Valid
-    @NotNull
-    private Timeouts timeouts;
-
-    @Getter
-    @Setter
-    public static class Auth {
-
-      @NotBlank
-      private String email;
-
-      @NotBlank
-      private String password;
-
-      @NotBlank
-      private String tenant;
-    }
-
-    @Getter
-    @Setter
-    public static class Timeouts {
-
-      @NotNull
-      private Long image;
-
-      @NotNull
-      private Long os;
-
-      @NotNull
-      private Long location;
-
-      @NotNull
-      private Long hardware;
-
-      @NotNull
-      private Long vmInst;
-
-      @NotNull
-      private Long acInst;
-    }
   }
 
   @Getter
@@ -126,33 +72,6 @@ public class AdapterProperties {
     private Map<String, String> passwords = Maps.newHashMap();
 
     private Filters filters;
-
-    public String getEndpoint(String cloud) {
-      if (cloud == null) {
-        return null;
-      }
-      Optional<String> endpointKey = endpoints.keySet().stream()
-        .filter(cloud::equalsIgnoreCase).findAny();
-      return endpointKey.map(s -> endpoints.get(s)).orElse(null);
-    }
-
-    public String getLogin(String cloud) {
-      if (cloud == null) {
-        return null;
-      }
-      Optional<String> loginKey = logins.keySet().stream()
-              .filter(cloud::equalsIgnoreCase).findAny();
-      return loginKey.map(s -> logins.get(s)).orElse(null);
-    }
-
-    public String getPassword(String cloud) {
-      if (cloud == null) {
-        return null;
-      }
-      Optional<String> passwordKey = passwords.keySet().stream()
-              .filter(cloud::equalsIgnoreCase).findAny();
-      return passwordKey.map(s -> passwords.get(s)).orElse(null);
-    }
 
     @Getter
     @Setter
@@ -188,5 +107,18 @@ public class AdapterProperties {
     private Integer maxPoolSize;
     private Integer queueCapacity;
 
+  }
+
+  @Getter
+  @Setter
+  public static class CloudiatorV2 {
+
+    @NotBlank
+    private String url;
+
+    @NotBlank
+    private String apiKey;
+
+    private int httpReadTimeout = 50;
   }
 }

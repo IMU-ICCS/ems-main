@@ -15,9 +15,11 @@ import lombok.Getter;
 //@ToString(doNotUseGetters = true, exclude = { "host_name", /* "component_name", */ "level" })
 public class MetricValueEventDataCenter {
 	private String cloudProvider1;
+	private boolean isCp1Public = true;
 	private String dataCenter1;
 	private String region1;
 	private String cloudProvider2;
+	private boolean isCp2Public = true;
 	private String dataCenter2;
 	private String region2;
 	private int latencyVal;

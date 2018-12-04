@@ -9,119 +9,44 @@
 
 package eu.melodic.upperware.adapter.communication.colosseum;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.model.*;
 
 import java.util.List;
 
 public interface ColosseumApi {
 
-  Api createApi(Api api);
+  Queue findQueuedTask(String taskId) throws ApiException;
 
-  Api updateApi(Api api);
 
-  List<Api> getApis();
+  Queue addSchedule(ScheduleNew scheduleNew) throws ApiException;
 
-  Cloud createCloud(Cloud cloud);
+  Schedule getSchedule(String scheduleId) throws ApiException;
 
-  Cloud updateCloud(Cloud cloud);
+  List<Schedule> getSchedules() throws ApiException;
 
-  List<Cloud> getClouds();
 
-  CloudProperty createCloudProperty(CloudProperty cloudProperty);
+  Queue addProcess(CloudiatorProcessNew cloudiatorProcessNew) throws ApiException;
 
-  CloudProperty updateCloudProperty(CloudProperty cloudProperty);
+  CloudiatorProcess getProcess(String scheduleId, String processId) throws ApiException;
 
-  void deleteCloudProperty(CloudProperty cloudProperty);
+  List<CloudiatorProcess> getProcessess(String scheduleId) throws ApiException;
 
-  List<CloudProperty> getCloudProperties();
 
-  CloudCredential createCloudCredential(CloudCredential cloudCredential);
+  Job addJob(JobNew jobNew) throws ApiException;
 
-  CloudCredential updateCloudCredential(CloudCredential cloudCredential);
+  Job getJob(String jobId) throws ApiException;
 
-  List<CloudCredential> getCloudCredentials();
+  List<Job> getJobs() throws ApiException;
 
-  Image updateImage(Image image);
 
-  Image getImage(Long cloudId, String name);
+  Queue addNode(NodeRequest nodeRequest) throws ApiException;
 
-  Image getImage(Long cloudId, String name, long timeout);
+  Node getNode(String id) throws ApiException;
 
-  OperatingSystem updateOperatingSystem(OperatingSystem operatingSystem);
+  List<Node> getNodes() throws ApiException;
 
-  OperatingSystem getOperatingSystem(Long id, long timeout);
 
-  Location getLocation(Long cloudId, String name);
+  NodeGroup getNodeGroup(String nodeGroupId) throws ApiException;
 
-  Location getLocation(Long cloudId, String name, long timeout);
-
-  Hardware getHardware(Long cloudId, String name);
-
-  Hardware getHardware(Long cloudId, String name, long timeout);
-
-  Application createApplication(Application application);
-
-  Application updateApplication(Application application);
-
-  void deleteApplication(Application application);
-
-  List<Application> getApplications();
-
-  ApplicationInstance createApplicationInstance(ApplicationInstance applicationInstance);
-
-  void deleteApplicationInstance(ApplicationInstance applicationInstance);
-
-  List<ApplicationInstance> getApplicationInstances();
-
-  VirtualMachineTemplate createVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
-
-  void deleteVirtualMachine(VirtualMachineTemplate virtualMachineTemplate);
-
-  List<VirtualMachineTemplate> getVirtualMachines();
-
-  VirtualMachine createVirtualMachineInstance(VirtualMachine virtualMachine);
-
-  void deleteVirtualMachineInstance(VirtualMachine virtualMachine);
-
-  List<VirtualMachine> getVirtualMachineInstances();
-
-  boolean isVirtualMachineInstanceRunning(VirtualMachine vm, long timeout);
-
-  LifecycleComponent createLifecycleComponent(LifecycleComponent lifecycleComponent);
-
-  void deleteLifecycleComponent(LifecycleComponent lifecycleComponent);
-
-  List<LifecycleComponent> getLifecycleComponents();
-
-  ApplicationComponent createApplicationComponent(ApplicationComponent applicationComponent);
-
-  void deleteApplicationComponent(ApplicationComponent applicationComponent);
-
-  List<ApplicationComponent> getApplicationComponents();
-
-  Instance createApplicationComponentInstance(Instance instance);
-
-  void deleteApplicationComponentInstance(Instance instance);
-
-  List<Instance> getApplicationComponentInstances();
-
-  boolean isApplicationComponentInstanceRunning(Instance vm, long timeout);
-
-  PortProvided createPortProvided(PortProvided portProvided);
-
-  void deletePortProvided(PortProvided portProvided);
-
-  List<PortProvided> getPortsProvided();
-
-  PortRequired createPortRequired(PortRequired portRequired);
-
-  void deletePortRequired(PortRequired portRequired);
-
-  List<PortRequired> getPortsRequired();
-
-  Communication createCommunication(Communication communication);
-
-  void deleteCommunication(Communication communication);
-
-  List<Communication> getCommunications();
 }

@@ -52,7 +52,7 @@ public class Algo_ClusterDataCenters {
 				pamClustering.run();
 				break;
 			default:
-				log.debug("Invalid clustering method selected");
+				log.error("Invalid clustering method selected");
 				return -1;
 			}
 		}else {

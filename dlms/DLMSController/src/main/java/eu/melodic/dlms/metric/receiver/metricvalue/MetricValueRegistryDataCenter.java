@@ -23,24 +23,24 @@ public class MetricValueRegistryDataCenter<T> {
 
 	public void saveMetricValues() {
 		// for the first data center
-		long cpId1 = storeCloudProvider(this.event.getCloudProvider1());
+		long cpId1 = storeCloudProvider(this.event.getCloudProvider1(), this.event.isCp1Public());
 		long regionId1 = storeRegion(this.event.getRegion1(), cpId1);
-		long dcId1 = storeDataCenter(this.event.getDataCenter1(), regionId1);
+		long dcId1 = storeDataCenter(this.event.getDataCenter1(), regionId1, cpId1);
 		// for the second data center
-		long cpId2 = storeCloudProvider(this.event.getCloudProvider2());
+		long cpId2 = storeCloudProvider(this.event.getCloudProvider2(), this.event.isCp2Public());
 		long regionId2 = storeRegion(this.event.getRegion2(), cpId2);
-		long dcId2 = storeDataCenter(this.event.getDataCenter2(), regionId2);
+		long dcId2 = storeDataCenter(this.event.getDataCenter2(), regionId2, cpId2);
 		// save the values between them
 		storeTwoDataCenter(dcId1, dcId2, this.event.getLatencyVal(), this.event.getBandwidthVal(),
 				new Date(this.event.getTimeStamp()));
 	}
 
 	/**
-	 * Store the cloud provider and return the cloud provider id if it does not exist
+	 * Store the cloud provider it does not exist and return the cloud provider id
 	 */
-	public long storeCloudProvider(String name) {
+	public long storeCloudProvider(String name, boolean isPublic) {
 		if (!cpRepository.existsByName(name)) {
-			CloudProvider cloudProvider = new CloudProvider(name);
+			CloudProvider cloudProvider = new CloudProvider(name, isPublic);
 			cpRepository.save(cloudProvider);
 		}
 		// return id for cloud provider
@@ -62,9 +62,9 @@ public class MetricValueRegistryDataCenter<T> {
 	/**
 	 * Store the data center and return region id if it does not exist
 	 */
-	public long storeDataCenter(String name, long regionId) {
+	public long storeDataCenter(String name, long regionId, long cpId) {
 		if (!dcRepository.existsByName(name)) {
-			DataCenter dataCenter = new DataCenter(name,regionId);	
+			DataCenter dataCenter = new DataCenter(name,regionId, cpId);	
 			dcRepository.save(dataCenter);
 		}
 		// return id for data center

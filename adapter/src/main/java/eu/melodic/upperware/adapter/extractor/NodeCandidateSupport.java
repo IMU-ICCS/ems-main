@@ -2,7 +2,7 @@ package eu.melodic.upperware.adapter.extractor;
 
 import camel.core.Attribute;
 import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.VMInstance;
+import camel.deployment.SoftwareComponentInstance;
 import camel.type.StringValue;
 import camel.type.Value;
 import com.google.gson.Gson;
@@ -23,18 +23,18 @@ class NodeCandidateSupport {
     Map<String, NodeCandidate> getNodeCandidateForDeployment(DeploymentInstanceModel deploymentInstanceModel){
 
         Map<String, NodeCandidate> result = new HashMap<>();
-        for (VMInstance vmInstance : deploymentInstanceModel.getVmInstances()) {
-            Attribute nodeCandidateAttribute = getNodeCandidateAttribute(vmInstance)
-                    .orElseThrow(() -> new IllegalStateException(format("Could not find attribute %s for vmInstance: %s", NODE_CANDIDATE_PROPERTY_NAME, vmInstance.getName())));
+        for (SoftwareComponentInstance softwareComponentInstance : deploymentInstanceModel.getSoftwareComponentInstances()) {
+            Attribute nodeCandidateAttribute = getNodeCandidateAttribute(softwareComponentInstance)
+                    .orElseThrow(() -> new IllegalStateException(format("Could not find attribute %s for softwareComponentInstance: %s", NODE_CANDIDATE_PROPERTY_NAME, softwareComponentInstance.getName())));
 
             NodeCandidate nodeCandidate = gson.fromJson(getStringValue(nodeCandidateAttribute), NodeCandidate.class);
-            result.put(vmInstance.getName(), nodeCandidate);
+            result.put(softwareComponentInstance.getName(), nodeCandidate);
         }
         return result;
     }
 
-    private Optional<Attribute> getNodeCandidateAttribute(VMInstance vmInstance) {
-        return vmInstance.getAttributes().stream().filter(attribute -> NODE_CANDIDATE_PROPERTY_NAME.equals(attribute.getName())).findFirst();
+    private Optional<Attribute> getNodeCandidateAttribute(SoftwareComponentInstance softwareComponentInstance) {
+        return softwareComponentInstance.getAttributes().stream().filter(attribute -> NODE_CANDIDATE_PROPERTY_NAME.equals(attribute.getName())).findFirst();
     }
 
     private String getStringValue(Attribute attribute){

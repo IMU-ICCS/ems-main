@@ -2,84 +2,56 @@ package eu.melodic.dlms.algorithms.metric_sender;
 
 import java.util.Date;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.Topic;
-
-import org.apache.activemq.ActiveMQConnectionFactory;
-
 import eu.melodic.dlms.algorithms.utility.RandomGenerator;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Class to randomly generate data write between application component and data source 
- * Send to metric generator
- * This class is only for TEST and should be commented in production
+ * Class to randomly generate data write between application component and data
+ * source Send to metric generator This class is only for TEST and should be
+ * commented in production
  */
-@Getter
+
 @Setter
 @Slf4j
-public class Algo_DlmsMetricSender_AcDsDataWrite {
-	// configuration parameters
-	private String jmsServerAddress;
-	private String jmsServerPort;
+public class Algo_DlmsMetricSender_AcDsDataWrite extends Algo_DlmsMetricSender<AcDsDataWritePojo> {
+	// Configuration parameters
 	private int numAC;
 	private int numDS;
 	private long bestDataWrite;
 	private long worstDataWrite;
 
-	@Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
-	private ActiveMQConnectionFactory activeMQConnectionFactory;
+	// Pattern how the message should be sent
+	private final String PATTERN = "{\"ac\":\"%d\" , \"ds\":\"%d\" , \"amountWrite\":\"%d\" , \"timeStamp\":\"%d\"}";
 
+	@Override
 	public int run() throws Exception {
 		long ac = RandomGenerator.generateNum(1, numAC);
 		long ds = RandomGenerator.generateNum(1, numDS);
 
 		long amountWrite = RandomGenerator.generateNum(worstDataWrite, bestDataWrite);
 
-		this.activeMQConnectionFactory = new ActiveMQConnectionFactory(
-				this.jmsServerAddress + ":" + this.jmsServerPort);
-		sendOneMessage(ac, ds, amountWrite);
+		AcDsDataWritePojo parameters = AcDsDataWritePojo
+				.builder()
+				.ac(ac)
+				.ds(ds)
+				.amountWrite(amountWrite)
+				.build();
+
+		sendOneMessage(parameters);
 		log.info("Algo_DlmsMetricSender_AcDsDataWrite has successfully executed");
 		return 0;
 	}
 
-	private void sendOneMessage(long ac, long ds, long amountWrite) throws Exception {
-		Connection connection = startConnection();
-		connection.start();
-		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
+	@Override
+	protected String getMessage(AcDsDataWritePojo parameters) {
 		long timestamp = new Date().getTime();
-		String topicStr = "dataWrite";
-		String message = "{\"ac\":\"" + ac + "\" ,  \"ds\": \"" + ds + "\",\"amountWrite\":\"" + amountWrite
-				+ "\" ,  \"timeStamp\":\"" + timestamp + "\" }";
-		Topic topic = session.createTopic(topicStr);
-		log.debug("Message: {}", message);
-		Message msg = session.createTextMessage(message);
-		MessageProducer producer = session.createProducer(topic);
-		producer.send(msg);
-
-		stopConnection(connection);
+		return String.format(PATTERN, parameters.getAc(), parameters.getDs(), parameters.getAmountWrite(), timestamp);
 	}
 
-	private Connection startConnection() throws JMSException {
-		Connection connection = activeMQConnectionFactory.createConnection();
-		connection.start();
-		log.debug("Connection started");
-		return connection;
-	}
-
-	private void stopConnection(Connection connection) throws Exception {
-		if (connection != null) {
-			connection.close();
-		}
-		log.debug("Connection closed");
+	@Override
+	protected String getTopicName() {
+		return "dataWrite";
 	}
 
 }

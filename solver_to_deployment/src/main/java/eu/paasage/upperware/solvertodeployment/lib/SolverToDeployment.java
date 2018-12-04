@@ -140,15 +140,12 @@ public class SolverToDeployment {
 				DeploymentInstanceModel dm = (DeploymentInstanceModel) cm.getDeploymentModels().get(i);
 				log.info("  DeploymentInstanceModel " + i + " :" +
 						" SoftwareComponentInstances: " + dm.getSoftwareComponentInstances().size() +
-						" CommInstances: " + dm.getCommunicationInstances().size()
-						+ " VmInstances: " + dm.getVmInstances());
+						" CommInstances: " + dm.getCommunicationInstances().size());
 				if (level > 2) {
 					// ICI
 					log.info("SoftwareComponentInstances: " + getAsString(dm.getSoftwareComponentInstances()));
 					// CI
 					log.info("CommInstances: " + getAsString(dm.getCommunicationInstances()));
-					// VMI
-					log.info("VmInstances: " + getAsString(dm.getVmInstances()));
 				}
 			}
 

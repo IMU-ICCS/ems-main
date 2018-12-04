@@ -1,12 +1,7 @@
 package eu.melodic.dlms.utility;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Collections;
-
-import org.apache.tomcat.util.codec.binary.Base64;
+import io.github.cloudiator.rest.model.NodeCandidate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -14,8 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Client interface to call DlmsController from the UtilityGenerator.
@@ -35,7 +34,7 @@ public class DlmsControllerClient {
 	 * Constructor for unit tests etc.
 	 */
 	protected DlmsControllerClient() {
-		datasourceServerUrl = "";
+		this("");
 	}
 
 	/**
@@ -43,7 +42,7 @@ public class DlmsControllerClient {
 	 *
 	 * <p><b>TODO: May be removed on integration.</b>
 	 */
-	public static void main(String args[]) {
+	public static void main(String[] args) {
 		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING).getUtilityValues(Collections.emptyList(), Collections.emptyList());
 		for(String key : result.getResults().keySet()) {
 			log.info("{} --> {}", key, result.getResults().get(key));
@@ -64,20 +63,18 @@ public class DlmsControllerClient {
 
 			if(diffBundle.isEmpty()) {
 				log.info("no diffs found");
-				return new UtilityMetrics(Collections.emptyMap());
+				return new UtilityMetrics();
 			}
 
 			HttpEntity<DlmsDiffBundle> entity = new HttpEntity<>(diffBundle, headers);
 			ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity, UtilityMetrics.class);
 
-			UtilityMetrics result = response.getBody();
-			return result;
-		}
-		catch(URISyntaxException | RestClientException e) {
+			return response.getBody();
+		} catch(URISyntaxException | RestClientException e) {
 			log.error(e.getMessage(), e);
 		}
 
-		return new UtilityMetrics(Collections.emptyMap());
+		return new UtilityMetrics();
 	}
 
 	private DlmsDiffBundle runDiff(Collection<DlmsConfigurationElement> deployed, Collection<DlmsConfigurationElement> proposed) {
@@ -154,7 +151,7 @@ public class DlmsControllerClient {
 	private HttpHeaders createHeaders() {
 		return new HttpHeaders() {{
 			String auth = "user" + ":" + "9687831d-a0bd-4d7a-993d-5d31e740749b";
-			byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+			byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")));
 			String authHeader = "Basic " + new String(encodedAuth);
 			set("Authorization", authHeader);
 		}};

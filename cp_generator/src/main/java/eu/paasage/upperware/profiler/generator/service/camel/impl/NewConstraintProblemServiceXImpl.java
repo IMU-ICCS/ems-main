@@ -6,7 +6,9 @@ import camel.constraint.impl.MetricConstraintImpl;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
+import camel.deployment.Configuration;
 import camel.deployment.RequirementSet;
+import camel.deployment.ServerlessConfiguration;
 import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
 import camel.deployment.impl.ScriptConfigurationImpl;
@@ -25,11 +27,13 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
+import eu.paasage.upperware.profiler.generator.communication.impl.NodeType;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.parser.ExpressionService;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import io.github.cloudiator.rest.ApiException;
@@ -425,7 +429,13 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         DeploymentTypeModelImpl deploymentTypeModel = getDeploymentModel(camelModel);
 
         for (SoftwareComponent softwareComponent : deploymentTypeModel.getSoftwareComponents()) {
-            List<NodeCandidate> nodeCandidates = loadProviders(deploymentTypeModel.getGlobalRequirementSet(), softwareComponent.getRequirementSet(), camelModel.getLocationModels(), getImageId(softwareComponent));
+            List<NodeCandidate> nodeCandidates = loadProviders(
+                    deploymentTypeModel.getGlobalRequirementSet(),
+                    softwareComponent.getRequirementSet(),
+                    camelModel.getLocationModels(),
+                    getImageId(softwareComponent),
+                    getNodeType(softwareComponent)
+                    );
             Map<String, List<NodeCandidate>> nodeCandidatesByProvider = nodeCandidatesService.groupByProviders(nodeCandidates);
             Map<Integer, List<NodeCandidate>> nodeCandidatesByProviderIndex = getAsIndexMap(nodeCandidatesByProvider);
             result.put(softwareComponent.getName(), nodeCandidatesByProviderIndex);
@@ -434,16 +444,33 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return result;
     }
 
+    private NodeType getNodeType(SoftwareComponent softwareComponent) {
+        Configuration configuration = CdoTool.getFirstElement(softwareComponent.getConfigurations());
+
+        NodeType result;
+        if (configuration instanceof ServerlessConfiguration) {
+            result = NodeType.FAAS;
+        } else {
+            result = NodeType.IAAS;
+        }
+        return result;
+    }
+
     private DeploymentTypeModelImpl getDeploymentModel(CamelModel camelModel) {
         return (DeploymentTypeModelImpl) camelModel.getDeploymentModels().get(0);
     }
 
     private String getImageId(SoftwareComponent softwareComponent) {
-        return ((ScriptConfigurationImpl) softwareComponent.getConfigurations().get(0)).getImageId();
+        Configuration configuration = softwareComponent.getConfigurations().get(0);
+        if (configuration instanceof ScriptConfigurationImpl) {
+            return ((ScriptConfigurationImpl) configuration).getImageId();
+        }
+        return null;
     }
 
-    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String imageId) {
-        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, imageId);
+    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels,
+                                              String imageId, NodeType nodeType) {
+        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, imageId, nodeType);
         log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;

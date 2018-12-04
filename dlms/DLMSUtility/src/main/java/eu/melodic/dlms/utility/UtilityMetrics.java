@@ -1,5 +1,6 @@
 package eu.melodic.dlms.utility;
 
+import java.util.Collections;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +20,6 @@ import lombok.Setter;
 @Setter
 public class UtilityMetrics {
 
-	private Map<String, Double> results = null;
+	private Map<String, Double> results = Collections.emptyMap();
 
 }

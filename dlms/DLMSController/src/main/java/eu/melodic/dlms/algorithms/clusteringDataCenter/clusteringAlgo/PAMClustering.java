@@ -24,7 +24,6 @@ public class PAMClustering {
 	// map of clusters
 	private Map<Integer, Cluster> clusterMap = new HashMap<>();
 
-	
 	/**
 	 * primary method
 	 */
@@ -52,7 +51,7 @@ public class PAMClustering {
 	/**
 	 * change cluster center
 	 */
-	public boolean changeCenter() {
+	private boolean changeCenter() {
 		boolean isChanged = false;
 		List<String> newCentroidList = new ArrayList<String>();
 		for (Map.Entry<Integer, Cluster> entry : clusterMap.entrySet()) {
@@ -65,14 +64,14 @@ public class PAMClustering {
 		return isChanged;
 	}
 
-	public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+	private static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
 		return new HashSet<>(list1).equals(new HashSet<>(list2));
 	}
 
 	/**
 	 * assign datacenter to cluster
 	 */
-	public int assignToCluster(Cluster cluster) {
+	private int assignToCluster(Cluster cluster) {
 		int bestCenter = 0;
 		double similarity = 0;
 		double bestSimilarity = Double.MAX_VALUE;
@@ -95,7 +94,7 @@ public class PAMClustering {
 	/**
 	 * distance between two points
 	 */
-	public double calculateDistance(String center, String to) {
+	private double calculateDistance(String center, String to) {
 		double distance = 0;
 		Map<String, Double> dcFromCenter = dataSetToOtherValuesMap.get(center);
 		if (dcFromCenter.containsKey(to)) {
@@ -113,7 +112,7 @@ public class PAMClustering {
 	/**
 	 * distribute datacenters to different clusters
 	 */
-	public void assignCluster(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
+	private void assignCluster(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
 		double max = Double.MAX_VALUE;
 		double min = max;
 		double distance = 0.0;
@@ -152,7 +151,7 @@ public class PAMClustering {
 	/**
 	 * initialization
 	 */
-	public void init(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
+	private void init(Map<String, Map<String, Double>> dataSetToOtherValuesMap) {
 		List<String> keysAsArray = new ArrayList<String>(dataSetToOtherValuesMap.keySet());
 
 		// add unique datacenter name to centroidlist
@@ -166,11 +165,9 @@ public class PAMClustering {
 		private List<String> dataCenterList;
 
 		@Override
-		// to debug later
+		// to help in debug
 		public String toString() {
-			String text = "";
-			text += this.dataCenterList + " ";
-			return text;
+			return this.dataCenterList.toString();
 		}
 	}
 

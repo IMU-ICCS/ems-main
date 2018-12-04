@@ -32,19 +32,6 @@ public class SolverToDeploymentHelper {
                 .orElseThrow(() -> new S2DException("Unable to find " + componentName + " component in camel model"));
     }
 
-
-    //////////////////////////////////////////////////////////////////////////////////////
-    // VM Instance
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    public static EList<VMInstance> searchAndCreateVMInstance(VM vm, int cardinality) {
-
-        return IntStream.range(0, cardinality)
-                .mapToObj(i -> CloudMLHelper.createVMInstance(vm))
-                .collect(Collectors.toCollection(BasicEList::new));
-    }
-
-
     //	//////////////////////////////////////////////////////////////////////////////////////
 //	// Hosting Instance
 //	//////////////////////////////////////////////////////////////////////////////////////

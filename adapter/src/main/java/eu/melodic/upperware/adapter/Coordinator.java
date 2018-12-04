@@ -21,6 +21,7 @@ import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
 import eu.melodic.security.authorization.client.extractor.*;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
+import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
 import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
@@ -31,6 +32,7 @@ import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.PlanValidator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import io.github.cloudiator.rest.ApiException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -94,7 +96,11 @@ public class Coordinator {
     }
 
     public void refreshContext() {
-        context.refreshContext();
+        try {
+            context.refreshContext();
+        } catch (ApiException e) {
+            throw new AdapterException("Problem during refreshing context", e);
+        }
     }
 
     private void run(String resourceName, String notificationUri, String uuid) {
@@ -122,7 +128,11 @@ public class Coordinator {
             cdoSessionX.closeSession();
         }
         if (!context.isLoaded()) {
-            context.refreshContext();
+            try {
+                context.refreshContext();
+            } catch (ApiException e) {
+                throw new AdapterException("Problem during refreshing context", e);
+            }
         }
 
         toLogGraphLogger.logGraph(plan.getTaskGraph());

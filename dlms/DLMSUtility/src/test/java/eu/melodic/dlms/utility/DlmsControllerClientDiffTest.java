@@ -1,13 +1,14 @@
 package eu.melodic.dlms.utility;
 
-import io.github.cloudiator.rest.model.Hardware;
-import io.github.cloudiator.rest.model.Location;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import io.github.cloudiator.rest.model.Hardware;
+import io.github.cloudiator.rest.model.Location;
+import io.github.cloudiator.rest.model.NodeCandidate;
 
 public class DlmsControllerClientDiffTest {
 
@@ -243,19 +244,19 @@ public class DlmsControllerClientDiffTest {
 		Assert.assertFalse(client.hasHardwareDiff(deployed, proposed));
 	}
 
-	@Test
-	public void testRegisterDiff() {
-		DlmsControllerClient client = new DlmsControllerClient();
-
-		DlmsDiffBundle diffBundle = new DlmsDiffBundle();
-		Assert.assertTrue(diffBundle.isEmpty());
-
-		DlmsConfigurationElement deployed = Mockito.mock(DlmsConfigurationElement.class);
-		DlmsConfigurationElement proposed = Mockito.mock(DlmsConfigurationElement.class);
-
-		client.registerDiff(diffBundle, deployed, proposed);
-
-		Assert.assertFalse(diffBundle.isEmpty());
-	}
+//	@Test
+//	public void testRegisterDiff() {
+//		DlmsControllerClient client = new DlmsControllerClient();
+//
+//		DlmsDiffBundle diffBundle = new DlmsDiffBundle();
+//		Assert.assertTrue(diffBundle.isEmpty());
+//
+//		DlmsConfigurationElement deployed = Mockito.mock(DlmsConfigurationElement.class);
+//		DlmsConfigurationElement proposed = Mockito.mock(DlmsConfigurationElement.class);
+//
+//		client.registerDiff(diffBundle, deployed, proposed);
+//
+//		Assert.assertFalse(diffBundle.isEmpty());
+//	}
 
 }

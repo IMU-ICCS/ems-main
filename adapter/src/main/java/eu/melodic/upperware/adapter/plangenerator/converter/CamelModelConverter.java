@@ -19,48 +19,18 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CamelModelConverter implements ModelConverter<DeploymentInstanceModel, ComparableModel> {
 
-  private CloudApiConverter cloudApiConverter;
-  private CloudConverter cloudConverter;
-  private CloudPropertyConverter cloudPropertyConverter;
-  private CloudCredentialConverter cloudCredentialConverter;
-
-  private ApplicationConverter applicationConverter;
-  private ApplicationInstanceConverter applicationInstanceConverter;
-
-  private LifecycleComponentConverter lifecycleComponentConverter;
-
-  private VirtualMachineConverter virtualMachineConverter;
-  private VirtualMachineInstanceConverter virtualMachineInstanceConverter;
-
-  private ApplicationComponentConverter applicationComponentConverter;
-  private ApplicationComponentInstanceConverter applicationComponentInstanceConverter;
-
-  private CommunicationConverter communicationConverter;
-  private PortProvidedConverter portProvidedConverter;
-  private PortRequiredConverter portRequiredConverter;
-
-  private VirtualMachineInstanceMonitorConverter virtualMachineInstanceMonitorConverter;
-  private ApplicationComponentInstanceMonitorConverter applicationComponentInstanceMonitorConverter;
+  private JobConverter jobConverter;
+  private ProcessesConverter processesConverter;
+  private RequirementsConverter requirementsConverter;
+  private ScheduleConverter scheduleConverter;
 
   @Override
   public ComparableModel toComparableModel(DeploymentInstanceModel deploymentModel) {
     return ComparableModel.builder()
-      .cloudApis(cloudApiConverter.toComparableModel(deploymentModel))
-      .clouds(cloudConverter.toComparableModel(deploymentModel))
-      .cloudProperties(cloudPropertyConverter.toComparableModel(deploymentModel))
-      .cloudCredentials(cloudCredentialConverter.toComparableModel(deploymentModel))
-      .application(applicationConverter.toComparableModel(deploymentModel))
-      .applicationInstance(applicationInstanceConverter.toComparableModel(deploymentModel))
-      .lifecycleComponents(lifecycleComponentConverter.toComparableModel(deploymentModel))
-      .virtualMachines(virtualMachineConverter.toComparableModel(deploymentModel))
-      .virtualMachineInstances(virtualMachineInstanceConverter.toComparableModel(deploymentModel))
-      .applicationComponents(applicationComponentConverter.toComparableModel(deploymentModel))
-      .applicationComponentInstances(applicationComponentInstanceConverter.toComparableModel(deploymentModel))
-      .communications(communicationConverter.toComparableModel(deploymentModel))
-      .portsProvided(portProvidedConverter.toComparableModel(deploymentModel))
-      .portsRequired(portRequiredConverter.toComparableModel(deploymentModel))
-      .virtualMachineInstanceMonitors(virtualMachineInstanceMonitorConverter.toComparableModel(deploymentModel))
-      .applicationComponentInstanceMonitors(applicationComponentInstanceMonitorConverter.toComparableModel(deploymentModel))
+      .adapterJob(jobConverter.toComparableModel(deploymentModel))
+      .adapterSchedule(scheduleConverter.toComparableModel(deploymentModel))
+      .adapterRequirements(requirementsConverter.toComparableModel(deploymentModel))
+      .adapterProcesses(processesConverter.toComparableModel(deploymentModel))
       .build();
   }
 }

@@ -77,7 +77,7 @@ public class DlmsMetricProperties {
 			@NotBlank
 			private String url;
 			private String clientId;
-			private TopicType type;
+			private TopicType type;		
 		}
 	}
 

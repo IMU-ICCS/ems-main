@@ -14,10 +14,11 @@ import org.springframework.context.annotation.Bean;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.DataCenterClusterRepository;
+import eu.melodic.dlms.db.repository.CloudProviderRepository;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
 import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
 import eu.melodic.dlms.db.repository.DataSourceRepository;
+import eu.melodic.dlms.db.repository.RegionRepository;
 import eu.melodic.dlms.db.repository.TwoDataCenterCombinationRepository;
 import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
@@ -42,13 +43,13 @@ public class DlmsControllerApplication {
 	private final DataCenterRepository dataCenterRepository;
 	private final TwoDataCentersRepository twoDataCentersRepository;
 	private final TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
-	private final DataCenterClusterRepository dataCenterClusterRepository;
 	private final DataCenterZoneRepository dataCenterZoneRepository;
 	private final ApplicationComponentRepository acRepository;
 	private final DataSourceRepository dsRepository;
 	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
 	private final ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository;
-	
+	private final CloudProviderRepository cpRepository;
+	private final RegionRepository regionRepository;
 	/**
 	 * Main method for starting. No arguments needed for normal use.
 	 */
