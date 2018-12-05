@@ -1,5 +1,6 @@
 package eu.melodic.dlms.utility;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Setter
 public class DlmsDiffBundle {
 
-	private List<DlmsConfigurationDiff> configurationDiffs;
+	private List<DlmsConfigurationDiff> configurationDiffs = new ArrayList<>();
 
 
 	/**
