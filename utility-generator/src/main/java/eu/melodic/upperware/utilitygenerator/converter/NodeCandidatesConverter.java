@@ -52,6 +52,13 @@ public class NodeCandidatesConverter extends ArgumentConverter{
         }
     }
 
+    public static NodeCandidateAttribute findAttributeForComponent(Collection<NodeCandidateAttribute> attributes, String componentId, CamelMetadata type){
+        return attributes.stream()
+                .filter(a -> componentId.equals(a.getComponentId()) && type.equals(a.getType()))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Attribute with type " + type + "for component " + componentId + " not found"));
+    }
+
     private static Collection<Element> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
         log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
         return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());

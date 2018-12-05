@@ -16,6 +16,7 @@ import eu.melodic.upperware.utilitygenerator.model.function.DLMSUtilityAttribute
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 
 @AllArgsConstructor
+@Slf4j
 public class DLMSConverter extends ArgumentConverter{
 
     private DLMSService dlmsUtilityService;
@@ -48,11 +50,19 @@ public class DLMSConverter extends ArgumentConverter{
         if (dlmsUtilityAttributes.isEmpty()){ //way to not call dlms library if not needed
             return Collections.emptyList();
         }
-        UtilityMetrics dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
+        UtilityMetrics dlmsUtility;
+        try {
+            dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
+            return dlmsUtilityAttributes.stream()
+                    .map(attribute -> createElement(attribute.getName(),getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
+                    .collect(Collectors.toList());
+        }
 
-        return dlmsUtilityAttributes.stream()
-                .map(attribute -> createElement(attribute.getName(),getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
-                .collect(Collectors.toList());
+        catch (Exception e){
+            log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value");
+        }
+        return dlmsUtilityAttributes.stream().map(attribute -> createElement(attribute.getName(), 0)).collect(Collectors.toList());
+
 
     }
 
