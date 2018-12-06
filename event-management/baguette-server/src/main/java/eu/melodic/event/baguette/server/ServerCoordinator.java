@@ -9,21 +9,17 @@
 
 package eu.melodic.event.baguette.server;
 
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
-import java.util.Map;
-import java.util.Set;
 import java.util.Properties;
 
 public interface ServerCoordinator {
-	//public abstract void initialize(Properties config, Runnable callback);
-	public abstract void initialize(BaguetteServer server, Runnable callback);
-	public abstract int getPhase();
-	public abstract void register(ClientShellCommand c);
-	public abstract void unregister(ClientShellCommand c);
-	public abstract void brokerReady(ClientShellCommand c);
-	public abstract void clientReady(ClientShellCommand c);
-	public abstract void start();
-	public abstract void stop();
+	void initialize(BaguetteServer server, Runnable callback);
+	int getPhase();
+	void register(ClientShellCommand c);
+	void unregister(ClientShellCommand c);
+	void brokerReady(ClientShellCommand c);
+	void clientReady(ClientShellCommand c);
+	void start();
+	void stop();
 	
 	default public void sendGroupingConfigurations(Properties cfg, ClientShellCommand c, BaguetteServer server) {
 		for (String grouping : server.getGroupingNames()) {

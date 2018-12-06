@@ -15,11 +15,6 @@ import eu.melodic.event.baguette.server.segment.*;
 import eu.melodic.event.baguette.server.util.CloudiatorUtil;
 import eu.melodic.event.baguette.server.util.NetUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-//import java.util.Properties;
-import java.util.Vector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -29,6 +24,7 @@ public class NoopCoordinator implements ServerCoordinator {
 	private Runnable callback;
 	private boolean started;
 	
+	@Override
 	public void initialize(BaguetteServer server, Runnable callback) {
 		if (started) return;
 		log.info("NoopCoordinator: initialize");
@@ -37,6 +33,7 @@ public class NoopCoordinator implements ServerCoordinator {
 		this.callback = callback;
 	}
 	
+	@Override
 	public void start() {
 		if (started) return;
 		log.info("NoopCoordinator: start");
@@ -48,6 +45,7 @@ public class NoopCoordinator implements ServerCoordinator {
 		}
 	}
 	
+	@Override
 	public void stop() {
 		if (!started) return;
 		log.info("NoopCoordinator: stop");
@@ -56,8 +54,10 @@ public class NoopCoordinator implements ServerCoordinator {
 	
 	public boolean isStarted() { return started; }
 	
+	@Override
 	public int getPhase() { return -1; }
 	
+	@Override
 	public synchronized void register(ClientShellCommand c) {
 		if (!started) return;
 		log.info("NoopCoordinator: register: {}", c);
@@ -95,17 +95,19 @@ public class NoopCoordinator implements ServerCoordinator {
 	
 	
 	
-	
+	@Override
 	public synchronized void unregister(ClientShellCommand c) {
 		if (!started) return;
 		log.info("NoopCoordinator: unregister: {}", c);
 	}
 	
+	@Override
 	public synchronized void brokerReady(ClientShellCommand c) {
 		if (!started) return;
 		log.info("NoopCoordinator: brokerReady: {}", c);
 	}
 	
+	@Override
 	public synchronized void clientReady(ClientShellCommand c) {
 		if (!started) return;
 		log.info("NoopCoordinator: clientReady: {}", c);

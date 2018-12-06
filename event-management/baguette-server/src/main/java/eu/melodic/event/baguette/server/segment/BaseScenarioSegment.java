@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server.segment;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
@@ -355,16 +355,16 @@ public class BaseScenarioSegment extends AbstractSegment {
 	// ------------------------------------------------------------------------
 	// Private Segment part - Internal operations
 	
-	private Vector<ClientShellCommand> pending = new Vector<>();
-	private Vector<ClientShellCommand> clients = new Vector<>();
-	private Vector<ClientShellCommand> ready = new Vector<>();
+	private List<ClientShellCommand> pending = new LinkedList<>();
+	private List<ClientShellCommand> clients = new LinkedList<>();
+	private List<ClientShellCommand> ready = new LinkedList<>();
 	private ClientShellCommand broker;
 	
 	private synchronized List<ClientShellCommand> getPending() { return pending; }
 	
-	public synchronized List<ClientShellCommand> getPendings() { return (List<ClientShellCommand>)pending.clone(); }
-	public synchronized List<ClientShellCommand> getClients() { return (List<ClientShellCommand>)clients.clone(); }
-	public synchronized List<ClientShellCommand> getReadyClients() { return (List<ClientShellCommand>)ready.clone(); }
+	public synchronized List<ClientShellCommand> getPendings() { return Collections.unmodifiableList(pending); }
+	public synchronized List<ClientShellCommand> getClients() { return Collections.unmodifiableList(clients); }
+	public synchronized List<ClientShellCommand> getReadyClients() { return Collections.unmodifiableList(ready); }
 	public synchronized int countPendings() { return pending.size(); }
 	public synchronized int countClients() { return clients.size(); }
 	public synchronized int countReadyClients() { return ready.size(); }
@@ -379,9 +379,16 @@ public class BaseScenarioSegment extends AbstractSegment {
 		if (num>0) {
 			int index = 0;
 			switch (brokerSelectionMethod) {
-				case FIRST: index = 0; break;
-				case RANDOM: index = (int)Math.round((num-1) * Math.random()); log.debug("doSelectBroker: Random index={}", index); break;
-				case BEST_FIT: index = 0; break;
+				case FIRST:
+					//index = 0;
+					break;
+				case RANDOM:
+					index = (int)Math.round((num-1) * Math.random());
+					log.debug("doSelectBroker: Random index={}", index);
+					break;
+				case BEST_FIT:
+					//index = 0;
+					break;
 				default:
 					throw new IllegalArgumentException("Invalid broker selection method: "+brokerSelectionMethod);
 			}

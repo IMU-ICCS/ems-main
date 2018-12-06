@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CloudiatorUtil 
 {
-	static { try { java.util.logging.LogManager.getLogManager().readConfiguration( CloudiatorUtil.class.getResourceAsStream("/logging.properties") ); } catch (IOException ex) { throw new RuntimeException(ex); } }
+	//static { try { java.util.logging.LogManager.getLogManager().readConfiguration( CloudiatorUtil.class.getResourceAsStream("/logging.properties") ); } catch (IOException ex) { throw new RuntimeException(ex); } }
 	
 	public static final String DEFAULT_CLOUDIATOR_PROPERTIES = "/cloudiator.properties";
 	public static final String DEFAULT_PROVIDER_ENDPOINT_PATTERNS = "/provider-endpoint-patterns.txt";
@@ -90,31 +90,31 @@ public class CloudiatorUtil
 	
 	
 	public VmCloudInfo findVmInfoUsingIpAddress(String searchIpAddress, boolean searchIpAddressIsPublic) {
-		System.out.printf("Looking up VM info using IP address:\n\t %s %s\n", searchIpAddress, searchIpAddressIsPublic ? "/ PUBLIC" : "/ PUBLIC-or-PRIVATE" );
+		log.info("Looking up VM info using IP address:\n\t {} {}", searchIpAddress, searchIpAddressIsPublic ? "/ PUBLIC" : "/ PUBLIC-or-PRIVATE" );
 		
 		// Find VM instance using IP address
 		long foundVm = -1;
 		List<IpAddress> ipAddressList = client.controller(IpAddress.class).getList();
 		for (IpAddress ipAddr : ipAddressList) {
-			if (ipAddr.getIp().equals(searchIpAddress) && (!searchIpAddressIsPublic || searchIpAddressIsPublic && ipAddr.getIpType().equals("PUBLIC"))) {
+			if (ipAddr.getIp().equals(searchIpAddress) && (!searchIpAddressIsPublic || searchIpAddressIsPublic && "PUBLIC".equals(ipAddr.getIpType()))) {
 				foundVm = ipAddr.getVirtualMachine();
 				break;
 			}
 		}
-		System.out.printf("Found VM with Id:\n\t %d\n", foundVm);
+		log.info("Found VM with Id:\n\t {}\n", foundVm);
 		
 		if (foundVm<0) {
-			System.err.println("** Could not find IP address: "+searchIpAddress);
+			log.error("** Could not find IP address: {}", searchIpAddress);
 			return null;
 		}
 		
 		// Retrieve VM instance info
 		VirtualMachine vm = client.controller(VirtualMachine.class).get(foundVm);
 		if (vm==null) {
-			System.err.println("** Could not find VM with IP address: "+searchIpAddress);
+			log.error("** Could not find VM with IP address: {}", searchIpAddress);
 			return null;
 		} else {
-			System.out.printf("VM:\n\t id=%d,\n\t name=%s,\n\t remote-state=%s,\n\t location=%d,\n\t cloud=%d,\n\t provider-id=%s\n",
+			log.info("VM:\n\t id={},\n\t name={},\n\t remote-state={},\n\t location={},\n\t cloud={},\n\t provider-id={}\n",
 					vm.getId(), vm.getName(), vm.getRemoteState(), vm.getLocation(), vm.getCloud(), vm.getProviderId());
 		}
 		
@@ -126,35 +126,35 @@ public class CloudiatorUtil
 		if (vm.getCloud()>=0) {
 			Cloud cloud = client.controller(Cloud.class).get(vm.getCloud());
 			if (cloud==null) {
-				System.err.println("** Could not find Cloud with id: "+vm.getCloud()+"  -->  VM with IP address: "+searchIpAddress);
+				log.error("** Could not find Cloud with id: {}  -->  VM with IP address: {}", vm.getCloud(), searchIpAddress);
 			} else {
-				System.out.printf("Cloud:\n\t id=%d,\n\t name=%s,\n\t endpoint=%s\n",
+				log.info("Cloud:\n\t id={},\n\t name={},\n\t endpoint={}\n",
 						cloud.getId(), cloud.getName(), cloud.getEndpoint());
-				System.out.printf("Cloud Provider:\n\t %s\n", getCloudProviderByEndpoint(cloud.getEndpoint()));
+				log.info("Cloud Provider:\n\t {}\n", getCloudProviderByEndpoint(cloud.getEndpoint()));
 				response.cloud = cloud;
 				response.providerName = getCloudProviderByEndpoint(cloud.getEndpoint());
-				System.out.printf("\t provider-name=%s\n", response.providerName);
+				log.info("\t provider-name={}\n", response.providerName);
 			}
 		} else {
-			System.err.println("** No Cloud info in VM with IP address: "+searchIpAddress);
+			log.error("** No Cloud info in VM with IP address: {}", searchIpAddress);
 		}
 		
 		// Retrieve Location info
 		if (vm.getLocation()>=0) {
 			Location loc = client.controller(Location.class).get(vm.getLocation());
 			if (loc==null) {
-				System.err.println("** Could not find Location with id: "+vm.getLocation()+"  -->  VM with IP address: "+searchIpAddress);
+				log.error("** Could not find Location with id: {}  -->  VM with IP address: {}", vm.getLocation(), searchIpAddress);
 			} else {
-				System.out.printf("Location:\n\t id=%d,\n\t name=%s,\n\t parent-id=%d\n",
+				log.info("Location:\n\t id={},\n\t name={},\n\t parent-id={}\n",
 						loc.getId(), loc.getName(), loc.getParent());
 				response.location = loc;
 				if (loc.getName()!=null) {
 					response.locationName = getCloudLocationByName(loc.getName());
-					System.out.printf("\t location-name=%s\n", response.locationName);
+					log.info("\t location-name={}\n", response.locationName);
 				}
 			}
 		} else {
-			System.err.println("** No Location info in VM with IP address: "+searchIpAddress);
+			log.error("** No Location info in VM with IP address: {}", searchIpAddress);
 		}
 		
 		return response;

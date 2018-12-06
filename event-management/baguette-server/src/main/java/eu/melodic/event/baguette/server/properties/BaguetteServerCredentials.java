@@ -28,7 +28,4 @@ import org.springframework.validation.annotation.Validated;
 @Slf4j
 public class BaguetteServerCredentials {
 	private Map<String,String> credentials = new HashMap<>();
-	
-	public Map<String, String> getCredentials() { return credentials; }
-	public void setCredentials(Map<String, String> map) { credentials = map; }
 }

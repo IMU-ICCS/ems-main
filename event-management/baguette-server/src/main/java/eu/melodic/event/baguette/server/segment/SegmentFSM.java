@@ -13,7 +13,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.statefulj.fsm.FSM;
@@ -22,7 +25,6 @@ import org.statefulj.fsm.RetryException;
 import org.statefulj.fsm.model.Action;
 import org.statefulj.fsm.model.State;
 import org.statefulj.fsm.model.impl.StateImpl;
-//import org.statefulj.persistence.annotations.State;
 import org.statefulj.persistence.memory.MemoryPersisterImpl;
 
 @Slf4j
@@ -35,9 +37,9 @@ public class SegmentFSM {
 	private FSM<SegmentFSM> fsm;
 	
 	private String initialState;
-	private HashMap<String,State<SegmentFSM>> states;
+	private Map<String,State<SegmentFSM>> states;
 	private List<String> events;
-	private HashMap<Function<Object,Object>,Action<SegmentFSM>> actions;
+	private Map<Function<Object,Object>,Action<SegmentFSM>> actions;
 	private List<TransitionSpec> transitions;
 	
 	// ------------------------------------------------------------------------
@@ -58,10 +60,16 @@ public class SegmentFSM {
 	public State<SegmentFSM> onEvent(String event, Object...args) {
 		String fromState = getState();
 		String toState = null;
-		try { return fsm.onEvent(this, event, args); }
-		catch(Exception ex) { toState = "EXCEPTION THROWN"; throw new RuntimeException(ex); }
-		//finally { log.debug("On {} transition from {} to {}", event, fromState, getState()); }
-		finally { log.debug("{} --[ {} ]--> {}", fromState, event, toState==null ? getState() : toState); }
+		try {
+			return fsm.onEvent(this, event, args);
+		} catch(Exception ex) {
+			toState = "EXCEPTION THROWN";
+			throw new RuntimeException(ex);
+		}
+		finally {
+			//log.debug("On {} transition from {} to {}", event, fromState, getState());
+			log.debug("{} --[ {} ]--> {}", fromState, event, toState==null ? getState() : toState);
+		}
 	}
 	
 	// ------------------------------------------------------------------------
@@ -94,29 +102,20 @@ public class SegmentFSM {
 		log.trace("State-Names:\n{}", stateNames);
 		
 		// Initialize states
-		states = new HashMap<>();
-		for (String s : stateNames) {
-			states.put( s, new StateImpl<SegmentFSM>(s) );
-		}
+		states = stateNames.stream().collect(Collectors.toMap(o -> o, StateImpl::new));
 		log.trace("States:\n{}", states);
 	}
 	
 	private void initEvents(List<TransitionSpec> specs) {
 		// Collect event names from transition specs
-		HashSet<String> eventNames = new HashSet<String>();
-		for (TransitionSpec ts : specs) {
-			eventNames.add(ts.event);
-		}
+		Set<String> eventNames = specs.stream().map(ts -> ts.event).collect(Collectors.toSet());
 		events = new LinkedList<>(eventNames);
 		log.trace("Events:\n{}", events);
 	}
 	
 	private void initActions(List<TransitionSpec> specs) {
 		// Collect action names from transition specs
-		HashSet<Function<Object,Object>> functions = new HashSet<Function<Object,Object>>();
-		for (TransitionSpec ts : specs) {
-			if (ts.action!=null) functions.add(ts.action);
-		}
+		Set<Function<Object,Object>> functions = specs.stream().filter(ts -> ts.action!=null).map(ts -> ts.action).collect(Collectors.toSet());
 		log.trace("Action-function-refs:\n{}", functions);
 		// Initialize actions
 		actions = new HashMap<>();

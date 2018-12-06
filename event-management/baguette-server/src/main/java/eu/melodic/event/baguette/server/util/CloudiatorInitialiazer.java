@@ -18,11 +18,10 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Scanner;
-import java.util.Vector;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -33,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CloudiatorInitialiazer
 {
-	public static final String DEFAULT_CLOUDIATOR_PROPERTIES = "/cloudiator.properties";
+	//public static final String DEFAULT_CLOUDIATOR_PROPERTIES = "/cloudiator.properties";
 	
 	public static void main(String[] args) throws IOException {
 		log.info("Starting");
@@ -53,18 +52,18 @@ public class CloudiatorInitialiazer
 	private long appId = -1;
 	private long appInstanceId = -1;
 	
-	private Map<String,Long> imageMap = new HashMap<String,Long>();
-	private Map<String,Long> hardwareMap = new HashMap<String,Long>();
-	private Map<String,Long> locationMap = new HashMap<String,Long>();
+	private Map<String,Long> imageMap = new HashMap<>();
+	private Map<String,Long> hardwareMap = new HashMap<>();
+	private Map<String,Long> locationMap = new HashMap<>();
 	
-	private List<Long> componentId = new Vector<Long>();
-	private List<Long> vmTemplateId = new Vector<Long>();
-	private List<Long> appComponentId = new Vector<Long>();
-	private List<Long> virtualMachineId = new Vector<Long>();
-	private List<Long> portProvidedId = new Vector<Long>();
-	private List<Long> portRequiredId = new Vector<Long>();
-	private List<Long> communicationId = new Vector<Long>();
-	private List<Long> instanceId = new Vector<Long>();
+	private List<Long> componentId = new LinkedList<>();
+	private List<Long> vmTemplateId = new LinkedList<>();
+	private List<Long> appComponentId = new LinkedList<>();
+	private List<Long> virtualMachineId = new LinkedList<>();
+	private List<Long> portProvidedId = new LinkedList<>();
+	private List<Long> portRequiredId = new LinkedList<>();
+	private List<Long> communicationId = new LinkedList<>();
+	private List<Long> instanceId = new LinkedList<>();
 	
 	public CloudiatorInitialiazer() {}
 	
@@ -200,14 +199,14 @@ public class CloudiatorInitialiazer
 			.filter(name -> name.startsWith(startStr))
 			.map(name -> name.substring(startPos, name.indexOf(']', startPos)))
 			.filter(index -> !index.isEmpty())
-			.map(index -> Integer.parseInt(index))
+			.map(Integer::parseInt)
 			.sorted()
 			.distinct()
 			//.forEach(System.out::println);
 			.collect(java.util.stream.Collectors.toList());
 		
 		log.debug("{} indexes: {}", label, indexes);
-		indexes.forEach(index -> callback.apply(index));
+		indexes.forEach(callback::apply);
 	}
 	
 	protected void printIds() {
