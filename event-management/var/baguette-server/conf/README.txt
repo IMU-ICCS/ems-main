@@ -1,1 +1,0 @@
-Baguette server generates and stores the Baguette client configuration in this directory (/conf)
