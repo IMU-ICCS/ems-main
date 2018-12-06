@@ -2,6 +2,8 @@
 
 if not exist target\dependency cmd /C "mvn dependency:copy-dependencies"
 
+set MELODIC_CONFIG_DIR=.
+
 setlocal
 set JAVA_OPTS= -Djavax.net.ssl.keyStore=..\config-files\broker-keystore.p12 ^
  -Djavax.net.ssl.keyStoreType=pkcs12 ^
@@ -12,6 +14,6 @@ set JAVA_OPTS= -Djavax.net.ssl.keyStore=..\config-files\broker-keystore.p12 ^
 rem -Djavax.net.debug=all
 rem -Djavax.net.debug=ssl,handshake,record
 
-java %JAVA_OPTS% -classpath "target\classes;target\dependency\*" eu.melodic.event.brokerutil.BrokerClient %*
+java %JAVA_OPTS% -classpath "target\classes;target\dependency\*" eu.melodic.event.brokerclient.BrokerClient %*
 
 endlocal
