@@ -26,14 +26,14 @@ import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactor
 
 @AllArgsConstructor
 @Slf4j
-public class DLMSConverter extends ArgumentConverter{
+public class DLMSConverter extends ArgumentConverter {
 
     private DLMSService dlmsUtilityService;
     private Collection<DLMSUtilityAttribute> dlmsUtilityAttributes;
     private Collection<ConfigurationElement> actConfiguration;
 
 
-    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration){
+    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration) {
         this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
         this.dlmsUtilityAttributes = dlmsUtilityAttributes;
         this.actConfiguration = actConfiguration;
@@ -47,23 +47,30 @@ public class DLMSConverter extends ArgumentConverter{
 
     private Collection<Element> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
 
-        if (dlmsUtilityAttributes.isEmpty()){ //way to not call dlms library if not needed
+        if (dlmsUtilityAttributes.isEmpty()) { //way to not call dlms library if not needed
             return Collections.emptyList();
         }
         UtilityMetrics dlmsUtility;
         try {
             dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
-            return dlmsUtilityAttributes.stream()
-                    .map(attribute -> createElement(attribute.getName(),getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
-                    .collect(Collectors.toList());
-        }
-
-        catch (Exception e){
+        } catch (Exception e) {
             log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value");
+            return createDefaultValuesOfDLMSUtilityAttributes();
         }
+
+        if (dlmsUtility == null) {
+            log.warn("DLMSUtility is null, returning 0 as DLMS utility value");
+            return createDefaultValuesOfDLMSUtilityAttributes();
+        }
+        return dlmsUtilityAttributes.stream()
+                .map(attribute -> createElement(attribute.getName(), getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
+                .collect(Collectors.toList());
+
+
+    }
+
+    private Collection<Element> createDefaultValuesOfDLMSUtilityAttributes() {
         return dlmsUtilityAttributes.stream().map(attribute -> createElement(attribute.getName(), 0)).collect(Collectors.toList());
-
-
     }
 
     private static Number getDLMSUtilityAttributeValue(UtilityMetrics dlmsUtility, CamelMetadata type) {
