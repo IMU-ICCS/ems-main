@@ -15,6 +15,7 @@ import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.UtilityFunction;
+import eu.melodic.upperware.utilitygenerator.model.function.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
@@ -78,7 +79,9 @@ public class UtilityFunctionEvaluator {
             if (!listOfAttributesOfNodeCandidates.isEmpty()) {
                 log.warn("Flag on candidates is not supported in Utility Generator");
             }
-            converters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelConverter.getListOfDlmsUtilityAttributes(formula), deployedConfiguration));
+            Collection<DLMSUtilityAttribute> dlmsUtilityAttributes = fromCamelModelConverter.getListOfDlmsUtilityAttributes(formula);
+            log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
+            converters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), dlmsUtilityAttributes, deployedConfiguration));
             converters.add(new NodeCandidatesConverter(nodeCandidateAttributes, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem));
 
         } else {
