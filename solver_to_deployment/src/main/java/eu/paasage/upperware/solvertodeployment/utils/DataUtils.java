@@ -16,7 +16,6 @@ import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
-import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import io.github.cloudiator.rest.model.NodeCandidate;
@@ -37,11 +36,10 @@ public class DataUtils {
 
     public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
                                                     ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
-                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
-                                                    CDOTransaction transaction
+                                                    NodeCandidates nodeCandidates, CDOTransaction transaction
     ) {
 
-        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
+        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl();
 
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
