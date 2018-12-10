@@ -62,8 +62,7 @@ public class FromCamelModelConverter {
         this.sessionX = cdoService.openSession();
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
-        EList<MetricModel> metricModels = model.getMetricModels();
-        this.metricVariables = extractMetricVariables(metricModels);
+        this.metricVariables = extractMetricVariables(model.getMetricModels());
     }
 
     private Collection<MetricVariableImpl> extractMetricVariables(EList<MetricModel> metricModels) {
