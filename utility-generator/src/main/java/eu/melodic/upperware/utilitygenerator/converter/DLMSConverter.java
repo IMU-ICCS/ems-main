@@ -16,6 +16,7 @@ import eu.melodic.upperware.utilitygenerator.model.function.DLMSUtilityAttribute
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,14 +25,15 @@ import java.util.stream.Collectors;
 import static eu.melodic.upperware.utilitygenerator.model.function.ElementFactory.createElement;
 
 @AllArgsConstructor
-public class DLMSConverter extends ArgumentConverter{
+@Slf4j
+public class DLMSConverter extends ArgumentConverter {
 
     private DLMSService dlmsUtilityService;
     private Collection<DLMSUtilityAttribute> dlmsUtilityAttributes;
     private Collection<ConfigurationElement> actConfiguration;
 
 
-    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration){
+    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration) {
         this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
         this.dlmsUtilityAttributes = dlmsUtilityAttributes;
         this.actConfiguration = actConfiguration;
@@ -45,15 +47,30 @@ public class DLMSConverter extends ArgumentConverter{
 
     private Collection<Element> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
 
-        if (dlmsUtilityAttributes.isEmpty()){ //way to not call dlms library if not needed
+        if (dlmsUtilityAttributes.isEmpty()) { //way to not call dlms library if not needed
             return Collections.emptyList();
         }
-        UtilityMetrics dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
+        UtilityMetrics dlmsUtility;
+        try {
+            dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
+        } catch (Exception e) {
+            log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value");
+            return createDefaultValuesOfDLMSUtilityAttributes();
+        }
 
+        if (dlmsUtility == null) {
+            log.warn("DLMSUtility is null, returning 0 as DLMS utility value");
+            return createDefaultValuesOfDLMSUtilityAttributes();
+        }
         return dlmsUtilityAttributes.stream()
-                .map(attribute -> createElement(attribute.getName(),getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
+                .map(attribute -> createElement(attribute.getName(), getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
                 .collect(Collectors.toList());
 
+
+    }
+
+    private Collection<Element> createDefaultValuesOfDLMSUtilityAttributes() {
+        return dlmsUtilityAttributes.stream().map(attribute -> createElement(attribute.getName(), 0)).collect(Collectors.toList());
     }
 
     private static Number getDLMSUtilityAttributeValue(UtilityMetrics dlmsUtility, CamelMetadata type) {
