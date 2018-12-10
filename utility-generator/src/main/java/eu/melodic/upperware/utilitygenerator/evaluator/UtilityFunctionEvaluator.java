@@ -138,7 +138,7 @@ public class UtilityFunctionEvaluator {
     private Collection<NodeCandidateAttribute> createCostAttributesForAllComponents() {
         log.info("Creating default cost attributes for all components");
         return this.variablesFromConstraintProblem.stream()
-                .filter(v -> v.getType().equals(VariableType.CARDINALITY))
+                .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
                 .map(v -> new NodeCandidateAttribute(v.getComponentId() + "Cost", v.getComponentId(), CamelMetadata.PRICE, false))
                 .collect(Collectors.toList());
     }
@@ -146,7 +146,7 @@ public class UtilityFunctionEvaluator {
     private String createUtilityFunctionCostFormula() {
         Collection<String> componentCosts = new ArrayList<>();
         this.variablesFromConstraintProblem.stream()
-                .filter(v -> v.getType().equals(VariableType.CARDINALITY))
+                .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
                 .forEach(v -> componentCosts.add(v.getId() + "*"
                         + findAttributeForComponent(nodeCandidateAttributes, v.getComponentId(), CamelMetadata.PRICE).getName()));
 

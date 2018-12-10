@@ -26,6 +26,7 @@ import eu.melodic.upperware.utilitygenerator.model.function.DLMSUtilityAttribute
 import eu.melodic.upperware.utilitygenerator.model.function.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ import org.eclipse.emf.common.util.EList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFormula;
@@ -61,54 +63,47 @@ public class FromCamelModelConverter {
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
         EList<MetricModel> metricModels = model.getMetricModels();
+        this.metricVariables = extractMetricVariables(metricModels);
+    }
+
+    private Collection<MetricVariableImpl> extractMetricVariables(EList<MetricModel> metricModels) {
         if (metricModels.isEmpty()){
             log.warn("Camel Model does not contain any Metric Model");
-            this.metricVariables = Collections.emptyList();
+            return Collections.emptyList();
         }
-        else {
-            this.metricVariables = ((MetricTypeModelImpl) metricModels.get(0)).getMetrics().stream()
+        return ((MetricTypeModelImpl) CdoTool.getFirstElement(metricModels)).getMetrics().stream()
                     .filter(m -> m instanceof MetricVariable)
                     .map(m -> (MetricVariableImpl) m)
                     .collect(Collectors.toList());
-        }
     }
 
     public void endWorkWithCamelModel() {
         cdoService.closeSession(sessionX);
     }
 
-
     /* variable with NodeCandidateAttribute annotations */
     public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates(String utilityFunctionFormula) {
-        return createNodeCandidatesAttributes(metricVariables.stream()
-                .filter(a-> isAttributeOfNodeCandidate(a,utilityFunctionFormula))
-                .collect(Collectors.toList()), false);
+        return createNodeCandidatesAttributes(filterVariables(a-> isAttributeOfNodeCandidate(a,utilityFunctionFormula)), false);
     }
 
     /* variable with NodeCandidateAttribute anotations and current config flag */
     public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates(String utilityFunctionFormula) {
-        return createNodeCandidatesAttributes(metricVariables.stream()
-                .filter(a -> isCurrentConfigAttributeOfNodeCandidate(a, utilityFunctionFormula))
-                .collect(Collectors.toList()), false);
+        return createNodeCandidatesAttributes(filterVariables(a -> isCurrentConfigAttributeOfNodeCandidate(a, utilityFunctionFormula)), false);
     }
 
     /* on candidates flag */
     public Collection<NodeCandidateAttribute> getListOfAttributesOfNodeCandidates(String utilityFunctionFormula) {
-        return createNodeCandidatesAttributes(metricVariables.stream()
-                .filter(a -> isListOfAttributesOfNodeCandidates(a, utilityFunctionFormula))
-                .collect(Collectors.toList()), true);
+        return createNodeCandidatesAttributes(filterVariables(a -> isListOfAttributesOfNodeCandidates(a, utilityFunctionFormula)), true);
     }
 
+    /* dlms utility type */
     public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes(String utilityFunctionFormula){
-        return metricVariables.stream()
-                .filter(a -> isDlmsUtilityAttribute(a, utilityFunctionFormula))
-                .map(variable -> new DLMSUtilityAttribute(variable.getName(), variable.getComponent().getName(), findDlmsUtilityAttributeType(variable)))
-                .collect(Collectors.toList());
+        return createDlmsUtilityAttributes(filterVariables(a -> isDlmsUtilityAttribute(a, utilityFunctionFormula)));
     }
 
     /* software components with unmoveable annotation */
     public Collection<String> getUnmoveableComponentNames() {
-        return ((DeploymentTypeModel) model.getDeploymentModels().get(0))
+        return ((DeploymentTypeModel) CdoTool.getFirstElement(model.getDeploymentModels()))
                 .getSoftwareComponents().stream()
                 .filter(this::isUnmoveable)
                 .map(SoftwareComponent::getName)
@@ -117,16 +112,14 @@ public class FromCamelModelConverter {
 
     /* optimisation requirement - utility function */
     public Optional<String> getUtilityFormula() {
-        RequirementModel requirementModel = model.getRequirementModels().get(0);
+        RequirementModel requirementModel = CdoTool.getFirstElement(model.getRequirementModels());
         Optional<Requirement> optimisationRequirement = requirementModel
                 .getRequirements()
                 .stream()
                 .filter(r -> r instanceof OptimisationRequirementImpl)
                 .findAny();
 
-
         return optimisationRequirement.map(requirement -> ((OptimisationRequirement) requirement).getMetricVariable().getFormula());
-
     }
 
     private boolean isUnmoveable(SoftwareComponent softwareComponent) {
@@ -134,10 +127,23 @@ public class FromCamelModelConverter {
                 && softwareComponent.getAnnotations().get(0).getId().equals(CamelMetadata.UNMOVEABLE.camelName);
     }
 
+    private Collection<MetricVariableImpl> filterVariables(Predicate<MetricVariableImpl> metricVariablePredicate) {
+        return metricVariables.stream()
+                .filter(metricVariablePredicate)
+                .collect(Collectors.toList());
+    }
+
     private Collection<NodeCandidateAttribute> createNodeCandidatesAttributes(Collection<MetricVariableImpl> attributes, boolean isList) {
         return attributes.stream()
                 .map(attribute -> new NodeCandidateAttribute(attribute.getName(), attribute.getComponent().getName(),
                         CamelMetadataTool.findNodeCandidateAttributeType(attribute), isList))
+                .collect(Collectors.toList());
+    }
+
+    private Collection<DLMSUtilityAttribute> createDlmsUtilityAttributes(Collection<MetricVariableImpl> attributes) {
+        return attributes.stream()
+                .map(variable -> new DLMSUtilityAttribute(variable.getName(), variable.getComponent().getName(),
+                        findDlmsUtilityAttributeType(variable)))
                 .collect(Collectors.toList());
     }
 
