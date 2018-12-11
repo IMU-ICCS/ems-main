@@ -11,8 +11,8 @@
 
 package eu.paasage.upperware.profiler.generator.orchestrator;
 
+import camel.core.Application;
 import camel.core.CamelModel;
-import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
@@ -21,6 +21,7 @@ import eu.paasage.upperware.profiler.generator.result.CpGenerationResult;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -103,9 +104,6 @@ public class GenerationOrchestrator {
         CamelModel camelModel;
         try {
             camelModel = cdoService.getCamelModel(resourceName, cdoTransaction);
-
-//            camelModel = loadModel();
-
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage(), e);
             return CpGenerationResult.error("Problem during loading CamelModel");
@@ -126,16 +124,17 @@ public class GenerationOrchestrator {
         return CpGenerationResult.succes(cpId);
     }
 
-    private camel.core.CamelModel loadModel(){
-        return (camel.core.CamelModel) CDOClient.loadModel("C:\\work\\Genomnew.xmi");
-    }
-
     private String getCpName(CamelModel camelModel) {
         String appId = getAppId(camelModel);
         return appId + System.currentTimeMillis();
     }
 
     private String getAppId(CamelModel camelModel) {
-        return camelModel.getApplication().getName();
+        Application application = camelModel.getApplication();
+        if (application != null && StringUtils.isNotBlank(application.getName())) {
+            return application.getName();
+        }
+        log.info("There is no Application defined in CamelModel or application name is blank. CamelModel name will be used.");
+        return camelModel.getName();
     }
 }
