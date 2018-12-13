@@ -13,6 +13,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
@@ -181,7 +182,8 @@ public class DataUtils {
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getCoresPredicate(CPModelTool.getIntValue(variableValue))));
 
         CPModelTool.getRam(variableValues)
-                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates
+                        .getRamPredicate(variableValue instanceof LongValueUpperware ? CPModelTool.getLongValue(variableValue) : CPModelTool.getIntValue(variableValue))));
 
         CPModelTool.getStorage(variableValues)
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getIntValue(variableValue))));

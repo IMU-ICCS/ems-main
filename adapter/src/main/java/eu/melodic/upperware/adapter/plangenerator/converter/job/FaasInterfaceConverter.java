@@ -33,6 +33,7 @@ public class FaasInterfaceConverter implements InterfaceConverter<ServerlessConf
                 .handler(findHandler(configuration))
                 .triggers(createTriggers(configuration))
                 .functionEnvironment(createFunctionEnvironment(configuration))
+                .functionName(configuration.getName())
                 .build();
     }
 
@@ -42,7 +43,6 @@ public class FaasInterfaceConverter implements InterfaceConverter<ServerlessConf
         faasInterface.setRuntime(findRuntime(paasRequirement));
         faasInterface.setMemory(findMemory(paasRequirement));
         faasInterface.setTimeout(findTimeout(paasRequirement));
-        faasInterface.setFunctionName(softwareComponent.getName());
         return faasInterface;
     }
 
