@@ -1,5 +1,9 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
+import camel.constraint.ComparisonOperatorType;
+import camel.constraint.Constraint;
+import camel.constraint.impl.MetricConstraintImpl;
+import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
 import camel.deployment.Configuration;
@@ -9,12 +13,12 @@ import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
 import camel.deployment.impl.ScriptConfigurationImpl;
 import camel.location.LocationModel;
-import camel.metric.CompositeMetric;
-import camel.metric.Metric;
-import camel.metric.RawMetric;
+import camel.metric.*;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.HorizontalScaleRequirement;
+import camel.requirement.RequirementModel;
+import camel.requirement.ServiceLevelObjective;
 import camel.type.PrimitiveType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -27,6 +31,7 @@ import eu.paasage.upperware.profiler.generator.communication.impl.NodeType;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
+import eu.paasage.upperware.profiler.generator.service.camel.parser.ExpressionService;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
@@ -37,16 +42,14 @@ import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -68,6 +71,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     private ConstraintService constraintService;
     private VariableService variableService;
     private MetricService metricService;
+    private ExpressionService expressionService;
 
     private VariableCreatorFactory variableCreatorFactory;
 
@@ -76,7 +80,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                                            CloudiatorServiceX cloudiatorServiceX, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                            @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, NodeCandidatesService nodeCandidatesService,
                                            ConstantService constantService, ConstraintService constraintService, VariableService variableService,
-                                           MetricService metricService, VariableCreatorFactory variableCreatorFactory) {
+                                           MetricService metricService, ExpressionService expressionService, VariableCreatorFactory variableCreatorFactory) {
         this.cpFactory = cpFactory;
         this.generatorServices = generatorServices;
         this.cloudiatorServiceX = cloudiatorServiceX;
@@ -87,6 +91,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         this.constraintService = constraintService;
         this.variableService = variableService;
         this.metricService = metricService;
+        this.expressionService = expressionService;
         this.variableCreatorFactory = variableCreatorFactory;
     }
 
@@ -133,7 +138,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             List<MetricVariableImpl> variables = getVariables(camelModel, componentName);
 
             Optional<MetricVariableImpl> mCardinality = CamelMetadataTool.findVariableFor(variables, CamelMetadata.CARDINALITY);
-            CpVariable cardinalityVariable;
+            CpVariable cardinalityVariable = null;
 
             if (mCardinality.isPresent()) {
                 MetricVariableImpl cardinalityMetricVariable = mCardinality.get();
@@ -222,9 +227,107 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
         addMetrics(cp, camelModel);
 
+        addConstraint(cp, camelModel, cpName);
         CPModelTool.printCpModel(cp);
 
         return cp;
+    }
+
+    private void addConstraint(ConstraintProblem cp, CamelModel camelModel, String cacheKey) {
+
+        getSLORequirement(camelModel)
+            .stream()
+            .peek(slo -> log.info("Working with SLO with type: " + getConstraintType(slo) + " - name " + slo.getName()))
+            .forEach(sloRequirement -> {
+
+                Constraint constraint = sloRequirement.getConstraint();
+                if (constraint != null) {
+                    if (constraint instanceof MetricConstraintImpl) {
+                        MetricConstraintImpl mc = (MetricConstraintImpl) constraint;
+                        MetricContext metricContext = mc.getMetricContext();
+
+                        Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
+                        ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
+
+                        CpMetric cpMetric = metricService.getByName(cp.getCpMetrics(), metricContext.getMetric().getName()).orElseGet(() -> {
+                            CpMetric result = metricService.createCpMetric(metricContext.getMetric().getName(), getType(metricContext.getMetric()));
+                            cp.getCpMetrics().add(result);
+                            return result;
+                        });
+
+                        cp.getConstants().add(tresholdConstant);
+                        cp.getConstraints().add(constraintService.createComparisonExpression(cpMetric, comparatorEnum, tresholdConstant, mc.getName()));
+                    }
+
+                    if (constraint instanceof MetricVariableConstraintImpl) {
+                        MetricVariableConstraintImpl mvc = (MetricVariableConstraintImpl) constraint;
+                        camel.metric.MetricVariable metricVariable = mvc.getMetricVariable();
+                        double threshold = mvc.getThreshold();
+                        ComparisonOperatorType comparisonOperator = mvc.getComparisonOperator();
+
+                        String name = metricVariable.getName();
+                        String formula = metricVariable.getFormula();
+
+                        if (StringUtils.isNotBlank(formula)){
+                            expressionService.parse(name, formula, cp, camelModel, cacheKey);
+
+                            ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
+                                    .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
+
+                            Constant tresholdConstant = constantService.createDoubleConstant(threshold);
+                            cp.getConstants().add(tresholdConstant);
+                            cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
+                        }
+                    }
+                }
+        });
+
+    }
+
+    private String getConstraintType(ServiceLevelObjective slo) {
+        String result = "Unknown";
+        Constraint constraint = slo.getConstraint();
+        if (constraint instanceof MetricConstraintImpl) {
+            result = "MetricConstraintImpl";
+        } else if (constraint instanceof MetricVariableConstraintImpl) {
+            result = "MetricVariableConstraintImpl";
+        }
+        return result;
+    }
+
+    private ComparatorEnum convertComparator(ComparisonOperatorType comparisonOperator){
+        if (comparisonOperator == null) {
+            throw new GeneratorException("Could not find comparition operator for");
+        }
+
+        if (ComparisonOperatorType.GREATER_THAN.equals(comparisonOperator)) {
+            return ComparatorEnum.GREATER_THAN;
+        } else if (ComparisonOperatorType.GREATER_EQUAL_THAN.equals(comparisonOperator)) {
+            return ComparatorEnum.GREATER_OR_EQUAL_TO;
+        } else if (ComparisonOperatorType.LESS_THAN.equals(comparisonOperator)) {
+            return ComparatorEnum.LESS_THAN;
+        } else if (ComparisonOperatorType.LESS_EQUAL_THAN.equals(comparisonOperator)) {
+            return ComparatorEnum.LESS_OR_EQUAL_TO;
+        } else if (ComparisonOperatorType.EQUAL.equals(comparisonOperator)) {
+            return ComparatorEnum.EQUAL_TO;
+        } else if (ComparisonOperatorType.NOT_EQUAL.equals(comparisonOperator)) {
+            return ComparatorEnum.DIFFERENT;
+        }
+
+        throw new GeneratorException("Unsupported comparator: " + comparisonOperator.getName());
+    }
+
+
+    private List<ServiceLevelObjective> getSLORequirement(CamelModel camelModel) {
+        List<ServiceLevelObjective> result = new ArrayList<>();
+        for (RequirementModel requirementModel : CollectionUtils.emptyIfNull(camelModel.getRequirementModels())) {
+            for (camel.requirement.Requirement requirement : CollectionUtils.emptyIfNull(requirementModel.getRequirements())) {
+                if (requirement instanceof ServiceLevelObjective) {
+                    result.add((ServiceLevelObjective) requirement);
+                }
+            }
+        }
+        return result;
     }
 
     private void addMetrics(ConstraintProblem cp, CamelModel camelModel) {
@@ -442,8 +545,12 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     private List<Metric> getAllMetrics(CamelModel camelModel){
-        return CollectionUtils.emptyIfNull(camelModel.getMetricModels())
-                .stream()
+        EList<MetricModel> metricModels = camelModel.getMetricModels();
+        if (CollectionUtils.isEmpty(metricModels)){
+            return Collections.emptyList();
+        }
+
+        return metricModels.stream()
                 .map(metricModel -> ((MetricTypeModelImpl) metricModel).getMetrics())
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
