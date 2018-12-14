@@ -9,23 +9,18 @@
 
 package eu.melodic.upperware.adapter.executioncontext.colosseum;
 
-import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import eu.melodic.upperware.adapter.exception.AmbiguousResultException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
-import io.github.cloudiator.rest.model.Schedule;
 import io.github.cloudiator.rest.model.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +44,7 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
 
   private final List<NodeGroup> nodeGroups = synchronizedList();
   private final List<Schedule> schedules = synchronizedList();
-  private final List<CloudiatorProcess> processes = synchronizedList();
+  private final List<ProcessGroup> processGroups = synchronizedList();
   private final List<Job> jobs = synchronizedList();
 
   private boolean loaded;
@@ -59,13 +54,12 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   }
 
   public Optional<NodeGroup> getNodeGroup(String name) {
-    return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one node with the same name=%s", name)));
+    return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()), createAmbiguousResultException(NodeGroup.class, name));
   }
 
   public Optional<NodeGroup> getNodeGroupByNodeName(String name) {
     return getElement(nodeGroups, nodeGroup -> nodeGroup.getNodes().stream().map(Node::getName).anyMatch(nodeName -> nodeName.endsWith(name)),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one node with the same name=%s", name)));
+            createAmbiguousResultException(NodeGroup.class, name));
   }
 
   public void addSchedule(@NonNull Schedule schedule) {
@@ -73,17 +67,15 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   }
 
   public Optional<Schedule> getSchedule(String name) {
-    return getElement(schedules, schedule -> name.equals(schedule.getId()),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one schedules with the same name=%s", name)));
+    return getElement(schedules, schedule -> name.equals(schedule.getId()), createAmbiguousResultException(Schedule.class, name));
   }
 
-  public void addProcess(@NonNull CloudiatorProcess process) {
-    processes.add(process);
+  public void addProcessGroup(@NonNull ProcessGroup processGroup) {
+    processGroups.add(processGroup);
   }
 
-  public Optional<CloudiatorProcess> getProcess(String name) {
-    return getElement(processes, process -> name.equals(process.getId()),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one process with the same name=%s", name)));
+  public Optional<ProcessGroup> getProcessGroup(String processGroupId) {
+    return getElement(processGroups, process -> processGroupId.equals(process.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
   }
 
   public void addJob(@NonNull Job job) {
@@ -91,12 +83,14 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   }
 
   public Optional<Job> getJob(String name) {
-    return getElement(jobs, job -> name.equals(job.getId()),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", name)));
+      return getElement(jobs, job -> name.equals(job.getId()), createAmbiguousResultException(Job.class, name));
   }
 
+  private Supplier<AmbiguousResultException> createAmbiguousResultException(Class clazz, String id){
+      return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
+  }
 
-  private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<IllegalStateException> exceptionSupplier) {
+  private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {
     synchronized (collection) {
       return collection.stream()
               .filter(predicate)
@@ -104,7 +98,7 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
     }
   }
 
-  private <T> Collector<T, ?, Optional<T>> toSingleton(Supplier<IllegalStateException> exceptionSupplier) {
+  private <T> Collector<T, ?, Optional<T>> toSingleton(Supplier<AmbiguousResultException> exceptionSupplier) {
     return Collectors.collectingAndThen(
             Collectors.toList(),
             list -> {
@@ -130,10 +124,8 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
     schedules.clear();
     schedules.addAll(processApi.getSchedules());
 
-    processes.clear();
-    if (CollectionUtils.isNotEmpty(schedules)){
-        processes.addAll(processApi.getProcesses(schedules.get(0).getId()));
-  }
+    processGroups.clear();
+    processGroups.addAll(processApi.findProcessGroups());
 
     jobs.clear();
     jobs.addAll(jobApi.findJobs());
@@ -146,26 +138,4 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
     return loaded;
   }
 
-    private void printInstances(String text, List<Instance> instances) {
-        JSONArray array = new JSONArray();
-        String result = "";
-        try {
-            for (Instance instance : instances) {
-                array.put(createJsonRepresentation(instance));
-            }
-            result = array.toString(3);
-        } catch (Exception e) {
-            log.error("Problem with json", e);
-        }
-        log.info("{} Instances: {}\n{}", text, array.length(), result);
-    }
-
-    private JSONObject createJsonRepresentation(Instance instance) throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("id", instance.getId());
-        result.put("applicationComponent", instance.getApplicationComponent());
-        result.put("applicationInstance", instance.getApplicationInstance());
-        result.put("virtualMachine", instance.getVirtualMachine());
-        return result;
-    }
 }
