@@ -14,6 +14,7 @@ import javax.jms.*;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class BrokerClient {
 	@Autowired
 	private BrokerClientProperties properties;
 
-	public static void main(String args[]) throws JMSException {
+	public static void main(String args[]) throws MalformedURLException {
 		log.info("BrokerClient: Test");
 		final PropertySourcesPlaceholderConfigurer theConfigurer = new PropertySourcesPlaceholderConfigurer();
 		theConfigurer.setLocation(new UrlResource("eu.melodic.event.brokercep.properties"));
