@@ -6,7 +6,6 @@ import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveSchedule;
-import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterSchedule;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScheduleTask;
 import io.github.cloudiator.rest.ApiException;
@@ -15,7 +14,6 @@ import io.github.cloudiator.rest.model.Queue;
 import io.github.cloudiator.rest.model.Schedule;
 import io.github.cloudiator.rest.model.ScheduleNew;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
@@ -61,14 +59,18 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. New schedule is created", queue.getId());
 
-            Schedule schedule = api.getSchedule(getId(watch.getLocation()));
+            String scheduleId = getId(watch.getLocation());
+            Optional<Schedule> scheduleOpt = api.getSchedule(scheduleId);
 
-            log.info("New schedule is created: {}", schedule.getId());
-            log.debug("Schedule details: {}", schedule);
-            context.addSchedule(schedule);
+            if (scheduleOpt.isPresent()){
+                Schedule schedule = scheduleOpt.get();
 
-            shelveContext.addShelveSchedule(new ShelveSchedule(schedule.getId(), watch.getId(), job.getId()));
-
+                log.info("Schedule details: {}", schedule);
+                context.addSchedule(schedule);
+                shelveContext.addShelveSchedule(new ShelveSchedule(schedule.getId(), watch.getId(), job.getId()));
+            } else {
+                log.error("Could not get Schedule with id {}", scheduleId);
+            }
         } catch (ApiException e) {
             log.error("Could not add Schedule. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Schedule", e);

@@ -13,6 +13,7 @@ import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ColosseumApi {
 
@@ -21,16 +22,12 @@ public interface ColosseumApi {
 
   Queue addSchedule(ScheduleNew scheduleNew) throws ApiException;
 
-  Schedule getSchedule(String scheduleId) throws ApiException;
+  Optional<Schedule> getSchedule(String scheduleId) throws ApiException;
 
   List<Schedule> getSchedules() throws ApiException;
 
 
   Queue addProcess(CloudiatorProcessNew cloudiatorProcessNew) throws ApiException;
-
-  CloudiatorProcess getProcess(String scheduleId, String processId) throws ApiException;
-
-  List<CloudiatorProcess> getProcessess(String scheduleId) throws ApiException;
 
 
   Job addJob(JobNew jobNew) throws ApiException;
@@ -42,11 +39,8 @@ public interface ColosseumApi {
 
   Queue addNode(NodeRequest nodeRequest) throws ApiException;
 
-  Node getNode(String id) throws ApiException;
 
-  List<Node> getNodes() throws ApiException;
+  Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException;
 
-
-  NodeGroup getNodeGroup(String nodeGroupId) throws ApiException;
-
+  Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
 }
