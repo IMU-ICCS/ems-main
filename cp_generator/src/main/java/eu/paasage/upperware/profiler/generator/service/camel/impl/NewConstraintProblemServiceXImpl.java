@@ -1,6 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import camel.constraint.ComparisonOperatorType;
+import camel.constraint.ConstraintModel;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
@@ -48,10 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -286,9 +284,11 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private List<MetricVariableConstraintImpl> getMetricVariableConstraints(CamelModel camelModel){
 
-        return CollectionUtils.emptyIfNull(camelModel.getMetricModels())
+        return CollectionUtils.emptyIfNull(camelModel.getConstraintModels())
                 .stream()
-                .filter(metricModel -> metricModel instanceof MetricVariableConstraintImpl)
+                .map(ConstraintModel::getConstraints)
+                .flatMap(Collection::stream)
+                .filter(constraint -> constraint instanceof MetricVariableConstraintImpl)
                 .map(metricModel -> (MetricVariableConstraintImpl) metricModel)
                 .collect(Collectors.toList());
     }
