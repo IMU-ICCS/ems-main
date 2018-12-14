@@ -10,9 +10,9 @@
 package eu.melodic.event.translate;
 
 import camel.core.CamelModel;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 
 public interface Translator {
-	public TranslationContext translate(String camelId);
-	public TranslationContext translate(CamelModel camelModel);
+    public TranslationContext translate(String camelId);
+
+    public TranslationContext translate(CamelModel camelModel);
 }

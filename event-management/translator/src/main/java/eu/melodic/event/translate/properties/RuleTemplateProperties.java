@@ -11,24 +11,16 @@ package eu.melodic.event.translate.properties;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Data
 @Validated
@@ -37,25 +29,20 @@ import javax.validation.constraints.NotNull;
 @ConfigurationProperties(prefix = "generator")
 @Slf4j
 public class RuleTemplateProperties {
-	@Value("${generator.language:}")
-	private String language;
-	
-    private Map<String,Map<String,List<String>>> ruleTemplates;
+    @Value("${generator.language:}")
+    private String language;
 
-    public Map<String,Map<String,List<String>>> getRuleTemplates() {
-        return ruleTemplates;
-    }
+    private Map<String, Map<String, List<String>>> ruleTemplates;
 
-    public void setRuleTemplates(Map<String,Map<String,List<String>>> map) {
-		log.debug("RuleTemplateProperties.setRuleTemplates: {}", ruleTemplates);
+    public void setRuleTemplates(Map<String, Map<String, List<String>>> map) {
+        log.debug("RuleTemplateProperties.setRuleTemplates: {}", ruleTemplates);
         this.ruleTemplates = map;
     }
-	
-	public List<String> getTemplatesFor(String type, String grouping) {
-		log.trace("RuleTemplateProperties.getTemplatesFor: type={}, grouping={}", type, grouping);
-		List<String> list = Optional.ofNullable( ruleTemplates.get(type) ).map(groupings -> groupings.get(grouping)).orElse(null);
-		log.trace("RuleTemplateProperties.getTemplatesFor: results={}", list);
-		if (list==null) list = new ArrayList<>();
-		return list;
-	}
+
+    public List<String> getTemplatesFor(String type, String grouping) {
+        log.trace("RuleTemplateProperties.getTemplatesFor: type={}, grouping={}", type, grouping);
+        List<String> list = Optional.ofNullable(ruleTemplates.get(type)).map(groupings -> groupings.get(grouping)).orElse(Collections.emptyList());
+        log.trace("RuleTemplateProperties.getTemplatesFor: results={}", list);
+        return list;
+    }
 }

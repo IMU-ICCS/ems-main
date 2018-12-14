@@ -12,37 +12,29 @@ package eu.melodic.event.translate;
 import camel.core.CamelModel;
 import camel.core.CorePackage;
 import camel.core.NamedElement;
-
-import eu.melodic.event.translate.analyze.*;
-import eu.melodic.event.translate.generate.*;
-import eu.melodic.event.translate.transform.*;
+import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.translate.analyze.ModelAnalyzer;
+import eu.melodic.event.translate.generate.RuleGenerator;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.event.translate.properties.RuleTemplateProperties;
-
+import eu.melodic.event.translate.transform.GraphTransformer;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
-//import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+//import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 
 @Slf4j
 @Service("CamelToEplTranslator")
@@ -63,8 +55,7 @@ public class CamelToEplTranslator implements Translator {
 	}
 	
 	public CamelToEplTranslator(CDOClientX client) {
-		if (client==null) throw new NullPointerException("CamelToEplTranslator(CDOClientX) : Argument cannot be null");
-        this.cdoClient = client;
+		this.cdoClient = Objects.requireNonNull(client, "CamelToEplTranslator(CDOClientX) : Argument cannot be null");
 		log.debug("CamelToEplTranslator.<init>():  Set cdo-client");
 	}
 	
@@ -83,7 +74,7 @@ public class CamelToEplTranslator implements Translator {
 			// Retrieve CAMEL and CP models
 			log.debug("CamelToEplTranslator.translate():  Retrieving models...");
 			CamelModel camelModel = null;
-			if (camelId!=null && !camelId.trim().isEmpty()) {
+			if (!StringUtils.isBlank(camelId)) {
 				CDOResource camelModelRes = view.getResource(camelId);
 				EList<EObject> contents = camelModelRes.getContents();
 				camelModel = (CamelModel) contents.get(contents.size()-1);
@@ -161,7 +152,7 @@ public class CamelToEplTranslator implements Translator {
 			
 			// Get base name and path of export files
 			if (exportPath==null) exportPath = "";
-			exportName = (exportName==null || exportName.trim().isEmpty()) ? "" : exportName.trim();
+			exportName = StringUtils.stripToEmpty(exportName);
 			String baseFileName = String.format("%s/%s%s%d", exportPath, exportName, exportName.isEmpty()?"":"-", System.currentTimeMillis());
 			_TC.DAG.exportDAG(baseFileName, exportFormats, imageWidth);
 			//log.info("Decomposition Graph export to file(s): ok");
@@ -215,12 +206,10 @@ public class CamelToEplTranslator implements Translator {
 		return newMap;
 	}
 	
-	protected Collection<String> getElementNames(Collection col) {
+	protected Collection<String> getElementNames(Collection<FunctionDefinition> col) {
 		ArrayList<String> names = new ArrayList<>();
-		for (Object elem : col) {
-			if (elem!=null && NamedElement.class.isInstance(elem)) {
-				names.add( ((NamedElement)elem).getName() );
-			}
+		for (FunctionDefinition fd : col) {
+			names.add( fd.getName() );
 		}
 		return names;
 	}

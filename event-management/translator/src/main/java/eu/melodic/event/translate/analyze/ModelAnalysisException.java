@@ -10,7 +10,15 @@
 package eu.melodic.event.translate.analyze;
 
 public class ModelAnalysisException extends RuntimeException {
-	public ModelAnalysisException(String message) { super(message); }
-	public ModelAnalysisException(Throwable th) { super(th); }
-	public ModelAnalysisException(String message, Throwable th) { super(message, th); }
+    public ModelAnalysisException(String message) {
+        super(message);
+    }
+
+    public ModelAnalysisException(Throwable th) {
+        super(th);
+    }
+
+    public ModelAnalysisException(String message, Throwable th) {
+        super(message, th);
+    }
 }

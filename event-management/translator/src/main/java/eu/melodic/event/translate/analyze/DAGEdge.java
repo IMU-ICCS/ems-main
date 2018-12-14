@@ -9,37 +9,38 @@
 
 package eu.melodic.event.translate.analyze;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.jgrapht.graph.DefaultEdge;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class DAGEdge extends DefaultEdge {
-	private static AtomicLong edgeCounter = new AtomicLong();
-	
-	private final long id;
-	private final String _toString;
-	
-	public DAGEdge() {
-		id = edgeCounter.getAndIncrement();
-		_toString = "EDGE #"+id;
-	}
-	
-	public DAGNode getSource() {
-		return (DAGNode) super.getSource();
-	}
-	
-	public DAGNode getTarget() {
-		return (DAGNode) super.getTarget();
-	}
-	
-	public int hashCode() {
-		return toString().hashCode();
-	}
-	
-	public boolean equals(Object o) {
-		return (o instanceof DAGEdge) && (toString().equals(o.toString()));
-	}
-	
-	public String toString() {
-		return _toString;
-	}
+    private static AtomicLong edgeCounter = new AtomicLong();
+
+    private final long id;
+    private final String _toString;
+
+    public DAGEdge() {
+        id = edgeCounter.getAndIncrement();
+        _toString = "EDGE #" + id;
+    }
+
+    public DAGNode getSource() {
+        return (DAGNode) super.getSource();
+    }
+
+    public DAGNode getTarget() {
+        return (DAGNode) super.getTarget();
+    }
+
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    public boolean equals(Object o) {
+        return (o instanceof DAGEdge) && (toString().equals(o.toString()));
+    }
+
+    public String toString() {
+        return _toString;
+    }
 }

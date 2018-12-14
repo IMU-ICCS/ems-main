@@ -13,33 +13,33 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-//import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+//import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 @Slf4j
 @SpringBootApplication
 public class TranslatorApplication implements CommandLineRunner {
-	
-	private static boolean standalone = false;
-	
-	public static void main(String[] args) {
-		standalone = true;
-		SpringApplication.run(TranslatorApplication.class, args);
-	}
-	
-	@Autowired
-	private CamelToEplTranslator translator;
 
-	@Override
-	public void run(String... args) {
-		if (!standalone) return;	// Execute only if called by 'main()'
-		
-		log.info("Testing CAMEL-to-EPL Translator");
-		log.info("Args: {}", java.util.Arrays.asList(args));
-		
-		String camelModelId = (args.length>0 && !args[0].trim().isEmpty()) ? args[0].trim() : "/camel-new";
-		log.info("Models to use...");
-		log.info("  Camel-model: {}", camelModelId);
-		translator.translate(camelModelId);
-	}
+    private static boolean standalone = false;
+    @Autowired
+    private CamelToEplTranslator translator;
+
+    public static void main(String[] args) {
+        standalone = true;
+        SpringApplication.run(TranslatorApplication.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
+        if (!standalone) return;    // Execute only if called by 'main()'
+
+        log.info("Testing CAMEL-to-EPL Translator");
+        log.info("Args: {}", java.util.Arrays.asList(args));
+
+        String camelModelId = (args.length > 0 && !args[0].trim().isEmpty()) ? args[0].trim() : "/camel-new";
+        log.info("Models to use...");
+        log.info("  Camel-model: {}", camelModelId);
+        translator.translate(camelModelId);
+    }
 }

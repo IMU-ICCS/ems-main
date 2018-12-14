@@ -10,7 +10,15 @@
 package eu.melodic.event.translate;
 
 public class CamelToEplTranslationException extends RuntimeException {
-	public CamelToEplTranslationException(String message) { super(message); }
-	public CamelToEplTranslationException(Throwable th) { super(th); }
-	public CamelToEplTranslationException(String message, Throwable th) { super(message, th); }
+    public CamelToEplTranslationException(String message) {
+        super(message);
+    }
+
+    public CamelToEplTranslationException(Throwable th) {
+        super(th);
+    }
+
+    public CamelToEplTranslationException(String message, Throwable th) {
+        super(message, th);
+    }
 }
