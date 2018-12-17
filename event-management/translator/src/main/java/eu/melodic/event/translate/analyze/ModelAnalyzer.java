@@ -606,7 +606,7 @@ public class ModelAnalyzer {
                 }
             } else
                 // check if it is metric variable
-                if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+                if (m instanceof MetricVariable) {
                     // check if it is a composite metric variable
                     if (_TC.CMVAR.contains(m.getName())) {
                         hasNonMVVComponents = true;
@@ -748,7 +748,7 @@ public class ModelAnalyzer {
         // Check if sensor monitors have already been created
         if (_TC.containsMonitorsForSensor(sensor.getName())) {
             log.info("    _createMonitorsForSensor(): sensor={} :: Monitors for this sensor have already been added", sensor.getName());
-            return null;
+            return Collections.emptySet();
         }
 
         // Create result set
@@ -783,8 +783,7 @@ public class ModelAnalyzer {
         if (EMS_SINKS == null) {
             Sink sink = new SinkImpl();
             sink.setType(Sink.TypeType.JMS);
-            List<Sink> sinks = new ArrayList<>();
-            sinks.add(sink);
+            List<Sink> sinks = Collections.singletonList(sink);
             EMS_SINKS = sinks;
         }
 
@@ -1047,12 +1046,11 @@ public class ModelAnalyzer {
         throw new ModelAnalysisException("Invalid Object Context: either Component or Data property must be not null: " + objContext.getName());
     }
 
-    protected boolean checkIfUpperwareElement(NamedElement elem) {
-        return false
-                || MetricVariable.class.isInstance(elem)
-                || ServiceLevelObjective.class.isInstance(elem)
-                || Event.class.isInstance(elem)
-                || Constraint.class.isInstance(elem)
+    private boolean checkIfUpperwareElement(NamedElement elem) {
+        return (elem instanceof MetricVariable)
+                || (elem instanceof ServiceLevelObjective)
+                || (elem instanceof Event)
+                || (elem instanceof Constraint)
                 ;
     }
 

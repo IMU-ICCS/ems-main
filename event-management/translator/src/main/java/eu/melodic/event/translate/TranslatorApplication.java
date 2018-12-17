@@ -15,8 +15,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-//import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-
 @Slf4j
 @SpringBootApplication
 public class TranslatorApplication implements CommandLineRunner {

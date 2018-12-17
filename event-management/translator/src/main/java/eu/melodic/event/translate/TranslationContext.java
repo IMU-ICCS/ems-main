@@ -63,14 +63,14 @@ public class TranslationContext {
     // Function set
     public final Set<FunctionDefinition> FUNC;
     // Element-to-Full-Name cache, pattern and count
-    private transient final Map<NamedElement, String> E2N;            //XXX:TODO-LOW: Clear after translation
+    private transient final Map<NamedElement, String> E2N;              //XXX:TODO-LOW: Clear after translation
     private transient final AtomicLong elementsCount;
     // Topics-Connections-per-Grouping
-    protected Map<String, String> providedTopics;                        // topic-grouping where this topic is provided
-    protected Map<String, Set<String>> requiredTopics;                    // topic-set of groupins where this topic is required
-    protected Map<String, Map<String, Set<String>>> topicConnections;        // grouping-provided topic in grouping-groupings that require provided topic
+    protected Map<String, String> providedTopics;                       // topic-grouping where this topic is provided
+    protected Map<String, Set<String>> requiredTopics;                  // topic-set of groupins where this topic is required
+    protected Map<String, Map<String, Set<String>>> topicConnections;   // grouping-provided topic in grouping-groupings that require provided topic
     protected boolean needsRefresh;
-    private transient String fullNamePattern = "{ELEM}";                    // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
+    private transient String fullNamePattern;                           // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
 
 
     // ====================================================================================================================================================

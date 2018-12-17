@@ -12,7 +12,6 @@ package eu.melodic.event.translate;
 import camel.core.CamelModel;
 
 public interface Translator {
-    public TranslationContext translate(String camelId);
-
-    public TranslationContext translate(CamelModel camelModel);
+    TranslationContext translate(String camelId);
+    TranslationContext translate(CamelModel camelModel);
 }
