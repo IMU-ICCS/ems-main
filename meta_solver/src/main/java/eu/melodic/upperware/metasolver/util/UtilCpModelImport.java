@@ -57,78 +57,81 @@ import java.util.Arrays;
 
 public class UtilCpModelImport {
 
-  public static void main(String[] args) {
-	System.out.println("BEGIN");
-	int op = -1;
-	if (args.length>0) op = Integer.parseInt(args[0]);
-	switch (op) {
-	case 1:
-		System.out.println("Importing CP model from XMI file into CDO resource: "+resourceId+"...");
-		importCpModel(args); break;
-	case 2:
-		System.out.println("Retrieving CP model from CDO resource: "+resourceId+"...");
-		testGetCpModel(); break;
-	case 3:
-		System.out.println("Updating CP model in CDO resource: "+resourceId+"...");
-		testUpdateCpModel(); break;
-	default:
-		System.out.println("Invalid option. Valid options:");
-		System.out.println("  1: import CP model from file");
-		System.out.println("  2: retrieve CP model from CDO");
-		System.out.println("  3: update CP model in CDO");
-	}
-	System.out.println("END");
-  }
-  
-	// Connect to CDO
+    protected static String resourceId = "/CRMApp1531746091371_test";
 
-	protected static String resourceId = "/CRMApp1531746091371_test";
+    // Connect to CDO
 
-	protected static void testGetCpModel() {
-		try {
-			CpPackage.eINSTANCE.eClass();
-			CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+    public static void main(String[] args) {
+        System.out.println("BEGIN");
+        int op = -1;
+        if (args.length > 0) op = Integer.parseInt(args[0]);
+        switch (op) {
+            case 1:
+                System.out.println("Importing CP model from XMI file into CDO resource: " + resourceId + "...");
+                importCpModel(args);
+                break;
+            case 2:
+                System.out.println("Retrieving CP model from CDO resource: " + resourceId + "...");
+                testGetCpModel();
+                break;
+            case 3:
+                System.out.println("Updating CP model in CDO resource: " + resourceId + "...");
+                testUpdateCpModel();
+                break;
+            default:
+                System.out.println("Invalid option. Valid options:");
+                System.out.println("  1: import CP model from file");
+                System.out.println("  2: retrieve CP model from CDO");
+                System.out.println("  3: update CP model in CDO");
+        }
+        System.out.println("END");
+    }
 
-			//CDONet4jSession cdoSession = openSession();
-			CDOSessionX session = cdoClient.getSession();
-			CDOView cdoView = session.openView();
+    protected static void testGetCpModel() {
+        try {
+            CpPackage.eINSTANCE.eClass();
+            CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
 
-			// Get CP model
-			CDOResource resource = cdoView.getResource(resourceId);
-			ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+            //CDONet4jSession cdoSession = openSession();
+            CDOSessionX session = cdoClient.getSession();
+            CDOView cdoView = session.openView();
 
-			// Print Delta Utility
-			printDeltaUtility(cpModel);
+            // Get CP model
+            CDOResource resource = cdoView.getResource(resourceId);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
 
-			cdoView.close();
-			session.closeSession();
+            // Print Delta Utility
+            printDeltaUtility(cpModel);
 
-		} catch (Exception ex) {
-			System.err.println(ex.toString());
-			ex.printStackTrace(System.err);
-		}
-	}
+            cdoView.close();
+            session.closeSession();
 
-	protected static void testUpdateCpModel() {
-		CDOSessionX session = null;
-		CDOTransaction transaction = null;
-		try {
-			CpPackage.eINSTANCE.eClass();
-			CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+        } catch (Exception ex) {
+            System.err.println(ex.toString());
+            ex.printStackTrace(System.err);
+        }
+    }
 
-			session = cdoClient.getSession();
-			transaction = session.openTransaction();
+    protected static void testUpdateCpModel() {
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        try {
+            CpPackage.eINSTANCE.eClass();
+            CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
 
-			// Get CP model
-			CDOResource resource = transaction.getResource(resourceId);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(0);
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
 
-			// Print Delta Utility - BEFORE UPDATE
-			System.out.println("-------------  BEFORE UPDATE  --------------");
-			printDeltaUtility( cpModel );
+            // Get CP model
+            CDOResource resource = transaction.getResource(resourceId);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
 
-			// Add new solution to Delta Utility
-			System.out.println("-------------      UPDATE     --------------");
+            // Print Delta Utility - BEFORE UPDATE
+            System.out.println("-------------  BEFORE UPDATE  --------------");
+            printDeltaUtility(cpModel);
+
+            // Add new solution to Delta Utility
+            System.out.println("-------------      UPDATE     --------------");
 /*			DeltaUtility du = cpModel.getDeltaUtility();
 			EList<Variable> cpVarList = cpModel.getVariables();
 			EList<MetricVariable> cpMVarList = cpModel.getMetricVariables();
@@ -184,30 +187,30 @@ public class UtilCpModelImport {
 
 			transaction.commit();
 */
-			// Print Delta Utility - AFTER UPDATE
-			System.out.println("-------------  AFTER UPDATE   --------------");
-			printDeltaUtility( cpModel );
+            // Print Delta Utility - AFTER UPDATE
+            System.out.println("-------------  AFTER UPDATE   --------------");
+            printDeltaUtility(cpModel);
 
-			transaction = null;
-			session.closeSession();
+            transaction = null;
+            session.closeSession();
 
-		} catch (Exception ex) {
-			System.err.println(ex.toString());
-			ex.printStackTrace(System.err);
-		} finally {
-			if (transaction != null) {
-				transaction.rollback();
-				transaction.close();
-			}
-			if (session != null) {
-				session.closeSession();
-				session = null;
-			}
-		}
-	}
+        } catch (Exception ex) {
+            System.err.println(ex.toString());
+            ex.printStackTrace(System.err);
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
+                transaction.close();
+            }
+            if (session != null) {
+                session.closeSession();
+                session = null;
+            }
+        }
+    }
 
-	protected static void printDeltaUtility(ConstraintProblem cpModel) {
-		// Print Delta Utility
+    protected static void printDeltaUtility(ConstraintProblem cpModel) {
+        // Print Delta Utility
 /*		DeltaUtility du = cpModel.getDeltaUtility();
 		Parameter solSelected = du.getSelectedSolution();
 		System.out.println("==== SELECTED SOLUTION ====");
@@ -219,46 +222,46 @@ public class UtilCpModelImport {
 			Parameter sol = solutions.get(i);
 			printSolution( sol );
 		}*/
-  }
-  
-  protected static void printSolution(Parameter param) {
-	  if (param==null) {
-		  System.out.println("***** null argument");
-		  return;
-	  }
-	  String name = param.getName();
-	  Solution sol = param.getSolution();
-	  System.out.println("***** param: name="+name);
-	  if (sol==null) return;
-	  
-	  long ts = sol.getTimestamp();
-	  EList<CpVariableValue> vvList = sol.getVariableValue();
-	//  EList<MetricVariableValue> mvvList = sol.getMetricVariableValue();
-	  //
-	//  System.out.println("***** param : timestamp="+ts);
-	//  System.out.println("--- Metric Values");
-	//  for (int i=0, n=vvList.size(); i<n; i++) {
-		//  VariableValue vv = vvList.get(i);
-		//  Variable var = vv.getVariable();
-		//  DoubleValueUpperware v = (DoubleValueUpperware)vv.getValue();
-		//  System.out.println("  Var.Value:  name="+var.getId()+", value="+v.getValue());
-	//  }
-	//  System.out.println("--- Metric Variable Values");
-	//  for (int i=0, n=mvvList.size(); i<n; i++) {
-		//  MetricVariableValue mvv = mvvList.get(i);
-		//  MetricVariable mv = mvv.getVariable();
-		//  DoubleValueUpperware v = (DoubleValueUpperware)mvv.getValue();
-		//  System.out.println("  Metric Var.Value:  name="+mv.getId()+", value="+v.getValue());
-	//  }
-  }
+    }
 
-	public static void init() {
-		//
-		//log.debug("initialising model ....");
-		// initialise the Upperware model packages
+    protected static void printSolution(Parameter param) {
+        if (param == null) {
+            System.out.println("***** null argument");
+            return;
+        }
+        String name = param.getName();
+        Solution sol = param.getSolution();
+        System.out.println("***** param: name=" + name);
+        if (sol == null) return;
 
-		TypesPackage.eINSTANCE.eClass(); 
-		CpPackage.eINSTANCE.eClass();
+        long ts = sol.getTimestamp();
+        EList<CpVariableValue> vvList = sol.getVariableValue();
+        //  EList<MetricVariableValue> mvvList = sol.getMetricVariableValue();
+        //
+        //  System.out.println("***** param : timestamp="+ts);
+        //  System.out.println("--- Metric Values");
+        //  for (int i=0, n=vvList.size(); i<n; i++) {
+        //  VariableValue vv = vvList.get(i);
+        //  Variable var = vv.getVariable();
+        //  DoubleValueUpperware v = (DoubleValueUpperware)vv.getValue();
+        //  System.out.println("  Var.Value:  name="+var.getId()+", value="+v.getValue());
+        //  }
+        //  System.out.println("--- Metric Variable Values");
+        //  for (int i=0, n=mvvList.size(); i<n; i++) {
+        //  MetricVariableValue mvv = mvvList.get(i);
+        //  MetricVariable mv = mvv.getVariable();
+        //  DoubleValueUpperware v = (DoubleValueUpperware)mvv.getValue();
+        //  System.out.println("  Metric Var.Value:  name="+mv.getId()+", value="+v.getValue());
+        //  }
+    }
+
+    public static void init() {
+        //
+        //log.debug("initialising model ....");
+        // initialise the Upperware model packages
+
+        TypesPackage.eINSTANCE.eClass();
+        CpPackage.eINSTANCE.eClass();
 //		OntologyPackage.eINSTANCE.eClass();
         // Register the XMI resource factory for the .xmi extension
         Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*",
@@ -292,94 +295,95 @@ public class UtilCpModelImport {
         }
         return resource;
 
-	}
-	
-  protected static void importCpModel(String args[]) {
-	CDOSessionX session = null;
-        CDOTransaction transaction = null;
-        CDOTransaction transaction2 = null;  try {
-		// Initialize CDO classes
-		//CpModelTool.init();
-		init();
-		// ... or the next....
-		CpPackage.eINSTANCE.eClass();
+    }
 
-		// Load CP model from XMI
-		String xmiFile = "meta_solver/src/main/resources/tests_files/CRMApp1531746091371_test.xmi";
-		if (args.length>1 && !args[1].trim().isEmpty()) xmiFile = args[1].trim();
-		Resource resModel = loadFile(xmiFile);
-		String resourceId = UtilCpModelImport.resourceId;
-		if (args.length>2 && !args[2].trim().isEmpty()) resourceId = args[2].trim();
-		
-		// Print CP model (XMI)
-		java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
-		resModel.getContents().get(0).eResource().save(output, null);
-		System.out.println( output.toString() );
-		
-		// Print CP model info
+    protected static void importCpModel(String args[]) {
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        CDOTransaction transaction2 = null;
+        try {
+            // Initialize CDO classes
+            //CpModelTool.init();
+            init();
+            // ... or the next....
+            CpPackage.eINSTANCE.eClass();
+
+            // Load CP model from XMI
+            String xmiFile = "meta_solver/src/main/resources/tests_files/CRMApp1531746091371_test.xmi";
+            if (args.length > 1 && !args[1].trim().isEmpty()) xmiFile = args[1].trim();
+            Resource resModel = loadFile(xmiFile);
+            String resourceId = UtilCpModelImport.resourceId;
+            if (args.length > 2 && !args[2].trim().isEmpty()) resourceId = args[2].trim();
+
+            // Print CP model (XMI)
+            java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+            resModel.getContents().get(0).eResource().save(output, null);
+            System.out.println(output.toString());
+
+            // Print CP model info
 		/*ConstraintProblem cpModel_0 = (ConstraintProblem)resModel.getContents().get(0);
 		EList<Goal> goals = cpModel_0.getGoals();
 		for (int i=0, n=goals.size(); i<n; i++) System.out.printf("\t%s / %f\n", goals.get(i).getId(), goals.get(i).getPriority());
 		EList<Variable> vars = cpModel_0.getVariables();
 		for (int i=0, n=vars.size(); i<n; i++) System.out.printf("\t%s / [%d..%d]\n", vars.get(i).getId(), ((IntegerValueUpperware)((RangeDomain)vars.get(i).getDomain()).getFrom()).getValue(), ((IntegerValueUpperware)((RangeDomain)vars.get(i).getDomain()).getTo()).getValue());
 		*/
-		
 
-		
-		// Add DeltaUtility to avoid NullPointerException
-		ConstraintProblem cpModel = (ConstraintProblem)resModel.getContents().get(0);
+
+            // Add DeltaUtility to avoid NullPointerException
+            ConstraintProblem cpModel = (ConstraintProblem) resModel.getContents().get(0);
 		/*System.out.println( "DeltaUtility: "+cpModel.getDeltaUtility());
 		DeltaUtility du = CpFactory.eINSTANCE.createDeltaUtility();
 		du.setId("zzzz-du-id-1");
 		cpModel.setDeltaUtility(du);
 		*/
-		cpModel.setDeployedSolutionId(1);
-		cpModel.setCandidateSolutionId(2);
-		
-		CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));// Store in CDOsession = cdoClient.getSession();
-          transaction = session.openTransaction();
-		System.out.println( "Saving to : "+resourceId);
+            cpModel.setDeployedSolutionId(1);
+            cpModel.setCandidateSolutionId(2);
 
-		CDOResource resource = transaction.getOrCreateResource(resourceId);
+            CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));// Store in CDOsession = cdoClient.getSession();
+            transaction = session.openTransaction();
+            System.out.println("Saving to : " + resourceId);
 
-		resource.getContents().clear();
-		resource.getContents().add(resModel.getContents().get(0));
-		transaction.commit();
-		System.out.println( "Saved!" );transaction = null;
+            CDOResource resource = transaction.getOrCreateResource(resourceId);
+
+            resource.getContents().clear();
+            resource.getContents().add(resModel.getContents().get(0));
+            transaction.commit();
+            System.out.println("Saved!");
+            transaction = null;
 
 
-		// Retrieve CP model from CDO and print it
-		System.out.println( "Retrieving from : "+resourceId);
-		 transaction2 = session.openTransaction();
-		CDOResource resource2 = transaction2.getResource(resourceId);
-		ConstraintProblem cpModel_2 = (ConstraintProblem)resource2.getContents().get(0);
-		ByteArrayOutputStream output2 = new ByteArrayOutputStream();
-		cpModel_2.eResource().save(output2, null);
-		System.out.println( output2.toString() );
-		transaction2.close();
-		transaction2 = null;
+            // Retrieve CP model from CDO and print it
+            System.out.println("Retrieving from : " + resourceId);
+            transaction2 = session.openTransaction();
+            CDOResource resource2 = transaction2.getResource(resourceId);
+            ConstraintProblem cpModel_2 = (ConstraintProblem) resource2.getContents().get(0);
+            ByteArrayOutputStream output2 = new ByteArrayOutputStream();
+            cpModel_2.eResource().save(output2, null);
+            System.out.println(output2.toString());
+            transaction2.close();
+            transaction2 = null;
 
-		// Close CDO session
-		session.closeSession();
+            // Close CDO session
+            session.closeSession();
 
-	  } catch (Exception ex) {
-		  System.err.println(ex.toString());
-		  ex.printStackTrace(System.err);
-	  }finally {
-  if (transaction != null) {
+        } catch (Exception ex) {
+            System.err.println(ex.toString());
+            ex.printStackTrace(System.err);
+        } finally {
+            if (transaction != null) {
 
-		transaction.rollback();
+                transaction.rollback();
 
-		transaction.close();
-		}
-		if (transaction2 != null) {
-			transaction2.rollback();
-			transaction2.close();
-			}
-		if ( session != null) {
-		session.closeSession();
-		session = null;
-		}
-		}
-  }
+                transaction.close();
+            }
+            if (transaction2 != null) {
+                transaction2.rollback();
+                transaction2.close();
+            }
+            if (session != null) {
+                session.closeSession();
+                session = null;
+            }
+        }
+    }
 }
