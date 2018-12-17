@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -167,7 +168,7 @@ public class DLMSServiceController {
 	 * Updates the datasource with the given id with the data provided in the
 	 * datasource object.
 	 */
-	@PutMapping("/ds/{id}")
+	@PutMapping("/ds/id/{id}")
 	public ResponseEntity<Object> updateDataSource(@RequestBody DataSource ds, @PathVariable Long id) {
 		dlmsService.updateDataSource(ds, id);
 		return ResponseEntity.noContent().build();
@@ -177,7 +178,7 @@ public class DLMSServiceController {
 	 * Updates the datasource with the given name with the data provided in the
 	 * datasource object.
 	 */
-	@PutMapping("/ds/{name}")
+	@PutMapping("/ds/name/{name}")
 	public ResponseEntity<Object> updateDataSource(@RequestBody DataSource ds, @PathVariable String name) {
 		dlmsService.updateDataSource(ds, name);
 		return ResponseEntity.noContent().build();

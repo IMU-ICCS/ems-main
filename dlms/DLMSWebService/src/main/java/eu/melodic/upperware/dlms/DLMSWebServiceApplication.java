@@ -50,8 +50,8 @@ public class DLMSWebServiceApplication {
 			log.info("Alluxio master is located at " + env.getProperty("alluxio.master.address"));
 
 			// this is test
-//			dsRepository.save(new DataSource("DS1", DataSourceType.HDFS, "http://master:9000/", "/melodic/ds1"));
-//			dsRepository.save(new DataSource("DS2", DataSourceType.S3, "s3a://bucketferox/", "/melodic/ds2"));
+			dsRepository.save(new DataSource("DS1", DataSourceType.HDFS, "http://master:9000/", "/melodic/ds1"));
+			dsRepository.save(new DataSource("DS2", DataSourceType.S3, "s3a://bucketferox/", "/melodic/ds2"));
 //			log.info("Sample data sources added");
 		};
 	}

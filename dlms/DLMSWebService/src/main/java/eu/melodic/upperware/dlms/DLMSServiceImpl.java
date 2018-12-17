@@ -376,16 +376,14 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureConfiguration();
 
 		checkName(name);
-
 		ensureUnmount(name);
 		ensureMountPoint(ds);
 
 		// get old data source and update it
 		DataSource dsOrig = dsRepository.findByName(name);
-		dsOrig.setMountPoint(ds.getMountPoint());
-		dsOrig.setUfsURI(ds.getUfsURI());
-		dsRepository.save(dsOrig);
+		ds.setId(dsOrig.getId());
 
+		dsRepository.save(ds);
 		return null;
 	}
 
