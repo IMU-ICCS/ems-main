@@ -8,14 +8,10 @@
 package eu.melodic.upperware.dlms;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import eu.melodic.models.commons.NotificationResult;
@@ -34,6 +28,7 @@ import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequestImpl;
 import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
+import eu.melodic.upperware.dlms.properties.DLMSProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +44,8 @@ public class DLMSServiceController {
 	private final DLMSService dlmsService;
 	private final ModelAnalyzer modelAnalyzer;
 	private final RestTemplate restTemplate;
+	
+	private final DLMSProperties dlmsProperties;
 
 	/**
 	 * Returns all datasources in the database.
@@ -139,30 +136,24 @@ public class DLMSServiceController {
 			log.error(e.getMessage(), e);
 		}
 		dataModelNotificationRequest.setResult(notificationResult);
-		sendNotificationMessage(dataModelRequest.getNotificationURI(), dataModelNotificationRequest);
+		sendNotificationMessage(dataModelNotificationRequest);
+//		sendNotificationMessage(dataModelRequest.getNotificationURI(), dataModelNotificationRequest);
 		return retResponse;
 	}
 
 	/**
 	 * Post the notification message in the provided url
 	 */
-	public void sendNotificationMessage(String url, DataModelNotificationRequest dataModelNotificationRequest) {
-		try {
-			
-			URI uri = new URI(url);
-			HttpHeaders headers = new HttpHeaders();
-			HttpEntity<DataModelNotificationRequest> entity = new HttpEntity<>(dataModelNotificationRequest, headers);
-			restTemplate.exchange(uri, HttpMethod.POST, entity, DataModelNotificationRequest.class);
-		} catch (URISyntaxException | RestClientException e) {
-			log.error(e.getMessage(), e);
-		}
+	public void sendNotificationMessage(DataModelNotificationRequest dataModelNotificationRequest) {
+		String esbUrl = dlmsProperties.getEsb().getUrl();
+		restTemplate.postForEntity(esbUrl, dataModelNotificationRequest, DataModelNotificationRequest.class);
 	}
 
 	// test the notification request, uncomment this when actual url exists
-//	@PostMapping("/notification/msg")
-//	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
-//		log.info("Test message");
-//	}
+	@PostMapping("/notification/msg")
+	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
+		log.info("Test message");
+	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the
