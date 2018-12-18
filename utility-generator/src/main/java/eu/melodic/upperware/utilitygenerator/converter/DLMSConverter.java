@@ -46,7 +46,6 @@ public class DLMSConverter extends ArgumentConverter {
     }
 
     private Collection<Element> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
-
         if (dlmsUtilityAttributes.isEmpty()) { //way to not call dlms library if not needed
             return Collections.emptyList();
         }
@@ -58,10 +57,6 @@ public class DLMSConverter extends ArgumentConverter {
             return createDefaultValuesOfDLMSUtilityAttributes();
         }
 
-        if (dlmsUtility == null) {
-            log.warn("DLMSUtility is null, returning 0 as DLMS utility value");
-            return createDefaultValuesOfDLMSUtilityAttributes();
-        }
         return dlmsUtilityAttributes.stream()
                 .map(attribute -> createElement(attribute.getName(), getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
                 .collect(Collectors.toList());
@@ -74,19 +69,21 @@ public class DLMSConverter extends ArgumentConverter {
     }
 
     private static Number getDLMSUtilityAttributeValue(UtilityMetrics dlmsUtility, CamelMetadata type) {
-        switch (type) {
-            case AFFINITY_AWARENESS:
-                return dlmsUtility.getResults().get(CamelMetadata.AFFINITY_AWARENESS.camelName);
-            case DATA_CENTRE_AWARENESS:
-                return dlmsUtility.getResults().get(CamelMetadata.DATA_CENTRE_AWARENESS.camelName);
-            case SOURCE_AWARENESS:
-                return dlmsUtility.getResults().get(CamelMetadata.SOURCE_AWARENESS.camelName);
-            case DLMS_TOTAL_UTILITY:
-                return dlmsUtility.getResults().get(CamelMetadata.DLMS_TOTAL_UTILITY.camelName);
-            default:
-                throw new IllegalArgumentException("Illegal type of DLMS utility attribute: " + type);
+        if (!CamelMetadata.DLMS_LIST.contains(type)) {
+            throw new IllegalArgumentException("Illegal type of DLMS utility attribute: " + type);
         }
+
+        if (dlmsUtility == null || dlmsUtility.getResults() == null) {
+            log.warn("DLMSUtility is null, returning 0 as DLMS utility value");
+            return 0;
+        }
+
+        Double dlmsUtilityResult = dlmsUtility.getResults().get(type.camelName);
+        if (dlmsUtilityResult == null) {
+            log.warn("DLMS utility result for type: " + type.camelName + " is null, returning 0 as a DLMS utility value");
+            return 0;
+        }
+
+        return dlmsUtilityResult;
     }
-
-
 }

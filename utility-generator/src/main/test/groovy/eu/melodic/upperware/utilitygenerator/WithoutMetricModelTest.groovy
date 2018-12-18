@@ -36,6 +36,8 @@ class WithoutMetricModelTest extends Specification{
     def setup() {
         NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
         nodeCandidate.getPrice() >> 10.0
+        nodeCandidate.getNodeCandidateType() >> NodeCandidate.NodeCandidateTypeEnum.IAAS
+
         List<NodeCandidate> list = new ArrayList<>()
         list.add(nodeCandidate)
         Map<Integer, List<NodeCandidate>> nodeCandidatesMap = new HashMap<>()
