@@ -17,7 +17,7 @@ import lombok.Setter;
 @Validated
 @Configuration
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.dlms.properties")
+@PropertySource("file:${MELODIC_CONFIG_DIR}/application.properties")
 public class DLMSProperties {
 
 	@Valid

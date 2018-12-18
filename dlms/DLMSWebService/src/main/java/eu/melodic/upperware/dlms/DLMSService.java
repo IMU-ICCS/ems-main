@@ -65,11 +65,11 @@ public interface DLMSService {
 	DataSource updateDataSource(DataSource ds, long id);
 
 	/**
-	 * Updates the datasource with the given id with the data provided in the
-	 * datasource object. In the process the datasource with the given id is
+	 * Updates the datasource with the given name with the data provided in the
+	 * datasource object. In the process the datasource with the given name is
 	 * unmounted and the mount point from the datasource object is mounted instead.
-	 * Then the data is saved for this id. Throws an IdNotFoundException if no
-	 * datasource with this id exists.
+	 * Then the data is saved for this name. Throws a NameNotFoundException if no
+	 * datasource with this name exists.
 	 */
 	DataSource updateDataSource(DataSource ds, String name);
 

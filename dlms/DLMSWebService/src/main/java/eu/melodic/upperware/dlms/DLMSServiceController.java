@@ -44,7 +44,7 @@ public class DLMSServiceController {
 	private final DLMSService dlmsService;
 	private final ModelAnalyzer modelAnalyzer;
 	private final RestTemplate restTemplate;
-	
+
 	private final DLMSProperties dlmsProperties;
 
 	/**
@@ -100,10 +100,13 @@ public class DLMSServiceController {
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
 		dataModelNotificationRequest.setWatermark(dataModelRequest.getWatermark());
 		NotificationResult notificationResult = new NotificationResultImpl();
-
+		
+		// read the camel model and process it
 		try {
 			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
 			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
+
+			// do operations if relevant data sources are present in the camel model
 			for (DataSource datasource : dataSourceList) {
 				if (dlmsService.hasDataSourceByName(datasource.getName())) {
 					try {
@@ -130,30 +133,40 @@ public class DLMSServiceController {
 				notificationResult.setErrorCode("0");
 				notificationResult.setErrorDescription(retResponse.toString());
 			}
+
 		} catch (Exception e) {
 			notificationResult.setErrorCode("1");
 			notificationResult.setErrorDescription("The model could not be read");
 			log.error(e.getMessage(), e);
 		}
 		dataModelNotificationRequest.setResult(notificationResult);
-		sendNotificationMessage(dataModelNotificationRequest);
-//		sendNotificationMessage(dataModelRequest.getNotificationURI(), dataModelNotificationRequest);
+		// send notification
+		sendNotificationMessage(dataModelNotificationRequest, dataModelRequest.getNotificationURI());
 		return retResponse;
 	}
 
 	/**
 	 * Post the notification message in the provided url
 	 */
-	public void sendNotificationMessage(DataModelNotificationRequest dataModelNotificationRequest) {
+	public void sendNotificationMessage(DataModelNotificationRequest dataModelNotificationRequest,
+			String notificationUri) {
 		String esbUrl = dlmsProperties.getEsb().getUrl();
-		restTemplate.postForEntity(esbUrl, dataModelNotificationRequest, DataModelNotificationRequest.class);
+		if (esbUrl.endsWith("/")) {
+			esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
+		}
+		if (notificationUri.startsWith("/")) {
+			notificationUri = notificationUri.substring(1);
+		}
+
+		restTemplate.postForEntity(esbUrl + "/" + notificationUri, dataModelNotificationRequest,
+				DataModelNotificationRequest.class);
 	}
 
 	// test the notification request, uncomment this when actual url exists
-	@PostMapping("/notification/msg")
-	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
-		log.info("Test message");
-	}
+//	@PostMapping("/notification/msg")
+//	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
+//		log.info("Test message");
+//	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the
@@ -201,6 +214,5 @@ public class DLMSServiceController {
 	public void migrateDatasource(@RequestBody MigrationData migrationData) {
 		dlmsService.migrateDatasource(migrationData.getId(), migrationData.getPathTo());
 	}
-
 
 }
