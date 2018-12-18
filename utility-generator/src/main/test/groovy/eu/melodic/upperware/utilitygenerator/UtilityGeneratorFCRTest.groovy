@@ -40,12 +40,14 @@ class UtilityGeneratorFCRTest extends Specification{
     def setup() {
         NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
         nodeCandidate.getPrice() >> 10.0
+        nodeCandidate.getNodeCandidateType() >> NodeCandidate.NodeCandidateTypeEnum.IAAS
         List<NodeCandidate> list = new ArrayList<>()
         list.add(nodeCandidate)
         Map<Integer, List<NodeCandidate>> nodeCandidatesMap = new HashMap<>()
         nodeCandidatesMap.put(1, list)
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
+
 
         variables.add(new VariableDTO(cardinalityName, componentId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(providerName, componentId, VariableType.PROVIDER))
