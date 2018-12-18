@@ -80,7 +80,7 @@ public class DLMSConverter extends ArgumentConverter {
 
         Double dlmsUtilityResult = dlmsUtility.getResults().get(type.camelName);
         if (dlmsUtilityResult == null) {
-            log.warn("DLMS utility result for type: "+ type.camelName + " is null, returning 0 as a DLMS utility value");
+            log.warn("DLMS utility result for type: " + type.camelName + " is null, returning 0 as a DLMS utility value");
             return 0;
         }
 
