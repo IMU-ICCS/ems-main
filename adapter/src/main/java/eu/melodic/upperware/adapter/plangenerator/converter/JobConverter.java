@@ -57,10 +57,14 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     private AdapterTask convertToTask(SoftwareComponent softwareComponent, List<Communication> communications) {
         return AdapterTask.builder()
                 .name(softwareComponent.getName())
-                .taskType(AdapterTaskType.SERVICE)
+                .taskType(chooseTaskType(softwareComponent))
                 .interfaces(convertToInterfaces(softwareComponent))
                 .ports(convertToPorts(softwareComponent, communications))
                 .build();
+    }
+
+    private AdapterTaskType chooseTaskType(SoftwareComponent softwareComponent) {
+        return isFaasComponent(getConfiguration(softwareComponent)) ? AdapterTaskType.BATCH : AdapterTaskType.SERVICE;
     }
 
 
