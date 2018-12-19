@@ -55,7 +55,7 @@ class UtilityGeneratorFCRTest extends Specification{
         variables.add(new VariableDTO(dbCardinalityName, dbId, VariableType.CARDINALITY))
 
 
-        intSolution.add(new IntElement(cardinalityName, 3))
+        intSolution.add(new IntElement(cardinalityName, 2))
         intSolution.add(new IntElement(providerName, 1))
         intSolution.add(new IntElement(dbCardinalityName, 1))
         intSolution.add(new IntElement(dbProviderName, 0))
