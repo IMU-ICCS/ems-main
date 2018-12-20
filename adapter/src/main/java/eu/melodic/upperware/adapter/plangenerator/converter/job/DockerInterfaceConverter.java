@@ -1,6 +1,5 @@
 package eu.melodic.upperware.adapter.plangenerator.converter.job;
 
-import camel.core.Feature;
 import camel.deployment.ScriptConfiguration;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterDockerInterface;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
@@ -25,12 +24,9 @@ public class DockerInterfaceConverter implements InterfaceConverter<ScriptConfig
     }
 
     private Map<String, String> findEnvironment(ScriptConfiguration configuration) {
-        Feature feature = CamelMetadataToolForTaskInterfaces.findFeatureByAnnotation(configuration.getSubFeatures(), CamelMetadataForTaskInterfaces.DOCKER_ENVIRONMENT.camelName)
-                .orElseGet(() -> {
-                    log.warn("Feature for Docker arguments: {} not found in camel model configuration", CamelMetadataForTaskInterfaces.DOCKER_ENVIRONMENT.camelName);
-                    return null;
-                });
-        return feature == null ? Collections.emptyMap() : CamelMetadataToolForTaskInterfaces.createStringAttributesMapForFeature(feature);
+        return CamelMetadataToolForTaskInterfaces.findFeatureByAnnotation(configuration.getSubFeatures(), CamelMetadataForTaskInterfaces.DOCKER_ENVIRONMENT.camelName)
+                .map(CamelMetadataToolForTaskInterfaces::createStringAttributesMapForFeature)
+                .orElse(Collections.emptyMap());
     }
 
 }

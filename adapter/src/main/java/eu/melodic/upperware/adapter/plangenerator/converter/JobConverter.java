@@ -80,7 +80,6 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
             result = sparkInterfaceConverter.convert((ClusterConfiguration) configuration);
         } else if (isFaasComponent(configuration)) {
             result = faasInterfaceConverter.convert((ServerlessConfiguration) configuration);
-            result = faasInterfaceConverter.addInformationFromSoftwareComponent(result, softwareComponent);
         } else if (isPlatformComponent(configuration)) {
             result = new AdapterTaskInterface();
         } else {

@@ -40,7 +40,7 @@ public class DataUtils {
                                                     NodeCandidates nodeCandidates, CDOTransaction transaction
     ) {
 
-        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl();
+        ProviderEnricherService providerEnricherService = new ProviderEnricherServiceImpl();
 
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
