@@ -9,17 +9,6 @@ import lombok.NonNull;
 
 public interface ProviderInfoSupplier {
 
-    String getCloudName(Feature feature);
-    String getProviderName(Feature feature);
-    String getLocation(Feature feature);
-    String getImage(Feature feature);
-    String getMachineType(Feature feature);
-    String getDriver(Feature feature);
-    String getName(Feature feature);
-    String getApiName(Feature feature);
-    String getCredentialsName(Feature feature);
-    String getPropertyName(Feature feature);
-    String getEndpoint(Feature feature);
     NodeCandidate getNodeCandidate(Feature feature);
 
     default String getAttribute(@NonNull String name, Feature feature) {

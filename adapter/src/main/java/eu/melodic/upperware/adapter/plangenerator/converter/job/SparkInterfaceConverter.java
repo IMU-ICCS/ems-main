@@ -68,7 +68,6 @@ public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfig
         return feature == null ? Collections.emptyMap() : CamelMetadataToolForTaskInterfaces.createStringAttributesMapForFeature(feature);
     }
 
-    // todo tests, maybe list with only one element - arguments will be ok for cloudiator
     private static List<String> parseApplicationArguments(String arguments) {
         log.debug("Parsing application arguments: {}", arguments);
         String argumentSign = "\\s+";
