@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c2380acc-caae-4ca2-a375-2ec9372a225c" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="c2380acc-caae-4ca2-a375-2ec9372a225c" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/broker-cep/target/" />
     <ignored path="$PROJECT_DIR$/baguette-server/target/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -161,7 +159,7 @@
   <component name="ToolWindowManager">
     <frame x="-6" y="-6" width="1549" height="837" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21395037" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21395037" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -175,7 +173,7 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49940476" weight="0.29918033" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" sideWeight="0.49940476" visible="true" weight="0.29844412" />
       <window_info anchor="bottom" id="SVN Repositories" order="8" weight="0.32897604" />
       <window_info anchor="bottom" id="Terminal" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5005952" side_tool="true" weight="0.29956427" />
@@ -318,6 +316,9 @@
           <caret line="527" column="48" selection-start-line="527" selection-start-column="14" selection-end-line="527" selection-end-column="48" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
   <component name="masterDetails">
