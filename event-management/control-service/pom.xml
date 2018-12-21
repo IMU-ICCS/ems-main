@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>eu.melodic.event</groupId>
@@ -15,82 +15,141 @@
 
     <name>Upperware - EMS - Control Service</name>
 
-	<properties>
-		<!--DOCKER plugin properties-->
-		<docker.imageName>${docker.repository}melodic/ems-control-service</docker.imageName>
-		<gson.version>2.8.5</gson.version>
-	</properties>
+    <properties>
+        <!--DOCKER plugin properties-->
+        <docker.push>true</docker.push>
+        <docker.repository>172.31.1.100:5000/</docker.repository>
+        <docker.imageName>${docker.repository}melodic/ems-control-service-rc2.0</docker.imageName>
+        <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
+        <!--Other properties-->
+        <gson.version>2.8.5</gson.version>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>eu.melodic</groupId>
-			<artifactId>interfaces</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>eu.melodic.event</groupId>
-			<artifactId>baguette-server</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.melodic.event</groupId>
-			<artifactId>broker-cep</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.melodic.event</groupId>
-			<artifactId>translator</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<!-- Spring-boot dependencies -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>eu.melodic</groupId>
+            <artifactId>interfaces</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>baguette-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>broker-cep</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>translator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<!-- Lombok project -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <!-- Spring-boot dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>${gson.version}</version>
-		</dependency>
-	</dependencies>
+        <!-- Lombok project -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>eu.melodic.event</groupId>
-							<artifactId>baguette-client</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-<!--			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-			</plugin>-->
-		</plugins>
-	</build>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>eu.melodic.event</groupId>
+                            <artifactId>baguette-client</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.10</version>
+                <executions>
+                    <execution>
+                        <id>execution</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                            <imageName>${docker.imageName}</imageName>
+                            <pushImage>${docker.push}</pushImage>
+                            <resources>
+                                <resource>
+                                    <targetPath>/</targetPath>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${docker.jarToInclude}</include>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>without-docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>execution</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>docker-local</id>
+            <properties>
+                <docker.push>false</docker.push>
+                <docker.repository>127.0.0.1:5000/</docker.repository>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>docker-remote</id>
+        </profile>
+
+    </profiles>
 
 </project>
