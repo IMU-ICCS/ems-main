@@ -15,4 +15,14 @@
       </profile>
     </annotationProcessing>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="baguette-client" options="-parameters" />
+      <module name="baguette-server" options="-parameters" />
+      <module name="broker-cep" options="-parameters" />
+      <module name="broker-util" options="-parameters" />
+      <module name="control-service" options="-parameters" />
+      <module name="translator" options="-parameters" />
+    </option>
+  </component>
 </project>
