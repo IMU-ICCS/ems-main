@@ -11,6 +11,7 @@ package eu.melodic.event.control;
 
 import eu.melodic.event.control.properties.ControlServiceProperties;
 
+import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.CamelModelRequest;
 import eu.melodic.models.interfaces.ems.CamelModelRequestImpl;
 import eu.melodic.models.interfaces.ems.MonitorsDataRequest;
@@ -24,12 +25,10 @@ import java.util.Optional;
 import javax.ws.rs.BadRequestException;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -120,20 +119,27 @@ public class ControlServiceController {
 		
 		// Get information from request
 		String applicationId = request.getApplicationId();
-		String requestUuid = request.getWatermark().getUuid();
-		log.info("ControlServiceController.getSensors(): Request info: app-id={}, request-id={}", applicationId, requestUuid);
+		Watermark watermark = request.getWatermark();
+		String requestUuid = watermark.getUuid();
+		log.info("ControlServiceController.getSensors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
 		
 		// Retrieve sensor information
 		List<Monitor> sensors = coordinator.getSensorsOfCamelModel(applicationId);
-		
+
+		// Update watermark
+		watermark.setUser("EMS");
+		watermark.setSystem("EMS");
+		watermark.setDate(new java.util.Date());
+
 		// Prepare response
 		MonitorsDataResponse response = new MonitorsDataResponseImpl();
 		response.setMonitors(sensors);
+		response.setWatermark(watermark);
 		log.info("ControlServiceController.getSensors(): Response: {}", response);
 		
 		return response;
 	}
-	
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Baguette control methods
 	// ------------------------------------------------------------------------------------------------------------
