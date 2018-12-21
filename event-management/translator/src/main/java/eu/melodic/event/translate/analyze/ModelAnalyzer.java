@@ -771,6 +771,7 @@ public class ModelAnalyzer {
             PullSensor pullSensor = new PullSensorImpl();
             String className = sensor.getConfiguration();
             pullSensor.setClassName(className);
+            pullSensor.setConfiguration(Collections.emptyList());
             //pullSensor.setInterval(....);
             monitorSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
             log.info("    _createMonitorsForSensor(): sensor={} :: class-name={}, PullSensor: {}", sensor.getName(), className, pullSensor);
