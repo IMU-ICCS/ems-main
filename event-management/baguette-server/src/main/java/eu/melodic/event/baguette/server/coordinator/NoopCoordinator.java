@@ -19,10 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NoopCoordinator implements ServerCoordinator {
-	private BaguetteServer server;
-	private BaguetteServerProperties config;
-	private Runnable callback;
-	private boolean started;
+	protected BaguetteServer server;
+	protected BaguetteServerProperties config;
+	protected Runnable callback;
+	protected boolean started;
 	
 	@Override
 	public void initialize(BaguetteServer server, Runnable callback) {
@@ -61,40 +61,8 @@ public class NoopCoordinator implements ServerCoordinator {
 	public synchronized void register(ClientShellCommand c) {
 		if (!started) return;
 		log.info("NoopCoordinator: register: {}", c);
-		
-//XXX:DEL: TEST....
-		test(c);
 	}
-	
-	public synchronized void test(ClientShellCommand c) {
-//XXX:DEL: TEST....
-		// prepare configuration
-		java.util.Properties cfg = new java.util.Properties();
-		cfg.setProperty("GLOBAL", server.getUpperwareBrokerUrl());	// <-- XXX:SOS: check SCHEME (ssl, tcp) in Upperware Broker-CEP configuration
-		cfg.setProperty("PER_CLOUD", "ssl://localhost:61614");		// <-- XXX:SOS: check SCHEME (ssl, tcp)
-		
-		// prepare Broker-CEP configuration
-		log.info("NoopCoordinator.test(): --------------------------------------------------");
-		log.info("NoopCoordinator.test(): Sending grouping configurations...");
-		sendGroupingConfigurations(cfg, c, server);
-		log.info("NoopCoordinator.test(): Sending grouping configurations... done");
-		
-		// Set active grouping and send an event
-		String grouping = "PER_INSTANCE";
-		try { Thread.sleep(500); } catch (Exception ex) {}
-		log.info("NoopCoordinator.test(): --------------------------------------------------");
-		log.info("NoopCoordinator.test(): Setting active grouping: {}", grouping );
-		c.setActiveGrouping(grouping);
-		
-		try { Thread.sleep(5000); } catch (Exception ex) {}
-		log.info("NoopCoordinator.test(): --------------------------------------------------");
-		//c.sendCommand("SEND-EVENT tcp://localhost:61616 CPURawMetricContext "+mv);
-		//c.sendCommand("SEND-LOCAL-EVENT MySENSOR "+mv);
-		//c.sendCommand("GENERATE-EVENTS-START MySENSOR 2000 100 500");
-	}
-	
-	
-	
+
 	@Override
 	public synchronized void unregister(ClientShellCommand c) {
 		if (!started) return;
