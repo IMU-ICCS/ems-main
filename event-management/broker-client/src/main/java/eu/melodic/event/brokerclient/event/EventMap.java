@@ -9,19 +9,35 @@
 
 package eu.melodic.event.brokerclient.event;
 
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
-@Data
+@Getter
 @Slf4j
-public class EventMap extends HashMap<String,Object> implements Serializable {
-	public EventMap() { super(); }
-	public EventMap(Map<String,Object> map) { super(map); }
-	public EventMap(double metricValue, int level, long timestamp) { put("metricValue", metricValue); put("level", level); put("timestamp", timestamp); }
-	
-	public static String[] getPropertyNames() { return new String[] { "metricValue", "level", "timestamp" }; }
-	public static Class[] getPropertyClasses() { return new Class[] { Double.class, Integer.class, Long.class }; }
+public class EventMap extends HashMap<String, Object> implements Serializable {
+    public EventMap() {
+        super();
+    }
+
+    public EventMap(Map<String, Object> map) {
+        super(map);
+    }
+
+    public EventMap(double metricValue, int level, long timestamp) {
+        put("metricValue", metricValue);
+        put("level", level);
+        put("timestamp", timestamp);
+    }
+
+    public static String[] getPropertyNames() {
+        return new String[]{"metricValue", "level", "timestamp"};
+    }
+
+    public static Class[] getPropertyClasses() {
+        return new Class[]{Double.class, Integer.class, Long.class};
+    }
 }
