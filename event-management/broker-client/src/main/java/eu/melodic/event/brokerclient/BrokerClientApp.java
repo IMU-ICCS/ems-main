@@ -11,80 +11,99 @@ package eu.melodic.event.brokerclient;
 
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
-import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.jms.JMSException;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class BrokerClientApp {
 
-    @Autowired
-    private BrokerClientProperties properties;
-
     public static void main(String args[]) throws java.io.IOException, JMSException {
-        String command = args[0];
+        if (args.length==0) {
+            usage();
+            return;
+        }
+
+        int aa=0;
+        String command = args[aa++];
+
+        String username = args.length>aa && args[aa].startsWith("-U") ? args[aa++].substring(2) : null;
+        String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
+        if (username != null && username.length() > 0 && password == null) {
+            password = new String(System.console().readPassword("Enter broker password: "));
+        }
+
         // send an event
         if ("publish".equalsIgnoreCase(command)) {
-            String url = args[1];
-            String topic = args[2];
-            String value = args[3];
-            String level = args[4];
+            String url = args[aa++];
+            String topic = args[aa++];
+            String value = args[aa++];
+            String level = args[aa++];
             EventMap event = new EventMap(Double.parseDouble(value), Integer.parseInt(level), System.currentTimeMillis());
             log.info("BrokerClientApp: Publishing event: {}", event);
             BrokerClient client = BrokerClient.newClient();
+            if (username!=null && password!=null) {
+                client.getClientProperties().setBrokerUsername(username);
+                client.getClientProperties().setBrokerPassword(password);
+            }
             client.publishEvent(url, topic, event);
         } else
-            // subscribe to topic
-            if ("subscribe".equalsIgnoreCase(command)) {
-                String url = args[1];
-                String topic = args[2];
-                log.info("BrokerClientApp: Subscribing to topic: {}", topic);
-                BrokerClient client = BrokerClient.newClient();
-                client.subscribeToTopic(url, topic, new BrokerClient.EventReceiver() {
-                    public void eventReceived(Object o) {
-                        log.info("BrokerClientApp: eventReceieved(Object): {}", o);
-                    }
-
-                    public void eventReceived(String t) {
-                        log.info("BrokerClientApp: eventReceieved(String): {}", t);
-                    }
-                });
-            } else
-                // start event generator
-                if ("generator".equalsIgnoreCase(command)) {
-                    String url = args[1];
-                    String topic = args[2];
-                    long interval = Long.parseLong(args[3]);
-                    long howmany = Long.parseLong(args[4]);
-                    double lowerValue = Double.parseDouble(args[5]);
-                    double upperValue = Double.parseDouble(args[6]);
-                    int level = Integer.parseInt(args[7]);
-
-                    BrokerClient client = BrokerClient.newClient();
-                    EventGenerator generator = new EventGenerator();
-                    generator.setClient(client);
-                    generator.setBrokerUrl(url);
-                    generator.setDestinationName(topic);
-                    generator.setInterval(interval);
-                    generator.setHowmany(howmany);
-                    generator.setLowerValue(lowerValue);
-                    generator.setUpperValue(upperValue);
-                    generator.setLevel(level);
-                    generator.run();
-                } else
-                // error
-                {
-                    log.error("BrokerClientApp: Unknown command: {}", command);
-                    usage();
+        // subscribe to topic
+        if ("subscribe".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            String topic = args[aa++];
+            log.info("BrokerClientApp: Subscribing to topic: {}", topic);
+            BrokerClient client = BrokerClient.newClient();
+            if (username!=null && password!=null) {
+                client.getClientProperties().setBrokerUsername(username);
+                client.getClientProperties().setBrokerPassword(password);
+            }
+            client.receiveEvents(url, topic, new BrokerClient.EventReceiver() {
+                public void eventReceived(Object o) {
+                    log.info("BrokerClientApp: eventReceieved(Object): {}", o);
                 }
+
+                public void eventReceived(String t) {
+                    log.info("BrokerClientApp: eventReceieved(String): {}", t);
+                }
+            });
+        } else
+        // start event generator
+        if ("generator".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            String topic = args[aa++];
+            long interval = Long.parseLong(args[3]);
+            long howmany = Long.parseLong(args[4]);
+            double lowerValue = Double.parseDouble(args[5]);
+            double upperValue = Double.parseDouble(args[6]);
+            int level = Integer.parseInt(args[7]);
+
+            BrokerClient client = BrokerClient.newClient();
+            if (username!=null && password!=null) {
+                client.getClientProperties().setBrokerUsername(username);
+                client.getClientProperties().setBrokerPassword(password);
+            }
+            EventGenerator generator = new EventGenerator();
+            generator.setClient(client);
+            generator.setBrokerUrl(url);
+            generator.setDestinationName(topic);
+            generator.setInterval(interval);
+            generator.setHowmany(howmany);
+            generator.setLowerValue(lowerValue);
+            generator.setUpperValue(upperValue);
+            generator.setLevel(level);
+            generator.run();
+        } else
+        // error
+        {
+            log.error("BrokerClientApp: Unknown command: {}", command);
+            usage();
+        }
     }
 
     protected static void usage() {
         log.info("BrokerClientApp: Usage: ");
-        log.info("BrokerClientApp: client publish <URL> <TOPIC> <VALUE> <LEVEL> ");
-        log.info("BrokerClientApp: client subscribe <URL> <TOPIC> ");
-        log.info("BrokerClientApp: client generator <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client publish [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
+        log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
     }
 }

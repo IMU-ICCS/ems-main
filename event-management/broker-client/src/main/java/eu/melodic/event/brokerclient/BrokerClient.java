@@ -26,10 +26,10 @@ public class BrokerClient {
 
     @Autowired
     private BrokerClientProperties properties;
+    private Connection connection;
+    private Session session;
 
     public BrokerClient() {
-        //use defaults
-        properties = new BrokerClientProperties();
     }
 
     public BrokerClient(BrokerClientProperties bcp) {
@@ -74,6 +74,13 @@ public class BrokerClient {
         return properties;
     }
 
+    protected void checkProperties() {
+        if (properties==null) {
+            //use defaults
+            properties = new BrokerClientProperties();
+        }
+    }
+
     // ------------------------------------------------------------------------
 
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
@@ -81,19 +88,13 @@ public class BrokerClient {
     }
 
     protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
-        // Clone connection factory
-        if (connectionString == null) connectionString = properties.getBrokerUrl();
-        ActiveMQConnectionFactory connectionFactory = createConnectionFactory();
-        connectionFactory.setBrokerURL(connectionString);
-
-        // Create a Connection
-        Connection connection = (properties.getBrokerUsername() == null)
-                ? connectionFactory.createConnection()
-                : connectionFactory.createConnection(properties.getBrokerUsername(), properties.getBrokerPassword());
-        connection.start();
-
-        // Create a Session
-        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        // open or reuse connection
+        checkProperties();
+        boolean _closeConn = false;
+        if (session==null) {
+            openConnection(connectionString);
+            _closeConn = ! properties.isPreserveConnection();
+        }
 
         // Create the destination (Topic or Queue)
         //Destination destination = session.createQueue( destinationName );
@@ -113,43 +114,24 @@ public class BrokerClient {
         producer.send(message);
         log.info("BrokerClient.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
 
-        // Clean up
-        session.close();
-        connection.close();
+        // close connection
+        if (_closeConn) {
+            closeConnection();
+        }
     }
 
     // ------------------------------------------------------------------------
 
-    public void subscribeToTopic(String connectionString, String destinationName, EventReceiver listener) throws JMSException {
-        String username = null;//args.length>2 ? args[2].trim() : null;
-        String password = null;//args.length>3 ? args[3] : null;
-
-        if (username != null && username.length() > 0 && password == null) {
-            password = new String(System.console().readPassword("Enter broker password: "));
-        }
-
-        Connection connection = null;
-        Session session = null;
+    public void receiveEvents(String connectionString, String destinationName, EventReceiver listener) throws JMSException {
+        checkProperties();
         MessageConsumer consumer = null;
+        boolean _closeConn = false;
         try {
-            // Create a ConnectionFactory
-            ActiveMQConnectionFactory connectionFactory = createConnectionFactory();
-            connectionFactory.setBrokerURL(connectionString);
-            if (username != null && password != null) {
-                connectionFactory.setUserName(username);
-                connectionFactory.setPassword(password);
+            // Create or open connection
+            if (session==null) {
+                openConnection(connectionString);
+                _closeConn = ! properties.isPreserveConnection();
             }
-            connectionFactory.setTrustAllPackages(true);
-            connectionFactory.setWatchTopicAdvisories(true);
-
-            // Create a Connection
-            log.info("BrokerClient: Connecting to broker: {}...", connectionString);
-            connection = connectionFactory.createConnection();
-            connection.start();
-
-            // Create a Session
-            log.info("BrokerClient: Opening session...");
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
             // Create the destination (Topic or Queue)
             log.info("BrokerClient: Subscribing to destination: {}...", destinationName);
@@ -182,15 +164,14 @@ public class BrokerClient {
             // Clean up
             log.info("BrokerClient: Closing connection...");
             if (consumer != null) consumer.close();
-            if (session != null) session.close();
-            if (connection != null) connection.close();
-            log.info("BrokerClient: Bye");
+            if (_closeConn) {
+                closeConnection();
+            }
         }
     }
 
-    public static interface EventReceiver {
+    public interface EventReceiver {
         void eventReceived(Object o);
-
         void eventReceived(String t);
     }
 
@@ -198,6 +179,7 @@ public class BrokerClient {
 
     public ActiveMQConnectionFactory createConnectionFactory() {
         // Create connection factory based on Broker URL scheme
+        checkProperties();
         final ActiveMQConnectionFactory connectionFactory;
         String brokerUrl = properties.getBrokerUrl();
         if (brokerUrl.startsWith("ssl")) {
@@ -228,5 +210,55 @@ public class BrokerClient {
         connectionFactory.setWatchTopicAdvisories(true);
 
         return connectionFactory;
+    }
+
+    // ------------------------------------------------------------------------
+
+    public synchronized void openConnection() throws JMSException {
+        checkProperties();
+        openConnection(properties.getBrokerUrl(), null, null);
+    }
+
+    public synchronized void openConnection(String connectionString) throws JMSException {
+        openConnection(connectionString, null, null);
+    }
+
+    public synchronized void openConnection(String connectionString, String username, String password) throws JMSException {
+        openConnection(connectionString, username, password, properties.isPreserveConnection());
+    }
+
+    public synchronized void openConnection(String connectionString, String username, String password, boolean preserveConnection) throws JMSException {
+        checkProperties();
+        if (connectionString == null) connectionString = properties.getBrokerUrl();
+        if (username!=null) username = properties.getBrokerUsername();
+        if (password!=null) password = properties.getBrokerPassword();
+
+        // Create connection factory
+        ActiveMQConnectionFactory connectionFactory = createConnectionFactory();
+        connectionFactory.setBrokerURL(connectionString);
+        if (username != null && password != null) {
+            connectionFactory.setUserName(username);
+            connectionFactory.setPassword(password);
+        }
+
+        // Create a Connection
+        log.info("BrokerClient: Connecting to broker: {}...", connectionString);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // Create a Session
+        log.info("BrokerClient: Opening session...");
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        this.connection = connection;
+        this.session = session;
+    }
+
+    public synchronized void closeConnection() throws JMSException {
+        // Clean up
+        session.close();
+        connection.close();
+        session = null;
+        connection = null;
     }
 }

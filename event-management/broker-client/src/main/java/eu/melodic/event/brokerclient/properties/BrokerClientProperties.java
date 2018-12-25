@@ -32,6 +32,8 @@ public class BrokerClientProperties {
     private String brokerUrlProperties;
     @Value("${connector-port:-1}")
     private int connectorPort;
+    @Value("${preserve-connection:false}")
+    private boolean preserveConnection;
 
     @Value("${ssl.truststore.file:}")
     private String truststoreFile;
@@ -59,6 +61,7 @@ public class BrokerClientProperties {
         brokerUrl = "ssl://localhost:61616}";
         brokerUrlProperties = "";
         connectorPort = -1;
+        preserveConnection = true;
 
         truststoreFile = "";
         truststoreType = "";
@@ -77,6 +80,7 @@ public class BrokerClientProperties {
         brokerUrl = p.getProperty("brokerclient.broker-url", "ssl://localhost:61616}");
         brokerUrlProperties = p.getProperty("brokerclient.broker-url-properties", "");
         connectorPort = Integer.parseInt(p.getProperty("brokerclient.connector-port", "-1"));
+        preserveConnection = Boolean.parseBoolean(p.getProperty("brokerclient.preserve-connection", "true"));
 
         truststoreFile = p.getProperty("brokerclient.ssl.truststore.file", "");
         truststoreType = p.getProperty("brokerclient.ssl.truststore.type", "");
