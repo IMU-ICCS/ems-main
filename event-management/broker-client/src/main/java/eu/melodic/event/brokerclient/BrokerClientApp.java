@@ -11,7 +11,9 @@ package eu.melodic.event.brokerclient;
 
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
-import javax.jms.JMSException;
+
+import javax.jms.*;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -47,6 +49,36 @@ public class BrokerClientApp {
             }
             client.publishEvent(url, topic, event);
         } else
+        // receive events from topic
+        if ("receive".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            String topic = args[aa++];
+            log.info("BrokerClientApp: Subscribing to topic: {}", topic);
+            BrokerClient client = BrokerClient.newClient();
+            if (username!=null && password!=null) {
+                client.getClientProperties().setBrokerUsername(username);
+                client.getClientProperties().setBrokerPassword(password);
+            }
+            client.receiveEvents(url, topic, new MessageListener() {
+                public void onMessage(Message message) {
+                    try {
+                        if (message instanceof ObjectMessage) {
+                            ObjectMessage objMessage = (ObjectMessage) message;
+                            Object obj = objMessage.getObject();
+                            log.info("BrokerClientApp:  - Received object message: {}", obj);
+                        } else if (message instanceof TextMessage) {
+                            TextMessage textMessage = (TextMessage) message;
+                            String text = textMessage.getText();
+                            log.info("BrokerClientApp:  - Received text message: {}", text);
+                        } else {
+                            log.info("BrokerClientApp:  - Received message: {}", message);
+                        }
+                    } catch (JMSException je) {
+                        log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
+                    }
+                }
+            });
+        } else
         // subscribe to topic
         if ("subscribe".equalsIgnoreCase(command)) {
             String url = args[aa++];
@@ -57,15 +89,37 @@ public class BrokerClientApp {
                 client.getClientProperties().setBrokerUsername(username);
                 client.getClientProperties().setBrokerPassword(password);
             }
-            client.receiveEvents(url, topic, new BrokerClient.EventReceiver() {
-                public void eventReceived(Object o) {
-                    log.info("BrokerClientApp: eventReceieved(Object): {}", o);
-                }
-
-                public void eventReceived(String t) {
-                    log.info("BrokerClientApp: eventReceieved(String): {}", t);
+            MessageListener listener = null;
+            client.subscribe(url, topic, listener = new MessageListener() {
+                public void onMessage(Message message) {
+                    try {
+                        if (message instanceof ObjectMessage) {
+                            ObjectMessage objMessage = (ObjectMessage) message;
+                            Object obj = objMessage.getObject();
+                            log.info("BrokerClientApp:  - Received object message: {}", obj);
+                        } else if (message instanceof TextMessage) {
+                            TextMessage textMessage = (TextMessage) message;
+                            String text = textMessage.getText();
+                            log.info("BrokerClientApp:  - Received text message: {}", text);
+                        } else {
+                            log.info("BrokerClientApp:  - Received message: {}", message);
+                        }
+                    } catch (JMSException je) {
+                        log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
+                    }
                 }
             });
+
+            log.info("BrokerClientApp: Hit ENTER to exit");
+            try {
+                System.in.read();
+            } catch (Exception e) {}
+            log.info("BrokerClientApp: Closing connection...");
+
+            client.unsubscribe(listener);
+            client.closeConnection();
+            log.info("BrokerClientApp: Exiting...");
+
         } else
         // start event generator
         if ("generator".equalsIgnoreCase(command)) {
@@ -103,6 +157,7 @@ public class BrokerClientApp {
     protected static void usage() {
         log.info("BrokerClientApp: Usage: ");
         log.info("BrokerClientApp: client publish [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
     }

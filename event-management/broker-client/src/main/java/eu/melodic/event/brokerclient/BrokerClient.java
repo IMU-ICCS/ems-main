@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.*;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -28,6 +29,7 @@ public class BrokerClient {
     private BrokerClientProperties properties;
     private Connection connection;
     private Session session;
+    private HashMap<MessageListener,MessageConsumer> listeneres = new HashMap<>();
 
     public BrokerClient() {
     }
@@ -54,7 +56,7 @@ public class BrokerClient {
 
         // load properties
         Properties p = new Properties();
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        //ClassLoader loader = Thread.currentThread().getContextClassLoader();
         //try (java.io.InputStream in = loader.getClass().getResourceAsStream(configPropFile)) { p.load(in); }
         try (java.io.InputStream in = new java.io.FileInputStream(configPropFile)) {
             p.load(in);
@@ -122,7 +124,34 @@ public class BrokerClient {
 
     // ------------------------------------------------------------------------
 
-    public void receiveEvents(String connectionString, String destinationName, EventReceiver listener) throws JMSException {
+    public void subscribe(String connectionString, String destinationName, MessageListener listener) throws JMSException {
+        // Create or open connection
+        checkProperties();
+        if (session==null) {
+            openConnection(connectionString);
+        }
+
+        // Create the destination (Topic or Queue)
+        log.info("BrokerClient: Subscribing to destination: {}...", destinationName);
+        //Destination destination = session.createQueue( destinationName );
+        Destination destination = session.createTopic(destinationName);
+
+        // Create a MessageConsumer from the Session to the Topic or Queue
+        MessageConsumer consumer = session.createConsumer(destination);
+        consumer.setMessageListener(listener);
+        listeneres.put(listener, consumer);
+    }
+
+    public void unsubscribe(MessageListener listener) throws JMSException {
+        MessageConsumer consumer = listeneres.get(listener);
+        if (consumer!=null) {
+            consumer.close();
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    public void receiveEvents(String connectionString, String destinationName, MessageListener listener) throws JMSException {
         checkProperties();
         MessageConsumer consumer = null;
         boolean _closeConn = false;
@@ -145,19 +174,7 @@ public class BrokerClient {
             log.info("BrokerClient: Waiting for messages...");
             while (true) {
                 Message message = consumer.receive();
-                if (message instanceof ObjectMessage) {
-                    ObjectMessage objMessage = (ObjectMessage) message;
-                    Object obj = objMessage.getObject();
-                    log.info(" - Received object message: {}", obj);
-                    listener.eventReceived(obj);
-                } else if (message instanceof TextMessage) {
-                    TextMessage textMessage = (TextMessage) message;
-                    String text = textMessage.getText();
-                    log.info(" - Received text message: {}", text);
-                    listener.eventReceived(text);
-                } else {
-                    log.info(" - Received message: {}", message);
-                }
+                listener.onMessage(message);
             }
 
         } finally {
@@ -168,11 +185,6 @@ public class BrokerClient {
                 closeConnection();
             }
         }
-    }
-
-    public interface EventReceiver {
-        void eventReceived(Object o);
-        void eventReceived(String t);
     }
 
     // ------------------------------------------------------------------------
@@ -230,8 +242,8 @@ public class BrokerClient {
     public synchronized void openConnection(String connectionString, String username, String password, boolean preserveConnection) throws JMSException {
         checkProperties();
         if (connectionString == null) connectionString = properties.getBrokerUrl();
-        if (username!=null) username = properties.getBrokerUsername();
-        if (password!=null) password = properties.getBrokerPassword();
+        if (username==null) username = properties.getBrokerUsername();
+        if (password==null) password = properties.getBrokerPassword();
 
         // Create connection factory
         ActiveMQConnectionFactory connectionFactory = createConnectionFactory();
