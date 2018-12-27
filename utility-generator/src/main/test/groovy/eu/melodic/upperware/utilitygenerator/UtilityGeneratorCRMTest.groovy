@@ -2,10 +2,11 @@ package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
-import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO
-import eu.melodic.upperware.utilitygenerator.model.function.Element
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.MetricDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.IntVariableValueDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -18,6 +19,9 @@ class UtilityGeneratorCRMTest extends Specification {
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
 
     UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
+
+    CPModelHandler cpModelHandler, cpModelHandlerInit
+
 
 
     def setup() {
@@ -46,17 +50,18 @@ class UtilityGeneratorCRMTest extends Specification {
         variables.add(new VariableDTO(cardinalityCRMName, componentCRMId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(providerCRMName, componentCRMId, VariableType.PROVIDER))
 
-        Collection<Element> intSolution = new ArrayList<>()
-        intSolution.add(new IntElement(cardinalityCRMName, 3))
-        intSolution.add(new IntElement(providerCRMName, 2))
+        Collection<VariableValueDTO> intSolution = new ArrayList<>()
+        intSolution.add(new IntVariableValueDTO(cardinalityCRMName, 3))
+        intSolution.add(new IntVariableValueDTO(providerCRMName, 2))
 
-        Collection<Element> newConfiguration = new ArrayList<>()
-        newConfiguration.add(new IntElement(cardinalityCRMName, 2))
-        newConfiguration.add(new IntElement(providerCRMName, 1))
+        Collection<VariableValueDTO> newConfiguration = new ArrayList<>()
+        newConfiguration.add(new IntVariableValueDTO(cardinalityCRMName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerCRMName, 1))
 
 
         String path = "src/main/test/resources/CRM.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+        cpModelHandler = new CPModelHandler(variables, metrics, intSolution, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -78,17 +83,19 @@ class UtilityGeneratorCRMTest extends Specification {
         variables.add(new VariableDTO(cardinalityCRMName, componentCRMId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(providerCRMName, componentCRMId, VariableType.PROVIDER))
 
-        Collection<Element> intSolution = new ArrayList<>()
-        intSolution.add(new IntElement(cardinalityCRMName, 3))
-        intSolution.add(new IntElement(providerCRMName, 2))
+        Collection<VariableValueDTO> intSolution = new ArrayList<>()
+        intSolution.add(new IntVariableValueDTO(cardinalityCRMName, 3))
+        intSolution.add(new IntVariableValueDTO(providerCRMName, 2))
 
-        Collection<Element> newConfiguration = new ArrayList<>()
-        newConfiguration.add(new IntElement(cardinalityCRMName, 2))
-        newConfiguration.add(new IntElement(providerCRMName, 1))
+        Collection<VariableValueDTO> newConfiguration = new ArrayList<>()
+        newConfiguration.add(new IntVariableValueDTO(cardinalityCRMName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerCRMName, 1))
 
+
+        cpModelHandler = new CPModelHandler(variables, metrics, intSolution, mockNodeCandidates)
 
         String path = "src/main/test/resources/CRM2.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

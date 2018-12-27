@@ -2,9 +2,10 @@ package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO
-import eu.melodic.upperware.utilitygenerator.model.function.Element
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.IntVariableValueDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -17,10 +18,10 @@ class WithoutMetricModelTest extends Specification{
 
     UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
 
-    Collection<IntElement> newConfiguration = new ArrayList<>()
-    Collection<IntElement> secondConfiguration = new ArrayList<>()
+    Collection<IntVariableValueDTO> newConfiguration = new ArrayList<>()
+    Collection<IntVariableValueDTO> secondConfiguration = new ArrayList<>()
     Collection<VariableDTO> variables = new ArrayList<>()
-    Collection<Element> intSolution = new ArrayList<>()
+    Collection<VariableValueDTO> intSolution = new ArrayList<>()
 
     String componentAppId = "Component_App"
     String componentDBId = "Component_DB"
@@ -30,6 +31,8 @@ class WithoutMetricModelTest extends Specification{
 
     String providerApp = "provider_Component_App"
     String providerDB = "provider_Component_DB"
+
+    CPModelHandler handler, initHandler
 
 
 
@@ -49,15 +52,15 @@ class WithoutMetricModelTest extends Specification{
         properties.getUtilityGenerator().setDlmsControllerUrl("")
 
 
-        newConfiguration.add(new IntElement(cardinalityApp, 2))
-        newConfiguration.add(new IntElement(providerApp, 1))
-        newConfiguration.add(new IntElement(cardinalityDB, 1))
-        newConfiguration.add(new IntElement(providerDB, 0))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityApp, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerApp, 1))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityDB, 1))
+        newConfiguration.add(new IntVariableValueDTO(providerDB, 0))
 
-        secondConfiguration.add(new IntElement(cardinalityApp, 3))
-        secondConfiguration.add(new IntElement(providerApp, 1))
-        secondConfiguration.add(new IntElement(cardinalityDB, 1))
-        secondConfiguration.add(new IntElement(providerDB, 0))
+        secondConfiguration.add(new IntVariableValueDTO(cardinalityApp, 3))
+        secondConfiguration.add(new IntVariableValueDTO(providerApp, 1))
+        secondConfiguration.add(new IntVariableValueDTO(cardinalityDB, 1))
+        secondConfiguration.add(new IntVariableValueDTO(providerDB, 0))
 
         variables.add(new VariableDTO(cardinalityApp, componentAppId, VariableType.CARDINALITY))
         variables.add(new VariableDTO(cardinalityDB, componentDBId, VariableType.CARDINALITY))
@@ -65,10 +68,14 @@ class WithoutMetricModelTest extends Specification{
         variables.add(new VariableDTO(providerDB, componentDBId, VariableType.PROVIDER))
 
 
-        intSolution.add(new IntElement(cardinalityApp, 3))
-        intSolution.add(new IntElement(providerApp, 1))
-        intSolution.add(new IntElement(cardinalityDB, 1))
-        intSolution.add(new IntElement(providerDB, 0))
+        intSolution.add(new IntVariableValueDTO(cardinalityApp, 3))
+        intSolution.add(new IntVariableValueDTO(providerApp, 1))
+        intSolution.add(new IntVariableValueDTO(cardinalityDB, 1))
+        intSolution.add(new IntVariableValueDTO(providerDB, 0))
+
+        initHandler = new CPModelHandler(variables, Collections.emptyList(), mockNodeCandidates)
+        handler = new CPModelHandler(variables, Collections.emptyList(), intSolution, mockNodeCandidates)
+
     }
 
     def "Without metric model initial deployment test"() {
@@ -76,7 +83,7 @@ class WithoutMetricModelTest extends Specification{
         given:
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, Collections.emptyList(), properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, initHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -95,7 +102,7 @@ class WithoutMetricModelTest extends Specification{
         given:
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, Collections.emptyList(), intSolution, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, initHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

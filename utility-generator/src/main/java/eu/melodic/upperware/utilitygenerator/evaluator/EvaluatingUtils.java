@@ -9,9 +9,8 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,7 @@ import static java.util.Objects.isNull;
 public class EvaluatingUtils {
 
 
-    static Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<Element> solution) {
+    static Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<VariableValueDTO> solution) {
         log.debug("Converting solution to Node Candidates");
 
         Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
@@ -51,7 +50,7 @@ public class EvaluatingUtils {
         return newConfiguration;
     }
 
-    static Collection<ConfigurationElement> convertDeployedSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<Element> solution) {
+    static Collection<ConfigurationElement> convertDeployedSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<VariableValueDTO> solution) {
         if (solution == null) {
             return Collections.emptyList();
         }
@@ -65,7 +64,7 @@ public class EvaluatingUtils {
                         .anyMatch(actComponent -> actComponent.equals(component)));
     }
 
-    private static Map<String, Integer> getCardinalitiesForComponent(Collection<Element> newConfiguration, Collection<VariableDTO> variables) {
+    private static Map<String, Integer> getCardinalitiesForComponent(Collection<VariableValueDTO> newConfiguration, Collection<VariableDTO> variables) {
         Map<String, Integer> cardinalitiesForComponent = new HashMap<>();
 
         Collection<VariableDTO> cardinalities = variables.stream()
@@ -81,7 +80,7 @@ public class EvaluatingUtils {
     }
 
     //provider value is always int
-    private static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<Element> newConfigurationInt) {
+    private static int getProviderValue(String componentId, Collection<VariableDTO> variables, Collection<VariableValueDTO> newConfigurationInt) {
         String provider = getVariableName(componentId, VariableType.PROVIDER, variables);
         return (int) newConfigurationInt.stream()
                 .filter(intVar -> provider.equals(intVar.getName()))
@@ -90,16 +89,16 @@ public class EvaluatingUtils {
                 .getValue();
     }
 
-    private static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<Element> solution, Collection<VariableDTO> variables) {
+    private static Predicate<NodeCandidate>[] makePredicatesFromSolution(String componentId, Collection<VariableValueDTO> solution, Collection<VariableDTO> variables) {
         Collection<String> variableNamesForComponent = getVariableNames(componentId, variables);
 
-        List<Element> variablesForComponent = solution.stream()
+        List<VariableValueDTO> variablesForComponent = solution.stream()
                 .filter(var -> variableNamesForComponent.contains(var.getName()))
                 .collect(Collectors.toList());
 
         List<Predicate<NodeCandidate>> predicates = new ArrayList<>();
 
-        for (Element var : variablesForComponent) {
+        for (VariableValueDTO var : variablesForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
 
             switch (type) {

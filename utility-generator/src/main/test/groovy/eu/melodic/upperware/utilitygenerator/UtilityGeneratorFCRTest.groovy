@@ -2,11 +2,12 @@ package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
-import eu.melodic.upperware.utilitygenerator.model.DTO.IntMetricDTO
-import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO
-import eu.melodic.upperware.utilitygenerator.model.function.Element
-import eu.melodic.upperware.utilitygenerator.model.function.IntElement
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntMetricDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.MetricDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.IntVariableValueDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -34,8 +35,10 @@ class UtilityGeneratorFCRTest extends Specification{
 
 
     Collection<VariableDTO> variables = new ArrayList<>()
-    Collection<Element> intSolution = new ArrayList<>()
-    Collection<IntElement> newConfiguration = new ArrayList<>()
+    Collection<VariableValueDTO> intSolution = new ArrayList<>()
+    Collection<IntVariableValueDTO> newConfiguration = new ArrayList<>()
+
+    CPModelHandler cpModelHandler, cpModelHandlerInit
 
     def setup() {
         NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
@@ -55,26 +58,29 @@ class UtilityGeneratorFCRTest extends Specification{
         variables.add(new VariableDTO(dbCardinalityName, dbId, VariableType.CARDINALITY))
 
 
-        intSolution.add(new IntElement(cardinalityName, 2))
-        intSolution.add(new IntElement(providerName, 1))
-        intSolution.add(new IntElement(dbCardinalityName, 1))
-        intSolution.add(new IntElement(dbProviderName, 0))
+        intSolution.add(new IntVariableValueDTO(cardinalityName, 2))
+        intSolution.add(new IntVariableValueDTO(providerName, 1))
+        intSolution.add(new IntVariableValueDTO(dbCardinalityName, 1))
+        intSolution.add(new IntVariableValueDTO(dbProviderName, 0))
         metrics.add(new IntMetricDTO(metricName, 40))
         metrics.add(new IntMetricDTO(actCardinalityName, 1))
 
         properties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
         properties.getUtilityGenerator().setDlmsControllerUrl("")
+
+        cpModelHandler = new CPModelHandler(variables, metrics, intSolution, mockNodeCandidates)
+        cpModelHandlerInit = new CPModelHandler(variables, metrics, mockNodeCandidates)
     }
 
     def "FCR initial deployment"() {
 
         given:
-        newConfiguration.add(new IntElement(cardinalityName, 2))
-        newConfiguration.add(new IntElement(providerName, 1))
-        newConfiguration.add(new IntElement(dbCardinalityName, 1))
-        newConfiguration.add(new IntElement(dbProviderName, 0))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandlerInit, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -89,12 +95,12 @@ class UtilityGeneratorFCRTest extends Specification{
 
         given:
 
-        newConfiguration.add(new IntElement(cardinalityName, 2))
-        newConfiguration.add(new IntElement(providerName, 1))
-        newConfiguration.add(new IntElement(dbCardinalityName, 1))
-        newConfiguration.add(new IntElement(dbProviderName, 0))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -109,13 +115,13 @@ class UtilityGeneratorFCRTest extends Specification{
 
         given:
 
-        newConfiguration.add(new IntElement(cardinalityName, 2))
-        newConfiguration.add(new IntElement(providerName, 1))
-        newConfiguration.add(new IntElement(dbCardinalityName, 2))
-        newConfiguration.add(new IntElement(dbProviderName, 0))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -129,13 +135,13 @@ class UtilityGeneratorFCRTest extends Specification{
     def "FCR without unmoveable component - test"() {
 
         given:
-        newConfiguration.add(new IntElement(cardinalityName, 2))
-        newConfiguration.add(new IntElement(providerName, 1))
-        newConfiguration.add(new IntElement(dbCardinalityName, 2))
-        newConfiguration.add(new IntElement(dbProviderName, 0))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
         path = "src/main/test/resources/FCRWithoutUnmoveable.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -148,14 +154,14 @@ class UtilityGeneratorFCRTest extends Specification{
     def "FCR with dlms utility - test"() {
 
         given:
-        newConfiguration.add(new IntElement(cardinalityName, 2))
-        newConfiguration.add(new IntElement(providerName, 1))
-        newConfiguration.add(new IntElement(dbCardinalityName, 1))
-        newConfiguration.add(new IntElement(dbProviderName, 0))
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
         path = "src/main/test/resources/FCRwithDLMS.xmi"
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, variables, metrics, intSolution, properties, mockNodeCandidates)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, cpModelHandler, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

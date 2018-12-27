@@ -8,32 +8,25 @@
 
 package eu.melodic.upperware.utilitygenerator;
 
-import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
-import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, UtilityGeneratorProperties properties, NodeCandidates nodeCandidates) {
-        this(camelModelFilePath, readFromFile, variables, metrics, null, properties, nodeCandidates);
-    }
-
-    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, Collection<Element> deployedSolution, UtilityGeneratorProperties properties, NodeCandidates nodeCandidates) {
+    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, CPModelHandler handler, UtilityGeneratorProperties properties) {
         log.info("Creating of the Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, variables, metrics, deployedSolution, properties, nodeCandidates);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, handler, properties);
     }
 
-    public double evaluate(Collection<Element> solution) {
+    public double evaluate(Collection<VariableValueDTO> solution) {
         return this.utilityFunctionEvaluator.evaluate(solution);
     }
 

@@ -1,6 +1,6 @@
 package groovy.eu.melodic.upperware.utilitygenerator.model
 
-import eu.melodic.upperware.utilitygenerator.model.UtilityFunction
+import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction
 import org.mariuszgromada.math.mxparser.Argument
 import org.mariuszgromada.math.mxparser.Constant
 import spock.lang.Specification

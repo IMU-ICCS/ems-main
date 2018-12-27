@@ -8,9 +8,9 @@
 
 package eu.melodic.upperware.utilitygenerator.utils;
 
-import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +27,14 @@ public class Printer {
 
     private Collection<VariableDTO> variables;
 
-    public void printSolution(Collection<Element> solution) {
+    public void printSolution(Collection<VariableValueDTO> solution) {
         log.debug("Solution:");
         solution.stream()
                 .filter(var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName())))
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
-    public void printSolutionForDebug(Collection<Element> solutionInt, Collection<Element> solutionReal) {
+    public void printSolutionForDebug(Collection<VariableValueDTO> solutionInt, Collection<VariableValueDTO> solutionReal) {
         printSolution(Stream.concat(solutionInt.stream(), solutionReal.stream()).collect(Collectors.toList()));
     }
 
