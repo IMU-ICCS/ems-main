@@ -11,10 +11,12 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
-import eu.melodic.event.brokercep.event.EventGenerator;
 import eu.melodic.event.brokercep.event.EventMap;
-//import eu.melodic.event.brokercep.event.MetricEvent;
+/*XXX:DEL: import eu.melodic.event.brokercep.event.MetricEvent;*/
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
+import eu.melodic.event.brokerclient.BrokerClient;
+import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.brokerclient.event.EventGenerator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -58,7 +60,9 @@ public class CommandExecutor
 {
 	@Autowired
 	private BrokerCepService brokerCepService;
-	
+	@Autowired
+	private BrokerClientProperties brokerClientProperties;
+
 	private Properties config;
 	private String idFile;
 	
@@ -188,8 +192,15 @@ log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
 			double lower = Double.parseDouble(args[3].trim());
 			double upper = Double.parseDouble(args[4].trim());
 			
-			if (eventGenerators.get(destination)==null) {	
-				EventGenerator generator = new EventGenerator(brokerCepService, destination, interval, lower, upper);
+			if (eventGenerators.get(destination)==null) {
+				EventGenerator generator = new EventGenerator();
+				generator.setClient(new BrokerClient(brokerClientProperties));
+				generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrl());
+				generator.setDestinationName(destination);
+				generator.setLevel(1);
+				generator.setInterval(interval);
+				generator.setLowerValue(lower);
+				generator.setUpperValue(upper);
 				eventGenerators.put(destination, generator);
 				generator.start();
 			}

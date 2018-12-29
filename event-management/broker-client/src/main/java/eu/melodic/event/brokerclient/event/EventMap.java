@@ -9,12 +9,11 @@
 
 package eu.melodic.event.brokerclient.event;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Slf4j

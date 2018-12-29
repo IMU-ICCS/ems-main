@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationContext;
  * Baguette client
  *
  */
-@SpringBootApplication(scanBasePackages={"eu.melodic.event.baguette.client", "eu.melodic.event.brokercep"})
+@SpringBootApplication(scanBasePackages={"eu.melodic.event.baguette.client", "eu.melodic.event.brokercep", "eu.melodic.event.brokerclient"})
 @Slf4j
 public class BaguetteClient
 {
