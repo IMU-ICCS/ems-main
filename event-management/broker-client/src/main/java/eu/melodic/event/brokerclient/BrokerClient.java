@@ -30,7 +30,7 @@ public class BrokerClient {
     private BrokerClientProperties properties;
     private Connection connection;
     private Session session;
-    private HashMap<MessageListener,MessageConsumer> listeneres = new HashMap<>();
+    private HashMap<MessageListener,MessageConsumer> listeners = new HashMap<>();
 
     public BrokerClient() {
     }
@@ -140,11 +140,11 @@ public class BrokerClient {
         // Create a MessageConsumer from the Session to the Topic or Queue
         MessageConsumer consumer = session.createConsumer(destination);
         consumer.setMessageListener(listener);
-        listeneres.put(listener, consumer);
+        listeners.put(listener, consumer);
     }
 
     public void unsubscribe(MessageListener listener) throws JMSException {
-        MessageConsumer consumer = listeneres.get(listener);
+        MessageConsumer consumer = listeners.get(listener);
         if (consumer!=null) {
             consumer.close();
         }
