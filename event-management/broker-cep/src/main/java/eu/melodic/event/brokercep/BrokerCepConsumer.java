@@ -11,134 +11,119 @@ package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
-import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
-import org.apache.activemq.command.DataStructure;
-import org.apache.activemq.command.DestinationInfo;
-import org.apache.activemq.broker.BrokerService;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jms.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 @Service
 @Slf4j
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
-	@Autowired
-	private BrokerConfig brokerConfig;
-	@Autowired
-	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
-	@Autowired
-	private ActiveMQConnectionFactory connectionFactory;
-	@Autowired
-	private CepService cepService;
-	
-	private Connection connection;
-	private Session session;
-	private Set<String> addedDestinations = new HashSet<String>();
-	
-	@Override
-	public void afterPropertiesSet() {
-		initialize();
-	}
-	
-	protected void initialize() {
-		log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance...");
-		try {
-			connection = (brokerConfig.getBrokerUsername()!=null)
-					? connectionFactory.createConnection( brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword() )
-					: connectionFactory.createConnection();
-			connection.start();
-			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance... done");
-		} catch (Exception ex) {
-			log.error("BrokerCepConsumer.init(): EXCEPTION: ", ex);
-		}
-	}
-	
-	public synchronized void addQueue(String queueName) {
-		log.debug("BrokerCepConsumer.addQueue(): Adding queue: {}", queueName);
-		if (addedDestinations.contains(queueName)) {
-			log.debug("BrokerCepConsumer.addQueue(): Queue already added: {}", queueName);
-			return;
-		}
-		try {
-			Queue queue = session.createQueue( queueName );
-			MessageConsumer consumer = session.createConsumer(queue);
-			consumer.setMessageListener( this );
-			addedDestinations.add(queueName);
-			log.debug("BrokerCepConsumer.addQueue(): Added queue: {}", queueName);
-		} catch (Exception ex) {
-			log.error("BrokerCepConsumer.addQueue(): EXCEPTION: ", ex);
-		}
-	}
-	
-	public synchronized void addTopic(String topicName) {
-		log.debug("BrokerCepConsumer.addTopic(): Adding topic: {}", topicName);
-		if (addedDestinations.contains(topicName)) {
-			log.debug("BrokerCepConsumer.addTopic(): Topic already added: {}", topicName);
-			return;
-		}
-		try {
-			Topic topic = session.createTopic( topicName );
-			MessageConsumer consumer = session.createConsumer(topic);
-			consumer.setMessageListener( this );
-			addedDestinations.add(topicName);
-			log.debug("BrokerCepConsumer.addTopic(): Added topic: {}", topicName);
-		} catch (Exception ex) {
-			log.error("BrokerCepConsumer.addTopic(): EXCEPTION: ", ex);
-		}
-	}
-	
-	@Override
-	public void onMessage(Message message) {
-		try {
-			log.trace("BrokerCepConsumer.onMessage(): {}", message);
-			if (message instanceof ActiveMQObjectMessage) {
-				ActiveMQObjectMessage mesg = (ActiveMQObjectMessage) message;
-				ActiveMQDestination messageDestination = mesg.getDestination();
-				log.debug("BrokerCepConsumer.onMessage(): Message received: source={}, payload={}",
-					messageDestination.getPhysicalName(), mesg.getObject());
-				
-				// Send message to Esper
-				if (mesg.getObject() instanceof Map) {
-					cepService.handleEvent((Map<String,Object>)mesg.getObject(), messageDestination.getPhysicalName());
-				} else {
-					cepService.handleEvent(mesg.getObject());
-				}
-			} else
-			if (message instanceof ActiveMQTextMessage) {
-				ActiveMQTextMessage mesg = (ActiveMQTextMessage) message;
-				ActiveMQDestination messageDestination = mesg.getDestination();
-				log.debug("BrokerCepConsumer.onMessage(): Message received: source={}, payload={}, mime={}",
-					messageDestination.getPhysicalName(), mesg.getText(), mesg.getJMSXMimeType());
-				
-				// Send message to Esper
-				cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
-			} else {
-				log.warn("BrokerCepConsumer.onMessage(): Message ignored: type={}", message.getClass().getName());
-			}
-		} catch (Exception ex) {
-			log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
-		}
-	}
+    @Autowired
+    private BrokerConfig brokerConfig;
+    @Autowired
+    private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
+    @Autowired
+    private ActiveMQConnectionFactory connectionFactory;
+    @Autowired
+    private CepService cepService;
+
+    private Connection connection;
+    private Session session;
+    private Set<String> addedDestinations = new HashSet<String>();
+
+    @Override
+    public void afterPropertiesSet() {
+        initialize();
+    }
+
+    protected void initialize() {
+        log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance...");
+        try {
+            connection = (brokerConfig.getBrokerUsername() != null)
+                    ? connectionFactory.createConnection(brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword())
+                    : connectionFactory.createConnection();
+            connection.start();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance... done");
+        } catch (Exception ex) {
+            log.error("BrokerCepConsumer.init(): EXCEPTION: ", ex);
+        }
+    }
+
+    public synchronized void addQueue(String queueName) {
+        log.debug("BrokerCepConsumer.addQueue(): Adding queue: {}", queueName);
+        if (addedDestinations.contains(queueName)) {
+            log.debug("BrokerCepConsumer.addQueue(): Queue already added: {}", queueName);
+            return;
+        }
+        try {
+            Queue queue = session.createQueue(queueName);
+            MessageConsumer consumer = session.createConsumer(queue);
+            consumer.setMessageListener(this);
+            addedDestinations.add(queueName);
+            log.debug("BrokerCepConsumer.addQueue(): Added queue: {}", queueName);
+        } catch (Exception ex) {
+            log.error("BrokerCepConsumer.addQueue(): EXCEPTION: ", ex);
+        }
+    }
+
+    public synchronized void addTopic(String topicName) {
+        log.debug("BrokerCepConsumer.addTopic(): Adding topic: {}", topicName);
+        if (addedDestinations.contains(topicName)) {
+            log.debug("BrokerCepConsumer.addTopic(): Topic already added: {}", topicName);
+            return;
+        }
+        try {
+            Topic topic = session.createTopic(topicName);
+            MessageConsumer consumer = session.createConsumer(topic);
+            consumer.setMessageListener(this);
+            addedDestinations.add(topicName);
+            log.debug("BrokerCepConsumer.addTopic(): Added topic: {}", topicName);
+        } catch (Exception ex) {
+            log.error("BrokerCepConsumer.addTopic(): EXCEPTION: ", ex);
+        }
+    }
+
+    @Override
+    public void onMessage(Message message) {
+        try {
+            log.trace("BrokerCepConsumer.onMessage(): {}", message);
+            if (message instanceof ActiveMQObjectMessage) {
+                ActiveMQObjectMessage mesg = (ActiveMQObjectMessage) message;
+                ActiveMQDestination messageDestination = mesg.getDestination();
+                log.debug("BrokerCepConsumer.onMessage(): Message received: source={}, payload={}",
+                        messageDestination.getPhysicalName(), mesg.getObject());
+
+                // Send message to Esper
+                if (mesg.getObject() instanceof Map) {
+                    cepService.handleEvent((Map<String, Object>) mesg.getObject(), messageDestination.getPhysicalName());
+                } else {
+                    cepService.handleEvent(mesg.getObject());
+                }
+            } else if (message instanceof ActiveMQTextMessage) {
+                ActiveMQTextMessage mesg = (ActiveMQTextMessage) message;
+                ActiveMQDestination messageDestination = mesg.getDestination();
+                log.debug("BrokerCepConsumer.onMessage(): Message received: source={}, payload={}, mime={}",
+                        messageDestination.getPhysicalName(), mesg.getText(), mesg.getJMSXMimeType());
+
+                // Send message to Esper
+                cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
+            } else {
+                log.warn("BrokerCepConsumer.onMessage(): Message ignored: type={}", message.getClass().getName());
+            }
+        } catch (Exception ex) {
+            log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
+        }
+    }
 }

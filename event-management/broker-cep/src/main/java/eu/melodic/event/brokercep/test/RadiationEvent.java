@@ -9,22 +9,24 @@
 
 package eu.melodic.event.brokercep.test;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Random;
+
 @AllArgsConstructor
-@Getter @ToString
+@Getter
+@ToString
 @EqualsAndHashCode
 public class RadiationEvent implements Serializable {
-	private final int radiation;
-	private final Date timeOfReading;
-	
-	public RadiationEvent() {
-		this(new Random().nextInt(500)+400, new Date());
-	}
+    private final int radiation;
+    private final Date timeOfReading;
+
+    public RadiationEvent() {
+        this(new Random().nextInt(500) + 400, new Date());
+    }
 }

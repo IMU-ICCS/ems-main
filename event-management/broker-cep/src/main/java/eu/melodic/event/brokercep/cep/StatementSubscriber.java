@@ -15,16 +15,18 @@ package eu.melodic.event.brokercep.cep;
  */
 public interface StatementSubscriber {
 
-	/**
-	 * Get the Subscriber name.
-	 * @return Subscriber name
-	 */
-	public String getName();
+    /**
+     * Get the Subscriber name.
+     *
+     * @return Subscriber name
+     */
+    public String getName();
 
-	/**
-	 * Get the EPL Stamement the Subscriber will listen to.
-	 * @return EPL Statement
-	 */
-	public String getStatement();
+    /**
+     * Get the EPL Stamement the Subscriber will listen to.
+     *
+     * @return EPL Statement
+     */
+    public String getStatement();
 
 }

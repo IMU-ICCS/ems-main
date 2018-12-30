@@ -1,86 +1,86 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>eu.melodic.event</groupId>
-		<artifactId>event-management</artifactId>
-		<version>2.1.0-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>eu.melodic.event</groupId>
+        <artifactId>event-management</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+    </parent>
 
-	<groupId>eu.melodic.event</groupId>
-	<artifactId>broker-cep</artifactId>
-	<!--<version>2.1.0-SNAPSHOT</version>
-	<packaging>jar</packaging>-->
-	<name>Upperware - EMS - Embeded Broker+CEP Service</name>
+    <groupId>eu.melodic.event</groupId>
+    <artifactId>broker-cep</artifactId>
+    <!--<version>2.1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>-->
+    <name>Upperware - EMS - Embeded Broker+CEP Service</name>
 
-	<properties>
-		<esper-version>7.1.0</esper-version>
-		<mathparser-version>4.2.0</mathparser-version>
-	</properties>
-	
-	<dependencies>
-		<!-- EMS dependencies -->
-		<dependency>
-			<groupId>eu.melodic.event</groupId>
-			<artifactId>broker-client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+    <properties>
+        <esper-version>7.1.0</esper-version>
+        <mathparser-version>4.2.0</mathparser-version>
+    </properties>
 
-		<!-- Spring-boot dependencies -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-activemq</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-kahadb-store</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		
-		<!-- Esper dependencies -->
-		<dependency>
-			<groupId>com.espertech</groupId>
-			<artifactId>esper</artifactId>
-			<version>${esper-version}</version>
-		</dependency>
-		
-		<!-- MathParser dependencies -->
-		<dependency>
-			<groupId>org.mariuszgromada.math</groupId>
-			<artifactId>MathParser.org-mXparser</artifactId>
-			<version>${mathparser-version}</version>
-		</dependency>
-		
-		<!-- Lombok project -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		
-		<!-- Gson -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.5</version>
-		</dependency>
-		
-		<!-- Apache Commons Lang -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.8.1</version>
-		</dependency>
-		
-	</dependencies>
+    <dependencies>
+        <!-- EMS dependencies -->
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>broker-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring-boot dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-activemq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-kahadb-store</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- Esper dependencies -->
+        <dependency>
+            <groupId>com.espertech</groupId>
+            <artifactId>esper</artifactId>
+            <version>${esper-version}</version>
+        </dependency>
+
+        <!-- MathParser dependencies -->
+        <dependency>
+            <groupId>org.mariuszgromada.math</groupId>
+            <artifactId>MathParser.org-mXparser</artifactId>
+            <version>${mathparser-version}</version>
+        </dependency>
+
+        <!-- Lombok project -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+
+        <!-- Apache Commons Lang -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
+    </dependencies>
 
 </project>

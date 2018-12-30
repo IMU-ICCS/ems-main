@@ -10,7 +10,6 @@
 package eu.melodic.event.brokercep.cep;
 
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -21,18 +20,18 @@ import org.springframework.stereotype.Service;
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Slf4j
 public class CepExtensions {
-    
-	static ApplicationContext appContext;
-	static CepService cepService;
-	
-	// Single-Row Functions methods
-	
-	@Autowired
-	public CepExtensions(ApplicationContext ac) {
-		appContext = ac;
-		cepService = appContext.getBean(CepService.class);
-		cepService.addSingleRowFunction("EVAL", CepEvalFunction.class.getName(), "eval");
-		cepService.addSingleRowFunction("NEWEVENT", CepEvalFunction.class.getName(), "newEvent");
-		cepService.addAggregatorFunction("EVALAGG", CepEvalAggregatorFactory.class.getName());
-	}
+
+    static ApplicationContext appContext;
+    static CepService cepService;
+
+    // Single-Row Functions methods
+
+    @Autowired
+    public CepExtensions(ApplicationContext ac) {
+        appContext = ac;
+        cepService = appContext.getBean(CepService.class);
+        cepService.addSingleRowFunction("EVAL", CepEvalFunction.class.getName(), "eval");
+        cepService.addSingleRowFunction("NEWEVENT", CepEvalFunction.class.getName(), "newEvent");
+        cepService.addAggregatorFunction("EVALAGG", CepEvalAggregatorFactory.class.getName());
+    }
 }

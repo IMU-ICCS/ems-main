@@ -9,22 +9,22 @@
 
 package eu.melodic.event.brokercep.test;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @AllArgsConstructor
-@Getter @ToString
+@Getter
+@ToString
 @EqualsAndHashCode
 public class VisorEvent implements Serializable {
-	private final double metricValue;
-	private final String vmName;
-	private final String cloudName;
-	private final String componentName;
-	private final int level;
-	private final long timestamp;
+    private final double metricValue;
+    private final String vmName;
+    private final String cloudName;
+    private final String componentName;
+    private final int level;
+    private final long timestamp;
 }

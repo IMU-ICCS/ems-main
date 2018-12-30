@@ -9,22 +9,24 @@
 
 package eu.melodic.event.brokercep.test;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Random;
+
 @AllArgsConstructor
-@Getter @ToString
+@Getter
+@ToString
 @EqualsAndHashCode
 public class TemperatureEvent implements Serializable {
-	private final int temperature;
-	private final Date timeOfReading;
-	
-	public TemperatureEvent() {
-		this(new Random().nextInt(500), new Date());
-	}
+    private final int temperature;
+    private final Date timeOfReading;
+
+    public TemperatureEvent() {
+        this(new Random().nextInt(500), new Date());
+    }
 }

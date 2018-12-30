@@ -9,23 +9,25 @@
 
 package eu.melodic.event.brokercep.test;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Random;
+
 @AllArgsConstructor
-@Getter @ToString
+@Getter
+@ToString
 @EqualsAndHashCode
 public class WindEvent implements Serializable {
-	private final int speed;
-	private final int direction;
-	private final Date timeOfReading;
-	
-	public WindEvent() {
-		this(new Random().nextInt(8)+2, new Random().nextInt(60)+230, new Date());
-	}
+    private final int speed;
+    private final int direction;
+    private final Date timeOfReading;
+
+    public WindEvent() {
+        this(new Random().nextInt(8) + 2, new Random().nextInt(60) + 230, new Date());
+    }
 }
