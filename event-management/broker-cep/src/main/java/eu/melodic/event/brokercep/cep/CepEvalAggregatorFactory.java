@@ -32,12 +32,13 @@ public class CepEvalAggregatorFactory implements AggregationFunctionFactory {
     }
 
     public void validate(AggregationValidationContext validationContext) {
+		//XXX: TODO: or DEL???
 		/*Class[] paramType = validationContext.getParameterTypes();
 		if (!paramType[0].equals(String.class))
-			throw new IllegalArgumentException("CepExtensions.validate(): Invalid argument #0 type in aggregator '"+aggregatorFunctionName+"'. Expected String but found: "+paramType[0].getName());
+			throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #0 type in aggregator '"+aggregatorFunctionName+"'. Expected String but found: "+paramType[0].getName());
 		for (int i=1; i<paramType.length; i++) {
 			if (!paramType[i].equals(Double.class))
-				throw new IllegalArgumentException("CepExtensions.validate(): Invalid argument #"+i+" type in aggregator '"+aggregatorFunctionName+"'. Expected Double but found: "+paramType[i].getName());
+				throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #"+i+" type in aggregator '"+aggregatorFunctionName+"'. Expected Double but found: "+paramType[i].getName());
 		}*/
     }
 }

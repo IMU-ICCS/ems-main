@@ -11,25 +11,23 @@ package eu.melodic.event.brokercep.cep;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+/**
+ * This class registers a few Single-Row Functions as EPL extensions.
+ * Registered function implementations reside in CepEvalFunction and CepEvalAggregator classes.
+ * This class is instantiated automatically by Spring-Boot (no need for explicit instantiation)
+ */
 @Service
-@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Slf4j
 public class CepExtensions {
 
-    static ApplicationContext appContext;
-    static CepService cepService;
-
-    // Single-Row Functions methods
+    // Register Single-Row Functions methods
 
     @Autowired
-    public CepExtensions(ApplicationContext ac) {
-        appContext = ac;
-        cepService = appContext.getBean(CepService.class);
+    public CepExtensions(ApplicationContext appContext) {
+        CepService cepService = appContext.getBean(CepService.class);
         cepService.addSingleRowFunction("EVAL", CepEvalFunction.class.getName(), "eval");
         cepService.addSingleRowFunction("NEWEVENT", CepEvalFunction.class.getName(), "newEvent");
         cepService.addAggregatorFunction("EVALAGG", CepEvalAggregatorFactory.class.getName());

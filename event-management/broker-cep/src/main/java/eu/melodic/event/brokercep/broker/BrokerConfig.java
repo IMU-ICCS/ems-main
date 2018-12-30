@@ -135,7 +135,7 @@ public class BrokerConfig implements InitializingBean {
 
     public void setBrokerUsername(String s) {
         if (userList != null) {
-            userList.get(1).setUsername(s);
+            userList.get(1).setUsername(s);     //XXX: : 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
         }
         log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
@@ -183,7 +183,7 @@ public class BrokerConfig implements InitializingBean {
         if (properties.isAuthenticationEnabled()) plugins.add(getBrokerAuthenticationPlugin());
         if (properties.isAuthorizationEnabled()) plugins.add(getBrokerAuthorizationPlugin());
         if (plugins.size() > 0) {
-            brokerService.setPlugins(plugins.stream().toArray(BrokerPlugin[]::new));
+            brokerService.setPlugins(plugins.toArray(new BrokerPlugin[0]));
         }
 
         // Configure broker service instance
@@ -196,11 +196,9 @@ public class BrokerConfig implements InitializingBean {
 
         // Change the JMX connector port
         if (properties != null && properties.getConnectorPort() > 0) {
-            if (brokerService != null) {
-                if (brokerService.getManagementContext() != null) {
-                    log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getConnectorPort());
-                    brokerService.getManagementContext().setConnectorPort(properties.getConnectorPort());
-                }
+            if (brokerService.getManagementContext() != null) {
+                log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getConnectorPort());
+                brokerService.getManagementContext().setConnectorPort(properties.getConnectorPort());
             }
         }
 

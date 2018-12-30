@@ -34,6 +34,7 @@ public class CepEvalAggregator implements AggregationMethod {
     }
 
     public void leave(Object value) {
+        //XXX: TODO: see Pawel's comment: "Shouldn't it be: entries.remove(value);" ???
         Object[] oldValue = entries.remove(0);
         log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, removed={}, hash={}", hashCode(), value, oldValue, value.hashCode());
     }
@@ -54,12 +55,12 @@ public class CepEvalAggregator implements AggregationMethod {
             // initialize event lists for each stream
             List<List<EventMap>> lists = new ArrayList<>();
             for (int i = 0; i < streamNames.length; i++) {
-                lists.add(new ArrayList<EventMap>());
+                lists.add(new ArrayList<>());
             }
 
-            // append events from entries into sream event lists
+            // append events from entries into stream event lists
             for (Object[] entry : entries) {
-                if (!((String) entry[0]).equals(formula) && !((String) entry[1]).equals(streamNames))
+                if (!entry[0].equals(formula) && !entry[1].equals(streamNames))
                     throw new IllegalArgumentException("Aggregator entries do not contain the same formula or stream names in arguments #0 or #1");
                 for (int i = 0; i < streamNames.length; i++) {
                     if (EventMap.class.isAssignableFrom(entry[i + 2].getClass())) {

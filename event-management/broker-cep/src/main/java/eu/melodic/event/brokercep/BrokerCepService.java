@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -32,24 +33,18 @@ import java.util.Set;
 
 //import eu.melodic.event.brokercep.event.MetricEvent;
 
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
 @Slf4j
 public class BrokerCepService {
-    @Autowired
     private BrokerCepProperties properties;
-    @Autowired
     private BrokerConfig brokerConfig;
-    @Autowired
     private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
-    @Autowired
     private ActiveMQConnectionFactory connectionFactory;
-    //@Autowired
     //private BrokerAdvisoryWatcher advisoryMessageWatcher;
     @Getter
-    @Autowired
     private BrokerCepConsumer brokerCepBridge;
     @Getter
-    @Autowired
     private CepService cepService;
 
     public BrokerCepProperties getBrokerCepProperties() {
@@ -57,8 +52,6 @@ public class BrokerCepService {
     }
 
     public synchronized void clearState() {
-//XXX:DEL: ...next line
-        log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         log.info("BrokerCepService.clearState(): Clearing Broker-CEP state...");
 
         cepService.clearStatements();
@@ -69,9 +62,9 @@ public class BrokerCepService {
         try {
             BrokerView bv = brokerService.getAdminView();
             ObjectName[] queues = bv.getQueues();
-            ObjectName[] queueSubscribers = bv.getQueueSubscribers();
+            //ObjectName[] queueSubscribers = bv.getQueueSubscribers();
             ObjectName[] topics = bv.getTopics();
-            ObjectName[] topicSubscribers = bv.getTopicSubscribers();
+            //ObjectName[] topicSubscribers = bv.getTopicSubscribers();
             for (ObjectName q : queues) {
                 String name = q.getCanonicalName();
                 bv.removeQueue(name);
@@ -91,13 +84,13 @@ public class BrokerCepService {
 
     public synchronized void addEventTypes(Set<String> eventTypeNames, String[] eventPropertyNames, Class[] eventPropertyTypes) {
         log.info("BrokerCepService.addEventTypes(): Adding event types: {}", eventTypeNames);
-        eventTypeNames.stream().forEach(name -> addEventType(name, eventPropertyNames, eventPropertyTypes));
+        eventTypeNames.forEach(name -> addEventType(name, eventPropertyNames, eventPropertyTypes));
         log.info("BrokerCepService.addEventTypes(): Adding event types: ok");
     }
 
     public synchronized void addEventTypes(Set<String> eventTypeNames, Class eventType) {
         log.info("BrokerCepService.addEventTypes(): Adding event types: {}", eventTypeNames);
-        eventTypeNames.stream().forEach(name -> addEventType(name, eventType));
+        eventTypeNames.forEach(name -> addEventType(name, eventType));
         log.info("BrokerCepService.addEventTypes(): Adding event types: ok");
     }
 
@@ -133,7 +126,7 @@ public class BrokerCepService {
 
     public void addFunctionDefinitions(Set<FunctionDefinition> definitions) {
         log.info("BrokerCepService.addFunctionDefinitions(): Adding function definitions: {}", definitions);
-        definitions.stream().forEach(def -> addFunctionDefinition(def));
+        definitions.forEach(def -> addFunctionDefinition(def));
         log.info("BrokerCepService.addFunctionDefinitions(): Adding function definitions: ok");
     }
 

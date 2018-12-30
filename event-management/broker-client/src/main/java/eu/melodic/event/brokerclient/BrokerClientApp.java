@@ -11,10 +11,9 @@ package eu.melodic.event.brokerclient;
 
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
-
 import javax.jms.*;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class BrokerClientApp {
@@ -30,7 +29,7 @@ public class BrokerClientApp {
 
         String username = args.length>aa && args[aa].startsWith("-U") ? args[aa++].substring(2) : null;
         String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
-        if (username != null && username.length() > 0 && password == null) {
+        if (StringUtils.isNotBlank(username) && password == null) {
             password = new String(System.console().readPassword("Enter broker password: "));
         }
 

@@ -20,13 +20,12 @@ public interface StatementSubscriber {
      *
      * @return Subscriber name
      */
-    public String getName();
+    String getName();
 
     /**
      * Get the EPL Stamement the Subscriber will listen to.
      *
      * @return EPL Statement
      */
-    public String getStatement();
-
+    String getStatement();
 }

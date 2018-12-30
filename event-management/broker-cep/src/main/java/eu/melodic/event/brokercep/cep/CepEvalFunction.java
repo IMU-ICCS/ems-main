@@ -81,10 +81,7 @@ public class CepEvalFunction {
         log.debug(">> newEvent:   params-length: {}", params.length);
 
         // Add metric value
-        EventMap event = new EventMap();
-        event.put("metricValue", metricValue);
-        event.put("level", 1);
-        event.put("timestamp", System.currentTimeMillis());
+        EventMap event = new EventMap(metricValue, 1, System.currentTimeMillis());
         //MetricEvent event = new MetricEvent(metricValue, 1, System.currentTimeMillis());
 
         // Add extra parameters
