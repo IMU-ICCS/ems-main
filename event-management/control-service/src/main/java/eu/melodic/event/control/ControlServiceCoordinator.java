@@ -37,8 +37,11 @@ import javax.annotation.PreDestroy;
 
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -81,7 +84,7 @@ public class ControlServiceCoordinator {
 	public void preloadModels() {
 		String preloadCamelModel = properties.getPreloadCamelModel();
 		String preloadCpModel = properties.getPreloadCpModel();
-		if (preloadCamelModel!=null && !preloadCamelModel.trim().isEmpty()) {
+		if (StringUtils.isNotBlank(preloadCamelModel)) {
 			log.info("===================================================================================================");
 			log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}", preloadCamelModel, preloadCpModel);
 			processNewModel(preloadCamelModel, preloadCpModel, null);
@@ -94,8 +97,6 @@ public class ControlServiceCoordinator {
 	
 	@Async
 	public void processNewModel(String camelModelId, String cpModelId, String notificationUri) {
-		notificationUri = (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) ? notificationUri : null;
-		
 		// Acquire lock of this coordinator
 		if (! inUse.compareAndSet(false, true)) {
 			String mesg = "ControlServiceCoordinator.processNewModel(): ERROR: Coordinator is in use. Method exits immediately";
@@ -129,8 +130,6 @@ public class ControlServiceCoordinator {
 	
 	@Async
 	public void processCpModel(String cpModelId, String notificationUri) {
-		notificationUri = (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) ? notificationUri : null;
-		
 		// Acquire lock of this coordinator
 		if (! inUse.compareAndSet(false, true)) {
 			String mesg = "ControlServiceCoordinator.processCpModel(): ERROR: Coordinator is in use. Method exits immediately";
@@ -177,7 +176,7 @@ public class ControlServiceCoordinator {
 			
 			// serialize 'TranslationContext' to file
 			String fileName = properties.getTcSaveFile();
-			if (fileName!=null && !(fileName=fileName.trim()).isEmpty()) {
+			if (StringUtils.isNotBlank(fileName)) {
 				try {
 					log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
 					java.io.Writer writer = new java.io.FileWriter(fileName);
@@ -200,7 +199,7 @@ public class ControlServiceCoordinator {
 			
 			// unserialize 'TranslationContext' from file
 			String fileName = properties.getTcLoadFile();
-			if (fileName!=null && !(fileName=fileName.trim()).isEmpty()) {
+			if (StringUtils.isNotBlank(fileName)) {
 				try {
 					log.info("ControlServiceCoordinator.processNewModel(): Start unserializing _TC data from file: {}", fileName);
 					java.io.Reader reader = new java.io.FileReader(fileName);
@@ -226,7 +225,7 @@ public class ControlServiceCoordinator {
 		// Retrieve Metric Variable Values (MVV) from CP model
 		Map<String,Double> constants = new HashMap<>();
 		if (! properties.isSkipMvvRetrieve()) {
-			if (cpModelId!=null && !cpModelId.trim().isEmpty()) {
+			if (StringUtils.isNotBlank(cpModelId)) {
 				try {
 					log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 					
@@ -237,11 +236,9 @@ public class ControlServiceCoordinator {
 					
 				} catch (Exception ex) {
 					log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
-					//return;
 				}
 			} else {
 				log.error("ControlServiceCoordinator.processNewModel(): No CP model have been provided");
-				//return;
 			}
 		} else {
 			log.warn("ControlServiceCoordinator.processNewModel(): Skipping MVV retrieval due to configuration");
@@ -283,7 +280,7 @@ public class ControlServiceCoordinator {
 						String topicName = topicRules.getKey();
 						for (String rule : topicRules.getValue()) {
 							brokerCep.getCepService().addStatementSubscriber(
-								new CscStatementSubscriber().setNameTopicAndStatement("Subscriber_"+cnt++, topicName, rule, brokerCep)
+								new CscStatementSubscriber("Subscriber_"+cnt++, topicName, rule, brokerCep)
 							);
 						}
 					}
@@ -292,7 +289,6 @@ public class ControlServiceCoordinator {
 				}
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", camelModelId, ex);
-				//return;
 			}
 		} else {
 			log.warn("ControlServiceCoordinator.processNewModel(): Skipping Broker-CEP setup due to configuration");
@@ -307,7 +303,6 @@ public class ControlServiceCoordinator {
 						brokerCep.getBrokerUsername(), brokerCep.getBrokerPassword() );
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
-				//return;
 			}
 		} else {
 			log.warn("ControlServiceCoordinator.processNewModel(): Skipping Baguette Server setup due to configuration");
@@ -322,13 +317,12 @@ public class ControlServiceCoordinator {
 			log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: scaling-topics: {}", scalingTopics);
 			
 			// Get top-level metric topics from _TC
-			Set<String> metricTopics = new HashSet<>();
-			metricTopics.addAll( _TC.DAG.getTopLevelNodes().stream().filter(node -> ! scalingTopics.contains(node.getElementName())).map(node -> node.getElementName()).collect(Collectors.toSet()) );
+			Set<String> metricTopics = _TC.DAG.getTopLevelNodes().stream().filter(node -> ! scalingTopics.contains(node.getElementName())).map(node -> node.getElementName()).collect(Collectors.toSet());
 			log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
 			
 			// Prepare subscription configurations
 			String upperwareBrokerUrl = brokerCep!=null ? brokerCep.getBrokerCepProperties().getBrokerUrl() : null;
-			if (upperwareBrokerUrl==null || upperwareBrokerUrl.trim().isEmpty()) {
+			if (StringUtils.isBlank(upperwareBrokerUrl)) {
 				log.warn("ControlServiceCoordinator.processNewModel(): No Broker URL has been specified or Broker-CEP module is deactivated");
 			}
 			List<Map> subscriptionConfigs = new ArrayList<>();
@@ -343,11 +337,10 @@ public class ControlServiceCoordinator {
 			log.info("ControlServiceCoordinator.processNewModel(): MetaSolver subscription configuration in JSON: {}", json);
 			try {
 				log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
-				String metaSolverResponse = new RestTemplate().postForObject(metaSolverEndpoint, json, String.class);
+				String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
 				log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
-				//return;
 			}
 			
 		} else {
@@ -374,7 +367,8 @@ public class ControlServiceCoordinator {
 		
 		// Notify ESB, if 'notificationUri' is provided
 		if (! properties.isSkipEsbNotification()) {
-			if (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) {
+			if (StringUtils.isNotBlank(notificationUri)) {
+				notificationUri = notificationUri.trim();
 				log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
 				sendSuccessNotification(camelModelId, notificationUri);
 				log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
@@ -395,7 +389,7 @@ public class ControlServiceCoordinator {
 		// Retrieve Metric Variable Values (MVV) from CP model
 		Map<String,Double> constants = new HashMap<>();
 		if (! properties.isSkipMvvRetrieve()) {
-			if (cpModelId!=null && !cpModelId.trim().isEmpty()) {
+			if (StringUtils.isNotBlank(cpModelId)) {
 				try {
 					log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 					
@@ -406,18 +400,15 @@ public class ControlServiceCoordinator {
 					
 				} catch (Exception ex) {
 					log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
-					//return;
 				}
 			} else {
 				log.error("ControlServiceCoordinator._processCpModel(): No CP model have been provided");
-				//return;
 			}
 		} else {
 			log.warn("ControlServiceCoordinator._processCpModel(): Skipping MVV retrieval due to configuration");
 		}
 
 		// (Re-)Configure Broker and CEP
-		String upperwareGrouping = properties.getUpperwareGrouping();
 		if (! properties.isSkipBrokerCep()) {
 			try {
 				// Initializing Broker-CEP module if necessary
@@ -431,7 +422,6 @@ public class ControlServiceCoordinator {
 				brokerCep.setConstants( constants );
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", cpModelId, ex);
-				//return;
 			}
 		} else {
 			log.warn("ControlServiceCoordinator._processCpModel(): Skipping Broker-CEP setup due to configuration");
@@ -444,7 +434,6 @@ public class ControlServiceCoordinator {
 				baguette.sendConstants( constants );
 			} catch (Exception ex) {
 				log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while configuring Baguette server: cp-model-id={}", cpModelId, ex);
-				//return;
 			}
 		} else {
 			log.warn("ControlServiceCoordinator._processCpModel(): Skipping Baguette Server setup due to configuration");
@@ -452,7 +441,8 @@ public class ControlServiceCoordinator {
 		
 		// Notify ESB, if 'notificationUri' is provided
 		if (! properties.isSkipEsbNotification()) {
-			if (notificationUri!=null && !(notificationUri=notificationUri.trim()).isEmpty()) {
+			if (StringUtils.isNotBlank(notificationUri)) {
+				notificationUri = notificationUri.trim();
 				log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
 				sendSuccessNotification(null, notificationUri);
 				log.info("ControlServiceCoordinator._processCpModel(): ESB notified: {}", notificationUri);
@@ -474,24 +464,14 @@ public class ControlServiceCoordinator {
 		map.put("type", type);
 		return map;
 	}
-	
+
+	@AllArgsConstructor
+	@Getter
 	public static class CscStatementSubscriber implements StatementSubscriber {
 		private String name;
 		private String topic;
 		private String statement;
 		private BrokerCepService brokerCep;
-		
-		public String getName() { return name; }
-		public String getTopic() { return topic; }
-		public String getStatement() { return statement; }
-		
-		public StatementSubscriber setNameTopicAndStatement(String n, String t, String s, BrokerCepService bc) {
-			name = n;
-			topic = t;
-			statement = s;
-			brokerCep = bc;
-			return this;
-		}
 		
 		public void update(java.util.Map<String, Object> eventMap) {
 			try {
@@ -597,14 +577,22 @@ public class ControlServiceCoordinator {
 	}
 
 	private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri) {
+		// Check if 'notificationUri' is blank
+		if (StringUtils.isBlank(notificationUri)) {
+			log.warn("ControlServiceCoordinator.sendCamelModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");
+			return;
+		}
+		notificationUri = notificationUri.trim();
+
 		// Get ESB url from control-service configuration
 		String esbUrl = properties.getEsbUrl();
-		if (esbUrl==null || (esbUrl=esbUrl.trim()).isEmpty()) {
+		if (StringUtils.isBlank(esbUrl)) {
 			log.warn("ControlServiceCoordinator.sendCamelModelNotification(): esb-url property is empty. No notification will be sent to ESB.");
 			return;
 		}
+		esbUrl = esbUrl.trim();
 		
-		// Fixing ESB url
+		// Fixing ESB url parts
 		if (esbUrl.endsWith("/")) {
 			esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
 		}
@@ -661,7 +649,7 @@ public class ControlServiceCoordinator {
 				return eventLogEnd(method, EVENT_DEBUG_ERROR);
 			}
 		}
-		else if (clientId.equals("*")) baguette.sendToActiveClients(command);
+		else if ("*".equals(clientId)) baguette.sendToActiveClients(command);
 		else baguette.sendToClient(clientId, command);
 		
 		// Log success

@@ -11,19 +11,11 @@ package eu.melodic.event.control.properties;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Data
 @Validated

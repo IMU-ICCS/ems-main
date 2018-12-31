@@ -43,7 +43,7 @@ public class BaguetteServer {
 
     // Configuration getter methods
     public Set<String> getGroupingNames() {
-        Set<String> groupings = new HashSet<String>();
+        Set<String> groupings = new HashSet<>();
         groupings.addAll(groupingTopicsMap.keySet());
         groupings.addAll(groupingRulesMap.keySet());
         groupings.addAll(topicConnections.keySet());

@@ -13,34 +13,29 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
+
+import java.util.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 @Component
 @Slf4j
 public class CpModelHelper {
 	
-	protected HashSet<String> LOCKS = new HashSet<>();
-	
-	protected static int counter = 0;
+	private static HashSet<String> LOCKS = new HashSet<>();
+	private static int counter = 0;
 
 	private int id;
     private CDOClientXImpl cdoClient;
 	
 	public CpModelHelper() {
 		id = ++counter;
-        this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
 		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
 	}
 	
@@ -74,17 +69,31 @@ public class CpModelHelper {
 						log.debug("CpModelHelper.getMetricVariableValues():  Found Metric Variable: id={}, class={}", varId, cvv.getClass().getName());
 						NumericValueUpperware value = cvv.getValue();
 						double doubleVal;
-						if (BooleanValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((BooleanValueUpperware)value).isValue()?1d:0d));
-						else if (IntegerValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((IntegerValueUpperware)value).getValue()));
-						else if (LongValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((LongValueUpperware)value).getValue()));
-						else if (FloatValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((FloatValueUpperware)value).getValue()));
-						else if (DoubleValueUpperware.class.isAssignableFrom(value.getClass())) results.put(varId, new Double(doubleVal = ((DoubleValueUpperware)value).getValue()));
-						else throw new IllegalArgumentException("Encountered Non-numeric Metric Variable: "+varId+", class="+value.getClass().getName());
+						if (value instanceof BooleanValueUpperware) {
+							results.put(varId, doubleVal = ((BooleanValueUpperware)value).isValue()?1d:0d);
+						} else
+						if (value instanceof IntegerValueUpperware) {
+							results.put(varId, doubleVal = ((IntegerValueUpperware) value).getValue());
+						} else
+						if (value instanceof LongValueUpperware) {
+							results.put(varId, doubleVal = ((LongValueUpperware) value).getValue());
+						} else
+						if (value instanceof FloatValueUpperware) {
+							results.put(varId, doubleVal = ((FloatValueUpperware) value).getValue());
+						} else
+						if (value instanceof DoubleValueUpperware) {
+							results.put(varId, doubleVal = ((DoubleValueUpperware) value).getValue());
+						} else
+						{
+							String mesg = String.format("Encountered Non-numeric Metric Variable: %s, class=%s",
+									varId, value.getClass().getName());
+							throw new IllegalArgumentException(mesg);
+						}
 						log.info("CpModelHelper.getMetricVariableValues():  Metric Variable Value: {} = {}", varId, doubleVal);
 					}
 				});
 				if (results.keySet().size()!=variableNames.size()) {
-					HashSet<String> missingVars = new HashSet<String>(variableNames);
+					Set<String> missingVars = new HashSet<>(variableNames);
 					missingVars.removeAll(results.keySet());
 					log.error("CpModelHelper.getMetricVariableValues(): ERROR: Not found values for all Metric Variables: {}", missingVars);
 					throw new IllegalArgumentException("Not found values for all Metric Variables: "+missingVars);
@@ -119,7 +128,6 @@ public class CpModelHelper {
 				LOCKS.add(cpModelPath);
 			} else {
 				throw new ConcurrentAccessException("CpModelHelper."+caller+"->lockCpModel: Resource is locked: "+cpModelPath);
-				//return null;
 			}
 		}
 		log.debug("CpModelHelper.{}->lockCpModel(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);

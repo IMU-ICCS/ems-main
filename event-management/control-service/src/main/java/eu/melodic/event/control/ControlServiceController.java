@@ -9,12 +9,8 @@
 
 package eu.melodic.event.control;
 
-import eu.melodic.event.control.properties.ControlServiceProperties;
-
 import eu.melodic.models.commons.Watermark;
-import eu.melodic.models.interfaces.ems.CamelModelRequest;
 import eu.melodic.models.interfaces.ems.CamelModelRequestImpl;
-import eu.melodic.models.interfaces.ems.MonitorsDataRequest;
 import eu.melodic.models.interfaces.ems.MonitorsDataRequestImpl;
 import eu.melodic.models.interfaces.ems.MonitorsDataResponse;
 import eu.melodic.models.interfaces.ems.MonitorsDataResponseImpl;
@@ -46,9 +42,7 @@ public class ControlServiceController {
 	
 	@Autowired
 	private ControlServiceCoordinator coordinator;
-	@Autowired
-	private ControlServiceProperties properties;
-	
+
 	// ------------------------------------------------------------------------------------------------------------
 	// ESB and Upperware interfacing methods
 	// ------------------------------------------------------------------------------------------------------------
@@ -64,8 +58,7 @@ public class ControlServiceController {
 		log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}", applicationId, notificationUri, requestUuid);
 		
 		// Start translation and reconfiguration in a worker thread
-		String camelModelId = applicationId;
-		coordinator.processNewModel( camelModelId, null, notificationUri );
+		coordinator.processNewModel( applicationId, null, notificationUri );
 		log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 		
 		return "OK";
