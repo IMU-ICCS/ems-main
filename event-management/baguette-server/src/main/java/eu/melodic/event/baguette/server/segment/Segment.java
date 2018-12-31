@@ -10,22 +10,31 @@
 package eu.melodic.event.baguette.server.segment;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+
 import java.util.function.Function;
 
 public interface Segment {
-	public abstract String getId();
-	public abstract String getState();
-	
-	public abstract void start();
-	public abstract void stop();
-	
-	public abstract void register(ClientShellCommand c);
-	public abstract void unregister(ClientShellCommand c);
-	public abstract void brokerReady(ClientShellCommand broker);
-	public abstract void clientReady(ClientShellCommand client);
-	
-	public abstract Function getReadyCallback();
-	public abstract void setReadyCallback(Function f);
-	public abstract Function getChangeCallback();
-	public abstract void setChangeCallback(Function f);
+    public abstract String getId();
+
+    public abstract String getState();
+
+    public abstract void start();
+
+    public abstract void stop();
+
+    public abstract void register(ClientShellCommand c);
+
+    public abstract void unregister(ClientShellCommand c);
+
+    public abstract void brokerReady(ClientShellCommand broker);
+
+    public abstract void clientReady(ClientShellCommand client);
+
+    public abstract Function getReadyCallback();
+
+    public abstract void setReadyCallback(Function f);
+
+    public abstract Function getChangeCallback();
+
+    public abstract void setChangeCallback(Function f);
 }

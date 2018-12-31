@@ -12,19 +12,26 @@ package eu.melodic.event.baguette.server;
 import java.util.Properties;
 
 public interface ServerCoordinator {
-	void initialize(BaguetteServer server, Runnable callback);
-	int getPhase();
-	void register(ClientShellCommand c);
-	void unregister(ClientShellCommand c);
-	void brokerReady(ClientShellCommand c);
-	void clientReady(ClientShellCommand c);
-	void start();
-	void stop();
-	
-	default public void sendGroupingConfigurations(Properties cfg, ClientShellCommand c, BaguetteServer server) {
-		for (String grouping : server.getGroupingNames()) {
-			GroupingConfiguration gc = new GroupingConfiguration(grouping, cfg, server);
-			c.sendGroupingConfiguration(grouping, gc);
-		}
-	}
+    void initialize(BaguetteServer server, Runnable callback);
+
+    int getPhase();
+
+    void register(ClientShellCommand c);
+
+    void unregister(ClientShellCommand c);
+
+    void brokerReady(ClientShellCommand c);
+
+    void clientReady(ClientShellCommand c);
+
+    void start();
+
+    void stop();
+
+    default public void sendGroupingConfigurations(Properties cfg, ClientShellCommand c, BaguetteServer server) {
+        for (String grouping : server.getGroupingNames()) {
+            GroupingConfiguration gc = new GroupingConfiguration(grouping, cfg, server);
+            c.sendGroupingConfiguration(grouping, gc);
+        }
+    }
 }

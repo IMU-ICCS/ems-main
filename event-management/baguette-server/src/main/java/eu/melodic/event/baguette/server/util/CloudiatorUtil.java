@@ -11,182 +11,181 @@ package eu.melodic.event.baguette.server.util;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
-import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.IpAddress;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.Location;
+import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
 import eu.melodic.event.baguette.server.properties.CloudiatorUtilProperties;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 /**
- *  Colosseum Utilities
- *
- *  INSTEAD OF DOCUMENTATION USE COLOSSEUM CLIENT CODE:
- *  Colosseum Client code:
- *		https://github.com/cloudiator/colosseum-client/tree/master/src/main/java/de/uniulm/omi/cloudiator/colosseum/client
+ * Colosseum Utilities
+ * <p>
+ * INSTEAD OF DOCUMENTATION USE COLOSSEUM CLIENT CODE:
+ * Colosseum Client code:
+ * https://github.com/cloudiator/colosseum-client/tree/master/src/main/java/de/uniulm/omi/cloudiator/colosseum/client
  */
 @Slf4j
-public class CloudiatorUtil implements InitializingBean
-{
-	private static CloudiatorUtil instance = null;
+public class CloudiatorUtil implements InitializingBean {
+    private static CloudiatorUtil instance = null;
 
-	@Autowired
-	private CloudiatorUtilProperties properties;
+    @Autowired
+    private CloudiatorUtilProperties properties;
 
-	protected List<PatternPair> providerEndpointPatterns;
-	protected List<PatternPair> providerLocationPatterns;
-	private Client client = null;
+    protected List<PatternPair> providerEndpointPatterns;
+    protected List<PatternPair> providerLocationPatterns;
+    private Client client = null;
 
-	private CloudiatorUtil() {
-		CloudiatorUtil.instance = this;
-	}
-
-	public static CloudiatorUtil getInstance() {
-		if (instance==null) instance = new CloudiatorUtil();
-		return instance;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		log.warn("CloudiatorUtil.afterPropertiesSet(): configuration: {}", properties);
-
-		//XXX: ASK: This can be done later in 'findVmInfoUsingIpAddress()'
-		this.client = ClientBuilder.getNew()
-				.url(properties.getColosseumEndpoint())
-				.credentials(properties.getColosseumAuthEmail(), properties.getColosseumAuthTenant(), properties.getColosseumAuthPassword())
-				.build();
-
-		preparePatterns();
-	}
-
-	// ==================================================================================
-
-	public VmCloudInfo findVmInfoUsingIpAddress(String searchIpAddress, boolean searchIpAddressIsPublic) {
-		log.info("Looking up VM info using IP address:\n\t {} {}", searchIpAddress, searchIpAddressIsPublic ? "/ PUBLIC" : "/ PUBLIC-or-PRIVATE" );
-		
-		// Find VM instance using IP address
-		long foundVm = -1;
-		List<IpAddress> ipAddressList = client.controller(IpAddress.class).getList();
-		for (IpAddress ipAddr : ipAddressList) {
-			if (ipAddr.getIp().equals(searchIpAddress) && (!searchIpAddressIsPublic || searchIpAddressIsPublic && "PUBLIC".equals(ipAddr.getIpType()))) {
-				foundVm = ipAddr.getVirtualMachine();
-				break;
-			}
-		}
-		log.info("Found VM with Id:\n\t {}\n", foundVm);
-		
-		if (foundVm<0) {
-			log.error("** Could not find IP address: {}", searchIpAddress);
-			return null;
-		}
-		
-		// Retrieve VM instance info
-		VirtualMachine vm = client.controller(VirtualMachine.class).get(foundVm);
-		if (vm==null) {
-			log.error("** Could not find VM with IP address: {}", searchIpAddress);
-			return null;
-		} else {
-			log.info("VM:\n\t id={},\n\t name={},\n\t remote-state={},\n\t location={},\n\t cloud={},\n\t provider-id={}\n",
-					vm.getId(), vm.getName(), vm.getRemoteState(), vm.getLocation(), vm.getCloud(), vm.getProviderId());
-		}
-		
-		VmCloudInfo response = new VmCloudInfo();
-		response.ipAddress = searchIpAddress;
-		response.vm = vm;
-		
-		// Retrieve Cloud info
-		if (vm.getCloud()>=0) {
-			Cloud cloud = client.controller(Cloud.class).get(vm.getCloud());
-			if (cloud==null) {
-				log.error("** Could not find Cloud with id: {}  -->  VM with IP address: {}", vm.getCloud(), searchIpAddress);
-			} else {
-				log.info("Cloud:\n\t id={},\n\t name={},\n\t endpoint={}\n",
-						cloud.getId(), cloud.getName(), cloud.getEndpoint());
-				log.info("Cloud Provider:\n\t {}\n", getCloudProviderByEndpoint(cloud.getEndpoint()));
-				response.cloud = cloud;
-				response.providerName = getCloudProviderByEndpoint(cloud.getEndpoint());
-				log.info("\t provider-name={}\n", response.providerName);
-			}
-		} else {
-			log.error("** No Cloud info in VM with IP address: {}", searchIpAddress);
-		}
-		
-		// Retrieve Location info
-		if (vm.getLocation()>=0) {
-			Location loc = client.controller(Location.class).get(vm.getLocation());
-			if (loc==null) {
-				log.error("** Could not find Location with id: {}  -->  VM with IP address: {}", vm.getLocation(), searchIpAddress);
-			} else {
-				log.info("Location:\n\t id={},\n\t name={},\n\t parent-id={}\n",
-						loc.getId(), loc.getName(), loc.getParent());
-				response.location = loc;
-				if (loc.getName()!=null) {
-					response.locationName = getCloudLocationByName(loc.getName());
-					log.info("\t location-name={}\n", response.locationName);
-				}
-			}
-		} else {
-			log.error("** No Location info in VM with IP address: {}", searchIpAddress);
-		}
-		
-		return response;
+    private CloudiatorUtil() {
+        CloudiatorUtil.instance = this;
     }
 
-	// ==================================================================================
+    public static CloudiatorUtil getInstance() {
+        if (instance == null) instance = new CloudiatorUtil();
+        return instance;
+    }
 
-	private void preparePatterns() {
-		// Translate Cloud Endpoints and Locations to human readable strings (using patterns from config files)
-		providerEndpointPatterns = properties.getProviderEndpointPatterns().stream().map(item -> new PatternPair(item.getPattern(), item.getProvider())).collect(Collectors.toList());
-		providerLocationPatterns = properties.getProviderLocationPatterns().stream().map(item -> new PatternPair(item.getPattern(), item.getProvider())).collect(Collectors.toList());
-	}
-	
-	private String getCloudProviderByEndpoint(String endpoint) {
-		return _getCloudProviderByString(endpoint, providerEndpointPatterns);
-	}
-	
-	private String getCloudLocationByName(String name) {
-		return _getCloudProviderByString(name, providerLocationPatterns);
-	}
-	
-	private static String _getCloudProviderByString(String endpoint, List<PatternPair> config) {
-		List<PatternPair> copy = config;
-		for (PatternPair pp : copy) {
-			if (pp.pattern.matcher(endpoint).matches()) return pp.name;
-		}
-		return null;
-	}
-	
-	// Member classes
-	private static class PatternPair {
-		private final Pattern pattern;
-		private final String name;
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.warn("CloudiatorUtil.afterPropertiesSet(): configuration: {}", properties);
 
-		public PatternPair(Pattern pat, String name) {
-			this.pattern = pat;
-			this.name = name;
-		}
-		public PatternPair(String patStr, String name) {
-			this(Pattern.compile(patStr), name);
-		}
-	}
-	
-	public static class VmCloudInfo {
-		public String ipAddress;
-		public VirtualMachine vm;
-		public Location location;
-		public Cloud cloud;
-		public String providerName;
-		public String locationName;
-	}
-	
-	// ==================================================================================
+        //XXX: ASK: This can be done later in 'findVmInfoUsingIpAddress()'
+        this.client = ClientBuilder.getNew()
+                .url(properties.getColosseumEndpoint())
+                .credentials(properties.getColosseumAuthEmail(), properties.getColosseumAuthTenant(), properties.getColosseumAuthPassword())
+                .build();
+
+        preparePatterns();
+    }
+
+    // ==================================================================================
+
+    public VmCloudInfo findVmInfoUsingIpAddress(String searchIpAddress, boolean searchIpAddressIsPublic) {
+        log.info("Looking up VM info using IP address:\n\t {} {}", searchIpAddress, searchIpAddressIsPublic ? "/ PUBLIC" : "/ PUBLIC-or-PRIVATE");
+
+        // Find VM instance using IP address
+        long foundVm = -1;
+        List<IpAddress> ipAddressList = client.controller(IpAddress.class).getList();
+        for (IpAddress ipAddr : ipAddressList) {
+            if (ipAddr.getIp().equals(searchIpAddress) && (!searchIpAddressIsPublic || searchIpAddressIsPublic && "PUBLIC".equals(ipAddr.getIpType()))) {
+                foundVm = ipAddr.getVirtualMachine();
+                break;
+            }
+        }
+        log.info("Found VM with Id:\n\t {}\n", foundVm);
+
+        if (foundVm < 0) {
+            log.error("** Could not find IP address: {}", searchIpAddress);
+            return null;
+        }
+
+        // Retrieve VM instance info
+        VirtualMachine vm = client.controller(VirtualMachine.class).get(foundVm);
+        if (vm == null) {
+            log.error("** Could not find VM with IP address: {}", searchIpAddress);
+            return null;
+        } else {
+            log.info("VM:\n\t id={},\n\t name={},\n\t remote-state={},\n\t location={},\n\t cloud={},\n\t provider-id={}\n",
+                    vm.getId(), vm.getName(), vm.getRemoteState(), vm.getLocation(), vm.getCloud(), vm.getProviderId());
+        }
+
+        VmCloudInfo response = new VmCloudInfo();
+        response.ipAddress = searchIpAddress;
+        response.vm = vm;
+
+        // Retrieve Cloud info
+        if (vm.getCloud() >= 0) {
+            Cloud cloud = client.controller(Cloud.class).get(vm.getCloud());
+            if (cloud == null) {
+                log.error("** Could not find Cloud with id: {}  -->  VM with IP address: {}", vm.getCloud(), searchIpAddress);
+            } else {
+                log.info("Cloud:\n\t id={},\n\t name={},\n\t endpoint={}\n",
+                        cloud.getId(), cloud.getName(), cloud.getEndpoint());
+                log.info("Cloud Provider:\n\t {}\n", getCloudProviderByEndpoint(cloud.getEndpoint()));
+                response.cloud = cloud;
+                response.providerName = getCloudProviderByEndpoint(cloud.getEndpoint());
+                log.info("\t provider-name={}\n", response.providerName);
+            }
+        } else {
+            log.error("** No Cloud info in VM with IP address: {}", searchIpAddress);
+        }
+
+        // Retrieve Location info
+        if (vm.getLocation() >= 0) {
+            Location loc = client.controller(Location.class).get(vm.getLocation());
+            if (loc == null) {
+                log.error("** Could not find Location with id: {}  -->  VM with IP address: {}", vm.getLocation(), searchIpAddress);
+            } else {
+                log.info("Location:\n\t id={},\n\t name={},\n\t parent-id={}\n",
+                        loc.getId(), loc.getName(), loc.getParent());
+                response.location = loc;
+                if (loc.getName() != null) {
+                    response.locationName = getCloudLocationByName(loc.getName());
+                    log.info("\t location-name={}\n", response.locationName);
+                }
+            }
+        } else {
+            log.error("** No Location info in VM with IP address: {}", searchIpAddress);
+        }
+
+        return response;
+    }
+
+    // ==================================================================================
+
+    private void preparePatterns() {
+        // Translate Cloud Endpoints and Locations to human readable strings (using patterns from config files)
+        providerEndpointPatterns = properties.getProviderEndpointPatterns().stream().map(item -> new PatternPair(item.getPattern(), item.getProvider())).collect(Collectors.toList());
+        providerLocationPatterns = properties.getProviderLocationPatterns().stream().map(item -> new PatternPair(item.getPattern(), item.getProvider())).collect(Collectors.toList());
+    }
+
+    private String getCloudProviderByEndpoint(String endpoint) {
+        return _getCloudProviderByString(endpoint, providerEndpointPatterns);
+    }
+
+    private String getCloudLocationByName(String name) {
+        return _getCloudProviderByString(name, providerLocationPatterns);
+    }
+
+    private static String _getCloudProviderByString(String endpoint, List<PatternPair> config) {
+        List<PatternPair> copy = config;
+        for (PatternPair pp : copy) {
+            if (pp.pattern.matcher(endpoint).matches()) return pp.name;
+        }
+        return null;
+    }
+
+    // Member classes
+    private static class PatternPair {
+        private final Pattern pattern;
+        private final String name;
+
+        public PatternPair(Pattern pat, String name) {
+            this.pattern = pat;
+            this.name = name;
+        }
+
+        public PatternPair(String patStr, String name) {
+            this(Pattern.compile(patStr), name);
+        }
+    }
+
+    public static class VmCloudInfo {
+        public String ipAddress;
+        public VirtualMachine vm;
+        public Location location;
+        public Cloud cloud;
+        public String providerName;
+        public String locationName;
+    }
+
+    // ==================================================================================
 	
 	/*private final static String CLOUDIATOR_DB_QUERY_VM_INFO =
 			"SELECT vm.id AS vm_id, vm.name AS vm_name, ip.ip AS vm_ip, cl.name AS vm_cloud, " +

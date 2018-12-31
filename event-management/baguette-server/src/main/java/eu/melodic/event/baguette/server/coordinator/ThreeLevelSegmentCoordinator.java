@@ -9,183 +9,191 @@
 
 package eu.melodic.event.baguette.server.coordinator;
 
-import eu.melodic.event.baguette.server.*;
+import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
-import eu.melodic.event.baguette.server.segment.*;
+import eu.melodic.event.baguette.server.segment.BaseScenarioSegment;
+import eu.melodic.event.baguette.server.segment.Segment;
+import eu.melodic.event.baguette.server.segment.SegmentFactory;
 import eu.melodic.event.baguette.server.util.CloudiatorUtil;
-import eu.melodic.event.baguette.server.util.NetUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.Vector;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ThreeLevelSegmentCoordinator implements ServerCoordinator {
-	private BaguetteServer server;
-	private BaguetteServerProperties config;
-	private Runnable callback;
-	private boolean started;
-	private int phase;
-	
-	private HashMap<String,Segment> segmentMap;
-	private HashMap<ClientShellCommand,Segment> clientSegmentMap;
-	private int readySegments = 0;
-	
-	private Properties brokerConfig;
-	private long registrationWindow;
-	private int expectedClients;
-	private int expectedSegments;
-	
-	public void initialize(BaguetteServer server, Runnable callback) {
-		if (started) return;
-		this.server = server;
-		this.config = server.getConfiguration();
-		this.callback = callback;
-		this.segmentMap = new HashMap<String,Segment>();
-		this.clientSegmentMap = new HashMap<ClientShellCommand,Segment>();
-	}
-	
-	public void start() {
-		log.info("ThreeLevelSegmentCoordinator: START");
-		if (started) return;
-		started = true;
-		
-		brokerConfig = new Properties();
-		brokerConfig.setProperty("central.ip-address", config.getThirdLevelAddress());
-		brokerConfig.setProperty("central.port", Integer.toString(config.getThirdLevelPort()));
-		
-		registrationWindow = config.getRegistrationWindow();
-		expectedClients = config.getNumberOfInstances();
-		expectedSegments = config.getNumberOfSegments();
-	}
-	
-	public void stop() {
-		started = false;
-	}
-	
-	public boolean isStarted() { return started; }
-	
-	public int getPhase() { return phase; }
-	
-	protected String deriveSegmentId(ClientShellCommand c) {
-		// Get new client IP address (from session)
-		String clientIpAddr = c.getClientIpAddress();
-		int clientPort = c.getClientPort();
-		log.info("{}--> Client connection : {}:{}", c.getId(), clientIpAddr, clientPort);
-		
-		//XXX: Useful for debugging
-		String clientAddressOverride = config.getClientAddressOverride();
-		if (!clientAddressOverride.isEmpty()) clientIpAddr = clientAddressOverride;
-		
-		// Query cloudiator for new client's cloud and location (using IP address)
-		String segmentId;
-		try {
-			CloudiatorUtil.VmCloudInfo vmInfo = CloudiatorUtil.getInstance().findVmInfoUsingIpAddress(clientIpAddr, true);
-			
-			String cloudPart;
-			if (vmInfo.cloud!=null && vmInfo.providerName!=null) cloudPart = vmInfo.cloud.getId()+"/"+vmInfo.providerName;
-			else if (vmInfo.cloud!=null) cloudPart = vmInfo.cloud.getId()+"/"+vmInfo.cloud.getEndpoint();
-			else cloudPart = "";
-			
-			String locationPart;
-			if (vmInfo.location!=null && vmInfo.locationName!=null) locationPart = vmInfo.location.getId()+"/"+vmInfo.locationName;
-			else if (vmInfo.location!=null) locationPart = vmInfo.location.getId()+"/"+vmInfo.location.getName();
-			else locationPart = "";
-			
-			segmentId = (!locationPart.isEmpty()) ? cloudPart + " @ " + locationPart : cloudPart;
-			log.info("{}--> Client VM group : {}", c.getId(), segmentId);
-		} catch (Exception ex) {
-			log.error("{}--> Could not retrieve VM info from Cloudiator: {}", c.getId(), ex);
-			throw ex;
-		}
-		
-		return segmentId;
-	}
-	
-	public synchronized void register(ClientShellCommand c) {
-		log.debug("register: BEGIN: {}", c);
-		if (!started) return;
-		//log.trace("register: Coordinator has been started");
-		
-		// Get appropriate client segment
-		String segId = deriveSegmentId(c);
-		log.debug("register: Client segment id: {}", segId);
-		BaseScenarioSegment seg = (BaseScenarioSegment)segmentMap.get(segId);
-		if (seg==null) {
-			seg = (BaseScenarioSegment)SegmentFactory.createSegment(segId);
-			seg.setTimeoutPeriod( registrationWindow );
-			//seg.setExpectedMembers(....);
-			seg.setSelectionMethod(BaseScenarioSegment.SELECTION_METHOD.FIRST);
-			seg.setBrokerConfig(brokerConfig);
-			seg.setReadyCallback(this::segmentReady);
-			seg.setChangeCallback(this::segmentReady);
-			segmentMap.put(segId, seg);
-			log.debug("register: New segment added");
-			log.debug("register: New segment-map: {}", segmentMap);
-			seg.start();
-		}
-		
-		// Add client in segment
-		seg.register(c);
-		clientSegmentMap.put(c, seg);
-		log.debug("register: Client registered: {}", c);
-	}
-	
-	public synchronized void unregister(ClientShellCommand c) {
-		if (!started) return;
-		if (clientSegmentMap.containsKey(c)) {
-			clientSegmentMap.remove(c).unregister(c);
-			// cleanup empty segments??
-		}
-	}
-	
-	public synchronized void brokerReady(ClientShellCommand c) {
-		if (!started) return;
-		if (clientSegmentMap.containsKey(c)) {
-			clientSegmentMap.get(c).brokerReady(c);
-		}
-	}
-	
-	public synchronized void clientReady(ClientShellCommand c) {
-		if (!started) return;
-		if (clientSegmentMap.containsKey(c)) {
-			clientSegmentMap.get(c).clientReady(c);
-		}
-	}
-	
-	public Object segmentReady(Object o) {
-		log.debug("segmentReady: {}", o);
-		Segment s = (Segment)o;
-		if (countVms()==expectedClients) {
-			signalTopologyReady();
-		}
-		
-		//XXX: Not sure if the following is the correct approach
+    private BaguetteServer server;
+    private BaguetteServerProperties config;
+    private Runnable callback;
+    private boolean started;
+    private int phase;
+
+    private HashMap<String, Segment> segmentMap;
+    private HashMap<ClientShellCommand, Segment> clientSegmentMap;
+    private int readySegments = 0;
+
+    private Properties brokerConfig;
+    private long registrationWindow;
+    private int expectedClients;
+    private int expectedSegments;
+
+    public void initialize(BaguetteServer server, Runnable callback) {
+        if (started) return;
+        this.server = server;
+        this.config = server.getConfiguration();
+        this.callback = callback;
+        this.segmentMap = new HashMap<String, Segment>();
+        this.clientSegmentMap = new HashMap<ClientShellCommand, Segment>();
+    }
+
+    public void start() {
+        log.info("ThreeLevelSegmentCoordinator: START");
+        if (started) return;
+        started = true;
+
+        brokerConfig = new Properties();
+        brokerConfig.setProperty("central.ip-address", config.getThirdLevelAddress());
+        brokerConfig.setProperty("central.port", Integer.toString(config.getThirdLevelPort()));
+
+        registrationWindow = config.getRegistrationWindow();
+        expectedClients = config.getNumberOfInstances();
+        expectedSegments = config.getNumberOfSegments();
+    }
+
+    public void stop() {
+        started = false;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public int getPhase() {
+        return phase;
+    }
+
+    protected String deriveSegmentId(ClientShellCommand c) {
+        // Get new client IP address (from session)
+        String clientIpAddr = c.getClientIpAddress();
+        int clientPort = c.getClientPort();
+        log.info("{}--> Client connection : {}:{}", c.getId(), clientIpAddr, clientPort);
+
+        //XXX: Useful for debugging
+        String clientAddressOverride = config.getClientAddressOverride();
+        if (!clientAddressOverride.isEmpty()) clientIpAddr = clientAddressOverride;
+
+        // Query cloudiator for new client's cloud and location (using IP address)
+        String segmentId;
+        try {
+            CloudiatorUtil.VmCloudInfo vmInfo = CloudiatorUtil.getInstance().findVmInfoUsingIpAddress(clientIpAddr, true);
+
+            String cloudPart;
+            if (vmInfo.cloud != null && vmInfo.providerName != null)
+                cloudPart = vmInfo.cloud.getId() + "/" + vmInfo.providerName;
+            else if (vmInfo.cloud != null) cloudPart = vmInfo.cloud.getId() + "/" + vmInfo.cloud.getEndpoint();
+            else cloudPart = "";
+
+            String locationPart;
+            if (vmInfo.location != null && vmInfo.locationName != null)
+                locationPart = vmInfo.location.getId() + "/" + vmInfo.locationName;
+            else if (vmInfo.location != null) locationPart = vmInfo.location.getId() + "/" + vmInfo.location.getName();
+            else locationPart = "";
+
+            segmentId = (!locationPart.isEmpty()) ? cloudPart + " @ " + locationPart : cloudPart;
+            log.info("{}--> Client VM group : {}", c.getId(), segmentId);
+        } catch (Exception ex) {
+            log.error("{}--> Could not retrieve VM info from Cloudiator: {}", c.getId(), ex);
+            throw ex;
+        }
+
+        return segmentId;
+    }
+
+    public synchronized void register(ClientShellCommand c) {
+        log.debug("register: BEGIN: {}", c);
+        if (!started) return;
+        //log.trace("register: Coordinator has been started");
+
+        // Get appropriate client segment
+        String segId = deriveSegmentId(c);
+        log.debug("register: Client segment id: {}", segId);
+        BaseScenarioSegment seg = (BaseScenarioSegment) segmentMap.get(segId);
+        if (seg == null) {
+            seg = (BaseScenarioSegment) SegmentFactory.createSegment(segId);
+            seg.setTimeoutPeriod(registrationWindow);
+            //seg.setExpectedMembers(....);
+            seg.setSelectionMethod(BaseScenarioSegment.SELECTION_METHOD.FIRST);
+            seg.setBrokerConfig(brokerConfig);
+            seg.setReadyCallback(this::segmentReady);
+            seg.setChangeCallback(this::segmentReady);
+            segmentMap.put(segId, seg);
+            log.debug("register: New segment added");
+            log.debug("register: New segment-map: {}", segmentMap);
+            seg.start();
+        }
+
+        // Add client in segment
+        seg.register(c);
+        clientSegmentMap.put(c, seg);
+        log.debug("register: Client registered: {}", c);
+    }
+
+    public synchronized void unregister(ClientShellCommand c) {
+        if (!started) return;
+        if (clientSegmentMap.containsKey(c)) {
+            clientSegmentMap.remove(c).unregister(c);
+            // cleanup empty segments??
+        }
+    }
+
+    public synchronized void brokerReady(ClientShellCommand c) {
+        if (!started) return;
+        if (clientSegmentMap.containsKey(c)) {
+            clientSegmentMap.get(c).brokerReady(c);
+        }
+    }
+
+    public synchronized void clientReady(ClientShellCommand c) {
+        if (!started) return;
+        if (clientSegmentMap.containsKey(c)) {
+            clientSegmentMap.get(c).clientReady(c);
+        }
+    }
+
+    public Object segmentReady(Object o) {
+        log.debug("segmentReady: {}", o);
+        Segment s = (Segment) o;
+        if (countVms() == expectedClients) {
+            signalTopologyReady();
+        }
+
+        //XXX: Not sure if the following is the correct approach
 		/*if (s!=null && segmentMap.get(s.getId())==s) {
 			readySegments++;
 			if (readySegments==expectedSegments) {
 				signalTopologyReady();
 			}
 		}*/
-		return null;
-	}
-	
-	protected int countVms() {
-		int count = 0;
-		for (Segment seg : segmentMap.values()) {
-			count += (((BaseScenarioSegment)seg).getBroker()!=null) ? 1 : 0;
-			count += ((BaseScenarioSegment)seg).countReadyClients();
-		}
-		log.info("countVms: Total num of VMs: {}", count);
-		return count;
-	}
-	
-	protected void signalTopologyReady() {
-		log.debug("signalTopologyReady: Topology is ready");
-		if (callback!=null) {
-			log.debug("signalTopologyReady: Invoking callback");
-			callback.run();
-		}
-	}
+        return null;
+    }
+
+    protected int countVms() {
+        int count = 0;
+        for (Segment seg : segmentMap.values()) {
+            count += (((BaseScenarioSegment) seg).getBroker() != null) ? 1 : 0;
+            count += ((BaseScenarioSegment) seg).countReadyClients();
+        }
+        log.info("countVms: Total num of VMs: {}", count);
+        return count;
+    }
+
+    protected void signalTopologyReady() {
+        log.debug("signalTopologyReady: Topology is ready");
+        if (callback != null) {
+            log.debug("signalTopologyReady: Invoking callback");
+            callback.run();
+        }
+    }
 }

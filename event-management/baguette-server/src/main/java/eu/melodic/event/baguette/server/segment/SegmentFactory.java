@@ -10,7 +10,7 @@
 package eu.melodic.event.baguette.server.segment;
 
 public class SegmentFactory {
-	public static Segment createSegment(String id) {
-		return new BaseScenarioSegment(id);
-	}
+    public static Segment createSegment(String id) {
+        return new BaseScenarioSegment(id);
+    }
 }

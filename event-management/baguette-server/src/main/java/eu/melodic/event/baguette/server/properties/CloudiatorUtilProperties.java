@@ -9,10 +9,6 @@
 
 package eu.melodic.event.baguette.server.properties;
 
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -23,6 +19,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
@@ -32,13 +32,17 @@ import org.springframework.validation.annotation.Validated;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/cloudiator.properties")
 @Slf4j
 public class CloudiatorUtilProperties {
-    @NotNull @Value("${colosseum.endpoint}")
+    @NotNull
+    @Value("${colosseum.endpoint}")
     private String colosseumEndpoint;
-    @NotNull @Value("${colosseum.auth.email}")
+    @NotNull
+    @Value("${colosseum.auth.email}")
     private String colosseumAuthEmail;
-    @NotNull @Value("${colosseum.auth.tenant}")
+    @NotNull
+    @Value("${colosseum.auth.tenant}")
     private String colosseumAuthTenant;
-    @NotNull @Value("${colosseum.auth.password}")
+    @NotNull
+    @Value("${colosseum.auth.password}")
     private String colosseumAuthPassword;
 
     @Value("${colosseum.db.enabled:false}")
