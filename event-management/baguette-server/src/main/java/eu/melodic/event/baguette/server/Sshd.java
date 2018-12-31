@@ -9,16 +9,11 @@
 
 package eu.melodic.event.baguette.server;
 
-import eu.melodic.event.baguette.server.properties.BaguetteServerCredentials;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.common.Factory;
@@ -38,18 +33,16 @@ public class Sshd
 {
 	private ServerCoordinator coordinator;
 	private BaguetteServerProperties configuration;
-	private BaguetteServerCredentials credentials;
 	private SshServer sshd;
 	
 	private boolean heartbeatOn;
 	private long heartbeatPeriod;
 	
-	public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator, BaguetteServerCredentials credentials) throws IOException {
+	public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator) throws IOException {
 		log.info( "** SSH server **" );
 		this.coordinator = coordinator;
 		this.configuration = configuration;
-		this.credentials = credentials;
-		
+
 		// Configure SSH server
 		int port = configuration.getServerPort();
 		String serverKeyFilePath = configuration.getServerKeyFile();
@@ -84,17 +77,17 @@ public class Sshd
 		
 		sshd.setPasswordAuthenticator(
 			new PasswordAuthenticator() {
-				private BaguetteServerCredentials credentials;
+				private Map<String,String> credentials;
 				public boolean authenticate(String username, String password, ServerSession session) {
-					String pwd = Optional.ofNullable( credentials.getCredentials().get(username.trim()) ).orElse("");
+					String pwd = Optional.ofNullable( credentials.get(username.trim()) ).orElse("");
 					return pwd.equals(password);
 				}
-				public PasswordAuthenticator setCredentials(BaguetteServerCredentials credentials) {
+				public PasswordAuthenticator setCredentials(Map<String,String> credentials) {
 					this.credentials = credentials;
 					return this;
 				}
 			}
-			.setCredentials(credentials)
+			.setCredentials(configuration.getCredentials())
 		);
 		//sshd.setPublickeyAuthenticator( new PublickeyAuthenticator() { public boolean authenticate(String username, PublicKey key, ServerSession session) { return true; } } );
 		

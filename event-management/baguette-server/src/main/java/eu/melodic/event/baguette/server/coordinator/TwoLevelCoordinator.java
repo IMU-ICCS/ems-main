@@ -12,12 +12,7 @@ package eu.melodic.event.baguette.server.coordinator;
 import eu.melodic.event.baguette.server.*;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.baguette.server.segment.*;
-import eu.melodic.event.baguette.server.util.CloudiatorUtil;
-import eu.melodic.event.baguette.server.util.NetUtil;
-
-import java.util.HashMap;
 import java.util.Properties;
-import java.util.Vector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

@@ -22,6 +22,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @Validated
 @Configuration
@@ -50,7 +53,9 @@ public class BaguetteServerProperties {
 	private boolean heartbeatEnabled;
 	@Value("${baguette.server.heartbeat.period:60000}") @Min(-1)
 	private long heartbeatPeriod;
-	
+
+	private final Map<String,String> credentials = new HashMap<>();
+
 //XXX: TODO: to-be removed (Server or Coordinator must be able to figure them out automatically)
 	@Value("${baguette.server.third-level.address:}")
 	private String thirdLevelAddress;

@@ -12,19 +12,18 @@ package eu.melodic.event.baguette.server.util;
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.*;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
+import eu.melodic.event.baguette.server.properties.CloudiatorUtilProperties;
+
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  Colosseum Utilities
@@ -34,61 +33,41 @@ import lombok.extern.slf4j.Slf4j;
  *		https://github.com/cloudiator/colosseum-client/tree/master/src/main/java/de/uniulm/omi/cloudiator/colosseum/client
  */
 @Slf4j
-public class CloudiatorUtil 
+public class CloudiatorUtil implements InitializingBean
 {
-	//static { try { java.util.logging.LogManager.getLogManager().readConfiguration( CloudiatorUtil.class.getResourceAsStream("/logging.properties") ); } catch (IOException ex) { throw new RuntimeException(ex); } }
-	
-	public static final String DEFAULT_CLOUDIATOR_PROPERTIES = "/cloudiator.properties";
-	public static final String DEFAULT_PROVIDER_ENDPOINT_PATTERNS = "/provider-endpoint-patterns.txt";
-	public static final String DEFAULT_PROVIDER_LOCATION_PATTERNS = "/provider-location-patterns.txt";
-	
-	private static Object _CLASS_LOCK = new Object();
 	private static CloudiatorUtil instance = null;
-	protected static Vector<PatternPair> providerEndpointPatterns;
-	protected static Vector<PatternPair> providerLocationPatterns;
-	
-	private Properties config = null;
+
+	@Autowired
+	private CloudiatorUtilProperties properties;
+
+	protected List<PatternPair> providerEndpointPatterns;
+	protected List<PatternPair> providerLocationPatterns;
 	private Client client = null;
-	
-	protected CloudiatorUtil() {
-		try {
-			try (InputStream in = getClass().getResourceAsStream(DEFAULT_CLOUDIATOR_PROPERTIES)) {
-				Properties cfg = new Properties();
-				cfg.load(in);
-				this.config = cfg;
-				
-				String colosseumEndpoint = cfg.getProperty("colosseum.endpoint");
-				String email = cfg.getProperty("colosseum.auth.email");
-				String tenant = cfg.getProperty("colosseum.auth.tenant");
-				String password = cfg.getProperty("colosseum.auth.password");
-				this.client = ClientBuilder.getNew().url(colosseumEndpoint).credentials(email, tenant, password).build();
-			}
-		} catch (IOException ex) {
-			log.error("EXCEPTION when reading properties from file: {}", DEFAULT_CLOUDIATOR_PROPERTIES, ex);
-		}
-		
-		synchronized (_CLASS_LOCK) {
-			if (providerEndpointPatterns!=null) {
-				loadPatterns();
-			}
-		}
+
+	private CloudiatorUtil() {
+		CloudiatorUtil.instance = this;
 	}
-	
-	protected CloudiatorUtil(String colosseumEndpoint, String email, String tenant, String password) {
-		this.client = ClientBuilder.getNew().url(colosseumEndpoint).credentials(email, tenant, password).build();
-	}
-	
+
 	public static CloudiatorUtil getInstance() {
 		if (instance==null) instance = new CloudiatorUtil();
 		return instance;
 	}
-	
-	public static CloudiatorUtil getInstance(String colosseumEndpoint, String email, String tenant, String password) {
-		if (instance==null) instance = new CloudiatorUtil(colosseumEndpoint, email, tenant, password);
-		return instance;
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		log.warn("CloudiatorUtil.afterPropertiesSet(): configuration: {}", properties);
+
+		//XXX: ASK: This can be done later in 'findVmInfoUsingIpAddress()'
+		this.client = ClientBuilder.getNew()
+				.url(properties.getColosseumEndpoint())
+				.credentials(properties.getColosseumAuthEmail(), properties.getColosseumAuthTenant(), properties.getColosseumAuthPassword())
+				.build();
+
+		preparePatterns();
 	}
-	
-	
+
+	// ==================================================================================
+
 	public VmCloudInfo findVmInfoUsingIpAddress(String searchIpAddress, boolean searchIpAddressIsPublic) {
 		log.info("Looking up VM info using IP address:\n\t {} {}", searchIpAddress, searchIpAddressIsPublic ? "/ PUBLIC" : "/ PUBLIC-or-PRIVATE" );
 		
@@ -159,64 +138,25 @@ public class CloudiatorUtil
 		
 		return response;
     }
-	
-	// Methods for translating Endpoints to Human readable strings (using patterns from config files)
-	protected static void loadPatternsFromFile(String file, Vector<PatternPair> config) {
-		try {
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(CloudiatorUtil.class.getResourceAsStream(file)))) {
-				config.clear();
-				String line;
-				int ln = 0;
-				while ((line = in.readLine()) != null) {
-					ln++;
-					log.debug("loadPatterns: File={}: Line={}. {}", file, ln, line);
-					line = line.trim();
-					if (!line.isEmpty() && line.charAt(0)!='#') {
-						int p1 = line.lastIndexOf(" ");
-						int p2 = line.lastIndexOf("\t");
-						int p = (p1>p2) ? p1 : p2;
-						if (p>0) {
-							String patStr = line.substring(0,p).trim();
-							String patName= line.substring(p).trim();
-							log.debug("loadPatterns: File={}: Pattern={}: Provider={}", file, patStr, patName);
-							PatternPair pp = new PatternPair( Pattern.compile(patStr), patName);
-							config.add(pp);
-						}
-					}
-				}
-			}
-		} catch (IOException ex) {
-			log.error("EXCEPTION when reading patterns from file: {}", file, ex);
-		}
+
+	// ==================================================================================
+
+	private void preparePatterns() {
+		// Translate Cloud Endpoints and Locations to human readable strings (using patterns from config files)
+		providerEndpointPatterns = properties.getProviderEndpointPatterns().stream().map(item -> new PatternPair(item.getPattern(), item.getProvider())).collect(Collectors.toList());
+		providerLocationPatterns = properties.getProviderLocationPatterns().stream().map(item -> new PatternPair(item.getPattern(), item.getProvider())).collect(Collectors.toList());
 	}
 	
-	protected static void loadPatterns() {
-		providerEndpointPatterns = new Vector<PatternPair>();
-		providerLocationPatterns = new Vector<PatternPair>();
-		loadPatternsFromFile(DEFAULT_PROVIDER_ENDPOINT_PATTERNS, providerEndpointPatterns);
-		loadPatternsFromFile(DEFAULT_PROVIDER_LOCATION_PATTERNS, providerLocationPatterns);
+	private String getCloudProviderByEndpoint(String endpoint) {
+		return _getCloudProviderByString(endpoint, providerEndpointPatterns);
 	}
 	
-	protected static String getCloudProviderByEndpoint(String endpoint) {
-		_checkIfCloudPatternsAreLoaded();
-		return _getCloudPatternByString(endpoint, providerEndpointPatterns);
+	private String getCloudLocationByName(String name) {
+		return _getCloudProviderByString(name, providerLocationPatterns);
 	}
 	
-	protected static String getCloudLocationByName(String name) {
-		_checkIfCloudPatternsAreLoaded();
-		return _getCloudPatternByString(name, providerLocationPatterns);
-	}
-	
-	protected static void _checkIfCloudPatternsAreLoaded() {
-		synchronized (_CLASS_LOCK) {
-			if (providerEndpointPatterns==null) {
-				loadPatterns();
-			}
-		}
-	}
-	
-	protected static String _getCloudPatternByString(String endpoint, Vector<PatternPair> config) {
-		Vector<PatternPair> copy = (Vector<PatternPair>)config.clone();
+	private static String _getCloudProviderByString(String endpoint, List<PatternPair> config) {
+		List<PatternPair> copy = config;
 		for (PatternPair pp : copy) {
 			if (pp.pattern.matcher(endpoint).matches()) return pp.name;
 		}
@@ -224,12 +164,16 @@ public class CloudiatorUtil
 	}
 	
 	// Member classes
-	protected static class PatternPair {
-		public Pattern pattern;
-		public String name;
+	private static class PatternPair {
+		private final Pattern pattern;
+		private final String name;
+
 		public PatternPair(Pattern pat, String name) {
 			this.pattern = pat;
 			this.name = name;
+		}
+		public PatternPair(String patStr, String name) {
+			this(Pattern.compile(patStr), name);
 		}
 	}
 	
@@ -244,7 +188,7 @@ public class CloudiatorUtil
 	
 	// ==================================================================================
 	
-/*	protected final static String CLOUDIATOR_DB_QUERY_VM_INFO =
+	/*private final static String CLOUDIATOR_DB_QUERY_VM_INFO =
 			"SELECT vm.id AS vm_id, vm.name AS vm_name, ip.ip AS vm_ip, cl.name AS vm_cloud, " +
 			"	vm.generatedLoginUsername AS vm_username, vm.generatedLoginPassword AS vm_password, vm.generatedPrivateKey AS vm_private_key, " +
 			"	loc.id AS loc_id, loc.name AS loc_name, loc.locationScope AS loc_scope, " +
@@ -273,16 +217,16 @@ public class CloudiatorUtil
 			"ORDER BY vm_id ";
 	
 	public List<DbVmInfo> getVmInfo() {
-		String dbDriver = config.getProperty("colosseum.db.driver");
-		String dbUrl = config.getProperty("colosseum.db.url");
-		String dbUser = config.getProperty("colosseum.db.username");
-		String dbPass = config.getProperty("colosseum.db.password");
-		String dbName = config.getProperty("colosseum.db.database");
-		
-		int ownerId = Integer.parseInt( config.getProperty("colosseum.owner-id") );
+		String dbDriver = properties.getColosseumDbDriver();
+		String dbUrl = properties.getColosseumDbUrl();
+		String dbUser = properties.getColosseumDbUsername();
+		String dbPass = properties.getColosseumDbPassword();
+		String dbName = properties.getColosseumDbDatabase();
+
+		int ownerId = properties.getColosseumOwnerId();
 		Connection con = null;
 		
-		Vector<DbVmInfo> info = new Vector<DbVmInfo>();
+		List<DbVmInfo> info = new ArrayList<>();
 		try {
 			Class.forName(dbDriver);
 			con = DriverManager.getConnection(dbUrl, dbUser, dbPass);
@@ -291,15 +235,15 @@ public class CloudiatorUtil
 			stmt.setInt( 1, ownerId );
 			ResultSet rs = stmt.executeQuery();
 			
-			//ResultSetMetaData metadata = rs.getMetaData();
-			//int colCount = metadata.getColumnCount();
-			while(rs.next()) {
-				/*System.out.printf("VIRTUAL MACHINE: %s  %s\n", rs.getString("vm_id"), rs.getString("vm_name"));
-				for (int i=1; i<=colCount; i++) {
-					System.out.printf("\t%s:\t%s\n", metadata.getColumnLabel(i), rs.getString(i));
-				}*/
-/*				info.add( new DbVmInfo(rs) );
-			}
+//			ResultSetMetaData metadata = rs.getMetaData();
+//			int colCount = metadata.getColumnCount();
+//			while(rs.next()) {
+//				log.info("VIRTUAL MACHINE: {}  {}", rs.getString("vm_id"), rs.getString("vm_name"));
+//				for (int i=1; i<=colCount; i++) {
+//					log.info("\t{}:\t{}\n", metadata.getColumnLabel(i), rs.getString(i));
+//				}
+//				info.add( new DbVmInfo(rs) );
+//			}
 			log.debug("getVmInfo: {}", info);
 			
 		} catch(Exception e) {

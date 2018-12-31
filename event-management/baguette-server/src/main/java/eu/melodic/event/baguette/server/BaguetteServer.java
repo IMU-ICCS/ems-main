@@ -9,21 +9,12 @@
 
 package eu.melodic.event.baguette.server;
 
-import eu.melodic.event.baguette.server.coordinator.*;
-import eu.melodic.event.baguette.server.properties.BaguetteServerCredentials;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Scanner;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,9 +31,7 @@ public class BaguetteServer
 {
 	@Autowired
 	private BaguetteServerProperties config;
-	@Autowired
-	private BaguetteServerCredentials credentials;
-	
+
 	private Sshd server;
 	
 	private Map<String,Set<String>> groupingTopicsMap;
@@ -93,17 +82,13 @@ public class BaguetteServer
 	public String getBrokerPassword() {
 		return brokerPassword;
 	}
-	
-	public BaguetteServerCredentials getCredentials() {
-		return credentials;
-	}
-	
+
 	// Server control methods
 	public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
 		if (server==null) {
 			log.info("BaguetteServer.startServer(): Starting SSH server instance...");
 			Sshd server = new Sshd();
-			server.start(config, coordinator, credentials);
+			server.start(config, coordinator);
 			this.server = server;
 			log.info("BaguetteServer.startServer(): Starting SSH server instance... done");
 		} else {
@@ -168,14 +153,8 @@ public class BaguetteServer
 		this.brokerUsername = brokerUsername;
 		this.brokerPassword = brokerPassword;
 		
-		// load credentials
-//XXX: TODO: read using Spring-boot properties
-		log.info("BaguetteServer.setTopologyConfiguration(): Loading Baguette server configuration...");
-		Properties cred = loadConfig("/credentials.properties");
-		this.credentials.setCredentials((Map)cred);
-		
 		log.info("BaguetteServer.setTopologyConfiguration(): Baguette server configuration: {}", config);
-		log.info("BaguetteServer.setTopologyConfiguration(): Server credentials count: {}", credentials.getCredentials().size());
+		log.info("BaguetteServer.setTopologyConfiguration(): Baguette Server credentials: {}", config.getCredentials());
 		
 		// Initialize server coordinator
 		log.info("BaguetteServer.setTopologyConfiguration(): Initializing Baguette protocol coordinator...");
@@ -207,22 +186,6 @@ public class BaguetteServer
 		}
 	}
 	
-//XXX: TODO: replace this method with Spring-boot properties
-	protected static Properties loadConfig(String configFile) throws IOException {
-		Properties config = new Properties();
-		try {
-			try (InputStream in = new FileInputStream( new File(configFile) )) {
-				config.load(in);
-			}
-		} catch (FileNotFoundException ex) {
-			try (InputStream in = BaguetteServer.class.getResourceAsStream(configFile)) {
-				if (in==null) throw ex;
-				config.load(in);
-			}
-		}
-		return config;
-	}
-	
 	public void sendToActiveClients(String command) {
 		server.sendToActiveClients(command);
 	}
@@ -234,86 +197,4 @@ public class BaguetteServer
 	public void sendConstants(Map<String,Double> constants) {
 		server.sendConstants(constants);
 	}
-	
-//XXX: TODO: change 'main()' to make use of 'setTopologyConfiguration()'
-/*	public static void main( String[] args ) throws IOException
-	{
-		// load configuration
-		Properties config = loadConfig("/server.properties");
-		Properties credentials = loadConfig("/credentials.properties");
-		
-		// prepapre client installation files
-//		prepareClientInstallationFile(config, "/baguette-server.credentials.tpl", "./conf/baguette-server.credentials");
-//		prepareClientInstallationFile(config, "/install.sh.tpl", "./conf/install.sh");
-//		prepareClientInstallationFile(config, "/install-local.sh.tpl", "./conf/install-local.sh");
-		
-		// check if a plan has been specified
-		int nextArg = 0;
-		Properties planConfig = null;
-		if (args.length>0 && !args[0].trim().equalsIgnoreCase("-i")) {
-			planConfig = loadConfig(args[0]);
-			if (planConfig!=null) config.putAll(planConfig);
-			nextArg++;
-		}
-		log.info("Boot-time config: {}", config);
-		
-		//ServerCoordinator coordinator = new ServerCoordinatorWaitAll(config, 
-		//ServerCoordinator coordinator = new ServerCoordinatorTimeWin(config,
-		//ServerCoordinator coordinator = new ServerCoordinatorClientsOnly(config, 
-		//ServerCoordinator coordinator = new ServerCoordinatorPerCloud(config, 
-		//ServerCoordinator coordinator = new ThreeLevelSegmentCoordinator(config,
-		//ServerCoordinator coordinator = new TwoLevelCoordinator(config,
-		ServerCoordinator coordinator = createServerCoordinator(config.getProperty("coordinator.class", "eu.melodic.event.baguette.server.coordinator.NoopCoordinator"));
-		coordinator.initialize(
-			config,
-			new Runnable() {
-				public void run() {
-					log.info("****************************************");
-					log.info("****  MONITORING TOPOLOGY IS READY  ****");
-					log.info("****************************************");
-				}
-			}
-		);
-		
-		Sshd server = new Sshd();
-		server.start(config, coordinator, credentials);
-		
-		// check if interactive flag is present
-		if (args.length>nextArg && args[nextArg].trim().equalsIgnoreCase("-i")) {
-			// Wait here until ENTER is hit in server console
-			System.out.println( "\nPress enter to exit" );
-			try { System.in.read(); } catch (Exception ex) {}
-		} else {
-			try { Object noexit = new Object(); synchronized (noexit) { noexit.wait(); } log.info("Server notified to exit"); } catch (InterruptedException ex) { log.info("Server interrupted and exits"); }
-		}
-		
-		server.stop();
-	}*/
-	
-//XXX: TODO: this method should be replaced with a template engine, and not require the creation of client config. files
-/*	protected static void prepareClientInstallationFile(Properties config, String tplFile, String outFile) throws FileNotFoundException, IOException {
-		log.debug("BaguetteServer.prepareClientInstallationFile(): BEGIN: template={}, output={}, config={}", tplFile, outFile, config);
-		//try (Scanner scanner = new Scanner(new File(tplFile))) {
-		try (Scanner scanner = new Scanner(BaguetteServer.class.getResourceAsStream(tplFile))) {
-			// Load template file
-			String contents = scanner.useDelimiter("\\A").next();
-			
-			// Replace placeholders with real values
-			contents = contents.replace("BAGUETTE_CLIENT_DOWNLOAD_URL", config.getProperty("BAGUETTE_CLIENT_DOWNLOAD_URL", "http://localhost:8080/melodic"));
-			contents = contents.replace("BAGUETTE_SERVER_HOST", config.getProperty("BAGUETTE_SERVER_HOST", "localhost"));
-			contents = contents.replace("BAGUETTE_SERVER_PORT", config.getProperty("BAGUETTE_SERVER_PORT", "22"));
-			contents = contents.replace("BAGUETTE_SERVER_PUBKEY", config.getProperty("BAGUETTE_SERVER_PUBKEY", ""));
-			contents = contents.replace("BAGUETTE_SERVER_FINGERPRINT", config.getProperty("BAGUETTE_SERVER_FINGERPRINT", ""));
-			contents = contents.replace("BAGUETTE_SERVER_USERNAME", config.getProperty("BAGUETTE_SERVER_USERNAME", ""));
-			contents = contents.replace("BAGUETTE_SERVER_PASSWORD", config.getProperty("BAGUETTE_SERVER_PASSWORD", ""));
-			contents = contents.replace("BAGUETTE_SERVER_CREDENTIALS_FILE", config.getProperty("BAGUETTE_SERVER_CREDENTIALS_FILE", ""));
-			
-			// Save to out file
-			try (FileWriter out = new FileWriter(outFile)) {
-				log.trace("BaguetteServer.prepareClientInstallationFile(): Writing to file {}: contents={}", outFile, contents);
-				out.write( contents );
-			}
-		}
-		log.debug("BaguetteServer.prepareClientInstallationFile(): END: template={}, output={}", tplFile, outFile);
-	}*/
 }

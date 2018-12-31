@@ -1,3 +1,0 @@
-# Provider Locations v20180323
-
-eu-west-1	eu-west-1_AWS_IRELAND

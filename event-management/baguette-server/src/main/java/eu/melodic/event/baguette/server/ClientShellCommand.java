@@ -9,14 +9,6 @@
 
 package eu.melodic.event.baguette.server;
 
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
-
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.ExitCallback;
-import org.apache.sshd.server.Environment;
-import org.apache.sshd.server.SessionAware;
-import org.apache.sshd.server.session.ServerSession;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
@@ -31,26 +23,27 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.sshd.server.Command;
+import org.apache.sshd.server.ExitCallback;
+import org.apache.sshd.server.Environment;
+import org.apache.sshd.server.SessionAware;
+import org.apache.sshd.server.session.ServerSession;
+
 @Slf4j
 public class ClientShellCommand implements Command, Runnable, SessionAware {
 	
-	protected static Object LOCK = new Object();
-	protected static long counter;
-	protected static HashSet<ClientShellCommand> activeCmdList = new HashSet<>();
+	private static Object LOCK = new Object();
+	private static long counter;
+	private static Set<ClientShellCommand> activeCmdList = new HashSet<>();
 	
 	public static Set<ClientShellCommand> getActive() {
-		return (Set<ClientShellCommand>)activeCmdList.clone();
+		return Collections.unmodifiableSet(activeCmdList);
 	}
 	
 	private InputStream in;
@@ -68,17 +61,14 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 	private int clientPort = -1;
 	
 	private ServerCoordinator coordinator;
-	private ServerSession session;
-	//private boolean isAdmin;
-	
+	@Getter private ServerSession session;
+
 	public ClientShellCommand(ServerCoordinator coordinator) {
 		synchronized (LOCK) {
 			id = String.format("#%05d", counter++);
 		}
 		this.coordinator = coordinator;
 	}
-	
-	public String getId() { return id; }
 	
 	public void setSession(ServerSession session) {
 		log.info("{}--> Got session : {}", id, session);
@@ -88,17 +78,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 			String clientIpAddr = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getAddress().getHostAddress();
 			int clientPort = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getPort();
 			log.info("{}--> Client connection : {}:{}", id, clientIpAddr, clientPort);
-		} catch (Exception ex) {}*/
-		
-		if (session!=null) {
 			String username = session.getUsername();
-			if (username!=null && !(username=username.trim()).isEmpty()) {
-				//this.isAdmin = coordinator.isAdmin(username);
-			}
-		}
+			log.info("{}--> Client session username: {}", username);
+		} catch (Exception ex) {}*/
 	}
-	
-	public ServerSession getSession() { return session; }
 	
 	public void setInputStream(InputStream in) { this.in = in; }
 	public void setOutputStream(OutputStream out) { this.out = new PrintStream(out, true); }
@@ -229,8 +212,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 	public void sendGroupingConfiguration(String grouping, GroupingConfiguration gc) {
 		log.debug("sendGroupingConfiguration: id={}, grouping={}, grouping-config={}", id, grouping, gc);
 		if (grouping!=null && !grouping.trim().isEmpty()) {
-			HashMap<String,Object> all = new HashMap<>();
-			all.putAll( gc.getConfigurationMap() );
+			HashMap<String,Object> all = new HashMap<>( gc.getConfigurationMap() );
 			log.debug("sendGroupingConfiguration: Grouping configuration for {}: {}", grouping, all);
 			
 			try {
