@@ -202,292 +202,292 @@ public class RuleGenerator {
                 log.warn("RuleGenerator.generateRules():      IGNORE NODE. No element specified: node={}", node);
                 providesTopic = false;
             } else
-                // Generate rules for Events and Event Patterns (and Metric Constraints)
-                if (elem instanceof camel.scalability.BinaryEventPattern) {
-                    log.warn("RuleGenerator.generateRules():      Found a Binary-Event-Pattern element: node={}, elem-name={}", node, elemName);
-                    BinaryEventPattern bep = (BinaryEventPattern) elem;
+            // Generate rules for Events and Event Patterns (and Metric Constraints)
+            if (elem instanceof camel.scalability.BinaryEventPattern) {
+                log.warn("RuleGenerator.generateRules():      Found a Binary-Event-Pattern element: node={}, elem-name={}", node, elemName);
+                BinaryEventPattern bep = (BinaryEventPattern) elem;
 
-                    // Get event pattern operator
-                    String camelOp = bep.getOperator().toString();
-                    String ruleOp = camelToRule(MapType.OPERATOR, ElemType.BEP, camelOp);
+                // Get event pattern operator
+                String camelOp = bep.getOperator().toString();
+                String ruleOp = camelToRule(MapType.OPERATOR, ElemType.BEP, camelOp);
 
-                    // Get event pattern composing events (just the names)
-                    String leName = bep.getLeftEvent().getName();
-                    String reName = bep.getRightEvent().getName();
-                    log.warn("RuleGenerator.generateRules():      Binary-Event-Pattern: node={}, elem-name={}, operator={}->{}, left-event={}, right-event={}", node, elemName, camelOp, ruleOp, leName, reName);
+                // Get event pattern composing events (just the names)
+                String leName = bep.getLeftEvent().getName();
+                String reName = bep.getRightEvent().getName();
+                log.warn("RuleGenerator.generateRules():      Binary-Event-Pattern: node={}, elem-name={}, operator={}->{}, left-event={}, right-event={}", node, elemName, camelOp, ruleOp, leName, reName);
 
 //XXX: ASK: Do we need 'lowOccurrenceBound', 'upperOccurrenceBound' and 'timer' ??
 
-                    // Write rule for BEP
-                    Context context = new Context();
-                    context.setVariable("operator", ruleOp);
-                    context.setVariable("leftEvent", leName);
-                    context.setVariable("rightEvent", reName);
-                    _generateRule(_TC, "BEP-" + ruleOp, grouping, elemName, context);
-                } else if (elem instanceof camel.scalability.UnaryEventPattern) {
-                    log.warn("RuleGenerator.generateRules():      Found a Unary-Event-Pattern element: node={}, elem-name={}", node, elemName);
-                    UnaryEventPattern uep = (UnaryEventPattern) elem;
+                // Write rule for BEP
+                Context context = new Context();
+                context.setVariable("operator", ruleOp);
+                context.setVariable("leftEvent", leName);
+                context.setVariable("rightEvent", reName);
+                _generateRule(_TC, "BEP-" + ruleOp, grouping, elemName, context);
+            } else if (elem instanceof camel.scalability.UnaryEventPattern) {
+                log.warn("RuleGenerator.generateRules():      Found a Unary-Event-Pattern element: node={}, elem-name={}", node, elemName);
+                UnaryEventPattern uep = (UnaryEventPattern) elem;
 
-                    // Get event pattern operator
-                    String camelOp = uep.getOperator().toString();
-                    String ruleOp = camelToRule(MapType.OPERATOR, ElemType.UEP, camelOp);
+                // Get event pattern operator
+                String camelOp = uep.getOperator().toString();
+                String ruleOp = camelToRule(MapType.OPERATOR, ElemType.UEP, camelOp);
 
-                    // Get event pattern composing event (just the name)
-                    String eventName = uep.getEvent().getName();
-                    log.warn("RuleGenerator.generateRules():      Unary-Event-Pattern: node={}, elem-name={}, operator={}->{}, event={}", node, elemName, camelOp, ruleOp, eventName);
+                // Get event pattern composing event (just the name)
+                String eventName = uep.getEvent().getName();
+                log.warn("RuleGenerator.generateRules():      Unary-Event-Pattern: node={}, elem-name={}, operator={}->{}, event={}", node, elemName, camelOp, ruleOp, eventName);
 
 //XXX: ASK: Do we need 'occurrenceNum' and 'timer' ??
 
-                    // Write rule for UEP
-                    Context context = new Context();
-                    context.setVariable("operator", ruleOp);
-                    context.setVariable("event", eventName);
-                    _generateRule(_TC, "UEP-" + ruleOp, grouping, elemName, context);
-                } else if (elem instanceof camel.scalability.NonFunctionalEvent) {
-                    log.warn("RuleGenerator.generateRules():      Found a Non-Functional-Event element: node={}, elem-name={}", node, elemName);
-                    NonFunctionalEvent nfe = (NonFunctionalEvent) elem;
+                // Write rule for UEP
+                Context context = new Context();
+                context.setVariable("operator", ruleOp);
+                context.setVariable("event", eventName);
+                _generateRule(_TC, "UEP-" + ruleOp, grouping, elemName, context);
+            } else if (elem instanceof camel.scalability.NonFunctionalEvent) {
+                log.warn("RuleGenerator.generateRules():      Found a Non-Functional-Event element: node={}, elem-name={}", node, elemName);
+                NonFunctionalEvent nfe = (NonFunctionalEvent) elem;
 
-                    // Get event is-violation
-                    boolean isViolation = nfe.isIsViolation();
+                // Get event is-violation
+                boolean isViolation = nfe.isIsViolation();
 
-                    // Get event's metric constraint (just the name)
-                    MetricConstraint constr = nfe.getMetricConstraint();
-                    log.warn("RuleGenerator.generateRules():      Non-Functional-Event: node={}, elem-name={}, is-violation={}, metric-constraint={}", node, elemName, isViolation, constr.getName());
+                // Get event's metric constraint (just the name)
+                MetricConstraint constr = nfe.getMetricConstraint();
+                log.warn("RuleGenerator.generateRules():      Non-Functional-Event: node={}, elem-name={}, is-violation={}, metric-constraint={}", node, elemName, isViolation, constr.getName());
 
-                    // Write rule for NFE
-                    Context context = new Context();
-                    context.setVariable("metricConstraint", constr.getName());
-                    _generateRule(_TC, "NFE", grouping, elemName, context);
-                } else
+                // Write rule for NFE
+                Context context = new Context();
+                context.setVariable("metricConstraint", constr.getName());
+                _generateRule(_TC, "NFE", grouping, elemName, context);
+            } else
 
-                    // Generate rules for Constraints
-                    if (elem instanceof camel.constraint.MetricConstraint) {
-                        log.warn("RuleGenerator.generateRules():      Found a Metric-Constraint element: node={}, elem-name={}", node, elemName);
-                        MetricConstraint constr = (MetricConstraint) elem;
+            // Generate rules for Constraints
+            if (elem instanceof camel.constraint.MetricConstraint) {
+                log.warn("RuleGenerator.generateRules():      Found a Metric-Constraint element: node={}, elem-name={}", node, elemName);
+                MetricConstraint constr = (MetricConstraint) elem;
 
-                        // Get metric constraint operator and threshold
-                        String camelOp = constr.getComparisonOperator().toString();
-                        String ruleOp = camelToRule(MapType.OPERATOR, ElemType.CONSTR, camelOp);
-                        double threshold = constr.getThreshold();
+                // Get metric constraint operator and threshold
+                String camelOp = constr.getComparisonOperator().toString();
+                String ruleOp = camelToRule(MapType.OPERATOR, ElemType.CONSTR, camelOp);
+                double threshold = constr.getThreshold();
 
-                        // Get constraint's metric context (just the name)
-                        MetricContext mc = constr.getMetricContext();
-                        log.warn("RuleGenerator.generateRules():      Metric-Constraint: node={}, elem-name={}, operator={}->{}, threshold={}, metric-context={}", node, elemName, camelOp, ruleOp, threshold, mc.getName());
+                // Get constraint's metric context (just the name)
+                MetricContext mc = constr.getMetricContext();
+                log.warn("RuleGenerator.generateRules():      Metric-Constraint: node={}, elem-name={}, operator={}->{}, threshold={}, metric-context={}", node, elemName, camelOp, ruleOp, threshold, mc.getName());
 
-                        // Require context topic in this level
-                        _TC.requireGroupingTopicPair(grouping, mc.getName());
+                // Require context topic in this level
+                _TC.requireGroupingTopicPair(grouping, mc.getName());
 
-                        // Write rule for CONSTR
+                // Write rule for CONSTR
+                Context context = new Context();
+                context.setVariable("metricContext", mc.getName());
+                context.setVariable("operator", ruleOp);
+                context.setVariable("threshold", threshold);
+                _generateRule(_TC, "CONSTR-MET", grouping, elemName, context);
+            } else if (elem instanceof camel.constraint.IfThenConstraint) {
+                log.warn("RuleGenerator.generateRules():      Found an If-Then-Constraint element: node={}, elem-name={}", node, elemName);
+//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+            } else if (elem instanceof camel.constraint.MetricVariableConstraint) {
+                // Not used in EMS
+                log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element and ignoring it: node={}, elem-name={}", node, elemName);
+            } else if (elem instanceof camel.constraint.LogicalConstraint) {
+                log.warn("RuleGenerator.generateRules():      Found an Logical-Constraint element: node={}, elem-name={}", node, elemName);
+//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+            } else
+
+            // Generate rules for Metrics Contexts
+            if (elem instanceof camel.metric.CompositeMetricContext) {
+                log.warn("RuleGenerator.generateRules():      Found a Composite-Metric-Context element: node={}, elem-name={}", node, elemName);
+                CompositeMetricContext cmc = (CompositeMetricContext) elem;
+
+                // Get composite metric context's metric parameters
+                CompositeMetric metric = (CompositeMetric) cmc.getMetric();
+                String formula = metric.getFormula();
+                EList<Metric> components = metric.getComponentMetrics();
+                List<String> componentNames = components.stream().map(item -> item.getName()).collect(Collectors.toList());
+
+                // Get composite metric context's window and schedule parameters
+                Window win = cmc.getWindow();
+                String winClause = _generateWindowClause(win);
+                Schedule sched = cmc.getSchedule();
+                String schedClause = _generateScheduleClause(sched);
+
+                // Get composite metric context's component or data parameters
+                String[] compAndDataName = getComponentAndDataName(cmc);
+                String compName = compAndDataName[0];
+                String dataName = compAndDataName[1];
+
+                // Get composite metric context's composing metric contexts (just the names)
+                EList<MetricContext> composingCtxList = cmc.getComposingMetricContexts();
+                List<String> composingMetricNamesList = composingCtxList.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
+                List<String> composingCtxNamesList = composingCtxList.stream().map(item -> item.getName()).collect(Collectors.toList());
+
+                // Check that component metrics' names (from composite metric) and metric names from component contexts match
+                if (checkIfListsAreEqual(componentNames, composingCtxNamesList)) {
+                    log.error("RuleGenerator.generateRules():      Component metrics of composite metric '{}' do not match to component contexts of Composite-Metric-Context '{}': component-metrics={}, component-context-metrics={}", metric.getName(), cmc.getName(), componentNames, composingCtxNamesList);
+                    throw new IllegalArgumentException(String.format("Component metrics of composite metric '%s' do not match to component contexts of Composite-Metric-Context: %s", metric.getName(), cmc.getName()));
+                }
+
+                log.warn("RuleGenerator.generateRules():      Composite-Metric-Context: node={}, elem-name={}, metric={}, formula={}, components={}, win={}, sched={}, component={}, data={}, composing-metrics={}, composing-metric-contexts={}",
+                        node, elemName, metric.getName(), formula, componentNames, winClause, schedClause, compName, dataName, composingMetricNamesList, composingCtxNamesList);
+
+                // Require topics in this level
+                _TC.requireGroupingTopicPairs(grouping, composingCtxNamesList);
+
+                // Select rule tag, depending on whether an Aggregator function is used in formula
+                // (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
+                String ruleTag = "COMP-CTX";
+                if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-COMP-CTX";
+                log.warn("RuleGenerator.generateRules():      CMC-tag={}", ruleTag);
+
+                // Write rule for CMC or CMC-AGG
+                Context context = new Context();
+                context.setVariable("formula", formula);
+                context.setVariable("metric", metric.getName());
+                context.setVariable("components", composingMetricNamesList);
+                context.setVariable("contexts", composingCtxNamesList);
+                context.setVariable("windowClause", winClause);
+                context.setVariable("scheduleClause", schedClause);
+                _generateRule(_TC, ruleTag, grouping, elemName, context);
+            } else if (elem instanceof camel.metric.RawMetricContext) {
+                log.warn("RuleGenerator.generateRules():      Found a Raw-Metric-Context element: node={}, elem-name={}", node, elemName);
+                RawMetricContext rmc = (RawMetricContext) elem;
+
+                // Get raw metric context's metric parameters
+                RawMetric metric = (RawMetric) rmc.getMetric();
+                Sensor sensor = rmc.getSensor();
+                String sensorName = sensor != null ? sensor.getName() : null;
+
+                // Get raw metric context's schedule parameters
+                Schedule sched = rmc.getSchedule();
+                String schedClause = _generateScheduleClause(sched);
+
+                // Get raw metric context's component or data parameters
+                String[] compAndDataName = getComponentAndDataName(rmc);
+                String compName = compAndDataName[0];
+                String dataName = compAndDataName[1];
+
+                log.warn("RuleGenerator.generateRules():      Raw-Metric-Context: node={}, elem-name={}, metric={}, sensor={}, sched={}, component={}, data={}",
+                        node, elemName, metric.getName(), sensorName, schedClause, compName, dataName);
+
+                // Require topics in this level
+                _TC.requireGroupingTopicPair(grouping, rmc.getName());
+
+                // Write rule for RMC
+                Context context = new Context();
+                context.setVariable("metric", metric.getName());
+                context.setVariable("sensor", sensorName);
+                context.setVariable("scheduleClause", schedClause);
+                _generateRule(_TC, "RAW-CTX", grouping, elemName, context);
+            } else
+
+            // Generate rules for Metrics and Metric Variables
+            if (elem instanceof camel.metric.CompositeMetric) {
+                log.warn("RuleGenerator.generateRules():      Found a Composite-Metric element: node={}, elem-name={}", node, elemName);
+                providesTopic = false;
+                // Nothing to do here
+            } else if (elem instanceof camel.metric.RawMetric) {
+                log.warn("RuleGenerator.generateRules():      Found a Raw-Metric element: node={}, elem-name={}", node, elemName);
+                providesTopic = false;
+                // Nothing to do here
+            } else if (elem instanceof camel.metric.MetricVariable) {
+                log.warn("RuleGenerator.generateRules():      Found a Metric-Variable element: node={}, elem-name={}", node, elemName);
+                MetricVariable mvar = (MetricVariable) elem;
+                boolean isCurrConfig = mvar.isCurrentConfiguration();
+                boolean isOnNodeCand = mvar.isOnNodeCandidates();
+                Component comp = mvar.getComponent();
+                String compName = comp != null ? comp.getName() : null;
+                String formula = mvar.getFormula();
+                EList<Metric> componentMetrics = mvar.getComponentMetrics();
+                List<String> componentMetricNames = componentMetrics.stream().map(item -> item.getName()).collect(Collectors.toList());
+                boolean containsMetrics = (componentMetrics.size() > 0);
+
+                log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
+                        node, elemName, isCurrConfig, isOnNodeCand, compName, formula, componentMetricNames, containsMetrics);
+
+                // Select rule tag, depending on whether an Aggregator function is used in formula
+                // (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
+                String ruleTag = "VAR";
+                if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-VAR";
+                log.warn("RuleGenerator.generateRules():      VAR-tag={}", ruleTag);
+
+                if (componentMetrics.size() > 0) {
+                    // Write rule for VAR
+                    List<MetricContext> contexts = componentMetrics.stream().map(item -> _TC.getMetricContextForMetric(item)).filter(Objects::nonNull).collect(Collectors.toList());
+                    List<String> metricNames = contexts.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
+                    List<String> contextNames = contexts.stream().map(item -> item.getName()).collect(Collectors.toList());
+                    log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, component-metrics={}, component-metric-contexts={}",
+                            node, elemName, metricNames, contextNames);
+
+                    // Check that component metrics' names (from composite metric) and metric names from component contexts match
+                    if (checkIfListsAreEqual(componentMetricNames, metricNames)) {
+                        log.error("RuleGenerator.generateRules():      Component metrics of metric variable '{}' do not match to component contexts' metrics: component-metrics={}, component-context-metrics={}", mvar.getName(), componentMetricNames, metricNames);
+                        throw new IllegalArgumentException(String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics", mvar.getName()));
+                    }
+
+                    if (contexts.size() > 0) {
+                        // Require topics in this level
+                        _TC.requireGroupingTopicPairs(grouping, contextNames);
+
+                        // Write rule for VAR
                         Context context = new Context();
-                        context.setVariable("metricContext", mc.getName());
-                        context.setVariable("operator", ruleOp);
-                        context.setVariable("threshold", threshold);
-                        _generateRule(_TC, "CONSTR-MET", grouping, elemName, context);
-                    } else if (elem instanceof camel.constraint.IfThenConstraint) {
-                        log.warn("RuleGenerator.generateRules():      Found an If-Then-Constraint element: node={}, elem-name={}", node, elemName);
-//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
-                    } else if (elem instanceof camel.constraint.MetricVariableConstraint) {
-                        // Not used in EMS
-                        log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element and ignoring it: node={}, elem-name={}", node, elemName);
-                    } else if (elem instanceof camel.constraint.LogicalConstraint) {
-                        log.warn("RuleGenerator.generateRules():      Found an Logical-Constraint element: node={}, elem-name={}", node, elemName);
-//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
-                    } else
+                        context.setVariable("formula", formula);
+                        context.setVariable("variable", mvar.getName());
+                        context.setVariable("components", metricNames);
+                        context.setVariable("contexts", contextNames);
+                        _generateRule(_TC, ruleTag, grouping, elemName, context);
+                    } else {
+                        // All component metrics for this metric variable do not have related metric contexts (i.e. the metric variable is MVV)
+                        // No rules will be generated
+                        log.info("RuleGenerator.generateRules():      Metric-Variable has no metric contexts related to its component metrics. No rules will be generated: node={}, elem-name={}", node, elemName);
+                    }
+                } else {
+                    // No component metrics for this metric variable (i.e. it is a MVV)
+                    // No rules will be generated
+                    log.info("RuleGenerator.generateRules():      Metric-Variable has no component metrics. No rules will be generated: node={}, elem-name={}", node, elemName);
+                }
+            } else
 
-                        // Generate rules for Metrics Contexts
-                        if (elem instanceof camel.metric.CompositeMetricContext) {
-                            log.warn("RuleGenerator.generateRules():      Found a Composite-Metric-Context element: node={}, elem-name={}", node, elemName);
-                            CompositeMetricContext cmc = (CompositeMetricContext) elem;
-
-                            // Get composite metric context's metric parameters
-                            CompositeMetric metric = (CompositeMetric) cmc.getMetric();
-                            String formula = metric.getFormula();
-                            EList<Metric> components = metric.getComponentMetrics();
-                            List<String> componentNames = components.stream().map(item -> item.getName()).collect(Collectors.toList());
-
-                            // Get composite metric context's window and schedule parameters
-                            Window win = cmc.getWindow();
-                            String winClause = _generateWindowClause(win);
-                            Schedule sched = cmc.getSchedule();
-                            String schedClause = _generateScheduleClause(sched);
-
-                            // Get composite metric context's component or data parameters
-                            String[] compAndDataName = getComponentAndDataName(cmc);
-                            String compName = compAndDataName[0];
-                            String dataName = compAndDataName[1];
-
-                            // Get composite metric context's composing metric contexts (just the names)
-                            EList<MetricContext> composingCtxList = cmc.getComposingMetricContexts();
-                            List<String> composingMetricNamesList = composingCtxList.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
-                            List<String> composingCtxNamesList = composingCtxList.stream().map(item -> item.getName()).collect(Collectors.toList());
-
-                            // Check that component metrics' names (from composite metric) and metric names from component contexts match
-                            if (checkIfListsAreEqual(componentNames, composingCtxNamesList)) {
-                                log.error("RuleGenerator.generateRules():      Component metrics of composite metric '{}' do not match to component contexts of Composite-Metric-Context '{}': component-metrics={}, component-context-metrics={}", metric.getName(), cmc.getName(), componentNames, composingCtxNamesList);
-                                throw new IllegalArgumentException(String.format("Component metrics of composite metric '%s' do not match to component contexts of Composite-Metric-Context: %s", metric.getName(), cmc.getName()));
-                            }
-
-                            log.warn("RuleGenerator.generateRules():      Composite-Metric-Context: node={}, elem-name={}, metric={}, formula={}, components={}, win={}, sched={}, component={}, data={}, composing-metrics={}, composing-metric-contexts={}",
-                                    node, elemName, metric.getName(), formula, componentNames, winClause, schedClause, compName, dataName, composingMetricNamesList, composingCtxNamesList);
-
-                            // Require topics in this level
-                            _TC.requireGroupingTopicPairs(grouping, composingCtxNamesList);
-
-                            // Select rule tag, depending on whether an Aggregator function is used in formula
-                            // (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
-                            String ruleTag = "COMP-CTX";
-                            if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-COMP-CTX";
-                            log.warn("RuleGenerator.generateRules():      CMC-tag={}", ruleTag);
-
-                            // Write rule for CMC or CMC-AGG
-                            Context context = new Context();
-                            context.setVariable("formula", formula);
-                            context.setVariable("metric", metric.getName());
-                            context.setVariable("components", composingMetricNamesList);
-                            context.setVariable("contexts", composingCtxNamesList);
-                            context.setVariable("windowClause", winClause);
-                            context.setVariable("scheduleClause", schedClause);
-                            _generateRule(_TC, ruleTag, grouping, elemName, context);
-                        } else if (elem instanceof camel.metric.RawMetricContext) {
-                            log.warn("RuleGenerator.generateRules():      Found a Raw-Metric-Context element: node={}, elem-name={}", node, elemName);
-                            RawMetricContext rmc = (RawMetricContext) elem;
-
-                            // Get raw metric context's metric parameters
-                            RawMetric metric = (RawMetric) rmc.getMetric();
-                            Sensor sensor = rmc.getSensor();
-                            String sensorName = sensor != null ? sensor.getName() : null;
-
-                            // Get raw metric context's schedule parameters
-                            Schedule sched = rmc.getSchedule();
-                            String schedClause = _generateScheduleClause(sched);
-
-                            // Get raw metric context's component or data parameters
-                            String[] compAndDataName = getComponentAndDataName(rmc);
-                            String compName = compAndDataName[0];
-                            String dataName = compAndDataName[1];
-
-                            log.warn("RuleGenerator.generateRules():      Raw-Metric-Context: node={}, elem-name={}, metric={}, sensor={}, sched={}, component={}, data={}",
-                                    node, elemName, metric.getName(), sensorName, schedClause, compName, dataName);
-
-                            // Require topics in this level
-                            _TC.requireGroupingTopicPair(grouping, rmc.getName());
-
-                            // Write rule for RMC
-                            Context context = new Context();
-                            context.setVariable("metric", metric.getName());
-                            context.setVariable("sensor", sensorName);
-                            context.setVariable("scheduleClause", schedClause);
-                            _generateRule(_TC, "RAW-CTX", grouping, elemName, context);
-                        } else
-
-                            // Generate rules for Metrics and Metric Variables
-                            if (elem instanceof camel.metric.CompositeMetric) {
-                                log.warn("RuleGenerator.generateRules():      Found a Composite-Metric element: node={}, elem-name={}", node, elemName);
-                                providesTopic = false;
-                                // Nothing to do here
-                            } else if (elem instanceof camel.metric.RawMetric) {
-                                log.warn("RuleGenerator.generateRules():      Found a Raw-Metric element: node={}, elem-name={}", node, elemName);
-                                providesTopic = false;
-                                // Nothing to do here
-                            } else if (elem instanceof camel.metric.MetricVariable) {
-                                log.warn("RuleGenerator.generateRules():      Found a Metric-Variable element: node={}, elem-name={}", node, elemName);
-                                MetricVariable mvar = (MetricVariable) elem;
-                                boolean isCurrConfig = mvar.isCurrentConfiguration();
-                                boolean isOnNodeCand = mvar.isOnNodeCandidates();
-                                Component comp = mvar.getComponent();
-                                String compName = comp != null ? comp.getName() : null;
-                                String formula = mvar.getFormula();
-                                EList<Metric> componentMetrics = mvar.getComponentMetrics();
-                                List<String> componentMetricNames = componentMetrics.stream().map(item -> item.getName()).collect(Collectors.toList());
-                                boolean containsMetrics = (componentMetrics.size() > 0);
-
-                                log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
-                                        node, elemName, isCurrConfig, isOnNodeCand, compName, formula, componentMetricNames, containsMetrics);
-
-                                // Select rule tag, depending on whether an Aggregator function is used in formula
-                                // (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
-                                String ruleTag = "VAR";
-                                if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-VAR";
-                                log.warn("RuleGenerator.generateRules():      VAR-tag={}", ruleTag);
-
-                                if (componentMetrics.size() > 0) {
-                                    // Write rule for VAR
-                                    List<MetricContext> contexts = componentMetrics.stream().map(item -> _TC.getMetricContextForMetric(item)).filter(Objects::nonNull).collect(Collectors.toList());
-                                    List<String> metricNames = contexts.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
-                                    List<String> contextNames = contexts.stream().map(item -> item.getName()).collect(Collectors.toList());
-                                    log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, component-metrics={}, component-metric-contexts={}",
-                                            node, elemName, metricNames, contextNames);
-
-                                    // Check that component metrics' names (from composite metric) and metric names from component contexts match
-                                    if (checkIfListsAreEqual(componentMetricNames, metricNames)) {
-                                        log.error("RuleGenerator.generateRules():      Component metrics of metric variable '{}' do not match to component contexts' metrics: component-metrics={}, component-context-metrics={}", mvar.getName(), componentMetricNames, metricNames);
-                                        throw new IllegalArgumentException(String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics", mvar.getName()));
-                                    }
-
-                                    if (contexts.size() > 0) {
-                                        // Require topics in this level
-                                        _TC.requireGroupingTopicPairs(grouping, contextNames);
-
-                                        // Write rule for VAR
-                                        Context context = new Context();
-                                        context.setVariable("formula", formula);
-                                        context.setVariable("variable", mvar.getName());
-                                        context.setVariable("components", metricNames);
-                                        context.setVariable("contexts", contextNames);
-                                        _generateRule(_TC, ruleTag, grouping, elemName, context);
-                                    } else {
-                                        // All component metrics for this metric variable do not have related metric contexts (i.e. the metric variable is MVV)
-                                        // No rules will be generated
-                                        log.info("RuleGenerator.generateRules():      Metric-Variable has no metric contexts related to its component metrics. No rules will be generated: node={}, elem-name={}", node, elemName);
-                                    }
-                                } else {
-                                    // No component metrics for this metric variable (i.e. it is a MVV)
-                                    // No rules will be generated
-                                    log.info("RuleGenerator.generateRules():      Metric-Variable has no component metrics. No rules will be generated: node={}, elem-name={}", node, elemName);
-                                }
-                            } else
-
-                                // Generate rules for Templates and Sensors
-                                if (elem instanceof camel.metric.MetricTemplate) {
-                                    log.warn("RuleGenerator.generateRules():      Found a Metric-Template element: node={}, elem-name={}", node, elemName);
-                                } else if (elem instanceof camel.metric.Sensor) {
-                                    log.warn("RuleGenerator.generateRules():      Found a Sensor element: node={}, elem-name={}", node, elemName);
+            // Generate rules for Templates and Sensors
+            if (elem instanceof camel.metric.MetricTemplate) {
+                log.warn("RuleGenerator.generateRules():      Found a Metric-Template element: node={}, elem-name={}", node, elemName);
+            } else if (elem instanceof camel.metric.Sensor) {
+                log.warn("RuleGenerator.generateRules():      Found a Sensor element: node={}, elem-name={}", node, elemName);
 //XXX:TODO: Do we need to do something here?? (e.g. create schema??)
-                                } else
+            } else
 
-                                    // Generate rules for Optimisation Requirements and SLO's
-                                    if (elem instanceof camel.requirement.OptimisationRequirement) {
-                                        log.warn("RuleGenerator.generateRules():      Found an Optimisation-Requirement element: node={}, elem-name={}", node, elemName);
-                                        OptimisationRequirement optr = (OptimisationRequirement) elem;
-                                        MetricContext mc = optr.getMetricContext();
-                                        MetricVariable mv = optr.getMetricVariable();
+            // Generate rules for Optimisation Requirements and SLO's
+            if (elem instanceof camel.requirement.OptimisationRequirement) {
+                log.warn("RuleGenerator.generateRules():      Found an Optimisation-Requirement element: node={}, elem-name={}", node, elemName);
+                OptimisationRequirement optr = (OptimisationRequirement) elem;
+                MetricContext mc = optr.getMetricContext();
+                MetricVariable mv = optr.getMetricVariable();
 
-                                        // Write rules for OPT-REQ
-                                        if (mc != null) {
-                                            Context context = new Context();
-                                            context.setVariable("context", mc.getName());
-                                            _generateRule(_TC, "OPT-REQ-CTX", grouping, elemName, context);
-                                        }
-                                        if (mv != null) {
-                                            Context context = new Context();
-                                            context.setVariable("variable", mv.getName());
-                                            _generateRule(_TC, "OPT-REQ-VAR", grouping, elemName, context);
-                                        }
-                                    } else if (elem instanceof camel.requirement.ServiceLevelObjective) {
-                                        log.warn("RuleGenerator.generateRules():      Found a Service-Level-Objective element: node={}, elem-name={}", node, elemName);
-                                        ServiceLevelObjective slo = (ServiceLevelObjective) elem;
-                                        Constraint constr = slo.getConstraint();
+                // Write rules for OPT-REQ
+                if (mc != null) {
+                    Context context = new Context();
+                    context.setVariable("context", mc.getName());
+                    _generateRule(_TC, "OPT-REQ-CTX", grouping, elemName, context);
+                }
+                if (mv != null) {
+                    Context context = new Context();
+                    context.setVariable("variable", mv.getName());
+                    _generateRule(_TC, "OPT-REQ-VAR", grouping, elemName, context);
+                }
+            } else if (elem instanceof camel.requirement.ServiceLevelObjective) {
+                log.warn("RuleGenerator.generateRules():      Found a Service-Level-Objective element: node={}, elem-name={}", node, elemName);
+                ServiceLevelObjective slo = (ServiceLevelObjective) elem;
+                Constraint constr = slo.getConstraint();
 
-                                        // Write rule for SLO
-                                        Context context = new Context();
-                                        context.setVariable("constraint", constr.getName());
-                                        _generateRule(_TC, "SLO", grouping, elemName, context);
-                                    } else
+                // Write rule for SLO
+                Context context = new Context();
+                context.setVariable("constraint", constr.getName());
+                _generateRule(_TC, "SLO", grouping, elemName, context);
+            } else
 
-                                    {
-                                        log.warn("RuleGenerator.generateRules():      ERROR in NODE. Unsupported element type: node={}, elem-name={}, elem-class={}", node, elemName, elemClass);
-                                        providesTopic = false;
-                                    }
+            {
+                log.warn("RuleGenerator.generateRules():      ERROR in NODE. Unsupported element type: node={}, elem-name={}, elem-class={}", node, elemName, elemClass);
+                providesTopic = false;
+            }
 
             // Add provided topic (i.e. this node generates the rule(s) that will create the events to be published in topic)
             if (providesTopic && elem != null) {
