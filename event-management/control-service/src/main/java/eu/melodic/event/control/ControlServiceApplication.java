@@ -16,12 +16,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication(scanBasePackages={"eu.melodic.event.baguette.server", "eu.melodic.event.brokercep", "eu.melodic.event.control", "eu.melodic.event.translate"})
+@SpringBootApplication(scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.brokercep", "eu.melodic.event.control", "eu.melodic.event.translate"})
 @EnableAsync
 @Configuration
 @Slf4j
 public class ControlServiceApplication {
-	public static void main(String[] args) throws Exception {
-		ConfigurableApplicationContext ctx = SpringApplication.run(ControlServiceApplication.class, args);
-	}
+    public static void main(String[] args) throws Exception {
+        ConfigurableApplicationContext ctx = SpringApplication.run(ControlServiceApplication.class, args);
+    }
 }

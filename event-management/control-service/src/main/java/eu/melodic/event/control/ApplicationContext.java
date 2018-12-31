@@ -18,8 +18,8 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
-	@Bean
-	public RestTemplate getRestTemplate() {
-		return new RestTemplate();
-	}
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 }
