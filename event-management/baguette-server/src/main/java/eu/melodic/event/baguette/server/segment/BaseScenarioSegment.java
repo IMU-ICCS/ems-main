@@ -10,13 +10,13 @@
 package eu.melodic.event.baguette.server.segment;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class BaseScenarioSegment extends AbstractSegment {
+
     // ------------------------------------------------------------------------
     // Static part
 
@@ -67,13 +67,13 @@ public class BaseScenarioSegment extends AbstractSegment {
         return timeoutPeriod;
     }
 
-    public int getExpectedMembers() {
-        return expectedMembers;
-    }
-
     public void setTimeoutPeriod(long t) {
         checkNotStarted();
         timeoutPeriod = t;
+    }
+
+    public int getExpectedMembers() {
+        return expectedMembers;
     }
 
     public void setExpectedMembers(int n) {

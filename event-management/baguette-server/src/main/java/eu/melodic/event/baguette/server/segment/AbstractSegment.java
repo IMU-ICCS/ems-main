@@ -9,12 +9,10 @@
 
 package eu.melodic.event.baguette.server.segment;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
@@ -22,7 +20,7 @@ public abstract class AbstractSegment implements Segment {
     // ------------------------------------------------------------------------
     // Static part
 
-    private static HashMap<String, Segment> segments = new HashMap<>();
+    private static Map<String, Segment> segments = new HashMap<>();
 
     public static Set<String> getSegmentIds() {
         return segments.keySet();
@@ -95,17 +93,13 @@ public abstract class AbstractSegment implements Segment {
     // ------------------------------------------------------------------------
     // Event dispatcher part
 
+    @AllArgsConstructor
     private static class QueueEvent {
         String event;
         Object[] args;
-
-        QueueEvent(String e, Object[] a) {
-            event = e;
-            args = a;
-        }
     }
 
-    private LinkedBlockingQueue<QueueEvent> eventQueue = new LinkedBlockingQueue<QueueEvent>();
+    private LinkedBlockingQueue<QueueEvent> eventQueue = new LinkedBlockingQueue<>();
     private Thread eventDispatcher;
     private boolean keepRunning;
 
@@ -134,8 +128,8 @@ public abstract class AbstractSegment implements Segment {
                     public void run() {
                         keepRunning = true;
                         while (keepRunning || eventQueue.size() > 0) {
-                            //QueueEvent qe = eventQueue.poll();
                             try {
+                                //QueueEvent qe = eventQueue.poll();
                                 QueueEvent qe = eventQueue.take();
                                 if (qe != null) {
                                     log.debug("EventDispatcher: Dispatching event: event={}, args={}", qe.event, qe.args);
@@ -144,10 +138,11 @@ public abstract class AbstractSegment implements Segment {
                                     try {
                                         Thread.sleep(100);
                                     } catch (InterruptedException ex) {
+                                        log.warn("EventDispatcher: Sleep interrupted: ", ex);
                                     }
                                 }
                             } catch (InterruptedException ex) {
-                                log.warn("EventDispatcher: Waiting for event interrupted");
+                                log.warn("EventDispatcher: Waiting for event interrupted: ", ex);
                             }
                         }
                     }

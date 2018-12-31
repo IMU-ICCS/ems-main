@@ -9,7 +9,11 @@
 
 package eu.melodic.event.baguette.server.segment;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+
 import org.statefulj.fsm.FSM;
 import org.statefulj.fsm.Persister;
 import org.statefulj.fsm.RetryException;
@@ -17,10 +21,6 @@ import org.statefulj.fsm.model.Action;
 import org.statefulj.fsm.model.State;
 import org.statefulj.fsm.model.impl.StateImpl;
 import org.statefulj.persistence.memory.MemoryPersisterImpl;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class SegmentFSM {
@@ -110,8 +110,7 @@ public class SegmentFSM {
 
     private void initEvents(List<TransitionSpec> specs) {
         // Collect event names from transition specs
-        Set<String> eventNames = specs.stream().map(ts -> ts.event).collect(Collectors.toSet());
-        events = new LinkedList<>(eventNames);
+        events = specs.stream().map(ts -> ts.event).distinct().collect(Collectors.toList());
         log.trace("Events:\n{}", events);
     }
 
@@ -120,10 +119,7 @@ public class SegmentFSM {
         Set<Function<Object, Object>> functions = specs.stream().filter(ts -> ts.action != null).map(ts -> ts.action).collect(Collectors.toSet());
         log.trace("Action-function-refs:\n{}", functions);
         // Initialize actions
-        actions = new HashMap<>();
-        for (Function<Object, Object> f : functions) {
-            actions.put(f, new SegmentAction(f));
-        }
+        actions = functions.stream().collect(Collectors.toMap(f -> f, SegmentAction::new));
         log.trace("Actions:\n{}", actions);
     }
 

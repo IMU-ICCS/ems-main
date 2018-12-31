@@ -24,8 +24,7 @@ public class NoopCoordinator implements ServerCoordinator {
 
     @Override
     public void initialize(BaguetteServer server, Runnable callback) {
-        if (started) return;
-        log.info("NoopCoordinator: initialize");
+        if (_logInvocation("initialize", null, false)) return;
         this.server = server;
         this.config = server.getConfiguration();
         this.callback = callback;
@@ -33,20 +32,18 @@ public class NoopCoordinator implements ServerCoordinator {
 
     @Override
     public void start() {
-        if (started) return;
-        log.info("NoopCoordinator: start");
+        if (_logInvocation("start", null, false)) return;
         started = true;
 
         if (callback != null) {
-            log.info("NoopCoordinator: start: Invoking callback");
+            log.info("{}: start(): Invoking callback", getClass().getSimpleName());
             callback.run();
         }
     }
 
     @Override
     public void stop() {
-        if (!started) return;
-        log.info("NoopCoordinator: stop");
+        if (!_logInvocation("stop", null, true)) return;
         started = false;
     }
 
@@ -61,25 +58,35 @@ public class NoopCoordinator implements ServerCoordinator {
 
     @Override
     public synchronized void register(ClientShellCommand c) {
-        if (!started) return;
-        log.info("NoopCoordinator: register: {}", c);
+        _logInvocation("register", c, true);
     }
 
     @Override
     public synchronized void unregister(ClientShellCommand c) {
-        if (!started) return;
-        log.info("NoopCoordinator: unregister: {}", c);
+        _logInvocation("unregister", c, true);
     }
 
     @Override
     public synchronized void brokerReady(ClientShellCommand c) {
-        if (!started) return;
-        log.info("NoopCoordinator: brokerReady: {}", c);
+        _logInvocation("brokerReady", c, true);
     }
 
     @Override
     public synchronized void clientReady(ClientShellCommand c) {
-        if (!started) return;
-        log.info("NoopCoordinator: clientReady: {}", c);
+        _logInvocation("clientReady", c, true);
+    }
+
+    protected boolean _logInvocation(String methodName, ClientShellCommand c, boolean checkStarted) {
+        String className = getClass().getSimpleName();
+        String cscStr =  (c!=null) ? String.format(". CSC: %s", c.toString()) : "";
+        if (checkStarted && !started) {
+            log.warn("{}: {}(): Coordinator has not been started{}", className, methodName, cscStr);
+        } else
+        if (!checkStarted && started) {
+            log.warn("{}: {}(): Coordinator is already running{}", className, methodName, cscStr);
+        } else {
+            log.info("{}: {}(): Method invoked{}", className, methodName, cscStr);
+        }
+        return started;
     }
 }

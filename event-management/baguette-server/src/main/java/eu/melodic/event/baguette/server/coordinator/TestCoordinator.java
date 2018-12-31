@@ -16,9 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TestCoordinator extends NoopCoordinator {
     @Override
     public synchronized void register(ClientShellCommand c) {
-        if (!started) return;
-        log.info("TestCoordinator: register: {}", c);
-
+        if (!_logInvocation("register", c, true)) return;
         _do_register(c);
     }
 
