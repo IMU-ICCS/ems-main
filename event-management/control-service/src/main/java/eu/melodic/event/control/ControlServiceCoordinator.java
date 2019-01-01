@@ -28,7 +28,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -62,7 +64,7 @@ public class ControlServiceCoordinator {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
         preloadModels();
@@ -523,6 +525,27 @@ public class ControlServiceCoordinator {
         }
     }
 
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Life-Cycle control methods
+    // ------------------------------------------------------------------------------------------------------------
+
+    void emsShutdown() {
+        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS...");
+        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS... done");
+    }
+
+    @Async
+    synchronized void emsExit() {
+        if (properties.isExitAllowed()) {
+            // Signal SpringBootApp to exit
+            log.info("ControlServiceCoordinator.emsExit(): Signaling exit...");
+            ControlServiceApplication.exitApp(properties.getExitCode(), properties.getExitGracePeriod());
+            log.info("ControlServiceCoordinator.emsExit(): Signaling exit... done");
+        } else {
+            log.warn("ControlServiceCoordinator.emsExit(): Exit is not allowed");
+        }
+    }
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB notification methods

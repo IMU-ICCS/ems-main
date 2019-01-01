@@ -167,6 +167,15 @@ public class ControlServiceController {
     // EMS status and information query methods
     // ------------------------------------------------------------------------------------------------------------
 
+    @RequestMapping(value = { "/ems/shutdown", "/ems/shutdown/{exitApp}" }, method = {GET, POST})
+    public String emsShutdown(@PathVariable Optional<Boolean> exitApp) {
+        boolean _exitApp = exitApp.orElse(false);
+        log.info("ControlServiceController.emsShutdown(): exitApp={}", _exitApp);
+        coordinator.emsShutdown();
+        if (_exitApp) coordinator.emsExit();
+        return "OK";
+    }
+
     @RequestMapping(value = "/ems/status", method = {GET, POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String emsStatus() {

@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.Min;
+
 @Data
 @Validated
 @Configuration
@@ -55,4 +57,11 @@ public class ControlServiceProperties {
     private String tcSaveFile;
     @Value("${control.event-debug-enabled:false}")
     private boolean eventDebugEnabled;
+
+    @Value("${control.exit-allowed:false}")
+    private boolean exitAllowed;
+    @Value("${control.exit-grace-period:10}") @Min(1)
+    private long exitGracePeriod;
+    @Value("${control.exit-code:0}")
+    private int exitCode;
 }
