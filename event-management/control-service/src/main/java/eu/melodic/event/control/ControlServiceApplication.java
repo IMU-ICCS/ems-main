@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -29,7 +30,9 @@ public class ControlServiceApplication {
     private static Timer exitTimer;
 
     public static void main(String[] args) throws Exception {
-        applicationContext = SpringApplication.run(ControlServiceApplication.class, args);
+        SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
+        springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
+        applicationContext = springApplication.run(args);
     }
 
     synchronized static void exitApp(int exitCode, long gracePeriod) {
