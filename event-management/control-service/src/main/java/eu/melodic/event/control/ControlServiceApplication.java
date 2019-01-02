@@ -9,7 +9,9 @@
 
 package eu.melodic.event.control;
 
+import eu.melodic.event.control.util.LogPrintStream;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,7 +31,12 @@ public class ControlServiceApplication {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
+        // Set standard system streams being logged
+        System.setOut(new LogPrintStream(System.out, Level.INFO, "OUT"));
+        System.setErr(new LogPrintStream(System.err, Level.ERROR, "ERR"));
+
+        // Start EMS
         SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);

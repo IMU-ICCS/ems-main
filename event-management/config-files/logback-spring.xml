@@ -20,7 +20,12 @@
 			<Pattern>EMS> %msg%n</Pattern>
 		</layout>
 	</appender>
-	
+	<appender name="LOGSTREAM" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>%msg%n</Pattern>
+		</layout>
+	</appender>
+
 	<logger name="root" level="ERROR"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="org.springframework" level="INFO"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
@@ -29,4 +34,6 @@
 	<logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.translate" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+
+	<logger name="eu.melodic.event.control.util.LogPrintStream" level="ALL" additivity="false"> <appender-ref ref="LOGSTREAM"/> </logger>
 </configuration>
