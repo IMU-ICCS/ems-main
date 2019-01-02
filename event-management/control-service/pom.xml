@@ -87,6 +87,10 @@
                             <groupId>eu.melodic.event</groupId>
                             <artifactId>baguette-client</artifactId>
                         </exclude>
+                        <exclude>
+                            <groupId>com.espertech</groupId>
+                            <artifactId>esper</artifactId>
+                        </exclude>
                     </excludes>
                 </configuration>
             </plugin>
