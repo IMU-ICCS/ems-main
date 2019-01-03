@@ -15,7 +15,6 @@ import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.api.QueueApi;
 import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Process;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -47,21 +48,26 @@ public class ColosseumClientApi implements ColosseumApi {
 
   @Override
   public Queue findQueuedTask(String taskId) throws ApiException {
+    Objects.requireNonNull(taskId);
+
     return queueApi.findQueuedTask(taskId);
   }
   @Override
   public Queue addSchedule(@NonNull ScheduleNew scheduleNew) throws ApiException {
+    Objects.requireNonNull(scheduleNew);
+
     log.info("Adding ScheduleNew: {}", scheduleNew);
     return processApi.addSchedule(scheduleNew);
   }
 
   @Override
-  public Schedule getSchedule(String scheduleId) throws ApiException {
+  public Optional<Schedule> getSchedule(String scheduleId) throws ApiException {
+    Objects.requireNonNull(scheduleId);
+
     return CollectionUtils.emptyIfNull(processApi.getSchedules())
             .stream()
             .filter(schedule -> scheduleId.equals(schedule.getId()))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
   }
 
   @Override
@@ -70,33 +76,25 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public Queue addProcess(@NotNull ProcessNew processNew) throws ApiException {
-    log.info("Adding ProcessNew: {}", processNew);
-    return processApi.createProcess(processNew);
-  }
+  public Queue addProcess(@NotNull CloudiatorProcessNew cloudiatorProcessNew) throws ApiException {
+    Objects.requireNonNull(cloudiatorProcessNew);
 
-  @Override
-  public Process getProcess(String scheduleId, String processId) throws ApiException {
-    return CollectionUtils.emptyIfNull(processApi.getProcesses(scheduleId))
-            .stream()
-            .filter(process -> processId.equals(process.getId()))
-            .findFirst()
-            .orElse(null);
-  }
-
-  @Override
-  public List<Process> getProcessess(String scheduleId) throws ApiException {
-    return processApi.getProcesses(scheduleId);
+    log.info("Adding CloudiatorProcessNew: {}", cloudiatorProcessNew);
+    return processApi.createProcess(cloudiatorProcessNew);
   }
 
   @Override
   public Job addJob(@NonNull JobNew jobNew) throws ApiException {
+    Objects.requireNonNull(jobNew);
+
     log.info("Adding JobNew: {}", jobNew);
     return jobApi.addJob(jobNew);
   }
 
   @Override
   public Job getJob(@NonNull String jobId) throws ApiException {
+    Objects.requireNonNull(jobId);
+
     return jobApi.findJob(jobId);
   }
 
@@ -107,23 +105,27 @@ public class ColosseumClientApi implements ColosseumApi {
 
   @Override
   public Queue addNode(@NonNull NodeRequest nodeRequest) throws ApiException {
+    Objects.requireNonNull(nodeRequest);
+
       log.info("Adding NodeRequest: {}", nodeRequest);
       return nodeApi.addNode(nodeRequest);
   }
 
   @Override
-  public Node getNode(String id) throws ApiException {
-    return nodeApi.getNode(id);
+  public Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException {
+    Objects.requireNonNull(nodeGroupId);
+
+    return Optional.ofNullable(nodeApi.getNodeGroup(nodeGroupId));
   }
 
   @Override
-  public List<Node> getNodes() throws ApiException {
-    return nodeApi.findNodes();
-  }
+  public Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException {
+    Objects.requireNonNull(processGroupId);
 
-  @Override
-  public NodeGroup getNodeGroup(String nodeGroupId) throws ApiException {
-    return nodeApi.getNodeGroup(nodeGroupId);
+    return processApi.findProcessGroups()
+            .stream()
+            .filter(processGroup -> processGroupId.equals(processGroup.getId()))
+            .findFirst();
   }
 
 }

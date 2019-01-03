@@ -14,6 +14,9 @@ import eu.melodic.security.authorization.util.properties.AuthorizationServiceCli
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
@@ -21,7 +24,6 @@ import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.api.QueueApi;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -84,9 +86,8 @@ public class ApplicationContext {
   }
 
   @Bean
-  @ConfigurationProperties
-  public AuthorizationServiceClientProperties authorizationServiceClientProperties(){
-    return new AuthorizationServiceClientProperties();
+  public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
+    return new JWTServiceImpl(melodicSecurityProperties);
   }
 
   @Bean

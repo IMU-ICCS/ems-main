@@ -13,6 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,6 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
         try {
             log.info("Creating Node with NodeCandidateId: {}, groupName: {}", taskBody.getNodeCandidate().getId(), taskBody.getNodeName());
 
-            taskBody.getNodeCandidate().getCloud().credential(new CloudCredential().secret("secret").user("user"));
             Queue queue = api.addNode(new NodeRequest()
                     .groupName(taskBody.getNodeName())
                     .nodeCandidate(taskBody.getNodeCandidate())
@@ -41,18 +41,23 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. New node is created", queue.getId());
 
-            NodeGroup nodeGroup = api.getNodeGroup(getId(watch.getLocation()));
+            String nodeGroupId = getId(watch.getLocation());
+            Optional<NodeGroup> nodeGroupOpt = api.getNodeGroup(nodeGroupId);
+            if (nodeGroupOpt.isPresent()) {
+                NodeGroup nodeGroup = nodeGroupOpt.get();
+                log.info("New nodeGroup is created: name: {}, nodeId: {}", nodeGroup.getId(),
+                        nodeGroup
+                                .getNodes()
+                                .stream()
+                                .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() +"}")
+                                .collect(Collectors.joining(", ", "[", "]")));
 
-            log.info("New nodeGroup is created: name: {}, nodeId: {}", nodeGroup.getId(),
-                    nodeGroup
-                            .getNodes()
-                            .stream()
-                            .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() +"}")
-                            .collect(Collectors.joining(", ", "[", "]")));
+                context.addNodeGroup(nodeGroup);
+            } else {
+                log.error("Could not get NodeGroup with id {}", nodeGroupId);
+            }
 
-            context.addNodeGroup(nodeGroup);
         } catch (ApiException e) {
-            log.error("Could not add NodeGroup: ", e);
             log.error("Could not add NodeGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Node", e);
         }

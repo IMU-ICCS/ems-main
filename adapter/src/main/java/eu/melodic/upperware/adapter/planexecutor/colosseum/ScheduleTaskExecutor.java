@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -39,9 +40,7 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
                 .job(job.getId())
                 .instantiation(ScheduleNew.InstantiationEnum.fromValue(taskBody.getInstantiation().name()));
 
-
-        //TODO - is it correct???
-        if (jobName.equals(scheduleNew.getJob()) && taskBody.getInstantiation().name().equals(taskBody.getInstantiation().name())) {
+        if (jobName.equals(scheduleNew.getJob())) {
             log.info("Schedule with job {} and instantiation {} already created", jobName, taskBody.getInstantiation());
             return;
         }
@@ -54,12 +53,17 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. New schedule is created", queue.getId());
 
-            Schedule schedule = api.getSchedule(getId(watch.getLocation()));
+            String scheduleId = getId(watch.getLocation());
+            Optional<Schedule> scheduleOpt = api.getSchedule(scheduleId);
 
-            log.info("New schedule is created: {}", schedule.getId());
-            log.debug("Schedule details: {}", schedule);
-            context.addSchedule(schedule);
+            if (scheduleOpt.isPresent()){
+                Schedule schedule = scheduleOpt.get();
 
+                log.info("Schedule details: {}", schedule);
+                context.addSchedule(schedule);
+            } else {
+                log.error("Could not get Schedule with id {}", scheduleId);
+            }
         } catch (ApiException e) {
             log.error("Could not add Schedule. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Schedule", e);

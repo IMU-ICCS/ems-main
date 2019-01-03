@@ -128,6 +128,18 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .dockerImage(((AdapterDockerInterface) adapterTaskInterface).getDockerImage())
                     .environment(((AdapterDockerInterface) adapterTaskInterface).getEnvironment())
                     .type(DockerInterface.class.getSimpleName());
+
+        } else if (adapterTaskInterface instanceof AdapterFaasInterface) {
+            return new FaasInterface()
+                    .functionName(((AdapterFaasInterface) adapterTaskInterface).getFunctionName())
+                    .sourceCodeUrl(((AdapterFaasInterface) adapterTaskInterface).getSourceCodeUrl())
+                    .handler(((AdapterFaasInterface) adapterTaskInterface).getHandler())
+                    .runtime(((AdapterFaasInterface) adapterTaskInterface).getRuntime())
+                    .triggers(convertToTriggers(((AdapterFaasInterface) adapterTaskInterface).getTriggers()))
+                    .timeout(((AdapterFaasInterface) adapterTaskInterface).getTimeout())
+                    .memory(((AdapterFaasInterface) adapterTaskInterface).getMemory())
+                    .functionEnvironment(((AdapterFaasInterface) adapterTaskInterface).getFunctionEnvironment())
+                    .type(FaasInterface.class.getSimpleName());
         }
         throw new AdapterException(format("Unknown TaskInterface type: %s", adapterTaskInterface.getClass().getSimpleName()));
     }
@@ -143,6 +155,21 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
         return new Communication()
                 .portProvided(adapterCommunication.getPortProvided())
                 .portRequired(adapterCommunication.getPortRequired());
+    }
+
+    private List<Trigger> convertToTriggers(List<AdapterFaasTrigger> triggers) {
+        return triggers
+                .stream()
+                .map(this::convertToTrigger)
+                .collect(Collectors.toList());
+    }
+
+
+    private Trigger convertToTrigger(AdapterFaasTrigger trigger) {
+        return new HttpTrigger()
+                .httpMethod(trigger.getHttpMethod())
+                .httpPath(trigger.getHttpPath())
+                .type(trigger.getType());
     }
 
 }

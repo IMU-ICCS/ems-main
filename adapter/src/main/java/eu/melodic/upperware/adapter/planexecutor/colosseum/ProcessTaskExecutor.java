@@ -6,12 +6,14 @@ import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Process;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static java.lang.String.format;
@@ -42,24 +44,28 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
                 .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
 
 
-        ProcessNew processNew = new ProcessNew()
-                .node(nodeGroup.getNodes().get(0).getNodeId())
+        CloudiatorProcessNew cloudiatorProcessNew = new CloudiatorProcessNew()
+                .nodeGroup(nodeGroup.getId())
                 .schedule(schedule.getId())
                 .task(task.getName());
 
         try {
-            log.info("Creating Process with Node: {}, Schedule {}, Task: {}", processNew.getNode(), processNew.getSchedule(), processNew.getTask());
-            Queue queue = api.addProcess(processNew);
+            log.info("Creating Process with NodeGroup: {}, Schedule {}, Task: {}", cloudiatorProcessNew.getNodeGroup(), cloudiatorProcessNew.getSchedule(), cloudiatorProcessNew.getTask());
+            Queue queue = api.addProcess(cloudiatorProcessNew);
             log.info("Waiting for response from queue: {}", queue.getId());
 
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. New process is created", queue.getId());
 
-            Process process = api.getProcess(schedule.getId(), getId(watch.getLocation()));
-
-            log.info("New process is created: {}", process.getId());
-            log.debug("Process details: {}", process);
-            context.addProcess(process);
+            String processGroupId = getId(watch.getLocation());
+            Optional<ProcessGroup> processGroupOpt = api.getProcessGroup(processGroupId);
+            if (processGroupOpt.isPresent()){
+                ProcessGroup processGroup = processGroupOpt.get();
+                log.info("ProcessGroup details: {}", processGroup);
+                context.addProcessGroup(processGroup);
+            } else {
+                log.error("Could not get ProcessGroup with id {}", processGroupId);
+            }
 
         } catch (ApiException e) {
             log.error("Could not add Process. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());

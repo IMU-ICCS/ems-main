@@ -13,10 +13,10 @@ import eu.melodic.cache.NodeCandidates;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.types.LongValueUpperware;
 import eu.paasage.upperware.solvertodeployment.db.lib.CDODatabaseProxy2;
 import eu.paasage.upperware.solvertodeployment.lib.CommunicationProvidedRequiredDomain;
 import eu.paasage.upperware.solvertodeployment.lib.S2DException;
-import eu.paasage.upperware.solvertodeployment.properties.SolverToDeploymentProperties;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import io.github.cloudiator.rest.model.NodeCandidate;
@@ -37,11 +37,10 @@ public class DataUtils {
 
     public static DataHolder computeDatasToRegister(DeploymentTypeModel deploymentTypeModel, DeploymentInstanceModel deploymentInstanceModel,
                                                     ConstraintProblem constraintProblem, Solution solution, CamelModel camelModel, String camelModelId,
-                                                    NodeCandidates nodeCandidates, SolverToDeploymentProperties solverToDeploymentProperties,
-                                                    CDOTransaction transaction
+                                                    NodeCandidates nodeCandidates, CDOTransaction transaction
     ) {
 
-        ProviderEnricherServiceImpl providerEnricherService = new ProviderEnricherServiceImpl(solverToDeploymentProperties);
+        ProviderEnricherService providerEnricherService = new ProviderEnricherServiceImpl();
 
         // Analyzing the model for LOCAL group, ie component connected by LOCAL communication
         // component i => i
@@ -74,7 +73,7 @@ public class DataUtils {
                         try {
                             throw new S2DException(String.format("Port number %d required by %s is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName()));
                         } catch (S2DException e) {
-                            e.printStackTrace();
+                            log.error("Problem with S2D: ", e);
                         }
                     }
                 }));
@@ -84,7 +83,7 @@ public class DataUtils {
         int key = 0;
         for (SoftwareComponent sc : softwareComponents) {
             if (localComponentGroups.get(sc.getName()) == key) {
-                String msg = localGroups.get(key).stream().collect(Collectors.joining(" "));
+                String msg = String.join(" ", localGroups.get(key));
                 log.info("Group {}: {}", key, msg);
             }
             key++;
@@ -142,6 +141,7 @@ public class DataUtils {
         return null;
     }
 
+    //TODO - to remove
     private static GeographicalRegion getOrCreateRegion(DataHolder dataHolder, @NonNull NodeCandidate nodeCandidate, @NonNull CamelModel camelModel) {
 
         String regionName = nodeCandidate.getLocation().getName();
@@ -182,7 +182,8 @@ public class DataUtils {
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getCoresPredicate(CPModelTool.getIntValue(variableValue))));
 
         CPModelTool.getRam(variableValues)
-                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getRamPredicate(CPModelTool.getLongValue(variableValue))));
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates
+                        .getRamPredicate(variableValue instanceof LongValueUpperware ? CPModelTool.getLongValue(variableValue) : CPModelTool.getIntValue(variableValue))));
 
         CPModelTool.getStorage(variableValues)
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getStoragePredicate(CPModelTool.getIntValue(variableValue))));

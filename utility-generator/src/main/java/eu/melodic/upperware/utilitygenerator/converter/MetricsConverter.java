@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.converter;
 
+import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
 import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
@@ -21,11 +22,13 @@ import static eu.melodic.upperware.utilitygenerator.model.UtilityFunction.isInFo
 
 @Slf4j
 @AllArgsConstructor
-public class MetricsConverter {
+public class MetricsConverter extends ArgumentConverter{
 
     private Collection<MetricDTO> metricsFromConstraintProblem;
+    private String function;
 
-    public Collection<Element> convertMetrics(String function) {
+    @Override
+    public Collection<Element> convertToElements(Collection<Element> solution, Collection<ConfigurationElement> configuration) {
         return metricsFromConstraintProblem.stream()
                 .filter(m -> isInFormula(function, m.getName()))
                 .map(ElementFactory::createElement)

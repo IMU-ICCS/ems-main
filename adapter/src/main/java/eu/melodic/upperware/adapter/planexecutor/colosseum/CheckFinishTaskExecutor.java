@@ -18,13 +18,15 @@ public class CheckFinishTaskExecutor implements Callable<Queue> {
 
     private CheckFinishTask checkFinishTask;
     private ColosseumApi api;
+    private int delayBetweenCheck;
 
     @Override
     public Queue call() throws Exception {
         Queue queuedTask;
         do {
             queuedTask = api.findQueuedTask(checkFinishTask.getData().getQueueName());
-            log.debug("Result of queuedTask {} with queueId {} is {}", checkFinishTask.getData().getName(), checkFinishTask.getData().getQueueName(), queuedTask.toString());
+            log.debug("Result of queuedTask {} with queueId {} is {}",
+                    checkFinishTask.getData().getName(), checkFinishTask.getData().getQueueName(), queuedTask.toString());
 
             if (isInStatus(QueueStatus.FAILED, queuedTask)) {
                 throw new AdapterException(format("Result of task %s failed, reason: %s", queuedTask.getId(), queuedTask.getDiagnosis()));
@@ -34,7 +36,7 @@ public class CheckFinishTaskExecutor implements Callable<Queue> {
                 return queuedTask;
             }
             //waiting
-            Thread.sleep(1000);
+            Thread.sleep(delayBetweenCheck);
         } while (isInStatus(QueueStatus.RUNNING, queuedTask) || isInStatus(QueueStatus.SCHEDULED, queuedTask));
         throw new AdapterException("Something is wrong, and I don't know why...");
     }

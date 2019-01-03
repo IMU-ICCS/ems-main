@@ -3,6 +3,7 @@ package eu.melodic.upperware.adapter.plangenerator.converter;
 import camel.deployment.*;
 import camel.deployment.Communication;
 import eu.melodic.upperware.adapter.plangenerator.converter.job.DockerInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.FaasInterfaceConverter;
 import eu.melodic.upperware.adapter.plangenerator.converter.job.LanceInterfaceConverter;
 import eu.melodic.upperware.adapter.plangenerator.converter.job.SparkInterfaceConverter;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
@@ -26,9 +27,12 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     private LanceInterfaceConverter lanceInterfaceConverter;
     private SparkInterfaceConverter sparkInterfaceConverter;
     private DockerInterfaceConverter dockerInterfaceConverter;
+    private FaasInterfaceConverter faasInterfaceConverter;
 
     private static final String PORT_PROVIDED = "PortProvided";
     private static final String PORT_REQUIRED = "PortRequired";
+
+    private static final String DOCKER_TAG = "docker";
 
     @Override
     public AdapterJob toComparableModel(DeploymentInstanceModel model) {
@@ -53,10 +57,14 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     private AdapterTask convertToTask(SoftwareComponent softwareComponent, List<Communication> communications) {
         return AdapterTask.builder()
                 .name(softwareComponent.getName())
-                .taskType(AdapterTaskType.SERVICE)
+                .taskType(chooseTaskType(softwareComponent))
                 .interfaces(convertToInterfaces(softwareComponent))
                 .ports(convertToPorts(softwareComponent, communications))
                 .build();
+    }
+
+    private AdapterTaskType chooseTaskType(SoftwareComponent softwareComponent) {
+        return isFaasComponent(getConfiguration(softwareComponent)) ? AdapterTaskType.BATCH : AdapterTaskType.SERVICE;
     }
 
 
@@ -67,9 +75,11 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
         if (isLanceComponent(configuration)) {
             result = lanceInterfaceConverter.convert((ScriptConfiguration) configuration);
         } else if (isDockerComponent(configuration)) {
-            result = dockerInterfaceConverter.convert((ServerlessConfiguration) configuration);
+            result = dockerInterfaceConverter.convert((ScriptConfiguration) configuration);
         } else if (isSparkComponent(configuration)) {
             result = sparkInterfaceConverter.convert((ClusterConfiguration) configuration);
+        } else if (isFaasComponent(configuration)) {
+            result = faasInterfaceConverter.convert((ServerlessConfiguration) configuration);
         } else if (isPlatformComponent(configuration)) {
             result = new AdapterTaskInterface();
         } else {
@@ -79,8 +89,13 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
         return Collections.singletonList(result);
     }
 
+
     private boolean isLanceComponent(Configuration configuration) {
-        return configuration instanceof ScriptConfiguration;
+        if (configuration instanceof ScriptConfiguration) {
+            ScriptConfiguration scriptConfiguration = (ScriptConfiguration) configuration;
+            return !DOCKER_TAG.equals(scriptConfiguration.getDevopsTool());
+        }
+        return false;
     }
 
     private boolean isSparkComponent(Configuration configuration) {
@@ -88,6 +103,14 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     }
 
     private boolean isDockerComponent(Configuration configuration) {
+        if (configuration instanceof ScriptConfiguration) {
+            ScriptConfiguration scriptConfiguration = (ScriptConfiguration) configuration;
+            return DOCKER_TAG.equals(scriptConfiguration.getDevopsTool());
+        }
+        return false;
+    }
+
+    private boolean isFaasComponent(Configuration configuration) {
         return configuration instanceof ServerlessConfiguration;
     }
 
