@@ -18,8 +18,6 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
-import eu.melodic.security.authorization.client.AuthorizationServiceClient;
-import eu.melodic.security.authorization.client.extractor.*;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
@@ -29,7 +27,7 @@ import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
-import eu.melodic.upperware.adapter.validation.PlanValidator;
+import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import io.github.cloudiator.rest.ApiException;
@@ -59,20 +57,16 @@ public class Coordinator {
     private CdoServerApi cdoServerApi;
 
     private PlanGenerator planGenerator;
-    private PlanValidator planValidator;
     private PlanExecutor planExecutor;
     private CdoServerUpdater cdoServerUpdater;
     private ToLogGraphLogger toLogGraphLogger;
 
     private ContextOperations context;
-
     private RestTemplate restTemplate;
-
     private AdapterProperties properties;
-
     private CDOClientX cdoClientX;
 
-    private AuthorizationServiceClient authorizationServiceClient;
+    private DeploymentInstanceModelValidator deploymentInstanceModelValidator;
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid) {
@@ -118,10 +112,6 @@ public class Coordinator {
                 plan = planGenerator.buildConfigurationPlan(targetModel);
             } else {
                 plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
-                if (!planValidator.validate(plan)) {
-                    notifyPlanRejected(resourceName, notificationUri, uuid);
-                    return;
-                }
             }
         } finally {
             cdoSessionX.closeTransaction(tr);
@@ -141,12 +131,17 @@ public class Coordinator {
         if (targetModel!=null) {
             log.info("Authorizing deployment plan with Authorization-Service...");
 			try {
-				preAuthorizeTargetModel(targetModel);
-                log.info("Deployment plan authorized, executing...");
+                if (deploymentInstanceModelValidator.validate(targetModel)) {
+                    log.info("Deployment plan authorized, executing...");
 
-				planExecutor.executePlan(plan);
-				cdoServerUpdater.updateCamelModel(resourceName);
-				notifyPlanApplied(resourceName, notificationUri, uuid);
+                    planExecutor.executePlan(plan);
+                    cdoServerUpdater.updateCamelModel(resourceName);
+                    notifyPlanApplied(resourceName, notificationUri, uuid);
+                } else {
+                    log.info("Deployment plan authorized failed...");
+                    notifyPlanRejected(resourceName, notificationUri, uuid);
+                }
+
 			} catch (Exception ex) {
 			    log.error("Error: ", ex);
 				notifyPlanRejected(resourceName, notificationUri, uuid);
@@ -154,41 +149,6 @@ public class Coordinator {
 		} else {
 			log.warn("Cannot pre-authorize target model. Target model is null");
 		}
-    }
-
-//XXX:DEL: after completing development+tests
-    public String test() {
-        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST - BEGIN");
-        preAuthorizeTargetModel( null );
-        //run("/FCR", "", "");
-        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST - END");
-        return "SUCCESS";
-    }
-
-    private void preAuthorizeTargetModel(DeploymentInstanceModel targetModel) {
-        
-		// Collect plan information to submit to (Pre-)Authorization Server
-        String resource = "deployment-model";	//XXX: ...or the actual resource-id of target model in CDO
-        String action = "DEPLOY";
-        String subject = "Adapter";
-
-		// Call data extractors to collect information from target model 
-		DataExtractorHelper helper = new DataExtractorHelper(authorizationServiceClient);
-        Map<String,Object> extra = helper.getModelData( targetModel );
-		log.info("preAuthorizeTargetModel: Extracted target model data: {}", extra);
-
-        // Use PDP client to pre-authorize execution plan against policies
-        try {
-            log.debug("Calling PDP: {}", authorizationServiceClient.getPdpEndpoint());
-            boolean permit = authorizationServiceClient.requestAccess(resource, action, subject, extra);
-            log.debug("PDP decision: {}", permit);
-
-            if (!permit)
-                throw new RuntimeException("Plan pre-authorization have failed.");
-        } catch (Exception ex) {
-            log.warn("An error occurred while evaluating web access request: ", ex);
-            throw new RuntimeException(ex);
-        }
     }
 
     private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
