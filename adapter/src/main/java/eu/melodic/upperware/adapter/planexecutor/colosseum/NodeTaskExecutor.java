@@ -34,7 +34,6 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
         try {
             log.info("Creating Node with NodeCandidateId: {}, groupName: {}", taskBody.getNodeCandidate().getId(), taskBody.getNodeName());
 
-            taskBody.getNodeCandidate().getCloud().credential(new CloudCredential().secret("secret").user("user"));
             Queue queue = api.addNode(new NodeRequest()
                     .groupName(taskBody.getNodeName())
                     .nodeCandidate(taskBody.getNodeCandidate())
