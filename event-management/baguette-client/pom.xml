@@ -8,10 +8,7 @@
         <version>2.1.0-SNAPSHOT</version>
 	</parent>
 
-	<groupId>eu.melodic.event</groupId>
 	<artifactId>baguette-client</artifactId>
-	<!--<version>1.0.0-SNAPSHOT</version>-->
-	<!--<packaging>jar</packaging>-->
 	<name>Upperware - EMS - Baguette Client</name>
 
 	<dependencies>
@@ -63,49 +60,15 @@
 				<configuration>
 					<mainClass>eu.melodic.event.baguette.client.BaguetteClient</mainClass>
 					<executable>maven</executable>
-					<!-- optional -->
-					<!--<workingDirectory>/tmp</workingDirectory>-->
-					<!--<arguments>
-						<argument>-X</argument>
-						<argument>myproject:dist</argument>
-					</arguments>-->
-					<!--<systemProperties>
-						<systemProperty>
-							<key>myproperty</key>
-							<value>myvalue</value>
-						</systemProperty>
-					</systemProperties>-->
 				</configuration>
 			</plugin>
-			<!-- IMPORTANT: DON'T USE THIS PLUGIN to bundle classes. IT INVALIDATES DEPENDENCY JARS' SIGNING (esp. BouncyCastleProvider JCE PROVIDER) -->
-			<!--<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<archive>
-						<manifest>
-							<mainClass>eu.melodic.event.baguette.client.BaguetteClient</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>-->
-			
+
 			<!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<descriptor>src/assembly/docker.xml</descriptor>
+					<descriptor>src/assembly/vm.xml</descriptor>
 					<finalName>baguette-client</finalName>
 				</configuration>
 				<executions>
@@ -131,7 +94,7 @@
 							<goal>rename</goal>
 						</goals>
 						<configuration>
-							<sourceFile>target/baguette-client-docker.zip</sourceFile>
+							<sourceFile>target/baguette-client-vm.zip</sourceFile>
 							<destinationFile>target/baguette-client.zip</destinationFile>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
 						</configuration>
@@ -144,7 +107,7 @@
 						</goals>
 						<configuration>
 							<sourceFile>target/baguette-client.zip</sourceFile>
-							<destinationFile>../../../tests-melodic/esper-demo/baguette-client.zip</destinationFile>
+							<destinationFile>../config-files/html/baguette-client.zip</destinationFile>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
 						</configuration>
 					</execution>

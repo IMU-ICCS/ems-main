@@ -8,16 +8,8 @@
         <version>2.1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>eu.melodic.event</groupId>
     <artifactId>broker-cep</artifactId>
-    <!--<version>2.1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>-->
     <name>Upperware - EMS - Embeded Broker+CEP Service</name>
-
-    <properties>
-        <esper-version>7.1.0</esper-version>
-        <mathparser-version>4.2.0</mathparser-version>
-    </properties>
 
     <dependencies>
         <!-- EMS dependencies -->
