@@ -35,5 +35,5 @@
 	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.translate" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 
-	<logger name="eu.melodic.event.control.util.LogPrintStream" level="ALL" additivity="false"> <appender-ref ref="LOGSTREAM"/> </logger>
+	<logger name="eu.melodic.event.control.util.LogPrintStream" level="OFF" additivity="false"> <appender-ref ref="LOGSTREAM"/> </logger>
 </configuration>
