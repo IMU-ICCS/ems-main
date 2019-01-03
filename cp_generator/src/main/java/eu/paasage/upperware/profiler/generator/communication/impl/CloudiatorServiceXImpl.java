@@ -2,7 +2,6 @@ package eu.paasage.upperware.profiler.generator.communication.impl;
 
 import camel.core.Attribute;
 import camel.core.Feature;
-import camel.core.NamedElement;
 import camel.deployment.RequirementSet;
 import camel.location.GeographicalRegion;
 import camel.location.LocationModel;
@@ -22,7 +21,6 @@ import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
@@ -47,9 +45,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
-        List<NodeCandidate> nodeCandidates = matchmakingApi.findNodeCandidates(requirements);
-        removeCredentials(nodeCandidates);
-        return nodeCandidates;
+        return matchmakingApi.findNodeCandidates(requirements);
     }
 
     @Override
@@ -293,10 +289,5 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return String.valueOf(((DoubleValue) value).getValue());
         }
         throw new GeneratorException("Unsupported value type");
-    }
-
-    private void removeCredentials(List<NodeCandidate> nodeCandidates){
-        ListUtils.emptyIfNull(nodeCandidates).forEach(nc -> nc.getCloud().setCredential(new CloudCredential()));
-        log.debug("Credentials in the Node Candidate List has been removed.");
     }
 }
