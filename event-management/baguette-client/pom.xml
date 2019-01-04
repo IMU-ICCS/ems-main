@@ -88,27 +88,16 @@
 				<version>1.0</version>
 				<executions>
 					<execution>
-						<id>rename-zip</id>
-						<phase>package</phase>
-						<goals>
-							<goal>rename</goal>
-						</goals>
-						<configuration>
-							<sourceFile>target/baguette-client-vm.zip</sourceFile>
-							<destinationFile>target/baguette-client.zip</destinationFile>
-							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
-						</configuration>
-					</execution>
-					<execution>
 						<id>copy-zip</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<sourceFile>target/baguette-client.zip</sourceFile>
-							<destinationFile>../config-files/html/baguette-client.zip</destinationFile>
+							<sourceFile>target/baguette-client-vm.zip</sourceFile>
+							<destinationFile>../config-files/resources/baguette-client.zip</destinationFile>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+							<overWrite>true</overWrite>
 						</configuration>
 					</execution>
 				</executions>

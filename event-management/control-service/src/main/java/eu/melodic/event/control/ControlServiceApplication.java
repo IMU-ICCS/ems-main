@@ -15,6 +15,8 @@ import org.slf4j.event.Level;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +25,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import java.util.Timer;
 import java.util.TimerTask;
 
-@SpringBootApplication(scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.brokercep", "eu.melodic.event.control", "eu.melodic.event.translate"})
+@SpringBootApplication(
+        scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.brokercep", "eu.melodic.event.control", "eu.melodic.event.translate"},
+        exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
 @EnableAsync
 @Configuration
 @Slf4j
