@@ -7,8 +7,6 @@ import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Process;
-import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -32,10 +30,10 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
         NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
-        Job job = context.getJobByName(taskBody.getJobName())
+        Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
 
-        Schedule schedule = context.getScheduleByJobId(job.getId())
+        Schedule schedule = context.getSchedule(taskBody.getScheduleName())
                 .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
 
         Task task = job.getTasks()

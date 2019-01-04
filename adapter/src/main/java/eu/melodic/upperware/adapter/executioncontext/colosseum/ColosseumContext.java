@@ -9,9 +9,9 @@
 
 package eu.melodic.upperware.adapter.executioncontext.colosseum;
 
+import com.google.common.collect.Lists;
 import eu.melodic.upperware.adapter.exception.AmbiguousResultException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
-import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -48,15 +49,6 @@ public class ColosseumContext implements ContextOperations {
   private final List<Job> jobs = synchronizedList();
 
   private boolean loaded;
-
-  public void addNode(@NonNull Node node) {
-    nodes.add(node);
-  }
-
-  public Optional<Node> getNode(String name) {
-    return getElement(nodes, node -> name.equals(node.getNodeId()),
-            () -> new IllegalStateException(format("Ambiguous search result - there are more than one node with the same name=%s", name)));
-  }
 
   public void addNodeGroup(@NonNull NodeGroup nodeGroup) {
     nodeGroups.add(nodeGroup);
@@ -145,6 +137,10 @@ public class ColosseumContext implements ContextOperations {
   @Override
   public boolean isLoaded() {
     return loaded;
+  }
+
+  private  <E> List<E> synchronizedList() {
+    return Collections.synchronizedList(Lists.newLinkedList());
   }
 
 }

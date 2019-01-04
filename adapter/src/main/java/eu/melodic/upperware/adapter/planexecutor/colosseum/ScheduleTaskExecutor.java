@@ -32,7 +32,7 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
     public void create(AdapterSchedule taskBody) {
         String jobName = checkNotNull(taskBody.getJobName());
 
-        Job job = context.getJobByName(taskBody.getJobName())
+        Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new IllegalStateException(
                         format("Job with name %s was not configured in Colosseum - schedule cannot be created", taskBody.getJobName())));
 

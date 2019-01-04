@@ -31,7 +31,7 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
     @Override
     public void create(AdapterJob taskBody) {
         JobNew jobNew = convertToJobNew(taskBody);
-        if (context.getJobById(jobNew.getName()).isPresent()) {
+        if (context.getJob(jobNew.getName()).isPresent()) {
             log.warn("Job {} already exists in Colosseum - skipping execution of the task", taskBody.getName());
             log.warn("Trying to deploy job: {}", jobNew.toString());
             return;
