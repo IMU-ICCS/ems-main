@@ -50,7 +50,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}", applicationId, notificationUri, requestUuid);
 
         // Start translation and reconfiguration in a worker thread
-        coordinator.processNewModel(applicationId, null, notificationUri);
+        coordinator.processNewModel(applicationId, null, notificationUri, requestUuid);
         log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -70,7 +70,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCamelModel(): CP model id from request: {}", cpModelId);
 
         // Start translation and component reconfiguration in a worker thread
-        coordinator.processNewModel(camelModelId, cpModelId, null);
+        coordinator.processNewModel(camelModelId, cpModelId, null, null);
         log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -90,7 +90,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCpModel(): CP model id from request: {}", cpModelId);
 
         // Start CP model processing in a worker thread
-        coordinator.processCpModel(cpModelId, null);
+        coordinator.processCpModel(cpModelId, null, null);
         log.debug("ControlServiceController.newCpModel(): CP Model processing dispatched to a worker thread");
 
         return "OK";

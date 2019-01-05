@@ -77,7 +77,7 @@ public class ControlServiceCoordinator {
         if (StringUtils.isNotBlank(preloadCamelModel)) {
             log.info("===================================================================================================");
             log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}", preloadCamelModel, preloadCpModel);
-            processNewModel(preloadCamelModel, preloadCpModel, null);
+            processNewModel(preloadCamelModel, preloadCpModel, null, null);
         } else {
             log.info("ControlServiceCoordinator.preloadModels(): No CAMEL model to preload");
         }
@@ -86,13 +86,13 @@ public class ControlServiceCoordinator {
     // ------------------------------------------------------------------------------------------------------------
 
     @Async
-    public void processNewModel(String camelModelId, String cpModelId, String notificationUri) {
+    public void processNewModel(String camelModelId, String cpModelId, String notificationUri, String requestUuid) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator.processNewModel(): ERROR: Coordinator is in use. Method exits immediately";
             log.warn(mesg);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(camelModelId, notificationUri, mesg, mesg);
+                sendErrorNotification(camelModelId, notificationUri, requestUuid, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
             }
@@ -101,14 +101,14 @@ public class ControlServiceCoordinator {
 
         try {
             // Call '_processNewModels()' to do actual processing
-            _processNewModels(camelModelId, cpModelId, notificationUri);
+            _processNewModels(camelModelId, cpModelId, notificationUri, requestUuid);
             this.currentCamelModelId = camelModelId;
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
             String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(camelModelId, notificationUri, mesg, mesg);
+                sendErrorNotification(camelModelId, notificationUri, requestUuid, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
             }
@@ -119,13 +119,13 @@ public class ControlServiceCoordinator {
     }
 
     @Async
-    public void processCpModel(String cpModelId, String notificationUri) {
+    public void processCpModel(String cpModelId, String notificationUri, String requestUuid) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator.processCpModel(): ERROR: Coordinator is in use. Method exits immediately";
             log.warn(mesg);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(null, notificationUri, mesg, mesg);
+                sendErrorNotification(null, notificationUri, requestUuid, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
             }
@@ -134,13 +134,13 @@ public class ControlServiceCoordinator {
 
         try {
             // Call '_processCpModel()' to do actual processing
-            _processCpModel(cpModelId, notificationUri);
+            _processCpModel(cpModelId, notificationUri, requestUuid);
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
             String mesg = "ControlServiceCoordinator.processCpModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(null, notificationUri, mesg, mesg);
+                sendErrorNotification(null, notificationUri, requestUuid, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
             }
@@ -152,8 +152,8 @@ public class ControlServiceCoordinator {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected void _processNewModels(String camelModelId, String cpModelId, String notificationUri) {
-        log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, cp-model-id={}, notification-uri={}", camelModelId, cpModelId, notificationUri);
+    protected void _processNewModels(String camelModelId, String cpModelId, String notificationUri, String requestUuid) {
+        log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, cp-model-id={}, notification-uri={}, request-uuid={}", camelModelId, cpModelId, notificationUri, requestUuid);
 
         // Translate models into EPL rules etc
         TranslationContext _TC = null;
@@ -363,7 +363,7 @@ public class ControlServiceCoordinator {
             if (StringUtils.isNotBlank(notificationUri)) {
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(camelModelId, notificationUri);
+                sendSuccessNotification(camelModelId, notificationUri, requestUuid);
                 log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
             }
         } else {
@@ -374,8 +374,8 @@ public class ControlServiceCoordinator {
         log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
     }
 
-    protected void _processCpModel(String cpModelId, String notificationUri) {
-        log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, notification-uri={}", cpModelId, notificationUri);
+    protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid) {
+        log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, notification-uri={}, request-uuid={}", cpModelId, notificationUri, requestUuid);
         log.info("ControlServiceCoordinator._processCpModel(): Current camel-model-id={}", currentCamelModelId);
         TranslationContext _TC = this.currentTC;
 
@@ -437,7 +437,7 @@ public class ControlServiceCoordinator {
             if (StringUtils.isNotBlank(notificationUri)) {
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(null, notificationUri);
+                sendSuccessNotification(null, notificationUri, requestUuid);
                 log.info("ControlServiceCoordinator._processCpModel(): ESB notified: {}", notificationUri);
             }
         } else {
@@ -495,6 +495,7 @@ public class ControlServiceCoordinator {
 
     public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptyList();
         List<Monitor> sensors = new ArrayList<>(_tc.MON);
         return sensors;
     }
@@ -551,16 +552,16 @@ public class ControlServiceCoordinator {
     // ESB notification methods
     // ------------------------------------------------------------------------------------------------------------
 
-    private void sendSuccessNotification(String applicationId, String notificationUri) {
+    private void sendSuccessNotification(String applicationId, String notificationUri, String requestUuid) {
         // Prepare success result notification
         NotificationResultImpl result = new NotificationResultImpl();
         result.setStatus(NotificationResult.StatusType.SUCCESS);
 
         // Prepare and send CamelModelNotification
-        sendCamelModelNotification(applicationId, result, notificationUri);
+        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid);
     }
 
-    private void sendErrorNotification(String applicationId, String notificationUri, String errorCode, String errorDescription) {
+    private void sendErrorNotification(String applicationId, String notificationUri, String requestUuid, String errorCode, String errorDescription) {
         // Prepare error result notification
         NotificationResultImpl result = new NotificationResultImpl();
         result.setStatus(NotificationResult.StatusType.ERROR);
@@ -568,16 +569,16 @@ public class ControlServiceCoordinator {
         result.setErrorDescription(errorDescription);
 
         // Prepare and send CamelModelNotification
-        sendCamelModelNotification(applicationId, result, notificationUri);
+        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid);
     }
 
-    private void sendCamelModelNotification(String applicationId, NotificationResult result, String notificationUri) {
+    private void sendCamelModelNotification(String applicationId, NotificationResult result, String notificationUri, String requestUuid) {
         // Create a new watermark
         Watermark watermark = new WatermarkImpl();
         watermark.setUser("EMS");
         watermark.setSystem("EMS");
         watermark.setDate(new java.util.Date());
-        String uuid = java.util.UUID.randomUUID().toString().toLowerCase();
+        String uuid = requestUuid!=null ? requestUuid : java.util.UUID.randomUUID().toString().toLowerCase();
         watermark.setUuid(uuid);
 
         // Create a new CamelModelNotification
