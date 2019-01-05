@@ -52,7 +52,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         if ("generate".equalsIgnoreCase(principalRequestValue)) {
             principalRequestValue = RandomStringUtils.randomAlphanumeric(30);
-            log.info("WebSecurityConfig: API-KEY generated: '{}'", principalRequestValue);
+            log.info("WebSecurityConfig: API key generated: {}", principalRequestValue);
         }
 
         APIKeyAuthFilter filter = new APIKeyAuthFilter(principalRequestHeader, principalRequestParam);
@@ -71,7 +71,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         });
 
         httpSecurity.
-                antMatcher("/resources/**").
+                antMatcher("/**").
                 csrf().disable().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
                 and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
