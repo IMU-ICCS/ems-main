@@ -7,7 +7,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.event.control.web;
+package eu.melodic.event.control.webconf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
