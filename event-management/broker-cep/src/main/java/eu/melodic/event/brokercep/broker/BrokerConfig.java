@@ -135,7 +135,7 @@ public class BrokerConfig implements InitializingBean {
 
     public void setBrokerUsername(String s) {
         if (userList != null) {
-            userList.get(1).setUsername(s);     //XXX: : 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
+            userList.get(1).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
         }
         log.debug("BrokerConfig.setBrokerUsername(): username={}", s);

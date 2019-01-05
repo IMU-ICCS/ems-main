@@ -30,6 +30,8 @@ public class BrokerClientProperties {
     private String brokerUrl;
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
+    @Value("${ssl.client-auth.required:false}")
+    private boolean clientAuthRequired;
     @Value("${connector-port:-1}")
     private int connectorPort;
     @Value("${preserve-connection:false}")
@@ -47,9 +49,6 @@ public class BrokerClientProperties {
     private String keystoreType;
     @Value("${ssl.keystore.password:}")
     private String keystorePassword;
-    //XXX:DEL-IF: not really needed in client authentication
-    @Value("${ssl.client-auth.required:false}")
-    private boolean clientAuthRequired;
 
     @Value("${broker-username:}")
     private String brokerUsername;

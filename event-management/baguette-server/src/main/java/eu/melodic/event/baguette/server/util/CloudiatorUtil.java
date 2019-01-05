@@ -55,7 +55,6 @@ public class CloudiatorUtil implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         log.warn("CloudiatorUtil.afterPropertiesSet(): configuration: {}", properties);
 
-        //XXX: ASK: This can be done later in 'findVmInfoUsingIpAddress()'
         this.client = ClientBuilder.getNew()
                 .url(properties.getColosseumEndpoint())
                 .credentials(properties.getColosseumAuthEmail(), properties.getColosseumAuthTenant(), properties.getColosseumAuthPassword())
