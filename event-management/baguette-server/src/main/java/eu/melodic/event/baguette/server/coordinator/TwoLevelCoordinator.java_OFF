@@ -57,8 +57,9 @@ public class TwoLevelCoordinator implements ServerCoordinator {
         started = true;
 
         clientConfig = new Properties();
-        clientConfig.setProperty("broker.ip-address", config.getThirdLevelAddress());
-        clientConfig.setProperty("broker.port", Integer.toString(config.getThirdLevelPort()));
+        //XXX: OBSOLETE CODE: Needs to be re-implemented
+        /*clientConfig.setProperty("broker.ip-address", config.getThirdLevelAddress());
+        clientConfig.setProperty("broker.port", Integer.toString(config.getThirdLevelPort()));*/
         expectedClients = config.getNumberOfInstances();
 
         initSegment();

@@ -39,7 +39,8 @@ public class ServerCoordinatorClientsOnly implements ServerCoordinator {
         this.callback = callback;
         this.clients = new Vector<>();
 
-        String addr = config.getBrokerAddress();
+        //XXX: OBSOLETE CODE: Needs to be re-implemented
+        /*String addr = config.getBrokerAddress();
         String port = Integer.toString(config.getBrokerPort());
         String tplFile = config.getBrokerConfigTemplate();
         String outFile = config.getBrokerConfigFile();
@@ -48,7 +49,7 @@ public class ServerCoordinatorClientsOnly implements ServerCoordinator {
         if (!addr.isEmpty() && !port.isEmpty() && !tplFile.isEmpty() && !outFile.isEmpty()) {
             brokerCfgIpAddressCmd = String.format("SET-PARAM %s BROKER_IP_ADDR %s %s", tplFile, addr, outFile);
             brokerCfgPortCmd = String.format("SET-PARAM %s BROKER_PORT %s %s", outFile, port, outFile);
-        }
+        }*/
     }
 
     public void start() {

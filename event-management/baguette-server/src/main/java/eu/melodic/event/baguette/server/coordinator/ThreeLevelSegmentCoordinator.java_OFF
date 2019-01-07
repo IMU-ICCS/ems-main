@@ -54,8 +54,9 @@ public class ThreeLevelSegmentCoordinator implements ServerCoordinator {
         started = true;
 
         brokerConfig = new Properties();
-        brokerConfig.setProperty("central.ip-address", config.getThirdLevelAddress());
-        brokerConfig.setProperty("central.port", Integer.toString(config.getThirdLevelPort()));
+        //XXX: OBSOLETE CODE: Needs to be re-implemented
+        /*brokerConfig.setProperty("central.ip-address", config.getThirdLevelAddress());
+        brokerConfig.setProperty("central.port", Integer.toString(config.getThirdLevelPort()));*/
 
         registrationWindow = config.getRegistrationWindow();
         expectedClients = config.getNumberOfInstances();
@@ -79,10 +80,6 @@ public class ThreeLevelSegmentCoordinator implements ServerCoordinator {
         String clientIpAddr = c.getClientIpAddress();
         int clientPort = c.getClientPort();
         log.info("{}--> Client connection : {}:{}", c.getId(), clientIpAddr, clientPort);
-
-        //XXX: Useful for debugging
-        String clientAddressOverride = config.getClientAddressOverride();
-        if (!clientAddressOverride.isEmpty()) clientIpAddr = clientAddressOverride;
 
         // Query cloudiator for new client's cloud and location (using IP address)
         String segmentId;
