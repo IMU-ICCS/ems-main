@@ -2,10 +2,9 @@ package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.IntVariableValueDTO
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.metamodel.cp.VariableType
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -31,9 +30,6 @@ class WithoutMetricModelTest extends Specification{
 
     String providerApp = "provider_Component_App"
     String providerDB = "provider_Component_DB"
-
-    CPModelHandler handler, initHandler
-
 
 
     def setup() {
@@ -68,13 +64,7 @@ class WithoutMetricModelTest extends Specification{
         variables.add(new VariableDTO(providerDB, componentDBId, VariableType.PROVIDER))
 
 
-        intSolution.add(new IntVariableValueDTO(cardinalityApp, 3))
-        intSolution.add(new IntVariableValueDTO(providerApp, 1))
-        intSolution.add(new IntVariableValueDTO(cardinalityDB, 1))
-        intSolution.add(new IntVariableValueDTO(providerDB, 0))
 
-        initHandler = new CPModelHandler(variables, Collections.emptyList(), mockNodeCandidates)
-        handler = new CPModelHandler(variables, Collections.emptyList(), intSolution, mockNodeCandidates)
 
     }
 
@@ -83,7 +73,8 @@ class WithoutMetricModelTest extends Specification{
         given:
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, initHandler, properties)
+        String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModel.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -102,7 +93,8 @@ class WithoutMetricModelTest extends Specification{
         given:
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, true, initHandler, properties)
+        String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModel.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

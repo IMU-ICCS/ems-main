@@ -5,26 +5,14 @@
  * was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
  */
-package eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution;
+package eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO;
 
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.DoubleMetricDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.FloatMetricDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntMetricDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.MetricDTO;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.types.*;
 
 public class VariableValueDTOFactory {
 
-    public static VariableValueDTO createElement(MetricDTO metric) {
-        if (metric instanceof IntMetricDTO) {
-            return new IntVariableValueDTO(metric.getName(), ((IntMetricDTO) metric).getValue());
-        } else if (metric instanceof DoubleMetricDTO) {
-            return new RealVariableValueDTO(metric.getName(), ((DoubleMetricDTO) metric).getValue());
-        } else { //Float
-            return new RealVariableValueDTO(metric.getName(), (double) ((FloatMetricDTO) metric).getValue());
-        }
-    }
+
 
     public static VariableValueDTO createElement(CpVariableValue variableValue) {
         NumericValueUpperware value = variableValue.getValue();

@@ -9,15 +9,17 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
+import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction.isInFormula;
+import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 
 @Slf4j
 @AllArgsConstructor
@@ -27,12 +29,15 @@ public class VariableConverter extends ArgumentConverter {
     private String formula;
 
     @Override
-    public Collection<VariableValueDTO> convertToElements(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration) {
+    public Collection<Argument> convertToArguments(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration) {
         return convertVariablesForFunction(solution);
     }
 
-    private Collection<VariableValueDTO> convertVariablesForFunction(Collection<VariableValueDTO> solution) {
-        return solution.stream().filter(element -> isInFormula(formula, element.getName()) && isVariable(element)).collect(Collectors.toList());
+    private Collection<Argument> convertVariablesForFunction(Collection<VariableValueDTO> solution) {
+        return solution.stream()
+                .filter(element -> isInFormula(formula, element.getName()) && isVariable(element))
+                .map(ArgumentFactory::createArgument)
+                .collect(Collectors.toList());
     }
 
     private boolean isVariable(VariableValueDTO variableValueDTO) {

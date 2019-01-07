@@ -9,11 +9,9 @@ package eu.melodic.upperware.cpsolver.lib;
 
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTOFactory;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -43,6 +41,8 @@ import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static eu.passage.upperware.commons.model.tools.CPModelTool.isInitialDeployment;
+
 @Slf4j
 public class CPSolver {
 
@@ -55,7 +55,6 @@ public class CPSolver {
     private static final int UPPER_INT_LIMIT = 100000000;
     private static final double LOW_REAL_LIMIT = -1000000000.0;
     private static final double UPPER_REAL_LIMIT = 1000000000.0;
-    private static int INITIAL_DEPLOYMENT_ID = -1;
     private int intVarNum = 0;
     private int realVarNum = 0;
     private int constNum = 0;
@@ -63,11 +62,7 @@ public class CPSolver {
     private long timestamp = 0;
     private UtilityGeneratorApplication utilityGenerator;
     private double maxUtility;
-    private double utilityOfDeployedSolution = 0;
-    private List<VariableDTO> variablesForUG = new ArrayList<>();
-    private Collection<VariableValueDTO> deployedSolution;
-    private Collection<MetricDTO> metricsForUG;
-    private boolean isReconfig = false;
+    private Collection<VariableDTO> variables;
     private Map<String, Number> solutionWithMaximumUtility = new HashMap<>();
 
 
@@ -83,11 +78,7 @@ public class CPSolver {
         if (!readFromFile) {
             camelModelFilePath = applicationId;
         }
-        if (isReconfig) {
-            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, new CPModelHandler(variablesForUG, metricsForUG, deployedSolution, nodeCandidates), utilityGeneratorProperties);
-        } else {
-            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, new CPModelHandler(variablesForUG, metricsForUG, null, nodeCandidates), utilityGeneratorProperties);
-        }
+        this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, pathName, readFromFile, nodeCandidates, utilityGeneratorProperties);
     }
 
     /* Constructor which also reads the CP Model either from CDO via
@@ -114,6 +105,7 @@ public class CPSolver {
         createVariables(cp.getCpVariables());
         createMetrics(cp.getCpMetrics());
         createConstraints(cp.getConstraints());
+        this.variables = getVariables(cp.getCpVariables());
     }
 
 
@@ -177,11 +169,11 @@ public class CPSolver {
         maxUtility = utility;
 
         solutionWithMaximumUtility = idToIntVar.values().stream()
-                .filter(intVar -> variablesForUG.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
+                .filter(intVar -> variables.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
                 .collect(Collectors.toMap(IntVar::getName, IntVar::getValue));
 
         idToRealVar.values().stream()
-                .filter(realVar -> variablesForUG.stream().anyMatch(v -> realVar.getName().equals(v.getId())))
+                .filter(realVar -> variables.stream().anyMatch(v -> realVar.getName().equals(v.getId())))
                 .forEach(realVar -> solutionWithMaximumUtility.put(realVar.getName(), realVar.getUB()));
     }
 
@@ -217,7 +209,7 @@ public class CPSolver {
         } else {
             cp = (ConstraintProblem) clientX.loadModel(pathName);
         }
-        if (isReconfig) {
+        if (!isInitialDeployment(cp)) {
             updateUtilityOfDeployedSolution(cp);
         }
 
@@ -312,6 +304,7 @@ public class CPSolver {
 
 
     private void updateUtilityOfDeployedSolution(ConstraintProblem cp) {
+        double utilityOfDeployedSolution = 0;
         log.debug("Updating utility of deployed solution = {}", utilityOfDeployedSolution);
         Solution deployedSolution = cp.getSolution().get(cp.getDeployedSolutionId());
         log.debug("Previous utility of deployed solution was {}", ((DoubleValueUpperware) deployedSolution.getUtilityValue()).getValue());
@@ -1043,6 +1036,12 @@ public class CPSolver {
         constNum = 0;
     }
 
+    private Collection<VariableDTO> getVariables(EList<CpVariable> variables) {
+        return variables.stream()
+                .map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+                .collect(Collectors.toList());
+    }
+
     private void calculateUtility() {
 
         Collection<VariableValueDTO> intSolution = Arrays.stream(solver.retrieveIntVars())
@@ -1069,7 +1068,7 @@ public class CPSolver {
     }
 
     private Collection<VariableValueDTO> addSingleValueIntVariables(Collection<VariableValueDTO> solution) {
-        variablesForUG.stream()
+        variables.stream()
                 .filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
                 .filter(varDTO -> idToIntVar.get(varDTO.getId()) != null)
                 .forEach(v -> solution.add(VariableValueDTOFactory.createElement(v.getId(), idToIntVar.get(v.getId()).getValue())));

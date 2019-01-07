@@ -8,7 +8,6 @@
 
 package eu.melodic.upperware.utilitygenerator.utility_function;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -20,16 +19,18 @@ import java.util.Collection;
 
 @Slf4j
 @Getter
-@AllArgsConstructor
 public class UtilityFunction {
 
     private Expression function;
     private Constant[] constants;
 
-    public UtilityFunction(String formula, Collection<Constant> constants) {
+    public UtilityFunction(String formula) {
+        this.function = new Expression(formula);
+    }
+
+    public void setConstants(Collection<Constant> constants){
         this.constants = constants.toArray(new Constant[constants.size()]);
         constants.forEach(c -> log.debug("constant: {}, {}", c.getConstantName(), c.getConstantValue()));
-        this.function = new Expression(formula);
     }
 
     public double evaluateFunction(Collection<Argument> variables) {
@@ -57,9 +58,4 @@ public class UtilityFunction {
         return function.getExpressionString();
     }
 
-    public static boolean isInFormula(String formula, String name) {
-        Expression expression = new Expression(formula);
-        String[] arguments = expression.getMissingUserDefinedArguments();
-        return Arrays.asList(arguments).contains(name);
-    }
 }

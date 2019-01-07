@@ -19,12 +19,18 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class CPModelTool {
+
+    private static int INITIAL_DEPLOYMENT_ID = -1;
+
 
     public static Optional<CpVariable> getVariable(List<CpVariable> variables, VariableType variableType, String appName){
         Objects.requireNonNull(variableType);
@@ -376,6 +382,12 @@ public class CPModelTool {
         cp.getSolution().add(sol);
 
         return sol;
+    }
+
+    public static boolean isInitialDeployment(ConstraintProblem cp){
+        int deployedSolutionId = cp.getDeployedSolutionId();
+        //int deployedSolutionId = 0;
+        return (deployedSolutionId == INITIAL_DEPLOYMENT_ID);
     }
 
 }

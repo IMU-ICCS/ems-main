@@ -8,18 +8,12 @@
 
 package eu.melodic.upperware.utilitygenerator.utility_function;
 
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.IntVariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.RealVariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Constant;
 
 public class ConstantFactory {
 
-    public static Constant createConstant(VariableValueDTO variableValueDTO) {
-        if (variableValueDTO instanceof RealVariableValueDTO) {
-            return new Constant(variableValueDTO.getName(), ((RealVariableValueDTO) variableValueDTO).getValue());
-        } else { //Integer
-            return new Constant(variableValueDTO.getName(), ((IntVariableValueDTO) variableValueDTO).getValue());
-        }
+    public static Constant createConstant(Argument argument) {
+        return new Constant(argument.getArgumentName(), argument.getArgumentValue());
     }
 }

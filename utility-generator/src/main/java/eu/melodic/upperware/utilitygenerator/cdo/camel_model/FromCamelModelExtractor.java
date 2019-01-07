@@ -26,8 +26,8 @@ import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import eu.passage.upperware.commons.model.tools.CamelModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -39,11 +39,11 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction.isInFormula;
+import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
 
 @Slf4j
-public class FromCamelModelConverter {
+public class FromCamelModelExtractor {
 
     private CDOService cdoService;
     private CDOSessionX sessionX;
@@ -51,7 +51,10 @@ public class FromCamelModelConverter {
     private CamelModel model;
     private Collection<MetricVariableImpl> metricVariables;
 
-    public FromCamelModelConverter(String path, boolean readFromFile) {
+    private String utilityFunctionFormula;
+    private static final String EMPTY_STRING = "";
+
+    public FromCamelModelExtractor(String path, boolean readFromFile) {
         if (readFromFile) {
             this.cdoService = new CDOServiceFromFile();
         } else {
@@ -63,6 +66,7 @@ public class FromCamelModelConverter {
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
         this.metricVariables = extractMetricVariables(model.getMetricModels());
+        this.utilityFunctionFormula = getUtilityFormula().orElse(EMPTY_STRING);
     }
 
     private Collection<MetricVariableImpl> extractMetricVariables(EList<MetricModel> metricModels) {
@@ -81,30 +85,30 @@ public class FromCamelModelConverter {
     }
 
     /* variable with NodeCandidateAttribute annotations */
-    public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates(String utilityFunctionFormula) {
-        return createNodeCandidatesAttributes(filterVariables(a-> isAttributeOfNodeCandidate(a,utilityFunctionFormula)), false);
+    public Collection<NodeCandidateAttribute> getAttributesOfNodeCandidates() {
+        return createNodeCandidatesAttributes(filterVariables(this::isAttributeOfNodeCandidate), false);
     }
 
     /* variable with NodeCandidateAttribute anotations and current config flag */
-    public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates(String utilityFunctionFormula) {
-        return createNodeCandidatesAttributes(filterVariables(a -> isCurrentConfigAttributeOfNodeCandidate(a, utilityFunctionFormula)), false);
+    public Collection<NodeCandidateAttribute> getCurrentConfigAttributesOfNodeCandidates() {
+        return createNodeCandidatesAttributes(filterVariables(this::isCurrentConfigAttributeOfNodeCandidate), false);
     }
 
     /* on candidates flag */
-    public Collection<NodeCandidateAttribute> getListOfAttributesOfNodeCandidates(String utilityFunctionFormula) {
-        return createNodeCandidatesAttributes(filterVariables(a -> isListOfAttributesOfNodeCandidates(a, utilityFunctionFormula)), true);
+    public Collection<NodeCandidateAttribute> getListOfAttributesOfNodeCandidates() {
+        return createNodeCandidatesAttributes(filterVariables(this::isListOfAttributesOfNodeCandidates), true);
     }
 
     /* dlms utility type */
-    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes(String utilityFunctionFormula){
-        return createDlmsUtilityAttributes(filterVariables(a -> isDlmsUtilityAttribute(a, utilityFunctionFormula)));
+    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes(){
+        return createDlmsUtilityAttributes(filterVariables(this::isDlmsUtilityAttribute));
     }
 
     /* software components with unmoveable annotation */
     public Collection<String> getUnmoveableComponentNames() {
         return ((DeploymentTypeModel) CdoTool.getFirstElement(model.getDeploymentModels()))
                 .getSoftwareComponents().stream()
-                .filter(this::isUnmoveable)
+                .filter(CamelModelTool::isUnmoveableComponent)
                 .map(SoftwareComponent::getName)
                 .collect(Collectors.toList());
     }
@@ -119,11 +123,6 @@ public class FromCamelModelConverter {
                 .findAny();
 
         return optimisationRequirement.map(requirement -> ((OptimisationRequirement) requirement).getMetricVariable().getFormula());
-    }
-
-    private boolean isUnmoveable(SoftwareComponent softwareComponent) {
-        return !softwareComponent.getAnnotations().isEmpty()
-                && softwareComponent.getAnnotations().get(0).getId().equals(CamelMetadata.UNMOVEABLE.camelName);
     }
 
     private Collection<MetricVariableImpl> filterVariables(Predicate<MetricVariableImpl> metricVariablePredicate) {
@@ -147,14 +146,14 @@ public class FromCamelModelConverter {
     }
 
     /* on candidates flag */
-    private boolean isListOfAttributesOfNodeCandidates(MetricVariableImpl variable, String utilityFunctionFormula) {
+    private boolean isListOfAttributesOfNodeCandidates(MetricVariableImpl variable) {
         return CamelMetadataTool.isFromNodeCandidate(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName())
                 && variable.isOnNodeCandidates();
     }
 
     /* variable with NodeCandidateAttribute anotations and current config flag */
-    private boolean isCurrentConfigAttributeOfNodeCandidate(MetricVariableImpl variable, String utilityFunctionFormula) {
+    private boolean isCurrentConfigAttributeOfNodeCandidate(MetricVariableImpl variable) {
         return CamelMetadataTool.isFromNodeCandidate(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName())
                 && !variable.isOnNodeCandidates()
@@ -162,14 +161,14 @@ public class FromCamelModelConverter {
     }
 
     /* variable with NodeCandidateAttribute annotations */
-    private boolean isAttributeOfNodeCandidate(MetricVariableImpl variable, String utilityFunctionFormula) {
+    private boolean isAttributeOfNodeCandidate(MetricVariableImpl variable) {
         return CamelMetadataTool.isFromNodeCandidate(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName())
                 && !variable.isOnNodeCandidates()
                 && !variable.isCurrentConfiguration();
     }
 
-    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable, String utilityFunctionFormula){
+    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable){
         return CamelMetadataTool.isFromDlmsUtility(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName());
     }

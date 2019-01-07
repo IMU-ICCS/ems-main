@@ -8,9 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.utility_function;
 
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.IntVariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.RealVariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.*;
 import org.mariuszgromada.math.mxparser.Argument;
 
 public class ArgumentFactory {
@@ -20,6 +18,25 @@ public class ArgumentFactory {
             return new Argument(variableValueDTO.getName(), ((IntVariableValueDTO) variableValueDTO).getValue());
         } else { //RealVariableValueDTO
             return new Argument(variableValueDTO.getName(), ((RealVariableValueDTO) variableValueDTO).getValue());
+        }
+    }
+
+    public static Argument createArgument(String name, Number value) {
+        if (value instanceof Integer) {
+            return new Argument(name, (int) value);
+        } else { //Double
+            return new Argument(name, (double) value);
+        }
+    }
+
+
+    public static Argument createArgument(MetricDTO metric) {
+        if (metric instanceof IntMetricDTO) {
+            return new Argument(metric.getName(), ((IntMetricDTO) metric).getValue());
+        } else if (metric instanceof DoubleMetricDTO) {
+            return new Argument(metric.getName(), ((DoubleMetricDTO) metric).getValue());
+        } else { //Float
+            return new Argument(metric.getName(), (double) ((FloatMetricDTO) metric).getValue());
         }
     }
 }

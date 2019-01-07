@@ -9,69 +9,87 @@
 package eu.melodic.upperware.utilitygenerator.node_candidates;
 
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTOFactory.createElement;
+import static eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFactory.createArgument;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadata.PRICE;
 
 @Slf4j
-@AllArgsConstructor
 @Getter
 public class NodeCandidatesConverter extends ArgumentConverter {
 
-
+    @Setter
     private Collection<NodeCandidateAttribute> oneNodeCandidateAttributes;
-    private Collection<NodeCandidateAttribute> allNodeCandidatesListAttributes;
+    private Collection<NodeCandidateAttribute> allNodeCandidatesListAttributes = Collections.emptyList();
+    private Collection<NodeCandidateAttribute> currentConfigAttributes = Collections.emptyList();
     private NodeCandidates nodeCandidates;
     private Collection<VariableDTO> variables;
 
+    public NodeCandidatesConverter(FromCamelModelExtractor fromCamelModelExtractor, NodeCandidates nodeCandidates, Collection<VariableDTO> variablesFromConstraintProblem) {
+        super();
+        this.oneNodeCandidateAttributes = fromCamelModelExtractor.getAttributesOfNodeCandidates();
+        this.allNodeCandidatesListAttributes = fromCamelModelExtractor.getListOfAttributesOfNodeCandidates();
+        this.currentConfigAttributes = fromCamelModelExtractor.getCurrentConfigAttributesOfNodeCandidates();
+        this.nodeCandidates = nodeCandidates;
+        this.variables = variablesFromConstraintProblem;
+        if (!allNodeCandidatesListAttributes.isEmpty()) {
+            log.info("Attributes of list of Node Candidates: {}", allNodeCandidatesListAttributes);
+            log.warn("Flag on candidates is not supported in Utility Generator");
+        }
+        log.info("Attributes of Node Candidates: {}", oneNodeCandidateAttributes);
+    }
 
     @Override
-    public Collection<VariableValueDTO> convertToElements(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration) {
+    public Collection<Argument> convertToArguments(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration) {
         return convertAttributes(this.oneNodeCandidateAttributes, newConfiguration);
     }
 
-    public static Collection<VariableValueDTO> convertCurrentConfigAttributesOfNodeCandidates(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
-            Collection<ConfigurationElement> configuration) {
+    public Collection<Argument> convertCurrentConfigAttributesOfNodeCandidates(Collection<ConfigurationElement> configuration) {
         if (configuration.isEmpty()) {
-            return setDefaultValuesOfAttributes(nodeCandidateAttributes);
+            return setDefaultValuesOfAttributes(this.currentConfigAttributes);
         } else {
-            return convertAttributes(nodeCandidateAttributes, configuration);
+            return convertAttributes(this.currentConfigAttributes, configuration);
         }
     }
 
-    public static NodeCandidateAttribute findAttributeForComponent(Collection<NodeCandidateAttribute> attributes, String componentId, CamelMetadata type) {
-        return attributes.stream()
-                .filter(a -> componentId.equals(a.getComponentId()) && type.equals(a.getType()))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Attribute with type " + type + "for component " + componentId + " not found"));
+
+    public void createCostAttributesForAllComponents() {
+        log.info("Creating default cost attributes for all components");
+        this.oneNodeCandidateAttributes = variables.stream()
+                .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
+                .map(v -> new NodeCandidateAttribute(v.getComponentId() + "Cost", v.getComponentId(), CamelMetadata.PRICE, false))
+                .collect(Collectors.toList());
     }
 
-    private static Collection<VariableValueDTO> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
+    private Collection<Argument> setDefaultValuesOfAttributes(Collection<NodeCandidateAttribute> attributes) {
         log.info("It is the initial deployment. Setting values of attributes of Node Candidates to default values");
-        return attributes.stream().map(a -> createElement(a.getName(), 1.0)).collect(Collectors.toList());
+        return attributes.stream().map(a -> createArgument(a.getName(), 1.0)).collect(Collectors.toList());
     }
 
-    private static Collection<VariableValueDTO> convertAttributes(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
+    private Collection<Argument> convertAttributes(Collection<NodeCandidateAttribute> nodeCandidateAttributes,
             Collection<ConfigurationElement> newConfiguration) {
         return nodeCandidateAttributes.stream()
-                .map(a -> createElement(a.getName(),
+                .map(a -> createArgument(a.getName(),
                         getAttributeValue(getNodeCandidate(newConfiguration, a.getComponentId()), a.getType())))
                 .collect(Collectors.toList());
     }
 
-    private static NodeCandidate getNodeCandidate(Collection<ConfigurationElement> newConfiguration, String componentId) {
+    private NodeCandidate getNodeCandidate(Collection<ConfigurationElement> newConfiguration, String componentId) {
         return newConfiguration.stream()
                 .filter(configurationElement -> configurationElement.getId().equals(componentId))
                 .findAny()
@@ -79,7 +97,7 @@ public class NodeCandidatesConverter extends ArgumentConverter {
                 .getNodeCandidate();
     }
 
-    private static Number getAttributeValue(NodeCandidate nodeCandidate, CamelMetadata type) {
+    private Number getAttributeValue(NodeCandidate nodeCandidate, CamelMetadata type) {
         if (PRICE.equals(type)) {
             if (NodeCandidate.NodeCandidateTypeEnum.FAAS.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPricePerInvocation();
@@ -91,6 +109,5 @@ public class NodeCandidatesConverter extends ArgumentConverter {
         } else
             throw new IllegalArgumentException("Illegal type of Node Candidate attribute: " + type);
     }
-
 
 }

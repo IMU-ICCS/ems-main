@@ -6,11 +6,11 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution;
+package eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO;
 
-public class RealVariableValueDTO extends VariableValueDTO<Double> {
+public class IntVariableValueDTO extends VariableValueDTO<Integer> {
 
-    public RealVariableValueDTO(String name, Double value) {
+    public IntVariableValueDTO(String name, Integer value) {
         super(name, value);
     }
 }

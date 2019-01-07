@@ -12,6 +12,8 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collection;
+
 @Getter
 public class NodeCandidateAttribute {
 
@@ -32,5 +34,12 @@ public class NodeCandidateAttribute {
     @Override
     public String toString() {
         return this.name + " , component = " + this.componentId + " type = " + this.type;
+    }
+
+    public static NodeCandidateAttribute findAttribute(Collection<NodeCandidateAttribute> attributes, String componentId, CamelMetadata type) {
+        return attributes.stream()
+                .filter(a -> componentId.equals(a.getComponentId()) && type.equals(a.getType()))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Attribute with type " + type + "for component " + componentId + " not found"));
     }
 }

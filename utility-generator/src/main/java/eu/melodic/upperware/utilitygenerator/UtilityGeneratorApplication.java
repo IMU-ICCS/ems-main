@@ -8,8 +8,8 @@
 
 package eu.melodic.upperware.utilitygenerator;
 
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +21,9 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, CPModelHandler handler, UtilityGeneratorProperties properties) {
+    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties) {
         log.info("Creating of the Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, handler, properties);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {

@@ -6,7 +6,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution;
+package eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

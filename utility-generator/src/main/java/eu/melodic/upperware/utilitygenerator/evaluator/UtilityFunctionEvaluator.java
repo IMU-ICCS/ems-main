@@ -9,33 +9,27 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelConverter;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.CPModelHandler;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.ConstraintProblemExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.MetricsConverter;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.dlms.DLMSConverter;
-import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
-import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.utils.Printer;
-import eu.paasage.upperware.metamodel.cp.VariableType;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.extern.slf4j.Slf4j;
+import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertDeployedSolutionToNodeCandidates;
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolutionToNodeCandidates;
-import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates;
-import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConverter.findAttributeForComponent;
-import static eu.melodic.upperware.utilitygenerator.utility_function.ConvertingUtils.convertToArgument;
-import static eu.melodic.upperware.utilitygenerator.utility_function.ConvertingUtils.convertToConstants;
+import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.convertToConstants;
+import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.createUtilityFunctionCostFormula;
 
 @Slf4j
 public class UtilityFunctionEvaluator {
@@ -44,65 +38,46 @@ public class UtilityFunctionEvaluator {
     private Collection<String> unmoveableComponents;
     private Collection<ConfigurationElement> deployedConfiguration;
     private Collection<VariableDTO> variablesFromConstraintProblem;
-    private Collection<NodeCandidateAttribute> nodeCandidateAttributes;
     private NodeCandidates nodeCandidates;
 
     private Collection<ArgumentConverter> converters;
 
     private Printer printer;
 
-    public UtilityFunctionEvaluator(String camelModelFilePath, boolean readFromFile, CPModelHandler handler, UtilityGeneratorProperties properties) {
+    public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties) {
 
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
-        this.variablesFromConstraintProblem = Objects.requireNonNull(handler.getVariables(), "List of Variables could not be null");
-        this.nodeCandidates = Objects.requireNonNull(handler.getNodeCandidates(), "List of Node Candidates is null");
-        Objects.requireNonNull(handler.getMetrics(), "List of Metrics could not be null");
-        variablesFromConstraintProblem.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
-        FromCamelModelConverter fromCamelModelConverter = new FromCamelModelConverter(camelModelFilePath, readFromFile);
+        FromCamelModelExtractor fromCamelModelExtractor = new FromCamelModelExtractor(camelModelFilePath, readFromFile);
 
-        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, handler.getDeployedSolution());
-        this.unmoveableComponents = fromCamelModelConverter.getUnmoveableComponentNames();
-        log.info("Unmoveable components: {}", unmoveableComponents.toString());
+        ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, readFromFile);
+        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        Collection<VariableValueDTO> actualConfiguration = constraintProblemExtractor.extractActualConfiguration();
+        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, actualConfiguration);
 
-        Optional<String> utilityFunctionFormula = fromCamelModelConverter.getUtilityFormula();
-        String formula;
+        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, variablesFromConstraintProblem);
+
+        String formula = prepareUtilityFunction(fromCamelModelExtractor, nodeCandidatesConverter);
+        this.function = new UtilityFunction(formula);
+        this.function.setConstants(convertToConstants(createConstants(constraintProblemExtractor, nodeCandidatesConverter, formula)));
+
+
         converters = new ArrayList<>();
-
-        if (utilityFunctionFormula.isPresent()) {
-            formula = utilityFunctionFormula.get();
-            log.info("Formula of the utility function: {}", formula);
-
-            this.nodeCandidateAttributes = fromCamelModelConverter.getAttributesOfNodeCandidates(formula);
-
-            Collection<NodeCandidateAttribute> listOfAttributesOfNodeCandidates = fromCamelModelConverter.getListOfAttributesOfNodeCandidates(formula);
-            log.info("Attributes of list of Node Candidates: {}", listOfAttributesOfNodeCandidates);
-
-            if (!listOfAttributesOfNodeCandidates.isEmpty()) {
-                log.warn("Flag on candidates is not supported in Utility Generator");
-            }
-            Collection<DLMSUtilityAttribute> dlmsUtilityAttributes = fromCamelModelConverter.getListOfDlmsUtilityAttributes(formula);
-            log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
-            converters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), dlmsUtilityAttributes, deployedConfiguration));
-            converters.add(new NodeCandidatesConverter(nodeCandidateAttributes, listOfAttributesOfNodeCandidates, nodeCandidates, variablesFromConstraintProblem));
-
-        } else {
-            log.warn("Optimisation requirement is not defined in the Camel Model, default utility function will be created.");
-            this.nodeCandidateAttributes = createCostAttributesForAllComponents();
-            formula = createUtilityFunctionCostFormula();
-            converters.add(new NodeCandidatesConverter(nodeCandidateAttributes, Collections.emptyList(), nodeCandidates, variablesFromConstraintProblem));
-
-        }
+        converters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, deployedConfiguration));
         converters.add(new VariableConverter(variablesFromConstraintProblem, formula));
+        converters.add(nodeCandidatesConverter);
 
-        log.info("Attributes of Node Candidates: {}", nodeCandidateAttributes);
 
-        this.function = new UtilityFunction(formula, convertToConstants(createConstants(fromCamelModelConverter, handler.getMetrics(), formula)));
-
+        log.info("Formula of the utility function: {}", formula);
         this.printer = new Printer(variablesFromConstraintProblem);
         printer.printVariablesFromConstraintProblem();
 
-        fromCamelModelConverter.endWorkWithCamelModel();
+        this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
+        log.info("Unmoveable components: {}", unmoveableComponents.toString());
+
+        fromCamelModelExtractor.endWorkWithCamelModel();
+        constraintProblemExtractor.endWorkWithCPModel();
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
@@ -117,45 +92,34 @@ public class UtilityFunctionEvaluator {
             return 0;
         }
 
-        Collection<VariableValueDTO> allArguments = converters.stream()
-                .map(converter -> converter.convertToElements(solution, newConfiguration))
+        Collection<Argument> allArguments = converters.stream()
+                .map(converter -> converter.convertToArguments(solution, newConfiguration))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
-        return function.evaluateFunction(convertToArgument(allArguments));
+        return function.evaluateFunction(allArguments);
     }
 
-    private Collection<VariableValueDTO> createConstants(FromCamelModelConverter fromCamelModelConverter, Collection<MetricDTO> metricsFromConstraintProblem, String formula) {
-        MetricsConverter metricsConverter = new MetricsConverter(metricsFromConstraintProblem, formula);
-        Collection<VariableValueDTO> metrics = metricsConverter.convertToElements(Collections.emptyList(), deployedConfiguration);
-        log.info("Metrics: {}", metrics);
+    private String prepareUtilityFunction(FromCamelModelExtractor fromCamelModelExtractor, NodeCandidatesConverter nodeCandidatesConverter) {
+        Optional<String> utilityFunctionFormula = fromCamelModelExtractor.getUtilityFormula();
+        String formula;
+        if (utilityFunctionFormula.isPresent()) {
+            formula = utilityFunctionFormula.get();
+        } else {
+            log.warn("Optimisation requirement is not defined in the Camel Model, default utility function which optimises the cost will be created.");
+            nodeCandidatesConverter.createCostAttributesForAllComponents();
+            formula = createUtilityFunctionCostFormula(variablesFromConstraintProblem, nodeCandidatesConverter.getOneNodeCandidateAttributes());
+        }
+        return formula;
+    }
 
-        Collection<VariableValueDTO> currentConfigAttributesOfNodeCandidates = convertCurrentConfigAttributesOfNodeCandidates(fromCamelModelConverter.getCurrentConfigAttributesOfNodeCandidates(formula), deployedConfiguration);
-        log.info("Current config attributes of Node Candidates: {}", currentConfigAttributesOfNodeCandidates);
-        Collection<VariableValueDTO> allConstants = new ArrayList<>(metrics);
+    private Collection<Argument> createConstants(ConstraintProblemExtractor constraintProblemExtractor, NodeCandidatesConverter nodeCandidatesConverter, String formula) {
+        MetricsConverter metricsConverter = new MetricsConverter(constraintProblemExtractor, formula);
+        Collection<Argument> metrics = metricsConverter.convertToArguments(Collections.emptyList(), deployedConfiguration);
+        Collection<Argument> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(deployedConfiguration);
+
+        Collection<Argument> allConstants = new ArrayList<>(metrics);
         allConstants.addAll(currentConfigAttributesOfNodeCandidates);
         return allConstants;
     }
-
-    private Collection<NodeCandidateAttribute> createCostAttributesForAllComponents() {
-        log.info("Creating default cost attributes for all components");
-        return this.variablesFromConstraintProblem.stream()
-                .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
-                .map(v -> new NodeCandidateAttribute(v.getComponentId() + "Cost", v.getComponentId(), CamelMetadata.PRICE, false))
-                .collect(Collectors.toList());
-    }
-
-    private String createUtilityFunctionCostFormula() {
-        Collection<String> componentCosts = new ArrayList<>();
-        this.variablesFromConstraintProblem.stream()
-                .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
-                .forEach(v -> componentCosts.add(v.getId() + "*"
-                        + findAttributeForComponent(nodeCandidateAttributes, v.getComponentId(), CamelMetadata.PRICE).getName()));
-
-        String utilityFunctionCostFormula = "1/(" + String.join("+", componentCosts) + ")";
-        log.info("Default utility function formula, which optimises the cost: {}", utilityFunctionCostFormula);
-
-        return utilityFunctionCostFormula;
-    }
-
 }

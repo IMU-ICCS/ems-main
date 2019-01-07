@@ -9,20 +9,20 @@
 package eu.melodic.upperware.utilitygenerator.dlms;
 
 import eu.melodic.dlms.utility.UtilityMetrics;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.cdo.cp_model.solution.VariableValueDTOFactory.createElement;
+import static eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFactory.createArgument;
 
-@AllArgsConstructor
 @Slf4j
 public class DLMSConverter extends ArgumentConverter {
 
@@ -31,19 +31,20 @@ public class DLMSConverter extends ArgumentConverter {
     private Collection<ConfigurationElement> actConfiguration;
 
 
-    public DLMSConverter(String dlmsControllerUrl, Collection<DLMSUtilityAttribute> dlmsUtilityAttributes, Collection<ConfigurationElement> actConfiguration) {
+    public DLMSConverter(String dlmsControllerUrl, FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration){
         this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
-        this.dlmsUtilityAttributes = dlmsUtilityAttributes;
+        this.dlmsUtilityAttributes = fromCamelModelExtractor.getListOfDlmsUtilityAttributes();
+        log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
         this.actConfiguration = actConfiguration;
+
     }
 
-
     @Override
-    public Collection<VariableValueDTO> convertToElements(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration) {
+    public Collection<Argument> convertToArguments(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration) {
         return convertDLMSUtilityAttributes(newConfiguration);
     }
 
-    private Collection<VariableValueDTO> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
+    private Collection<Argument> convertDLMSUtilityAttributes(Collection<ConfigurationElement> newConfiguration) {
         if (dlmsUtilityAttributes.isEmpty()) { //way to not call dlms library if not needed
             return Collections.emptyList();
         }
@@ -56,14 +57,14 @@ public class DLMSConverter extends ArgumentConverter {
         }
 
         return dlmsUtilityAttributes.stream()
-                .map(attribute -> createElement(attribute.getName(), getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
+                .map(attribute -> createArgument(attribute.getName(), getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
                 .collect(Collectors.toList());
 
 
     }
 
-    private Collection<VariableValueDTO> createDefaultValuesOfDLMSUtilityAttributes() {
-        return dlmsUtilityAttributes.stream().map(attribute -> createElement(attribute.getName(), 0)).collect(Collectors.toList());
+    private Collection<Argument> createDefaultValuesOfDLMSUtilityAttributes() {
+        return dlmsUtilityAttributes.stream().map(attribute -> createArgument(attribute.getName(), 0)).collect(Collectors.toList());
     }
 
     private static Number getDLMSUtilityAttributeValue(UtilityMetrics dlmsUtility, CamelMetadata type) {
