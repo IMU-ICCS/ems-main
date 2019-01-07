@@ -23,9 +23,10 @@ echo "** Copyright ICCS-NTUA (C) 2016-2019, http://imu.iccs.gr **"
 date -Iseconds
 
 # Common variables
-APIKEY=?ems-api-key=\$1
-DOWNLOAD_URL=$BASE_URL/baguette-client.zip
-DOWNLOAD_URL_MD5=$BASE_URL/baguette-client.zip.md5
+BASE_URL=\$1
+APIKEY=?ems-api-key=\$2
+DOWNLOAD_URL=\$BASE_URL/baguette-client.zip
+DOWNLOAD_URL_MD5=\$BASE_URL/baguette-client.zip.md5
 INSTALL_PACKAGE=/opt/baguette-client/baguette-client.zip
 INSTALL_PACKAGE_MD5=/opt/baguette-client/baguette-client.zip.md5
 INSTALL_DIR=/opt/
@@ -164,5 +165,4 @@ exit 0
 EOM
 
 # Run 'install-log.sh' script
-$BIN_DIRECTORY/install-log.sh $APIKEY &> $LOGS_DIRECTORY/install.log
-
+$BIN_DIRECTORY/install-log.sh $BASE_URL $APIKEY &> $LOGS_DIRECTORY/install.log
