@@ -3,7 +3,8 @@
 # Create installation directories
 BIN_DIRECTORY=/opt/baguette-client/bin
 LOGS_DIRECTORY=/opt/baguette-client/logs
-APIKEY=$1
+BASE_URL=$1
+APIKEY=$2
 
 mkdir -p $BIN_DIRECTORY/
 mkdir -p $LOGS_DIRECTORY/
@@ -23,12 +24,14 @@ date -Iseconds
 
 # Common variables
 APIKEY=?ems-api-key=\$1
-DOWNLOAD_URL=http://192.168.48.1/resources/baguette-client.zip
-PACKAGE_MD5=ecd502efe0292697721e99194a84dcef
+DOWNLOAD_URL=$BASE_URL/baguette-client.zip
+DOWNLOAD_URL_MD5=$BASE_URL/baguette-client.zip.md5
 INSTALL_PACKAGE=/opt/baguette-client/baguette-client.zip
+INSTALL_PACKAGE_MD5=/opt/baguette-client/baguette-client.zip.md5
 INSTALL_DIR=/opt/
 STARTUP_SCRIPT=/opt/baguette-client/bin/baguette-client
 SERVICE_NAME=baguette-client
+CLIENT_CONF_FILE=/opt/baguette-client/conf/baguette-client.properties
 CLIENT_ID_FILE=/opt/baguette-client/conf/id.txt
 CREDENTIALS_FILE=/opt/baguette-client/conf/baguette-server.credentials
 
@@ -58,10 +61,26 @@ fi
 date -Iseconds
 echo "Download installation package...ok"
 
+# Download installation package MD5 checksum
+echo ""
+echo "Download installation package MD5 checksum..."
+date -Iseconds
+wget \$DOWNLOAD_URL_MD5 -O \$INSTALL_PACKAGE_MD5
+if [ \$? != 0 ]; then
+  echo "Failed to download installation package (\$?)"
+  echo "Aborting installation..."
+  date -Iseconds
+  exit 1
+fi
+date -Iseconds
+echo "Download installation package MD5 checksum...ok"
+
 # Check MD5 checksum
+PACKAGE_MD5=~cat \$INSTALL_PACKAGE_MD5~
 ZIP_CHECKSUM=~md5sum \$INSTALL_PACKAGE |cut -d " " -f 1~
 echo ""
-echo "Checksum: \$ZIP_CHECKSUM"
+echo "Checksum MD5:  \$PACKAGE_MD5"
+echo "Checksum calc: \$ZIP_CHECKSUM"
 if [ \$ZIP_CHECKSUM == \$PACKAGE_MD5 ]; then
   echo "Checksum: ok"
 else
@@ -116,10 +135,10 @@ if [ \$? != 0 ]; then
   exit 1
 fi
 
-# Add Id and Credentials configuration files
-echo "Add Id and Credentials configuration files"
+# Add Id, Credentials and Client configuration files
+echo "Add Id, Credentials and Client configuration files"
 date -Iseconds
-touch \$CLIENT_ID_FILE \$CREDENTIALS_FILE
+touch \$CLIENT_ID_FILE \$CREDENTIALS_FILE \$CLIENT_CONF_FILE
 if [ \$? != 0 ]; then
   echo "Failed to 'touch' configuration files (\$?)"
   echo "Aborting installation..."
@@ -127,7 +146,7 @@ if [ \$? != 0 ]; then
   exit 1
 fi
 
-chmod u=rw,og-rwx \$CLIENT_ID_FILE \$CREDENTIALS_FILE
+chmod u=rw,og-rwx \$CLIENT_ID_FILE \$CREDENTIALS_FILE \$CLIENT_CONF_FILE
 touch \$CLIENT_ID_FILE \$CREDENTIALS_FILE
 if [ \$? != 0 ]; then
   echo "Failed to change permissions of configuration files (\$?)"

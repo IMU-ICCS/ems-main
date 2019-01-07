@@ -144,6 +144,10 @@
 									<sourceFile>target/baguette-client-vm.zip.md5</sourceFile>
                                     <destinationFile>../config-files/resources/baguette-client.zip.md5</destinationFile>
 								</fileSet>
+								<fileSet>
+									<sourceFile>bin/install.sh</sourceFile>
+                                    <destinationFile>../config-files/resources/install.sh</destinationFile>
+								</fileSet>
 							</fileSets>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
 							<overWrite>true</overWrite>

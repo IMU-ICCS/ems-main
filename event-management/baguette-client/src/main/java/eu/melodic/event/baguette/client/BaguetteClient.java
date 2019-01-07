@@ -27,7 +27,7 @@ public class BaguetteClient {
         // Load configuration
         log.trace("BaguetteClient: Starting");
         //XXX:TODO: Use SpringBoot to load baguette client properties
-        Properties config = loadConfig("/conf/baguette-client.properties");
+        Properties config = loadConfig("/opt/baguette-client/conf/baguette-client.properties");
         String idFile = null;
         if (args.length > 0 && !args[0].trim().isEmpty()) {
             config.putAll(loadConfig(args[0]));
