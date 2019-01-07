@@ -104,7 +104,8 @@
 				<configuration>
 					<fileSets>
 						<fileSet>
-							<directory>target</directory>
+							<directory>baguette-client/target</directory>
+							<!--<directory>target</directory>-->
 							<includes>
 								<include>*.zip</include>
 							</includes>
@@ -123,7 +124,7 @@
 			</plugin>
 
 			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
-			<!--<plugin>
+			<plugin>
 				<groupId>com.coderplus.maven.plugins</groupId>
 				<artifactId>copy-rename-maven-plugin</artifactId>
 				<version>1.0</version>
@@ -154,7 +155,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>-->
+			</plugin>
 
 		</plugins>
 	</build>
