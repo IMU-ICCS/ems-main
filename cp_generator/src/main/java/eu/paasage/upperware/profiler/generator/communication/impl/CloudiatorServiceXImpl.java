@@ -185,18 +185,17 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     }
 
     private Collection<? extends Requirement> createPaasRequirements(PaaSRequirement paasRequirement) {
-        if (paasRequirement != null) {
-            Optional<Feature> featureByAnnotation = CamelMetadataToolForTaskInterfaces.findFeatureByAnnotation(paasRequirement.getSubFeatures(), CamelMetadataForTaskInterfaces.FAAS_ENVIRONMENT.camelName);
-            if (featureByAnnotation.isPresent()) {
-                Optional<String> s = CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(featureByAnnotation.get().getAttributes(), FAAS_RUNTIME.camelName)
-                        .map(attribute -> ((StringValue) attribute.getValue()).getValue());
-                if (s.isPresent()) {
-                    return Collections.singletonList(createRequirement(FAAS_ENVIRONMENT_CLASS, "runtime", RequirementOperator.EQ, prepareRuntimeValue(s.get())));
-                }
-            }
+        if (paasRequirement == null) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
-
+        return CamelMetadataToolForTaskInterfaces.findFeatureByAnnotation(paasRequirement.getSubFeatures(), CamelMetadataForTaskInterfaces.FAAS_ENVIRONMENT.camelName)
+                .map(featureByAnnotation -> CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(featureByAnnotation.getAttributes(), FAAS_RUNTIME.camelName))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(attribute -> ((StringValue) attribute.getValue()).getValue())
+                .map(s -> createRequirement(FAAS_ENVIRONMENT_CLASS, "runtime", RequirementOperator.EQ, prepareRuntimeValue(s)))
+                .map(Collections::singletonList)
+                .orElse(Collections.emptyList());
     }
 
     private Map<MmsObject, List<Attribute>> getRequirementsMap(Feature feature) {
