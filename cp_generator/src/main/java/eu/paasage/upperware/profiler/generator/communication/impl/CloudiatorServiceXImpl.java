@@ -7,17 +7,18 @@ import camel.location.GeographicalRegion;
 import camel.location.LocationModel;
 import camel.mms.MmsObject;
 import camel.requirement.LocationRequirement;
+import camel.requirement.PaaSRequirement;
 import camel.requirement.ProviderRequirement;
 import camel.requirement.ResourceRequirement;
-import camel.type.DoubleValue;
-import camel.type.FloatValue;
-import camel.type.IntValue;
-import camel.type.Value;
+import camel.type.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Runtime;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,8 +29,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces.FAAS_RUNTIME;
 
 @Slf4j
 @Component
@@ -40,6 +44,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private static final String IMAGE_CLASS = "image";
     private static final String LOCATION_CLASS = "location";
     private static final String CLOUD_CLASS = "cloud";
+    private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
     private MatchmakingApi matchmakingApi;
 
@@ -50,7 +55,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-                                                List<LocationModel> locationModels, String imageId, NodeType nodeType) {
+            List<LocationModel> locationModels, String imageId, NodeType nodeType) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
@@ -58,6 +63,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createProviderRequirement(getProviderRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createNodeTypeRequirement(nodeType));
+        requirements.addAll(createPaasRequirements(getPaasRequirement(globalRequirementSet, localRequirementSet)));
         return requirements;
     }
 
@@ -178,6 +184,21 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         return Collections.singletonList(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.IN, prepareOSFamilyValue(osRequirement.getOs())));
     }
 
+    private Collection<? extends Requirement> createPaasRequirements(PaaSRequirement paasRequirement) {
+        if (paasRequirement != null) {
+            Optional<Feature> featureByAnnotation = CamelMetadataToolForTaskInterfaces.findFeatureByAnnotation(paasRequirement.getSubFeatures(), CamelMetadataForTaskInterfaces.FAAS_ENVIRONMENT.camelName);
+            if (featureByAnnotation.isPresent()) {
+                Optional<String> s = CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(featureByAnnotation.get().getAttributes(), FAAS_RUNTIME.camelName)
+                        .map(attribute -> ((StringValue) attribute.getValue()).getValue());
+                if (s.isPresent()) {
+                    return Collections.singletonList(createRequirement(FAAS_ENVIRONMENT_CLASS, "runtime", RequirementOperator.EQ, prepareRuntimeValue(s.get())));
+                }
+            }
+        }
+        return Collections.emptyList();
+
+    }
+
     private Map<MmsObject, List<Attribute>> getRequirementsMap(Feature feature) {
         Map<MmsObject, List<Attribute>> result = getRequirementsMap(feature, new HashMap<>());
         checkRequirements(result);
@@ -205,7 +226,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             for (MmsObject mmsObject : CollectionUtils.emptyIfNull(attribute.getAnnotations())) {
 
                 List<Attribute> attributes = result.get(mmsObject);
-                if (CollectionUtils.isEmpty(attributes)){
+                if (CollectionUtils.isEmpty(attributes)) {
                     attributes = new ArrayList<>();
                     result.put(mmsObject, attributes);
                 }
@@ -219,7 +240,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         return result;
     }
 
-    private Requirement createRequirement(String requirementClass, String requirementAttribute, RequirementOperator requirementOperator, String value){
+    private Requirement createRequirement(String requirementClass, String requirementAttribute, RequirementOperator requirementOperator, String value) {
         return new AttributeRequirement()
                 .requirementClass(requirementClass)
                 .requirementAttribute(requirementAttribute)
@@ -235,6 +256,14 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return "OSFamily::" + enumName;
         }
         throw new GeneratorException(String.format("Could not parse %s as a OperatingSystemFamily. Possible values are: %s", enumName, Arrays.toString(OperatingSystemFamily.values())));
+    }
+
+    private String prepareRuntimeValue(String runtimeName) {
+        String enumName = StringUtils.upperCase(runtimeName);
+        if (EnumUtils.isValidEnum(Runtime.class, enumName)) {
+            return "Runtime::" + enumName;
+        }
+        throw new GeneratorException(String.format("Could not parse %s as a Runtime. Possible values are: %s", enumName, Arrays.toString(Runtime.values())));
     }
 
     private String prepareCloudTypeValue(String cloudType) {
@@ -269,8 +298,12 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getOsRequirement);
     }
 
+    private camel.requirement.PaaSRequirement getPaasRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet) {
+        return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getPaasRequirement);
+    }
+
     private <T extends camel.requirement.HardRequirement> T getRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-                                                                           Function<RequirementSet, T> function) {
+            Function<RequirementSet, T> function) {
         T result = localRequirementSet != null ? function.apply(localRequirementSet) : null;
 
         if (result == null && globalRequirementSet != null) {
