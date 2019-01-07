@@ -26,7 +26,8 @@ public class BaguetteClient {
     public static void main(String[] args) throws IOException {
         // Load configuration
         log.trace("BaguetteClient: Starting");
-        Properties config = loadConfig("/client.properties");
+        //XXX:TODO: Use SpringBoot to load baguette client properties
+        Properties config = loadConfig("/conf/baguette-client.properties");
         String idFile = null;
         if (args.length > 0 && !args[0].trim().isEmpty()) {
             config.putAll(loadConfig(args[0]));

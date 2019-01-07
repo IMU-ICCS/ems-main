@@ -17,44 +17,34 @@
             <includes>
                 <include>README*</include>
                 <include>LICENSE*</include>
+                <include>INSTALLATION*</include>
             </includes>
+            <lineEnding>unix</lineEnding>
         </fileSet>
         <fileSet>
-            <outputDirectory>/</outputDirectory>
-            <directory>/</directory>
+            <outputDirectory>bin</outputDirectory>
+            <directory>bin</directory>
             <includes>
-                <include>run.sh</include>
+                <include>*</include>
             </includes>
             <lineEnding>unix</lineEnding>
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
             <outputDirectory>conf</outputDirectory>
-            <directory>target/classes</directory>
+            <directory>conf</directory>
             <includes>
-                <include>client.properties</include>
-                <include>log4j.properties</include>
-                <include>baguette-server.credentials</include>
+                <include>*</include>
             </includes>
             <lineEnding>unix</lineEnding>
         </fileSet>
         <fileSet>
-            <outputDirectory>bin</outputDirectory>
-            <directory>bin</directory>
+            <outputDirectory>logs</outputDirectory>
+            <directory>logs</directory>
             <includes>
-                <include>cl*.tpl</include>
+                <include>*</include>
             </includes>
             <lineEnding>unix</lineEnding>
-            <fileMode>0644</fileMode>
-        </fileSet>
-        <fileSet>
-            <outputDirectory>bin</outputDirectory>
-            <directory>bin</directory>
-            <includes>
-                <include>cl*.sh</include>
-            </includes>
-            <lineEnding>unix</lineEnding>
-            <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
             <outputDirectory>jars</outputDirectory>

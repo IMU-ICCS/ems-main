@@ -119,10 +119,10 @@ public class Sshc {
 
                         // Print server address info
                         log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
-					/*log.info("verifyServerKey(): remoteAddress: {}: {}",
-						remoteAddress.getClass().getName(),	//java.net.InetSocketAddress
-						remoteAddress.toString()
-					);*/
+					    /*log.info("verifyServerKey(): remoteAddress: {}: {}",
+                                remoteAddress.getClass().getName(),	//java.net.InetSocketAddress
+						        remoteAddress.toString()
+					            );*/
 
                         // Check that server public key fingerprint matches with the one in configuration
                         String fingerprint = KeyUtils.getFingerPrint(serverKey);
