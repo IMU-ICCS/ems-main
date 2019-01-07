@@ -32,7 +32,7 @@ import java.util.Map;
 @Slf4j
 public class BaguetteServerProperties {
     @NotNull
-    @Size(min = 1, message = "Please provide a valid Coordinator class (including package)")
+    @Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
     @Value("${baguette.server.coordinator.class}")
     private String coordinatorClass;
 
@@ -60,32 +60,6 @@ public class BaguetteServerProperties {
 
     private final Map<String, String> credentials = new HashMap<>();
 
-    //XXX: TODO: to-be removed (Server or Coordinator must be able to figure them out automatically)
-    @Value("${baguette.server.third-level.address:}")
-    private String thirdLevelAddress;
-    @Value("${baguette.server.third-level.port:61616}")
-    private int thirdLevelPort;
-
-    //XXX: TODO: to-be removed (Server or Coordinator must be able to figure them out automatically)
-    @Value("${baguette.server.broker.config.template:}")
-    private String brokerConfigTemplate;
-    @Value("${baguette.server.broker.config.file:}")
-    private String brokerConfigFile;
-    @Value("${baguette.server.broker.address:}")
-    private String brokerAddress;
-    @Value("${baguette.server.broker.address-override:}")
-    private String brokerAddressOverride;
-    @Value("${baguette.server.broker.port:61616}")
-    private int brokerPort;
-
-    //XXX: TODO: to-be removed (Server or Coordinator must be able to figure them out automatically)
-    @Value("${baguette.server.client.config.template:}")
-    private String clientConfigTemplate;
-    @Value("${baguette.server.client.config.file:}")
-    private String clientConfigFile;
-    @Value("${baguette.server.client.address-override:}")
-    private String clientAddressOverride;
-    @Value("${baguette.server.client.port:61616}")
-    private int clientPort;
-
+    @Value("${baguette.server.debug.client-address-override-allowed:false}")
+    private boolean clientAddressOverrideAllowed;
 }

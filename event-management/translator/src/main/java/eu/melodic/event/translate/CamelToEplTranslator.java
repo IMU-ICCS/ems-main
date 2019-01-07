@@ -144,7 +144,6 @@ public class CamelToEplTranslator implements Translator {
 		}
 		log.info("*********************************************************");
 		try {
-//XXX: OPTIONAL: get export file name pattern from configuration
 			// Get graph export configuration
 			String exportPath = properties.getExportPath();
 			String[] exportFormats = properties.getExportFormats();
@@ -153,6 +152,7 @@ public class CamelToEplTranslator implements Translator {
 			// Get base name and path of export files
 			if (exportPath==null) exportPath = "";
 			exportName = StringUtils.stripToEmpty(exportName);
+			if (exportName.isEmpty()) exportName = "noname";
 			String baseFileName = String.format("%s/%s%s%d", exportPath, exportName, exportName.isEmpty()?"":"-", System.currentTimeMillis());
 			_TC.DAG.exportDAG(baseFileName, exportFormats, imageWidth);
 			//log.info("Decomposition Graph export to file(s): ok");
