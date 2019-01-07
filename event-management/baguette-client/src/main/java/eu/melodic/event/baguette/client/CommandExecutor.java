@@ -72,6 +72,7 @@ public class CommandExecutor {
         args[0] = "";
 
         if ("EXIT".equals(cmd)) {
+//XXX: PROBABLY NOT A GOOD IDEA TO EXIT CLIENT
             return true;
         } else if ("CLIENT".equals(cmd)) {
             // Information from server. Don't do anything
@@ -80,24 +81,35 @@ public class CommandExecutor {
         } else if ("HEARTBEAT".equals(cmd)) {
             // Respond to server with OK
             out.println("OK");
-        } else if ("EXEC".equals(cmd)) {
+
+//XXX: DO WE NEED THIS FUNCTIONALITY?
+//
+/*        } else if ("EXEC".equals(cmd)) {
             String execCmd = String.join(" ", args);
             log.info("EXEC COMMAND: {}", execCmd);
             // Execute command
             execCmdExec(execCmd, in, out, err);
+            */
+//XXX: DO WE NEED THIS FUNCTIONALITY?
         } else if ("SET-ID".equals(cmd)) {
             if (args.length < 2) return false;
             String id = args[1].trim();
             log.info("SET ID: {}", id);
             // Execute command
             setClientId(id);
-        } else if ("ROLE".equals(cmd) || "SET-ROLE".equals(cmd)) {
+
+//XXX: OBSOLETE: Use setActiveGrouping instead
+//
+/*        } else if ("ROLE".equals(cmd) || "SET-ROLE".equals(cmd)) {
             if (args.length < 2) return false;
             String role = args[1].trim();
             log.info("ASSUMING ROLE: {}", role);
             // Execute command
             assumeRole(role, in, out, err);
-        } else if ("SET-PARAM".equals(cmd)) {
+            */
+//XXX:TO BE DELETED
+//
+/*        } else if ("SET-PARAM".equals(cmd)) {
             if (args.length < 5) return false;
             String tplFile = args[1].trim();
             String placeholder = args[2].trim();
@@ -119,8 +131,8 @@ public class CommandExecutor {
                 log.error("Could not unserialize parameters: ", e);
             }
             log.info("SETTING PARAMETERS: {}", config);
-//XXX:TODO-or-DEL
             log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
+            */
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -182,7 +194,8 @@ public class CommandExecutor {
         return false;
     }
 
-    protected void assumeRole(String role, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
+    //XXX: OBSOLETE: Use setActiveGrouping instead
+    /*protected void assumeRole(String role, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
         // Execute role preparation command
         role = role.toLowerCase();
         String cmdProp = role + ".command." + getOsName();
@@ -222,9 +235,10 @@ public class CommandExecutor {
         }
         // Signaling server for error
         out.println("ERROR: Missing property " + cmdProp);
-    }
+    }*/
 
-    protected void execCmdExec(String command, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
+    //XXX: DO WE NEED THIS FUNCTIONALITY?
+    /*protected void execCmdExec(String command, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
         boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
         if (isWindows) {
             command = String.format("cmd.exe /c %s", command);
@@ -237,9 +251,10 @@ public class CommandExecutor {
         //Executors.newSingleThreadExecutor().submit(streamGobbler);
         int exitCode = process.waitFor();
         out.println("Command exited with code: " + exitCode);
-    }
+    }*/
 
-    protected void setFileParam(String placeholder, String value, String tplFile, String outFile, PrintStream out) {
+    //XXX: TO BE DELETED
+    /*protected void setFileParam(String placeholder, String value, String tplFile, String outFile, PrintStream out) {
         // Read template file contents
         String contents = null;
         try (Scanner scanner = new Scanner(new File(tplFile))) {
@@ -284,7 +299,7 @@ public class CommandExecutor {
             log.error("Could not unserialize parameters: ", e);
         }
         return null;
-    }
+    }*/
 
     /**
      * Read the object from Base64 string.
@@ -454,6 +469,7 @@ public class CommandExecutor {
         }
     }
 
+    //XXX: DO WE NEED THIS FUNCTIONALITY?
     protected void setClientId(String id) {
         if (id == null || id.trim().isEmpty()) {
             log.error("SET-ID: ERROR: Invalid id: {}", id);

@@ -51,14 +51,16 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private int clientPort = -1;
 
     private ServerCoordinator coordinator;
+    private boolean clientAddressOverrideAllowed;
     @Getter
     private ServerSession session;
 
-    public ClientShellCommand(ServerCoordinator coordinator) {
+    public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress) {
         synchronized (LOCK) {
             id = String.format("#%05d", counter++);
         }
         this.coordinator = coordinator;
+        this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;
     }
 
     public void setSession(ServerSession session) {
@@ -150,11 +152,13 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         if (greetingInfo == null) return;
         String[] clientInfo = greetingInfo.trim().split(" ");
         this.id = clientInfo[0].trim();
-//XXX: DEL-after-DEVEL: or add a debug mode in server config
-        this.clientIpAddress = clientInfo.length > 1 ? clientInfo[1].trim() : null;
-        try {
-            this.clientPort = clientInfo.length > 2 ? Integer.parseInt(clientInfo[2].trim()) : -1;
-        } catch (Exception ex) {
+
+        if (clientAddressOverrideAllowed) {
+            this.clientIpAddress = clientInfo.length > 1 ? clientInfo[1].trim() : null;
+            try {
+                this.clientPort = clientInfo.length > 2 ? Integer.parseInt(clientInfo[2].trim()) : -1;
+            } catch (Exception ex) {
+            }
         }
     }
 

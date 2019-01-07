@@ -58,7 +58,7 @@ public class Sshd {
                     private ServerCoordinator coordinator;
 
                     public Command create() {
-                        ClientShellCommand msc = new ClientShellCommand(this.coordinator);
+                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed());
                         //msc.setId( "#-"+System.currentTimeMillis() );
                         log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", msc.getId());
                         return msc;
@@ -74,7 +74,7 @@ public class Sshd {
                         return this;
                     }
                 }
-                        .setCoordinator(coordinator)
+                .setCoordinator(coordinator)
         );
 
         sshd.setPasswordAuthenticator(
