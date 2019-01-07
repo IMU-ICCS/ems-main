@@ -42,8 +42,15 @@
 			<version>1.16.20</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/net.nicoulaj.maven.plugins/checksum-maven-plugin -->
+		<dependency>
+			<groupId>net.nicoulaj.maven.plugins</groupId>
+			<artifactId>checksum-maven-plugin</artifactId>
+			<version>1.8</version>
+		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -80,7 +87,41 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
+			<!-- Checksum Maven plugin (http://checksum-maven-plugin.nicoulaj.net) -->
+			<plugin>
+				<groupId>net.nicoulaj.maven.plugins</groupId>
+				<artifactId>checksum-maven-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>files</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<fileSets>
+						<fileSet>
+							<directory>target</directory>
+							<includes>
+								<include>*.zip</include>
+							</includes>
+							<excludes>
+								<exclude>*.jar</exclude>
+							</excludes>
+						</fileSet>
+					</fileSets>
+					<algorithms>
+						<algorithm>MD5</algorithm>
+					</algorithms>
+					<individualFiles>true</individualFiles>
+					<failOnError>true</failOnError>
+					<failIfNoFiles>false</failIfNoFiles>
+				</configuration>
+			</plugin>
+
 			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
 			<!--<plugin>
 				<groupId>com.coderplus.maven.plugins</groupId>
@@ -94,15 +135,23 @@
 							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<sourceFile>target/baguette-client-vm.zip</sourceFile>
-							<destinationFile>../config-files/resources/baguette-client.zip</destinationFile>
+							<fileSets>
+								<fileSet>
+									<sourceFile>target/baguette-client-vm.zip</sourceFile>
+                                    <destinationFile>../config-files/resources/baguette-client.zip</destinationFile>
+								</fileSet>
+								<fileSet>
+									<sourceFile>target/baguette-client-vm.zip.md5</sourceFile>
+                                    <destinationFile>../config-files/resources/baguette-client.zip.md5</destinationFile>
+								</fileSet>
+							</fileSets>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
 							<overWrite>true</overWrite>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>-->
-			
+
 		</plugins>
 	</build>
 	
