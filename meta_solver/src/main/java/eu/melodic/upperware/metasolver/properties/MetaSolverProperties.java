@@ -14,9 +14,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.NotBlank;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -24,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Getter
@@ -36,60 +36,60 @@ import java.util.List;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.metaSolver.properties")
 public class MetaSolverProperties {
 
-	@Valid
-	@NotNull
-	private Esb esb;
-	
-	@Getter
-	@Setter
-	public static class Esb {
-		@NotBlank
-		private String url;
-	}
-	
-	// --------------------------------------------------------------
-	
-	@Valid
-	@NotNull
-	private Pubsub pubsub;
+    @Valid
+    @NotNull
+    private Esb esb;
+    @Valid
+    @NotNull
+    private Pubsub pubsub;
+    @Valid
+    @NotNull
+    private double utilityThresholdFactor;
+    @Valid
+    private String emsUrl;
 
-	@Getter
-	@Setter
-	@ToString
-	public static class Pubsub {
-		private String on;
+    // --------------------------------------------------------------
 
-		private List<Topic> topics;
+    private static boolean booleanValue(String str) {
+        return booleanValue(str, false);
+    }
 
-		public boolean isOn() {
-			return booleanValue(on);
-		}
+    private static boolean booleanValue(String str, boolean defVal) {
+        if (StringUtils.isBlank(str)) return defVal;
+        return BooleanUtils.toBoolean(str);
+    }
 
-		@Getter
-		@Setter
-		@ToString
-		public static class Topic {
-			@NotBlank
-			private String name;
-			@NotBlank
-			private String url;
-			private String clientId;
-			private TopicType type;
-		}
-	}
+    // --------------------------------------------------------------
 
-	private static boolean booleanValue(String str) {
-		return booleanValue(str, false);
-	}
+    @Getter
+    @Setter
+    public static class Esb {
+        @NotBlank
+        private String url;
+    }
 
-	private static boolean booleanValue(String str, boolean defVal) {
-		if (StringUtils.isBlank(str)) return defVal;
-		return BooleanUtils.toBooleanObject(str);
-	}
-	
-	// --------------------------------------------------------------
+    @Getter
+    @Setter
+    @ToString
+    public static class Pubsub {
+        private String on;
 
-	@Valid
-	@NotNull
-	private double utilityThresholdFactor;
+        private List<Topic> topics;
+
+        public boolean isOn() {
+            return booleanValue(on);
+        }
+
+        @Getter
+        @Setter
+        @ToString
+        public static class Topic {
+            @NotBlank
+            private String name;
+            @NotBlank
+            private String url;
+            private String clientId;
+            private TopicType type;
+        }
+    }
 }

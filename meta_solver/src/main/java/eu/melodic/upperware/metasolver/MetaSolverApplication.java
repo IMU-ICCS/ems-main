@@ -27,8 +27,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 public class MetaSolverApplication {
 
-  public static void main(String[] args) {
-    SpringApplication.run(MetaSolverApplication.class, args);
-	//UtilCpModelImport.main(args);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run(MetaSolverApplication.class, args);
+        //UtilCpModelImport.main(args);
+    }
 }
