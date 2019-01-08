@@ -9,6 +9,8 @@
 
 package eu.melodic.event.control;
 
+import com.google.gson.Gson;
+import eu.melodic.event.control.util.CloudiatorHelper;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
@@ -129,16 +131,66 @@ public class ControlServiceController {
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/stopBaguette", method = {GET, POST},
+    @RequestMapping(value = "/baguette/stopServer", method = {GET, POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String stopBaguette() {
-        log.info("ControlServiceController.stopBaguette(): BEGIN");
+    public String baguetteStopServer() {
+        log.info("ControlServiceController.baguetteStopServer(): BEGIN");
 
         // Dispatch Baguette stop operation in a worker thread
         coordinator.stopBaguette();
-        log.debug("ControlServiceController.stopBaguette(): Baguette stop operation dispatched to a worker thread");
+        log.debug("ControlServiceController.baguetteStopServer(): Baguette stop operation dispatched to a worker thread");
 
         return "OK";
+    }
+
+    @RequestMapping(value = "/baguette/registerNode/{os}/{nodeId}/{nodeName}/{nodeType}/{nodeIpAddress}", method = {GET, POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String baguetteRegisterNode(@PathVariable String os, @PathVariable String nodeId, @PathVariable String nodeName,
+                                                                          @PathVariable String nodeType, @PathVariable String nodeIpAddress)
+    {
+        log.info("ControlServiceController.baguetteRegisterNode(): BEGIN: os={}, node-id={}, node-name={}, node-type={}, node-ip-address={}",
+                os, nodeId, nodeName, nodeType, nodeIpAddress);
+
+        String installationDir = "/opt/baguette-client";
+        String installScriptUrl = "http://10.10.254.110/resources/install.sh";
+        String installScriptPath = installationDir + "/bin/install.sh";
+        String baseDownloadUrl = "http://10.10.254.110/resources";
+        String apiKey = "1234567890";
+        String clientConfPath = installationDir + "/conf/baguette-client.properties";
+        String clientConfAppend = "\n# ++++++++++++  TODO  +++++++++++\n\n";
+
+        CloudiatorHelper.InstallationInstructions installationInstructions = new CloudiatorHelper.InstallationInstructions();
+        installationInstructions.setOs("linux");
+        // Create Baguette Client installation directory
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Create Baguette Client installation directory");
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo mkdir -p "+installationDir+"/bin");
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo mkdir -p "+installationDir+"/logs");
+
+        // Download Baguette Client installation script
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Download Baguette Client installation script");
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo wget "+installScriptUrl+" -O "+installScriptPath);
+
+        // Make Baguette Client installation script executable
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Make Baguette Client installation script executable");
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo chmod u+rwx,og-rwx "+installScriptPath);
+
+        // Run Baguette Client installation script
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Run Baguette Client installation script");
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey+" \n");
+
+        // Add client identification and server credentials configuration
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Add client identification and server credentials configuration");
+        installationInstructions.appendInstruction(clientConfPath, clientConfAppend, false);
+
+        // Launch Baguette Client
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Launch Baguette Client");
+        installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo service baguette-client start");
+
+        Gson gson = new Gson();
+        String json = gson.toJson(installationInstructions, CloudiatorHelper.InstallationInstructions.class);
+
+        log.debug("ControlServiceController.baguetteRegisterNode(): END: {}", json);
+        return json;
     }
 
     // ------------------------------------------------------------------------------------------------------------
