@@ -10,6 +10,8 @@
 package eu.melodic.event.control;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import eu.melodic.event.control.util.CloudiatorHelper;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import java.util.List;
 import java.util.Optional;
@@ -134,28 +137,66 @@ public class ControlServiceController {
     @RequestMapping(value = "/baguette/stopServer", method = {GET, POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String baguetteStopServer() {
-        log.info("ControlServiceController.baguetteStopServer(): BEGIN");
+        log.info("ControlServiceController.baguetteStopServer(): Request received");
 
         // Dispatch Baguette stop operation in a worker thread
         coordinator.stopBaguette();
-        log.debug("ControlServiceController.baguetteStopServer(): Baguette stop operation dispatched to a worker thread");
+        log.info("ControlServiceController.baguetteStopServer(): Baguette stop operation dispatched to a worker thread");
 
         return "OK";
     }
 
-    @RequestMapping(value = "/baguette/registerNode/{os}/{nodeId}/{nodeName}/{nodeType}/{nodeIpAddress}", method = {GET, POST},
+    @RequestMapping(value = "/baguette/registerNode", method = POST,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String baguetteRegisterNode(@PathVariable String os, @PathVariable String nodeId, @PathVariable String nodeName,
-                                                                          @PathVariable String nodeType, @PathVariable String nodeIpAddress)
-    {
-        log.info("ControlServiceController.baguetteRegisterNode(): BEGIN: os={}, node-id={}, node-name={}, node-type={}, node-ip-address={}",
-                os, nodeId, nodeName, nodeType, nodeIpAddress);
+    public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) {
+        log.info("ControlServiceController.baguetteRegisterNode(): Invoked");
+        log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
+
+        //XXX: ASK: probably use the Node class from Cloudiator jars to deserialize json?? or use Node in mehtod signature??
+        JsonParser parser = new JsonParser();
+        JsonObject jo = parser.parse(jsonNode).getAsJsonObject();
+        String nodeId = jo.get("id").getAsString();
+        String nodeName = jo.get("name").getAsString();
+        String nodeType = jo.get("type").getAsString();
+        String nodeProvider = jo.getAsJsonObject("nodeProperties").get("providerId").getAsString();
+        String nodeOs = jo.getAsJsonObject("nodeProperties").getAsJsonObject("operatingSystem").get("operatingSystemFamily").getAsString();
+        String nodeIpAddress = jo.getAsJsonObject("connectTo").get("ip").getAsString();
+        log.info("ControlServiceController.baguetteRegisterNode(): Node information: id={}, name={}, type={}, provider={}, os={}, ip-address={}",
+                nodeId, nodeName, nodeType, nodeProvider, nodeOs, nodeIpAddress);
+
+        //XXX: TODO: do actual node registration with Baguette server. More information might be returned.
+        //++++++++++++++++++++
+
+        // Prepare Baguette Client installation instructions for node
+        String baseUrl = request.getRequestURL().toString().replace("/baguette/registerNode", "");
+        //int serverPort = request.getServerPort();
+        CloudiatorHelper.InstallationInstructions installationInstructions = null;
+
+        if ("UBUNTU".equalsIgnoreCase(nodeOs)) installationInstructions = prepareInstallationInstructionsForLinux(baseUrl);
+
+        if (installationInstructions==null) {
+            log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
+            return null;
+        }
+        log.debug("ControlServiceController.baguetteRegisterNode(): installationInstructions: {}", installationInstructions);
+
+        // Convert 'installationInstructions' into json string
+        Gson gson = new Gson();
+        String json = gson.toJson(installationInstructions, CloudiatorHelper.InstallationInstructions.class);
+
+        log.info("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
+        return json;
+    }
+
+    private CloudiatorHelper.InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl) {
+        log.debug("ControlServiceController.prepareInstallationInstructionsForLinux(): Invoked");
 
         String installationDir = "/opt/baguette-client";
-        String installScriptUrl = "http://10.10.254.110/resources/install.sh";
+        String baseDownloadUrl = baseUrl + "/resources";    //XXX: TODO: use value from control service settings
+        String installScriptUrl = baseDownloadUrl + "/install.sh";
         String installScriptPath = installationDir + "/bin/install.sh";
-        String baseDownloadUrl = "http://10.10.254.110/resources";
-        String apiKey = "1234567890";
+        String apiKey = "1234567890";                       //XXX: TODO: use value from control service settings or generated value
         String clientConfPath = installationDir + "/conf/baguette-client.properties";
         String clientConfAppend = "\n# ++++++++++++  TODO  +++++++++++\n\n";
 
@@ -186,11 +227,7 @@ public class ControlServiceController {
         installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.LOG, "Launch Baguette Client");
         installationInstructions.appendInstruction(CloudiatorHelper.INSTRUCTION_TYPE.CMD, "sudo service baguette-client start");
 
-        Gson gson = new Gson();
-        String json = gson.toJson(installationInstructions, CloudiatorHelper.InstallationInstructions.class);
-
-        log.debug("ControlServiceController.baguetteRegisterNode(): END: {}", json);
-        return json;
+        return installationInstructions;
     }
 
     // ------------------------------------------------------------------------------------------------------------
