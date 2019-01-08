@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Change directory to Baguette client home
+BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+MELODIC_CONFIG_DIR=$BASEDIR/config-files
+PAASAGE_CONFIG_DIR=$BASEDIR/config-files
+
+# Uncomment next line to set JAVA runtime options
+# JAVA_OPTS=-Djavax.net.debug=all
+
+# Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
+# BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
+
+# Use when Esper is packaged in control-service.jar
+# java %JAVA_OPTS% -jar %BROKER_CEP_TEST% control-service\target\control-service.jar --logging.config=%MELODIC_CONFIG_DIR%\logback-spring.xml
+
+# Use when Esper is NOT packaged in control-service.jar
+java $JAVA_OPTS -cp $BASEDIR/control-service/target/control-service.jar -Dloader.path=$BASEDIR/control-service/target/esper-7.1.0.jar $BROKER_CEP_TEST org.springframework.boot.loader.PropertiesLauncher --logging.config=$MELODIC_CONFIG_DIR/logback-spring.xml
+
+# e.g. --spring.config.location=$MELODIC_CONFIG_DIR
+# e.g. --spring.config.name=application.properties
