@@ -146,6 +146,8 @@ public class ControlServiceController {
         return "OK";
     }
 
+    public static final List<String> LINUX_OS_FAMILIES = java.util.Arrays.asList("CENTOS", "DARWIN", "DEBIAN", "FEDORA ", "FREEBSD ", "GENTOO", "COREOS", "AMZN_LINUX", "MANDRIVA ", "NETBSD", "OEL ", "OPENBSD", "RHEL", "SCIENTIFIC", "CEL", "SLACKWARE", "SOLARIS", "SUSE", "TURBOLINUX", "CLOUD_LINUX", "UBUNTU");
+
     @RequestMapping(value = "/baguette/registerNode", method = POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -153,7 +155,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.baguetteRegisterNode(): Invoked");
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
-        //XXX: ASK: probably use the Node class from Cloudiator jars to deserialize json?? or use Node in mehtod signature??
+        // Extract node information from json
         JsonParser parser = new JsonParser();
         JsonObject jo = parser.parse(jsonNode).getAsJsonObject();
         String nodeId = jo.get("id").getAsString();
@@ -173,7 +175,7 @@ public class ControlServiceController {
         //int serverPort = request.getServerPort();
         CloudiatorHelper.InstallationInstructions installationInstructions = null;
 
-        if ("UBUNTU".equalsIgnoreCase(nodeOs)) installationInstructions = prepareInstallationInstructionsForLinux(baseUrl);
+        if (LINUX_OS_FAMILIES.contains(nodeOs.toUpperCase())) installationInstructions = prepareInstallationInstructionsForLinux(baseUrl);
 
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
