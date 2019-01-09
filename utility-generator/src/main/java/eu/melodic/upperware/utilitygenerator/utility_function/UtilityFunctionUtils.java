@@ -10,7 +10,6 @@ package eu.melodic.upperware.utilitygenerator.utility_function;
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute.findAttribute;
+import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute.createAttributeName;
 
 @Slf4j
 public class UtilityFunctionUtils {
@@ -36,14 +35,13 @@ public class UtilityFunctionUtils {
         return arguments.stream().map(ConstantFactory::createConstant).collect(Collectors.toList());
     }
 
-    public static String createUtilityFunctionCostFormula(Collection<VariableDTO> variablesFromConstraintProblem, Collection<NodeCandidateAttribute> nodeCandidateAttributes) {
-
-        log.info("Creating default utility function formula");
+    public static String createUtilityFunctionCostFormula(Collection<VariableDTO> variablesFromConstraintProblem) {
+        log.warn("The Optimisation requirement is not defined in the Camel Model, default utility function which optimises the cost will be created.");
         Collection<String> componentCosts = new ArrayList<>();
         variablesFromConstraintProblem.stream()
                 .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
                 .forEach(v -> componentCosts.add(v.getId() + "*"
-                        + findAttribute(nodeCandidateAttributes, v.getComponentId(), CamelMetadata.PRICE).getName()));
+                        + createAttributeName(v.getComponentId(), CamelMetadata.PRICE)));
 
         return "1/(" + String.join("+", componentCosts) + ")";
     }

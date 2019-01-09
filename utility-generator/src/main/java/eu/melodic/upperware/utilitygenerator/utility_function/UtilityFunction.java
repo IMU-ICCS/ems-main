@@ -17,6 +17,8 @@ import org.mariuszgromada.math.mxparser.Expression;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.convertToConstants;
+
 @Slf4j
 @Getter
 public class UtilityFunction {
@@ -24,13 +26,9 @@ public class UtilityFunction {
     private Expression function;
     private Constant[] constants;
 
-    public UtilityFunction(String formula) {
+    public UtilityFunction(String formula, Collection<Argument> constants) {
+        this.constants = convertToConstants(constants).toArray(new Constant[constants.size()]);
         this.function = new Expression(formula);
-    }
-
-    public void setConstants(Collection<Constant> constants){
-        this.constants = constants.toArray(new Constant[constants.size()]);
-        constants.forEach(c -> log.debug("constant: {}, {}", c.getConstantName(), c.getConstantValue()));
     }
 
     public double evaluateFunction(Collection<Argument> variables) {
@@ -43,7 +41,7 @@ public class UtilityFunction {
             throw new IllegalStateException("Missing arguments: " + Arrays.toString(function.getMissingUserDefinedArguments()) + " for function " + function.getExpressionString());
         }
         double result = function.calculate();
-        if (Double.isNaN(result)){
+        if (Double.isNaN(result)) {
             log.warn("Result of calculating the utility function is NaN, returning 0");
             result = 0.0;
         }

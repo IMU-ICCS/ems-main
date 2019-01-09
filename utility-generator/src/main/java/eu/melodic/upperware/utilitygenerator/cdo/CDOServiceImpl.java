@@ -27,6 +27,8 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Objects;
+
 import static java.lang.String.format;
 
 @Slf4j
@@ -63,20 +65,10 @@ public class CDOServiceImpl implements CDOService {
 
     @Override
     public ConstraintProblem getConstraintProblem(String name, CDOView view) {
-        ConstraintProblem cp = null;
         log.info("Reading CP model...");
-
-        //CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
-
         CDOResource resource = view.getResource(name);
-        EList<EObject> contents = resource.getContents();
-        for (EObject obj : contents) {
-            if (obj instanceof ConstraintProblem) {
-                return (ConstraintProblem) obj;
-            }
-        }
-        throw new IllegalStateException("Constraint Problem does not exist in CDO");
-
+        Objects.requireNonNull(resource);
+        return (ConstraintProblem) resource.getContents().stream().filter(obj -> obj instanceof ConstraintProblem).findAny().orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
     }
 
     @Override

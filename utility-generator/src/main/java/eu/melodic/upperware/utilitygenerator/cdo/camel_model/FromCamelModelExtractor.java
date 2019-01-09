@@ -70,14 +70,14 @@ public class FromCamelModelExtractor {
     }
 
     private Collection<MetricVariableImpl> extractMetricVariables(EList<MetricModel> metricModels) {
-        if (metricModels.isEmpty()){
+        if (metricModels.isEmpty()) {
             log.warn("Camel Model does not contain any Metric Model");
             return Collections.emptyList();
         }
         return ((MetricTypeModelImpl) CdoTool.getFirstElement(metricModels)).getMetrics().stream()
-                    .filter(m -> m instanceof MetricVariable)
-                    .map(m -> (MetricVariableImpl) m)
-                    .collect(Collectors.toList());
+                .filter(m -> m instanceof MetricVariable)
+                .map(m -> (MetricVariableImpl) m)
+                .collect(Collectors.toList());
     }
 
     public void endWorkWithCamelModel() {
@@ -100,7 +100,7 @@ public class FromCamelModelExtractor {
     }
 
     /* dlms utility type */
-    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes(){
+    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes() {
         return createDlmsUtilityAttributes(filterVariables(this::isDlmsUtilityAttribute));
     }
 
@@ -121,7 +121,6 @@ public class FromCamelModelExtractor {
                 .stream()
                 .filter(r -> r instanceof OptimisationRequirementImpl)
                 .findAny();
-
         return optimisationRequirement.map(requirement -> ((OptimisationRequirement) requirement).getMetricVariable().getFormula());
     }
 
@@ -168,7 +167,7 @@ public class FromCamelModelExtractor {
                 && !variable.isCurrentConfiguration();
     }
 
-    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable){
+    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable) {
         return CamelMetadataTool.isFromDlmsUtility(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName());
     }

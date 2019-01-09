@@ -27,9 +27,8 @@ public class MetricsConverter extends ArgumentConverter {
     private Collection<MetricDTO> metricsFromConstraintProblem;
     private String function;
 
-    public MetricsConverter(ConstraintProblemExtractor constraintProblemExtractor, String function){
+    public MetricsConverter(ConstraintProblemExtractor constraintProblemExtractor, String function) {
         this.metricsFromConstraintProblem = constraintProblemExtractor.extractMetrics();
-        log.info("Metrics from the Constraint Problem: {}", metricsFromConstraintProblem);
         this.function = function;
     }
 

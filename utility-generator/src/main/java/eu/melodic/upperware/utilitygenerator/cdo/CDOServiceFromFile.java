@@ -46,9 +46,7 @@ public class CDOServiceFromFile implements CDOService {
     @Override
     public ConstraintProblem getConstraintProblem(String name, CDOView view) {
         CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
-
         return (ConstraintProblem) clientX.loadModel(name);
-
     }
 
     public void closeSession(CDOSessionX sessionX) {

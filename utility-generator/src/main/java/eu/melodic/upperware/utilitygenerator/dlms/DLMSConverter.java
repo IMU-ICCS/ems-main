@@ -31,12 +31,11 @@ public class DLMSConverter extends ArgumentConverter {
     private Collection<ConfigurationElement> actConfiguration;
 
 
-    public DLMSConverter(String dlmsControllerUrl, FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration){
+    public DLMSConverter(String dlmsControllerUrl, FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration) {
         this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
         this.dlmsUtilityAttributes = fromCamelModelExtractor.getListOfDlmsUtilityAttributes();
         log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
         this.actConfiguration = actConfiguration;
-
     }
 
     @Override
@@ -55,12 +54,9 @@ public class DLMSConverter extends ArgumentConverter {
             log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value");
             return createDefaultValuesOfDLMSUtilityAttributes();
         }
-
         return dlmsUtilityAttributes.stream()
                 .map(attribute -> createArgument(attribute.getName(), getDLMSUtilityAttributeValue(dlmsUtility, attribute.getType())))
                 .collect(Collectors.toList());
-
-
     }
 
     private Collection<Argument> createDefaultValuesOfDLMSUtilityAttributes() {
@@ -71,18 +67,15 @@ public class DLMSConverter extends ArgumentConverter {
         if (!CamelMetadata.DLMS_LIST.contains(type)) {
             throw new IllegalArgumentException("Illegal type of DLMS utility attribute: " + type);
         }
-
         if (dlmsUtility == null || dlmsUtility.getResults() == null) {
             log.warn("DLMSUtility is null, returning 0 as DLMS utility value");
             return 0;
         }
-
         Double dlmsUtilityResult = dlmsUtility.getResults().get(type.camelName);
         if (dlmsUtilityResult == null) {
             log.warn("DLMS utility result for type: " + type.camelName + " is null, returning 0 as a DLMS utility value");
             return 0;
         }
-
         return dlmsUtilityResult;
     }
 }

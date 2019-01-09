@@ -23,9 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
+import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute.createAttributeName;
 import static eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFactory.createArgument;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadata.PRICE;
 
@@ -35,18 +35,22 @@ public class NodeCandidatesConverter extends ArgumentConverter {
 
     @Setter
     private Collection<NodeCandidateAttribute> oneNodeCandidateAttributes;
-    private Collection<NodeCandidateAttribute> allNodeCandidatesListAttributes = Collections.emptyList();
-    private Collection<NodeCandidateAttribute> currentConfigAttributes = Collections.emptyList();
+    private Collection<NodeCandidateAttribute> allNodeCandidatesListAttributes;
+    private Collection<NodeCandidateAttribute> currentConfigAttributes;
     private NodeCandidates nodeCandidates;
     private Collection<VariableDTO> variables;
 
     public NodeCandidatesConverter(FromCamelModelExtractor fromCamelModelExtractor, NodeCandidates nodeCandidates, Collection<VariableDTO> variablesFromConstraintProblem) {
         super();
-        this.oneNodeCandidateAttributes = fromCamelModelExtractor.getAttributesOfNodeCandidates();
+
         this.allNodeCandidatesListAttributes = fromCamelModelExtractor.getListOfAttributesOfNodeCandidates();
         this.currentConfigAttributes = fromCamelModelExtractor.getCurrentConfigAttributesOfNodeCandidates();
         this.nodeCandidates = nodeCandidates;
         this.variables = variablesFromConstraintProblem;
+        this.oneNodeCandidateAttributes = fromCamelModelExtractor.getAttributesOfNodeCandidates();
+        if (this.oneNodeCandidateAttributes.isEmpty()) {
+            this.oneNodeCandidateAttributes = createCostAttributesForAllComponents();
+        }
         if (!allNodeCandidatesListAttributes.isEmpty()) {
             log.info("Attributes of list of Node Candidates: {}", allNodeCandidatesListAttributes);
             log.warn("Flag on candidates is not supported in Utility Generator");
@@ -67,12 +71,11 @@ public class NodeCandidatesConverter extends ArgumentConverter {
         }
     }
 
-
-    public void createCostAttributesForAllComponents() {
+    private Collection<NodeCandidateAttribute> createCostAttributesForAllComponents() {
         log.info("Creating default cost attributes for all components");
-        this.oneNodeCandidateAttributes = variables.stream()
+        return this.variables.stream()
                 .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
-                .map(v -> new NodeCandidateAttribute(v.getComponentId() + "Cost", v.getComponentId(), CamelMetadata.PRICE, false))
+                .map(v -> new NodeCandidateAttribute(createAttributeName(v.getComponentId(), CamelMetadata.PRICE), v.getComponentId(), CamelMetadata.PRICE, false))
                 .collect(Collectors.toList());
     }
 

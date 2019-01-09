@@ -386,7 +386,6 @@ public class CPModelTool {
 
     public static boolean isInitialDeployment(ConstraintProblem cp){
         int deployedSolutionId = cp.getDeployedSolutionId();
-        //int deployedSolutionId = 0;
         return (deployedSolutionId == INITIAL_DEPLOYMENT_ID);
     }
 

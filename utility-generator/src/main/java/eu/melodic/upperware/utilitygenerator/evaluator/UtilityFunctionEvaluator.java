@@ -19,17 +19,19 @@ import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConve
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
-import eu.melodic.upperware.utilitygenerator.utils.Printer;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertDeployedSolutionToNodeCandidates;
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolutionToNodeCandidates;
-import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.convertToConstants;
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.createUtilityFunctionCostFormula;
+import static eu.melodic.upperware.utilitygenerator.utils.Printer.printSolution;
 
 @Slf4j
 public class UtilityFunctionEvaluator {
@@ -42,57 +44,51 @@ public class UtilityFunctionEvaluator {
 
     private Collection<ArgumentConverter> converters;
 
-    private Printer printer;
-
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties) {
 
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
         FromCamelModelExtractor fromCamelModelExtractor = new FromCamelModelExtractor(camelModelFilePath, readFromFile);
-
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, readFromFile);
-        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
-        Collection<VariableValueDTO> actualConfiguration = constraintProblemExtractor.extractActualConfiguration();
-        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, actualConfiguration);
-
-        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, variablesFromConstraintProblem);
-
-        String formula = prepareUtilityFunction(fromCamelModelExtractor, nodeCandidatesConverter);
-        this.function = new UtilityFunction(formula);
-        this.function.setConstants(convertToConstants(createConstants(constraintProblemExtractor, nodeCandidatesConverter, formula)));
-
-
-        converters = new ArrayList<>();
-        converters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, deployedConfiguration));
-        converters.add(new VariableConverter(variablesFromConstraintProblem, formula));
-        converters.add(nodeCandidatesConverter);
-
-
-        log.info("Formula of the utility function: {}", formula);
-        this.printer = new Printer(variablesFromConstraintProblem);
-        printer.printVariablesFromConstraintProblem();
 
         this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
-        log.info("Unmoveable components: {}", unmoveableComponents.toString());
+        log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
+        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
+
+        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
+        String formula = prepareUtilityFunction(fromCamelModelExtractor);
+        log.info("Formula of the utility function: {}", formula);
+
+        this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter);
+        this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
 
         fromCamelModelExtractor.endWorkWithCamelModel();
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
+    private Collection<ArgumentConverter> createConverters(UtilityGeneratorProperties properties, FromCamelModelExtractor fromCamelModelExtractor, String formula, NodeCandidatesConverter nodeCandidatesConverter) {
+        Collection<ArgumentConverter> argConverters = new ArrayList<>();
+        argConverters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, this.deployedConfiguration));
+        argConverters.add(new VariableConverter(this.variablesFromConstraintProblem, formula));
+        argConverters.add(nodeCandidatesConverter);
+        return argConverters;
+    }
+
     public double evaluate(Collection<VariableValueDTO> solution) {
-        printer.printSolution(solution);
-        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(variablesFromConstraintProblem, nodeCandidates, solution);
+        printSolution(variablesFromConstraintProblem, solution);
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
         if (newConfiguration.isEmpty()) {
             log.info("No Node Candidate for the evaluated solution, returning 0");
             return 0;
-        } else if (!deployedConfiguration.isEmpty() && EvaluatingUtils.areUnmoveableComponentsMoved(unmoveableComponents, deployedConfiguration, newConfiguration)) {
+        } else if (!this.deployedConfiguration.isEmpty() && EvaluatingUtils.areUnmoveableComponentsMoved(this.unmoveableComponents, this.deployedConfiguration, newConfiguration)) {
             log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
 
-        Collection<Argument> allArguments = converters.stream()
+        Collection<Argument> allArguments = this.converters.stream()
                 .map(converter -> converter.convertToArguments(solution, newConfiguration))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
@@ -100,26 +96,13 @@ public class UtilityFunctionEvaluator {
         return function.evaluateFunction(allArguments);
     }
 
-    private String prepareUtilityFunction(FromCamelModelExtractor fromCamelModelExtractor, NodeCandidatesConverter nodeCandidatesConverter) {
-        Optional<String> utilityFunctionFormula = fromCamelModelExtractor.getUtilityFormula();
-        String formula;
-        if (utilityFunctionFormula.isPresent()) {
-            formula = utilityFunctionFormula.get();
-        } else {
-            log.warn("Optimisation requirement is not defined in the Camel Model, default utility function which optimises the cost will be created.");
-            nodeCandidatesConverter.createCostAttributesForAllComponents();
-            formula = createUtilityFunctionCostFormula(variablesFromConstraintProblem, nodeCandidatesConverter.getOneNodeCandidateAttributes());
-        }
-        return formula;
+    private String prepareUtilityFunction(FromCamelModelExtractor fromCamelModelExtractor) {
+        return fromCamelModelExtractor.getUtilityFormula().orElse(createUtilityFunctionCostFormula(this.variablesFromConstraintProblem));
     }
 
-    private Collection<Argument> createConstants(ConstraintProblemExtractor constraintProblemExtractor, NodeCandidatesConverter nodeCandidatesConverter, String formula) {
-        MetricsConverter metricsConverter = new MetricsConverter(constraintProblemExtractor, formula);
-        Collection<Argument> metrics = metricsConverter.convertToArguments(Collections.emptyList(), deployedConfiguration);
-        Collection<Argument> currentConfigAttributesOfNodeCandidates = nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(deployedConfiguration);
-
-        Collection<Argument> allConstants = new ArrayList<>(metrics);
-        allConstants.addAll(currentConfigAttributesOfNodeCandidates);
-        return allConstants;
+    private Collection<Argument> createConstantValuesForOneReasoning(MetricsConverter metricsConverter, NodeCandidatesConverter nodeCandidatesConverter) {
+        Collection<Argument> arguments = metricsConverter.convertToArguments(Collections.emptyList(), this.deployedConfiguration);
+        arguments.addAll(nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(this.deployedConfiguration));
+        return arguments;
     }
 }

@@ -27,7 +27,6 @@ public class DLMSServiceImpl implements DLMSService {
 
     @Override
     public UtilityMetrics getDLMSUtility(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
-
         return dlmsClient.getUtilityValues(convertToDlmsConfigurationElement(actConfiguration), convertToDlmsConfigurationElement(newConfiguration));
     }
 

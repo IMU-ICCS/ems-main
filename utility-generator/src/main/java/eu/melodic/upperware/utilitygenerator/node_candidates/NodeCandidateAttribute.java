@@ -42,4 +42,8 @@ public class NodeCandidateAttribute {
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("Attribute with type " + type + "for component " + componentId + " not found"));
     }
+
+    public static String createAttributeName(String componentId, CamelMetadata type) {
+        return componentId + "_" + type.camelName;
+    }
 }

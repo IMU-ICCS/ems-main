@@ -10,15 +10,11 @@ package eu.melodic.upperware.utilitygenerator.utils;
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @AllArgsConstructor
@@ -27,23 +23,11 @@ public class Printer {
 
     private Collection<VariableDTO> variables;
 
-    public void printSolution(Collection<VariableValueDTO> solution) {
+    public static void printSolution(Collection<VariableDTO> variables, Collection<VariableValueDTO> solution) {
         log.debug("Solution:");
         solution.stream()
                 .filter(var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName())))
                 .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
     }
 
-    public void printSolutionForDebug(Collection<VariableValueDTO> solutionInt, Collection<VariableValueDTO> solutionReal) {
-        printSolution(Stream.concat(solutionInt.stream(), solutionReal.stream()).collect(Collectors.toList()));
-    }
-
-    public void printVariablesFromConstraintProblem() {
-        log.debug("Variables from Constraint Problem:");
-        variables.forEach(v -> log.debug("{}, type: {}", v.getId(), v.getType()));
-    }
-
-    public void printConfiguration(Collection<ConfigurationElement> configuration) {
-        CollectionUtils.emptyIfNull(configuration).forEach(el -> log.debug(el.toString()));
-    }
 }

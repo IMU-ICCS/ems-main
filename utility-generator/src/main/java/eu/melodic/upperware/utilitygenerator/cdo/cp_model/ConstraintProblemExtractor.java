@@ -40,21 +40,21 @@ public class ConstraintProblemExtractor {
         this.model = cdoService.getConstraintProblem(cpModelPath, view);
     }
 
-    public Collection<VariableDTO> extractVariables(){
+    public Collection<VariableDTO> extractVariables() {
         Collection<VariableDTO> variableDTOS = extractVariables(model.getCpVariables());
-        variableDTOS.forEach(v -> log.info("Variables from Constraint Problem: {}, {}, {}", v.getId(), v.getType(), v.getComponentId()));
+        log.info("Variables from the Constraint Problem:");
+        variableDTOS.forEach(v -> log.info("{}, type: {}, component: {}", v.getId(), v.getType(), v.getComponentId()));
         return variableDTOS;
     }
 
-    public Collection<VariableValueDTO> extractActualConfiguration(){
+    public Collection<VariableValueDTO> extractActualConfiguration() {
         return extractActualConfiguration(model);
     }
 
     public Collection<MetricDTO> extractMetrics() {
         Collection<MetricDTO> metricDTOS = extractMetrics(model.getCpMetrics());
-        log.info("The number of metrics for the Utility Generator: {}.", metricDTOS.size());
-        metricDTOS.forEach(m -> log.info("Metrics from Constraint Problem: {}, {}, {}", m.getName(), m.getValue()));
-
+        log.info("Metrics from the Constraint Problem:");
+        metricDTOS.forEach(m -> log.info("{} = {}", m.getName(), m.getValue()));
         return metricDTOS;
     }
 
@@ -66,15 +66,11 @@ public class ConstraintProblemExtractor {
         if (isInitialDeployment(cp)) {
             return Collections.emptyList();
         }
-//        return cp.getSolution().get(cp.getDeployedSolutionId())
-//                .getVariableValue().stream()
-//                .map(VariableValueDTOFactory::createElement)
-//                .collect(Collectors.toList());
-
-        return cp.getSolution().get(0)
+        return cp.getSolution().get(cp.getDeployedSolutionId())
                 .getVariableValue().stream()
                 .map(VariableValueDTOFactory::createElement)
                 .collect(Collectors.toList());
+
     }
 
     private Collection<MetricDTO> extractMetrics(EList<CpMetric> metrics) {
