@@ -13,7 +13,7 @@
     <fileSets>
         <fileSet>
             <outputDirectory></outputDirectory>
-            <directory>${basedir}</directory>
+            <directory>${project.basedir}</directory>
             <includes>
                 <include>README*</include>
                 <include>LICENSE*</include>
