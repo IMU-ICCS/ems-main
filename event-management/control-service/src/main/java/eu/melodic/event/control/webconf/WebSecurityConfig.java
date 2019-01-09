@@ -21,7 +21,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
@@ -39,15 +38,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private String principalRequestHeader;
     @Value("${web.api-key.parameter:ems-api-key}")
     private String principalRequestParam;
-    @Value("${web.api-key.value:#{null}}")
     @Getter
+    @Value("${web.api-key.value:#{null}}")
     private String principalRequestValue;
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        if (principalRequestValue==null) {
+        if (StringUtils.isBlank(principalRequestValue)) {
             log.warn("WebSecurityConfig: No API-KEY specified in configuration. Web security will be disabled");
-            return;
         }
 
         if ("generate".equalsIgnoreCase(principalRequestValue)) {
@@ -57,15 +55,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         APIKeyAuthFilter filter = new APIKeyAuthFilter(principalRequestHeader, principalRequestParam);
         filter.setAuthenticationManager(new AuthenticationManager() {
-
             @Override
             public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                String principal = (String) authentication.getPrincipal();
-                if (!principalRequestValue.equals(principal))
-                {
-                    throw new BadCredentialsException("The API key was not found or not the expected value.");
+                log.debug("APIKeyAuthFilter.authenticate(): Authenticating request: {}", authentication);
+                if (StringUtils.isNotBlank(principalRequestValue)) {
+                    String principal = (String) authentication.getPrincipal();
+                    log.debug("APIKeyAuthFilter.authenticate(): Comparing configured api-key to request principal: api-key={}, principal={}", principalRequestValue, principal);
+                    if (!principalRequestValue.equals(principal)) {
+                        throw new BadCredentialsException("The API key was not found or not the expected value.");
+                    }
                 }
                 authentication.setAuthenticated(true);
+                log.debug("APIKeyAuthFilter.authenticate(): Authenticated");
                 return authentication;
             }
         });
@@ -73,8 +74,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.
                 antMatcher("/**").
                 csrf().disable().
-                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
+                //sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().
+                addFilter(filter).authorizeRequests().anyRequest().authenticated();
     }
 
 
@@ -106,7 +107,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             }
             String effectiveApiKey = Optional.ofNullable(headerApiKey).orElse(paramApiKey);
             log.debug("APIKeyAuthFilter: Effective Api-Key: {}", effectiveApiKey);
-            return effectiveApiKey;
+            return Optional.ofNullable(effectiveApiKey).orElse("");
         }
 
         @Override
