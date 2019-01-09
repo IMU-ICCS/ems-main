@@ -11,23 +11,23 @@ package eu.melodic.event.baguette.client.install;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Baguette Client installation helper
  */
 @Slf4j
+@Service
 public class ClientInstallationHelper implements InitializingBean {
     private static ClientInstallationHelper instance = null;
+    private static List<String> LINUX_OS_FAMILIES;
+    private static List<String> WINDOWS_OS_FAMILIES;
 
-    public static final List<String> LINUX_OS_FAMILIES = Collections.unmodifiableList(Arrays.asList("CENTOS", "DARWIN", "DEBIAN", "FEDORA ", "FREEBSD ", "GENTOO", "COREOS", "AMZN_LINUX", "MANDRIVA ", "NETBSD", "OEL ", "OPENBSD", "RHEL", "SCIENTIFIC", "CEL", "SLACKWARE", "SOLARIS", "SUSE", "TURBOLINUX", "CLOUD_LINUX", "UBUNTU"));
-    public static final List<String> WINDOWS_OS_FAMILIES = Collections.unmodifiableList(Arrays.asList("WINDOWS"));
-
-    /*@Autowired
-    private CloudiatorUtilProperties properties;*/
+    @Autowired
+    private ClientInstallationProperties properties;
 
     private ClientInstallationHelper() {
         ClientInstallationHelper.instance = this;
@@ -40,7 +40,9 @@ public class ClientInstallationHelper implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        //log.warn("ClientInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
+        log.info("ClientInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
+        LINUX_OS_FAMILIES = properties.getOsFamilies().get("LINUX");
+        WINDOWS_OS_FAMILIES = properties.getOsFamilies().get("WINDOWS");
     }
 
     public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(String osFamily, String baseUrl) {
@@ -68,7 +70,7 @@ public class ClientInstallationHelper implements InitializingBean {
         String clientConfAppend = "\n# ++++++++++++  TODO  +++++++++++\n\n";
 
         OrchestrationHelper.InstallationInstructions installationInstructions = new OrchestrationHelper.InstallationInstructions();
-        installationInstructions.setOs("linux");
+        installationInstructions.setOs("LINUX");
         // Create Baguette Client installation directory
         installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Create Baguette Client installation directory");
         installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo mkdir -p "+installationDir+"/bin");
