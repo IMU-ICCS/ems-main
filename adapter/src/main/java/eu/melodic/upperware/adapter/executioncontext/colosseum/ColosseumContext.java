@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -63,6 +64,10 @@ public class ColosseumContext implements ContextOperations {
             createAmbiguousResultException(NodeGroup.class, name));
   }
 
+    public void deleteNodeGroup(String nodeGroupId) {
+      nodeGroups.removeIf(nodeGroup -> nodeGroupId.equals(nodeGroup.getId()));
+    }
+
   public void addSchedule(@NonNull Schedule schedule) {
     schedules.add(schedule);
   }
@@ -76,8 +81,30 @@ public class ColosseumContext implements ContextOperations {
   }
 
   public Optional<ProcessGroup> getProcessGroup(String processGroupId) {
-    return getElement(processGroups, process -> processGroupId.equals(process.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
+    return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
   }
+
+
+    public Optional<ProcessGroup> getProcessGroup(String nodeGroupId, String scheduleId, String taskName) throws ApiException {
+        Objects.requireNonNull(nodeGroupId);
+        Objects.requireNonNull(scheduleId);
+        Objects.requireNonNull(taskName);
+
+        return processApi.findProcessGroups()
+                .stream()
+                .filter(processGroup ->
+                        processGroup.getProcesses()
+                                .stream()
+                                .anyMatch(cloudiatorProcess -> {
+                                    return scheduleId.equals(cloudiatorProcess.getSchedule()) &&
+                                            taskName.equals(cloudiatorProcess.getTask());
+                                    //TODO - add check if processGroup is equal
+                                }))
+                .findFirst();
+    }
+    public void deleteProcessGroup(String processGroupId) {
+        processGroups.removeIf(processGroup -> processGroupId.equals(processGroup.getId()));
+    }
 
   public void addJob(@NonNull Job job) {
     jobs.add(job);
