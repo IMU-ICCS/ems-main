@@ -7,4 +7,4 @@ RUN bash -c 'touch /esper-7.1.0.jar'
 RUN bash -c 'apt-get update'
 RUN bash -c 'apt-get install -y netcat'
 RUN bash -c 'ls -ltr'
-ENTRYPOINT ["/config/wait-for-cdo.sh", "java", "-Duser.timezone=Europe/Warsaw", "-Djava.security.egd=file:/dev/./urandom", "-Dloader.path=/esper-7.1.0.jar", "-cp", "/control-service.jar", "org.springframework.boot.loader.PropertiesLauncher", " --logging.config=/config/logback-spring.xml"]
+ENTRYPOINT ["/config/wait-for-cdo.sh", "java", "-Duser.timezone=Europe/Warsaw", "-Djava.security.egd=file:/dev/./urandom", "-Dloader.path=/esper-7.1.0.jar", "-cp", "/control-service.jar", "org.springframework.boot.loader.PropertiesLauncher", " --logging.config=/config/logback-conf/logback-spring.xml"]
