@@ -153,6 +153,10 @@
                                     <include>${docker.jarToInclude}</include>
                                     <include>${docker.esperJarToInclude}</include>
                                 </resource>
+                                <resource>
+                                    <targetPath>/config</targetPath>
+                                    <directory>${project.basedir}/../config-files</directory>
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>
