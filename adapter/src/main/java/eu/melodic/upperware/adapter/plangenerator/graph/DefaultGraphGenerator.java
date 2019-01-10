@@ -13,6 +13,7 @@ import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.DefaultEdge;
@@ -34,6 +35,7 @@ import static java.util.stream.Collectors.toList;
 public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<ComparableModel> {
 
   private ToLogGraphLogger toLogGraphLogger;
+  private AdapterProperties adapterProperties;
 
   @Override
   public SimpleDirectedGraph<Task, DefaultEdge> generateConfigGraph(ComparableModel model) {
@@ -49,7 +51,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     Collection<ProcessTask> processTasks = genProcessTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
 
-    Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
+    if (!adapterProperties.getEms().isEnabled()) {
+      Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
+    }
 
     log.info("Built graph: {}", graph);
 

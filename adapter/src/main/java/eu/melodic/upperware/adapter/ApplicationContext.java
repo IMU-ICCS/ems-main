@@ -11,8 +11,6 @@ package eu.melodic.upperware.adapter;
 
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
-import eu.melodic.upperware.adapter.communication.ems.EmsApi;
-import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -114,7 +112,6 @@ public class ApplicationContext {
     return new MonitoringApi(apiClient);
   }
 
-
   @Bean
   public ApiClient apiClient() {
     ApiClient apiClient = new ApiClient();
@@ -122,11 +119,6 @@ public class ApplicationContext {
     apiClient.setApiKey(adapterProperties.getCloudiatorV2().getApiKey());
     apiClient.setReadTimeout(adapterProperties.getCloudiatorV2().getHttpReadTimeout());
     return apiClient;
-  }
-
-  @Bean
-  public EmsApi emsApi(RestTemplate restTemplate) {
-    return new EmsClientApi(restTemplate);
   }
 
 }
