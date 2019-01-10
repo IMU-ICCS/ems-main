@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Create installation directories
 BIN_DIRECTORY=/opt/baguette-client/bin
@@ -15,7 +15,7 @@ chmod u=rwx,og-rwx $BIN_DIRECTORY/install-log.sh
 
 # Write contents of 'install-log.sh' script
 cat |sed -E 's/~/`/g' > $BIN_DIRECTORY/install-log.sh <<- EOM
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo ""
 echo "** Baguette Client - MELODIC PROJECT FP7 EU ...... **"
