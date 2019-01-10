@@ -33,17 +33,6 @@ public class AdapterController {
 
   private DeploymentRequestValidator validator;
 
-//XXX:DEL: after finishing development+testing
-  @RequestMapping(value = "/test", method = GET)
-  public String test() {
-    try {
-      log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST - BEGIN");
-      return coordinator.test();
-    } finally {
-      log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>> TEST - END");
-    }
-  }
-
   @RequestMapping(value = "/applicationDeployment", method = POST,
     consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request) {

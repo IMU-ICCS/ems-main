@@ -78,6 +78,8 @@ public class AdapterProperties {
     @NotBlank
     private String apiKey;
 
-    private int httpReadTimeout = 60000;
+    private int httpReadTimeout = 30000;
+
+    private int delayBetweenQueueCheck = 1000;
   }
 }

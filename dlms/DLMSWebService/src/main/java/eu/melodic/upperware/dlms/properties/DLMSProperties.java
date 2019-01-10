@@ -1,0 +1,35 @@
+package eu.melodic.upperware.dlms.properties;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.validation.annotation.Validated;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Validated
+@Configuration
+@ConfigurationProperties
+@PropertySource("file:${MELODIC_CONFIG_DIR}/application.properties")
+public class DLMSProperties {
+
+	@Valid
+	@NotNull
+	private Esb esb;
+
+	@Getter
+	@Setter
+	public static class Esb {
+		@NotBlank
+		private String url;
+
+	}
+
+}

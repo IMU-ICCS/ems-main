@@ -2,27 +2,26 @@ package eu.paasage.upperware.profiler.generator.communication.impl;
 
 import camel.core.Attribute;
 import camel.core.Feature;
-import camel.core.NamedElement;
 import camel.deployment.RequirementSet;
 import camel.location.GeographicalRegion;
 import camel.location.LocationModel;
 import camel.mms.MmsObject;
 import camel.requirement.LocationRequirement;
+import camel.requirement.PaaSRequirement;
 import camel.requirement.ProviderRequirement;
 import camel.requirement.ResourceRequirement;
-import camel.type.DoubleValue;
-import camel.type.FloatValue;
-import camel.type.IntValue;
-import camel.type.Value;
+import camel.type.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Runtime;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
@@ -30,8 +29,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces.FAAS_RUNTIME;
 
 @Slf4j
 @Component
@@ -42,19 +44,18 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private static final String IMAGE_CLASS = "image";
     private static final String LOCATION_CLASS = "location";
     private static final String CLOUD_CLASS = "cloud";
+    private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
     private MatchmakingApi matchmakingApi;
 
     @Override
     public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
-        List<NodeCandidate> nodeCandidates = matchmakingApi.findNodeCandidates(requirements);
-        removeCredentials(nodeCandidates);
-        return nodeCandidates;
+        return matchmakingApi.findNodeCandidates(requirements);
     }
 
     @Override
     public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-                                                List<LocationModel> locationModels, String imageId, NodeType nodeType) {
+            List<LocationModel> locationModels, String imageId, NodeType nodeType) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
@@ -62,6 +63,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createProviderRequirement(getProviderRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createNodeTypeRequirement(nodeType));
+        requirements.addAll(createPaasRequirements(getPaasRequirement(globalRequirementSet, localRequirementSet)));
         return requirements;
     }
 
@@ -182,6 +184,20 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         return Collections.singletonList(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.IN, prepareOSFamilyValue(osRequirement.getOs())));
     }
 
+    private Collection<? extends Requirement> createPaasRequirements(PaaSRequirement paasRequirement) {
+        if (paasRequirement == null) {
+            return Collections.emptyList();
+        }
+        return CamelMetadataToolForTaskInterfaces.findFeatureByAnnotation(paasRequirement.getSubFeatures(), CamelMetadataForTaskInterfaces.FAAS_ENVIRONMENT.camelName)
+                .map(featureByAnnotation -> CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(featureByAnnotation.getAttributes(), FAAS_RUNTIME.camelName))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(attribute -> ((StringValue) attribute.getValue()).getValue())
+                .map(s -> createRequirement(FAAS_ENVIRONMENT_CLASS, "runtime", RequirementOperator.EQ, prepareRuntimeValue(s)))
+                .map(Collections::singletonList)
+                .orElse(Collections.emptyList());
+    }
+
     private Map<MmsObject, List<Attribute>> getRequirementsMap(Feature feature) {
         Map<MmsObject, List<Attribute>> result = getRequirementsMap(feature, new HashMap<>());
         checkRequirements(result);
@@ -209,7 +225,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             for (MmsObject mmsObject : CollectionUtils.emptyIfNull(attribute.getAnnotations())) {
 
                 List<Attribute> attributes = result.get(mmsObject);
-                if (CollectionUtils.isEmpty(attributes)){
+                if (CollectionUtils.isEmpty(attributes)) {
                     attributes = new ArrayList<>();
                     result.put(mmsObject, attributes);
                 }
@@ -223,7 +239,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         return result;
     }
 
-    private Requirement createRequirement(String requirementClass, String requirementAttribute, RequirementOperator requirementOperator, String value){
+    private Requirement createRequirement(String requirementClass, String requirementAttribute, RequirementOperator requirementOperator, String value) {
         return new AttributeRequirement()
                 .requirementClass(requirementClass)
                 .requirementAttribute(requirementAttribute)
@@ -239,6 +255,14 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return "OSFamily::" + enumName;
         }
         throw new GeneratorException(String.format("Could not parse %s as a OperatingSystemFamily. Possible values are: %s", enumName, Arrays.toString(OperatingSystemFamily.values())));
+    }
+
+    private String prepareRuntimeValue(String runtimeName) {
+        String enumName = StringUtils.upperCase(runtimeName);
+        if (EnumUtils.isValidEnum(Runtime.class, enumName)) {
+            return "Runtime::" + enumName;
+        }
+        throw new GeneratorException(String.format("Could not parse %s as a Runtime. Possible values are: %s", enumName, Arrays.toString(Runtime.values())));
     }
 
     private String prepareCloudTypeValue(String cloudType) {
@@ -273,8 +297,12 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getOsRequirement);
     }
 
+    private camel.requirement.PaaSRequirement getPaasRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet) {
+        return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getPaasRequirement);
+    }
+
     private <T extends camel.requirement.HardRequirement> T getRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-                                                                           Function<RequirementSet, T> function) {
+            Function<RequirementSet, T> function) {
         T result = localRequirementSet != null ? function.apply(localRequirementSet) : null;
 
         if (result == null && globalRequirementSet != null) {
@@ -293,10 +321,5 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return String.valueOf(((DoubleValue) value).getValue());
         }
         throw new GeneratorException("Unsupported value type");
-    }
-
-    private void removeCredentials(List<NodeCandidate> nodeCandidates){
-        ListUtils.emptyIfNull(nodeCandidates).forEach(nc -> nc.getCloud().setCredential(new CloudCredential()));
-        log.debug("Credentials in the Node Candidate List has been removed.");
     }
 }

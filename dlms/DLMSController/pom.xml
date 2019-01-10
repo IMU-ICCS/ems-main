@@ -1,5 +1,4 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -11,10 +10,14 @@
 	<description>DLMS Controller Project</description>
 
 	<parent>
-		<groupId>org.ow2.paasage</groupId>
+		<groupId>eu.melodic</groupId>
 		<artifactId>dlms</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>2.1.0-SNAPSHOT</version>
 	</parent>
+
+	<properties>
+		<docker.imageName>${docker.repository}melodic/dlms-controller</docker.imageName>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -85,6 +88,7 @@
 			<version>3.8.1</version>
 		</dependency>
 	</dependencies>
+	
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
@@ -94,5 +98,32 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<repositories>
+		<repository>
+			<id>eu.7bulls</id>
+			<name>Melodic 7bulls repository</name>
+			<url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>eu.7bulls</id>
+			<name>Melodic 7bulls repository</name>
+			<url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>eu.7bulls</id>
+			<name>Melodic 7bulls repository</name>
+			<url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+		</repository>
+	</distributionManagement>
 
 </project>

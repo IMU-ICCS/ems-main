@@ -13,6 +13,7 @@ import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
 import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.model.function.Element;
+import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -23,13 +24,13 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, NodeCandidates nodeCandidates) {
-        this(camelModelFilePath, readFromFile, variables, metrics, null, nodeCandidates);
+    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, UtilityGeneratorProperties properties, NodeCandidates nodeCandidates) {
+        this(camelModelFilePath, readFromFile, variables, metrics, null, properties, nodeCandidates);
     }
 
-    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, Collection<Element> deployedSolution, NodeCandidates nodeCandidates) {
+    public UtilityGeneratorApplication(String camelModelFilePath, boolean readFromFile, List<VariableDTO> variables, Collection<MetricDTO> metrics, Collection<Element> deployedSolution, UtilityGeneratorProperties properties, NodeCandidates nodeCandidates) {
         log.info("Creating of the Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, variables, metrics, deployedSolution, nodeCandidates);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, readFromFile, variables, metrics, deployedSolution, properties, nodeCandidates);
     }
 
     public double evaluate(Collection<Element> solution) {

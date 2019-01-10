@@ -39,7 +39,6 @@ public class ModelAnalyzer {
 	 * Read the camel model to get a list of datasource(s) to update and/or create
 	 */
 	public void readModel(String modelId) {
-//		cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE));
 		cdoClient = new CDOClientXImpl(Collections.singletonList(CorePackage.eINSTANCE));
 		translateModel(modelId);
 	}
@@ -83,10 +82,11 @@ public class ModelAnalyzer {
 											DataSource dataSource = new DataSource();
 											dataSource.setName(data.getName());
 											dataSource.setUfsURI(strVal.getValue());
-											// set the mount point with initial "melodic" for all
+											// set the mount point with the initial "melodic" for all
 											dataSource.setMountPoint("/melodic/" + data.getName());
 
 											dataSourceList.add(dataSource);
+											log.debug("DataSource was added: " + camelModel);
 										}
 									}
 								}

@@ -7,5 +7,7 @@ import eu.melodic.dlms.db.model.DataSource;
 
 @Repository
 public interface DataSourceRepository extends JpaRepository<DataSource, Long> {
+	boolean existsByName(String name);
 
+	DataSource findByName(String name);
 }

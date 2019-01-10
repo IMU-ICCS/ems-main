@@ -1,8 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import camel.constraint.ComparisonOperatorType;
-import camel.constraint.Constraint;
-import camel.constraint.impl.MetricConstraintImpl;
+import camel.constraint.ConstraintModel;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
@@ -13,12 +12,13 @@ import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
 import camel.deployment.impl.ScriptConfigurationImpl;
 import camel.location.LocationModel;
-import camel.metric.*;
+import camel.metric.CompositeMetric;
+import camel.metric.Metric;
+import camel.metric.MetricVariable;
+import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.HorizontalScaleRequirement;
-import camel.requirement.RequirementModel;
-import camel.requirement.ServiceLevelObjective;
 import camel.type.PrimitiveType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -138,7 +138,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             List<MetricVariableImpl> variables = getVariables(camelModel, componentName);
 
             Optional<MetricVariableImpl> mCardinality = CamelMetadataTool.findVariableFor(variables, CamelMetadata.CARDINALITY);
-            CpVariable cardinalityVariable = null;
+            CpVariable cardinalityVariable;
 
             if (mCardinality.isPresent()) {
                 MetricVariableImpl cardinalityMetricVariable = mCardinality.get();
@@ -235,64 +235,29 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private void addConstraint(ConstraintProblem cp, CamelModel camelModel, String cacheKey) {
 
-        getSLORequirement(camelModel)
+        getMetricVariableConstraints(camelModel)
             .stream()
-            .peek(slo -> log.info("Working with SLO with type: " + getConstraintType(slo) + " - name " + slo.getName()))
-            .forEach(sloRequirement -> {
+            .peek(metricVariableConstraint -> log.info("Working with MetricVariableConstraintImpl: {}", metricVariableConstraint.getName()))
+            .forEach(metricVariableConstraint -> {
+                MetricVariable metricVariable = metricVariableConstraint.getMetricVariable();
+                double threshold = metricVariableConstraint.getThreshold();
+                ComparisonOperatorType comparisonOperator = metricVariableConstraint.getComparisonOperator();
 
-                Constraint constraint = sloRequirement.getConstraint();
-                if (constraint != null) {
-                    if (constraint instanceof MetricConstraintImpl) {
-                        MetricConstraintImpl mc = (MetricConstraintImpl) constraint;
-                        MetricContext metricContext = mc.getMetricContext();
+                String name = metricVariable.getName();
+                String formula = metricVariable.getFormula();
 
-                        Constant tresholdConstant = constantService.createDoubleConstant(mc.getThreshold());
-                        ComparatorEnum comparatorEnum = convertComparator(mc.getComparisonOperator());
+                if (StringUtils.isNotBlank(formula)){
+                    expressionService.parse(name, formula, cp, camelModel, cacheKey);
 
-                        CpMetric cpMetric = metricService.getByName(cp.getCpMetrics(), metricContext.getMetric().getName()).orElseGet(() -> {
-                            CpMetric result = metricService.createCpMetric(metricContext.getMetric().getName(), getType(metricContext.getMetric()));
-                            cp.getCpMetrics().add(result);
-                            return result;
-                        });
+                    ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
+                            .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
 
-                        cp.getConstants().add(tresholdConstant);
-                        cp.getConstraints().add(constraintService.createComparisonExpression(cpMetric, comparatorEnum, tresholdConstant, mc.getName()));
-                    }
-
-                    if (constraint instanceof MetricVariableConstraintImpl) {
-                        MetricVariableConstraintImpl mvc = (MetricVariableConstraintImpl) constraint;
-                        camel.metric.MetricVariable metricVariable = mvc.getMetricVariable();
-                        double threshold = mvc.getThreshold();
-                        ComparisonOperatorType comparisonOperator = mvc.getComparisonOperator();
-
-                        String name = metricVariable.getName();
-                        String formula = metricVariable.getFormula();
-
-                        if (StringUtils.isNotBlank(formula)){
-                            expressionService.parse(name, formula, cp, camelModel, cacheKey);
-
-                            ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
-                                    .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
-
-                            Constant tresholdConstant = constantService.createDoubleConstant(threshold);
-                            cp.getConstants().add(tresholdConstant);
-                            cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
-                        }
-                    }
+                    Constant tresholdConstant = constantService.createDoubleConstant(threshold);
+                    cp.getConstants().add(tresholdConstant);
+                    cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
                 }
         });
 
-    }
-
-    private String getConstraintType(ServiceLevelObjective slo) {
-        String result = "Unknown";
-        Constraint constraint = slo.getConstraint();
-        if (constraint instanceof MetricConstraintImpl) {
-            result = "MetricConstraintImpl";
-        } else if (constraint instanceof MetricVariableConstraintImpl) {
-            result = "MetricVariableConstraintImpl";
-        }
-        return result;
     }
 
     private ComparatorEnum convertComparator(ComparisonOperatorType comparisonOperator){
@@ -317,17 +282,15 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         throw new GeneratorException("Unsupported comparator: " + comparisonOperator.getName());
     }
 
+    private List<MetricVariableConstraintImpl> getMetricVariableConstraints(CamelModel camelModel){
 
-    private List<ServiceLevelObjective> getSLORequirement(CamelModel camelModel) {
-        List<ServiceLevelObjective> result = new ArrayList<>();
-        for (RequirementModel requirementModel : CollectionUtils.emptyIfNull(camelModel.getRequirementModels())) {
-            for (camel.requirement.Requirement requirement : CollectionUtils.emptyIfNull(requirementModel.getRequirements())) {
-                if (requirement instanceof ServiceLevelObjective) {
-                    result.add((ServiceLevelObjective) requirement);
-                }
-            }
-        }
-        return result;
+        return CollectionUtils.emptyIfNull(camelModel.getConstraintModels())
+                .stream()
+                .map(ConstraintModel::getConstraints)
+                .flatMap(Collection::stream)
+                .filter(constraint -> constraint instanceof MetricVariableConstraintImpl)
+                .map(metricModel -> (MetricVariableConstraintImpl) metricModel)
+                .collect(Collectors.toList());
     }
 
     private void addMetrics(ConstraintProblem cp, CamelModel camelModel) {
@@ -462,7 +425,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private String getImageId(SoftwareComponent softwareComponent) {
         Configuration configuration = softwareComponent.getConfigurations().get(0);
-        if (configuration instanceof ScriptConfigurationImpl) {
+        if (configuration instanceof ScriptConfigurationImpl && "docker".equals(((ScriptConfigurationImpl) configuration).getDevopsTool())) {
             return ((ScriptConfigurationImpl) configuration).getImageId();
         }
         return null;
@@ -545,12 +508,8 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     private List<Metric> getAllMetrics(CamelModel camelModel){
-        EList<MetricModel> metricModels = camelModel.getMetricModels();
-        if (CollectionUtils.isEmpty(metricModels)){
-            return Collections.emptyList();
-        }
-
-        return metricModels.stream()
+        return CollectionUtils.emptyIfNull(camelModel.getMetricModels())
+                .stream()
                 .map(metricModel -> ((MetricTypeModelImpl) metricModel).getMetrics())
                 .flatMap(List::stream)
                 .collect(Collectors.toList());

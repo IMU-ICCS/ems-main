@@ -105,7 +105,7 @@ public class SolverToDeployment {
 
 				DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) camelModel.getDeploymentModels().get(dmId);
 				DataHolder dataholder = DataUtils.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModel, constraintProblem, solution,
-						camelModel, camelModelID, nodeCandidates, solverToDeploymentProperties, transaction);
+                        camelModel, camelModelID, nodeCandidates, transaction);
 				if (dataholder==null) {
 					notifySolutionNotApplied(camelModelID, notificationUri, requestUuid);
 					return;

@@ -14,6 +14,7 @@ import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -32,6 +33,7 @@ public class ColosseumExecutorFactory {
   private ColosseumApi api;
   private ThreadPoolTaskExecutor executor;
   private ShelveContext shelveContext;
+  private AdapterProperties adapterProperties;
 
   private ColosseumContext context;
 
@@ -57,7 +59,7 @@ public class ColosseumExecutorFactory {
 
   Callable createTaskExecutor(Task task) {
     if (task instanceof CheckFinishTask) {
-      return new CheckFinishTaskExecutor((CheckFinishTask) task, api);
+      return new CheckFinishTaskExecutor((CheckFinishTask) task, api, adapterProperties.getCloudiatorV2().getDelayBetweenQueueCheck());
     }
     throw new IllegalArgumentException(format("Task %s is not supported as CallableTask", task.getClass().getName()));
   }

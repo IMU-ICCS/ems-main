@@ -1,0 +1,13 @@
+# TO BE EXECUTED IN VM
+# REQUIRES "SUDO" (without password prompt)
+# bash, sed and JAVA
+
+sudo mkdir -p /opt/baguette-client/bin
+sudo mkdir -p /opt/baguette-client/logs
+sudo wget http://192.168.48.1/resources/baguette-client/bin/install.sh -O /opt/baguette-client/bin/install.sh
+sudo chmod u+rwx,og-rwx /opt/baguette-client/bin/install.sh
+sudo /opt/baguette-client/bin/install.sh http://192.168.48.1/resources 1234567890
+
+....................
+
+sudo service baguette-client start

@@ -1,6 +1,8 @@
 package eu.melodic.dlms.db.model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import lombok.AllArgsConstructor;
@@ -15,10 +17,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DataSource {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
 	
-	public DataSource(Long id) {
-		this.id = id;
+	public DataSource(String name) {
+		this.name = name;
 	}
+	
 }

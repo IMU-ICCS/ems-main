@@ -1,0 +1,8 @@
+# Test action plan
+
+third-level.address	127.0.0.1
+third-level.port	61616
+
+registration-window	5000
+num-of-vms			4
+num-of-segments		2

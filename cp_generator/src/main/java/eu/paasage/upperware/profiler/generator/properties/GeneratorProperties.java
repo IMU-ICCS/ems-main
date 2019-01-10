@@ -3,13 +3,13 @@ package eu.paasage.upperware.profiler.generator.properties;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -34,7 +34,6 @@ public class GeneratorProperties {
 
         @NotBlank
         private String url;
-
     }
 
     @Getter
@@ -47,6 +46,6 @@ public class GeneratorProperties {
         @NotBlank
         private String apiKey;
 
-        private int httpReadTimeout = 50;
+        private int httpReadTimeout = 30000;
     }
 }
