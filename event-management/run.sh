@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Change directory to Baguette client home
+# Get EMS home directory
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 MELODIC_CONFIG_DIR=$BASEDIR/config-files
 PAASAGE_CONFIG_DIR=$BASEDIR/config-files
