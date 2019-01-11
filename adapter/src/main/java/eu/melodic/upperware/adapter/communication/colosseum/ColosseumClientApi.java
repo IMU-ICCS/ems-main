@@ -128,6 +128,20 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
+  public Queue deleteProcess(String processId) throws ApiException {
+    Objects.requireNonNull(processId);
+    log.info("Deleting process with id: {}", processId);
+    return processApi.deleteProcess(processId);
+  }
+
+  @Override
+  public Queue deleteNode(String nodeId) throws ApiException {
+    Objects.requireNonNull(nodeId);
+    log.info("Deleting node with id: {}", nodeId);
+    return nodeApi.deleteNode(nodeId);
+  }
+
+  @Override
   public Monitor addMonitor(Monitor monitor) throws ApiException{
     return monitoringApi.addMonitor(monitor);
   }

@@ -3,15 +3,13 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.Communication;
-import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.PortProvided;
 import io.github.cloudiator.rest.model.PortRequired;
+import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -26,8 +24,8 @@ import static java.lang.String.format;
 public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
 
     JobTaskExecutor(JobTask task, Collection<Future> predecessors, ColosseumApi api,
-                    ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                    ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
@@ -41,7 +39,6 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
             JobNew jobNew = convertToJobNew(taskBody);
             Job job = api.addJob(jobNew);
             context.addJob(job);
-            shelveContext.addShelveJob(new ShelveJob(job.getId(), job.getName()));
         } catch (ApiException e) {
             log.error("Could not add Job. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);

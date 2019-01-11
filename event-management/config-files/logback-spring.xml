@@ -31,6 +31,7 @@
 	<logger name="eu.melodic.event" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.control" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.baguette.server" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="eu.melodic.event.baguette.client.install" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
 	<logger name="eu.melodic.event.translate" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
