@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -34,6 +31,12 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
     @Override
     public void create(AdapterMonitor taskBody) {
         Monitor monitor = convertToMonitor(taskBody);
+        Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName());
+        if (monitorOpt.isPresent()) {
+            log.info("There is already Monitor defined with metric: {}", taskBody.getMetricName());
+            return;
+        }
+
         try {
             Monitor addedMonitor = api.addMonitor(monitor);
             context.addMonitor(addedMonitor);

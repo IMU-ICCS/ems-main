@@ -93,9 +93,9 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
       return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
   }
 
-    public Optional<Monitor> getMonitors(String metricName){
+    public Optional<Monitor> getMonitor(String metricName){
         return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()),
-                () -> new IllegalStateException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
+                () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
     public void addMonitor(@NonNull Monitor monitor) {
