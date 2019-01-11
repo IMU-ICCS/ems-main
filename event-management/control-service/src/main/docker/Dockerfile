@@ -1,10 +1,25 @@
 FROM java:8
-VOLUME /tmp
-ADD control-service.jar control-service.jar
-ADD esper-7.1.0.jar esper-7.1.0.jar
-RUN bash -c 'touch /control-service.jar'
-RUN bash -c 'touch /esper-7.1.0.jar'
-RUN bash -c 'apt-get update'
-RUN bash -c 'apt-get install -y netcat'
-RUN bash -c 'ls -ltr'
-ENTRYPOINT ["/config/wait-for-cdo.sh", "java", "-Duser.timezone=Europe/Warsaw", "-Djava.security.egd=file:/dev/./urandom", "-Dloader.path=/esper-7.1.0.jar", "-cp", "/control-service.jar", "org.springframework.boot.loader.PropertiesLauncher", " --logging.config=/config/logback-conf/logback-spring.xml"]
+
+WORKDIR /opt/ems-server
+
+ADD control-service.jar .
+ADD esper-*.jar .
+ADD config ./config
+ADD run-ems.sh .
+
+RUN bash -c 'touch control-service.jar'
+RUN bash -c 'touch esper-*.jar'
+RUN bash -c 'chmod +rx run-ems.sh'
+RUN mkdir logs
+
+#RUN bash -c 'apt-get update'
+#RUN bash -c 'apt-get install -y netcat'
+
+ENTRYPOINT ["./run-ems.sh"]
+
+#ENV BASEDIR=/opt/ems-server
+#ENV MELODIC_CONFIG_DIR=$BASEDIR/config
+#ENV PAASAGE_CONFIG_DIR=$BASEDIR/config
+
+#ENTRYPOINT ["/config/wait-for-cdo.sh", "java", "-Duser.timezone=Europe/Warsaw", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/control-service.jar", " --logging.config=/config/logback-spring.xml"]
+#ENTRYPOINT ["java", "-Duser.timezone=Europe/Warsaw", "-Djava.security.egd=file:/dev/./urandom", "-Dloader.path=$BASEDIR/esper-7.1.0.jar", "-cp", "$BASEDIR/control-service.jar", "org.springframework.boot.loader.PropertiesLauncher", " --logging.config=$MELODIC_CONFIG_DIR/logback-spring.xml"]
