@@ -2,7 +2,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.MonitorTask;
 import io.github.cloudiator.rest.ApiException;
@@ -23,9 +22,9 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     public MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
                                ColosseumApi api, ColosseumContext context, ThreadPoolTaskExecutor executor,
-                               ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
+                               ColosseumExecutorFactory colosseumExecutorFactory) {
 
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override

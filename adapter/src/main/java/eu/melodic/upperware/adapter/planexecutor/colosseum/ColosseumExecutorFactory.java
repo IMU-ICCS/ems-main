@@ -52,7 +52,7 @@ public class ColosseumExecutorFactory {
       return new WaitTaskExecutor((WaitTask) task, predecessors, api, context, executor, this);
     }
     if (task instanceof MonitorTask) {
-      return new MonitorTaskExecutor((MonitorTask)task, predecessors, api, context, executor, this, shelveContext);
+      return new MonitorTaskExecutor((MonitorTask)task, predecessors, api, context, executor, this);
     }
 
     throw new IllegalArgumentException(format("Task %s is not supported as RunnableTask", task.getClass().getName()));

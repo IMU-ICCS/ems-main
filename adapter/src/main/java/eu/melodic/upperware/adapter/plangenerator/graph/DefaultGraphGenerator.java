@@ -57,7 +57,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         Collection<NodeTask> nodeTasks = genNodeCreateTasks(graph, model.getAdapterRequirements());
 
-        genProcessCreateTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
+        Collection<ProcessTask> processTasks = genProcessCreateTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
 
         if (!adapterProperties.getEms().isEnabled()) {
           Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
@@ -117,10 +117,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         monitorTasks.forEach(monitorTask -> {
             addVertex(graph, monitorTask);
-
-//      findAndSetDependencies(graph, monitorTask, monitorTask.getData().getName(), processTasks, CREATE,
-//              task -> ((ProcessTask) task).getData().getTaskName().equals(monitorTask.getData().getTaskName())
-//      );
 
             findAndSetProcessDependencies(graph, monitorTask, monitorTask.getData().getTaskName(), processTasks, CREATE);
         });
