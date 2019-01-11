@@ -42,5 +42,11 @@ public interface ColosseumApi {
 
   Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException;
 
+  Queue deleteNode(String nodeId) throws ApiException;
+
+
   Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
+
+  Queue deleteProcess(String processId) throws ApiException;
+
 }

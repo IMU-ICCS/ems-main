@@ -9,9 +9,9 @@
 
 package eu.melodic.upperware.adapter.executioncontext.colosseum;
 
+import com.google.common.collect.Lists;
 import eu.melodic.upperware.adapter.exception.AmbiguousResultException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
-import eu.melodic.upperware.adapter.executioncontext.ContextUtils;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.NodeApi;
@@ -24,7 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -36,7 +38,7 @@ import static java.lang.String.format;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
-public class ColosseumContext extends ContextUtils implements ContextOperations {
+public class ColosseumContext implements ContextOperations {
 
   private final JobApi jobApi;
   private final NodeApi nodeApi;
@@ -62,6 +64,10 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
             createAmbiguousResultException(NodeGroup.class, name));
   }
 
+    public void deleteNodeGroup(String nodeGroupId) {
+      nodeGroups.removeIf(nodeGroup -> nodeGroupId.equals(nodeGroup.getId()));
+    }
+
   public void addSchedule(@NonNull Schedule schedule) {
     schedules.add(schedule);
   }
@@ -75,8 +81,30 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   }
 
   public Optional<ProcessGroup> getProcessGroup(String processGroupId) {
-    return getElement(processGroups, process -> processGroupId.equals(process.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
+    return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
   }
+
+
+    public Optional<ProcessGroup> getProcessGroup(String nodeGroupId, String scheduleId, String taskName) throws ApiException {
+        Objects.requireNonNull(nodeGroupId);
+        Objects.requireNonNull(scheduleId);
+        Objects.requireNonNull(taskName);
+
+        return processApi.findProcessGroups()
+                .stream()
+                .filter(processGroup ->
+                        processGroup.getProcesses()
+                                .stream()
+                                .anyMatch(cloudiatorProcess -> {
+                                    return scheduleId.equals(cloudiatorProcess.getSchedule()) &&
+                                            taskName.equals(cloudiatorProcess.getTask());
+                                    //TODO - add check if processGroup is equal
+                                }))
+                .findFirst();
+    }
+    public void deleteProcessGroup(String processGroupId) {
+        processGroups.removeIf(processGroup -> processGroupId.equals(processGroup.getId()));
+    }
 
   public void addJob(@NonNull Job job) {
     jobs.add(job);
@@ -136,6 +164,10 @@ public class ColosseumContext extends ContextUtils implements ContextOperations 
   @Override
   public boolean isLoaded() {
     return loaded;
+  }
+
+  private  <E> List<E> synchronizedList() {
+    return Collections.synchronizedList(Lists.newLinkedList());
   }
 
 }

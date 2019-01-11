@@ -3,9 +3,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveSchedule;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
@@ -23,8 +20,8 @@ import static java.lang.String.format;
 public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProcess> {
 
     ProcessTaskExecutor(ProcessTask task, Collection<Future> predecessors, ColosseumApi api,
-                        ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                        ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
@@ -33,18 +30,11 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
         NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
-        ShelveJob shelveJob = shelveContext.getShelveJobByName(taskBody.getJobName())
-                .orElseThrow(() -> new AdapterException(format("Could not find ShelveJob with name %s", taskBody.getJobName())));
+        Job job = context.getJob(taskBody.getJobName())
+                .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
 
-        Job job = context.getJob(shelveJob.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find Job with id %s", shelveJob.getId())));
-
-
-        ShelveSchedule shelveSchedule = shelveContext.getShelveScheduleByJobId(job.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find ShelveSchedule with job %s", job.getId())));
-
-        Schedule schedule = context.getSchedule(shelveSchedule.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with id %s", shelveSchedule.getId())));
+        Schedule schedule = context.getSchedule(taskBody.getScheduleName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
 
         Task task = job.getTasks()
                 .stream()
@@ -67,7 +57,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
 
             String processGroupId = getId(watch.getLocation());
             Optional<ProcessGroup> processGroupOpt = api.getProcessGroup(processGroupId);
-            if (processGroupOpt.isPresent()){
+            if (processGroupOpt.isPresent()) {
                 ProcessGroup processGroup = processGroupOpt.get();
                 log.info("ProcessGroup details: {}", processGroup);
                 context.addProcessGroup(processGroup);
@@ -83,6 +73,39 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
 
     @Override
     public void delete(AdapterProcess taskBody) {
+        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
+        Job job = context.getJob(taskBody.getJobName())
+                .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
+
+        Schedule schedule = context.getSchedule(taskBody.getScheduleName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
+
+        Task task = job.getTasks()
+                .stream()
+                .filter(t -> t.getName().equals(taskBody.getTaskName()))
+                .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
+
+        try {
+            Optional<ProcessGroup> optionalProcessGroup = context.getProcessGroup(nodeGroup.getId(), schedule.getId(), task.getName());
+
+            if (optionalProcessGroup.isPresent()) {
+                ProcessGroup processGroup = optionalProcessGroup.get();
+                String processGroupId = processGroup.getId();
+                CloudiatorProcess cloudiatorProcess = processGroup.getProcesses().get(0);
+
+                Queue deleteProcessQueue = api.deleteProcess(cloudiatorProcess.getId());
+
+                watch(deleteProcessQueue.getId());
+                log.info("Response from queue {} successfully reached. Process is deleted", deleteProcessQueue.getId(), processGroupId);
+                context.deleteProcessGroup(processGroupId);
+            } else {
+                log.warn("Could not find process group with nodeGroup {}, schedule {} and task {}. Nothing will be deleted.", nodeGroup.getId(), schedule.getId(), task.getName());
+            }
+        } catch (ApiException e) {
+            log.error("Could not delete ProcessGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            throw new AdapterException("Problem during removing ProcessGroup", e);
+        }
     }
 }

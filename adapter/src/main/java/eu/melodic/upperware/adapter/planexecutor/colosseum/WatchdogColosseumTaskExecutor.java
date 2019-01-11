@@ -3,7 +3,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.planexecutor.TaskWatchDog;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterCheckFinish;
 import eu.melodic.upperware.adapter.plangenerator.model.Data;
@@ -26,16 +25,13 @@ public abstract class WatchdogColosseumTaskExecutor<T extends Data> extends Colo
 
     private ThreadPoolTaskExecutor executor;
     private ColosseumExecutorFactory colosseumExecutorFactory;
-    ShelveContext shelveContext;
-
 
     WatchdogColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api,
                                   ColosseumContext context, ThreadPoolTaskExecutor executor,
-                                  ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
+                                  ColosseumExecutorFactory colosseumExecutorFactory) {
         super(task, predecessors, api, context);
         this.executor = executor;
         this.colosseumExecutorFactory = colosseumExecutorFactory;
-        this.shelveContext = shelveContext;
     }
 
     @Override

@@ -11,7 +11,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
@@ -32,23 +31,25 @@ public class ColosseumExecutorFactory {
 
   private ColosseumApi api;
   private ThreadPoolTaskExecutor executor;
-  private ShelveContext shelveContext;
   private AdapterProperties adapterProperties;
 
   private ColosseumContext context;
 
   RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors) {
     if (task instanceof JobTask) {
-    return new JobTaskExecutor((JobTask) task, predecessors, api, context, executor, this, shelveContext);
+    return new JobTaskExecutor((JobTask) task, predecessors, api, context, executor, this);
     }
     if (task instanceof ScheduleTask) {
-      return new ScheduleTaskExecutor((ScheduleTask) task, predecessors, api, context, executor, this, shelveContext);
+      return new ScheduleTaskExecutor((ScheduleTask) task, predecessors, api, context, executor, this);
     }
     if (task instanceof NodeTask) {
-      return new NodeTaskExecutor((NodeTask) task, predecessors, api, context, executor, this, shelveContext);
+      return new NodeTaskExecutor((NodeTask) task, predecessors, api, context, executor, this);
     }
     if (task instanceof ProcessTask) {
-      return new ProcessTaskExecutor((ProcessTask) task, predecessors, api, context, executor, this, shelveContext);
+      return new ProcessTaskExecutor((ProcessTask) task, predecessors, api, context, executor, this);
+    }
+    if (task instanceof WaitTask) {
+      return new WaitTaskExecutor((WaitTask) task, predecessors, api, context, executor, this);
     }
     throw new IllegalArgumentException(format("Task %s is not supported as RunnableTask", task.getClass().getName()));
   }
