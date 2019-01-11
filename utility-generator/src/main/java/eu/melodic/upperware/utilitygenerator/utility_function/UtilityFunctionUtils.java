@@ -9,7 +9,6 @@
 package eu.melodic.upperware.utilitygenerator.utility_function;
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +26,6 @@ import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidat
 @Slf4j
 public class UtilityFunctionUtils {
 
-    public static Collection<Argument> convertToArgument(Collection<VariableValueDTO> variableValueDTOS) {
-        return variableValueDTOS.stream().map(ArgumentFactory::createArgument).collect(Collectors.toList());
-    }
-
-    public static Collection<Constant> convertToConstants(Collection<Argument> arguments) {
-        return arguments.stream().map(ConstantFactory::createConstant).collect(Collectors.toList());
-    }
 
     public static String createUtilityFunctionCostFormula(Collection<VariableDTO> variablesFromConstraintProblem) {
         log.warn("The Optimisation requirement is not defined in the Camel Model, default utility function which optimises the cost will be created.");
@@ -50,6 +42,10 @@ public class UtilityFunctionUtils {
         Expression expression = new Expression(formula);
         String[] arguments = expression.getMissingUserDefinedArguments();
         return Arrays.asList(arguments).contains(name);
+    }
+
+    static Collection<Constant> convertToConstants(Collection<Argument> arguments) {
+        return arguments.stream().map(ConstantFactory::createConstant).collect(Collectors.toList());
     }
 
 }

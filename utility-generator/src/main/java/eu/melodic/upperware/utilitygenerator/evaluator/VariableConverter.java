@@ -23,7 +23,7 @@ import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunc
 
 @Slf4j
 @AllArgsConstructor
-public class VariableConverter extends ArgumentConverter {
+public class VariableConverter implements ArgumentConverter {
 
     private Collection<VariableDTO> variablesFromConstraintProblem;
     private String formula;

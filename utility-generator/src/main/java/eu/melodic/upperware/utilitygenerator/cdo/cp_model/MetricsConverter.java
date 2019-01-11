@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 
 @Slf4j
-public class MetricsConverter extends ArgumentConverter {
+public class MetricsConverter implements ArgumentConverter {
 
     private Collection<MetricDTO> metricsFromConstraintProblem;
     private String function;

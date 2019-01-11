@@ -10,38 +10,23 @@ package eu.melodic.upperware.utilitygenerator.node_candidates;
 
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.util.Collection;
+import lombok.ToString;
 
 @Getter
+@ToString
+@RequiredArgsConstructor
 public class NodeCandidateAttribute {
 
-    private String name;
-    private String componentId;
-    private CamelMetadata type;
-    private boolean isList;
+    private final String name;
+    private final String componentId;
+    private final CamelMetadata type;
+    @ToString.Exclude
+    private final boolean isList;
     @Setter
+    @ToString.Exclude
     double value;
-
-    public NodeCandidateAttribute(String name, String componentId, CamelMetadata type, boolean isList) {
-        this.name = name;
-        this.componentId = componentId;
-        this.type = type;
-        this.isList = isList;
-    }
-
-    @Override
-    public String toString() {
-        return this.name + " , component = " + this.componentId + " type = " + this.type;
-    }
-
-    public static NodeCandidateAttribute findAttribute(Collection<NodeCandidateAttribute> attributes, String componentId, CamelMetadata type) {
-        return attributes.stream()
-                .filter(a -> componentId.equals(a.getComponentId()) && type.equals(a.getType()))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Attribute with type " + type + "for component " + componentId + " not found"));
-    }
 
     public static String createAttributeName(String componentId, CamelMetadata type) {
         return componentId + "_" + type.camelName;

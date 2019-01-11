@@ -81,6 +81,6 @@ public class CamelModelTool {
 
     public static boolean isUnmoveableComponent(SoftwareComponent softwareComponent) {
         return !softwareComponent.getAnnotations().isEmpty()
-                && softwareComponent.getAnnotations().get(0).getId().equals(CamelMetadata.UNMOVEABLE.camelName);
+                && softwareComponent.getAnnotations().stream().anyMatch(a -> CamelMetadata.UNMOVEABLE.camelName.equals(a.getId()));
     }
 }

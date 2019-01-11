@@ -18,8 +18,8 @@ import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
@@ -30,19 +30,16 @@ import static eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFac
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadata.PRICE;
 
 @Slf4j
-@Getter
-public class NodeCandidatesConverter extends ArgumentConverter {
+public class NodeCandidatesConverter implements ArgumentConverter {
 
-    @Setter
     private Collection<NodeCandidateAttribute> oneNodeCandidateAttributes;
     private Collection<NodeCandidateAttribute> allNodeCandidatesListAttributes;
     private Collection<NodeCandidateAttribute> currentConfigAttributes;
+    @Getter
     private NodeCandidates nodeCandidates;
     private Collection<VariableDTO> variables;
 
     public NodeCandidatesConverter(FromCamelModelExtractor fromCamelModelExtractor, NodeCandidates nodeCandidates, Collection<VariableDTO> variablesFromConstraintProblem) {
-        super();
-
         this.allNodeCandidatesListAttributes = fromCamelModelExtractor.getListOfAttributesOfNodeCandidates();
         this.currentConfigAttributes = fromCamelModelExtractor.getCurrentConfigAttributesOfNodeCandidates();
         this.nodeCandidates = nodeCandidates;
@@ -51,7 +48,7 @@ public class NodeCandidatesConverter extends ArgumentConverter {
         if (this.oneNodeCandidateAttributes.isEmpty()) {
             this.oneNodeCandidateAttributes = createCostAttributesForAllComponents();
         }
-        if (!allNodeCandidatesListAttributes.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(allNodeCandidatesListAttributes)) {
             log.info("Attributes of list of Node Candidates: {}", allNodeCandidatesListAttributes);
             log.warn("Flag on candidates is not supported in Utility Generator");
         }
@@ -66,9 +63,8 @@ public class NodeCandidatesConverter extends ArgumentConverter {
     public Collection<Argument> convertCurrentConfigAttributesOfNodeCandidates(Collection<ConfigurationElement> configuration) {
         if (configuration.isEmpty()) {
             return setDefaultValuesOfAttributes(this.currentConfigAttributes);
-        } else {
-            return convertAttributes(this.currentConfigAttributes, configuration);
         }
+        return convertAttributes(this.currentConfigAttributes, configuration);
     }
 
     private Collection<NodeCandidateAttribute> createCostAttributesForAllComponents() {
@@ -96,7 +92,7 @@ public class NodeCandidatesConverter extends ArgumentConverter {
         return newConfiguration.stream()
                 .filter(configurationElement -> configurationElement.getId().equals(componentId))
                 .findAny()
-                .orElseThrow(() -> new IllegalStateException("Configuration VariableValueDTO for component " + componentId + " is not found"))
+                .orElseThrow(() -> new IllegalStateException("Configuration Element for component " + componentId + " is not found"))
                 .getNodeCandidate();
     }
 

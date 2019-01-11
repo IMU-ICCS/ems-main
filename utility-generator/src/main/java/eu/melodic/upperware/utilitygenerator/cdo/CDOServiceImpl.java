@@ -25,14 +25,13 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Objects;
 
 import static java.lang.String.format;
 
 @Slf4j
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@AllArgsConstructor
 public class CDOServiceImpl implements CDOService {
 
     private CDOClientX clientX;
@@ -65,7 +64,7 @@ public class CDOServiceImpl implements CDOService {
 
     @Override
     public ConstraintProblem getConstraintProblem(String name, CDOView view) {
-        log.info("Reading CP model...");
+        log.info("Reading CP model {} ...", name);
         CDOResource resource = view.getResource(name);
         Objects.requireNonNull(resource);
         return (ConstraintProblem) resource.getContents().stream().filter(obj -> obj instanceof ConstraintProblem).findAny().orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));

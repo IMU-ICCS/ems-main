@@ -106,12 +106,6 @@ public class EvaluatingUtils {
                     log.debug("Creating getRamPredicate for value {}", var.getValue());
                     predicates.add(getRamPredicate((long) (int) var.getValue()));
                     break;
-                case CARDINALITY:
-                    break;
-                case PROVIDER:
-                    break;
-                case CPU:
-                    break;
                 case CORES:
                     log.debug("Creating getCoresPredicate for value {}", var.getValue());
                     predicates.add(getCoresPredicate((int) var.getValue()));
@@ -124,8 +118,10 @@ public class EvaluatingUtils {
                     predicates.add(getStoragePredicate((int) var.getValue()));
                     break;
                 case LOCATION:
+                case CARDINALITY:
+                case PROVIDER:
+                case CPU:
                     break;
-
             }
         }
 

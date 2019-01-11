@@ -10,19 +10,14 @@ package eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
+@ToString
 public class VariableValueDTO<T extends Number> {
 
     private String name;
     private T value;
 
-    @Override
-    public String toString() {
-        return "VariableValueDTO{" +
-                "name='" + name + '\'' +
-                ", value=" + value +
-                '}';
-    }
 }

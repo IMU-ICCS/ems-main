@@ -6,8 +6,7 @@ import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
 
-public abstract class ArgumentConverter {
+public interface ArgumentConverter {
 
-
-    public abstract Collection<Argument> convertToArguments(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration);
+    Collection<Argument> convertToArguments(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> newConfiguration);
 }

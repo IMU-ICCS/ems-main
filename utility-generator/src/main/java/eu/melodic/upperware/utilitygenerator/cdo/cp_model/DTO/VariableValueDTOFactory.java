@@ -13,7 +13,6 @@ import eu.paasage.upperware.metamodel.types.*;
 public class VariableValueDTOFactory {
 
 
-
     public static VariableValueDTO createElement(CpVariableValue variableValue) {
         NumericValueUpperware value = variableValue.getValue();
         VariableValueDTO variable;
@@ -31,16 +30,6 @@ public class VariableValueDTOFactory {
             variable = new IntVariableValueDTO(variableValue.getVariable().getId(), (int) longVal.getValue());
         }
         return variable;
-
-
-    }
-
-    public static VariableValueDTO createElementWithNewName(String name, VariableValueDTO variableValueDTO) {
-        if (variableValueDTO instanceof IntVariableValueDTO) {
-            return new IntVariableValueDTO(name, ((IntVariableValueDTO) variableValueDTO).getValue());
-        } else { //RealVariableValueDTO
-            return new RealVariableValueDTO(name, ((RealVariableValueDTO) variableValueDTO).getValue());
-        }
     }
 
     public static VariableValueDTO createElement(String name, Number value) {

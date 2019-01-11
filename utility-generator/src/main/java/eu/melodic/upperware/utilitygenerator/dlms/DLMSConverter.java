@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import static eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFactory.createArgument;
 
 @Slf4j
-public class DLMSConverter extends ArgumentConverter {
+public class DLMSConverter implements ArgumentConverter {
 
     private DLMSService dlmsUtilityService;
     private Collection<DLMSUtilityAttribute> dlmsUtilityAttributes;
@@ -73,7 +73,7 @@ public class DLMSConverter extends ArgumentConverter {
         }
         Double dlmsUtilityResult = dlmsUtility.getResults().get(type.camelName);
         if (dlmsUtilityResult == null) {
-            log.warn("DLMS utility result for type: " + type.camelName + " is null, returning 0 as a DLMS utility value");
+            log.warn("DLMS utility result for type: {} is null, returning 0 as a DLMS utility value", type.camelName);
             return 0;
         }
         return dlmsUtilityResult;
