@@ -200,7 +200,7 @@ public class ControlServiceCoordinator {
 
                     CamelToEplTranslator translator =
                             applicationContext.getBean(CamelToEplTranslator.class);
-                    translator.printAnalysisResults(_TC, null);
+                    translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to unserialize _TC from file: {} : Exception: ", fileName, ex);
                 }

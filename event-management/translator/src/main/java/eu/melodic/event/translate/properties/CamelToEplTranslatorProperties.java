@@ -39,6 +39,14 @@ public class CamelToEplTranslatorProperties {
     @Value("${translator.formula-check-enabled:true}")
     private boolean formulaCheckEnabled;
 
+    // Translation Results & Graph print/export Switches
+    @Value("${translator.print-results:true}")
+    private boolean printResults;
+    @Value("${dag.export-to-dot.enabled:true}")
+    private boolean exportToDotEnabled;
+    @Value("${dag.export-to-file.enabled:true}")
+    private boolean exportToFileEnabled;
+
     // Graph rendering parameters
     @Value("${dag.export.path:}")
     private String exportPath;

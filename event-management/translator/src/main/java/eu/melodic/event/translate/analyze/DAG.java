@@ -369,6 +369,18 @@ public class DAG {
             log.debug("DAG.exportDAG(): Results of exportToDot(): Graph in DOT format:\n{}", dot);
 
             // Export DOT into specified formats and save to file(s)
+            exportDAG(dot, baseFileName, exportFormats, imageWidth);
+
+        } catch (Exception ex) {
+            log.error("DAG.exportDAG(): Graph export FAILED: ", ex);
+        }
+    }
+
+    public void exportDAG(String dot, String baseFileName, String[] exportFormats, int imageWidth) {
+        try {
+            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return;
+
+            // Export DOT into specified formats and save to file(s)
             MutableGraph mg = Parser.read(dot);
             for (String f : exportFormats) {
                 Format fmt = Format.valueOf(f.toUpperCase());
