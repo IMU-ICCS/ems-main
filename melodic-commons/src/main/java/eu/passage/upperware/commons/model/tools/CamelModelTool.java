@@ -1,6 +1,7 @@
 package eu.passage.upperware.commons.model.tools;
 
 import camel.core.CamelModel;
+import camel.deployment.SoftwareComponent;
 import camel.metric.CompositeMetric;
 import camel.metric.Metric;
 import camel.metric.MetricModel;
@@ -8,6 +9,7 @@ import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
 import camel.type.PrimitiveType;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.common.util.EList;
 
@@ -77,5 +79,8 @@ public class CamelModelTool {
         return metricVariable.getMetricTemplate().getValueType().getPrimitiveType();
     }
 
-
+    public static boolean isUnmoveableComponent(SoftwareComponent softwareComponent) {
+        return !softwareComponent.getAnnotations().isEmpty()
+                && softwareComponent.getAnnotations().stream().anyMatch(a -> CamelMetadata.UNMOVEABLE.camelName.equals(a.getId()));
+    }
 }

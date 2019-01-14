@@ -13,7 +13,15 @@
       <configurations xsi:type="deployment:ScriptConfiguration" name="ComponentDBConfiguration" installCommand="~/melodic/MySQLDB.sh install" startCommand="~/melodic/MySQLDB.sh start" downloadCommand="rm -rf ~/melodic &amp;&amp; mkdir ~/melodic &amp;&amp; cd ~/melodic &amp;&amp; wget https://s3-eu-west-1.amazonaws.com/melodic.testing.data/MySQLDB.sh &amp;&amp; chmod +x ~/melodic/MySQLDB.sh" configureCommand="~/melodic/MySQLDB.sh configure"/>
       <requiredHost name="WM_DBHostReq"/>
     </softwareComponents>
+    <vms name="VM_App">
+      <providedHosts name="VM_AppHost"/>
+    </vms>
+    <vms name="VM_DB">
+      <providedHosts name="VM_DBHost"/>
+    </vms>
     <communications name="AppToDB" providedCommunication="//@deploymentModels.0/@softwareComponents.1/@providedCommunications.0" requiredCommunication="//@deploymentModels.0/@softwareComponents.0/@requiredCommunications.0"/>
+    <hostings name="TwoComponentAppToWM" providedHost="//@deploymentModels.0/@vms.0/@providedHosts.0" requiredHosts="//@deploymentModels.0/@softwareComponents.0/@requiredHost"/>
+    <hostings name="TwoComponentAppToWMDB" providedHost="//@deploymentModels.0/@vms.1/@providedHosts.0" requiredHosts="//@deploymentModels.0/@softwareComponents.1/@requiredHost"/>
     <requirementSets name="AppRequirementSet" resourceRequirement="//@requirementModels.0/@requirements.0" horizontalScaleRequirement="//@requirementModels.0/@requirements.2"/>
     <requirementSets name="DBRequirementSet" resourceRequirement="//@requirementModels.0/@requirements.1" horizontalScaleRequirement="//@requirementModels.0/@requirements.3"/>
   </deploymentModels>

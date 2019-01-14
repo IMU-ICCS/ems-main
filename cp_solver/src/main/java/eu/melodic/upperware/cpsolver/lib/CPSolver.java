@@ -9,11 +9,9 @@ package eu.melodic.upperware.cpsolver.lib;
 
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
-import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTO;
-import eu.melodic.upperware.utilitygenerator.model.DTO.MetricDTOFactory;
-import eu.melodic.upperware.utilitygenerator.model.DTO.VariableDTO;
-import eu.melodic.upperware.utilitygenerator.model.function.Element;
-import eu.melodic.upperware.utilitygenerator.model.function.ElementFactory;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -43,6 +41,8 @@ import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static eu.passage.upperware.commons.model.tools.CPModelTool.isInitialDeployment;
+
 @Slf4j
 public class CPSolver {
 
@@ -55,7 +55,6 @@ public class CPSolver {
     private static final int UPPER_INT_LIMIT = 100000000;
     private static final double LOW_REAL_LIMIT = -1000000000.0;
     private static final double UPPER_REAL_LIMIT = 1000000000.0;
-    private static int INITIAL_DEPLOYMENT_ID = -1;
     private int intVarNum = 0;
     private int realVarNum = 0;
     private int constNum = 0;
@@ -63,11 +62,7 @@ public class CPSolver {
     private long timestamp = 0;
     private UtilityGeneratorApplication utilityGenerator;
     private double maxUtility;
-    private double utilityOfDeployedSolution = 0;
-    private List<VariableDTO> variablesForUG = new ArrayList<>();
-    private Collection<Element> deployedSolution;
-    private Collection<MetricDTO> metricsForUG;
-    private boolean isReconfig = false;
+    private Collection<VariableDTO> variables;
     private Map<String, Number> solutionWithMaximumUtility = new HashMap<>();
 
 
@@ -83,11 +78,7 @@ public class CPSolver {
         if (!readFromFile) {
             camelModelFilePath = applicationId;
         }
-        if (isReconfig) {
-            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, deployedSolution, utilityGeneratorProperties, nodeCandidates);
-        } else {
-            this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, readFromFile, variablesForUG, metricsForUG, utilityGeneratorProperties, nodeCandidates);
-        }
+        this.utilityGenerator = new UtilityGeneratorApplication(camelModelFilePath, pathName, readFromFile, nodeCandidates, utilityGeneratorProperties);
     }
 
     /* Constructor which also reads the CP Model either from CDO via
@@ -114,37 +105,9 @@ public class CPSolver {
         createVariables(cp.getCpVariables());
         createMetrics(cp.getCpMetrics());
         createConstraints(cp.getConstraints());
-        createVariablesForUG(cp.getCpVariables());
-        createMetricsForUG(cp.getCpMetrics());
-        getActualConfiguration(cp);
+        this.variables = getVariables(cp.getCpVariables());
     }
 
-    private void getActualConfiguration(ConstraintProblem cp) {
-        int deployedSolutionId = cp.getDeployedSolutionId();
-        if (deployedSolutionId != INITIAL_DEPLOYMENT_ID) {
-            isReconfig = true;
-            deployedSolution = cp.getSolution().get(deployedSolutionId)
-                    .getVariableValue().stream()
-                    .map(ElementFactory::createElement)
-                    .collect(Collectors.toList());
-        } else {
-            isReconfig = false;
-        }
-    }
-
-    private void createMetricsForUG(EList<CpMetric> metrics) {
-        log.info("Creating metrics for Utility Generator");
-        this.metricsForUG = metrics.stream().map(MetricDTOFactory::createMetricDTO).collect(Collectors.toList());
-        log.info("Creating metrics for Utility Generator is finished, number of metrics: {}.", metricsForUG.size());
-    }
-
-    private void createVariablesForUG(EList<CpVariable> variables) {
-        log.info("Creating variables for Utility Generator");
-        this.variablesForUG = variables.stream()
-                .map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
-                .collect(Collectors.toList());
-        log.info("Creating variables for Utility Generator is finished, number of variables: {}", variablesForUG.size());
-    }
 
     /* Reads the CPModel from CDO provided that a correct CDO path or a file path
      * name for this model is provided as input
@@ -206,11 +169,11 @@ public class CPSolver {
         maxUtility = utility;
 
         solutionWithMaximumUtility = idToIntVar.values().stream()
-                .filter(intVar -> variablesForUG.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
+                .filter(intVar -> variables.stream().anyMatch(v -> intVar.getName().equals(v.getId())))
                 .collect(Collectors.toMap(IntVar::getName, IntVar::getValue));
 
         idToRealVar.values().stream()
-                .filter(realVar -> variablesForUG.stream().anyMatch(v -> realVar.getName().equals(v.getId())))
+                .filter(realVar -> variables.stream().anyMatch(v -> realVar.getName().equals(v.getId())))
                 .forEach(realVar -> solutionWithMaximumUtility.put(realVar.getName(), realVar.getUB()));
     }
 
@@ -246,7 +209,7 @@ public class CPSolver {
         } else {
             cp = (ConstraintProblem) clientX.loadModel(pathName);
         }
-        if (isReconfig) {
+        if (!isInitialDeployment(cp)) {
             updateUtilityOfDeployedSolution(cp);
         }
 
@@ -341,6 +304,7 @@ public class CPSolver {
 
 
     private void updateUtilityOfDeployedSolution(ConstraintProblem cp) {
+        double utilityOfDeployedSolution = 0;
         log.debug("Updating utility of deployed solution = {}", utilityOfDeployedSolution);
         Solution deployedSolution = cp.getSolution().get(cp.getDeployedSolutionId());
         log.debug("Previous utility of deployed solution was {}", ((DoubleValueUpperware) deployedSolution.getUtilityValue()).getValue());
@@ -443,7 +407,7 @@ public class CPSolver {
                 OperatorEnum op = cep.getOperator();
                 if (op.equals(OperatorEnum.PLUS)) {
                     IntVar var = createIntVar(getBounds(vars, OperatorEnum.PLUS));
-                    log.info("IntElement: {}",var);
+                    log.info("IntVariableValueDTO: {}",var);
                     solver.post(IntConstraintFactory.sum(vars, var));
                     log.info("IntConstraint: SUM with int vars: {} being equal to int var: {}", printVarArray(vars), var);
                     return var;
@@ -452,7 +416,7 @@ public class CPSolver {
                     int[] coeff = new int[exprs.size()];
                     Arrays.fill(coeff, -1);
                     coeff[0] = 1;
-                    log.info("IntElement: {}",var);
+                    log.info("IntVariableValueDTO: {}",var);
 
                     solver.post(IntConstraintFactory.scalar(vars, coeff, var));
                     log.info("IntConstraint: NARY_MINUS with int vars:{} being equal to int var: {}", printVarArray(vars), var);
@@ -465,7 +429,7 @@ public class CPSolver {
                         solver.post(IntConstraintFactory.times(vars[j], prev, v));
                         prev = v;
                     }
-                    log.info("IntElement: {}", prev);
+                    log.info("IntVariableValueDTO: {}", prev);
                     log.info("IntConstraint: TIMES with int vars: {} being equal to int var: {}", printVarArray(vars), prev);
                     return prev;
 
@@ -478,13 +442,13 @@ public class CPSolver {
                         solver.post(IntConstraintFactory.eucl_div(vars[j], prev, v));
                         prev = v;
                     }
-                    log.info("IntElement: {}", prev);
+                    log.info("IntVariableValueDTO: {}", prev);
                     log.info("IntConstraint: DIV with int vars: {} being equal to int var: {}", printVarArray(vars), prev);
                     return prev;
                 } else if (op.equals(OperatorEnum.EQ)) {
                     BoolVar prev = createBoolVar();
                     solver.post(IntConstraintFactory.among(prev, new IntVar[]{vars[0]}, new int[]{vars[1].getValue()}));
-                    log.info("IntElement: {}", prev);
+                    log.info("IntVariableValueDTO: {}", prev);
                     log.info("IntConstraint: EQ with int vars: {} being equal to int var: {}", printVarArray(vars), prev);
                     return prev;
                 }
@@ -496,7 +460,7 @@ public class CPSolver {
                     SimpleUnaryOperatorEnum op = sue.getOperator();
                     if (op.equals(SimpleUnaryOperatorEnum.ABSTRACT_VALUE)) {
                         IntVar newVar = createIntVar();
-                        log.info("IntElement: {}", newVar);
+                        log.info("IntVariableValueDTO: {}", newVar);
                         solver.post(IntConstraintFactory.absolute(newVar, var2));
                         log.info("IntConstraint: ABS with var: {}", newVar);
                         return newVar;
@@ -512,7 +476,7 @@ public class CPSolver {
                             return var2;
                         } else if (val == 2) {
                             solver.post(IntConstraintFactory.times(var2, var2, prevVar));
-                            log.info("IntElement: {}", prevVar);
+                            log.info("IntVariableValueDTO: {}", prevVar);
                             log.info("IntConstraint: EXP with x: {} and y: {}", prevVar, val);
                             return prevVar;
                         } else {
@@ -522,7 +486,7 @@ public class CPSolver {
                                 solver.post(IntConstraintFactory.times(prevVar, var2, varN));
                                 prevVar = varN;
                                 if (i == val) {
-                                    log.info("IntElement: {}", varN);
+                                    log.info("IntVariableValueDTO: {}", varN);
                                     log.info("IntConstraint: EXP with x: {} and y: {}", varN, val);
                                     return varN;
                                 }
@@ -573,7 +537,7 @@ public class CPSolver {
                     IntVar iv = idToIntVar.get(expr.getId());
                     if (iv != null) {
                         v = VariableFactory.real(iv, epsilon);
-                        log.info("RealElement: " + v + " on top of IntElement: " + iv.getName());
+                        log.info("RealVariableValueDTO: " + v + " on top of IntVariableValueDTO: " + iv.getName());
                     }
                 }
                 return v;
@@ -584,10 +548,10 @@ public class CPSolver {
                     IntVar iv = idToIntVar.get(expr.getId());
                     if (iv != null) {
                         v = VariableFactory.real(iv, epsilon);
-                        log.info("RealElement: " + v + " on top of IntElement: " + iv.getName());
+                        log.info("RealVariableValueDTO: " + v + " on top of IntVariableValueDTO: " + iv.getName());
                     } else {
-                        RealVar var = VariableFactory.real("RealElement" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
-                        log.info("RealElement: " + var);
+                        RealVar var = VariableFactory.real("RealVariableValueDTO" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+                        log.info("RealVariableValueDTO: " + var);
                         idToRealVar.put(var.getName(), var);
                         rc.addFunction("{0} >= 0", var);
                         return var;
@@ -624,8 +588,8 @@ public class CPSolver {
                 }
             }
         } else {
-            RealVar var = VariableFactory.real("RealElement" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
-            log.info("RealElement: " + var);
+            RealVar var = VariableFactory.real("RealVariableValueDTO" + (realVarNum++), LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
+            log.info("RealVariableValueDTO: " + var);
             if (expr instanceof ComposedExpression) {
                 ComposedExpression cep = (ComposedExpression) expr;
                 EList<NumericExpression> exprs = cep.getExpressions();
@@ -689,7 +653,7 @@ public class CPSolver {
 						else if (val == 2){
 							function = new StringBuilder("(");
 							function.append("{0} * {0} = {1} )");
-							RealElement[] vars = new RealElement[]{var2,var};
+							RealVariableValueDTO[] vars = new RealVariableValueDTO[]{var2,var};
 							rc.addFunction(function.toString(),vars);
 						}
 						else{
@@ -698,7 +662,7 @@ public class CPSolver {
 								function.append("* {" + i + "} ");
 							}
 							function.append(" )");
-							RealElement[] vars = new RealElement[]{var2,var};
+							RealVariableValueDTO[] vars = new RealVariableValueDTO[]{var2,var};
 							rc.addFunction(function.toString(),vars);
 						}*/
                         function = new StringBuilder("( pow( {0}, " + val + " ) = {1} )");
@@ -802,13 +766,13 @@ public class CPSolver {
                     String id = var.getId();
                     log.info("Checking variable with name: {}", id);
                     RealVar v = idToRealVar.get(id);
-                    log.info("RealElement is: {}", v);
+                    log.info("RealVariableValueDTO is: {}", v);
                     if (v == null) {
                         IntVar iv = idToIntVar.get(id);
                         //Checking if int var is involved
                         if (iv != null) {
                             v = VariableFactory.real(iv, epsilon);
-                            log.info("RealElement: {} on top of IntElement: {}", v, iv.getName());
+                            log.info("RealVariableValueDTO: {} on top of IntVariableValueDTO: {}", v, iv.getName());
                         }
                         //If not, then we have a problem
                         else {
@@ -941,28 +905,28 @@ public class CPSolver {
                     IntegerValueUpperware int2 = (IntegerValueUpperware) to;
                     String id = var.getId();
                     IntVar v = createIntVar(id, int1.getValue(), int2.getValue());
-                    log.info("IntElement: {}", v);
+                    log.info("IntVariableValueDTO: {}", v);
                     idToIntVar.put(id, v);
                 } else if (type.equals(BasicTypeEnum.LONG)) {
                     LongValueUpperware long1 = (LongValueUpperware) from;
                     LongValueUpperware long2 = (LongValueUpperware) to;
                     String id = var.getId();
                     IntVar v = createIntVar(id, (int) long1.getValue(), (int) long2.getValue());
-                    log.info("IntElement: {}", v);
+                    log.info("IntVariableValueDTO: {}", v);
                     idToIntVar.put(id, v);
                 } else if (type.equals(BasicTypeEnum.DOUBLE)) {
                     DoubleValueUpperware real1 = (DoubleValueUpperware) from;
                     DoubleValueUpperware real2 = (DoubleValueUpperware) to;
                     String id = var.getId();
                     RealVar v = VariableFactory.real(id, real1.getValue(), real2.getValue(), epsilon, solver);
-                    log.info("RealElement: {}", v);
+                    log.info("RealVariableValueDTO: {}", v);
                     idToRealVar.put(id, v);
                 } else if (type.equals(BasicTypeEnum.FLOAT)) {
                     FloatValueUpperware float1 = (FloatValueUpperware) from;
                     FloatValueUpperware float2 = (FloatValueUpperware) to;
                     String id = var.getId();
                     RealVar v = VariableFactory.real(id, float1.getValue(), float2.getValue(), epsilon, solver);
-                    log.info("RealElement: {}", v);
+                    log.info("RealVariableValueDTO: {}", v);
                     idToRealVar.put(id, v);
                 }
             } else if (dom instanceof NumericListDomain) {
@@ -980,7 +944,7 @@ public class CPSolver {
 
                     String id = var.getId();
                     RealVar v = VariableFactory.real(id, min, max, epsilon, solver);
-                    log.info("RealElement: {}", v);
+                    log.info("RealVariableValueDTO: {}", v);
                     idToRealVar.put(id, v);
                 } else if (type.equals(BasicTypeEnum.FLOAT)) {
                     double min = nld.getValues().stream().mapToDouble(value -> ((FloatValueUpperware) value).getValue()).min().orElse(0d);
@@ -988,7 +952,7 @@ public class CPSolver {
 
                     String id = var.getId();
                     RealVar v = VariableFactory.real(id, min, max, epsilon, solver);
-                    log.info("RealElement: {}", v);
+                    log.info("RealVariableValueDTO: {}", v);
                     idToRealVar.put(id, v);
                 }
 
@@ -999,12 +963,12 @@ public class CPSolver {
                 if (type.equals(BasicTypeEnum.INTEGER) || type.equals(BasicTypeEnum.LONG)) {
                     String id = var.getId();
                     IntVar v = createIntVar(id);
-                    log.info("IntElement: {}", v);
+                    log.info("IntVariableValueDTO: {}", v);
                     idToIntVar.put(id, v);
                 } else if (type.equals(BasicTypeEnum.DOUBLE) || type.equals(BasicTypeEnum.FLOAT)) {
                     String id = var.getId();
                     RealVar v = VariableFactory.real(id, LOW_REAL_LIMIT, UPPER_REAL_LIMIT, epsilon, solver);
-                    log.info("RealElement: {}", v);
+                    log.info("RealVariableValueDTO: {}", v);
                     idToRealVar.put(id, v);
                 }
             }
@@ -1022,7 +986,7 @@ public class CPSolver {
 
         String id = var.getId();
         IntVar v = createIntVar(id, ints);
-        log.info("IntElement: {}", v);
+        log.info("IntVariableValueDTO: {}", v);
         idToIntVar.put(id, v);
     }
 
@@ -1072,18 +1036,24 @@ public class CPSolver {
         constNum = 0;
     }
 
+    private Collection<VariableDTO> getVariables(EList<CpVariable> variables) {
+        return variables.stream()
+                .map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+                .collect(Collectors.toList());
+    }
+
     private void calculateUtility() {
 
-        Collection<Element> intSolution = Arrays.stream(solver.retrieveIntVars())
-                .map(var -> ElementFactory.createElement(var.getName(), var.getValue()))
+        Collection<VariableValueDTO> intSolution = Arrays.stream(solver.retrieveIntVars())
+                .map(var -> VariableValueDTOFactory.createElement(var.getName(), var.getValue()))
                 .collect(Collectors.toList());
 
         log.debug("First step: {}", intSolution);
 
         intSolution = addSingleValueIntVariables(intSolution);
         log.debug("Second step: {}", intSolution);
-        Collection<Element> realSolution = Arrays.stream(solver.retrieveRealVars())
-                .map(var -> ElementFactory.createElement(var.getName(), var.getUB()))
+        Collection<VariableValueDTO> realSolution = Arrays.stream(solver.retrieveRealVars())
+                .map(var -> VariableValueDTOFactory.createElement(var.getName(), var.getUB()))
                 .collect(Collectors.toList());
         //realSolution = addSingleValueRealVariables(realSolution);
         log.debug("Second step real:{}", realSolution);
@@ -1097,11 +1067,11 @@ public class CPSolver {
         }
     }
 
-    private Collection<Element> addSingleValueIntVariables(Collection<Element> solution) {
-        variablesForUG.stream()
+    private Collection<VariableValueDTO> addSingleValueIntVariables(Collection<VariableValueDTO> solution) {
+        variables.stream()
                 .filter(varDTO -> solution.stream().noneMatch(varSolver -> varDTO.getId().equals(varSolver.getName())))
                 .filter(varDTO -> idToIntVar.get(varDTO.getId()) != null)
-                .forEach(v -> solution.add(ElementFactory.createElement(v.getId(), idToIntVar.get(v.getId()).getValue())));
+                .forEach(v -> solution.add(VariableValueDTOFactory.createElement(v.getId(), idToIntVar.get(v.getId()).getValue())));
         return solution;
     }
 
@@ -1130,7 +1100,7 @@ public class CPSolver {
     }
 
     private String getIntVarName() {
-        return "IntElement" + (intVarNum++);
+        return "IntVariableValueDTO" + (intVarNum++);
     }
 
     private String getBoolVarName() {
