@@ -1,18 +1,18 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
-import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
-import eu.melodic.models.interfaces.ems.*;
+import camel.type.StringValue;
+import com.google.gson.Gson;
 import eu.melodic.models.interfaces.ems.Monitor;
-import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
+import eu.melodic.models.interfaces.ems.*;
+import eu.melodic.upperware.adapter.communication.ems.MonitorList;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,19 +20,22 @@ import static java.lang.String.format;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class MonitorConverter implements ModelConverter<DeploymentInstanceModel, List<AdapterMonitor>>{
 
-    private EmsClientApi emsClientApi;
+    private Gson gson = new Gson();
 
     @Override
     public List<AdapterMonitor> toComparableModel(DeploymentInstanceModel model) {
-        String camelName = getCamelName(model);
-        List<Monitor> monitors = emsClientApi.getMonitors(camelName);
-
-        return monitors.stream()
-                .map(this::toMonitor)
-                .collect(Collectors.toList());
+        return model.getAttributes()
+                .stream()
+                .filter(attribute -> "monitors".equals(attribute.getName()))
+                .findFirst()
+                .map(attribute -> ((StringValue) attribute.getValue()).getValue())
+                .map(value -> gson.fromJson(value, MonitorList.class)).map(monitorList -> monitorList
+                        .getMonitors()
+                        .stream()
+                        .map(this::toMonitor)
+                        .collect(Collectors.toList())).orElse(Collections.emptyList());
     }
 
     private AdapterMonitor toMonitor(Monitor monitor) {
@@ -92,7 +95,4 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
                 .collect(Collectors.toList());
     }
 
-    private String getCamelName(DeploymentInstanceModel model) {
-        return ((CamelModel) model.eContainer()).getName();
-    }
 }

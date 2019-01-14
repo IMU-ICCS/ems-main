@@ -9,16 +9,24 @@
 
 package eu.melodic.upperware.adapter;
 
+import camel.core.Attribute;
 import camel.core.CamelModel;
+import camel.core.CoreFactory;
 import camel.deployment.DeploymentInstanceModel;
+import camel.type.StringValue;
+import camel.type.TypeFactory;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.interfaces.ems.Monitor;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
+import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
+import eu.melodic.upperware.adapter.communication.ems.MonitorList;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
@@ -33,7 +41,9 @@ import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import io.github.cloudiator.rest.ApiException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -41,6 +51,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
 import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
@@ -66,10 +77,14 @@ public class Coordinator {
     private AdapterProperties properties;
     private CDOClientX cdoClientX;
 
+    private EmsClientApi emsClientApi;
+
     private DeploymentInstanceModelValidator deploymentInstanceModelValidator;
 
+    private Gson gson = new Gson();
+
     @Async
-    public void deployNewModel(String resourceName, String notificationUri, String uuid) {
+    public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
         try {
             acquireLock(resourceName);
         } catch (Exception e) {
@@ -79,7 +94,7 @@ public class Coordinator {
         }
         log.info("Starting new model deployment process");
         try {
-            run(resourceName, notificationUri, uuid);
+            run(resourceName, notificationUri, uuid, authorization);
         } catch (Exception e) {
             log.error("An exception occurred during deployment process", e);
             notifyErrorOccurred(resourceName, notificationUri, uuid, e);
@@ -97,15 +112,16 @@ public class Coordinator {
         }
     }
 
-    private void run(String resourceName, String notificationUri, String uuid) {
+    private void run(String resourceName, String notificationUri, String uuid, String authorization) {
         Plan plan;
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
         CDOTransaction tr = cdoSessionX.openTransaction();
 
-		DeploymentInstanceModel targetModel = null;
-		DeploymentInstanceModel currentModel = null;
+        DeploymentInstanceModel targetModel = null;
+        DeploymentInstanceModel currentModel = null;
         try {
             targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
+            enrichMonitors(targetModel, authorization);
             currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
             if (currentModel == null) {
                 saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
@@ -127,10 +143,10 @@ public class Coordinator {
 
         toLogGraphLogger.logGraph(plan.getTaskGraph());
 
-		// pre-authorize target model
-        if (targetModel!=null) {
+        // pre-authorize target model
+        if (targetModel != null) {
             log.info("Authorizing deployment plan with Authorization-Service...");
-			try {
+            try {
                 if (deploymentInstanceModelValidator.validate(targetModel)) {
                     log.info("Deployment plan authorized, executing...");
 
@@ -142,13 +158,50 @@ public class Coordinator {
                     notifyPlanRejected(resourceName, notificationUri, uuid);
                 }
 
-			} catch (Exception ex) {
-			    log.error("Error: ", ex);
-				notifyPlanRejected(resourceName, notificationUri, uuid);
-			}
-		} else {
-			log.warn("Cannot pre-authorize target model. Target model is null");
-		}
+            } catch (Exception ex) {
+                log.error("Error: ", ex);
+                notifyPlanRejected(resourceName, notificationUri, uuid);
+            }
+        } else {
+            log.warn("Cannot pre-authorize target model. Target model is null");
+        }
+    }
+
+    private void enrichMonitors(DeploymentInstanceModel targetModel, String authorization) {
+        String attributeName = "monitors";
+        String camelName = ((CamelModel) targetModel.eContainer()).getName();
+        MonitorList monitors = emsClientApi.getMonitors(camelName, authorization);
+        if (CollectionUtils.isEmpty(monitors.getMonitors())) {
+            log.info("There is no monitors defined for CamelModel {}", camelName);
+            return;
+        }
+
+        EList<Attribute> attributes = targetModel.getAttributes();
+        if (findAttribute(attributes, attributeName)) {
+            log.info("Attribute with name {} for {} exists. DeploymentInstanceModel will not be updated", attributeName, targetModel.getName());
+        } else {
+            attributes.add(createAttribute(attributeName, gson.toJson(monitors)));
+            log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
+                    monitors.getMonitors().stream().map(Monitor::getMetric).collect(Collectors.joining(", ", "[", "]")));
+        }
+    }
+
+    private boolean findAttribute(EList<Attribute> attributes, String attributeName){
+        return attributes.stream().anyMatch(attribute -> attribute.getName().equals(attributeName));
+    }
+
+    private Attribute createAttribute(String attributeName, String attributeValue) {
+        log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
+        Attribute strAttribute = CoreFactory.eINSTANCE.createAttribute();
+        strAttribute.setName(attributeName);
+        strAttribute.setValue(createStringValue(attributeValue));
+        return strAttribute;
+    }
+
+    private StringValue createStringValue(String attributeValue) {
+        StringValue stringValue = TypeFactory.eINSTANCE.createStringValue();
+        stringValue.setValue(attributeValue);
+        return stringValue;
     }
 
     private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
