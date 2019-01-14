@@ -33,7 +33,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
         Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
 
-        Schedule schedule = context.getSchedule(taskBody.getScheduleName())
+        Schedule schedule = context.getScheduleByJobId(job.getId())
                 .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
 
         Task task = job.getTasks()
@@ -79,7 +79,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
         Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
 
-        Schedule schedule = context.getSchedule(taskBody.getScheduleName())
+        Schedule schedule = context.getScheduleByJobId(job.getId())
                 .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
 
         Task task = job.getTasks()
