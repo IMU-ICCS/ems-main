@@ -8,6 +8,7 @@
 package eu.melodic.upperware.dlms;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -25,6 +26,8 @@ import org.springframework.web.client.RestTemplate;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResult.StatusType;
 import eu.melodic.models.commons.NotificationResultImpl;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequestImpl;
@@ -99,7 +102,8 @@ public class DLMSServiceController {
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-		dataModelNotificationRequest.setWatermark(dataModelRequest.getWatermark());
+		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
+		
 		NotificationResult notificationResult = new NotificationResultImpl();
 
 		// default status is success
@@ -174,6 +178,16 @@ public class DLMSServiceController {
 //	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
 //		log.info("Test message");
 //	}
+	
+	// generate watermark
+	private Watermark prepareWatermark(String uuid) {
+		Watermark watermark = new WatermarkImpl();
+		watermark.setUser("dlms");
+		watermark.setSystem("dlms");
+		watermark.setDate(new Date());
+		watermark.setUuid(uuid);
+		return watermark;
+	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the
