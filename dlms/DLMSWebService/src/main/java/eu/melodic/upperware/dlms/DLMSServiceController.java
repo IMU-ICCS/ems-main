@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import eu.melodic.models.commons.NotificationResult;
+import eu.melodic.models.commons.NotificationResult.StatusType;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequest;
@@ -100,7 +101,9 @@ public class DLMSServiceController {
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
 		dataModelNotificationRequest.setWatermark(dataModelRequest.getWatermark());
 		NotificationResult notificationResult = new NotificationResultImpl();
-		
+
+		// default status is success
+		StatusType statusType = StatusType.SUCCESS;
 		// read the camel model and process it
 		try {
 			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
@@ -135,10 +138,14 @@ public class DLMSServiceController {
 			}
 
 		} catch (Exception e) {
+			// data registration failed
+			statusType = StatusType.ERROR;
 			notificationResult.setErrorCode("1");
 			notificationResult.setErrorDescription("The model could not be read");
+
 			log.error(e.getMessage(), e);
 		}
+		notificationResult.setStatus(statusType);
 		dataModelNotificationRequest.setResult(notificationResult);
 		// send notification
 		sendNotificationMessage(dataModelNotificationRequest, dataModelRequest.getNotificationURI());
@@ -157,7 +164,7 @@ public class DLMSServiceController {
 		if (notificationUri.startsWith("/")) {
 			notificationUri = notificationUri.substring(1);
 		}
-
+		log.info("Sending {} notification ", dataModelNotificationRequest.getResult().getStatus());
 		restTemplate.postForEntity(esbUrl + "/" + notificationUri, dataModelNotificationRequest,
 				DataModelNotificationRequest.class);
 	}
