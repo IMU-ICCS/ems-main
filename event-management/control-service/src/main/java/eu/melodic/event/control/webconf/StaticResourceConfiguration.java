@@ -21,7 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 @Slf4j
 public class StaticResourceConfiguration implements WebMvcConfigurer {
-    @Value("${static.favicon.context:#/favicon.ico}")
+    @Value("${static.favicon.context:/favicon.ico}")
     private String faviconContext;
     @Value("${static.favicon.path:#{null}}")
     private String faviconPath;
