@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>baguette-client-install</artifactId>
-	<name>Upperware - EMS - Baguette Client installation utilities</name>
+	<name>Upperware - EMS - Baguette Client install utilities</name>
 
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
