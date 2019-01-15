@@ -18,6 +18,13 @@ export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 # Uncomment next line to set JAVA runtime options
 # JAVA_OPTS=-Djavax.net.debug=all
 
+# Read JASYPT password (decrypts encrypted configuration settings)
+JASYPT_PASSWORD=password
+if [[ -z "$JASYPT_PASSWORD" ]]; then
+    printf "Configuration Password: "
+    read -s JASYPT_PASSWORD
+fi
+
 # Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
 # BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
 

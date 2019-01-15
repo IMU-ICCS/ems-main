@@ -532,8 +532,9 @@ public class ControlServiceCoordinator {
     // ------------------------------------------------------------------------------------------------------------
 
     void emsShutdown() {
-        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS...");
-        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS... done");
+        /*log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS...");
+        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS... done");*/
+        log.warn("ControlServiceCoordinator.emsShutdown(): Not implemented");
     }
 
     @Async
