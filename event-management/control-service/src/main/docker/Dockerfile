@@ -4,13 +4,14 @@ WORKDIR /opt/ems-server
 
 ADD control-service.jar .
 ADD esper-*.jar .
-ADD config ./config
 ADD run-ems.sh .
 
 RUN bash -c 'touch control-service.jar'
 RUN bash -c 'touch esper-*.jar'
 RUN bash -c 'chmod +rx run-ems.sh'
-RUN mkdir logs
+RUN bash -c 'apt-get update'
+RUN bash -c 'apt-get install -y netcat'
+RUN bash -c 'apt-get install -y net-tools'
 
 #RUN bash -c 'apt-get update'
 #RUN bash -c 'apt-get install -y netcat'
