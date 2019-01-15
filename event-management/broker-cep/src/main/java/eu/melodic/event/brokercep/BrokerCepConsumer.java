@@ -50,8 +50,8 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     protected void initialize() {
         log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance...");
         try {
-            connection = (brokerConfig.getBrokerUsername() != null)
-                    ? connectionFactory.createConnection(brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword())
+            connection = (brokerConfig.getBrokerLocalAdminUsername() != null)
+                    ? connectionFactory.createConnection(brokerConfig.getBrokerLocalAdminUsername(), brokerConfig.getBrokerLocalAdminPassword())
                     : connectionFactory.createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.BrokerView;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -174,21 +175,34 @@ public class BrokerCepService {
 
     //XXX:TODO: Optimize this method
     protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+        // Get username/password for local broker service
+        String username = null;
+        String password = null;
+        if (connectionString==null || brokerConfig.getBrokerUrl().equals(connectionString)) {
+            username = brokerConfig.getBrokerLocalAdminUsername();
+            password = brokerConfig.getBrokerLocalAdminPassword();
+        }
+        _publishEvent(connectionString, username, password, destinationName, event);
+    }
+
+    protected synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
         if (connectionString == null) connectionString = properties.getBrokerUrl();
         ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
         connectionFactory.setBrokerURL(connectionString);
 
         // Create a Connection
-        Connection connection = (brokerConfig.getBrokerUsername() == null)
+        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}", connectionString, username, password);
+        Connection connection = StringUtils.isBlank(username)
                 ? connectionFactory.createConnection()
-                : connectionFactory.createConnection(brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword());
+                : connectionFactory.createConnection(username, password);
         connection.start();
 
         // Create a Session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
         // Create the destination (Topic or Queue)
+        log.debug("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
         //Destination destination = session.createQueue( destinationName );
         Destination destination = session.createTopic(destinationName);
 
@@ -202,9 +216,9 @@ public class BrokerCepService {
 
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, getBrokerUsername(), destinationName, hash, event);
+        log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
         producer.send(message);
-        log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, getBrokerUsername(), destinationName, hash, event);
+        log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
 
         // Clean up
         session.close();
@@ -214,14 +228,14 @@ public class BrokerCepService {
     public void setBrokerCredentials(String u, String p) {
         brokerConfig.setBrokerUsername(u);
         brokerConfig.setBrokerPassword(p);
-        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password=****", u);
+        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password={}", u, p);
     }
 
     public String getBrokerUsername() {
-        return brokerConfig.getBrokerUsername();
+        return brokerConfig.getBrokerLocalUserUsername();
     }
 
     public String getBrokerPassword() {
-        return brokerConfig.getBrokerPassword();
+        return brokerConfig.getBrokerLocalUserPassword();
     }
 }

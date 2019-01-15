@@ -16,8 +16,7 @@ import org.apache.activemq.ActiveMQSslConnectionFactory;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.SslBrokerService;
-import org.apache.activemq.security.AuthenticationUser;
-import org.apache.activemq.security.SimpleAuthenticationPlugin;
+import org.apache.activemq.security.*;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -35,9 +34,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
@@ -52,10 +49,12 @@ public class BrokerConfig implements InitializingBean {
     private BrokerCepProperties properties;
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
-    private BrokerPlugin brokerAuthorizationPlugin;
+    private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
     private ArrayList<AuthenticationUser> userList;
     private String brokerLocalAdmin;
     private String brokerLocalAdminPassword;
+    private String brokerUsername;
+    private String brokerPassword;
 
     @Override
     public void afterPropertiesSet() {
@@ -71,15 +70,15 @@ public class BrokerConfig implements InitializingBean {
             userList = new ArrayList<>();
 
             // initialize local admin credentials
-            brokerLocalAdmin = "local-admin-" + RandomStringUtils.randomAlphanumeric(10);
+            brokerLocalAdmin = "admin-local-" + RandomStringUtils.randomAlphanumeric(10);
             brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(20);
-            userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, ""));
+            userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, SimpleBrokerAuthorizationPlugin.ADMIN_GROUP));
             log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}", brokerLocalAdmin, brokerLocalAdminPassword);
 
             // initialize broker user credentials
-            String brokerUsername = "user-" + RandomStringUtils.randomAlphanumeric(10);
-            String brokerPassword = RandomStringUtils.randomAlphanumeric(20);
-            userList.add(new AuthenticationUser(brokerUsername, brokerPassword, ""));
+            brokerUsername = "user-local-" + RandomStringUtils.randomAlphanumeric(10);
+            brokerPassword = RandomStringUtils.randomAlphanumeric(20);
+            userList.add(new AuthenticationUser(brokerUsername, brokerPassword, SimpleBrokerAuthorizationPlugin.RO_USER_GROUP));
             log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}", brokerUsername, brokerPassword);
 
             // initialize additional user credentials from configuration
@@ -87,7 +86,7 @@ public class BrokerConfig implements InitializingBean {
                 String[] cred = extraUserCred.split("/", 2);
                 String username = cred[0].trim();
                 String password = cred.length > 1 ? cred[1].trim() : "";
-                userList.add(new AuthenticationUser(username, password, ""));
+                userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
                 log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, password);
             }
 
@@ -99,11 +98,15 @@ public class BrokerConfig implements InitializingBean {
             log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}", sap.isAnonymousAccessAllowed(), sap.getUserPasswords());
         }
 
-        // initialize authorization
+        // initialize authorization (requires authentication being enabled)
         if (properties.isAuthorizationEnabled()) {
-            //XXX:TODO: ++++++++++++++++++++
-            brokerAuthorizationPlugin = null;
-            //log.debug("BrokerConfig._initializeSecurity(): Initialized broker authorization plugin");
+            if (properties.isAuthenticationEnabled()) {
+                // initialize Broker authorization plugin
+                brokerAuthorizationPlugin = new SimpleBrokerAuthorizationPlugin();
+                log.debug("BrokerConfig._initializeSecurity(): Initialized broker authorization plugin");
+            } else {
+                log.error("BrokerConfig._initializeSecurity(): Authorization will not be configured because authentication is not enabled");
+            }
         }
     }
 
@@ -117,7 +120,7 @@ public class BrokerConfig implements InitializingBean {
         return properties.getBrokerUrl();
     }
 
-    public String getBrokerLocalAdmin() {
+    public String getBrokerLocalAdminUsername() {
         return brokerLocalAdmin;
     }
 
@@ -125,16 +128,17 @@ public class BrokerConfig implements InitializingBean {
         return brokerLocalAdminPassword;
     }
 
-    public String getBrokerUsername() {
-        return userList != null ? userList.get(1).getUsername() : null;
+    public String getBrokerLocalUserUsername() {
+        return brokerUsername;
     }
 
-    public String getBrokerPassword() {
-        return userList != null ? userList.get(1).getPassword() : null;
+    public String getBrokerLocalUserPassword() {
+        return brokerPassword;
     }
 
     public void setBrokerUsername(String s) {
         if (userList != null) {
+            brokerUsername = s;
             userList.get(1).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
         }
@@ -143,10 +147,11 @@ public class BrokerConfig implements InitializingBean {
 
     public void setBrokerPassword(String s) {
         if (userList != null) {
+            brokerPassword = s;
             userList.get(1).setPassword(s);
             brokerAuthenticationPlugin.setUsers(userList);
         }
-        log.debug("BrokerConfig.setBrokerPassword(): password=****");
+        log.debug("BrokerConfig.setBrokerPassword(): password={}", s);
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
@@ -154,7 +159,7 @@ public class BrokerConfig implements InitializingBean {
     }
 
     public BrokerPlugin getBrokerAuthorizationPlugin() {
-        return brokerAuthenticationPlugin;
+        return brokerAuthorizationPlugin;
     }
 
     /**
@@ -180,8 +185,8 @@ public class BrokerConfig implements InitializingBean {
 
         // Set authentication and authorization plugins
         List<BrokerPlugin> plugins = new ArrayList<>();
-        if (properties.isAuthenticationEnabled()) plugins.add(getBrokerAuthenticationPlugin());
-        if (properties.isAuthorizationEnabled()) plugins.add(getBrokerAuthorizationPlugin());
+        if (getBrokerAuthenticationPlugin()!=null) plugins.add(getBrokerAuthenticationPlugin());
+        if (getBrokerAuthorizationPlugin()!=null) plugins.add(getBrokerAuthorizationPlugin());
         if (plugins.size() > 0) {
             brokerService.setPlugins(plugins.toArray(new BrokerPlugin[0]));
         }
@@ -295,9 +300,9 @@ public class BrokerConfig implements InitializingBean {
         }
 
         // Other connection factory settings
-		/*if (getBrokerUsername()!=null) {
-			connectionFactory.setUserName(getBrokerUsername());
-			connectionFactory.setPassword(getBrokerPassword());
+		/*if (getBrokerLocalUserUsername()!=null) {
+			connectionFactory.setUserName(getBrokerLocalUserUsername());
+			connectionFactory.setPassword(getBrokerLocalUserPassword());
 		}*/
         //connectionFactory.setSendTimeout(....5000L);
         //connectionFactory.setTrustedPackages(Arrays.asList("eu.melodic.event"));
