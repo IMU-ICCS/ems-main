@@ -12,6 +12,13 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 MELODIC_CONFIG_DIR=$BASEDIR/config
 PAASAGE_CONFIG_DIR=$BASEDIR/config
 
-export BASEDIR MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
+# Read JASYPT password (decrypts encrypted configuration settings)
+JASYPT_PASSWORD=password
+if [[ -z "$JASYPT_PASSWORD" ]]; then
+    printf "Configuration Password: "
+    read -s JASYPT_PASSWORD
+fi
 
-java -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=$BASEDIR/esper-7.1.0.jar -cp $BASEDIR/control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=$MELODIC_CONFIG_DIR/logback-spring.xml
+export BASEDIR MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR JASYPT_PASSWORD
+
+java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=$BASEDIR/esper-7.1.0.jar -cp $BASEDIR/control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=$MELODIC_CONFIG_DIR/logback-spring.xml
