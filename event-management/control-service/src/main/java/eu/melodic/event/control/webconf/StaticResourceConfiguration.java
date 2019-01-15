@@ -21,6 +21,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 @Slf4j
 public class StaticResourceConfiguration implements WebMvcConfigurer {
+    @Value("${static.favicon.context:#/favicon.ico}")
+    private String faviconContext;
     @Value("${static.favicon.path:#{null}}")
     private String faviconPath;
     @Value("${static.resource.context:/**}")
@@ -40,9 +42,9 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         if(faviconPath != null) {
-            log.info("Serving favicon.ico from: {} --> {}", "/favicon.ico", faviconPath);
+            log.info("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
             registry
-                    .addResourceHandler("/favicon.ico")
+                    .addResourceHandler(faviconContext)
                     .addResourceLocations(faviconPath);
         }
         if(staticResourcePath != null) {
