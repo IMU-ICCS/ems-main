@@ -1,7 +1,7 @@
 package groovy.eu.melodic.upperware.utilitygenerator.model
 
-import eu.melodic.upperware.utilitygenerator.model.ConfigurationElement
-import eu.melodic.upperware.utilitygenerator.model.UtilityFunction
+import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement
+import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction
 import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Specification
 

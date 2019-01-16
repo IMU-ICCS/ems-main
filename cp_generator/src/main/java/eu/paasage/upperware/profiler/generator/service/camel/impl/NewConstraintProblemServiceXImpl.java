@@ -425,7 +425,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private String getImageId(SoftwareComponent softwareComponent) {
         Configuration configuration = softwareComponent.getConfigurations().get(0);
-        if (configuration instanceof ScriptConfigurationImpl && "docker".equals(((ScriptConfigurationImpl) configuration).getDevopsTool())) {
+        if (configuration instanceof ScriptConfigurationImpl && !"docker".equals(((ScriptConfigurationImpl) configuration).getDevopsTool())) {
             return ((ScriptConfigurationImpl) configuration).getImageId();
         }
         return null;

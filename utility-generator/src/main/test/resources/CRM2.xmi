@@ -295,8 +295,8 @@
         </concept>
       </concept>
       <concept id="ContextAwareSecurityModel" uri="mms:ContextAwareSecurityModel" name="ContextAwareSecurityModel" description="The Context Aware Security Model refers to the following top-level concepts; Security Context Element, Permission, Subject, Object, Context Patterns, and Handlers.">
-        <concept id="ContextPattern" uri="mms:ContextPattern" name="ContextPattern" description="Context patterns are recurring motives of object accesses that are recognised in repeating context element instances. Future access requests on sensitive data can be decided also considering such information (Verginadis et al., 2016). Its subclasses are: Location pattern, DateTime pattern, Connectivity pattern, Object pattern, Permission pattern, Access Sequence Pattern.">
-          <concept id="ObjectPattern" uri="mms:ObjectPattern" name="ObjectPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Object context element.">
+        <concept id="ContextPattern" uri="mms:ContextPattern" name="ContextPattern" description="Context patterns are recurring motives of object accesses that are recognised in repeating context variableValueDTO instances. Future access requests on sensitive data can be decided also considering such information (Verginadis et al., 2016). Its subclasses are: Location pattern, DateTime pattern, Connectivity pattern, Object pattern, Permission pattern, Access Sequence Pattern.">
+          <concept id="ObjectPattern" uri="mms:ObjectPattern" name="ObjectPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Object context variableValueDTO.">
             <concept id="MostFrequentlyAccessedObject" uri="mms:MostFrequentlyAccessedObject" name="MostFrequentlyAccessedObject" description=""/>
             <concept id="RecentlyAccessedObject" uri="mms:RecentlyAccessedObject" name="RecentlyAccessedObject" description=""/>
             <concept id="UsuallyAccessedObject" uri="mms:UsuallyAccessedObject" name="UsuallyAccessedObject" description="">
@@ -304,7 +304,7 @@
             </concept>
             <concept id="LeastAccessedObject" uri="mms:LeastAccessedObject" name="LeastAccessedObject" description=""/>
           </concept>
-          <concept id="PermissionPattern" uri="mms:PermissionPattern" name="PermissionPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Permission element.">
+          <concept id="PermissionPattern" uri="mms:PermissionPattern" name="PermissionPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Permission variableValueDTO.">
             <concept id="RecentlyDeniedPermission" uri="mms:RecentlyDeniedPermission" name="RecentlyDeniedPermission" description=""/>
             <concept id="MostFrequentlyDeniedPermission" uri="mms:MostFrequentlyDeniedPermission" name="MostFrequentlyDeniedPermission" description=""/>
             <concept id="MostFrequentlyGrantedPermission" uri="mms:MostFrequentlyGrantedPermission" name="MostFrequentlyGrantedPermission" description=""/>
@@ -314,7 +314,7 @@
             </concept>
             <property id="hasPermission" uri="mms:hasPermission" name="hasPermission" description="" rangeUri="http://www.melodic-project.eu/ontologies/psm/2017/09/20#Permission"/>
           </concept>
-          <concept id="ConnectivityPattern" uri="mms:ConnectivityPattern" name="ConnectivityPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Connectivity context element.">
+          <concept id="ConnectivityPattern" uri="mms:ConnectivityPattern" name="ConnectivityPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Connectivity context variableValueDTO.">
             <concept id="MostFrequentDeviceType" uri="mms:MostFrequentDeviceType" name="MostFrequentDeviceType" description="">
               <property id="hasDeviceType" uri="mms:hasDeviceType" name="hasDeviceType" description="" rangeUri="http://www.melodic-project.eu/ontologies/casm/2017/09/20#DeviceType"/>
             </concept>
@@ -332,7 +332,7 @@
               <property id="hasUCTThreshold" uri="mms:hasUCTThreshold" name="hasUCTThreshold" description="" rangeUri="xsd:positiveInteger"/>
             </concept>
           </concept>
-          <concept id="LocationPattern" uri="mms:LocationPattern" name="LocationPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Location context element.">
+          <concept id="LocationPattern" uri="mms:LocationPattern" name="LocationPattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the Location context variableValueDTO.">
             <concept id="UsualAccessLocation" uri="mms:UsualAccessLocation" name="UsualAccessLocation" description="">
               <property id="hasUAThreshold" uri="mms:hasUAThreshold" name="hasUAThreshold" description="" rangeUri="xsd:positiveInteger"/>
             </concept>
@@ -341,7 +341,7 @@
             <concept id="RecentAccessLocation" uri="mms:RecentAccessLocation" name="RecentAccessLocation" description=""/>
             <property id="hasLocation" uri="mms:hasLocation" name="hasLocation" description="" rangeUri="http://www.melodic-project.eu/ontologies/casm/2017/09/20#Location"/>
           </concept>
-          <concept id="DateTimePattern" uri="mms:DateTimePattern" name="DateTimePattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the DateTime context element.">
+          <concept id="DateTimePattern" uri="mms:DateTimePattern" name="DateTimePattern" description="It refers to recurring motives of data access occurences that are recognized with respect to the DateTime context variableValueDTO.">
             <concept id="LeastFrequentDateTimeInterval" uri="mms:LeastFrequentDateTimeInterval" name="LeastFrequentDateTimeInterval" description=""/>
             <concept id="MostFrequentDateTimeInstance" uri="mms:MostFrequentDateTimeInstance" name="MostFrequentDateTimeInstance" description=""/>
             <concept id="UsualDateTimeInterval" uri="mms:UsualDateTimeInterval" name="UsualDateTimeInterval" description="">
@@ -379,8 +379,8 @@
             <concept id="VolumePermission" uri="mms:VolumePermission" name="VolumePermission" description=""/>
           </concept>
         </concept>
-        <concept id="SecurityContextElement" uri="mms:SecurityContextElement" name="SecurityContextElement" description="The security context element class refers to all the relevant classes and properties that capture Location, DateTime and Connectivity aspects, and characterize subjects, objects, requests and the environment related to an interaction (Verginadis et al., 2016). Below we provide details only for the Location and Connectivity classes that are extended.">
-          <concept id="Auth" uri="mms:Auth" name="Auth" description="Common parent class of all Authentication, Authorization and Identity context element classes">
+        <concept id="SecurityContextElement" uri="mms:SecurityContextElement" name="SecurityContextElement" description="The security context variableValueDTO class refers to all the relevant classes and properties that capture Location, DateTime and Connectivity aspects, and characterize subjects, objects, requests and the environment related to an interaction (Verginadis et al., 2016). Below we provide details only for the Location and Connectivity classes that are extended.">
+          <concept id="Auth" uri="mms:Auth" name="Auth" description="Common parent class of all Authentication, Authorization and Identity context variableValueDTO classes">
             <concept id="AuthorizationMethod" uri="mms:AuthorizationMethod" name="AuthorizationMethod" description="This class indicates the framework used for granting access rights to a subject."/>
             <concept id="IdentityType" uri="mms:IdentityType" name="IdentityType" description="This class refers to permanent/static and ephemeral information that can be used for identifying an agent.">
               <concept id="EphemeralId" uri="mms:EphemeralId" name="EphemeralId" description="This class refers to frequently changing information that can be used for identifying an agent."/>
@@ -544,7 +544,7 @@
           <property id="longitude" uri="mms:longitude" name="longitude" description="" rangeUri="xsd:double"/>
           <property id="elevation" uri="mms:elevation" name="elevation" description="" rangeUri="xsd:double"/>
         </concept>
-        <concept id="DDEElement" uri="mms:DDEElement" name="DDEElement" description="Parent class of all PaaSword Data Distribution and Encryption Model elements">
+        <concept id="DDEElement" uri="mms:DDEElement" name="DDEElement" description="Parent class of all PaaSword Data Distribution and Encryption Model variableValueDTOS">
           <concept id="DataDistribution" uri="mms:DataDistribution" name="DataDistribution" description="This class captures aspects of the data distribution required for enhancing the security of sensitive information.">
             <concept id="ExcludedProvider" uri="mms:ExcludedProvider" name="ExcludedProvider" description="This class denotes certain untrusted IaaS providers that should be avoided when distributing sensitive data."/>
             <concept id="DistributionMetric" uri="mms:DistributionMetric" name="DistributionMetric" description="This class quantifies the data distribution required for enhancing the security of sensitive information.">
@@ -591,11 +591,11 @@
       </concept>
       <concept id="Big_DataModel" uri="mms:Big_DataModel" name="Big_DataModel" description="The Big Data Model refers to the following top-level concepts; Big Data Aspects, Data Location, Data Timestamp, Data Management, and Data Domains.">
         <concept id="DataTimestamp" uri="mms:DataTimestamp" name="DataTimestamp" description="This class includes all the necessary concepts for describing the temporal characteristics of data artefacts to be processed by a Melodic-enabled application.">
-          <concept id="ProcessingDate" uri="mms:ProcessingDate" name="ProcessingDate" description="This subclass is used for defining when a certain data element was processed."/>
-          <concept id="TransferDate" uri="mms:TransferDate" name="TransferDate" description="This subclass is used for defining when a certain data element was transmitted from a data source."/>
-          <concept id="DeletionDate" uri="mms:DeletionDate" name="DeletionDate" description="This subclass is used for defining when a certain data element was deleted."/>
-          <concept id="AcquisitionDate" uri="mms:AcquisitionDate" name="AcquisitionDate" description="This subclass is used for defining when a certain data element was received by the Melodic-enabled application."/>
-          <concept id="CreationDate" uri="mms:CreationDate" name="CreationDate" description="This subclass is used for defining when a certain data element was created."/>
+          <concept id="ProcessingDate" uri="mms:ProcessingDate" name="ProcessingDate" description="This subclass is used for defining when a certain data variableValueDTO was processed."/>
+          <concept id="TransferDate" uri="mms:TransferDate" name="TransferDate" description="This subclass is used for defining when a certain data variableValueDTO was transmitted from a data source."/>
+          <concept id="DeletionDate" uri="mms:DeletionDate" name="DeletionDate" description="This subclass is used for defining when a certain data variableValueDTO was deleted."/>
+          <concept id="AcquisitionDate" uri="mms:AcquisitionDate" name="AcquisitionDate" description="This subclass is used for defining when a certain data variableValueDTO was received by the Melodic-enabled application."/>
+          <concept id="CreationDate" uri="mms:CreationDate" name="CreationDate" description="This subclass is used for defining when a certain data variableValueDTO was created."/>
           <property id="hasTimePoint" uri="mms:hasTimePoint" name="hasTimePoint" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property associates the Data Timestamp class with the Instant class of the Context Aware Security model for referring to the precise point in time at which data was created, deleted, acquired, processed or transferred." propertyType="ObjectProperty" range="Instant" rangeUri="xsd:dateTime"/>
           <property id="hasTimeInterval" uri="mms:hasTimeInterval" name="hasTimeInterval" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property associates the Data Timestamp class with the DateTimeInterval class of the Context Aware Security model for referring to a period of time bounded by two time points, during which data was created, deleted, acquired, processed or transferred." propertyType="ObjectProperty" range="DateTimeInterval" rangeUri="xsd:duration"/>
         </concept>
@@ -1129,7 +1129,7 @@
               <property id="hasClockSpeed" uri="mms:hasClockSpeed" name="hasClockSpeed" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property captures the GPU operating speed expressed in cycles per second. It associates the GPU class with an integer value." rangeUri="xsd:positiveInteger"/>
               <property id="GPUhasManufacturer" uri="mms:GPUhasManufacturer" name="GPUhasManufacturer" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property expresses as a string the manufacturer of the processing unit." rangeUri="xsd:string"/>
               <property id="GPUhasMaxNumberofCores" uri="mms:GPUhasMaxNumberofCores" name="GPUhasMaxNumberofCores" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property denotes an integer that captures the maximum number of GPU cores available or requested." rangeUri="xsd:positiveInteger"/>
-              <property id="hasPEperCUs" uri="mms:hasPEperCUs" name="hasPEperCUs" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property expresses with an integer the number of processing elements per compute units that a certain GPU offers." rangeUri="xsd:positiveInteger"/>
+              <property id="hasPEperCUs" uri="mms:hasPEperCUs" name="hasPEperCUs" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property expresses with an integer the number of processing variableValueDTOS per compute units that a certain GPU offers." rangeUri="xsd:positiveInteger"/>
               <property id="hasStartUsageDate" uri="mms:hasStartUsageDate" name="hasStartUsageDate" description="This &#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;property denotes the date when a certain GPU began to operate. It can be used as an attribute that reveals how new the processing units used by a certain IaaS resource are." rangeUri="xsd:dateTime"/>
             </concept>
             <property id="GPUhasProcessingCost" uri="mms:GPUhasProcessingCost" name="GPUhasProcessingCost" description="hasProcessingCost" rangeUri="xsd:double"/>
