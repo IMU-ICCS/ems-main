@@ -41,51 +41,55 @@ import static java.lang.String.format;
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class ColosseumContext implements ContextOperations {
 
-  private final JobApi jobApi;
-  private final NodeApi nodeApi;
-  private final ProcessApi processApi;
-  private final MonitoringApi monitoringApi;
+    private final JobApi jobApi;
+    private final NodeApi nodeApi;
+    private final ProcessApi processApi;
+    private final MonitoringApi monitoringApi;
 
-  private final List<NodeGroup> nodeGroups = synchronizedList();
-  private final List<Schedule> schedules = synchronizedList();
-  private final List<ProcessGroup> processGroups = synchronizedList();
-  private final List<Job> jobs = synchronizedList();
-  private final List<Monitor> monitors = synchronizedList();
+    private final List<NodeGroup> nodeGroups = synchronizedList();
+    private final List<Schedule> schedules = synchronizedList();
+    private final List<ProcessGroup> processGroups = synchronizedList();
+    private final List<Job> jobs = synchronizedList();
+    private final List<Monitor> monitors = synchronizedList();
 
-  private boolean loaded;
+    private boolean loaded;
 
-  public void addNodeGroup(@NonNull NodeGroup nodeGroup) {
-    nodeGroups.add(nodeGroup);
-  }
-
-  public Optional<NodeGroup> getNodeGroup(String name) {
-    return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()), createAmbiguousResultException(NodeGroup.class, name));
-  }
-
-  public Optional<NodeGroup> getNodeGroupByNodeName(String name) {
-    return getElement(nodeGroups, nodeGroup -> nodeGroup.getNodes().stream().map(Node::getName).anyMatch(nodeName -> nodeName.endsWith(name)),
-            createAmbiguousResultException(NodeGroup.class, name));
-  }
-
-    public void deleteNodeGroup(String nodeGroupId) {
-      nodeGroups.removeIf(nodeGroup -> nodeGroupId.equals(nodeGroup.getId()));
+    public void addNodeGroup(@NonNull NodeGroup nodeGroup) {
+        nodeGroups.add(nodeGroup);
     }
 
-  public void addSchedule(@NonNull Schedule schedule) {
-    schedules.add(schedule);
-  }
+    public Optional<NodeGroup> getNodeGroup(String name) {
+        return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()), createAmbiguousResultException(NodeGroup.class, name));
+    }
 
-  public Optional<Schedule> getSchedule(String name) {
-    return getElement(schedules, schedule -> name.equals(schedule.getId()), createAmbiguousResultException(Schedule.class, name));
-  }
+    public Optional<NodeGroup> getNodeGroupByNodeName(String name) {
+        return getElement(nodeGroups, nodeGroup -> nodeGroup.getNodes().stream().map(Node::getName).anyMatch(nodeName -> nodeName.endsWith(name)),
+                createAmbiguousResultException(NodeGroup.class, name));
+    }
 
-  public void addProcessGroup(@NonNull ProcessGroup processGroup) {
-    processGroups.add(processGroup);
-  }
+    public void deleteNodeGroup(String nodeGroupId) {
+        nodeGroups.removeIf(nodeGroup -> nodeGroupId.equals(nodeGroup.getId()));
+    }
 
-  public Optional<ProcessGroup> getProcessGroup(String processGroupId) {
-    return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
-  }
+    public void addSchedule(@NonNull Schedule schedule) {
+        schedules.add(schedule);
+    }
+
+    public Optional<Schedule> getSchedule(String name) {
+        return getElement(schedules, schedule -> name.equals(schedule.getId()), createAmbiguousResultException(Schedule.class, name));
+    }
+
+    public Optional<Schedule> getScheduleByJobId(String jobId) {
+        return getElement(schedules, schedule -> jobId.equals(schedule.getJob()), () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one schedules with the same jobId=%s", jobId)));
+    }
+
+    public void addProcessGroup(@NonNull ProcessGroup processGroup) {
+        processGroups.add(processGroup);
+    }
+
+    public Optional<ProcessGroup> getProcessGroup(String processGroupId) {
+        return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
+    }
 
 
     public Optional<ProcessGroup> getProcessGroup(String nodeGroupId, String scheduleId, String taskName) throws ApiException {
@@ -105,21 +109,22 @@ public class ColosseumContext implements ContextOperations {
                                 }))
                 .findFirst();
     }
+
     public void deleteProcessGroup(String processGroupId) {
         processGroups.removeIf(processGroup -> processGroupId.equals(processGroup.getId()));
     }
 
-  public void addJob(@NonNull Job job) {
-    jobs.add(job);
-  }
+    public void addJob(@NonNull Job job) {
+        jobs.add(job);
+    }
 
-  public Optional<Job> getJob(String name) {
-      return getElement(jobs, job -> name.equals(job.getId()), createAmbiguousResultException(Job.class, name));
-  }
+    public Optional<Job> getJob(String name) {
+        return getElement(jobs, job -> name.equals(job.getName()), createAmbiguousResultException(Job.class, name));
+    }
 
-  private Supplier<AmbiguousResultException> createAmbiguousResultException(Class clazz, String id){
-      return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
-  }
+    private Supplier<AmbiguousResultException> createAmbiguousResultException(Class clazz, String id) {
+        return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
+    }
 
     public Optional<Monitor> getMonitor(String metricName){
         return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()),
@@ -130,59 +135,59 @@ public class ColosseumContext implements ContextOperations {
         monitors.add(monitor);
     }
 
-  private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {
-    synchronized (collection) {
-      return collection.stream()
-              .filter(predicate)
-              .collect(toSingleton(exceptionSupplier));
+    private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {
+        synchronized (collection) {
+            return collection.stream()
+                    .filter(predicate)
+                    .collect(toSingleton(exceptionSupplier));
+        }
     }
-  }
 
-  private <T> Collector<T, ?, Optional<T>> toSingleton(Supplier<AmbiguousResultException> exceptionSupplier) {
-    return Collectors.collectingAndThen(
-            Collectors.toList(),
-            list -> {
-              if (list.size() > 1) {
-                throw exceptionSupplier.get();
-              }
-              if (list.size() == 0) {
-                return Optional.empty();
-              }
-              return Optional.ofNullable(list.get(0));
-            }
-    );
-  }
+    private <T> Collector<T, ?, Optional<T>> toSingleton(Supplier<AmbiguousResultException> exceptionSupplier) {
+        return Collectors.collectingAndThen(
+                Collectors.toList(),
+                list -> {
+                    if (list.size() > 1) {
+                        throw exceptionSupplier.get();
+                    }
+                    if (list.size() == 0) {
+                        return Optional.empty();
+                    }
+                    return Optional.ofNullable(list.get(0));
+                }
+        );
+    }
 
-  @Override
-  @Synchronized
-  public void refreshContext() throws ApiException {
-    log.info("Refreshing Colosseum context");
+    @Override
+    @Synchronized
+    public void refreshContext() throws ApiException {
+        log.info("Refreshing Colosseum context");
 
-    nodeGroups.clear();
-    nodeGroups.addAll(nodeApi.findNodeGroups());
+        nodeGroups.clear();
+        nodeGroups.addAll(nodeApi.findNodeGroups());
 
-    schedules.clear();
-    schedules.addAll(processApi.getSchedules());
+        schedules.clear();
+        schedules.addAll(processApi.getSchedules());
 
-    processGroups.clear();
-    processGroups.addAll(processApi.findProcessGroups());
+        processGroups.clear();
+        processGroups.addAll(processApi.findProcessGroups());
 
-    jobs.clear();
-    jobs.addAll(jobApi.findJobs());
+        jobs.clear();
+        jobs.addAll(jobApi.findJobs());
 
     monitors.clear();
     monitors.addAll(monitoringApi.findMonitors());
 
-    loaded = true;
-  }
+        loaded = true;
+    }
 
-  @Override
-  public boolean isLoaded() {
-    return loaded;
-  }
+    @Override
+    public boolean isLoaded() {
+        return loaded;
+    }
 
-  private  <E> List<E> synchronizedList() {
-    return Collections.synchronizedList(Lists.newLinkedList());
-  }
+    private <E> List<E> synchronizedList() {
+        return Collections.synchronizedList(Lists.newLinkedList());
+    }
 
 }

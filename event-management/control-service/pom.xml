@@ -152,6 +152,7 @@
                                     <directory>${project.build.directory}</directory>
                                     <include>${docker.jarToInclude}</include>
                                     <include>${docker.esperJarToInclude}</include>
+                                    <include>${project.basedir}/../run.sh</include>
                                 </resource>
                                 <resource>
                                     <targetPath>/config</targetPath>

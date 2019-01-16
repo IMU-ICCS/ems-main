@@ -25,16 +25,24 @@
 			<Pattern>%msg%n</Pattern>
 		</layout>
 	</appender>
+	<appender name="LOG_FILE" class="ch.qos.logback.core.FileAppender">
+		<!--<file>${user.home}/ems.log</file>-->
+		<file>logs/ems.log</file>
+		<append>false</append>
+		<encoder>
+			<pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M - %msg%n</pattern>
+		</encoder>
+	</appender>
 
-	<logger name="root" level="ERROR"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="org.springframework" level="INFO"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.control" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.baguette.server" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.baguette.client.install" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
-	<logger name="eu.melodic.event.translate" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> </logger>
+	<logger name="root" level="ERROR"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="org.springframework" level="INFO"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event.control" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event.baguette.server" level="INFO" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event.baguette.client.install" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
+	<logger name="eu.melodic.event.translate" level="DEBUG" additivity="false"> <appender-ref ref="STDOUT"/> <appender-ref ref="LOG_FILE"/> </logger>
 
-	<logger name="eu.melodic.event.control.util.LogPrintStream" level="OFF" additivity="false"> <appender-ref ref="LOGSTREAM"/> </logger>
+	<logger name="eu.melodic.event.control.util.LogPrintStream" level="ALL" additivity="false"> <appender-ref ref="LOGSTREAM"/> <appender-ref ref="LOG_FILE"/> </logger>
 </configuration>
