@@ -142,6 +142,12 @@ public class BrokerCepService {
         _publishEvent(connectionString, destinationName, new EventMap(eventMap));
     }
 	
+    public synchronized void publishEvent(String connectionString, String username, String password, String destinationName, Map<String, Object> eventMap) throws JMSException {
+        if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
+            return;
+        _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
+    }
+
 	/*public synchronized void publishEvent(String connectionString, String destinationName, MetricEvent event) throws JMSException {
 		if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event)) return;
 		_publishEvent(connectionString, destinationName, event);
