@@ -21,12 +21,11 @@ import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
-import eu.melodic.models.interfaces.ems.Monitor;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
 import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
+import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
-import eu.melodic.upperware.adapter.communication.ems.MonitorList;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
@@ -50,6 +49,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -121,7 +121,7 @@ public class Coordinator {
         DeploymentInstanceModel currentModel = null;
         try {
             targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
-            enrichMonitors(targetModel, authorization);
+            enrichMonitors(targetModel, uuid, authorization);
             currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
             if (currentModel == null) {
                 saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
@@ -167,12 +167,12 @@ public class Coordinator {
         }
     }
 
-    private void enrichMonitors(DeploymentInstanceModel targetModel, String authorization) {
+    private void enrichMonitors(DeploymentInstanceModel targetModel, String uuid, String authorization) {
         String attributeName = "monitors";
-        String camelName = ((CamelModel) targetModel.eContainer()).getName();
-        MonitorList monitors = emsClientApi.getMonitors(camelName, authorization);
-        if (CollectionUtils.isEmpty(monitors.getMonitors())) {
-            log.info("There is no monitors defined for CamelModel {}", camelName);
+        String applicationId = ((CamelModel) targetModel.eContainer()).getName();
+        List<Monitor> monitors = emsClientApi.getMonitors(applicationId, prepareWatermark(uuid), authorization);
+        if (CollectionUtils.isEmpty(monitors)) {
+            log.info("There is no monitors defined for CamelModel {}", applicationId);
             return;
         }
 
@@ -182,7 +182,7 @@ public class Coordinator {
         } else {
             attributes.add(createAttribute(attributeName, gson.toJson(monitors)));
             log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
-                    monitors.getMonitors().stream().map(Monitor::getMetric).collect(Collectors.joining(", ", "[", "]")));
+                    monitors.stream().map(Monitor::getMetric).collect(Collectors.joining(", ", "[", "]")));
         }
     }
 

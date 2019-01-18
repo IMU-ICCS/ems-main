@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter.executioncontext.colosseum;
 import com.google.common.collect.Lists;
 import eu.melodic.upperware.adapter.exception.AmbiguousResultException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
 import io.github.cloudiator.rest.api.MonitoringApi;
@@ -45,6 +46,8 @@ public class ColosseumContext implements ContextOperations {
     private final NodeApi nodeApi;
     private final ProcessApi processApi;
     private final MonitoringApi monitoringApi;
+
+    private final AdapterProperties adapterProperties;
 
     private final List<NodeGroup> nodeGroups = synchronizedList();
     private final List<Schedule> schedules = synchronizedList();
@@ -175,8 +178,10 @@ public class ColosseumContext implements ContextOperations {
         jobs.clear();
         jobs.addAll(jobApi.findJobs());
 
-    monitors.clear();
-    monitors.addAll(monitoringApi.findMonitors());
+        if (adapterProperties.getEms().isEnabled()) {
+            monitors.clear();
+            monitors.addAll(monitoringApi.findMonitors());
+        }
 
         loaded = true;
     }

@@ -3,15 +3,16 @@ package eu.melodic.upperware.adapter.plangenerator.converter;
 import camel.deployment.DeploymentInstanceModel;
 import camel.type.StringValue;
 import com.google.gson.Gson;
-import eu.melodic.models.interfaces.ems.Monitor;
-import eu.melodic.models.interfaces.ems.*;
-import eu.melodic.upperware.adapter.communication.ems.MonitorList;
+import com.google.gson.reflect.TypeToken;
+import eu.melodic.models.services.adapter.*;
+import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,22 +21,28 @@ import static java.lang.String.format;
 
 @Slf4j
 @Service
-public class MonitorConverter implements ModelConverter<DeploymentInstanceModel, List<AdapterMonitor>>{
+public class MonitorConverter implements ModelConverter<DeploymentInstanceModel, List<AdapterMonitor>> {
 
     private Gson gson = new Gson();
+    private Type type = new TypeToken<List<Monitor>>() {}.getType();
 
     @Override
     public List<AdapterMonitor> toComparableModel(DeploymentInstanceModel model) {
-        return model.getAttributes()
+        List<Monitor> monitors = model.getAttributes()
                 .stream()
                 .filter(attribute -> "monitors".equals(attribute.getName()))
                 .findFirst()
                 .map(attribute -> ((StringValue) attribute.getValue()).getValue())
-                .map(value -> gson.fromJson(value, MonitorList.class)).map(monitorList -> monitorList
-                        .getMonitors()
-                        .stream()
-                        .map(this::toMonitor)
-                        .collect(Collectors.toList())).orElse(Collections.emptyList());
+                .map(this::fromJson).orElse(Collections.emptyList());
+
+        return monitors
+                .stream()
+                .map(this::toMonitor)
+                .collect(Collectors.toList());
+    }
+
+    private List<Monitor> fromJson(String value) {
+        return gson.fromJson(value, type);
     }
 
     private AdapterMonitor toMonitor(Monitor monitor) {
