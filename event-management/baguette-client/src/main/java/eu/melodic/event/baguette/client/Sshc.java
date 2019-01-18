@@ -64,7 +64,7 @@ public class Sshc {
         //this.commandExecutor = new CommandExecutor();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
         this.commandExecutor.setConfigAndId(config, idFile);
-        log.debug("Sshc: OS detected: {}", CommandExecutor.getOsName());
+//XXX:DEL:        log.debug("Sshc: OS detected: {}", CommandExecutor.getOsName());
     }
 
     public synchronized void start(boolean retry) throws IOException {

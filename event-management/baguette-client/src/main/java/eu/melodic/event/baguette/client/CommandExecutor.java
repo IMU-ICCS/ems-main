@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
-/*XXX:DEL: import eu.melodic.event.brokercep.event.MetricEvent;*/
+//import eu.melodic.event.brokercep.event.MetricEvent;
 //import java.util.concurrent.Executors;
 
 
@@ -59,7 +59,7 @@ public class CommandExecutor {
         this.config = config;
         this.idFile = idFile;
         this.clientId = config.getProperty("client.id", "");
-        log.debug("CommandExecutor: OS detected: {}", getOsName());
+//XXX:DEL:        log.debug("CommandExecutor: OS detected: {}", getOsName());
     }
 
     boolean executeCommand(String line, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
@@ -501,7 +501,8 @@ public class CommandExecutor {
         }
     }
 
-    public static String getOsName() {
+    //XXX: OBSOLETE: To delete
+    /*public static String getOsName() {
         String OS = System.getProperty("os.name").toLowerCase();
         if (OS.indexOf("win") >= 0) {
             return "windows";
@@ -512,7 +513,7 @@ public class CommandExecutor {
         } else {
             return "other";
         }
-    }
+    }*/
 
     private static class StreamGobbler implements Runnable {
         private InputStream inputStream1;
