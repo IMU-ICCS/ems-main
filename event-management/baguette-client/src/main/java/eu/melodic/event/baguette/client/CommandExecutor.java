@@ -49,7 +49,7 @@ public class CommandExecutor {
     //private PrintStream err;
     private String clientId;
 
-    private Map<String, Grouping> groupings = new HashMap<String, Grouping>();
+    private Map<String, Grouping> groupings = new HashMap<>();
     private Grouping activeGrouping;
 
     private Map<String, EventGenerator> eventGenerators = new HashMap<>();
