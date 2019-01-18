@@ -173,7 +173,6 @@ public class BrokerCepService {
         return true;
     }
 
-    //XXX:TODO: Optimize this method
     protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
         // Get username/password for local broker service
         String username = null;
@@ -198,8 +197,28 @@ public class BrokerCepService {
                 : connectionFactory.createConnection(username, password);
         connection.start();
 
+        // Publish event
+        _publishEvent(connection, destinationName, event);
+
+        // Clean up
+        connection.close();
+    }
+
+    protected synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
+        log.debug("BrokerCepService._publishEvent(): Connection given: {}", connection);
+
         // Create a Session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        // Publish event
+        _publishEvent(session, destinationName, event);
+
+        // Clean up
+        session.close();
+    }
+
+    protected synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
+        log.debug("BrokerCepService._publishEvent(): Session: {}", session);
 
         // Create the destination (Topic or Queue)
         log.debug("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
@@ -216,13 +235,11 @@ public class BrokerCepService {
 
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
+        //log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
+        log.info("BrokerCepService.publishEvent(): Sending message: destination={}, hash={}, payload={}", destinationName, hash, event);
         producer.send(message);
-        log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
-
-        // Clean up
-        session.close();
-        connection.close();
+        //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
+        log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
     }
 
     public void setBrokerCredentials(String u, String p) {

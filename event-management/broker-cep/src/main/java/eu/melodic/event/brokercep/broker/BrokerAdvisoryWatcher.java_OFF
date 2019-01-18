@@ -76,10 +76,6 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 				boolean isDel = info.isRemoveOperation();
 				log.debug("BrokerAdvisoryWatcher.onMessage(): Received a DestinationInfo message: destination={}, is-queue={}, is-topic={}, is-add={}, is-del={}",
 					destination, destination.isQueue(), destination.isTopic(), isAdd, isDel);
-				
-				if (isAdd) {
-					//XXX: TODO: Add here event type registration in esper
-				}
 			} else {
 				log.trace("BrokerAdvisoryWatcher.onMessage(): Message ignored");
 			}

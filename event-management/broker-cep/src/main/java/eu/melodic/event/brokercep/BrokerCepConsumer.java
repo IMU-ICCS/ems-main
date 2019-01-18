@@ -40,7 +40,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
     private Connection connection;
     private Session session;
-    private Set<String> addedDestinations = new HashSet<String>();
+    private Set<String> addedDestinations = new HashSet<>();
 
     @Override
     public void afterPropertiesSet() {
