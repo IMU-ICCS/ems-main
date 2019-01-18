@@ -170,6 +170,7 @@ public class BrokerConfig implements InitializingBean {
      */
     @Bean//(initMethod = "start", destroyMethod = "stop")
     public BrokerService createBrokerService() throws Exception {
+
         // Create new broker service instance
         String brokerUrl = getBrokerUrl();
         log.info("BrokerConfig: Creating new Broker Service instance: url={}", brokerUrl);
@@ -198,6 +199,9 @@ public class BrokerConfig implements InitializingBean {
         brokerService.setUseJmx(properties.isBrokerUsingJmx());
         brokerService.setUseShutdownHook(properties.isBrokerUsingShutdownHook());
         brokerService.setAdvisorySupport(properties.isBrokerAdvisorySupportEnabled());
+
+        brokerService.setPopulateJMSXUserID(properties.isPopulateJmsxUserId());
+        brokerService.setEnableStatistics(properties.isEnableStatistics());
 
         // Change the JMX connector port
         if (properties != null && properties.getConnectorPort() > 0) {

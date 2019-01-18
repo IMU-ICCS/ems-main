@@ -69,6 +69,11 @@ public class BrokerCepProperties {
     @Value("${broker-using-shutdown-hook:false}")
     private boolean brokerUsingShutdownHook;
 
+    @Value("${broker-enable-statistics:false}")
+    private boolean enableStatistics;
+    @Value("${broker-populate-jmsx-user-id:false}")
+    private boolean populateJmsxUserId;
+
     @Value("${brokercep.usage.memory.jvm-heap-percentage:-1}")
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
