@@ -527,7 +527,7 @@ public class ModelAnalyzer {
             // Not used in EMS
             //_decomposeMetricVariableConstraint(_TC, (MetricVariableConstraint)constraint);
         } else if (LogicalConstraint.class.isAssignableFrom(constraint.getClass())) {
-            throw new ModelAnalysisException("FEATURE NOT IMPLEMENTED");    //XXX: TODO: ++++++++++++++++
+            _decomposeLogicalConstraint(_TC, (LogicalConstraint) constraint);
         } else {
             throw new ModelAnalysisException(String.format("Invalid Constraint type occurred: %s  class=%s", constraint.getName(), constraint.getClass().getName()));
         }
@@ -557,6 +557,17 @@ public class ModelAnalyzer {
         _TC.DAG.addNode(constraint, mvar).setGrouping(Grouping.GLOBAL);
 
         _decomposeMetricVariable(_TC, mvar);
+    }
+
+    protected void _decomposeLogicalConstraint(TranslationContext _TC, LogicalConstraint constraint) {
+        log.info("  _decomposeLogicalConstraint(): {} :: {}", constraint.getName(), constraint.getClass().getName());
+        EList<Constraint> componentConstraints = constraint.getConstraints();
+        LogicalOperatorType operator = constraint.getLogicalOperator();
+        log.info("  _decomposeLogicalConstraint(): {} ==> operator: {}, component-constraints: {}", constraint.getName(), operator.getName(), componentConstraints);
+
+        componentConstraints.forEach(lc -> _TC.DAG.addNode(constraint, lc).setGrouping(getGrouping(lc)) );
+
+        componentConstraints.forEach(lc -> _decomposeConstraint(_TC, lc) );
     }
 
     protected boolean _decomposeMetricVariable(TranslationContext _TC, MetricVariable mvar) {

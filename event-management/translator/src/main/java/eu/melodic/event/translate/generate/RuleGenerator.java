@@ -10,6 +10,7 @@
 package eu.melodic.event.translate.generate;
 
 import camel.constraint.Constraint;
+import camel.constraint.LogicalConstraint;
 import camel.constraint.MetricConstraint;
 import camel.core.NamedElement;
 import camel.data.Data;
@@ -71,6 +72,10 @@ public class RuleGenerator {
             if ("LESS_EQUAL_THAN".equalsIgnoreCase(camelStr)) return "<=";
             if ("EQUAL".equalsIgnoreCase(camelStr)) return "=";
             if ("NOT_EQUAL".equalsIgnoreCase(camelStr)) return "<>";
+            if ("AND".equalsIgnoreCase(camelStr)) return "AND";
+            if ("OR".equalsIgnoreCase(camelStr)) return "OR";
+            //XXX: EPL does not support XOR event patterns:
+            // if ("XOR".equalsIgnoreCase(camelStr)) return "XOR";
             throw new IllegalArgumentException(String.format("Illegal argument in 'camelStr': MapType=%s, ElemType=%s, camel-str=%s", mapType, elemType, camelStr));
         }
         return camelStr.toUpperCase().trim();
@@ -277,7 +282,7 @@ public class RuleGenerator {
                 // Require context topic in this level
                 _TC.requireGroupingTopicPair(grouping, mc.getName());
 
-                // Write rule for CONSTR
+                // Write rule for CONSTR-MET
                 Context context = new Context();
                 context.setVariable("metricContext", mc.getName());
                 context.setVariable("operator", ruleOp);
@@ -290,8 +295,25 @@ public class RuleGenerator {
                 // Not used in EMS
                 log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element and ignoring it: node={}, elem-name={}", node, elemName);
             } else if (elem instanceof camel.constraint.LogicalConstraint) {
-                log.warn("RuleGenerator.generateRules():      Found an Logical-Constraint element: node={}, elem-name={}", node, elemName);
-//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+                log.warn("RuleGenerator.generateRules():      Found a Logical-Constraint element: node={}, elem-name={}", node, elemName);
+                LogicalConstraint constr = (LogicalConstraint) elem;
+
+                // Get logical constraint operator and component constraints
+                String camelOp = constr.getLogicalOperator().getName();
+                String ruleOp = camelToRule(MapType.OPERATOR, ElemType.CONSTR, camelOp);
+                EList<Constraint> componentConstraints = constr.getConstraints();
+                List<String> componentConstraintsNamesList = componentConstraints.stream().map(con -> con.getName()).collect(Collectors.toList());
+
+                log.warn("RuleGenerator.generateRules():      Logical-Constraint: node={}, elem-name={}, operator={}->{}, component-constraints={}", node, elemName, camelOp, ruleOp, componentConstraintsNamesList);
+
+                // Require context topic in this level
+                _TC.requireGroupingTopicPair(grouping, constr.getName());
+
+                // Write rule for CONSTR-LOG
+                Context context = new Context();
+                context.setVariable("operator", ruleOp);
+                context.setVariable("constraints", componentConstraintsNamesList);
+                _generateRule(_TC, "CONSTR-LOG", grouping, elemName, context);
             } else
 
             // Generate rules for Metrics Contexts
