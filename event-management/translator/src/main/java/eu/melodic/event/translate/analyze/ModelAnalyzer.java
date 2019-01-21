@@ -71,8 +71,9 @@ public class ModelAnalyzer {
         log.debug("ModelAnalyzer.analyzeModel():  Scalability Model analysis completed");
 
         // analyze optimisation requirements
-        _analyzeOptimisationRequirements(_TC, camelModel);
-        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");
+//XXX:SOS: Should i comment out opt.req. analysis or not???
+/*        _analyzeOptimisationRequirements(_TC, camelModel);
+        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");*/
 
         // analyze service level objectives
         _analyzeServiceLevelObjectives(_TC, camelModel);
