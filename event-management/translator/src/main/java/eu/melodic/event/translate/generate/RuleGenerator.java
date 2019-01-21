@@ -301,8 +301,7 @@ public class RuleGenerator {
                 // Get logical constraint operator and component constraints
                 String camelOp = constr.getLogicalOperator().getName();
                 String ruleOp = camelToRule(MapType.OPERATOR, ElemType.CONSTR, camelOp);
-                EList<Constraint> componentConstraints = constr.getConstraints();
-                List<String> componentConstraintsNamesList = componentConstraints.stream().map(con -> con.getName()).collect(Collectors.toList());
+                List<String> componentConstraintsNamesList = constr.getConstraints().stream().map(con -> con.getName()).collect(Collectors.toList());
 
                 log.warn("RuleGenerator.generateRules():      Logical-Constraint: node={}, elem-name={}, operator={}->{}, component-constraints={}", node, elemName, camelOp, ruleOp, componentConstraintsNamesList);
 

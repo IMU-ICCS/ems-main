@@ -167,7 +167,7 @@ public class CamelToEplTranslator implements Translator {
 				if (exportPath == null) exportPath = "";
 				exportName = StringUtils.stripToEmpty(exportName);
 				if (exportName.isEmpty()) exportName = "noname";
-				String baseFileName = String.format("%s/%s%s%d", exportPath, exportName, exportName.isEmpty() ? "" : "-", System.currentTimeMillis());
+				String baseFileName = String.format("%s/%s-%d", exportPath, exportName, System.currentTimeMillis());
 				if (dot!=null) {
 					_TC.DAG.exportDAG(dot, baseFileName, exportFormats, imageWidth);
 				} else {

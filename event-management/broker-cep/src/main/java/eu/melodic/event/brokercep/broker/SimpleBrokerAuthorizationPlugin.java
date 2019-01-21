@@ -35,10 +35,6 @@ public class SimpleBrokerAuthorizationPlugin implements BrokerPlugin {
         _prepareAuthorizationMap();
     }
 
-    public SimpleBrokerAuthorizationPlugin(AuthorizationMap map) {
-        this.map = map;
-    }
-
     public Broker installPlugin(Broker broker) {
         if (map == null) {
             throw new IllegalArgumentException("You must configure a 'map' property");

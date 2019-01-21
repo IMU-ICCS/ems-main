@@ -45,6 +45,13 @@ import java.util.*;
 @Slf4j
 public class BrokerConfig implements InitializingBean {
 
+    private final static int LOCAL_ADMIN_INDEX = 0;
+    private final static int LOCAL_USER_INDEX = 1;
+    private final static String LOCAL_ADMIN_PREFIX = "admin-local-";
+    private final static String LOCAL_USER_PREFIX = "user-local-";
+    private final static int USERNAME_RANDOM_PART_LENGTH = 10;
+    private final static int PASSWORD_LENGTH = 20;
+
     @Autowired
     private BrokerCepProperties properties;
 
@@ -70,14 +77,14 @@ public class BrokerConfig implements InitializingBean {
             userList = new ArrayList<>();
 
             // initialize local admin credentials
-            brokerLocalAdmin = "admin-local-" + RandomStringUtils.randomAlphanumeric(10);
-            brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(20);
+            brokerLocalAdmin = LOCAL_ADMIN_PREFIX + RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
+            brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
             userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, SimpleBrokerAuthorizationPlugin.ADMIN_GROUP));
             log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}", brokerLocalAdmin, brokerLocalAdminPassword);
 
             // initialize broker user credentials
-            brokerUsername = "user-local-" + RandomStringUtils.randomAlphanumeric(10);
-            brokerPassword = RandomStringUtils.randomAlphanumeric(20);
+            brokerUsername = LOCAL_USER_PREFIX+ RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
+            brokerPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
             userList.add(new AuthenticationUser(brokerUsername, brokerPassword, SimpleBrokerAuthorizationPlugin.RO_USER_GROUP));
             log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}", brokerUsername, brokerPassword);
 
@@ -139,7 +146,7 @@ public class BrokerConfig implements InitializingBean {
     public void setBrokerUsername(String s) {
         if (userList != null) {
             brokerUsername = s;
-            userList.get(1).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
+            userList.get(LOCAL_USER_INDEX).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
         }
         log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
@@ -148,7 +155,7 @@ public class BrokerConfig implements InitializingBean {
     public void setBrokerPassword(String s) {
         if (userList != null) {
             brokerPassword = s;
-            userList.get(1).setPassword(s);
+            userList.get(LOCAL_USER_INDEX).setPassword(s);
             brokerAuthenticationPlugin.setUsers(userList);
         }
         log.debug("BrokerConfig.setBrokerPassword(): password={}", s);
