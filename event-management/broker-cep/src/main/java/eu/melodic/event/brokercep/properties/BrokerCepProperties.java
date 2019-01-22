@@ -78,4 +78,8 @@ public class BrokerCepProperties {
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
+
+    @Value("${brokercep-password-encoder:eu.passage.upperware.commons.passwords.IdentityPasswordEncoder}")
+    private String passwordEncoder;
+
 }

@@ -10,6 +10,8 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
+import eu.passage.upperware.commons.passwords.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
@@ -20,6 +22,7 @@ import org.apache.activemq.security.*;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +38,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.util.*;
+import java.util.function.Supplier;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
@@ -54,6 +58,9 @@ public class BrokerConfig implements InitializingBean {
 
     @Autowired
     private BrokerCepProperties properties;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
     private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
@@ -94,7 +101,7 @@ public class BrokerConfig implements InitializingBean {
                 String username = cred[0].trim();
                 String password = cred.length > 1 ? cred[1].trim() : "";
                 userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
-                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, password);
+                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, passwordEncoder.encode(password));
             }
 
             // initialize Broker authentication plugin
@@ -158,7 +165,7 @@ public class BrokerConfig implements InitializingBean {
             userList.get(LOCAL_USER_INDEX).setPassword(s);
             brokerAuthenticationPlugin.setUsers(userList);
         }
-        log.debug("BrokerConfig.setBrokerPassword(): password={}", s);
+        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordEncoder.encode(s));
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
@@ -331,5 +338,23 @@ public class BrokerConfig implements InitializingBean {
         JmsTemplate template = new JmsTemplate();
         template.setConnectionFactory(connectionFactory());
         return template;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        Supplier<PasswordEncoder> passwordEncoderSupplier = IdentityPasswordEncoder::new;
+        String passwordEncoder = properties.getPasswordEncoder();
+        if (StringUtils.isBlank(passwordEncoder)) {
+            log.info("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
+            return passwordEncoderSupplier.get();
+        }
+
+        try {
+            Class<?> passwordEncoderClass = Class.forName(passwordEncoder);
+            return (PasswordEncoder) passwordEncoderClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            log.warn("Could not instantiate PasswordEncoder instance of {}. Default instance of PasswordEncoder will be created", passwordEncoder);
+            return passwordEncoderSupplier.get();
+        }
     }
 }

@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.passage.upperware.commons.passwords.PasswordEncoder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,8 @@ public class BrokerCepService {
     private BrokerConfig brokerConfig;
     private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
     private ActiveMQConnectionFactory connectionFactory;
+    private PasswordEncoder passwordEncoder;
+
     //private BrokerAdvisoryWatcher advisoryMessageWatcher;
     @Getter
     private BrokerCepConsumer brokerCepBridge;
@@ -197,7 +200,7 @@ public class BrokerCepService {
         connectionFactory.setBrokerURL(connectionString);
 
         // Create a Connection
-        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}", connectionString, username, password);
+        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}", connectionString, username, passwordEncoder.encode(password));
         Connection connection = StringUtils.isBlank(username)
                 ? connectionFactory.createConnection()
                 : connectionFactory.createConnection(username, password);
@@ -251,7 +254,7 @@ public class BrokerCepService {
     public void setBrokerCredentials(String u, String p) {
         brokerConfig.setBrokerUsername(u);
         brokerConfig.setBrokerPassword(p);
-        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password={}", u, p);
+        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password={}", u, passwordEncoder.encode(p));
     }
 
     public String getBrokerUsername() {
