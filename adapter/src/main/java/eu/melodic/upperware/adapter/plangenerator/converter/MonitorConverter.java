@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.models.services.adapter.*;
 import eu.melodic.models.services.adapter.Monitor;
+import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -86,7 +87,7 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
                     .interval(toInterval(pullSensor.getInterval()))
                     .build();
         }
-        throw new RuntimeException(format("Exception during converting Sensor. Only PushSensor and PullSensor are supported. Current value: %s", sensor.getClass().getSimpleName()));
+        throw new AdapterException(format("Exception during converting Sensor. Only PushSensor and PullSensor are supported. Current value: %s", sensor.getClass().getSimpleName()));
     }
 
     private AdapterInterval toInterval(Interval pullSensor) {

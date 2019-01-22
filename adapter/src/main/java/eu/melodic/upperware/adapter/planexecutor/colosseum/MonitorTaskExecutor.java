@@ -99,7 +99,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     @Override
     public void delete(AdapterMonitor taskBody) {
-
+        throw new UnsupportedOperationException("Delete method is not supported for MonitorTaskExecutor");
     }
 
 

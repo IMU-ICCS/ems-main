@@ -71,7 +71,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     }
   }
 
-  protected void findAndSetProcessDependencies(MelodicGraph<Task, DefaultEdge> graph, MonitorTask monitorTask, String taskName,
+  void findAndSetProcessDependencies(MelodicGraph<Task, DefaultEdge> graph, MonitorTask monitorTask, String taskName,
                                           Collection<ProcessTask> processTasks, Type type) {
     boolean wasSet = false;
     for (ProcessTask processTask : processTasks) {
@@ -86,7 +86,5 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
                       taskName, monitorTask.getData().getName()));
     }
   }
-
-
 
 }
