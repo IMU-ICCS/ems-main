@@ -14,6 +14,7 @@ import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -42,6 +43,7 @@ import static java.util.stream.Collectors.toList;
 public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<ComparableModel> {
 
     private ToLogGraphLogger toLogGraphLogger;
+    private AdapterProperties adapterProperties;
 
     @Override
     public SimpleDirectedGraph<Task, DefaultEdge> generateConfigGraph(ComparableModel model) {
@@ -55,13 +57,16 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         Collection<NodeTask> nodeTasks = genNodeCreateTasks(graph, model.getAdapterRequirements());
 
-        genProcessCreateTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
+        Collection<ProcessTask> processTasks = genProcessCreateTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
+
+        if (!adapterProperties.getEms().isEnabled()) {
+          Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
+        }
 
         log.info("Built graph: {}", graph);
 
         return graph;
     }
-
 
     @Override
     public SimpleDirectedGraph<Task, DefaultEdge> generateReconfigGraph(ComparableModel oldModel, ComparableModel newModel) {
@@ -102,6 +107,21 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         setDependencies(graph, createProcess, createNodes, waitTask, CREATE);
         setDependencies(graph, deleteProcess, deleteNodes, waitTask, DELETE);
+    }
+
+    private Collection<MonitorTask> getMonitorsTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<ProcessTask> processTasks, Collection<AdapterMonitor> adapterMonitors) {
+
+        List<MonitorTask> monitorTasks = adapterMonitors.stream()
+                .map(monitor -> new MonitorTask(CREATE, monitor))
+                .collect(toList());
+
+        monitorTasks.forEach(monitorTask -> {
+            addVertex(graph, monitorTask);
+
+            findAndSetProcessDependencies(graph, monitorTask, monitorTask.getData().getTaskName(), processTasks, CREATE);
+        });
+
+        return monitorTasks;
     }
 
     private void setDependencies(MelodicGraph<Task, DefaultEdge> graph, List<ProcessTask> processes, List<NodeTask> nodes, WaitTask waitTask, Type type) {

@@ -32,6 +32,10 @@ public class AdapterProperties {
   @NotNull
   private Esb esb;
 
+  @Valid
+  @NotNull
+  private Ems ems;
+
   private TaskExecutor taskExecutor;
 
   @Valid
@@ -44,7 +48,14 @@ public class AdapterProperties {
 
     @NotBlank
     private String url;
+  }
 
+  @Getter
+  @Setter
+  public static class Ems {
+
+    private String url;
+    private boolean enabled = true;
   }
 
   @Getter

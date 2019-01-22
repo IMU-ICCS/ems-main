@@ -30,25 +30,24 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
 
     @Override
     public void create(AdapterJob taskBody) {
-        JobNew jobNew = convertToJobNew(taskBody);
-        if (context.getJob(jobNew.getName()).isPresent()) {
+        if (context.getJob(taskBody.getJobName()).isPresent()) {
             log.warn("Job {} already exists in Colosseum - skipping execution of the task", taskBody.getName());
-            log.warn("Trying to deploy job: {}", jobNew.toString());
             return;
         }
 
         try {
+            JobNew jobNew = convertToJobNew(taskBody);
             Job job = api.addJob(jobNew);
             context.addJob(job);
         } catch (ApiException e) {
             log.error("Could not add Job. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
-            throw new AdapterException(format("Could not add Job %s", jobNew.getName()), e);
+            throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);
         }
     }
 
     @Override
     public void delete(AdapterJob taskBody) {
-
+        throw new UnsupportedOperationException("Delete method is not supported for JobTaskExecutor");
     }
 
 

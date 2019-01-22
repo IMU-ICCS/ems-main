@@ -72,6 +72,6 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
 
     @Override
     public void delete(AdapterSchedule taskBody) {
-
+         throw new UnsupportedOperationException("Delete method is not supported for ScheduleTaskExecutor");
     }
 }

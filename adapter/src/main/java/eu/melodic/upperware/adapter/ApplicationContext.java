@@ -18,10 +18,7 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.github.cloudiator.rest.ApiClient;
-import io.github.cloudiator.rest.api.JobApi;
-import io.github.cloudiator.rest.api.NodeApi;
-import io.github.cloudiator.rest.api.ProcessApi;
-import io.github.cloudiator.rest.api.QueueApi;
+import io.github.cloudiator.rest.api.*;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -108,6 +105,11 @@ public class ApplicationContext {
   @Bean
   public ProcessApi processApi(ApiClient apiClient) {
     return new ProcessApi(apiClient);
+  }
+
+  @Bean
+  public MonitoringApi monitoringApi(ApiClient apiClient) {
+    return new MonitoringApi(apiClient);
   }
 
   @Bean

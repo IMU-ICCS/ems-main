@@ -24,6 +24,7 @@ public class ComparableModel {
   private AdapterSchedule adapterSchedule;
   private Collection<AdapterRequirement> adapterRequirements;
   private Collection<AdapterProcess> adapterProcesses;
+  private Collection<AdapterMonitor> adapterMonitors;
 
   private Collection<CloudApi> cloudApis;
   private Collection<Cloud> clouds;

@@ -12,8 +12,10 @@ package eu.melodic.upperware.adapter.executioncontext.colosseum;
 import com.google.common.collect.Lists;
 import eu.melodic.upperware.adapter.exception.AmbiguousResultException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.JobApi;
+import io.github.cloudiator.rest.api.MonitoringApi;
 import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
 import io.github.cloudiator.rest.model.*;
@@ -43,11 +45,15 @@ public class ColosseumContext implements ContextOperations {
     private final JobApi jobApi;
     private final NodeApi nodeApi;
     private final ProcessApi processApi;
+    private final MonitoringApi monitoringApi;
+
+    private final AdapterProperties adapterProperties;
 
     private final List<NodeGroup> nodeGroups = synchronizedList();
     private final List<Schedule> schedules = synchronizedList();
     private final List<ProcessGroup> processGroups = synchronizedList();
     private final List<Job> jobs = synchronizedList();
+    private final List<Monitor> monitors = synchronizedList();
 
     private boolean loaded;
 
@@ -123,6 +129,15 @@ public class ColosseumContext implements ContextOperations {
         return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
     }
 
+    public Optional<Monitor> getMonitor(String metricName){
+        return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()),
+                () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
+    }
+
+    public void addMonitor(@NonNull Monitor monitor) {
+        monitors.add(monitor);
+    }
+
     private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {
         synchronized (collection) {
             return collection.stream()
@@ -162,6 +177,11 @@ public class ColosseumContext implements ContextOperations {
 
         jobs.clear();
         jobs.addAll(jobApi.findJobs());
+
+        if (adapterProperties.getEms().isEnabled()) {
+            monitors.clear();
+            monitors.addAll(monitoringApi.findMonitors());
+        }
 
         loaded = true;
     }
