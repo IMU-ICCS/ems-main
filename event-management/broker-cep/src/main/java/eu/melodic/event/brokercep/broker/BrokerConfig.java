@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.passage.upperware.commons.passwords.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
@@ -54,6 +55,9 @@ public class BrokerConfig implements InitializingBean {
 
     @Autowired
     private BrokerCepProperties properties;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
     private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
@@ -94,7 +98,7 @@ public class BrokerConfig implements InitializingBean {
                 String username = cred[0].trim();
                 String password = cred.length > 1 ? cred[1].trim() : "";
                 userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
-                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, password);
+                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, passwordEncoder.encode(password));
             }
 
             // initialize Broker authentication plugin
@@ -158,7 +162,7 @@ public class BrokerConfig implements InitializingBean {
             userList.get(LOCAL_USER_INDEX).setPassword(s);
             brokerAuthenticationPlugin.setUsers(userList);
         }
-        log.debug("BrokerConfig.setBrokerPassword(): password={}", s);
+        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordEncoder.encode(s));
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
