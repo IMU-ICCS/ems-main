@@ -24,7 +24,7 @@ import static java.lang.String.format;
 @Slf4j
 public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator<T> {
 
-  protected void setDependencies(MelodicGraph<Task, DefaultEdge> graph, Type type, Task source, Task target) {
+  void setDependencies(MelodicGraph<Task, DefaultEdge> graph, Type type, Task source, Task target) {
     if (DELETE.equals(type)) {
       log.debug("Setting {} as a dependency to {}", target, source);
       graph.addEdge(target, source);
@@ -34,7 +34,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     }
   }
 
-  protected void addVertex(MelodicGraph<Task, DefaultEdge> graph, Task task) {
+  void addVertex(MelodicGraph<Task, DefaultEdge> graph, Task task) {
     log.debug("Adding vertex {}", task);
     graph.addVertex(task);
   }
@@ -55,7 +55,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     }
   }
 
-  protected void findAndSetNodeDependencies(MelodicGraph<Task, DefaultEdge> graph, ProcessTask processTask, String depName,
+  void findAndSetNodeDependencies(MelodicGraph<Task, DefaultEdge> graph, ProcessTask processTask, String depName,
                                         Collection<NodeTask> nodeTasks, Type type) {
     boolean wasSet = false;
     for (NodeTask nodeTask : nodeTasks) {
