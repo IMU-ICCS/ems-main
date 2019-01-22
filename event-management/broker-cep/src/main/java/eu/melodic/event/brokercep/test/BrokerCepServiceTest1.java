@@ -43,8 +43,8 @@ public class BrokerCepServiceTest1 implements CommandLineRunner {
 		bridge.addQueue("temperatureQueue");
 		bridge.addQueue("radiationQueue");
 		bridge.addQueue("windQueue");*/
-        //XXX: If uncommented exceptions will be thrown, since 'bridge.addQueue'
-        //XXX: sets the queue message listener, which forwards messages to Esper
+        // If uncommented exceptions will be thrown, since 'bridge.addQueue'
+        // sets the queue message listener, which forwards messages to Esper
 
         log.info("Waiting for 5 seconds...");
         TimeUnit.SECONDS.sleep(5);

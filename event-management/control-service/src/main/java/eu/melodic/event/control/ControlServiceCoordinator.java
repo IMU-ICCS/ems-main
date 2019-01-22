@@ -200,7 +200,7 @@ public class ControlServiceCoordinator {
 
                     CamelToEplTranslator translator =
                             applicationContext.getBean(CamelToEplTranslator.class);
-                    translator.printAnalysisResults(_TC, null);
+                    translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to unserialize _TC from file: {} : Exception: ", fileName, ex);
                 }
@@ -532,8 +532,9 @@ public class ControlServiceCoordinator {
     // ------------------------------------------------------------------------------------------------------------
 
     void emsShutdown() {
-        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS...");
-        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS... done");
+        /*log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS...");
+        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS... done");*/
+        log.warn("ControlServiceCoordinator.emsShutdown(): Not implemented");
     }
 
     @Async

@@ -118,9 +118,10 @@ public class CamelToEplTranslator implements Translator {
 		RuleGenerator generator = new RuleGenerator(ruleTemplatesRegistry);
 		generator.generateRules(_TC);
 		log.debug("CamelToEplTranslator.translate():  Generating EPL rules... done");
-		
-		printAnalysisResults(_TC, camelModel!=null ? camelModel.getName() : "");
-		
+
+		// print results
+		printResults(_TC, camelModel != null ? camelModel.getName() : "");
+
 		log.debug("CamelToEplTranslator.translate():  END: result={}", _TC);
 		return _TC;
 	}
@@ -128,37 +129,57 @@ public class CamelToEplTranslator implements Translator {
 	// ================================================================================================================
 	// Helper methods
 	
-	public void printAnalysisResults(TranslationContext _TC, String exportName) {
+	public void printResults(TranslationContext _TC, String exportName) {
+		if (! properties.isPrintResults()) {
+			log.debug("CamelToEplTranslator.printResults(): Translation results printing is disabled");
+			return;
+		}
+
 		// Print analysis results
 		log.info("*********************************************************");
-		log.info("****         A N A L Y S I S   R E S U L T S         ****");
+		log.info("****      T R A N S L A T I O N   R E S U L T S      ****");
 		log.info("*********************************************************");
-		log.info("*********************************************************");
-		log.info("Decomposition Graph:\n{}", _TC.DAG);
-		log.info("*********************************************************");
-		try {
-			String dot = _TC.DAG.exportToDot();
-			log.info("Decomposition Graph in DOT format:\n{}", dot);
-		} catch (Exception ex) {
-			log.error("Decomposition Graph in DOT format: EXCEPTION: ", ex);
+		log.info("");
+
+		// Print DAG
+		String dot = null;
+		if (properties.isExportToDotEnabled()) {
+			log.info("Decomposition Graph:\n{}", _TC.DAG);
+			log.info("*********************************************************");
+			try {
+				dot = _TC.DAG.exportToDot();
+				log.info("Decomposition Graph in DOT format:\n{}", dot);
+			} catch (Exception ex) {
+				log.error("Decomposition Graph in DOT format: EXCEPTION: ", ex);
+			}
 		}
-		log.info("*********************************************************");
-		try {
-			// Get graph export configuration
-			String exportPath = properties.getExportPath();
-			String[] exportFormats = properties.getExportFormats();
-			int imageWidth = properties.getExportImageWidth();
-			
-			// Get base name and path of export files
-			if (exportPath==null) exportPath = "";
-			exportName = StringUtils.stripToEmpty(exportName);
-			if (exportName.isEmpty()) exportName = "noname";
-			String baseFileName = String.format("%s/%s%s%d", exportPath, exportName, exportName.isEmpty()?"":"-", System.currentTimeMillis());
-			_TC.DAG.exportDAG(baseFileName, exportFormats, imageWidth);
-			//log.info("Decomposition Graph export to file(s): ok");
-		} catch (Exception ex) {
-			log.error("Decomposition Graph export to file(s): EXCEPTION: ", ex);
+		// Export DAG to files
+		if (properties.isExportToFileEnabled()) {
+			log.info("*********************************************************");
+			log.error("Decomposition Graph export to file(s)");
+			try {
+				// Get graph export configuration
+				String exportPath = properties.getExportPath();
+				String[] exportFormats = properties.getExportFormats();
+				int imageWidth = properties.getExportImageWidth();
+
+				// Get base name and path of export files
+				if (exportPath == null) exportPath = "";
+				exportName = StringUtils.stripToEmpty(exportName);
+				if (exportName.isEmpty()) exportName = "noname";
+				String baseFileName = String.format("%s/%s-%d", exportPath, exportName, System.currentTimeMillis());
+				if (dot!=null) {
+					_TC.DAG.exportDAG(dot, baseFileName, exportFormats, imageWidth);
+				} else {
+					_TC.DAG.exportDAG(baseFileName, exportFormats, imageWidth);
+				}
+				//log.info("Decomposition Graph export to file(s): ok");
+			} catch (Exception ex) {
+				log.error("Decomposition Graph export to file(s): EXCEPTION: ", ex);
+			}
 		}
+
+		// Print other translation results
 		log.info("*********************************************************");
 		log.info("Event-to-Action map:\n{}", map2string( _TC.E2A ));
 		log.info("*********************************************************");

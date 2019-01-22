@@ -86,9 +86,26 @@ generator:
     CONSTR-MET:
       __ANY__:
         - |
-          /* CONSTR-MET-GLOBAL */ /*INSERT INTO [(${outputStream})]*/ 
+          /* CONSTR-MET-any */ /*INSERT INTO [(${outputStream})]*/
           SELECT * FROM [(${metricContext})] HAVING [(${metricContext})].metricValue [(${operator})] [(${threshold})]
           
+    # Logical-Constraint templates
+    CONSTR-LOG:
+      __ANY__:
+        - |
+          /* CONSTR-LOG-any */ /*INSERT INTO [(${outputStream})]*/
+          SELECT 1 AS metricValue, 3 AS level, current_timestamp AS timestamp
+          FROM PATTERN [ EVERY ( [# th:each="con,iterStat : ${constraints}" th:text="!${iterStat.last} ? ${con} + ' '+${operator}+' ' : ${con}"] [/] ) ]
+
+    # If-Then-Constraint templates
+    CONSTR-IF-THEN:
+      __ANY__:
+#XXX: TEST:
+        - |
+          /* CONSTR-IF-THEN-any */ /*INSERT INTO [(${outputStream})]*/
+          SELECT 1 AS metricValue, 3 AS level, current_timestamp AS timestamp
+          FROM PATTERN [ EVERY ( [(${ifConstraint})] AND [(${thenConstraint})] [# th:if="${elseConstraint != null}" th:text="'OR NOT ( ' + ${ifConstraint} + ' ) AND ' + ${elseConstraint}"] [/] ) ]
+
     # Context templates
     COMP-CTX:
       __ANY__:

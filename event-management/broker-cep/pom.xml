@@ -9,9 +9,16 @@
     </parent>
 
     <artifactId>broker-cep</artifactId>
-    <name>Upperware - EMS - Embeded Broker+CEP Service</name>
+    <name>Upperware - EMS - Broker+CEP Service</name>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+            <version>2.1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- EMS dependencies -->
         <dependency>
             <groupId>eu.melodic.event</groupId>
@@ -24,6 +31,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-activemq</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- ActiveMQ dependencies -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-broker</artifactId>
@@ -32,10 +46,10 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-kahadb-store</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-jaas</artifactId>
+            <version>5.15.8</version>
         </dependency>
 
         <!-- Esper dependencies -->

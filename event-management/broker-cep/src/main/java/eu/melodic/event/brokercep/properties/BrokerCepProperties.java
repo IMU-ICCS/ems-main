@@ -30,6 +30,8 @@ public class BrokerCepProperties {
     private String brokerUrl;
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
+    @Value("${brokercep.ssl.client-auth.required:false}")
+    private boolean clientAuthRequired;
     @Value("${connector-port:-1}")
     private int connectorPort;
     @Value("${bypass-local-broker:false}")
@@ -50,9 +52,6 @@ public class BrokerCepProperties {
     private String keystoreType;
     @Value("${brokercep.ssl.keystore.password:}")
     private String keystorePassword;
-    //XXX:DEL-IF: not really needed in client authentication
-    @Value("${brokercep.ssl.client-auth.required:false}")
-    private boolean clientAuthRequired;
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;
@@ -70,8 +69,17 @@ public class BrokerCepProperties {
     @Value("${broker-using-shutdown-hook:false}")
     private boolean brokerUsingShutdownHook;
 
+    @Value("${broker-enable-statistics:false}")
+    private boolean enableStatistics;
+    @Value("${broker-populate-jmsx-user-id:false}")
+    private boolean populateJmsxUserId;
+
     @Value("${brokercep.usage.memory.jvm-heap-percentage:-1}")
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
+
+    @Value("${brokercep-password-encoder:eu.passage.upperware.commons.passwords.IdentityPasswordEncoder}")
+    private String passwordEncoder;
+
 }

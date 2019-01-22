@@ -37,9 +37,11 @@ public class ControlServiceApplication {
     private static Timer exitTimer;
 
     public static void main(String[] args) {
-        // Set standard system streams being logged
-        System.setOut(new LogPrintStream(System.out, Level.INFO, "OUT"));
-        System.setErr(new LogPrintStream(System.err, Level.ERROR, "ERR"));
+        if (args.length==0 || !"-nolog".equalsIgnoreCase(args[0].trim())) {
+            // Set standard system streams being logged
+            System.setOut(new LogPrintStream(System.out, Level.INFO, "OUT"));
+            System.setErr(new LogPrintStream(System.err, Level.ERROR, "ERR"));
+        }
 
         // Start EMS
         SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);

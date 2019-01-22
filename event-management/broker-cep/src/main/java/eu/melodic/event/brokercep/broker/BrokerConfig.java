@@ -10,17 +10,19 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
+import eu.passage.upperware.commons.passwords.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.SslBrokerService;
-import org.apache.activemq.security.AuthenticationUser;
-import org.apache.activemq.security.SimpleAuthenticationPlugin;
+import org.apache.activemq.security.*;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,9 +37,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Supplier;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
@@ -48,14 +49,26 @@ import java.util.Optional;
 @Slf4j
 public class BrokerConfig implements InitializingBean {
 
+    private final static int LOCAL_ADMIN_INDEX = 0;
+    private final static int LOCAL_USER_INDEX = 1;
+    private final static String LOCAL_ADMIN_PREFIX = "admin-local-";
+    private final static String LOCAL_USER_PREFIX = "user-local-";
+    private final static int USERNAME_RANDOM_PART_LENGTH = 10;
+    private final static int PASSWORD_LENGTH = 20;
+
     @Autowired
     private BrokerCepProperties properties;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
-    private BrokerPlugin brokerAuthorizationPlugin;
+    private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
     private ArrayList<AuthenticationUser> userList;
     private String brokerLocalAdmin;
     private String brokerLocalAdminPassword;
+    private String brokerUsername;
+    private String brokerPassword;
 
     @Override
     public void afterPropertiesSet() {
@@ -71,15 +84,15 @@ public class BrokerConfig implements InitializingBean {
             userList = new ArrayList<>();
 
             // initialize local admin credentials
-            brokerLocalAdmin = "local-admin-" + RandomStringUtils.randomAlphanumeric(10);
-            brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(20);
-            userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, ""));
+            brokerLocalAdmin = LOCAL_ADMIN_PREFIX + RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
+            brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
+            userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, SimpleBrokerAuthorizationPlugin.ADMIN_GROUP));
             log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}", brokerLocalAdmin, brokerLocalAdminPassword);
 
             // initialize broker user credentials
-            String brokerUsername = "user-" + RandomStringUtils.randomAlphanumeric(10);
-            String brokerPassword = RandomStringUtils.randomAlphanumeric(20);
-            userList.add(new AuthenticationUser(brokerUsername, brokerPassword, ""));
+            brokerUsername = LOCAL_USER_PREFIX+ RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
+            brokerPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
+            userList.add(new AuthenticationUser(brokerUsername, brokerPassword, SimpleBrokerAuthorizationPlugin.RO_USER_GROUP));
             log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}", brokerUsername, brokerPassword);
 
             // initialize additional user credentials from configuration
@@ -87,8 +100,8 @@ public class BrokerConfig implements InitializingBean {
                 String[] cred = extraUserCred.split("/", 2);
                 String username = cred[0].trim();
                 String password = cred.length > 1 ? cred[1].trim() : "";
-                userList.add(new AuthenticationUser(username, password, ""));
-                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, password);
+                userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
+                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, passwordEncoder.encode(password));
             }
 
             // initialize Broker authentication plugin
@@ -99,11 +112,15 @@ public class BrokerConfig implements InitializingBean {
             log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}", sap.isAnonymousAccessAllowed(), sap.getUserPasswords());
         }
 
-        // initialize authorization
+        // initialize authorization (requires authentication being enabled)
         if (properties.isAuthorizationEnabled()) {
-            //XXX:TODO: ++++++++++++++++++++
-            brokerAuthorizationPlugin = null;
-            //log.debug("BrokerConfig._initializeSecurity(): Initialized broker authorization plugin");
+            if (properties.isAuthenticationEnabled()) {
+                // initialize Broker authorization plugin
+                brokerAuthorizationPlugin = new SimpleBrokerAuthorizationPlugin();
+                log.debug("BrokerConfig._initializeSecurity(): Initialized broker authorization plugin");
+            } else {
+                log.error("BrokerConfig._initializeSecurity(): Authorization will not be configured because authentication is not enabled");
+            }
         }
     }
 
@@ -117,7 +134,7 @@ public class BrokerConfig implements InitializingBean {
         return properties.getBrokerUrl();
     }
 
-    public String getBrokerLocalAdmin() {
+    public String getBrokerLocalAdminUsername() {
         return brokerLocalAdmin;
     }
 
@@ -125,17 +142,18 @@ public class BrokerConfig implements InitializingBean {
         return brokerLocalAdminPassword;
     }
 
-    public String getBrokerUsername() {
-        return userList != null ? userList.get(1).getUsername() : null;
+    public String getBrokerLocalUserUsername() {
+        return brokerUsername;
     }
 
-    public String getBrokerPassword() {
-        return userList != null ? userList.get(1).getPassword() : null;
+    public String getBrokerLocalUserPassword() {
+        return brokerPassword;
     }
 
     public void setBrokerUsername(String s) {
         if (userList != null) {
-            userList.get(1).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
+            brokerUsername = s;
+            userList.get(LOCAL_USER_INDEX).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
         }
         log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
@@ -143,10 +161,11 @@ public class BrokerConfig implements InitializingBean {
 
     public void setBrokerPassword(String s) {
         if (userList != null) {
-            userList.get(1).setPassword(s);
+            brokerPassword = s;
+            userList.get(LOCAL_USER_INDEX).setPassword(s);
             brokerAuthenticationPlugin.setUsers(userList);
         }
-        log.debug("BrokerConfig.setBrokerPassword(): password=****");
+        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordEncoder.encode(s));
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
@@ -154,7 +173,7 @@ public class BrokerConfig implements InitializingBean {
     }
 
     public BrokerPlugin getBrokerAuthorizationPlugin() {
-        return brokerAuthenticationPlugin;
+        return brokerAuthorizationPlugin;
     }
 
     /**
@@ -165,6 +184,7 @@ public class BrokerConfig implements InitializingBean {
      */
     @Bean//(initMethod = "start", destroyMethod = "stop")
     public BrokerService createBrokerService() throws Exception {
+
         // Create new broker service instance
         String brokerUrl = getBrokerUrl();
         log.info("BrokerConfig: Creating new Broker Service instance: url={}", brokerUrl);
@@ -180,8 +200,8 @@ public class BrokerConfig implements InitializingBean {
 
         // Set authentication and authorization plugins
         List<BrokerPlugin> plugins = new ArrayList<>();
-        if (properties.isAuthenticationEnabled()) plugins.add(getBrokerAuthenticationPlugin());
-        if (properties.isAuthorizationEnabled()) plugins.add(getBrokerAuthorizationPlugin());
+        if (getBrokerAuthenticationPlugin()!=null) plugins.add(getBrokerAuthenticationPlugin());
+        if (getBrokerAuthorizationPlugin()!=null) plugins.add(getBrokerAuthorizationPlugin());
         if (plugins.size() > 0) {
             brokerService.setPlugins(plugins.toArray(new BrokerPlugin[0]));
         }
@@ -193,6 +213,9 @@ public class BrokerConfig implements InitializingBean {
         brokerService.setUseJmx(properties.isBrokerUsingJmx());
         brokerService.setUseShutdownHook(properties.isBrokerUsingShutdownHook());
         brokerService.setAdvisorySupport(properties.isBrokerAdvisorySupportEnabled());
+
+        brokerService.setPopulateJMSXUserID(properties.isPopulateJmsxUserId());
+        brokerService.setEnableStatistics(properties.isEnableStatistics());
 
         // Change the JMX connector port
         if (properties != null && properties.getConnectorPort() > 0) {
@@ -295,9 +318,9 @@ public class BrokerConfig implements InitializingBean {
         }
 
         // Other connection factory settings
-		/*if (getBrokerUsername()!=null) {
-			connectionFactory.setUserName(getBrokerUsername());
-			connectionFactory.setPassword(getBrokerPassword());
+		/*if (getBrokerLocalUserUsername()!=null) {
+			connectionFactory.setUserName(getBrokerLocalUserUsername());
+			connectionFactory.setPassword(getBrokerLocalUserPassword());
 		}*/
         //connectionFactory.setSendTimeout(....5000L);
         //connectionFactory.setTrustedPackages(Arrays.asList("eu.melodic.event"));
@@ -315,5 +338,23 @@ public class BrokerConfig implements InitializingBean {
         JmsTemplate template = new JmsTemplate();
         template.setConnectionFactory(connectionFactory());
         return template;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        Supplier<PasswordEncoder> passwordEncoderSupplier = IdentityPasswordEncoder::new;
+        String passwordEncoder = properties.getPasswordEncoder();
+        if (StringUtils.isBlank(passwordEncoder)) {
+            log.info("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
+            return passwordEncoderSupplier.get();
+        }
+
+        try {
+            Class<?> passwordEncoderClass = Class.forName(passwordEncoder);
+            return (PasswordEncoder) passwordEncoderClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            log.warn("Could not instantiate PasswordEncoder instance of {}. Default instance of PasswordEncoder will be created", passwordEncoder);
+            return passwordEncoderSupplier.get();
+        }
     }
 }

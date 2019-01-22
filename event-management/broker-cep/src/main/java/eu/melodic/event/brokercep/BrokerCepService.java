@@ -16,12 +16,14 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.passage.upperware.commons.passwords.PasswordEncoder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.BrokerView;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,8 @@ public class BrokerCepService {
     private BrokerConfig brokerConfig;
     private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
     private ActiveMQConnectionFactory connectionFactory;
+    private PasswordEncoder passwordEncoder;
+
     //private BrokerAdvisoryWatcher advisoryMessageWatcher;
     @Getter
     private BrokerCepConsumer brokerCepBridge;
@@ -141,6 +145,12 @@ public class BrokerCepService {
         _publishEvent(connectionString, destinationName, new EventMap(eventMap));
     }
 	
+    public synchronized void publishEvent(String connectionString, String username, String password, String destinationName, Map<String, Object> eventMap) throws JMSException {
+        if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
+            return;
+        _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
+    }
+
 	/*public synchronized void publishEvent(String connectionString, String destinationName, MetricEvent event) throws JMSException {
 		if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event)) return;
 		_publishEvent(connectionString, destinationName, event);
@@ -172,23 +182,55 @@ public class BrokerCepService {
         return true;
     }
 
-    //XXX:TODO: Optimize this method
     protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+        // Get username/password for local broker service
+        String username = null;
+        String password = null;
+        if (connectionString==null || brokerConfig.getBrokerUrl().equals(connectionString)) {
+            username = brokerConfig.getBrokerLocalAdminUsername();
+            password = brokerConfig.getBrokerLocalAdminPassword();
+        }
+        _publishEvent(connectionString, username, password, destinationName, event);
+    }
+
+    protected synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
         if (connectionString == null) connectionString = properties.getBrokerUrl();
         ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
         connectionFactory.setBrokerURL(connectionString);
 
         // Create a Connection
-        Connection connection = (brokerConfig.getBrokerUsername() == null)
+        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}", connectionString, username, passwordEncoder.encode(password));
+        Connection connection = StringUtils.isBlank(username)
                 ? connectionFactory.createConnection()
-                : connectionFactory.createConnection(brokerConfig.getBrokerUsername(), brokerConfig.getBrokerPassword());
+                : connectionFactory.createConnection(username, password);
         connection.start();
+
+        // Publish event
+        _publishEvent(connection, destinationName, event);
+
+        // Clean up
+        connection.close();
+    }
+
+    protected synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
+        log.debug("BrokerCepService._publishEvent(): Connection given: {}", connection);
 
         // Create a Session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+        // Publish event
+        _publishEvent(session, destinationName, event);
+
+        // Clean up
+        session.close();
+    }
+
+    protected synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
+        log.debug("BrokerCepService._publishEvent(): Session: {}", session);
+
         // Create the destination (Topic or Queue)
+        log.debug("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
         //Destination destination = session.createQueue( destinationName );
         Destination destination = session.createTopic(destinationName);
 
@@ -202,26 +244,24 @@ public class BrokerCepService {
 
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, getBrokerUsername(), destinationName, hash, event);
+        //log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
+        log.info("BrokerCepService.publishEvent(): Sending message: destination={}, hash={}, payload={}", destinationName, hash, event);
         producer.send(message);
-        log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, getBrokerUsername(), destinationName, hash, event);
-
-        // Clean up
-        session.close();
-        connection.close();
+        //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
+        log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
     }
 
     public void setBrokerCredentials(String u, String p) {
         brokerConfig.setBrokerUsername(u);
         brokerConfig.setBrokerPassword(p);
-        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password=****", u);
+        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password={}", u, passwordEncoder.encode(p));
     }
 
     public String getBrokerUsername() {
-        return brokerConfig.getBrokerUsername();
+        return brokerConfig.getBrokerLocalUserUsername();
     }
 
     public String getBrokerPassword() {
-        return brokerConfig.getBrokerPassword();
+        return brokerConfig.getBrokerLocalUserPassword();
     }
 }
