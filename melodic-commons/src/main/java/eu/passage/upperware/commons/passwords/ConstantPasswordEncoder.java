@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ConstantPasswordEncoder implements PasswordEncoder {
 
-    private String constant = "<hidden>";
+    protected String constant = "<hidden>";
 
     @Override
     public String encode(String password) {
