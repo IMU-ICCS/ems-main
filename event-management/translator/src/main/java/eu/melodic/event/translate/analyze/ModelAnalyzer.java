@@ -523,7 +523,7 @@ public class ModelAnalyzer {
         if (MetricConstraint.class.isAssignableFrom(constraint.getClass())) {
             _decomposeMetricConstraint(_TC, (MetricConstraint) constraint);
         } else if (IfThenConstraint.class.isAssignableFrom(constraint.getClass())) {
-            throw new ModelAnalysisException("FEATURE NOT IMPLEMENTED");    //XXX: TODO: ++++++++++++++++
+            _decomposeIfThenConstraint(_TC, (IfThenConstraint) constraint);
         } else if (MetricVariableConstraint.class.isAssignableFrom(constraint.getClass())) {
             // Not used in EMS
             //_decomposeMetricVariableConstraint(_TC, (MetricVariableConstraint)constraint);
@@ -558,6 +558,25 @@ public class ModelAnalyzer {
         _TC.DAG.addNode(constraint, mvar).setGrouping(Grouping.GLOBAL);
 
         _decomposeMetricVariable(_TC, mvar);
+    }
+
+    protected void _decomposeIfThenConstraint(TranslationContext _TC, IfThenConstraint constraint) {
+        log.info("  _decomposeIfThenConstraint(): {} :: {}", constraint.getName(), constraint.getClass().getName());
+        Constraint ifConstraint = constraint.getIf();
+        Constraint thenConstraint = constraint.getThen();
+        Constraint elseConstraint = constraint.getElse();
+        log.info("  _decomposeIfThenConstraint(): {} ==> if: {}, then: {}, else: {}",
+                constraint.getName(), getElementName(ifConstraint), getElementName(thenConstraint), getElementName(elseConstraint));
+
+        _TC.DAG.addNode(constraint, ifConstraint).setGrouping(getGrouping(ifConstraint));
+        _TC.DAG.addNode(constraint, thenConstraint).setGrouping(getGrouping(thenConstraint));
+        if (elseConstraint!=null)
+            _TC.DAG.addNode(constraint, elseConstraint).setGrouping(getGrouping(elseConstraint));
+
+        _decomposeConstraint(_TC, ifConstraint);
+        _decomposeConstraint(_TC, thenConstraint);
+        if (elseConstraint!=null)
+            _decomposeConstraint(_TC, elseConstraint);
     }
 
     protected void _decomposeLogicalConstraint(TranslationContext _TC, LogicalConstraint constraint) {

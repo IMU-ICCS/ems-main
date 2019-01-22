@@ -10,6 +10,7 @@
 package eu.melodic.event.translate.generate;
 
 import camel.constraint.Constraint;
+import camel.constraint.IfThenConstraint;
 import camel.constraint.LogicalConstraint;
 import camel.constraint.MetricConstraint;
 import camel.core.NamedElement;
@@ -290,7 +291,25 @@ public class RuleGenerator {
                 _generateRule(_TC, "CONSTR-MET", grouping, elemName, context);
             } else if (elem instanceof camel.constraint.IfThenConstraint) {
                 log.warn("RuleGenerator.generateRules():      Found an If-Then-Constraint element: node={}, elem-name={}", node, elemName);
-//XXX:TODO: +++++++++++++++++++++++++++++++++++++++++++++++++
+                IfThenConstraint constr = (IfThenConstraint) elem;
+
+                // Get constraint If, Then, Else child constraints
+                String ifConstr = constr.getIf().getName();
+                String thenConstr = constr.getThen().getName();
+                String elseConstr = constr.getElse()!=null ? constr.getElse().getName() : null;
+
+                log.warn("RuleGenerator.generateRules():      If-Then-Constraint: node={}, elem-name={}, If={}, Then={}, Else={}",
+                        node, elemName, ifConstr, thenConstr, elseConstr);
+
+                // Require context topic in this level
+                _TC.requireGroupingTopicPair(grouping, constr.getName());
+
+                // Write rule for CONSTR-IF-THEN
+                Context context = new Context();
+                context.setVariable("ifConstraint", ifConstr);
+                context.setVariable("thenConstraint", thenConstr);
+                context.setVariable("elseConstraint", elseConstr);
+                _generateRule(_TC, "CONSTR-IF-THEN", grouping, elemName, context);
             } else if (elem instanceof camel.constraint.MetricVariableConstraint) {
                 // Not used in EMS
                 log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element and ignoring it: node={}, elem-name={}", node, elemName);
