@@ -121,7 +121,9 @@ public class Coordinator {
         DeploymentInstanceModel currentModel = null;
         try {
             targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
-            enrichMonitors(targetModel, uuid, authorization);
+            if (properties.getEms().isEnabled()) {
+                enrichMonitors(targetModel, uuid, authorization);
+            }
             currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
             if (currentModel == null) {
                 saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
