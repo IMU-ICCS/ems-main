@@ -14,8 +14,11 @@
     <properties>
         <!--DOCKER plugin properties-->
         <docker.push>true</docker.push>
-        <docker.repository>172.31.1.100:5000/</docker.repository>
-        <docker.imageName>${docker.repository}melodic/ems-control-service-rc2.0</docker.imageName>
+        <!--XXX: uncomment the 172.31.1.100:5000 before pushing to Bitbucket (and comment out the 88.99.85.63:5000 line) -->
+        <!--<docker.repository>172.31.1.100:5000/</docker.repository>-->
+        <docker.repository>88.99.85.63:5000/</docker.repository>
+        <docker.imageName>${docker.repository}melodic/ems-server-rc2.0</docker.imageName>
+        <!--<docker.imageTag>testing</docker.imageTag>-->
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
     </properties>
@@ -151,6 +154,9 @@
                             <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
                             <imageName>${docker.imageName}</imageName>
                             <pushImage>${docker.push}</pushImage>
+                            <!--<imageTags>
+                                <imageTag>${docker.imageTag}</imageTag>
+                            </imageTags>-->
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>

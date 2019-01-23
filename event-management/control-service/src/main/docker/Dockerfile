@@ -21,8 +21,9 @@ RUN bash -c 'touch esper-*.jar'
 RUN bash -c 'chmod +rx run-ems.sh'
 RUN mkdir logs
 
-#RUN bash -c 'apt-get update'
-#RUN bash -c 'apt-get install -y netcat'
+RUN bash -c 'apt-get update'
+RUN bash -c 'apt-get install -y netcat'
+RUN bash -c 'apt-get install -y net-tools'
 
 ENTRYPOINT ["./run-ems.sh"]
 
