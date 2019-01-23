@@ -159,7 +159,7 @@ public class BrokerCepService {
     // When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
     private final static java.util.regex.Pattern urlPattern = java.util.regex.Pattern.compile("^([a-z]+://[a-zA-Z0-9_\\.\\-]+:[0-9]+)([/#\\?].*)?$");
 
-    protected synchronized boolean _publishLocalEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+    private synchronized boolean _publishLocalEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
         java.util.regex.Matcher matcher = urlPattern.matcher(connectionString);
         String connBrokerUrl = matcher.matches() ? matcher.group(1) : connectionString;
         log.debug("BrokerCepService._publishLocalEvent(): Check if event is published to the local broker: local-broker-url={}, connection-broker-url={}, connection={}, destination={}, payload={}",
@@ -182,7 +182,7 @@ public class BrokerCepService {
         return true;
     }
 
-    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
         // Get username/password for local broker service
         String username = null;
         String password = null;
@@ -193,7 +193,7 @@ public class BrokerCepService {
         _publishEvent(connectionString, username, password, destinationName, event);
     }
 
-    protected synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
         if (connectionString == null) connectionString = properties.getBrokerUrl();
         ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
@@ -213,7 +213,7 @@ public class BrokerCepService {
         connection.close();
     }
 
-    protected synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
         log.debug("BrokerCepService._publishEvent(): Connection given: {}", connection);
 
         // Create a Session
@@ -226,7 +226,7 @@ public class BrokerCepService {
         session.close();
     }
 
-    protected synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
         log.debug("BrokerCepService._publishEvent(): Session: {}", session);
 
         // Create the destination (Topic or Queue)

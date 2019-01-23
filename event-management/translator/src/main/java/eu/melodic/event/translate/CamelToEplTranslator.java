@@ -156,7 +156,7 @@ public class CamelToEplTranslator implements Translator {
 		// Export DAG to files
 		if (properties.isExportToFileEnabled()) {
 			log.info("*********************************************************");
-			log.error("Decomposition Graph export to file(s)");
+			log.info("Decomposition Graph export to file(s)");
 			try {
 				// Get graph export configuration
 				String exportPath = properties.getExportPath();
