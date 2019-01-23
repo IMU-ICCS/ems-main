@@ -141,7 +141,8 @@ public class BaguetteServer {
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Function-Definitions: {}", functionDefinitions);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password=****", brokerUsername);
+        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password={}",
+                brokerUsername, config.getPasswordEncoder().encode(brokerPassword));
 
         // Stop any running instance of SSH server
         stopServer();
