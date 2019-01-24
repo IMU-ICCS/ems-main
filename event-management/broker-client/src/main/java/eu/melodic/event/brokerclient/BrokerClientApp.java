@@ -33,6 +33,17 @@ public class BrokerClientApp {
             password = new String(System.console().readPassword("Enter broker password: "));
         }
 
+        // list destinations
+        if ("list".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            log.info("BrokerClientApp: Listing destinations:");
+            BrokerClient client = BrokerClient.newClient();
+            if (username!=null && password!=null) {
+                client.getClientProperties().setBrokerUsername(username);
+                client.getClientProperties().setBrokerPassword(password);
+            }
+            client.getDestinationNames(url).stream().forEach(d -> log.info("    {}", d));
+        } else
         // send an event
         if ("publish".equalsIgnoreCase(command)) {
             String url = args[aa++];
@@ -155,6 +166,7 @@ public class BrokerClientApp {
 
     protected static void usage() {
         log.info("BrokerClientApp: Usage: ");
+        log.info("BrokerClientApp: client list [-U<USERNAME> [-P<PASSWORD]] <URL> ");
         log.info("BrokerClientApp: client publish [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <VALUE> <LEVEL> ");
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
