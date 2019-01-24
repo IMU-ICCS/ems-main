@@ -15,8 +15,9 @@ import camel.core.CoreFactory;
 import camel.deployment.DeploymentInstanceModel;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
@@ -81,7 +82,7 @@ public class Coordinator {
 
     private DeploymentInstanceModelValidator deploymentInstanceModelValidator;
 
-    private Gson gson = new Gson();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
@@ -182,7 +183,13 @@ public class Coordinator {
         if (findAttribute(attributes, attributeName)) {
             log.info("Attribute with name {} for {} exists. DeploymentInstanceModel will not be updated", attributeName, targetModel.getName());
         } else {
-            attributes.add(createAttribute(attributeName, gson.toJson(monitors)));
+            String attributeValue;
+            try {
+                attributeValue = objectMapper.writeValueAsString(monitors);
+            } catch (JsonProcessingException e) {
+                throw new AdapterException("Error during serialising Monitors", e);
+            }
+            attributes.add(createAttribute(attributeName, attributeValue));
             log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
                     monitors.stream().map(Monitor::getMetric).collect(Collectors.joining(", ", "[", "]")));
         }
