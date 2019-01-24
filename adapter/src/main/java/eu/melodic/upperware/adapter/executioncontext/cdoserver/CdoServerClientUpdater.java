@@ -11,6 +11,7 @@ package eu.melodic.upperware.adapter.executioncontext.cdoserver;
 
 import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
+import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,28 +24,28 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CdoServerClientUpdater implements CdoServerUpdater {
 
-  private CdoServerApi cdoServerApi;
+    private CdoServerApi cdoServerApi;
 
-  @Override
-  public void updateCamelModel(String resourceName) {
-    log.info("Updating CAMEL model in CDO Server");
-    setHistoryRecord(resourceName);
-    log.info("CAMEL model has been updated");
-  }
-
-  private void setHistoryRecord(String resourceName) {
-    CDOSessionX cdoSessionX = cdoServerApi.openSession();
-    CDOTransaction tr = cdoSessionX.openTransaction();
-
-    try {
-      DeploymentInstanceModel modelToDeploy = cdoServerApi.getModelToDeploy(resourceName, tr);
-      cdoServerApi.setExecutionContext(modelToDeploy);
-      tr.commit();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    } finally {
-      cdoSessionX.closeTransaction(tr);
-      cdoSessionX.closeSession();
+    @Override
+    public void updateCamelModel(String resourceName) {
+        log.info("Updating CAMEL model in CDO Server");
+        setHistoryRecord(resourceName);
+        log.info("CAMEL model has been updated");
     }
-  }
+
+    private void setHistoryRecord(String resourceName) {
+        CDOSessionX cdoSessionX = cdoServerApi.openSession();
+        CDOTransaction tr = cdoSessionX.openTransaction();
+
+        try {
+            DeploymentInstanceModel modelToDeploy = cdoServerApi.getModelToDeploy(resourceName, tr);
+            cdoServerApi.setExecutionContext(modelToDeploy);
+            tr.commit();
+        } catch (Exception e) {
+            throw new AdapterException("Exception during adding HistoryRecord", e);
+        } finally {
+            cdoSessionX.closeTransaction(tr);
+            cdoSessionX.closeSession();
+        }
+    }
 }

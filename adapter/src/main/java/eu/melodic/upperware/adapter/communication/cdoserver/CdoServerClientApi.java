@@ -15,9 +15,7 @@ import camel.core.CoreFactory;
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
-import camel.execution.ExecutionFactory;
-import camel.execution.ExecutionModel;
-import camel.execution.HistoryRecord;
+import camel.execution.*;
 import camel.requirement.RequirementModel;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
@@ -29,6 +27,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -115,6 +114,7 @@ public class CdoServerClientApi implements CdoServerApi {
       }
 
       executionModel.getHistoryRecords().add(createHistoryRecord(oldModel, newDeploymentModel));
+      log.info("History record has been added to ExecutionModel");
     }
   }
 
@@ -142,10 +142,21 @@ public class CdoServerClientApi implements CdoServerApi {
     HistoryRecord historyRecord = ExecutionFactory.eINSTANCE.createHistoryRecord();
     historyRecord.setName(getUniqueHistoryName());
     historyRecord.setStartTime(new Date());
+    historyRecord.setEndTime(new Date());
     historyRecord.setFromDeploymentInstanceModel(oldModel);
     historyRecord.setToDeploymentInstanceModel(newModel);
     historyRecord.setType(type);
+    historyRecord.setCause(createCause());
     return historyRecord;
+  }
+
+  private Cause createCause() {
+    RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
+    Cause cause = ExecutionFactory.eINSTANCE.createCause();
+    String name = "Cause_" + generator.generate(10);
+    cause.setName(name);
+    cause.setDescription(name);
+    return cause;
   }
 
   private Attribute createType() {
