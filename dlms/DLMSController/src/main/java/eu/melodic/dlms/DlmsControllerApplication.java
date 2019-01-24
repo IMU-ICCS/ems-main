@@ -55,7 +55,7 @@ public class DlmsControllerApplication {
 	 */
 	public static void main(String[] args) {
 		// To use eu.melodic.upperware.dlms.properties instead of application.properties
-		System.setProperty("spring.config.name", "eu.melodic.upperware.dlms");	
+//		System.setProperty("spring.config.name", "eu.melodic.upperware.dlms");	
 		SpringApplication.run(DlmsControllerApplication.class, args);
 	}
 
