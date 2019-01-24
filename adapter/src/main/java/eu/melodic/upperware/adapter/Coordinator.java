@@ -123,7 +123,7 @@ public class Coordinator {
         try {
             targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
             if (properties.getEms().isEnabled()) {
-                enrichMonitors(targetModel, uuid, authorization);
+                enrichMonitors(targetModel, uuid, authorization, resourceName);
             }
             currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
             if (currentModel == null) {
@@ -170,12 +170,11 @@ public class Coordinator {
         }
     }
 
-    private void enrichMonitors(DeploymentInstanceModel targetModel, String uuid, String authorization) {
+    private void enrichMonitors(DeploymentInstanceModel targetModel, String uuid, String authorization, String resourceName) {
         String attributeName = "monitors";
-        String applicationId = ((CamelModel) targetModel.eContainer()).getName();
-        List<Monitor> monitors = emsClientApi.getMonitors(applicationId, prepareWatermark(uuid), authorization);
+        List<Monitor> monitors = emsClientApi.getMonitors(resourceName, prepareWatermark(uuid), authorization);
         if (CollectionUtils.isEmpty(monitors)) {
-            log.info("There is no monitors defined for CamelModel {}", applicationId);
+            log.info("There is no monitors defined for CamelModel {}", resourceName);
             return;
         }
 
