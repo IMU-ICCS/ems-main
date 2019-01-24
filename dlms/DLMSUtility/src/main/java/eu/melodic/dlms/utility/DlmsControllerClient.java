@@ -19,28 +19,22 @@ import org.springframework.web.client.RestTemplate;
 import camel.deployment.SoftwareComponent;
 import eu.melodic.dlms.utility.camel.ModelAnalyzer;
 import io.github.cloudiator.rest.model.NodeCandidate;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Client interface to call DlmsController from the UtilityGenerator.
  */
 @Slf4j
+@RequiredArgsConstructor
 public class DlmsControllerClient {
 	// below url is just for testing, will be changed later once actual utility is
 	// available
-	private static final String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
+	private static String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
 
 	private final String datasourceServerUrl;
 	private final String camelModelId;
 
-	/**
-	 * Constructor to get datasource server url and stored camel model id
-	 */
-
-	public DlmsControllerClient(String datasource_server_url, String camelModelId) {
-		this.datasourceServerUrl = datasource_server_url;
-		this.camelModelId = camelModelId;
-	}
 
 	/**
 	 * Constructor for unit tests etc.

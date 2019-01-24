@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
@@ -59,7 +60,8 @@ public class ModelAnalyzer {
 			view = session.openView();
 
 			CamelModel camelModel = null;
-			if (camelId != null && !camelId.trim().isEmpty()) {
+			if (StringUtils.isNotBlank(camelId)) {
+//			if (camelId != null && !camelId.trim().isEmpty()) {
 				CDOResource camelModelRes = view.getResource(camelId);
 				EList<EObject> contents = camelModelRes.getContents();
 				camelModel = (CamelModel) contents.get(contents.size() - 1);
@@ -68,40 +70,45 @@ public class ModelAnalyzer {
 				EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
 				DeploymentTypeModel deployModel = null;
 				for (DeploymentModel model : deploymentModels) {
-
 					if (model instanceof DeploymentTypeModel) {
 						deployModel = (DeploymentTypeModel) model;
 						break;
 					}
 				}
+				// if deployment model is not null
+				if (deployModel != null) {
+					for (Communication comm : deployModel.getCommunications()) {
+						RequiredCommunication reqComm = comm.getRequiredCommunication();
+						SoftwareComponent fromComponent = (SoftwareComponent) reqComm.eContainer();
 
-				for (Communication comm : deployModel.getCommunications()) {
-					RequiredCommunication reqComm = comm.getRequiredCommunication();
-					SoftwareComponent fromComponent = (SoftwareComponent) reqComm.eContainer();
+						ProvidedCommunication provComm = comm.getProvidedCommunication();
+						// the component is provided by the utility generator and it has location
+						SoftwareComponent toComponent = (SoftwareComponent) provComm.eContainer();
 
-					ProvidedCommunication provComm = comm.getProvidedCommunication();
-					// the component is provided by the utility generator and it has location
-					SoftwareComponent toComponent = (SoftwareComponent) provComm.eContainer();
+						// get component that has connection only to datasource
+						if (!toComponent.getManagesDataSource().isEmpty()) {
+							// has only one datasource
+//							EList<camel.data.DataSource> dsList = toComponent.getManagesDataSource();
+							List<SoftwareComponent> toComponentList = new ArrayList<>();
+							if (compConMap.containsKey(fromComponent)) {
+								toComponentList = compConMap.get(fromComponent);
+								// to component list does not have the component
+								if (!toComponentList.contains(toComponent))
+									toComponentList.add(toComponent);
+							} else
+								toComponentList.add(toComponent);
 
-					// get component that has connection only to datasource
-					if (!toComponent.getManagesDataSource().isEmpty()) {
-						// has only one datasource
-						EList<camel.data.DataSource> dsList = toComponent.getManagesDataSource();
-
-						List<SoftwareComponent> toComponentList = new ArrayList<>();
-						if (compConMap.containsKey(fromComponent))
-							toComponentList = compConMap.get(fromComponent);
-						toComponentList.add(toComponent);
-						compConMap.put(fromComponent, toComponentList);
+							compConMap.put(fromComponent, toComponentList);
+						}
 					}
-				}
-				log.info("CamelModel was loaded succesfuly: " + camelModel);
-
+					log.info("CamelModel was loaded succesfully: {} ", camelModel);
+				} else
+					log.debug("Deployment model is missing");
 			} else {
 				log.info("Camel id is missing");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+//			log.error(e.getMessage(), e);
 			throw new RuntimeException(e);
 		} finally {
 			if (view != null)
