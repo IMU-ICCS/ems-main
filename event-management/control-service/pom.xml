@@ -92,6 +92,13 @@
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
         </dependency>
+
+        <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
+        <dependency>
+            <groupId>io.hawt</groupId>
+            <artifactId>hawtio-springboot</artifactId>
+            <version>2.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
