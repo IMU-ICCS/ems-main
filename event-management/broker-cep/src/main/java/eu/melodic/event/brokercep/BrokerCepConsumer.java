@@ -11,12 +11,14 @@ package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
+import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,8 @@ import java.util.Set;
 @Service
 @Slf4j
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
+    @Autowired
+    private BrokerCepProperties properties;
     @Autowired
     private BrokerConfig brokerConfig;
     @Autowired
@@ -48,16 +52,27 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     }
 
     private void initialize() {
-        log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance...");
+        log.debug("BrokerCepConsumer.initialize(): Initializing Broker-CEP consumer instance...");
         try {
+            // If an alternative Broker URL is provided for consumer, it will be use
+            ActiveMQConnectionFactory connectionFactory = this.connectionFactory;
+            if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
+                log.debug("BrokerCepConsumer.initialize(): Alternative broker URL will be used for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
+                connectionFactory = this.connectionFactory.copy();
+                connectionFactory.setBrokerURL(properties.getBrokerUrlForConsumer());
+            } else {
+                log.debug("BrokerCepConsumer.initialize(): Default broker URL will be used for Broker-CEP consumer instance: {}", brokerConfig.getBrokerUrl());
+            }
+
+            // Initialize connection
             connection = (brokerConfig.getBrokerLocalAdminUsername() != null)
                     ? connectionFactory.createConnection(brokerConfig.getBrokerLocalAdminUsername(), brokerConfig.getBrokerLocalAdminPassword())
                     : connectionFactory.createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            log.debug("BrokerCepConsumer.init(): Initializing Broker-CEP consumer instance... done");
+            log.debug("BrokerCepConsumer.initialize(): Initializing Broker-CEP consumer instance... done");
         } catch (Exception ex) {
-            log.error("BrokerCepConsumer.init(): EXCEPTION: ", ex);
+            log.error("BrokerCepConsumer.initialize(): EXCEPTION: ", ex);
         }
     }
 
