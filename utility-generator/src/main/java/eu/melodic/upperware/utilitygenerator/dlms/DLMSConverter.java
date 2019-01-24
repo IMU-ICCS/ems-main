@@ -32,7 +32,7 @@ public class DLMSConverter implements ArgumentConverter {
 
 
     public DLMSConverter(String dlmsControllerUrl, FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration) {
-        this.dlmsUtilityService = new DLMSServiceImpl(dlmsControllerUrl);
+        this.dlmsUtilityService = new DLMSServiceImpl(fromCamelModelExtractor.getCamelModelPath(), dlmsControllerUrl);
         this.dlmsUtilityAttributes = fromCamelModelExtractor.getListOfDlmsUtilityAttributes();
         log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
         this.actConfiguration = actConfiguration;

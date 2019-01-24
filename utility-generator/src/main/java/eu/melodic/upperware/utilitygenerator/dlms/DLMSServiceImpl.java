@@ -21,8 +21,8 @@ public class DLMSServiceImpl implements DLMSService {
 
     private DlmsControllerClient dlmsClient;
 
-    public DLMSServiceImpl(String dlmsControllerUrl) {
-        this.dlmsClient = new DlmsControllerClient(dlmsControllerUrl);
+    public DLMSServiceImpl(String camelName, String dlmsControllerUrl) {
+        this.dlmsClient = new DlmsControllerClient(dlmsControllerUrl, camelName);
     }
 
     @Override

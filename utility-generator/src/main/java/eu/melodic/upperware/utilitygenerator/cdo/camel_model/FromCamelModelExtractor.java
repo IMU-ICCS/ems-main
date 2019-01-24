@@ -29,6 +29,7 @@ import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CamelModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
@@ -48,6 +49,8 @@ public class FromCamelModelExtractor {
     private CDOService cdoService;
     private CDOSessionX sessionX;
 
+    @Getter
+    private String camelModelPath;
     private CamelModel model;
     private Collection<MetricVariableImpl> metricVariables;
 
@@ -62,6 +65,7 @@ public class FromCamelModelExtractor {
         }
         log.info("path = {}", path);
 
+        this.camelModelPath = path;
         this.sessionX = cdoService.openSession();
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
