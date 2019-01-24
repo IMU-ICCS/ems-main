@@ -49,5 +49,13 @@ public class Algo_AffinityAwareness {
 		}
 		return 0;
 	}
+	
+	
+	public double calculateAffinity(String from, String to) {
+		double val = -1;
+		// historical execution data exists between two components
+		
+		return val;
+	}
 
 }

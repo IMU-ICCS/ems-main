@@ -59,7 +59,7 @@ public class Algo_DataCenterAwareness {
 	 */
 	public double calculatePerformance(String from, String to) {
 		double val = -1;
-		// optimal vale
+		// historical execution data exists between two components
 		if (connectionExist(new TwoDCKey(from, to)))
 			val = getPerformance(new TwoDCKey(from, to));
 		// if original connection does not exist

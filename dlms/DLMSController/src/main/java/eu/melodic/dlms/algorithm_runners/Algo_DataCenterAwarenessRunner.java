@@ -82,7 +82,7 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 	}
 
 	/**
-	 * Get DlmsConfigurationElement matching the connection componen name
+	 * Get DlmsConfigurationElement matching the connection component name
 	 */
 	private DlmsConfigurationElement getComp(Collection<DlmsConfigurationElement> deployed, SoftwareComponent toComp) {
 		DlmsConfigurationElement element = new DlmsConfigurationElement();

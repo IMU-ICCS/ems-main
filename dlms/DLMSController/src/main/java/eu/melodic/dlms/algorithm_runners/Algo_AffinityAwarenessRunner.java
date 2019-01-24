@@ -1,9 +1,15 @@
 package eu.melodic.dlms.algorithm_runners;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import camel.deployment.SoftwareComponent;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.affinity.Algo_AffinityAwareness;
 import eu.melodic.dlms.utility.DlmsConfigurationConnection;
+import eu.melodic.dlms.utility.DlmsConfigurationElement;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -41,10 +47,48 @@ public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		// TODO Auto-generated method stub
-		return 0;
+		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
+		Map<SoftwareComponent, List<SoftwareComponent>> compConMap = diff.getCompConMap();
+
+		double utility = 0;
+		int numberConnection = 0;
+		for (Map.Entry<SoftwareComponent, List<SoftwareComponent>> comp : compConMap.entrySet()) {
+			SoftwareComponent fromComp = comp.getKey();
+			List<SoftwareComponent> toCompList = comp.getValue();
+
+			DlmsConfigurationElement fromElement = getComp(proposed, fromComp);
+			// connected to data source
+			for (SoftwareComponent toComp : toCompList) {
+				DlmsConfigurationElement toElement = getComp(proposed, toComp);
+				// calculate the utility between application component and datasource
+				double currentUtility = algo.calculateAffinity(fromElement.getId(), toElement.getId());
+
+				// there is no historical data between the two connections
+				if (currentUtility == -1) {
+					log.debug("No historical data exists between: {} and {}", fromElement.getId(), toElement.getId());
+
+				} else
+					// increase iteration
+					numberConnection++;
+				utility += currentUtility;
+			}
+		}
+		log.info("Utility for AFFINITY_AWARENESS was calculated successfully");
+		return utility / numberConnection;
 	}
 
-
+	/**
+	 * Get DlmsConfigurationElement matching the connection component name
+	 */
+	private DlmsConfigurationElement getComp(Collection<DlmsConfigurationElement> deployed, SoftwareComponent toComp) {
+		DlmsConfigurationElement element = new DlmsConfigurationElement();
+		for (DlmsConfigurationElement deployedElement : deployed) {
+			if (deployedElement.getId().equals(toComp.getName())) {
+				element = deployedElement;
+				break;
+			}
+		}
+		return element;
+	}
 
 }
