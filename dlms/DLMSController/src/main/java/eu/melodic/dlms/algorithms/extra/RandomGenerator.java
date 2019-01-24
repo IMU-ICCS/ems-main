@@ -1,4 +1,4 @@
-package eu.melodic.dlms.algorithms.utility;
+package eu.melodic.dlms.algorithms.extra;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;

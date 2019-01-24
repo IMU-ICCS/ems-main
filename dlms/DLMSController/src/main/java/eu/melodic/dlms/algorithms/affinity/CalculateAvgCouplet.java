@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * Algorithm logic based on deliverable D2.5
  */
 @Slf4j
-public class CalculateAvgCouplet extends Algo_CalculateCouplet {
+public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 	private long minDataTransPrediction = Long.MAX_VALUE;
 	private long maxDataTransPrediction = 0;
 	private long minNumTransPrediction = Long.MAX_VALUE;

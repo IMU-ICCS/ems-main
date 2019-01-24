@@ -23,7 +23,7 @@ import eu.melodic.dlms.db.model.DataCenter;
 import eu.melodic.dlms.db.model.DataCenterZone;
 import eu.melodic.dlms.db.model.DataSource;
 import eu.melodic.dlms.db.model.Region;
-import eu.melodic.dlms.utility.DlmsDiffBundle;
+import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 import eu.melodic.dlms.utility.UtilityMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +52,7 @@ public class DlmsRestController {
 	 * produced from the call of queryResults().
 	 */
 	@GetMapping(value = "/dlmsController/utilityValue")
-	public UtilityMetrics getUtilityValue(@RequestBody DlmsDiffBundle diffs) {
+	public UtilityMetrics getUtilityValue(@RequestBody DlmsConfigurationConnection diffs) {
 		Map<String, Double> utilityValueMap = new HashMap<>(algorithms.size());
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {

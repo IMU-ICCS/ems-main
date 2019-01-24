@@ -3,7 +3,7 @@ package eu.melodic.dlms.algorithm_runners;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.clusteringDataCenter.Algo_ClusterDataCenters;
-import eu.melodic.dlms.utility.DlmsDiffBundle;
+import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,10 +21,6 @@ public class Algo_ClusterDataCentersRunner implements AlgorithmRunner {
 				application.getDataCenterZoneRepository());
 	}
 
-	@Override
-	public double queryResults(DlmsDiffBundle diffBundle) {
-		return -5;
-	}
 
 	@Override
 	public int update(Object... parameters) {	
@@ -40,5 +36,13 @@ public class Algo_ClusterDataCentersRunner implements AlgorithmRunner {
 		algo.setNumCluster(numCluster);		
 		return algo.cluster();
 	}
+
+	@Override
+	public double queryResults(DlmsConfigurationConnection diff) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
 
 }

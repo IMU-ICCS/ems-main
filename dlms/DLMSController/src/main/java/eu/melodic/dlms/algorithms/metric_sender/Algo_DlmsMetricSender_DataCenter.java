@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import eu.melodic.dlms.algorithms.utility.RandomGenerator;
+import eu.melodic.dlms.algorithms.extra.RandomGenerator;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 

@@ -16,8 +16,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DlmsConfigurationElement {
-
-	private String id;
+	// software component name from camel
+	private String id; 
 	private NodeCandidate nodeCandidate;
 	private int cardinality;
 

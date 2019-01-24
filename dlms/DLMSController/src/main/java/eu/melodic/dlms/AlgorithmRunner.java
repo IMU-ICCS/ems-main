@@ -1,6 +1,6 @@
 package eu.melodic.dlms;
 
-import eu.melodic.dlms.utility.DlmsDiffBundle;
+import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 
 /**
  * Interface for algorithm runner classes.
@@ -16,7 +16,7 @@ public interface AlgorithmRunner {
 	 * Returns an utility value of all the collected results. 
 	 * It is the runner's responsibility to make sure that the results are cleared afterwards (if necessary).
 	 */
-	double queryResults(DlmsDiffBundle diffBundle);
+	double queryResults(DlmsConfigurationConnection diff);
 
 	/**
 	 * Method to run an algorithm. 

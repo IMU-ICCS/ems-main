@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-public class Algo_CalculateCouplet {
+public class Algo_AffinityAwareness {
 	protected final ApplicationComponentRepository acRepository;
 	protected final DataSourceRepository dsRepository;
 	protected final ApplicationComponentDataSourceDataRepository acDsDataRepository;

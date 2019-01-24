@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class TwoDataCenComb {
-	private final Long dc1Id;
-	private final Long dc2Id;
+	private final String dc1Id;
+	private final String dc2Id;
 }

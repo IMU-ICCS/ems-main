@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-public class Algo_CombineValSelectedRecords {
+public class Algo_DataCenterAwareness {
 	// set default; maybe modify just for experiments
 	private double WT_LATENCY = 0.5;
 
@@ -53,6 +53,40 @@ public class Algo_CombineValSelectedRecords {
 	private final TwoDataCentersRepository twoDataCentersRepository;
 	private final TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
 
+	
+	/**
+	 * Get the combined latency and bandwidth value between the two components
+	 */
+	public double calculatePerformance(String from, String to) {
+		double val = -1;
+		// optimal vale
+		if (connectionExist(new TwoDCKey(from, to)))
+			val = getPerformance(new TwoDCKey(from, to));
+		// if original connection does not exist
+		else if (connectionExist(new TwoDCKey(to, from)))
+			val = getPerformance(new TwoDCKey(from, to));
+
+		return val;
+	}
+	
+	/**
+	 * Check if there is historical execution data between the two components
+	 */
+	public boolean connectionExist(TwoDCKey twoDCKey) {
+		if (twoDataCenterCombinationRepository.existsByTwoDCKey(twoDCKey))
+			return true;
+		else
+			return false;
+	}
+	
+	/**
+	 * Get the network performance between the two components
+	 */
+	public double getPerformance(TwoDCKey twoDCKey) {
+		return twoDataCenterCombinationRepository.findByTwoDCKey(twoDCKey).getCombValue();
+	}
+	
+	
 	/**
 	 * Compute latency and bandwidth based on historical data
 	 */
@@ -68,10 +102,10 @@ public class Algo_CombineValSelectedRecords {
 				// other functions can be added
 				switch (weightData) {
 				case "averageWeight":
-					found = computeAverage(dc1.getId(), dc2.getId());
+					found = computeAverage(dc1.getName(), dc2.getName());
 					break;
 				case "latestHigher":
-					found = computeLatestHigher(dc1.getId(), dc2.getId());
+					found = computeLatestHigher(dc1.getName(), dc2.getName());
 					break;
 				default:
 					log.error("Invalid function selected");
@@ -93,7 +127,7 @@ public class Algo_CombineValSelectedRecords {
 	 * Compute average for lat and bandwidth for dc1 and dc2 based on time interval
 	 * it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1.
 	 */
-	private boolean computeAverage(Long dc1Id, Long dc2Id) {
+	private boolean computeAverage(String dc1Id, String dc2Id) {
 		List<TwoDataCenters> dataCenterList = new ArrayList<>();
 		switch (this.paraUpdateWith) {
 		case "time":
@@ -121,7 +155,7 @@ public class Algo_CombineValSelectedRecords {
 	 * Compute latency and bandwidth for dc1 and dc2 based on time intervals: latest higher weight
 	 * it is not commutative, i.e., dc1 and dc2 is not equal to dc2 and dc1.
 	 */
-	private boolean computeLatestHigher(Long dc1Id, Long dc2Id) {
+	private boolean computeLatestHigher(String dc1Id, String dc2Id) {
 		List<TwoDataCenters> dataCenterList = new ArrayList<>();
 		switch (this.paraUpdateWith) {
 		case "time":
@@ -149,7 +183,7 @@ public class Algo_CombineValSelectedRecords {
 	/**
 	 * Latest records have higher weights
 	 */
-	private void computeLatestHigherWeight(List<TwoDataCenters> dataCenterList, Long dc1Id, Long dc2Id) {
+	private void computeLatestHigherWeight(List<TwoDataCenters> dataCenterList, String dc1Id, String dc2Id) {
 		double latency = 0, bandwidth = 0;
 		int numberRecords = dataCenterList.size();
 		double multiply = 0;
@@ -199,7 +233,7 @@ public class Algo_CombineValSelectedRecords {
 	/**
 	 * All the records have equal weight
 	 */
-	private void computeEqualWeight(List<TwoDataCenters> dataCenterList, Long dc1Id, Long dc2Id) {
+	private void computeEqualWeight(List<TwoDataCenters> dataCenterList, String dc1Id, String dc2Id) {
 		double latency = 0, bandwidth = 0;
 		for (TwoDataCenters dcLatencyBandwidthItem : dataCenterList) {
 			latency += dcLatencyBandwidthItem.getLatency();
@@ -245,7 +279,7 @@ public class Algo_CombineValSelectedRecords {
 	}
 
 	/**
-	 * Normalization function
+	 * Normalization function for latency
 	 */
 	public double norLatency(double latency) {
 		double retVal = 0;
@@ -254,7 +288,7 @@ public class Algo_CombineValSelectedRecords {
 	}
 
 	/**
-	 * Normalization function
+	 * Normalization function for bandwidth
 	 */
 	public double norBandWidth(double bandwidth) {
 		double retVal = 0;

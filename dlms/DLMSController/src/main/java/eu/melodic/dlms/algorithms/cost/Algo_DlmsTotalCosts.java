@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-public class Algo_ComputeCost {
+public class Algo_DlmsTotalCosts {
 	// configuration parameters
 	private long src;
 	private long dst;

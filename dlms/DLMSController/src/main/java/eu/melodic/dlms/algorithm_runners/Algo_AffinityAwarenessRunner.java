@@ -2,28 +2,28 @@ package eu.melodic.dlms.algorithm_runners;
 
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
-import eu.melodic.dlms.algorithms.affinity.Algo_CalculateCouplet;
-import eu.melodic.dlms.utility.DlmsDiffBundle;
+import eu.melodic.dlms.algorithms.affinity.Algo_AffinityAwareness;
+import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Calculate affinity between application component and data source
  */
 @Slf4j
-public class Algo_CalculateCoupletRunner implements AlgorithmRunner {
+public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
 
-	private Algo_CalculateCouplet algo;
+	private Algo_AffinityAwareness algo;
 
 	@Override
 	public void initialize(DlmsControllerApplication application) {
-		algo = new Algo_CalculateCouplet(application.getAcRepository(), application.getDsRepository(),
+		algo = new Algo_AffinityAwareness(application.getAcRepository(), application.getDsRepository(),
 				application.getAcDsDataRepository(), application.getAcDsAffinityRepository());
 	}
 
-	@Override
-	public double queryResults(DlmsDiffBundle diffBundle) {
-		return -5;
-	}
+//	@Override
+//	public double queryResults(DlmsDiffBundle diffBundle) {
+//	return -5;
+//	}
 
 	@Override
 	public int update(Object... parameters) {
@@ -38,5 +38,13 @@ public class Algo_CalculateCoupletRunner implements AlgorithmRunner {
 		algo.setFunctionName(functionName);
 		return algo.computeAffinity();
 	}
+
+	@Override
+	public double queryResults(DlmsConfigurationConnection diff) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
 
 }
