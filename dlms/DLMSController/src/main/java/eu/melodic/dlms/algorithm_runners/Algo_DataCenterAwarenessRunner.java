@@ -70,11 +70,11 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 				// there is no historical data between the two connections
 				if (currentUtility == -1) {
 					log.debug("No historical data exists between: {} and {}", fromElement.getId(), toElement.getId());
-
-				} else
+				} else {
 					// increase iteration
 					numberConnection++;
-				utility += currentUtility;
+					utility += currentUtility;
+				}
 			}
 		}
 		log.info("Utility for DATA_CENTER_AWARENESS was calculated successfully");

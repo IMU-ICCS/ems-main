@@ -32,7 +32,7 @@ public class DlmsControllerClient {
 
 	private final String datasourceServerUrl;
 	private final String camelModelId;
-	
+
 	/**
 	 * Constructor to get datasource server url and stored camel model id
 	 */
@@ -70,7 +70,7 @@ public class DlmsControllerClient {
 	public Map<SoftwareComponent, List<SoftwareComponent>> readCamelModel(String camelId) {
 		ModelAnalyzer modelAnalyzer = new ModelAnalyzer();
 		modelAnalyzer.readModel(camelId);
-		
+
 		return modelAnalyzer.getCompConMap();
 	}
 
@@ -82,31 +82,43 @@ public class DlmsControllerClient {
 	public UtilityMetrics getUtilityValues(Collection<DlmsConfigurationElement> deployed,
 			Collection<DlmsConfigurationElement> proposed) {
 		// get the connections between the application component and datasource
-		Map<SoftwareComponent, List<SoftwareComponent>> compConMap= readCamelModel(this.camelModelId);
+		Map<SoftwareComponent, List<SoftwareComponent>> compConMap = readCamelModel(this.camelModelId);
 		// get the connections
-		
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			URI uri = new URI(datasourceServerUrl);
 			HttpHeaders headers = createHeaders();
 
-			DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
-
-			if (diffBundle.isEmpty()) {
-				log.info("no diffs found");
-				return new UtilityMetrics();
+			if (deployed.size() > 0 || proposed.size() > 0) {
+				// if some solutions were deployed originally
+				DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
+				if (diffBundle.isEmpty()) {
+					log.info("no diffs found");
+					return new UtilityMetrics();
+				}
+			} else {
+				checkSize(deployed, "deployed");
+				checkSize(proposed, "proposed");
 			}
-			DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
-			HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);
-			ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
-					UtilityMetrics.class);
+			// proposed and deployed solutions are different
+			if (proposed.size() > 0) {
+				DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
+				HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);
+				ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
+						UtilityMetrics.class);
 
-			return response.getBody();
+				return response.getBody();
+			}
 		} catch (URISyntaxException | RestClientException e) {
 			log.error(e.getMessage(), e);
 		}
 
 		return new UtilityMetrics();
+	}
+
+	private void checkSize(Collection<DlmsConfigurationElement> sol, String type) {
+		if (sol.size() == 0)
+			log.info("{} solution is empty", type);
 	}
 
 	private DlmsDiffBundle runDiff(Collection<DlmsConfigurationElement> deployed,

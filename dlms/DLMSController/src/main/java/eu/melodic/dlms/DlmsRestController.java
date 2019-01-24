@@ -57,7 +57,7 @@ public class DlmsRestController {
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
 			double algorithmResult = runner.queryResults(diffs);
-			log.info("result for algorithm {}: {}", key.getName(), algorithmResult);
+			log.info("result for algorithm {}: {}", key.getCamelId(), algorithmResult);
 			utilityValueMap.put(key.getCamelId(), algorithmResult);
 		});
 
