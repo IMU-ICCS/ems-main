@@ -2,18 +2,22 @@ package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.DeploymentInstanceModel;
 import camel.type.StringValue;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import eu.melodic.models.services.adapter.*;
 import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,9 +27,6 @@ import static java.lang.String.format;
 @Slf4j
 @Service
 public class MonitorConverter implements ModelConverter<DeploymentInstanceModel, List<AdapterMonitor>> {
-
-    private Gson gson = new Gson();
-    private Type type = new TypeToken<List<Monitor>>() {}.getType();
 
     @Override
     public List<AdapterMonitor> toComparableModel(DeploymentInstanceModel model) {
@@ -43,7 +44,18 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
     }
 
     private List<Monitor> fromJson(String value) {
-        return gson.fromJson(value, type);
+        ObjectMapper objectMapper = new ObjectMapper();
+        //I am not sure if it really works...
+        objectMapper.configOverride(Collections.class)
+                .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+
+        CollectionType typeReference =
+                TypeFactory.defaultInstance().constructCollectionType(List.class, Monitor.class);
+        try {
+            return objectMapper.readValue(value, typeReference);
+        } catch (IOException e) {
+            throw new AdapterException(format("Could not deserialise %s as a List<Monitor>", value));
+        }
     }
 
     private AdapterMonitor toMonitor(Monitor monitor) {
@@ -53,12 +65,18 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
                 .metricName(monitor.getMetric())
                 .sensor(toSensor(monitor.getSensor()))
                 .sinks(toSinks(monitor.getSinks()))
-                .tags(null)
+                .tags(toTags(monitor.getTags()))
                 .build();
     }
 
+    private List<Pair<String, String>> toTags(List<KeyValuePair> tags) {
+        return CollectionUtils.emptyIfNull(tags).stream()
+                .map(keyValuePair -> Pair.of(keyValuePair.getKey(), keyValuePair.getValue()))
+                .collect(Collectors.toList());
+    }
+
     private List<AdapterSink> toSinks(List<Sink> sinks) {
-        return sinks.stream()
+        return CollectionUtils.emptyIfNull(sinks).stream()
                 .map(this::toSink)
                 .collect(Collectors.toList());
     }
@@ -98,7 +116,7 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
     }
 
     private List<Pair<String, String>> toConfiguration(List<KeyValuePair> configuration) {
-        return configuration.stream()
+        return CollectionUtils.emptyIfNull(configuration).stream()
                 .map(keyValuePair -> Pair.of(keyValuePair.getKey(), keyValuePair.getValue()))
                 .collect(Collectors.toList());
     }
