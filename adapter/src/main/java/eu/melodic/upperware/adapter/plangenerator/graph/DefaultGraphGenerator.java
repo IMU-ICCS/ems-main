@@ -59,7 +59,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         Collection<ProcessTask> processTasks = genProcessCreateTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
 
-        if (!adapterProperties.getEms().isEnabled()) {
+        if (adapterProperties.getEms().isEnabled()) {
           Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
         }
 
