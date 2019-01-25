@@ -83,7 +83,10 @@ public class DlmsControllerClient {
 			URI uri = new URI(datasourceServerUrl);
 			HttpHeaders headers = createHeaders();
 
-			if (deployed.size() > 0 || proposed.size() > 0) {
+			log.debug("The size of deployed is {}", deployed.size());
+			log.debug("The size of proposed is {}", proposed.size());
+			
+			if (deployed.size() > 0 && proposed.size() > 0) {
 				// if some solutions were deployed originally
 				DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
 				if (diffBundle.isEmpty()) {
