@@ -290,7 +290,8 @@ public class ControlServiceCoordinator {
             log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
             try {
                 baguette.setTopologyConfiguration(_TC.getG2T(), _TC.getG2R(), _TC.getTopicConnections(), constants,
-                        _TC.getFunctionDefinitions(), upperwareGrouping, brokerCep.getBrokerCepProperties().getBrokerUrl(),
+                        _TC.getFunctionDefinitions(), upperwareGrouping,
+                        brokerCep.getBrokerCepProperties().getBrokerUrlForClients(),
                         brokerCep.getBrokerUsername(), brokerCep.getBrokerPassword());
             } catch (Exception ex) {
                 log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
@@ -312,7 +313,7 @@ public class ControlServiceCoordinator {
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
 
             // Prepare subscription configurations
-            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrl() : null;
+            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer() : null;
             if (StringUtils.isBlank(upperwareBrokerUrl)) {
                 log.warn("ControlServiceCoordinator.processNewModel(): No Broker URL has been specified or Broker-CEP module is deactivated");
             }

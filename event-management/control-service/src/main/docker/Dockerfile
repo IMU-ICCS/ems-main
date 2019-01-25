@@ -22,8 +22,9 @@ RUN bash -c 'apt-get update'
 RUN bash -c 'apt-get install -y netcat'
 RUN bash -c 'apt-get install -y net-tools'
 
-#RUN bash -c 'apt-get update'
-#RUN bash -c 'apt-get install -y netcat'
+RUN bash -c 'apt-get update'
+RUN bash -c 'apt-get install -y netcat'
+RUN bash -c 'apt-get install -y net-tools'
 
 ENTRYPOINT ["./run-ems.sh"]
 

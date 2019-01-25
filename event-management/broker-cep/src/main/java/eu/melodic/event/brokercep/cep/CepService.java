@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.cep;
 
 import com.espertech.esper.client.*;
+import eu.melodic.event.brokercep.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
@@ -116,7 +117,7 @@ public class CepService implements InitializingBean {
      */
     public void handleEvent(String event, String eventType) {
         log.debug("CepService.handleEvent(): type={}, event={}", eventType, event);
-        eu.melodic.event.brokercep.event.EventMap eventMap = new com.google.gson.Gson().fromJson(event, eu.melodic.event.brokercep.event.EventMap.class);
+        EventMap eventMap = new com.google.gson.Gson().fromJson(event, EventMap.class);
         log.debug("CepService.handleEvent(): event-map={}", eventMap);
         epService.getEPRuntime().sendEvent(eventMap, eventType);
     }

@@ -12,13 +12,17 @@ package eu.melodic.event.brokerclient;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import javax.jms.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
+import org.apache.activemq.advisory.DestinationSource;
+import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTempQueue;
+import org.apache.activemq.command.ActiveMQTempTopic;
+import org.apache.activemq.command.ActiveMQTopic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -82,6 +86,42 @@ public class BrokerClient {
             //use defaults
             properties = new BrokerClientProperties();
         }
+    }
+
+    // ------------------------------------------------------------------------
+
+    public synchronized Set<String> getDestinationNames(String connectionString) throws JMSException {
+        // open or reuse connection
+        checkProperties();
+        boolean _closeConn = false;
+        if (session==null) {
+            openConnection(connectionString);
+            _closeConn = ! properties.isPreserveConnection();
+        }
+
+        // Get destinations from Broker
+        log.info("BrokerClient.getDestinationNames(): Getting destinations: connection={}, username={}", connectionString, properties.getBrokerUsername());
+        ActiveMQConnection conn = (ActiveMQConnection)connection;
+        DestinationSource ds = conn.getDestinationSource();
+        Set<ActiveMQQueue> queues = ds.getQueues();
+        Set<ActiveMQTopic> topics = ds.getTopics();
+        Set<ActiveMQTempQueue> tempQueues = ds.getTemporaryQueues();
+        Set<ActiveMQTempTopic> tempTopics = ds.getTemporaryTopics();
+        log.info("BrokerClient.getDestinationNames(): Getting destinations: done");
+
+        // Get destination names
+        HashSet<String> destinationNames = new HashSet<>();
+        for (ActiveMQQueue q : queues) destinationNames.add("QUEUE "+q.getQueueName());
+        for (ActiveMQTopic t : topics) destinationNames.add("TOPIC "+t.getTopicName());
+        for (ActiveMQTempQueue tq : tempQueues) destinationNames.add("Temp QUEUE "+tq.getQueueName());
+        for (ActiveMQTempTopic tt : tempTopics) destinationNames.add("Temp TOPIC "+tt.getTopicName());
+
+        // close connection
+        if (_closeConn) {
+            closeConnection();
+        }
+
+        return destinationNames;
     }
 
     // ------------------------------------------------------------------------

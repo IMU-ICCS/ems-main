@@ -28,6 +28,10 @@ public class BrokerCepProperties {
     private String brokerName;
     @Value("${broker-url:ssl://localhost:61616}")
     private String brokerUrl;
+    @Value("${broker-url-for-consumer:}")
+    private String brokerUrlForConsumer;
+    @Value("${broker-url-for-clients:}")
+    private String brokerUrlForClients;
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
     @Value("${brokercep.ssl.client-auth.required:false}")
@@ -81,5 +85,4 @@ public class BrokerCepProperties {
 
     @Value("${brokercep-password-encoder:eu.passage.upperware.commons.passwords.IdentityPasswordEncoder}")
     private String passwordEncoder;
-
 }

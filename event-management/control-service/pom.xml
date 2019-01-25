@@ -15,7 +15,8 @@
         <!--DOCKER plugin properties-->
         <docker.push>true</docker.push>
         <docker.repository>172.31.1.100:5000/</docker.repository>
-        <docker.imageName>${docker.repository}melodic/ems-control-service-rc2.0</docker.imageName>
+        <docker.imageName>${docker.repository}melodic/ems-server-rc2.0</docker.imageName>
+        <!--<docker.imageTag>testing</docker.imageTag>-->
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
     </properties>
@@ -91,6 +92,13 @@
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
         </dependency>
+
+        <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
+        <dependency>
+            <groupId>io.hawt</groupId>
+            <artifactId>hawtio-springboot</artifactId>
+            <version>2.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -151,6 +159,9 @@
                             <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
                             <imageName>${docker.imageName}</imageName>
                             <pushImage>${docker.push}</pushImage>
+                            <!--<imageTags>
+                                <imageTag>${docker.imageTag}</imageTag>
+                            </imageTags>-->
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>

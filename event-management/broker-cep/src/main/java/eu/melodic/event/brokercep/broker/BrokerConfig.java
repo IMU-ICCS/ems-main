@@ -18,6 +18,7 @@ import org.apache.activemq.ActiveMQSslConnectionFactory;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.SslBrokerService;
+import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.security.*;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
@@ -223,6 +224,31 @@ public class BrokerConfig implements InitializingBean {
                 log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getConnectorPort());
                 brokerService.getManagementContext().setConnectorPort(properties.getConnectorPort());
             }
+        }
+
+        // Print Management Context information
+        try {
+            log.debug("BrokerConfig.createBrokerService(): Management Context (MC) settings:");
+            ManagementContext mc = brokerService.getManagementContext();
+            log.debug("    MC: BrokerName: {}", mc.getBrokerName());
+            log.debug("    MC: ConnectorHost: {}", mc.getConnectorHost());
+            log.debug("    MC: ConnectorPath: {}", mc.getConnectorPath());
+            log.debug("    MC: Environment: {}", mc.getEnvironment());
+            log.debug("    MC: JmxDomainName: {}", mc.getJmxDomainName());
+            log.debug("    MC: RmiServerPort: {}", mc.getRmiServerPort());
+            log.debug("    MC: SuppressMBean: {}", mc.getSuppressMBean());
+            log.debug("    MC: AllowRemoteAddressInMBeanNames: {}", mc.isAllowRemoteAddressInMBeanNames());
+            log.debug("    MC: ConnectorStarted: {}", mc.isConnectorStarted());
+            log.debug("    MC: CreateConnector: {}", mc.isCreateConnector());
+            log.debug("    MC: CreateMBeanServer: {}", mc.isCreateMBeanServer());
+            log.debug("    MC: FindTigerMbeanServer: {}", mc.isFindTigerMbeanServer());
+            log.debug("    MC: UseMBeanServer: {}", mc.isUseMBeanServer());
+
+            log.debug("    MC->MBS: DefaultDomain: {}", mc.getMBeanServer().getDefaultDomain());
+            log.debug("    MC->MBS: Domains: {}", mc.getMBeanServer().getDomains());
+            log.debug("    MC->MBS: MBeanCount: {}", mc.getMBeanServer().getMBeanCount());
+        } catch (Exception ex) {
+            log.error("    MC: EXCEPTION: ", ex);
         }
 
         // Set memory limit in order not to use too much memory
