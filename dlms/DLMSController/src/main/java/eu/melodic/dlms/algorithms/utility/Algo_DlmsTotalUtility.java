@@ -15,6 +15,11 @@ import eu.melodic.dlms.db.model.DataCenterZone;
 import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Not completed yet
+ * 
+ */
+
 @RequiredArgsConstructor
 public class Algo_DlmsTotalUtility {
 	private final DataCenterZoneRepository dataCenterZoneRepository;
@@ -24,8 +29,11 @@ public class Algo_DlmsTotalUtility {
 	private String[] graphCurrent;
 	private String[] graphProposed;
 	private static Map<UndirectedGraph<AtomVertex, BoundEdge>, Set<Integer>> currentFingerPrintMap;
+	
+	
 	/**
 	 * Starting method
+	 * Not yet completed
 	 */
 	public double calculateUtility() {
 		currentFingerPrintMap = new HashMap<>();
@@ -38,6 +46,7 @@ public class Algo_DlmsTotalUtility {
 
 	/**
 	 * Read the graph
+	 * Not completed yet
 	 */
 	public List<UndirectedGraph<AtomVertex, BoundEdge>> readGraph(Map<String, String> locZoneMap) {
 		List<UndirectedGraph<AtomVertex, BoundEdge>> structureGraphList = new ArrayList<>();
@@ -50,7 +59,7 @@ public class Algo_DlmsTotalUtility {
 	 */
 
 	public Map<String, String> readLocZone() {
-		Map<String, String> dcZoneMap = new HashMap<String, String>();
+		Map<String, String> dcZoneMap = new HashMap<>();
 		List<DataCenterZone> dcZoneList = dataCenterZoneRepository.findAll();
 		for (DataCenterZone dcZone : dcZoneList)
 			dcZoneMap.put(Long.toString(dcZone.getDataCenterId()), String.valueOf(dcZone.getZone()));
@@ -63,7 +72,6 @@ public class Algo_DlmsTotalUtility {
 	 * 
 	 */
 	public Set<Integer> getFingerprintSet(UndirectedGraph<AtomVertex, BoundEdge> structureGraph) {
-		fingerprintSet = new TreeSet<>();
 		fingerprintSet = new TreeSet<>();
 		Set<AtomVertex> atoms = structureGraph.vertexSet();
 		for (AtomVertex a : atoms) {

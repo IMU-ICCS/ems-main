@@ -54,8 +54,6 @@ public class DlmsControllerApplication {
 	 * Main method for starting. No arguments needed for normal use.
 	 */
 	public static void main(String[] args) {
-		// To use eu.melodic.upperware.dlms.properties instead of application.properties
-//		System.setProperty("spring.config.name", "eu.melodic.upperware.dlms");	
 		SpringApplication.run(DlmsControllerApplication.class, args);
 	}
 

@@ -44,6 +44,6 @@ public class AtomVertex implements Serializable {
 			return false;
 
 		AtomVertex that = (AtomVertex) o;
-		return name == that.name;
+		return name.equals(that.name);
 	}
 }

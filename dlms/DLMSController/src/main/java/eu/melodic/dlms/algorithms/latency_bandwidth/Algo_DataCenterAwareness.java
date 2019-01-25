@@ -64,7 +64,7 @@ public class Algo_DataCenterAwareness {
 			val = getPerformance(new TwoDCKey(from, to));
 		// if original connection does not exist
 		else if (connectionExist(new TwoDCKey(to, from)))
-			val = getPerformance(new TwoDCKey(from, to));
+			val = getPerformance(new TwoDCKey(to, from));
 
 		return val;
 	}
@@ -73,10 +73,7 @@ public class Algo_DataCenterAwareness {
 	 * Check if there is historical execution data between the two components
 	 */
 	public boolean connectionExist(TwoDCKey twoDCKey) {
-		if (twoDataCenterCombinationRepository.existsByTwoDCKey(twoDCKey))
-			return true;
-		else
-			return false;
+		return twoDataCenterCombinationRepository.existsByTwoDCKey(twoDCKey);
 	}
 	
 	/**

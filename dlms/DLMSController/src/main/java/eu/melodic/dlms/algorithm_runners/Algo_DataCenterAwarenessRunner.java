@@ -35,7 +35,6 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 			log.error("Number of parameters is not enough for Algo_CombineValSelectedRecordsRunner");
 			return -1;
 		}
-		System.out.println(parameters[0].toString());
 		int paraTimeInterval = Integer.parseInt(parameters[0].toString());
 		int paraNumRecords = Integer.parseInt(parameters[1].toString());
 		String paraUpdateWith = parameters[2].toString();
@@ -85,14 +84,10 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 	 * Get DlmsConfigurationElement matching the connection component name
 	 */
 	private DlmsConfigurationElement getComp(Collection<DlmsConfigurationElement> deployed, SoftwareComponent toComp) {
-		DlmsConfigurationElement element = new DlmsConfigurationElement();
-		for (DlmsConfigurationElement deployedElement : deployed) {
-			if (deployedElement.getId().equals(toComp.getName())) {
-				element = deployedElement;
-				break;
-			}
-		}
-		return element;
+		return deployed.stream()
+				.filter(dlmsConfigurationElement -> dlmsConfigurationElement.getId().equals(toComp.getName()))
+				.findFirst()
+				.orElse(new DlmsConfigurationElement());
 	}
 
 }

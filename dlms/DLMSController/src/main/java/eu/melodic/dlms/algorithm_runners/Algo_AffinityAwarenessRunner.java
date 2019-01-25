@@ -26,11 +26,6 @@ public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
 				application.getAcDsDataRepository(), application.getAcDsAffinityRepository());
 	}
 
-//	@Override
-//	public double queryResults(DlmsDiffBundle diffBundle) {
-//	return -5;
-//	}
-
 	@Override
 	public int update(Object... parameters) {
 		if (parameters.length < 2) {
@@ -81,14 +76,10 @@ public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
 	 * Get DlmsConfigurationElement matching the connection component name
 	 */
 	private DlmsConfigurationElement getComp(Collection<DlmsConfigurationElement> deployed, SoftwareComponent toComp) {
-		DlmsConfigurationElement element = new DlmsConfigurationElement();
-		for (DlmsConfigurationElement deployedElement : deployed) {
-			if (deployedElement.getId().equals(toComp.getName())) {
-				element = deployedElement;
-				break;
-			}
-		}
-		return element;
+		return deployed.stream()
+				.filter(dlmsConfigurationElement -> dlmsConfigurationElement.getId().equals(toComp.getName()))
+				.findFirst()
+				.orElse(new DlmsConfigurationElement());
 	}
 
 }
