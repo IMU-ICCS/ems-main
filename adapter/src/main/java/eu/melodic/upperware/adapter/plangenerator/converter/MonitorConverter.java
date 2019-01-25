@@ -30,6 +30,14 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
 
     @Override
     public List<AdapterMonitor> toComparableModel(DeploymentInstanceModel model) {
+        log.info("Looking for monitor attribute in DeploymentInstanceModel: {}, it has {} attributes", model.getName(), model.getAttributes().size());
+
+        boolean isMonitorAttributeExists = model.getAttributes()
+                .stream()
+                .anyMatch(attribute -> "monitors".equals(attribute.getName()));
+
+        log.info("Attribute monitors is {}", isMonitorAttributeExists ? "FOUND":"NOT_FOUND");
+
         List<Monitor> monitors = model.getAttributes()
                 .stream()
                 .filter(attribute -> "monitors".equals(attribute.getName()))
@@ -44,6 +52,8 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
     }
 
     private List<Monitor> fromJson(String value) {
+        log.info("Trying to deseriase monitors in JSON {}", value);
+
         ObjectMapper objectMapper = new ObjectMapper();
         //I am not sure if it really works...
         objectMapper.configOverride(Collections.class)
