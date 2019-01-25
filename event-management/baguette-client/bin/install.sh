@@ -37,6 +37,13 @@ CLIENT_CONF_FILE=/opt/baguette-client/conf/baguette-client.properties
 CLIENT_ID_FILE=/opt/baguette-client/conf/id.txt
 CREDENTIALS_FILE=/opt/baguette-client/conf/baguette-server.credentials
 
+# Check if already installed
+if [ -f /opt/baguette-client/conf/ok.txt ]; then
+  echo "Already installed. Exiting..."
+  date -Iseconds
+  exit 0
+fi
+
 # Create installation directory
 echo ""
 echo "Create installation directory..."
