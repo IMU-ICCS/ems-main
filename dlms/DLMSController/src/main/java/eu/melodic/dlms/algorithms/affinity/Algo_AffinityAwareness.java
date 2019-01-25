@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-public class Algo_CalculateCouplet {
+public class Algo_AffinityAwareness {
 	protected final ApplicationComponentRepository acRepository;
 	protected final DataSourceRepository dsRepository;
 	protected final ApplicationComponentDataSourceDataRepository acDsDataRepository;
@@ -48,6 +48,14 @@ public class Algo_CalculateCouplet {
 			return -1;
 		}
 		return 0;
+	}
+	
+	
+	public double calculateAffinity(String from, String to) {
+		double val = -1;
+		// historical execution data exists between two components
+		
+		return val;
 	}
 
 }

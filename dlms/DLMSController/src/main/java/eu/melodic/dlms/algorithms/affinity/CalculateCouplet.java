@@ -10,7 +10,7 @@ import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepositor
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.DataSourceRepository;
 
-public abstract class CalculateCouplet extends Algo_CalculateCouplet{
+public abstract class CalculateCouplet extends Algo_AffinityAwareness{
 	protected long minDataTransPrediction = Long.MAX_VALUE;
 	protected long maxDataTransPrediction = 0;
 	protected long minNumTransPrediction = Long.MAX_VALUE;

@@ -23,14 +23,14 @@ public class TwoDataCenters {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Setter(AccessLevel.NONE)
 	private Long id;
-	private Long dc1Id;
-	private Long dc2Id;
+	private String dc1Id;
+	private String dc2Id;
 	private int latency;
 	private int bandwidth;
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date timestamp;
 
-	public TwoDataCenters(Long dc1Id, Long dc2Id, int latency, int bandwidth, Date timestamp) {
+	public TwoDataCenters(String dc1Id, String dc2Id, int latency, int bandwidth, Date timestamp) {
 		this.dc1Id = dc1Id;
 		this.dc2Id = dc2Id;
 		this.timestamp = timestamp;

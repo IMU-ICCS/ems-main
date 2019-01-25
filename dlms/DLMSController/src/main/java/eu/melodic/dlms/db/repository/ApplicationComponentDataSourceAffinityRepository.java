@@ -9,4 +9,6 @@ import eu.melodic.dlms.db.model.ApplicationComponentDataSourceAffinity;
 public interface ApplicationComponentDataSourceAffinityRepository
 		extends JpaRepository<ApplicationComponentDataSourceAffinity, Long> {
 
+	boolean existsByAcDsKey();
+	
 }

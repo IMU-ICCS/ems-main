@@ -3,12 +3,12 @@ package eu.melodic.dlms.algorithm_runners;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.metric_sender.Algo_DlmsMetricSender_AcDsDataRead;
-import eu.melodic.dlms.utility.DlmsDiffBundle;
+import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Generate the metrics for data read between application component and data source
- * No need of this class in production
+ * Generate the metrics for data read between application component and data
+ * source No need of this class in production
  */
 @Slf4j
 public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner {
@@ -20,18 +20,13 @@ public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner
 		algo = new Algo_DlmsMetricSender_AcDsDataRead();
 	}
 
-	@Override
-	public double queryResults(DlmsDiffBundle diffBundle) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 	@Override
-	public int update(Object... parameters) {	
-		if(parameters.length<6) {
+	public int update(Object... parameters) {
+		if (parameters.length < 6) {
 			log.error("Number of parameters is not enough for Algo_DlmsMetricSender_AcDsDataRead");
 			return -1;
-		}		
+		}
 		String jmsServerAddress = parameters[0].toString();
 		String jmsServerPort = parameters[1].toString();
 		int numAC = Integer.parseInt(parameters[2].toString());
@@ -45,13 +40,19 @@ public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner
 		algo.setNumDS(numDS);
 		algo.setBestDataRead(bestDataRead);
 		algo.setWorstDataRead(worstDataRead);
-		
+
 		try {
 			return algo.run();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return -1;
 		}
+	}
+
+	@Override
+	public double queryResults(DlmsConfigurationConnection diff) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
