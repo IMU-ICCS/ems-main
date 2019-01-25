@@ -27,6 +27,16 @@ public class EventMap extends HashMap<String, Object> implements Serializable {
         super(map);
     }
 
+    public EventMap(double metricValue) {
+        put("metricValue", metricValue);
+        put("timestamp", System.currentTimeMillis());
+    }
+
+    public EventMap(double metricValue, long timestamp) {
+        put("metricValue", metricValue);
+        put("timestamp", timestamp);
+    }
+
     public EventMap(double metricValue, int level, long timestamp) {
         put("metricValue", metricValue);
         put("level", level);
