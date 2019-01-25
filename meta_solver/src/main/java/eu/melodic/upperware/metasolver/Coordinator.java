@@ -128,7 +128,6 @@ public class Coordinator implements ApplicationContextAware {
         // check if a solution is deployed. If no solution is deployed accept new solution
         if (solUv[0] < 0) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
-//            notifyEMS(cpModelPath);
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         }
 
@@ -138,7 +137,6 @@ public class Coordinator implements ApplicationContextAware {
         double newSolUv = solUv[1];
         if (newSolUv > uvThresholdFactor * depSolUv) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
-//            notifyEMS(cpModelPath);
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         } else {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
