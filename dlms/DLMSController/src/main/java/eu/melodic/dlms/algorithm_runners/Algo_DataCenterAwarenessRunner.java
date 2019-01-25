@@ -50,6 +50,7 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
+		log.info("Calculating utility from Alo_DataCenterAwarenessRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
 		Map<SoftwareComponent, List<SoftwareComponent>> compConMap = diff.getCompConMap();
 
@@ -58,7 +59,7 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 		for (Map.Entry<SoftwareComponent, List<SoftwareComponent>> comp : compConMap.entrySet()) {
 			SoftwareComponent fromComp = comp.getKey();
 			List<SoftwareComponent> toCompList = comp.getValue();
-
+			log.debug("Calculating utility");
 			DlmsConfigurationElement fromElement = getComp(proposed, fromComp);
 			// connected to data source
 			for (SoftwareComponent toComp : toCompList) {

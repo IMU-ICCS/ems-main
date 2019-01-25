@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -49,13 +48,13 @@ public class DlmsControllerClient {
 	 * <p>
 	 * <b>TODO: May be removed on integration?</b>
 	 */
-	public static void main(String[] args) {
-		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
-		for (String key : result.getResults().keySet()) {
-			log.info("{} --> {}", key, result.getResults().get(key));
-		}
-	}
+//	public static void main(String[] args) {
+//		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
+//				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
+//		for (String key : result.getResults().keySet()) {
+//			log.info("{} --> {}", key, result.getResults().get(key));
+//		}
+//	}
 
 	/**
 	 * Obtain the deployed application topology from the camel model
@@ -99,11 +98,12 @@ public class DlmsControllerClient {
 			}
 			// proposed and deployed solutions are different
 			if (proposed.size() > 0) {
+				log.info("Calculating the utility for the proposed solution");
 				DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
 				HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);
 				ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
 						UtilityMetrics.class);
-
+				log.info("Utility was calculated");
 				return response.getBody();
 			}
 		} catch (URISyntaxException | RestClientException e) {

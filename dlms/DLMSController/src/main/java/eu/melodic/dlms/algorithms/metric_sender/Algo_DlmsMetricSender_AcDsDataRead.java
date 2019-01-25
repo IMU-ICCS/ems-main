@@ -38,7 +38,7 @@ public class Algo_DlmsMetricSender_AcDsDataRead extends Algo_DlmsMetricSender<Ac
 				.build();
 
 		sendOneMessage(parameters);
-		log.info("Algo_DlmsMetricSender_AcDsDataRead has successfully executed");
+		log.debug("Algo_DlmsMetricSender_AcDsDataRead has successfully executed");
 		return 0;
 	}
 

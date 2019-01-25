@@ -53,9 +53,11 @@ public class DlmsRestController {
 	 */
 	@GetMapping(value = "/dlmsController/utilityValue")
 	public UtilityMetrics getUtilityValue(@RequestBody DlmsConfigurationConnection diffs) {
+		log.info("Going inside DlmsRestController succeeded");
 		Map<String, Double> utilityValueMap = new HashMap<>(algorithms.size());
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
+			log.info("Calculating utility for {}", key.getCamelId());
 			double algorithmResult = runner.queryResults(diffs);
 			log.info("result for algorithm {}: {}", key.getCamelId(), algorithmResult);
 			utilityValueMap.put(key.getCamelId(), algorithmResult);
