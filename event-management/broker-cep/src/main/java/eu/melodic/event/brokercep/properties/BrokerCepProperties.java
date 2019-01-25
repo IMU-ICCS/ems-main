@@ -85,5 +85,4 @@ public class BrokerCepProperties {
 
     @Value("${brokercep-password-encoder:eu.passage.upperware.commons.passwords.IdentityPasswordEncoder}")
     private String passwordEncoder;
-
 }
