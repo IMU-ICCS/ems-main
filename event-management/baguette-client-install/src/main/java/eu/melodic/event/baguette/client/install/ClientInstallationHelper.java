@@ -66,10 +66,31 @@ public class ClientInstallationHelper implements InitializingBean {
         String installScriptUrl = baseDownloadUrl + "/install.sh";
         String installScriptPath = installationDir + "/bin/install.sh";
         String apiKey = "1234567890";                       //XXX: TODO: use value from control service settings or generated value
-		
+
         String credentialsTempFile = "/tmp/baguette-server.credentials";
         String credentialsFile = installationDir + "/conf/baguette-server.credentials";
-        String clientConfAppend = "\n# ++++++++++++  TODO: EMS Server Credentials  +++++++++++\n\n";
+        String clientConfAppend =
+                "\n"+
+                "#-----------------------------------------------------------------"+
+                "\n"+
+                "client.id	= ${BAGUATTE_CLIENT_ID}\n"+
+                "\n"+
+                "host = ${BAGUETTE_SERVER_ADDRESS}\n"+
+                "port = ${BAGUETTE_SERVER_PORT}\n"+
+                "pubkey = ${BAGUETTE_SERVER_PUBKEY}\n"+
+                "fingerprint = ${BAGUETTE_SERVER_PUBKEY_FINGERPRINT}\n"+
+                "\n"+
+                "username = ${BAGUETTE_SERVER_USERNAME}\n"+
+                "password = ${BAGUETTE_SERVER_PASSWORD}\n"+
+                "";
+        clientConfAppend = clientConfAppend
+                .replace("${BAGUATTE_CLIENT_ID}", "anything")
+                .replace("${BAGUETTE_SERVER_ADDRESS}", ".............")
+                .replace("${BAGUETTE_SERVER_PORT}", "2222")
+                .replace("${BAGUETTE_SERVER_PUBKEY}", "...................")
+                .replace("${BAGUETTE_SERVER_PUBKEY_FINGERPRINT}", "...................")
+                .replace("${BAGUETTE_SERVER_USERNAME}", "bb")
+                .replace("${BAGUETTE_SERVER_UPASSWORD}", "yy");
 		String clientConfFile = installationDir + "/conf/baguette-client.properties";
 		String checkInstallationFile = installationDir + "/conf/ok.txt";
 
