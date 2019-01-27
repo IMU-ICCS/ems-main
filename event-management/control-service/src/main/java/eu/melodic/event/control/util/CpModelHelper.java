@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.util;
 
+import eu.melodic.event.translate.TranslationContext;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -38,6 +39,23 @@ public class CpModelHelper {
         id = ++counter;
         this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
         //log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
+    }
+
+    public Map<String, Double> getMatchingMetricVariableValues(String cpModelPath, TranslationContext _TC) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.getMatchingMetricVariableValues(): BEGIN: helper-id={}, cp-model-path={}, variables={}", id, cpModelPath, _TC.MVV_CP.keySet());
+
+        // Get metric variable values
+        Map<String,Double> valuePairs = this.getMetricVariableValues(cpModelPath, new java.util.HashSet<String>(_TC.MVV_CP.keySet()));
+
+        // Translate variable names from CP model names to Formula names
+        Map<String, Double> results = new HashMap<>();
+        for (String key : valuePairs.keySet()) {
+            String varName = _TC.MVV_CP.get(key);
+            results.put(varName, valuePairs.get(key));
+        }
+
+        log.debug("CpModelHelper.getMatchingMetricVariableValues(): END: Matching Metric Variable Values: {}", results);
+        return results;
     }
 
     public Map<String, Double> getMetricVariableValues(String cpModelPath, Set<String> variableNames) throws ConcurrentAccessException {
