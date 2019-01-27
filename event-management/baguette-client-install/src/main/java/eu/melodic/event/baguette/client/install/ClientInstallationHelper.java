@@ -66,35 +66,57 @@ public class ClientInstallationHelper implements InitializingBean {
         String installScriptUrl = baseDownloadUrl + "/install.sh";
         String installScriptPath = installationDir + "/bin/install.sh";
         String apiKey = "1234567890";                       //XXX: TODO: use value from control service settings or generated value
-        String clientConfPath = installationDir + "/conf/baguette-client.properties";
-        String clientConfAppend = "\n# ++++++++++++  TODO  +++++++++++\n\n";
+		
+        String credentialsTempFile = "/tmp/baguette-server.credentials";
+        String credentialsFile = installationDir + "/conf/baguette-server.credentials";
+        String clientConfAppend = "\n# ++++++++++++  TODO: EMS Server Credentials  +++++++++++\n\n";
+		String clientConfFile = installationDir + "/conf/baguette-client.properties";
+		String checkInstallationFile = installationDir + "/conf/ok.txt";
 
+		// Set the target operating system
         OrchestrationHelper.InstallationInstructions installationInstructions = new OrchestrationHelper.InstallationInstructions();
         installationInstructions.setOs("LINUX");
-        // Create Baguette Client installation directory
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Create Baguette Client installation directory");
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo mkdir -p "+installationDir+"/bin");
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo mkdir -p "+installationDir+"/logs");
+        installationInstructions
+
+		// Check whether EMS Client is already installed
+                /*.appendLog("Checking if Baguette Client is already installed")
+                .appendCheck("[[ -f "+checkInstallationFile+" ]] && exit 99", 0, true, "NOTE: Baguette Client is already installed")
+                .appendExec("Baguette Client is NOT installed")*/
+		
+		// Create Baguette Client installation directory
+                .appendLog("Create Baguette Client installation directory")
+                .appendExec("sudo mkdir -p "+installationDir+"/bin")
+                .appendExec("sudo mkdir -p "+installationDir+"/conf")
+                .appendExec("sudo mkdir -p "+installationDir+"/logs")
 
         // Download Baguette Client installation script
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Download Baguette Client installation script");
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo wget "+installScriptUrl+" -O "+installScriptPath);
+                .appendLog("Download Baguette Client installation script")
+                .appendExec("sudo wget "+installScriptUrl+" -O "+installScriptPath)
 
         // Make Baguette Client installation script executable
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Make Baguette Client installation script executable");
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo chmod u+rwx,og-rwx "+installScriptPath);
+                .appendLog("Make Baguette Client installation script executable")
+                .appendExec("sudo chmod u+rwx,og-rwx "+installScriptPath)
 
         // Run Baguette Client installation script
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Run Baguette Client installation script");
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey+" \n");
-
+                .appendLog("Run Baguette Client installation script")
+                .appendExec("sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey+" \n")
+                //.appendExec("sudo "+installationDir + "/bin/install-log.sh"+" "+baseDownloadUrl+" "+apiKey+" \n");
+		
         // Add client identification and server credentials configuration
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Add client identification and server credentials configuration");
-        installationInstructions.appendInstruction(clientConfPath, clientConfAppend, false);
+                .appendLog("Add client identification and server credentials configuration")
+                .appendWriteFile(credentialsTempFile, clientConfAppend, false)
+                .appendExec("sudo mv "+credentialsTempFile+" "+credentialsFile)
+                .appendExec("sudo chmod u+rw,og-rwx "+credentialsFile)
+                .appendExec("sudo -- sh -c 'cat "+credentialsFile+" >> "+clientConfFile+"' ")
 
         // Launch Baguette Client
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.LOG, "Launch Baguette Client");
-        installationInstructions.appendInstruction(OrchestrationHelper.INSTRUCTION_TYPE.CMD, "sudo service baguette-client start");
+                .appendLog("Launch Baguette Client")
+                .appendExec("sudo service baguette-client start")
+
+        // Write successful installation file
+                .appendLog("Write successful installation file")
+                .appendExec("sudo touch "+checkInstallationFile)
+        ;
 
         return installationInstructions;
     }
