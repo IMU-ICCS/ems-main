@@ -10,7 +10,7 @@
 
 # Create installation directories
 BIN_DIRECTORY=/opt/baguette-client/bin
-LOGS_DIRECTORY=/opt/baguette-client/conf
+CONF_DIRECTORY=/opt/baguette-client/conf
 LOGS_DIRECTORY=/opt/baguette-client/logs
 BASE_URL=$1
 APIKEY=$2
@@ -31,11 +31,18 @@ DOWNLOAD_URL_MD5=$BASE_URL/baguette-client.zip.md5
 INSTALL_PACKAGE=/opt/baguette-client/baguette-client.zip
 INSTALL_PACKAGE_MD5=/opt/baguette-client/baguette-client.zip.md5
 INSTALL_DIR=/opt/
-STARTUP_SCRIPT=/opt/baguette-client/bin/baguette-client
+STARTUP_SCRIPT=$BIN_DIRECTORY/baguette-client
 SERVICE_NAME=baguette-client
-CLIENT_CONF_FILE=/opt/baguette-client/conf/baguette-client.properties
-CLIENT_ID_FILE=/opt/baguette-client/conf/id.txt
-CREDENTIALS_FILE=/opt/baguette-client/conf/baguette-server.credentials
+CLIENT_CONF_FILE=$CONF_DIRECTORY/baguette-client.properties
+CLIENT_ID_FILE=$CONF_DIRECTORY/id.txt
+CREDENTIALS_FILE=$CONF_DIRECTORY/baguette-server.credentials
+
+# Check if already installed
+if [ -f /opt/baguette-client/conf/ok.txt ]; then
+  echo "Already installed. Exiting..."
+  date -Iseconds
+  exit 0
+fi
 
 # Create installation directory
 echo ""

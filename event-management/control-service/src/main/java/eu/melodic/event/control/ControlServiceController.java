@@ -160,9 +160,12 @@ public class ControlServiceController {
         String nodeId = jo.get("id").getAsString();
         String nodeName = jo.get("name").getAsString();
         String nodeType = jo.get("type").getAsString();
-        String nodeProvider = jo.getAsJsonObject("nodeProperties").get("providerId").getAsString();
+        /*String nodeProvider = jo.getAsJsonObject("nodeProperties").get("providerId").getAsString();
         String nodeOs = jo.getAsJsonObject("nodeProperties").getAsJsonObject("operatingSystem").get("operatingSystemFamily").getAsString();
-        String nodeIpAddress = jo.getAsJsonObject("connectTo").get("ip").getAsString();
+        String nodeIpAddress = jo.getAsJsonObject("connectTo").get("ip").getAsString();*/
+        String nodeProvider = jo.get("providerId").getAsString();
+        String nodeOs = jo.get("operatingSystem").getAsString();
+        String nodeIpAddress = jo.get("ip").getAsString();
         log.info("ControlServiceController.baguetteRegisterNode(): Node information: id={}, name={}, type={}, provider={}, os={}, ip-address={}",
                 nodeId, nodeName, nodeType, nodeProvider, nodeOs, nodeIpAddress);
 
@@ -171,6 +174,7 @@ public class ControlServiceController {
 
         // Prepare Baguette Client installation instructions for node
         String baseUrl = request.getRequestURL().toString().replace("/baguette/registerNode", "");
+        baseUrl = "http://192.168.25.17:8111";
         //int serverPort = request.getServerPort();
         OrchestrationHelper.InstallationInstructions installationInstructions =
                 ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeOs, baseUrl);
