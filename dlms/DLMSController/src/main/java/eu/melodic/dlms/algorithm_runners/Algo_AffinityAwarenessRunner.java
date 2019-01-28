@@ -68,7 +68,7 @@ public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
 				utility += currentUtility;
 			}
 		}
-		log.info("Utility for AFFINITY_AWARENESS was calculated successfully");
+		log.debug("Utility for AFFINITY_AWARENESS was calculated successfully");
 		return utility / numberConnection;
 	}
 

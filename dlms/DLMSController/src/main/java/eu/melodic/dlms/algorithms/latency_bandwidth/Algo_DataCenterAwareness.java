@@ -116,7 +116,7 @@ public class Algo_DataCenterAwareness {
 			log.debug("No two data centers were found");
 		// combine latency and bandwidth into one for each pair of data center
 		saveinDatabase();
-		log.info("Algo_CombineValSelectedRecordsRunner has successfully executed");
+		log.debug("Algo_CombineValSelectedRecordsRunner has successfully executed");
 		return 0;
 	}
 
@@ -166,7 +166,7 @@ public class Algo_DataCenterAwareness {
 					PageRequest.of(0, this.paraNumRecords));
 			break;
 		default:
-			log.info("The function has not been implemented yet!");
+			log.debug("The function has not been implemented yet!");
 		}
 
 		if (dataCenterList.size() == 0) { // if no record exists

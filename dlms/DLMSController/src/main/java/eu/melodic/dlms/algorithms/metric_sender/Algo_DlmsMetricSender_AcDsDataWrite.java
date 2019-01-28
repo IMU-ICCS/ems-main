@@ -39,7 +39,7 @@ public class Algo_DlmsMetricSender_AcDsDataWrite extends Algo_DlmsMetricSender<A
 				.build();
 
 		sendOneMessage(parameters);
-		log.info("Algo_DlmsMetricSender_AcDsDataWrite has successfully executed");
+		log.debug("Algo_DlmsMetricSender_AcDsDataWrite has successfully executed");
 		return 0;
 	}
 
