@@ -13,8 +13,6 @@ WORKDIR /opt/ems-server
 
 ADD control-service.jar .
 ADD esper-*.jar .
-ADD config ./config
-ADD resources ./resources
 ADD run-ems.sh .
 
 RUN bash -c 'touch control-service.jar'
