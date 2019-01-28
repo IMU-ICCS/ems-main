@@ -144,7 +144,7 @@ public class ModelAnalyzer {
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
-                    .filter(mv -> mv.isCurrentConfiguration())
+                    .filter(MetricVariable::isCurrentConfiguration)
                     // ...also filter using method 'isFromVariable()' from melodic-commons
                     .filter(mv -> CamelMetadataTool.isFromVariable((MetricVariableImpl) mv))
                     .collect(Collectors.toList());
@@ -207,7 +207,7 @@ public class ModelAnalyzer {
         }
 
         String mesg = String.format("No matching Metric variable was found for: mv=%s, camel-metadata-type=%s, component=%s", mvar.getName(), type, componentName);
-        log.error(mesg);
+        //log.error(mesg);
         throw new ModelAnalysisException(mesg);
     }
 

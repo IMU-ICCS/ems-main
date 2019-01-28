@@ -45,7 +45,7 @@ public class CpModelHelper {
         log.debug("CpModelHelper.getMatchingMetricVariableValues(): BEGIN: helper-id={}, cp-model-path={}, variables={}", id, cpModelPath, _TC.MVV_CP.keySet());
 
         // Get metric variable values
-        Map<String,Double> valuePairs = this.getMetricVariableValues(cpModelPath, new java.util.HashSet<String>(_TC.MVV_CP.keySet()));
+        Map<String,Double> valuePairs = this.getMetricVariableValues(cpModelPath, new java.util.HashSet<>(_TC.MVV_CP.keySet()));
 
         // Translate variable names from CP model names to Formula names
         Map<String, Double> results = new HashMap<>();
