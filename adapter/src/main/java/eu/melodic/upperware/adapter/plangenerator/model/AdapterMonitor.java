@@ -10,6 +10,8 @@ import java.util.List;
 @Builder
 public class AdapterMonitor implements Data {
 
+    private String jobName;
+    private String nodeName;
     private String metricName;
     private String taskName;
     private AdapterSensor sensor;

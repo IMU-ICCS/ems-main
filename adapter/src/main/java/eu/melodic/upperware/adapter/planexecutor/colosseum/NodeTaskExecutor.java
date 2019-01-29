@@ -13,6 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -70,6 +71,8 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
         try {
             if (nodeGroupOptional.isPresent()) {
                 String nodeId = nodeGroupOptional.get().getNodes().get(0).getNodeId();
+
+                List<Node> nodes = nodeGroupOptional.get().getNodes();
 
                 Queue queue = api.deleteNode(nodeId);
 

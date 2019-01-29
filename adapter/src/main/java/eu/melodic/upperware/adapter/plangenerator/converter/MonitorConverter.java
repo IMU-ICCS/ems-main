@@ -1,6 +1,7 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.SoftwareComponentInstance;
 import camel.type.StringValue;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
@@ -18,6 +19,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,45 +35,45 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
     public List<AdapterMonitor> toComparableModel(DeploymentInstanceModel model) {
         log.info("Looking for monitor attribute in DeploymentInstanceModel: {}, it has {} attributes", model.getName(), model.getAttributes().size());
 
+        String jobName = ConverterUtils.getJobName(model);
+        List<Monitor> monitors = getMonitors(model);
+
+        return model.getSoftwareComponentInstances()
+                .stream()
+                .map(softwareComponentInstance -> toMonitors(softwareComponentInstance, jobName, monitors))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    private List<Monitor> getMonitors(DeploymentInstanceModel model) {
         boolean isMonitorAttributeExists = model.getAttributes()
                 .stream()
                 .anyMatch(attribute -> "monitors".equals(attribute.getName()));
 
         log.info("Attribute monitors is {}", isMonitorAttributeExists ? "FOUND":"NOT_FOUND");
 
-        List<Monitor> monitors = model.getAttributes()
-                .stream()
-                .filter(attribute -> "monitors".equals(attribute.getName()))
-                .findFirst()
-                .map(attribute -> ((StringValue) attribute.getValue()).getValue())
-                .map(this::fromJson).orElse(Collections.emptyList());
+        return model.getAttributes()
+                    .stream()
+                    .filter(attribute -> "monitors".equals(attribute.getName()))
+                    .findFirst()
+                    .map(attribute -> ((StringValue) attribute.getValue()).getValue())
+                    .map(this::fromJson).orElse(Collections.emptyList());
+    }
 
-        return monitors
-                .stream()
-                .map(this::toMonitor)
+    private List<AdapterMonitor> toMonitors(SoftwareComponentInstance softwareComponentInstance, String jobName, List<Monitor> monitors) {
+        String componentName = softwareComponentInstance.getType().getName();
+
+        return monitors.stream()
+                .filter(monitor -> monitor.getComponent().equals(componentName))
+                .map(monitor -> toMonitor(monitor, jobName, softwareComponentInstance.getName()))
                 .collect(Collectors.toList());
     }
 
-    private List<Monitor> fromJson(String value) {
-        log.info("Trying to deseriase monitors in JSON {}", value);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        //I am not sure if it really works...
-        objectMapper.configOverride(Collections.class)
-                .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
-
-        CollectionType typeReference =
-                TypeFactory.defaultInstance().constructCollectionType(List.class, Monitor.class);
-        try {
-            return objectMapper.readValue(value, typeReference);
-        } catch (IOException e) {
-            throw new AdapterException(format("Could not deserialise %s as a List<Monitor>", value));
-        }
-    }
-
-    private AdapterMonitor toMonitor(Monitor monitor) {
+    private AdapterMonitor toMonitor(Monitor monitor, String jobName, String nodeName) {
 
         return AdapterMonitor.builder()
+                .jobName(jobName)
+                .nodeName(nodeName)
                 .taskName(monitor.getComponent())
                 .metricName(monitor.getMetric())
                 .sensor(toSensor(monitor.getSensor()))
@@ -92,10 +95,47 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
     }
 
     private AdapterSink toSink(Sink sink) {
+        checkConfiguration(sink);
+
         return AdapterSink.builder()
                 .sinkType(AdapterSinkType.valueOf(sink.getType().name()))
                 .configuration(toConfiguration(sink.getConfiguration()))
                 .build();
+    }
+
+    private void checkConfiguration(Sink sink) {
+        switch (sink.getType()) {
+            case INFLUX:
+                checkOrThrow(sink, Arrays.asList("influx.url", "influx.username", "influx.password", "influx.database"));
+                break;
+            case JMS:
+                checkOrThrow(sink, Arrays.asList("jms.broker", "jms.topic.selector", "jms.message.format"));
+                break;
+            case KAIROSDB:
+                checkOrThrow(sink, Arrays.asList("kairos.port", "kairos.host"));
+                break;
+        }
+    }
+
+    private void checkOrThrow(Sink sink, List<String> reqProperties){
+        if (!hasConfiguration(sink, reqProperties)) {
+            throw new AdapterException(format("Could not find all required elements %s for %s Sink configuration %s", reqProperties, sink.getType(), getConfigurationAsString(sink.getConfiguration())));
+        }
+    }
+
+    private String getConfigurationAsString(List<KeyValuePair> configuration) {
+        return CollectionUtils.emptyIfNull(configuration)
+                .stream()
+                .map(keyValuePair -> "(" + keyValuePair.getKey() + ": " + keyValuePair.getValue() + ")")
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    private boolean hasConfiguration(Sink sink, List<String> reqProperties) {
+        return sink
+                .getConfiguration()
+                .stream()
+                .map(KeyValuePair::getKey)
+                .collect(Collectors.toList()).containsAll(reqProperties);
     }
 
     private AdapterSensor toSensor(@NonNull Sensor sensor) {
@@ -129,6 +169,23 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
         return CollectionUtils.emptyIfNull(configuration).stream()
                 .map(keyValuePair -> Pair.of(keyValuePair.getKey(), keyValuePair.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    private List<Monitor> fromJson(String value) {
+        log.info("Trying to deseriase monitors in JSON {}", value);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        //I am not sure if it really works...
+        objectMapper.configOverride(Collections.class)
+                .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+
+        CollectionType typeReference =
+                TypeFactory.defaultInstance().constructCollectionType(List.class, Monitor.class);
+        try {
+            return objectMapper.readValue(value, typeReference);
+        } catch (IOException e) {
+            throw new AdapterException(format("Could not deserialise %s as a List<Monitor>", value));
+        }
     }
 
 }

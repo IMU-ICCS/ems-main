@@ -134,8 +134,25 @@ public class ColosseumContext implements ContextOperations {
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
+    public Optional<ProcessGroup> getProcessGroupByNodeGroupId(String nodeGroupId) {
+        return getElement(processGroups, processGroup -> processGroup.getProcesses()
+                .stream()
+                .anyMatch(cloudiatorProcess -> {
+                    if (cloudiatorProcess instanceof ClusterProcess) {
+                        return ((ClusterProcess) cloudiatorProcess).getNodeGroup().equals(nodeGroupId);
+                    } else if (cloudiatorProcess instanceof SingleProcess) {
+                        return ((SingleProcess) cloudiatorProcess).getNode().equals(nodeGroupId);
+                    }
+                    return false;
+                }), () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one ProcessGroup containing process with the same node/nodeGroup=%s", nodeGroupId)));
+    }
+
     public void addMonitor(@NonNull Monitor monitor) {
         monitors.add(monitor);
+    }
+
+    public void deleteMonitor(String metricName) {
+        monitors.removeIf(monitor -> metricName.equals(monitor.getMetric()));
     }
 
     private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {

@@ -1,6 +1,7 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
+import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.MonitorTask;
@@ -29,7 +30,14 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     @Override
     public void create(AdapterMonitor taskBody) {
-        Monitor monitor = convertToMonitor(taskBody);
+
+        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
+
+        ProcessGroup processGroup = context.getProcessGroupByNodeGroupId(nodeGroup.getId())
+                .orElseThrow(() -> new AdapterException(format("Could not find ProcessGroup with nodeGroupId %s", nodeGroup.getId())));
+
+        Monitor monitor = convertToMonitor(taskBody, processGroup.getId());
         Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName());
         if (monitorOpt.isPresent()) {
             log.info("There is already Monitor defined with metric: {}", taskBody.getMetricName());
@@ -44,10 +52,10 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         }
     }
 
-    private Monitor convertToMonitor(AdapterMonitor taskBody) {
+    private Monitor convertToMonitor(AdapterMonitor taskBody, String processGroupId) {
         return new Monitor()
                 .metric(taskBody.getMetricName())
-                .targets(convertToTargets(taskBody.getTaskName()))
+                .targets(convertToTargets(processGroupId))
                 .sensor(convertToSensor(taskBody.getSensor()))
                 .sinks(convertToSinks(taskBody.getSinks()))
                 .tags(convertToTags(taskBody.getTags()));
@@ -92,15 +100,26 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
-    private List<MonitoringTarget> convertToTargets(String taskName) {
+    private List<MonitoringTarget> convertToTargets(String processGroupId) {
         return Collections.singletonList(
-                new MonitoringTarget().type(MonitoringTarget.TypeEnum.TASK).identifier(taskName));
+                new MonitoringTarget().type(MonitoringTarget.TypeEnum.PROCESS).identifier(processGroupId));
     }
 
     @Override
     public void delete(AdapterMonitor taskBody) {
-        throw new UnsupportedOperationException("Delete method is not supported for MonitorTaskExecutor");
+        if (!context.getMonitor(taskBody.getMetricName()).isPresent()) {
+            log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());
+            return;
+        }
+
+        log.info("Going to remove monitor {}", taskBody.getMetricName());
+
+        try {
+            api.deleteMonitor(taskBody.getMetricName());
+            context.deleteMonitor(taskBody.getMetricName());
+        } catch (ApiException e) {
+            log.error("Could not delete Monitor with metricName. Error code: {}, Response body: {}, ResponseHeaders: {}",
+                    taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+        }
     }
-
-
 }
