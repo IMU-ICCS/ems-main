@@ -133,10 +133,8 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .functionName(((AdapterFaasInterface) adapterTaskInterface).getFunctionName())
                     .sourceCodeUrl(((AdapterFaasInterface) adapterTaskInterface).getSourceCodeUrl())
                     .handler(((AdapterFaasInterface) adapterTaskInterface).getHandler())
-                    .runtime(((AdapterFaasInterface) adapterTaskInterface).getRuntime())
                     .triggers(convertToTriggers(((AdapterFaasInterface) adapterTaskInterface).getTriggers()))
                     .timeout(((AdapterFaasInterface) adapterTaskInterface).getTimeout())
-                    .memory(((AdapterFaasInterface) adapterTaskInterface).getMemory())
                     .functionEnvironment(((AdapterFaasInterface) adapterTaskInterface).getFunctionEnvironment())
                     .type(FaasInterface.class.getSimpleName());
         }

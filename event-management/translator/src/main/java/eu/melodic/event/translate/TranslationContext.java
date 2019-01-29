@@ -60,6 +60,7 @@ public class TranslationContext {
     public final Set<MetricVariable> CMVAR_1;
     // Metric Variable Values set (i.e. non-composite metric variable)
     public final Set<String> MVV;
+    public final Map<String,String> MVV_CP;
     // Function set
     public final Set<FunctionDefinition> FUNC;
     // Element-to-Full-Name cache, pattern and count
@@ -96,6 +97,7 @@ public class TranslationContext {
         this.CMVAR = new HashSet<>();
         this.CMVAR_1 = new HashSet<>();
         this.MVV = new HashSet<>();
+        this.MVV_CP = new HashMap<>();
         this.FUNC = new HashSet<>();
 
         // Topics-Connections-per-Grouping staff
@@ -167,7 +169,8 @@ public class TranslationContext {
     }
 
     public void addSLO(ServiceLevelObjective slo) {
-        SLO.add(E2N.get(slo));
+        if (E2N.get(slo)!=null) SLO.add(E2N.get(slo));
+        else SLO.add(slo.getName());
     }
 
     public void addComponentSensorPair(ObjectContext objContext, Sensor sensor) {

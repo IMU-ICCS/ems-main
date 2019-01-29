@@ -56,7 +56,7 @@ public class Algo_DlmsMetricSender_DataCenter extends Algo_DlmsMetricSender<Data
 				.build();
 
 		sendOneMessage(dataCenterPojo);
-		log.info("Algo_DlmsMetricSender has successfully executed");
+		log.debug("Algo_DlmsMetricSender has successfully executed");
 		return 0;
 	}
 

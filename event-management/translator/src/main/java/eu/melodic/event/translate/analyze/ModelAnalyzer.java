@@ -15,6 +15,7 @@ import camel.data.Data;
 import camel.deployment.Component;
 import camel.metric.*;
 import camel.metric.Sensor;
+import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
 import camel.requirement.RequirementModel;
 import camel.requirement.ServiceLevelObjective;
@@ -25,6 +26,8 @@ import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.models.interfaces.ems.*;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 
@@ -72,16 +75,20 @@ public class ModelAnalyzer {
 
         // analyze optimisation requirements
 //XXX:SOS: Should i comment out opt.req. analysis or not???
-/*        _analyzeOptimisationRequirements(_TC, camelModel);
-        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");*/
+//        _analyzeOptimisationRequirements(_TC, camelModel);
+//        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");
 
         // analyze service level objectives
         _analyzeServiceLevelObjectives(_TC, camelModel);
         log.debug("ModelAnalyzer.analyzeModel():  Service Level Objectives analysis completed");
 
         // analyze metric variables
-//		_analyzeMetricVariables(_TC, camelModel);
-//		log.debug("ModelAnalyzer.analyzeModel():  Metric Variables analysis completed");
+		_analyzeMetricVariables(_TC, camelModel);
+		log.debug("ModelAnalyzer.analyzeModel():  Metric Variables analysis completed");
+
+        // analyze constraints
+//		_analyzeConstraints(_TC, camelModel);
+//		log.debug("ModelAnalyzer._analyzeConstraints():  Constraints analysis completed");
 
         // infer groupings
         _inferGroupings(_TC, leafGrouping);
@@ -136,11 +143,14 @@ public class ModelAnalyzer {
 
         // for every metric type model...
         metricModels.stream().forEach(mm -> {
-            // get metric variables
-            log.info("  Extracting Metric Variables from Metric Type model {}...", mm.getName());
+            // get current-config metric variables
+            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}...", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
+                    .filter(MetricVariable::isCurrentConfiguration)
+                    // ...also filter using method 'isFromVariable()' from melodic-commons
+                    .filter(mv -> CamelMetadataTool.isFromVariable((MetricVariableImpl) mv))
                     .collect(Collectors.toList());
             log.info("  Extracting Metric Variables from Metric Type model {}... {}", mm.getName(), variables);
 
@@ -160,8 +170,49 @@ public class ModelAnalyzer {
                 {
                     _TC.addCompositeMetricVariable(mv);
                 }
+
+                // Find matching variable for CP model
+                _TC.MVV_CP.put(_findMatchingVar(mv, camelModel).getName(), mv.getName());
             });
         });
+    }
+
+//XXX:Improve this method (probably pre-process metric models to avoid multiple scans of the model)
+    protected static MetricVariable _findMatchingVar(MetricVariable mvar, CamelModel camelModel) {
+        CamelMetadata type = CamelMetadataTool.findVariableType((MetricVariableImpl) mvar);
+        String componentName = mvar.getComponent().getName();
+
+        // extract metric models
+        List<MetricTypeModel> metricModels = camelModel.getMetricModels().stream()
+                .filter(mm -> MetricTypeModel.class.isAssignableFrom(mm.getClass()))
+                .map(mm -> (MetricTypeModel) mm)
+                .collect(Collectors.toList());
+
+        // for every metric type model...
+        for (MetricTypeModel mm : metricModels) {
+            // get metric variables
+            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}...", mm.getName());
+            List<MetricVariable> variables = mm.getMetrics().stream()
+                    .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
+                    .map(met -> (MetricVariable) met)
+                    .filter(mv -> ! mv.isCurrentConfiguration())
+                    .collect(Collectors.toList());
+
+            // for every metric variable...
+            for (MetricVariable mv : variables) {
+                CamelMetadata type1 = CamelMetadataTool.findVariableType((MetricVariableImpl) mv);
+                String componentName1 = mv.getComponent().getName();
+
+                if (type1==type && componentName.equals(componentName1)) {
+                    log.debug("_findMatchingVar(): Found matching variable: {} -> {}", mvar.getName(), mv.getName());
+                    return mv;
+                }
+            }
+        }
+
+        String mesg = String.format("No matching Metric variable was found for: mv=%s, camel-metadata-type=%s, component=%s", mvar.getName(), type, componentName);
+        //log.error(mesg);
+        throw new ModelAnalysisException(mesg);
     }
 
     protected void _extractFunctions(TranslationContext _TC, CamelModel camelModel) {
@@ -474,6 +525,35 @@ public class ModelAnalyzer {
             });
         });
     }
+
+   /* protected void _analyzeConstraints(TranslationContext _TC, CamelModel camelModel) {
+        // extract constraint models
+        log.info("  Extracting Constraint Models from CAMEL model...");
+        EList<ConstraintModel> constraintModels = camelModel.getConstraintModels();
+        log.info("  Extracting Constraint Models from CAMEL model... {}", constraintModels);
+
+        // for each constraint model...
+        constraintModels.stream().forEach(cm -> {
+            // extract constraints
+            log.info("  Extracting Constraints from Constraints model {}...", cm.getName());
+            List<Constraint> constraints = cm.getConstraints().stream()
+                    .collect(Collectors.toList());
+            log.info("  Extracting Constraints from Constraints model {}... {}", cm.getName(), constraints);
+
+            // for each Constraint...
+            constraints.stream().forEach(con -> {
+                // extract metric context and variable
+                String conName = con.getName();
+                log.info("  Processing Constraint {} from Constraints model {}: ...", con.getName(), cm.getName());
+
+                // add constraint to DAG
+                _TC.DAG.addTopLevelNode(con).setGrouping(getGrouping(con));
+
+                // decompose constraint
+                _decomposeConstraint(_TC, con);
+            });
+        });
+    }*/
 
     protected void _decomposeEvent(TranslationContext _TC, Event event) {
         log.info("  _decomposeEvent(): {} :: {}", event.getName(), event.getClass().getName());

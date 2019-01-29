@@ -13,7 +13,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -50,7 +49,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                         nodeGroup
                                 .getNodes()
                                 .stream()
-                                .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() + "}")
+                                .map(node -> "{nodeId: " + node.getId() + ", name: " + node.getName() + "}")
                                 .collect(Collectors.joining(", ", "[", "]")));
 
                 context.addNodeGroup(nodeGroup);
@@ -70,10 +69,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
 
         try {
             if (nodeGroupOptional.isPresent()) {
-                String nodeId = nodeGroupOptional.get().getNodes().get(0).getNodeId();
-
-                List<Node> nodes = nodeGroupOptional.get().getNodes();
-
+                String nodeId = nodeGroupOptional.get().getNodes().get(0).getId();
                 Queue queue = api.deleteNode(nodeId);
 
                 watch(queue.getId());

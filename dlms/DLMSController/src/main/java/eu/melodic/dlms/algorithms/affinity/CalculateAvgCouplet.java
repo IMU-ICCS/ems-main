@@ -41,7 +41,7 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 		// calculate the couple value
 		calculateCouple(appComDataSrcList);
 		saveAffinity(appComDataSrcList);
-		log.info("Algo_CalculateAffinity has successfully executed");
+		log.debug("Algo_CalculateAffinity has successfully executed");
 	}
 
 	/**

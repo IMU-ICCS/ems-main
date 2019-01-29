@@ -219,9 +219,10 @@ public class ControlServiceCoordinator {
                 try {
                     log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
-                    // Retrieve constant names from '_TC.MVV' and values from a given CP model
+                    // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
                     eu.melodic.event.control.util.CpModelHelper helper = new eu.melodic.event.control.util.CpModelHelper();
-                    constants.putAll(helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)));
+                    /*constants.putAll(helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)));*/
+                    constants = helper.getMatchingMetricVariableValues(cpModelId, _TC);
                     log.info("ControlServiceCoordinator.processNewModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
 
                 } catch (Exception ex) {
@@ -387,9 +388,11 @@ public class ControlServiceCoordinator {
                 try {
                     log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
-                    // Retrieve constant names from '_TC.MVV' and values from a given CP model
+                    // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
+                    log.info("ControlServiceCoordinator._processCpModel(): Looking for MVV_CP's: {}", _TC.MVV_CP);
                     eu.melodic.event.control.util.CpModelHelper helper = new eu.melodic.event.control.util.CpModelHelper();
-                    constants.putAll(helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)));
+                    /*constants.putAll(helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)));*/
+                    constants = helper.getMatchingMetricVariableValues(cpModelId, _TC);
                     log.info("ControlServiceCoordinator._processCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
 
                 } catch (Exception ex) {
