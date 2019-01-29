@@ -49,7 +49,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                         nodeGroup
                                 .getNodes()
                                 .stream()
-                                .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() + "}")
+                                .map(node -> "{nodeId: " + node.getId() + ", name: " + node.getName() + "}")
                                 .collect(Collectors.joining(", ", "[", "]")));
 
                 context.addNodeGroup(nodeGroup);
@@ -69,8 +69,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
 
         try {
             if (nodeGroupOptional.isPresent()) {
-                String nodeId = nodeGroupOptional.get().getNodes().get(0).getNodeId();
-
+                String nodeId = nodeGroupOptional.get().getNodes().get(0).getId();
                 Queue queue = api.deleteNode(nodeId);
 
                 watch(queue.getId());

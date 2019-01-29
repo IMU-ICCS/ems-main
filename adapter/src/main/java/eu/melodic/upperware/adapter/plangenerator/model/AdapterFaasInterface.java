@@ -17,9 +17,7 @@ public class AdapterFaasInterface extends AdapterTaskInterface {
     private String functionName;
     private String sourceCodeUrl;
     private String handler;
-    private String runtime;
     private List<AdapterFaasTrigger> triggers;
     private int timeout;
-    private int memory;
     private Map<String, String> functionEnvironment;
 }
