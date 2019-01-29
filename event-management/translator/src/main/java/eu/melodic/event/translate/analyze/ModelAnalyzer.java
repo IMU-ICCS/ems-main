@@ -75,16 +75,20 @@ public class ModelAnalyzer {
 
         // analyze optimisation requirements
 //XXX:SOS: Should i comment out opt.req. analysis or not???
-/*        _analyzeOptimisationRequirements(_TC, camelModel);
-        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");*/
+//        _analyzeOptimisationRequirements(_TC, camelModel);
+//        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");
 
         // analyze service level objectives
         _analyzeServiceLevelObjectives(_TC, camelModel);
         log.debug("ModelAnalyzer.analyzeModel():  Service Level Objectives analysis completed");
 
         // analyze metric variables
-//		_analyzeMetricVariables(_TC, camelModel);
-//		log.debug("ModelAnalyzer.analyzeModel():  Metric Variables analysis completed");
+		_analyzeMetricVariables(_TC, camelModel);
+		log.debug("ModelAnalyzer.analyzeModel():  Metric Variables analysis completed");
+
+        // analyze constraints
+//		_analyzeConstraints(_TC, camelModel);
+//		log.debug("ModelAnalyzer._analyzeConstraints():  Constraints analysis completed");
 
         // infer groupings
         _inferGroupings(_TC, leafGrouping);
@@ -521,6 +525,35 @@ public class ModelAnalyzer {
             });
         });
     }
+
+   /* protected void _analyzeConstraints(TranslationContext _TC, CamelModel camelModel) {
+        // extract constraint models
+        log.info("  Extracting Constraint Models from CAMEL model...");
+        EList<ConstraintModel> constraintModels = camelModel.getConstraintModels();
+        log.info("  Extracting Constraint Models from CAMEL model... {}", constraintModels);
+
+        // for each constraint model...
+        constraintModels.stream().forEach(cm -> {
+            // extract constraints
+            log.info("  Extracting Constraints from Constraints model {}...", cm.getName());
+            List<Constraint> constraints = cm.getConstraints().stream()
+                    .collect(Collectors.toList());
+            log.info("  Extracting Constraints from Constraints model {}... {}", cm.getName(), constraints);
+
+            // for each Constraint...
+            constraints.stream().forEach(con -> {
+                // extract metric context and variable
+                String conName = con.getName();
+                log.info("  Processing Constraint {} from Constraints model {}: ...", con.getName(), cm.getName());
+
+                // add constraint to DAG
+                _TC.DAG.addTopLevelNode(con).setGrouping(getGrouping(con));
+
+                // decompose constraint
+                _decomposeConstraint(_TC, con);
+            });
+        });
+    }*/
 
     protected void _decomposeEvent(TranslationContext _TC, Event event) {
         log.info("  _decomposeEvent(): {} :: {}", event.getName(), event.getClass().getName());

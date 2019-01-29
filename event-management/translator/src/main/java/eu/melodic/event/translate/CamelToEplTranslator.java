@@ -199,6 +199,8 @@ public class CamelToEplTranslator implements Translator {
 		log.info("*********************************************************");
 		log.info("MVV set:\n{}", _TC.MVV);
 		log.info("*********************************************************");
+		log.info("MVV_CP map:\n{}", _TC.MVV_CP);
+		log.info("*********************************************************");
 		log.info("Function Definitions set:\n{}", getElementNames(_TC.FUNC));
 		log.info("*********************************************************");
 	}
