@@ -12,8 +12,8 @@
     </formats>
     <fileSets>
         <fileSet>
-            <outputDirectory>/</outputDirectory>
-            <directory>/</directory>
+            <outputDirectory></outputDirectory>
+            <directory>${project.basedir}</directory>
             <includes>
                 <include>README*</include>
                 <include>LICENSE*</include>

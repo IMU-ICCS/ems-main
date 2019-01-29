@@ -3,9 +3,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveJob;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveSchedule;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterSchedule;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScheduleTask;
 import io.github.cloudiator.rest.ApiException;
@@ -27,20 +24,17 @@ import static java.lang.String.format;
 public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterSchedule> {
 
     ScheduleTaskExecutor(ScheduleTask task, Collection<Future> predecessors, ColosseumApi api,
-                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
     public void create(AdapterSchedule taskBody) {
         String jobName = checkNotNull(taskBody.getJobName());
 
-        ShelveJob shelveJob = shelveContext.getShelveJobByName(jobName)
-                .orElseThrow(() -> new IllegalArgumentException(format("Job with name %s could not be found in shelve", jobName)));
-
-        Job job = context.getJob(shelveJob.getId())
+        Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new IllegalStateException(
-                        format("Job %s was not configured in Colosseum - schedule cannot be created", shelveJob.getId())));
+                        format("Job with name %s was not configured in Colosseum - schedule cannot be created", taskBody.getJobName())));
 
         ScheduleNew scheduleNew = new ScheduleNew()
                 .job(job.getId())
@@ -67,7 +61,6 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
 
                 log.info("Schedule details: {}", schedule);
                 context.addSchedule(schedule);
-                shelveContext.addShelveSchedule(new ShelveSchedule(schedule.getId(), watch.getId(), job.getId()));
             } else {
                 log.error("Could not get Schedule with id {}", scheduleId);
             }
@@ -79,6 +72,6 @@ public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterS
 
     @Override
     public void delete(AdapterSchedule taskBody) {
-
+         throw new UnsupportedOperationException("Delete method is not supported for ScheduleTaskExecutor");
     }
 }

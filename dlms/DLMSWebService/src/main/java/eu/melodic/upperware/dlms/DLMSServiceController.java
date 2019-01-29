@@ -8,6 +8,7 @@
 package eu.melodic.upperware.dlms;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -23,7 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import eu.melodic.models.commons.NotificationResult;
+import eu.melodic.models.commons.NotificationResult.StatusType;
 import eu.melodic.models.commons.NotificationResultImpl;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequestImpl;
@@ -98,9 +102,12 @@ public class DLMSServiceController {
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-		dataModelNotificationRequest.setWatermark(dataModelRequest.getWatermark());
-		NotificationResult notificationResult = new NotificationResultImpl();
+		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
 		
+		NotificationResult notificationResult = new NotificationResultImpl();
+
+		// default status is success
+		StatusType statusType = StatusType.SUCCESS;
 		// read the camel model and process it
 		try {
 			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
@@ -135,10 +142,14 @@ public class DLMSServiceController {
 			}
 
 		} catch (Exception e) {
+			// data registration failed
+			statusType = StatusType.ERROR;
 			notificationResult.setErrorCode("1");
 			notificationResult.setErrorDescription("The model could not be read");
+
 			log.error(e.getMessage(), e);
 		}
+		notificationResult.setStatus(statusType);
 		dataModelNotificationRequest.setResult(notificationResult);
 		// send notification
 		sendNotificationMessage(dataModelNotificationRequest, dataModelRequest.getNotificationURI());
@@ -157,7 +168,7 @@ public class DLMSServiceController {
 		if (notificationUri.startsWith("/")) {
 			notificationUri = notificationUri.substring(1);
 		}
-
+		log.info("Sending {} notification ", dataModelNotificationRequest.getResult().getStatus());
 		restTemplate.postForEntity(esbUrl + "/" + notificationUri, dataModelNotificationRequest,
 				DataModelNotificationRequest.class);
 	}
@@ -167,6 +178,16 @@ public class DLMSServiceController {
 //	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
 //		log.info("Test message");
 //	}
+	
+	// generate watermark
+	private Watermark prepareWatermark(String uuid) {
+		Watermark watermark = new WatermarkImpl();
+		watermark.setUser("dlms");
+		watermark.setSystem("dlms");
+		watermark.setDate(new Date());
+		watermark.setUuid(uuid);
+		return watermark;
+	}
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the

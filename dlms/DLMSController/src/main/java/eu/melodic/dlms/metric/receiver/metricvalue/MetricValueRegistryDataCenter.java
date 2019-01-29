@@ -25,11 +25,11 @@ public class MetricValueRegistryDataCenter<T> {
 		// for the first data center
 		long cpId1 = storeCloudProvider(this.event.getCloudProvider1(), this.event.isCp1Public());
 		long regionId1 = storeRegion(this.event.getRegion1(), cpId1);
-		long dcId1 = storeDataCenter(this.event.getDataCenter1(), regionId1, cpId1);
+		String dcId1 = storeDataCenter(this.event.getDataCenter1(), regionId1, cpId1);
 		// for the second data center
 		long cpId2 = storeCloudProvider(this.event.getCloudProvider2(), this.event.isCp2Public());
 		long regionId2 = storeRegion(this.event.getRegion2(), cpId2);
-		long dcId2 = storeDataCenter(this.event.getDataCenter2(), regionId2, cpId2);
+		String dcId2 = storeDataCenter(this.event.getDataCenter2(), regionId2, cpId2);
 		// save the values between them
 		storeTwoDataCenter(dcId1, dcId2, this.event.getLatencyVal(), this.event.getBandwidthVal(),
 				new Date(this.event.getTimeStamp()));
@@ -62,20 +62,20 @@ public class MetricValueRegistryDataCenter<T> {
 	/**
 	 * Store the data center and return region id if it does not exist
 	 */
-	public long storeDataCenter(String name, long regionId, long cpId) {
+	public String storeDataCenter(String name, long regionId, long cpId) {
 		if (!dcRepository.existsByName(name)) {
 			DataCenter dataCenter = new DataCenter(name,regionId, cpId);	
 			dcRepository.save(dataCenter);
 		}
 		// return id for data center
-		return dcRepository.findByName(name).getId();
+		return String.valueOf(dcRepository.findByName(name).getId());
 	}
 	
 	
 	/**
 	 * Store the values between two data centers 
 	 */
-	public void storeTwoDataCenter(long dc1Id, long dc2Id, int latency, int bandwidth, Date timestamp) {
+	public void storeTwoDataCenter(String dc1Id, String dc2Id, int latency, int bandwidth, Date timestamp) {
 		TwoDataCenters twoDataCenters = new TwoDataCenters(dc1Id, dc2Id, latency, bandwidth, timestamp);
 		twoDcRepository.save(twoDataCenters);
 	}

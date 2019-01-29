@@ -3,7 +3,6 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ShelveContext;
 import eu.melodic.upperware.adapter.planexecutor.TaskWatchDog;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
@@ -22,8 +21,8 @@ import java.util.stream.Collectors;
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory, ShelveContext shelveContext) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory, shelveContext);
+                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
+        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
     @Override
@@ -50,7 +49,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                         nodeGroup
                                 .getNodes()
                                 .stream()
-                                .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() +"}")
+                                .map(node -> "{nodeId: " + node.getNodeId() + ", name: " + node.getName() + "}")
                                 .collect(Collectors.joining(", ", "[", "]")));
 
                 context.addNodeGroup(nodeGroup);
@@ -66,6 +65,24 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
 
     @Override
     public void delete(AdapterRequirement taskBody) {
+        Optional<NodeGroup> nodeGroupOptional = context.getNodeGroupByNodeName(taskBody.getNodeName());
+
+        try {
+            if (nodeGroupOptional.isPresent()) {
+                String nodeId = nodeGroupOptional.get().getNodes().get(0).getNodeId();
+
+                Queue queue = api.deleteNode(nodeId);
+
+                watch(queue.getId());
+                log.info("Response from queue {} successfully reached. Node {} is deleted", queue.getId(), nodeId);
+                context.deleteNodeGroup(nodeGroupOptional.get().getId());
+            } else {
+                log.warn("Could not find node group with nodeName {} Nothing will be deleted.", taskBody.getNodeName());
+            }
+        } catch (ApiException e) {
+            log.error("Could not remove NodeGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            throw new AdapterException("Problem during removing Node", e);
+        }
 
     }
 }

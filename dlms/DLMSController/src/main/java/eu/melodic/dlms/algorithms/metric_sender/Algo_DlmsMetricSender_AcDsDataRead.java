@@ -2,7 +2,7 @@ package eu.melodic.dlms.algorithms.metric_sender;
 
 import java.util.Date;
 
-import eu.melodic.dlms.algorithms.utility.RandomGenerator;
+import eu.melodic.dlms.algorithms.extra.RandomGenerator;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +38,7 @@ public class Algo_DlmsMetricSender_AcDsDataRead extends Algo_DlmsMetricSender<Ac
 				.build();
 
 		sendOneMessage(parameters);
-		log.info("Algo_DlmsMetricSender_AcDsDataRead has successfully executed");
+		log.debug("Algo_DlmsMetricSender_AcDsDataRead has successfully executed");
 		return 0;
 	}
 

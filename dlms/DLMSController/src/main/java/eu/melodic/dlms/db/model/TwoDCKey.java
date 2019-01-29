@@ -21,9 +21,9 @@ import lombok.Setter;
 public class TwoDCKey implements Serializable {
 	@NotNull
 	@Column(name = "dc1_Id", nullable = false)
-	private Long dc1Id;
+	private String dc1Id;
 	@NotNull
 	@Column(name = "dc2_Id", nullable = false)
-	private Long dc2Id;
+	private String dc2Id;
 
 }

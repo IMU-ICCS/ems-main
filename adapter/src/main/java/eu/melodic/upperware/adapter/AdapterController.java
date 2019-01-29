@@ -14,6 +14,7 @@ import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
@@ -34,15 +35,16 @@ public class AdapterController {
   private DeploymentRequestValidator validator;
 
   @RequestMapping(value = "/applicationDeployment", method = POST,
-    consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-  public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request) {
+consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+  public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
+                                    @RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
     validator.validate(request);
 
     String resourceName = request.getApplicationId();
     String notificationUri = request.getNotificationURI();
     String requestUuid = request.getWatermark().getUuid();
 
-    coordinator.deployNewModel(resourceName, notificationUri, requestUuid);
+    coordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization);
   }
 
   @RequestMapping(value = "/autoScaleEvent", method = POST,

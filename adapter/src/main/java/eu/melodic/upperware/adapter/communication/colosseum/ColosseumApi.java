@@ -17,30 +17,36 @@ import java.util.Optional;
 
 public interface ColosseumApi {
 
-  Queue findQueuedTask(String taskId) throws ApiException;
+    Queue findQueuedTask(String taskId) throws ApiException;
 
 
-  Queue addSchedule(ScheduleNew scheduleNew) throws ApiException;
+    Queue addSchedule(ScheduleNew scheduleNew) throws ApiException;
 
-  Optional<Schedule> getSchedule(String scheduleId) throws ApiException;
+    Optional<Schedule> getSchedule(String scheduleId) throws ApiException;
 
-  List<Schedule> getSchedules() throws ApiException;
-
-
-  Queue addProcess(CloudiatorProcessNew cloudiatorProcessNew) throws ApiException;
+    List<Schedule> getSchedules() throws ApiException;
 
 
-  Job addJob(JobNew jobNew) throws ApiException;
-
-  Job getJob(String jobId) throws ApiException;
-
-  List<Job> getJobs() throws ApiException;
+    Queue addProcess(CloudiatorProcessNew cloudiatorProcessNew) throws ApiException;
 
 
-  Queue addNode(NodeRequest nodeRequest) throws ApiException;
+    Job addJob(JobNew jobNew) throws ApiException;
+
+    Job getJob(String jobId) throws ApiException;
+
+    List<Job> getJobs() throws ApiException;
 
 
-  Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException;
+    Queue addNode(NodeRequest nodeRequest) throws ApiException;
 
-  Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
+
+    Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException;
+
+    Queue deleteNode(String nodeId) throws ApiException;
+
+    Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
+
+    Queue deleteProcess(String processId) throws ApiException;
+
+    Monitor addMonitor(Monitor monitor) throws ApiException;
 }

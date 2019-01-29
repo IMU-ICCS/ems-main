@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @ConfigurationProperties
 @Slf4j
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.dlms.properties")
+@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.dlms.input.properties")
 public class DlmsMetricProperties {
 
 	@Valid

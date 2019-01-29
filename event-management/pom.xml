@@ -33,7 +33,7 @@
     <modules>
         <module>broker-client</module>
         <module>broker-cep</module>
-        <module>baguette-client</module>
+        <!--<module>baguette-client</module>-->
         <module>baguette-client-install</module>
         <module>baguette-server</module>
         <module>translator</module>
