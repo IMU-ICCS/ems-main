@@ -12,13 +12,13 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Baguette Server
@@ -87,6 +87,10 @@ public class BaguetteServer {
     public String getBrokerPassword() {
         return brokerPassword;
     }
+
+    public String getServerPubkey() { return server.getPublicKey(); }
+
+    public String getServerPubkeyFingerprint() { return server.getPublicKeyFingerprint(); }
 
     // Server control methods
     public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
@@ -201,5 +205,29 @@ public class BaguetteServer {
 
     public void sendConstants(Map<String, Double> constants) {
         server.sendConstants(constants);
+    }
+
+    //XXX: TODO: do actual node registration with Baguette server. More information might be needed or returned.
+    public String registerClient(Map<String,Object> nodeInfoMap) {
+        log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
+
+        HashMap<String,Object> nodeInfo = new HashMap<>();
+        nodeInfo.putAll(nodeInfoMap);
+
+        String formatter = getConfiguration().getClientIdFormat();
+        String clientId = null;
+        if (StringUtils.isBlank(formatter)) {
+            log.debug("BaguetteServer.registerClient(): No formatter specified. A random uuid will be returned");
+            clientId = UUID.randomUUID().toString();
+        } else {
+            String escape = Optional.ofNullable(getConfiguration().getClientIdFormatEscape()).orElse("~");
+            formatter = formatter.replace(escape,"$");
+            log.debug("BaguetteServer.registerClient(): formatter={}", formatter);
+            nodeInfo.put("random", UUID.randomUUID().toString());
+            clientId = StringSubstitutor.replace(formatter, nodeInfo);
+        }
+
+        log.debug("BaguetteServer.registerClient(): client-id={}", clientId);
+        return clientId;
     }
 }

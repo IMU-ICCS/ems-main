@@ -509,6 +509,10 @@ public class ControlServiceCoordinator {
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
+    public BaguetteServer getBaguetteServer() {
+        return baguette;
+    }
+
     @Async
     public void stopBaguette() {
         // Acquire lock of this coordinator

@@ -26,4 +26,19 @@ import java.util.Map;
 @Slf4j
 public class ClientInstallationProperties {
     private final Map<String, List<String>> osFamilies = new HashMap<>();
+
+    private String baseDir;
+    private List<String> mkdirs;
+    private List<String> touchFiles;
+    private String checkInstalledFile;
+
+    private String downloadUrl;
+    private String apiKey;
+    private String installScriptUrl;
+    private String installScriptFile;
+
+    private String credentialsTempFile;
+    private String credentialsFile;
+    private String clientConfigTemplateFile;
+    private String clientConfigFile;
 }
