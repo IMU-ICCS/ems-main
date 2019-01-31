@@ -207,7 +207,7 @@ public class BaguetteServer {
         server.sendConstants(constants);
     }
 
-    //XXX: TODO: do actual node registration with Baguette server. More information might be needed or returned.
+    //XXX: TODO: do actual node registration with Server coordinator. More information might be needed or returned.
     public String registerClient(Map<String,Object> nodeInfoMap) {
         log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
 
