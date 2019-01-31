@@ -104,6 +104,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         List<NodeTask> deleteNodes = getFiltered(nodeTasks, DELETE);
 
         WaitTask waitTask = new WaitTask(CREATE, new WaitData());
+        addVertex(graph, waitTask);
 
         setDependencies(graph, createProcess, createNodes, waitTask, CREATE);
         setDependencies(graph, deleteProcess, deleteNodes, waitTask, DELETE);
