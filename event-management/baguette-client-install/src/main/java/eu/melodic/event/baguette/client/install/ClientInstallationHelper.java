@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.baguette.server.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.InitializingBean;
@@ -88,9 +89,9 @@ public class ClientInstallationHelper implements InitializingBean {
         String installationDir = properties.getBaseDir();
         String checkInstallationFile = properties.getCheckInstalledFile();
 
-        String baseDownloadUrl = properties.getDownloadUrl();
+        String baseDownloadUrl = _prepareUrl( properties.getDownloadUrl(), baseUrl);
         String apiKey = properties.getApiKey();
-        String installScriptUrl = properties.getInstallScriptUrl();
+        String installScriptUrl = _prepareUrl( properties.getInstallScriptUrl(), baseUrl);
         String installScriptPath = properties.getInstallScriptFile();
 
         String credentialsTempFile = properties.getCredentialsTempFile();
@@ -172,5 +173,12 @@ public class ClientInstallationHelper implements InitializingBean {
         log.debug("prepareInstallationInstructionsForLinux(): installationInstructions:\n{}", sw.toString());
 
         return installationInstructions;
+    }
+
+    private String _prepareUrl(String urlTemplate, String baseUrl) {
+        return urlTemplate
+                .replace("%{BASE_URL}%", baseUrl)
+                .replace("%{PUBLIC_IP}%", NetUtil.getPublicIpAddress())
+                .replace("%{DEFAULT_IP}%", NetUtil.getDefaultIpAddress());
     }
 }

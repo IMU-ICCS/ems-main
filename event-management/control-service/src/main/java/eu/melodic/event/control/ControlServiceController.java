@@ -184,7 +184,11 @@ public class ControlServiceController {
         String clientId = baguette.registerClient(nodeMap);
 
         // Get web server base URL
-        String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort();
+        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
+        if (staticResourceContext.endsWith("/**")) staticResourceContext = staticResourceContext.substring(0,staticResourceContext.length()-3);
+        if (staticResourceContext.endsWith("/*")) staticResourceContext = staticResourceContext.substring(0,staticResourceContext.length()-2);
+        if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
+        String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Prepare Baguette Client installation instructions for node

@@ -64,6 +64,12 @@ public class ControlServiceCoordinator {
 
     // ------------------------------------------------------------------------------------------------------------
 
+    public ControlServiceProperties getControlServiceProperties() {
+        return properties;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
