@@ -11,12 +11,11 @@ package eu.melodic.event.baguette.server.util;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.io.IOException;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Vector;
 
 /**
@@ -63,6 +62,66 @@ public class NetUtil {
             return list.get(0).getHostAddress();
         } catch (SocketException se) {
             return null;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    public final static String[][] SERVICES = {
+            { "AWS", "http://checkip.amazonaws.com" },
+            { "Ipify", "https://api.ipify.org/?format=text" },
+            { "WhatIsMyIpAddress", "http://bot.whatismyipaddress.com/" }
+    };
+
+    public static String getPublicIpAddress() {
+        for (String[] service : SERVICES) {
+            log.debug("NetUtil.getPublicIpAddress(): Contacting service {}", service[0]);
+            String ip = getIpAddressUsingService(service[1]);
+            if (ip!=null && ip.length()>0) return ip.trim();
+        }
+        return null;
+    }
+
+    private static String getIpAddressUsingService(String url) {
+        try {
+            log.debug("NetUtil.getIpAddressUsingService(): Service URL: {}", url);
+            String response = queryService(url);
+            log.debug("NetUtil.getIpAddressUsingService(): Service response: {}", response);
+            if (response!=null && !response.trim().isEmpty()) return response;
+            log.debug("NetUtil.getIpAddressUsingService(): Response is null or blank");
+        } catch (Exception ex) {
+            log.debug("NetUtil.getIpAddressUsingService(): Contacting service failed: url={}, exception={}", url, ex);
+        }
+        return null;
+    }
+
+    private static String queryService(String url) throws MalformedURLException, IOException {
+        try (Scanner s = new Scanner(new URL(url).openStream(), "UTF-8").useDelimiter("\\A")) {
+            return s.next().trim();
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    public final static String DATAGRAM_ADDRESS = "8.8.8.8";
+
+    public static String getDefaultIpAddress() {
+        try {
+            log.debug("NetUtil.getDefaultIpAddress(): Datagram address: {}", DATAGRAM_ADDRESS);
+            String address = getIpAddressWithDatagram(DATAGRAM_ADDRESS);
+            log.debug("NetUtil.getDefaultIpAddress(): Response: {}", address);
+            if (address!=null && !address.trim().isEmpty()) return address;
+            log.debug("NetUtil.getDefaultIpAddress(): Address is null or blank");
+        } catch (Exception ex) {
+            log.debug("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception={}", DATAGRAM_ADDRESS, ex);
+        }
+        return null;
+    }
+
+    public static String getIpAddressWithDatagram(String address) throws SocketException, UnknownHostException {
+        try(final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName(address), 10002);
+            return socket.getLocalAddress().getHostAddress();
         }
     }
 }
