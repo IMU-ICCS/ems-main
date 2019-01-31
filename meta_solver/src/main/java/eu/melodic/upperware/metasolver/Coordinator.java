@@ -50,6 +50,7 @@ public class Coordinator implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
+        this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
