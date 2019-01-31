@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
 import eu.melodic.event.baguette.client.install.OrchestrationHelper;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
@@ -173,25 +174,22 @@ public class ControlServiceController {
 
         // Extract node information from json
         Type type = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String,Object> mapNode = new Gson().fromJson(jsonNode, type);
-        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", mapNode);
-        String nodeId = (String) mapNode.get("id");
-        String nodeOs = (String) mapNode.get("operatingSystem");
+        Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
+        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
+        String nodeId = (String) nodeMap.get("id");
+        String nodeOs = (String) nodeMap.get("operatingSystem");
 
         // Register node to Baguette server
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        String clientId = baguette.registerClient(mapNode);
+        String clientId = baguette.registerClient(nodeMap);
 
-        // Get web server address
-        //XXX: TODO: get Web server public IP...
-        String baseUrl = request.getRequestURL().toString().replace("/baguette/registerNode", "");
-        log.warn(">>>>>>>>>>>>  baseUrl={}", baseUrl);
-        baseUrl = "http://192.168.25.17:8111";
-        //int serverPort = request.getServerPort();
+        // Get web server base URL
+        String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort();
+        log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Prepare Baguette Client installation instructions for node
         OrchestrationHelper.InstallationInstructions installationInstructions =
-                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeOs, baseUrl, clientId, baguette);
+                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -62,9 +63,11 @@ public class ClientInstallationHelper implements InitializingBean {
         }
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(String osFamily, String baseUrl, String clientId, BaguetteServer baguette) throws IOException {
+    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+        log.debug("ClientInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
+        String osFamily = (String) nodeMap.get("operatingSystem");
         OrchestrationHelper.InstallationInstructions installationInstructions = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase())) installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase())) installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette);
