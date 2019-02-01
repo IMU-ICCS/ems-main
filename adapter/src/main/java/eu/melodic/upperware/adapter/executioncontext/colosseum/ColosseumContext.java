@@ -137,15 +137,21 @@ public class ColosseumContext implements ContextOperations {
     public Optional<ProcessGroup> getProcessGroupByNodeGroupId(String nodeGroupId) {
         return getElement(processGroups, processGroup -> processGroup.getProcesses()
                 .stream()
-                .anyMatch(cloudiatorProcess -> {
-                    if (cloudiatorProcess instanceof ClusterProcess) {
-                        return ((ClusterProcess) cloudiatorProcess).getNodeGroup().equals(nodeGroupId);
-                    } else if (cloudiatorProcess instanceof SingleProcess) {
-                        return ((SingleProcess) cloudiatorProcess).getNode().equals(nodeGroupId);
-                    }
-                    return false;
-                }), () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one ProcessGroup containing process with the same node/nodeGroup=%s", nodeGroupId)));
+                .filter(ClusterProcess.class::isInstance)
+                .map(ClusterProcess.class::cast)
+                .anyMatch(cloudiatorProcess -> cloudiatorProcess.getNodeGroup().equals(nodeGroupId)),
+                    () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one ProcessGroup containing ClusterProcess with the same nodeGroup=%s", nodeGroupId)));
     }
+
+    public Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
+        return getElement(processGroups, processGroup -> processGroup.getProcesses()
+                .stream()
+                .filter(SingleProcess.class::isInstance)
+                .map(SingleProcess.class::cast)
+                .anyMatch(cloudiatorProcess -> cloudiatorProcess.getNode().equals(nodeId)),
+                    () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one SingleProcess containing process with the same node=%s", nodeId)));
+    }
+
 
     public void addMonitor(@NonNull Monitor monitor) {
         monitors.add(monitor);
