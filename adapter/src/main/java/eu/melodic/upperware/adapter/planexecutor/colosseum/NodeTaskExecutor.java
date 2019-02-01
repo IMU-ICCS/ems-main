@@ -52,7 +52,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                     .allMatch(node -> Node.StateEnum.RUNNING.equals(node.getState()));
 
             if (isNodeRunning) {
-                log.info("New nodeGroup is created: name: {}, nodeId: {}", nodeGroup.getId(),
+                log.info("New nodeGroup has been created: name: {}, nodeId: {}", nodeGroup.getId(),
                         nodeGroup
                                 .getNodes()
                                 .stream()
@@ -66,7 +66,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                         .stream()
                         .filter(node -> !Node.StateEnum.RUNNING.equals(node.getState()))
                         .map(node -> format("Node %s (id: %s) is in %s state", node.getName(), node.getId(), node.getState()))
-                        .collect(Collectors.joining(", ", "Node group " + nodeGroupId + " is created but ", "."));
+                        .collect(Collectors.joining(", ", "NodeGroup " + nodeGroupId + " has been created but ", "."));
 
                 throw new AdapterException(errorMessage);
             }

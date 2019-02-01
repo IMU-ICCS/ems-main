@@ -13,6 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -42,27 +43,38 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
                 .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
 
 
-        CloudiatorProcessNew cloudiatorProcessNew = new CloudiatorProcessNew()
-                .nodeGroup(nodeGroup.getId())
-                .schedule(schedule.getId())
-                .task(task.getName());
-
         try {
-            log.info("Creating Process with NodeGroup: {}, Schedule {}, Task: {}", cloudiatorProcessNew.getNodeGroup(), cloudiatorProcessNew.getSchedule(), cloudiatorProcessNew.getTask());
-            Queue queue = api.addProcess(cloudiatorProcessNew);
-            log.info("Waiting for response from queue: {}", queue.getId());
+            log.info("Creating Process with NodeGroup: {}, Schedule {}, Task: {}", nodeGroup.getId(), schedule.getId(), task.getName());
+
+            Queue queue = api.addProcess(new CloudiatorProcessNew()
+                    .nodeGroup(nodeGroup.getId())
+                    .schedule(schedule.getId())
+                    .task(task.getName()));
 
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. New process is created", queue.getId());
 
             String processGroupId = getId(watch.getLocation());
-            Optional<ProcessGroup> processGroupOpt = api.getProcessGroup(processGroupId);
-            if (processGroupOpt.isPresent()) {
-                ProcessGroup processGroup = processGroupOpt.get();
-                log.info("ProcessGroup details: {}", processGroup);
+            ProcessGroup processGroup = api.getProcessGroup(processGroupId)
+                    .orElseThrow(() -> new AdapterException((format("Could not get ProcessGroup with id %s", processGroupId))));
+
+            boolean isProcessRunning = processGroup
+                    .getProcesses()
+                    .stream()
+                    .allMatch(cloudiatorProcess -> CloudiatorProcess.StateEnum.RUNNING.equals(cloudiatorProcess.getState()));
+
+            if (isProcessRunning) {
+                log.info("Process group has been created ProcessGroup details: {}", processGroup);
                 context.addProcessGroup(processGroup);
             } else {
-                log.error("Could not get ProcessGroup with id {}", processGroupId);
+                String errorMessage = processGroup
+                        .getProcesses()
+                        .stream()
+                        .filter(cloudiatorProcess -> !CloudiatorProcess.StateEnum.RUNNING.equals(cloudiatorProcess.getState()))
+                        .map(cloudiatorProcess -> format("Process %s is in %s state", cloudiatorProcess.getId(), cloudiatorProcess.getState()))
+                        .collect(Collectors.joining(", ", "ProcessGroup " + processGroupId + " has been created but ", "."));
+
+                throw new AdapterException(errorMessage);
             }
 
         } catch (ApiException e) {
