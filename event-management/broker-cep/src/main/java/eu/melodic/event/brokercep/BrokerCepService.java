@@ -41,7 +41,7 @@ import java.util.Set;
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;
-    private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
+    private BrokerService brokerService;
     private ActiveMQConnectionFactory connectionFactory;
     private PasswordEncoder passwordEncoder;
 
@@ -79,6 +79,22 @@ public class BrokerCepService {
                 bv.removeQueue(name);
                 log.info("BrokerCepService.clearState(): Topic removed: {}", name);
             }
+
+            //XXX: remove tests
+            /*ConnectionContext cc = brokerService.getAdminConnectionContext();
+            ActiveMQDestination dest[] = brokerService.getRegionBroker().getDestinations();
+            long removeDelay = 1;
+            for (ActiveMQDestination d : dest) {
+                if (d.getQualifiedName().indexOf("://ActiveMQ.")<0) {
+                    String name = d.getDestinationTypeAsString() + " " + d.getQualifiedName();
+                    brokerService.getRegionBroker().removeDestination(null, d, removeDelay);
+                    log.info("BrokerCepService.clearState(): Destination removed: {}", name);
+                }
+            }*/
+
+            //XXX: remove tests
+            log.warn(">>>>>>>>>>> MBeans: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(null, null));
+            log.warn(">>>>>>>>>>> TopicViews: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(new ObjectName("org.apache.activemq:type=Broker,brokerName=broker,destinationType=Topic,destinationName=*"), null));
 
             log.info("BrokerCepService.clearState(): Broker-CEP state cleared");
         } catch (Exception ex) {
