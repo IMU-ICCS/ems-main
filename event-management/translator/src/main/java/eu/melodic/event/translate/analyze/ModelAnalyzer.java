@@ -172,7 +172,10 @@ public class ModelAnalyzer {
                 }
 
                 // Find matching variable for CP model
-                _TC.MVV_CP.put(_findMatchingVar(mv, camelModel).getName(), mv.getName());
+                MetricVariable matchingMv = _findMatchingVar(mv, camelModel);
+                if (matchingMv!=null) {
+                    _TC.MVV_CP.put(matchingMv.getName(), mv.getName());
+                }
             });
         });
     }
@@ -180,7 +183,12 @@ public class ModelAnalyzer {
 //XXX:Improve this method (probably pre-process metric models to avoid multiple scans of the model)
     protected static MetricVariable _findMatchingVar(MetricVariable mvar, CamelModel camelModel) {
         CamelMetadata type = CamelMetadataTool.findVariableType((MetricVariableImpl) mvar);
-        String componentName = mvar.getComponent().getName();
+        Component comp = mvar.getComponent();
+        if (type==null || comp==null) {
+            log.warn("  _findMatchingVar: type or component is null: type={}, component={}", type, comp);
+            return null;
+        }
+        String componentName = comp.getName();
 
         // extract metric models
         List<MetricTypeModel> metricModels = camelModel.getMetricModels().stream()
@@ -437,12 +445,13 @@ public class ModelAnalyzer {
         // for every metric type model...
         metricModels.stream().forEach(mm -> {
             // get metric variables
-            log.info("  Extracting Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting current-config Metric Variables from Metric Type model {}...", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
+                    .filter(mv -> mv.isCurrentConfiguration())
                     .collect(Collectors.toList());
-            log.info("  Extracting Metric Variables from Metric Type model {}... {}", mm.getName(), getListElementNames(variables));
+            log.info("  Extracting current-config Metric Variables from Metric Type model {}... {}", mm.getName(), getListElementNames(variables));
 
             // for every metric variable...
             variables.stream().forEach(mv -> {

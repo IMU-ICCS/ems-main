@@ -124,11 +124,12 @@ public class Coordinator {
                 enrichMonitors(targetModel, uuid, authorization, resourceName);
             }
             currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
+            saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
             if (currentModel == null) {
-                saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
                 plan = planGenerator.buildConfigurationPlan(targetModel);
             } else {
                 plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
+
             }
         } finally {
             cdoSessionX.closeTransaction(tr);

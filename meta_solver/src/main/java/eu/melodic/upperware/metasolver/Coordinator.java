@@ -19,9 +19,10 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -37,7 +38,8 @@ import java.util.*;
 public class Coordinator implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-    private MetaSolverProperties properties;
+    private MetaSolverProperties metaSolverProperties;
+    private MelodicSecurityProperties melodicSecurityProperties;
     private double uvThresholdFactor;
     private RestTemplate restTemplate;
 
@@ -47,10 +49,11 @@ public class Coordinator implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        this.properties = applicationContext.getBean(MetaSolverProperties.class);
-        this.uvThresholdFactor = properties.getUtilityThresholdFactor();
+        this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
+        this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
+        this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
-        log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", properties);
+        log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
     }
 
     /**
@@ -200,13 +203,17 @@ public class Coordinator implements ApplicationContextAware {
         notification.setApplicationId(appId);
         notification.setUseExistingCP(true);        // For scaling we need to re-use the existing CP model
         notification.setCdoResourcePath(cpModelPath);
+
+        notification.setUsername(melodicSecurityProperties.getUser().getUsername());
+        notification.setPassword(melodicSecurityProperties.getUser().getPassword());
+
         String uuid = UUID.randomUUID().toString().toLowerCase();
         notification.setWatermark(prepareWatermark(uuid));
         return notification;
     }
 
     private void sendNotification(DeploymentProcessRequest notification) {
-        String esbUrl = properties.getEsb().getUrl();
+        String esbUrl = metaSolverProperties.getEsb().getUrl();
         if (esbUrl.endsWith("/")) {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
@@ -256,7 +263,7 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     private void notifyEMS(String cpModelPath) {
-        String emsUrl = properties.getEmsUrl();
+        String emsUrl = metaSolverProperties.getEmsUrl();
         if (StringUtils.isEmpty(emsUrl)) {
             log.debug("MetaSolver.Coordinator: notifyEMS(): EMS-URL has not been set");
             return;

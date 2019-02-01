@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
@@ -27,7 +29,6 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
 
     @Override
     public void create(AdapterRequirement taskBody) {
-
         //TODO - in the future check if node exists
 
         try {
@@ -42,9 +43,15 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             log.info("Response from queue {} successfully reached. New node is created", queue.getId());
 
             String nodeGroupId = getId(watch.getLocation());
-            Optional<NodeGroup> nodeGroupOpt = api.getNodeGroup(nodeGroupId);
-            if (nodeGroupOpt.isPresent()) {
-                NodeGroup nodeGroup = nodeGroupOpt.get();
+            NodeGroup nodeGroup = api.getNodeGroup(nodeGroupId)
+                    .orElseThrow(() -> new AdapterException(format("Could not get NodeGroup with id %s", nodeGroupId)));
+
+            boolean isNodeRunning = nodeGroup
+                    .getNodes()
+                    .stream()
+                    .allMatch(node -> Node.StateEnum.RUNNING.equals(node.getState()));
+
+            if (isNodeRunning) {
                 log.info("New nodeGroup is created: name: {}, nodeId: {}", nodeGroup.getId(),
                         nodeGroup
                                 .getNodes()
@@ -54,7 +61,14 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
 
                 context.addNodeGroup(nodeGroup);
             } else {
-                log.error("Could not get NodeGroup with id {}", nodeGroupId);
+                String errorMessage = nodeGroup
+                        .getNodes()
+                        .stream()
+                        .filter(node -> !Node.StateEnum.RUNNING.equals(node.getState()))
+                        .map(node -> format("Node %s (id: %s) is in %s state", node.getName(), node.getId(), node.getState()))
+                        .collect(Collectors.joining(", ", "Node group " + nodeGroupId + " is created but ", "."));
+
+                throw new AdapterException(errorMessage);
             }
 
         } catch (ApiException e) {

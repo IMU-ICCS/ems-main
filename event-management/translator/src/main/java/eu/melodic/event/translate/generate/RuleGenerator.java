@@ -459,7 +459,7 @@ public class RuleGenerator {
                             node, elemName, metricNames, contextNames);
 
                     // Check that component metrics' names (from composite metric) and metric names from component contexts match
-                    if (checkIfListsAreEqual(componentMetricNames, metricNames)) {
+                    if (! checkIfListsAreEqual(componentMetricNames, metricNames)) {
                         log.error("RuleGenerator.generateRules():      Component metrics of metric variable '{}' do not match to component contexts' metrics: component-metrics={}, component-context-metrics={}", mvar.getName(), componentMetricNames, metricNames);
                         throw new IllegalArgumentException(String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics", mvar.getName()));
                     }

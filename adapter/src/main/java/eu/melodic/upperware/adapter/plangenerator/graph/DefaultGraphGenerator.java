@@ -110,8 +110,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                                             Collection<ProcessTask> processTasks, Collection<NodeTask> nodeTasks) {
 
         WaitTask waitCreateTask = new WaitTask(CREATE, new WaitData());
-        WaitTask waitDeleteTask = new WaitTask(DELETE, new WaitData());
-
+        addVertex(graph, waitCreateTask);
 
         List<MonitorTask> createMonitors = getFiltered(monitorsTasks, CREATE);
         List<MonitorTask> deleteMonitors = getFiltered(monitorsTasks, DELETE);
@@ -119,15 +118,20 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         List<ProcessTask> createProcess = getFiltered(processTasks, CREATE);
         List<ProcessTask> deleteProcess = getFiltered(processTasks, DELETE);
 
-
-        setDependencies1(graph, createMonitors, createProcess, waitCreateTask, CREATE);
-        setDependencies1(graph, deleteMonitors, deleteProcess, waitDeleteTask, DELETE);
-
         List<NodeTask> createNodes = getFiltered(nodeTasks, CREATE);
         List<NodeTask> deleteNodes = getFiltered(nodeTasks, DELETE);
 
+        setDependencies1(graph, createMonitors, createProcess, waitCreateTask, CREATE);
         setDependencies(graph, createProcess, createNodes, waitCreateTask, CREATE);
-        setDependencies(graph, deleteProcess, deleteNodes, waitDeleteTask, DELETE);
+
+        boolean isAnythingToDelete = CollectionUtils.isNotEmpty(deleteMonitors) || CollectionUtils.isNotEmpty(deleteProcess) || CollectionUtils.isNotEmpty(deleteNodes);
+        if (isAnythingToDelete) {
+            WaitTask waitDeleteTask = new WaitTask(DELETE, new WaitData());
+            addVertex(graph, waitDeleteTask);
+
+            setDependencies1(graph, deleteMonitors, deleteProcess, waitDeleteTask, DELETE);
+            setDependencies(graph, deleteProcess, deleteNodes, waitDeleteTask, DELETE);
+        }
     }
 
     private Collection<MonitorTask> getMonitorsTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<ProcessTask> processTasks, Collection<AdapterMonitor> adapterMonitors) {

@@ -36,4 +36,19 @@ public class MelodicSecurityProperties {
         @NotNull
         private Long expirationTime;
     }
+
+    @Valid
+    @NotNull
+    private User user;
+
+    @Getter
+    @Setter
+    public static class User {
+
+        @NotNull
+        private String username;
+
+        @NotNull
+        private String password;
+    }
 }
