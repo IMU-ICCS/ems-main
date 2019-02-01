@@ -30,7 +30,6 @@ import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
-import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
@@ -71,7 +70,6 @@ public class Coordinator {
     private PlanGenerator planGenerator;
     private PlanExecutor planExecutor;
     private CdoServerUpdater cdoServerUpdater;
-    private ToLogGraphLogger toLogGraphLogger;
 
     private ContextOperations context;
     private RestTemplate restTemplate;
@@ -144,8 +142,6 @@ public class Coordinator {
                 throw new AdapterException("Problem during refreshing context", e);
             }
         }
-
-        toLogGraphLogger.logGraph(plan.getTaskGraph());
 
         // pre-authorize target model
         if (targetModel != null) {

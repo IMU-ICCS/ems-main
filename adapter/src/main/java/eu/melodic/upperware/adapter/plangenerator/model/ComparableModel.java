@@ -26,27 +26,4 @@ public class ComparableModel {
   private Collection<AdapterProcess> adapterProcesses;
   private Collection<AdapterMonitor> adapterMonitors;
 
-  private Collection<CloudApi> cloudApis;
-  private Collection<Cloud> clouds;
-  private Collection<CloudProperty> cloudProperties;
-  private Collection<CloudCredential> cloudCredentials;
-
-  private Application application;
-  private ApplicationInstance applicationInstance;
-
-  private Collection<LifecycleComponent> lifecycleComponents;
-
-  private Collection<VirtualMachine> virtualMachines;
-  private Collection<VirtualMachineInstance> virtualMachineInstances;
-
-  private Collection<ApplicationComponent> applicationComponents;
-  private Collection<ApplicationComponentInstance> applicationComponentInstances;
-
-  private Collection<Communication> communications;
-  private Collection<PortProvided> portsProvided;
-  private Collection<PortRequired> portsRequired;
-
-  private Collection<VirtualMachineInstanceMonitor> virtualMachineInstanceMonitors;
-  private Collection<ApplicationComponentInstanceMonitor> applicationComponentInstanceMonitors;
-
 }

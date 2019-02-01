@@ -48,5 +48,8 @@ public interface ColosseumApi {
 
     Queue deleteProcess(String processId) throws ApiException;
 
+
     Monitor addMonitor(Monitor monitor) throws ApiException;
+
+    void deleteMonitor(String metricName) throws ApiException;
 }

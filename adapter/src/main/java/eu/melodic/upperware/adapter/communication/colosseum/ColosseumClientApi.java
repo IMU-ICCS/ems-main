@@ -143,7 +143,15 @@ public class ColosseumClientApi implements ColosseumApi {
 
   @Override
   public Monitor addMonitor(Monitor monitor) throws ApiException{
+    log.info("Adding monitor: {}", monitor);
     return monitoringApi.addMonitor(monitor);
+  }
+
+  @Override
+  public void deleteMonitor(String metricName) throws ApiException {
+    Objects.requireNonNull(metricName);
+    log.info("Deleting monitor with metricName: {}", metricName);
+    monitoringApi.deleteMonitor(metricName);
   }
 
 }

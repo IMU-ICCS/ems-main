@@ -134,8 +134,31 @@ public class ColosseumContext implements ContextOperations {
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
+    public Optional<ProcessGroup> getProcessGroupByNodeGroupId(String nodeGroupId) {
+        return getElement(processGroups, processGroup -> processGroup.getProcesses()
+                .stream()
+                .filter(ClusterProcess.class::isInstance)
+                .map(ClusterProcess.class::cast)
+                .anyMatch(cloudiatorProcess -> cloudiatorProcess.getNodeGroup().equals(nodeGroupId)),
+                    () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one ProcessGroup containing ClusterProcess with the same nodeGroup=%s", nodeGroupId)));
+    }
+
+    public Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
+        return getElement(processGroups, processGroup -> processGroup.getProcesses()
+                .stream()
+                .filter(SingleProcess.class::isInstance)
+                .map(SingleProcess.class::cast)
+                .anyMatch(cloudiatorProcess -> cloudiatorProcess.getNode().equals(nodeId)),
+                    () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one SingleProcess containing process with the same node=%s", nodeId)));
+    }
+
+
     public void addMonitor(@NonNull Monitor monitor) {
         monitors.add(monitor);
+    }
+
+    public void deleteMonitor(String metricName) {
+        monitors.removeIf(monitor -> metricName.equals(monitor.getMetric()));
     }
 
     private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {
