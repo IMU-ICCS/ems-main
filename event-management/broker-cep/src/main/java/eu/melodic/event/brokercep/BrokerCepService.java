@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
-import javax.management.ObjectName;
+import javax.management.*;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
@@ -58,11 +58,13 @@ public class BrokerCepService {
     public synchronized void clearState() {
         log.info("BrokerCepService.clearState(): Clearing Broker-CEP state...");
 
+        // Clear CEP service state
         cepService.clearStatements();
         cepService.clearEventTypes();
         cepService.clearConstants();
         cepService.clearFunctionDefinitions();
 
+        // Clear Broker service state
         try {
             BrokerView bv = brokerService.getAdminView();
             ObjectName[] queues = bv.getQueues();
@@ -93,8 +95,34 @@ public class BrokerCepService {
             }*/
 
             //XXX: remove tests
-            log.warn(">>>>>>>>>>> MBeans: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(null, null));
-            log.warn(">>>>>>>>>>> TopicViews: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(new ObjectName("org.apache.activemq:type=Broker,brokerName=broker,destinationType=Topic,destinationName=*"), null));
+            /*log.warn(">>>>>>>>>>> MBeans: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(null, null));*/
+            String topicMBeanNames = "org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName()
+                            +",destinationType=Topic,destinationName=*";
+            Set<ObjectInstance> instances = brokerService.getManagementContext()
+                    .getMBeanServer().queryMBeans(new ObjectName(topicMBeanNames), null);
+            /*log.warn(">>>>>>>>>>> TopicViews: {}", instances);*/
+            /*for (ObjectInstance oi: instances) {
+                log.warn("---->  oi: {} -> {} -> {}", oi.getObjectName(), oi.getClassName(), oi.getObjectName().getKeyProperty("destinationName"));
+            }*/
+
+            ObjectName brokerNameQuery =
+                    new ObjectName("org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName());
+            instances.stream()
+                    .map(ObjectInstance::getObjectName)
+                    .map(objName -> objName.getKeyProperty("destinationName"))
+                    .filter(name -> ! name.startsWith("ActiveMQ."))
+                    .peek(topicName -> log.warn("---->  {}", topicName))
+                    .forEach(topicName -> {
+                        try {
+                            brokerService.getManagementContext().getMBeanServer()
+                                    .invoke(brokerNameQuery,
+                                            "removeTopic",
+                                            new String[]{topicName},
+                                            new String[]{"java.lang.String"});
+                        } catch (Exception e) {
+                            log.error("Exception while deleting topic: {} -> {}", topicName, e);
+                        }
+                    });
 
             log.info("BrokerCepService.clearState(): Broker-CEP state cleared");
         } catch (Exception ex) {

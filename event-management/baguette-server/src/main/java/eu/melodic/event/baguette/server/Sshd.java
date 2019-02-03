@@ -52,6 +52,7 @@ public class Sshd {
         // Configure SSH server
         int port = configuration.getServerPort();
         String serverKeyFilePath = configuration.getServerKeyFile();
+        log.info("SSH server: Public IP address {}", configuration.getServerAddress());
         log.info("SSH server: Starting on port {}", port);
 
         sshd = SshServer.setUpDefaultServer();
