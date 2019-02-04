@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+  ~
+  ~ This Source Code Form is subject to the terms of the
+  ~ Mozilla Public License, v. 2.0. If a copy of the MPL
+  ~ was not distributed with this file, You can obtain one at
+  ~ http://mozilla.org/MPL/2.0/.
+  -->
+
+<configuration>
+    <logger name="eu.melodic.event.control" level="INFO"/>
+    <logger name="eu.melodic.event.baguette.server" level="INFO"/>
+    <logger name="eu.melodic.event.baguette.client.install" level="DEBUG"/>
+    <logger name="eu.melodic.event.brokercep" level="DEBUG"/>
+    <logger name="eu.melodic.event.brokerclient" level="DEBUG"/>
+    <logger name="eu.melodic.event.translate" level="DEBUG"/>
+</configuration>
