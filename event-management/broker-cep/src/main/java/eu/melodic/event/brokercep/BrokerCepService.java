@@ -82,7 +82,7 @@ public class BrokerCepService {
                 log.info("BrokerCepService.clearState(): Topic removed: {}", name);
             }
 
-            //XXX: remove tests
+            //XXX: remove JMX tests
             /*ConnectionContext cc = brokerService.getAdminConnectionContext();
             ActiveMQDestination dest[] = brokerService.getRegionBroker().getDestinations();
             long removeDelay = 1;
@@ -94,18 +94,18 @@ public class BrokerCepService {
                 }
             }*/
 
-            //XXX: remove tests
+            //XXX: remove JMX tests
             /*log.warn(">>>>>>>>>>> MBeans: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(null, null));*/
-            String topicMBeanNames = "org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName()
+/*            String topicMBeanNames = "org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName()
                             +",destinationType=Topic,destinationName=*";
             Set<ObjectInstance> instances = brokerService.getManagementContext()
-                    .getMBeanServer().queryMBeans(new ObjectName(topicMBeanNames), null);
+                    .getMBeanServer().queryMBeans(new ObjectName(topicMBeanNames), null);*/
             /*log.warn(">>>>>>>>>>> TopicViews: {}", instances);*/
             /*for (ObjectInstance oi: instances) {
                 log.warn("---->  oi: {} -> {} -> {}", oi.getObjectName(), oi.getClassName(), oi.getObjectName().getKeyProperty("destinationName"));
             }*/
 
-            ObjectName brokerNameQuery =
+/*            ObjectName brokerNameQuery =
                     new ObjectName("org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName());
             instances.stream()
                     .map(ObjectInstance::getObjectName)
@@ -122,7 +122,7 @@ public class BrokerCepService {
                         } catch (Exception e) {
                             log.error("Exception while deleting topic: {} -> {}", topicName, e);
                         }
-                    });
+                    });*/
 
             log.info("BrokerCepService.clearState(): Broker-CEP state cleared");
         } catch (Exception ex) {
