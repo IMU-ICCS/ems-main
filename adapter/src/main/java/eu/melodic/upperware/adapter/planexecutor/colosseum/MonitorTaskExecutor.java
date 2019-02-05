@@ -34,8 +34,17 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
-        ProcessGroup processGroup = getProcessGroup(nodeGroup)
-                .orElseThrow(() -> new AdapterException(format("Could not find ProcessGroup (Cluster) with nodeGroupId %s and ProcessGroup (Simple) with nodeId %s", nodeGroup.getId(), getFistNodeId(nodeGroup))));
+        String fistNodeId = getFistNodeId(nodeGroup);
+
+//        ProcessGroup processGroup = getProcessGroupByNodeId(fistNodeId)
+//                .orElseThrow(() -> new AdapterException(format("Could not find ProcessGroup (Simple) with nodeId %s", fistNodeId)));
+
+        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
+        if (!processGroupByNodeId.isPresent()) {
+            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
+            return;
+        }
+        ProcessGroup processGroup = processGroupByNodeId.get();
 
         Monitor monitor = convertToMonitor(taskBody, getFistProcessId(processGroup));
         Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName());
@@ -49,28 +58,12 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             context.addMonitor(addedMonitor);
         } catch (ApiException e) {
             log.error("Could not add Monitor. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
-            throw new AdapterException("Problem during adding Node", e);
+            throw new AdapterException("Problem during adding Monitor", e);
         }
     }
 
-    private Optional<ProcessGroup> getProcessGroup(NodeGroup nodeGroup) {
-
-        Optional<ProcessGroup> clusterProcessGroupOpt = context.getProcessGroupByNodeGroupId(nodeGroup.getId());
-        if (clusterProcessGroupOpt.isPresent()) {
-            ProcessGroup processGroup = clusterProcessGroupOpt.get();
-            log.info("Found ProcessGroup () with ClusterProcess () by nodeGroupId {}", processGroup.getId(), getFistProcessId(processGroup), nodeGroup.getId());
-            return clusterProcessGroupOpt;
-        }
-
-        String nodeId = getFistNodeId(nodeGroup);
-        Optional<ProcessGroup> singleProcessGroupOpt = context.getProcessGroupByNodeId(nodeId);
-        if (singleProcessGroupOpt.isPresent()) {
-            ProcessGroup processGroup = singleProcessGroupOpt.get();
-            log.info("Found ProcessGroup () with SingleProcess () by nodeId {}", processGroup.getId(), getFistProcessId(processGroup), nodeId);
-            return singleProcessGroupOpt;
-        }
-
-        return Optional.empty();
+    private Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
+        return context.getProcessGroupByNodeId(nodeId);
     }
 
     private String getFistNodeId(NodeGroup nodeGroup){
