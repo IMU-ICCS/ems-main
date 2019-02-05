@@ -37,7 +37,7 @@ public class AdapterController {
   @RequestMapping(value = "/applicationDeployment", method = POST,
 consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
-                                    @RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
+                                    @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
     validator.validate(request);
 
     String resourceName = request.getApplicationId();
