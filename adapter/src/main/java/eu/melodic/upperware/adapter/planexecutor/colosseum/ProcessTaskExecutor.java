@@ -10,7 +10,9 @@ import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
         super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
+
+    List<CloudiatorProcess.StateEnum> ACCEPTED_PROCESS_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
 
     @Override
     public void create(AdapterProcess taskBody) {
@@ -61,7 +65,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
             boolean isProcessRunning = processGroup
                     .getProcesses()
                     .stream()
-                    .allMatch(cloudiatorProcess -> CloudiatorProcess.StateEnum.RUNNING.equals(cloudiatorProcess.getState()));
+                    .allMatch(cloudiatorProcess ->  ACCEPTED_PROCESS_STATES.contains(cloudiatorProcess.getState()));
 
             if (isProcessRunning) {
                 log.info("Process group has been created ProcessGroup details: {}", processGroup);
@@ -70,7 +74,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
                 String errorMessage = processGroup
                         .getProcesses()
                         .stream()
-                        .filter(cloudiatorProcess -> !CloudiatorProcess.StateEnum.RUNNING.equals(cloudiatorProcess.getState()))
+                        .filter(cloudiatorProcess -> !ACCEPTED_PROCESS_STATES.contains(cloudiatorProcess.getState()))
                         .map(cloudiatorProcess -> format("Process %s is in %s state", cloudiatorProcess.getId(), cloudiatorProcess.getState()))
                         .collect(Collectors.joining(", ", "ProcessGroup " + processGroupId + " has been created but ", "."));
 
