@@ -8,6 +8,7 @@ import eu.melodic.models.services.adapter.MonitorsDataResponse;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,9 @@ public class EmsClientApi implements EmsApi {
 
     private HttpHeaders createHttpHeaders(String authorization) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, authorization);
+        if (StringUtils.isNotBlank(authorization)){
+            headers.set(HttpHeaders.AUTHORIZATION, authorization);
+        }
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         return headers;
