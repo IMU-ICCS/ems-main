@@ -30,11 +30,16 @@ fi
 
 export JAVA_OPTS BROKER_CEP_TEST
 
+# check logger configuration
+if [ -z "$LOG_CONFIG_FILE" ] then
+    LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-spring.xml
+fi
+
 # Use when Esper is packaged in control-service.jar
-# java $JAVA_OPTS -jar $BROKER_CEP_TEST $BASEDIR/control-service/target/control-service.jar --logging.config=$MELODIC_CONFIG_DIR/logback-spring.xml
+# java $JAVA_OPTS -jar $BROKER_CEP_TEST $BASEDIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
 # Use when Esper is NOT packaged in control-service.jar
-java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -cp $BASEDIR/control-service/target/control-service.jar -Dloader.path=$BASEDIR/control-service/target/esper-7.1.0.jar $BROKER_CEP_TEST org.springframework.boot.loader.PropertiesLauncher --logging.config=$MELODIC_CONFIG_DIR/logback-spring.xml
+java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -cp $BASEDIR/control-service/target/control-service.jar -Dloader.path=$BASEDIR/control-service/target/esper-7.1.0.jar $BROKER_CEP_TEST org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
 
 # e.g. --spring.config.location=$MELODIC_CONFIG_DIR
 # e.g. --spring.config.name=application.properties
