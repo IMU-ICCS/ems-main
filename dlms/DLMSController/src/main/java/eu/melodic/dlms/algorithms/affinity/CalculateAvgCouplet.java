@@ -75,7 +75,7 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 				if (acDSDataList.size() > 0) {
 					long predVal = dataPrediction(acDSDataList);
 					long predNumTransfer = numTransferPrediction(acDSDataList);
-					AppComDataSrc appComDataSrc = new AppComDataSrc(acListItem.getId(), dsListItem.getId(), predVal,
+					AppComDataSrc appComDataSrc = new AppComDataSrc(acListItem.getName(), dsListItem.getName(), predVal,
 							predNumTransfer);
 
 					appComDataSrcList.add(appComDataSrc);

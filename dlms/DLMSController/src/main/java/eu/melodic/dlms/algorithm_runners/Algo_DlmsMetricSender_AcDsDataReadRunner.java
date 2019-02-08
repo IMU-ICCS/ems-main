@@ -8,10 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Generate the metrics for data read between application component and data
- * source No need of this class in production
+ * source. No need of this class in production
  */
 @Slf4j
-public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner {
+public class Algo_DlmsMetricSender_AcDsDataReadRunner extends AlgorithmRunner {
 
 	private Algo_DlmsMetricSender_AcDsDataRead algo;
 
@@ -51,7 +51,6 @@ public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

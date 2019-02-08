@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor 
 public class AppComDataSrc {
-	private long appCompId; // application component
-	private long dataSrcId; // data source
+	private String appCompId; // application component
+	private String dataSrcId; // data source
 	private long expDataTransfer; // expected transfer
 	private double normExpDataTransfer; // normalized expected transfer
 	private long numTransfer; // number transfer
@@ -17,7 +17,7 @@ public class AppComDataSrc {
 
 	private double coupletValue; // final couple value for each application component and data source
 
-	public AppComDataSrc(long appCompId, long dataSrcId, long expDataTransfer, long numTransfer) {
+	public AppComDataSrc(String appCompId, String dataSrcId, long expDataTransfer, long numTransfer) {
 		this.appCompId = appCompId;
 		this.dataSrcId = dataSrcId;
 		this.expDataTransfer = expDataTransfer;

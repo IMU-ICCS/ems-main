@@ -16,8 +16,8 @@ import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Not completed yet
- * 
+ * Not implemented yet
+ * Need to experiment with more data first!!!!!
  */
 
 @RequiredArgsConstructor

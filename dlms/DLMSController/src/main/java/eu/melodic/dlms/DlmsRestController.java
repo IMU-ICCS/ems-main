@@ -51,16 +51,19 @@ public class DlmsRestController {
 	 * Returns a map of all active algorithms with the value their runner class
 	 * produced from the call of queryResults().
 	 */
-	@GetMapping(value = "/dlmsController/utilityValue")
+	@PostMapping(value = "/dlmsController/utilityValue")
 	public UtilityMetrics getUtilityValue(@RequestBody DlmsConfigurationConnection diffs) {
 		log.info("Going inside DlmsRestController succeeded");
 		Map<String, Double> utilityValueMap = new HashMap<>(algorithms.size());
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
-			log.info("Calculating utility for {}", key.getCamelId());
-			double algorithmResult = runner.queryResults(diffs);
-			log.info("result for algorithm {}: {}", key.getCamelId(), algorithmResult);
-			utilityValueMap.put(key.getCamelId(), algorithmResult);
+			// skip utility algorithms
+			if (!key.getCamelId().contains("CAMEL")) { 
+				log.info("Calculating utility for {}", key.getCamelId());
+				double algorithmResult = runner.queryResults(diffs);
+				log.info("result for algorithm {}: {}", key.getCamelId(), algorithmResult);
+				utilityValueMap.put(key.getCamelId(), algorithmResult);
+			}
 		});
 
 		return new UtilityMetrics(utilityValueMap);
@@ -373,7 +376,7 @@ public class DlmsRestController {
 		dlmsService.updateDataCenterZoneById(dcz, id);
 		return ResponseEntity.noContent().build();
 	}
-	
+
 	/**
 	 * Returns a list of data center zones in the database
 	 */

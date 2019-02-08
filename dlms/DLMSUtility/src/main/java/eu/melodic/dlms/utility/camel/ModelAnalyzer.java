@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class ModelAnalyzer {
 	private CDOClientX cdoClient;
-	private Map<SoftwareComponent, List<SoftwareComponent>> compConMap;
+	private Map<String, List<String>> compConMap;
 
 	/**
 	 * Read the camel model to get a list of datasource(s) to update and/or create
@@ -89,16 +89,16 @@ public class ModelAnalyzer {
 						if (!toComponent.getManagesDataSource().isEmpty()) {
 							// has only one datasource
 //							EList<camel.data.DataSource> dsList = toComponent.getManagesDataSource();
-							List<SoftwareComponent> toComponentList = new ArrayList<>();
-							if (compConMap.containsKey(fromComponent)) {
-								toComponentList = compConMap.get(fromComponent);
-								// to component list does not have the component
-								if (!toComponentList.contains(toComponent))
-									toComponentList.add(toComponent);
+							List<String> toComponentList = new ArrayList<>();
+							if (compConMap.containsKey(fromComponent.getName())) {
+								toComponentList = compConMap.get(fromComponent.getName());
+								// does component list have the component
+								if (!toComponentList.contains(toComponent.getName()))
+									toComponentList.add(toComponent.getName());
 							} else
-								toComponentList.add(toComponent);
+								toComponentList.add(toComponent.getName());
 
-							compConMap.put(fromComponent, toComponentList);
+							compConMap.put(fromComponent.getName(), toComponentList);
 						}
 					}
 					log.info("CamelModel was loaded succesfully: {} ", camelModel);

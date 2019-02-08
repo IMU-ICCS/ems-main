@@ -10,17 +10,19 @@ import eu.melodic.dlms.db.repository.CloudProviderRepository;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
 import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
 import eu.melodic.dlms.db.repository.RegionRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
 public class Algo_DlmsTotalCosts {
 	// configuration parameters
-	private long src;
-	private long dst;
 	private long size;
+	@Getter @Setter
 	private long max; // to convert cost between 0 and 1
+	@Getter @Setter
 	private long min; // to convert cost between 0 and 1
 
 	private final CloudProviderRepository cpRepository;
@@ -34,7 +36,7 @@ public class Algo_DlmsTotalCosts {
 	 * Compute the total cost
 	 * Return value between 0 and 1
 	 */
-	public double totalCost() {
+	public double totalCost(String src, String dst) {
 		long transfer = 0;
 		int dist = 1;
 		DataCenter srcDc = getDc(src);
@@ -64,11 +66,10 @@ public class Algo_DlmsTotalCosts {
 		}
 		transfer = size * dist;
 		log.info("The cost of the solution was computed successfully");
-		// if max and min is not known
+		// if max and min is not known => not so efficient
 		// return (Norm (transfer));	
 		
-		// if max and min is known
-		return (Norm (transfer, max, min));
+		return (transfer>0? Norm (transfer, max, min) : -1);
 	}
 
 	/**
@@ -95,11 +96,9 @@ public class Algo_DlmsTotalCosts {
 	/**
 	 * Get datacenters
 	 */
-	private DataCenter getDc(long id) {
-		if (dcRepository.existsById(id)) {
-			Optional<DataCenter> dc = dcRepository.findById(id);
-			if (dc.isPresent())
-				return dc.get();
+	private DataCenter getDc(String name) {
+		if (dcRepository.existsByName(name)) {
+			return (dcRepository.findByName(name));
 		}
 		isValid = false;
 		return null;
@@ -115,12 +114,10 @@ public class Algo_DlmsTotalCosts {
 	/**
 	 * Get geographical zone
 	 */
-	private DataCenterZone getZone(long id) {
-		if (dcZoneRepository.existsById(id)) {
-			Optional<DataCenterZone> zone = dcZoneRepository.findById(id);
-			if (zone.isPresent())
-				return zone.get();
-		}
+	private DataCenterZone getZone(String name) {
+		if (dcZoneRepository.existsByDataCenterName(name)) 
+			return dcZoneRepository.findByDataCenterName(name);
+
 		isValid = false;
 		return null;
 	}
@@ -143,12 +140,10 @@ public class Algo_DlmsTotalCosts {
 	/**
 	 * Get cloud provider
 	 */
-	private CloudProvider getCp(long id) {
-		if (cpRepository.existsById(id)) {
-			Optional<CloudProvider> cp = cpRepository.findById(id);
-			if (cp.isPresent())
-				return cp.get();
-		}
+	private CloudProvider getCp(String name) {
+		if (cpRepository.existsByName(name)) 
+			return (cpRepository.findByName(name));
+		
 		isValid = false;
 		return null;
 	}

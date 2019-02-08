@@ -10,4 +10,6 @@ public interface DataCenterZoneRepository extends JpaRepository<DataCenterZone, 
 	DataCenterZone findByDataCenterId(long id);
 	boolean existsByZone(int zone);
 	List<DataCenterZone> findByZone(int zone);
+	boolean existsByDataCenterName(String name);
+	DataCenterZone findByDataCenterName(String name);
 }

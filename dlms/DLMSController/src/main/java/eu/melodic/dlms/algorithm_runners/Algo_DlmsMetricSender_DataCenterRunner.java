@@ -8,10 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Generate the metrics between two data centers No need of this class in
- * production
+ * production. No need of this class in production
  */
 @Slf4j
-public class Algo_DlmsMetricSender_DataCenterRunner implements AlgorithmRunner {
+public class Algo_DlmsMetricSender_DataCenterRunner extends AlgorithmRunner {
 
 	private Algo_DlmsMetricSender_DataCenter algo;
 
@@ -23,7 +23,7 @@ public class Algo_DlmsMetricSender_DataCenterRunner implements AlgorithmRunner {
 	@Override
 	public int update(Object... parameters) {
 		if (parameters.length < 6) {
-			log.error("Number of parameters is not enough for Algo_DlmsMetricSenderRunner");
+			log.error("Number of parameters is not enough for Algo_DlmsMetricSender_DataCenter");
 			return -1;
 		}
 
