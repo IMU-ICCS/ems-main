@@ -54,4 +54,12 @@ public class CamelToEplTranslatorProperties {
     private String[] exportFormats;
     @Value("${dag.export.image-width:-1}")
     private int exportImageWidth;
+
+    // JMS sink parameters
+    @Value("${jms-sink.broker-url:}")
+    private String jmsSinkBrokerUrl;
+    @Value("${jms-sink.topic-selector:}")
+    private String jmsSinkTopicSelector;
+    @Value("${jms-sink.message-format:}")
+    private String jmsSinkMessageFormat;
 }

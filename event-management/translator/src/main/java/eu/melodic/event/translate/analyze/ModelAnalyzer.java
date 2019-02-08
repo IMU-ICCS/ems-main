@@ -42,8 +42,6 @@ import java.util.stream.Collectors;
 public class ModelAnalyzer {
     private CamelToEplTranslatorProperties properties;
 
-    // ================================================================================================================
-    // Public API
     private List<Sink> EMS_SINKS;
 
     // ================================================================================================================
@@ -862,6 +860,37 @@ public class ModelAnalyzer {
         _TC.addComponentSensorPair(objContext, sensor);
     }
 
+    protected synchronized void _initializeSinks() {
+        if (EMS_SINKS == null) {
+            // Create configuration for JMS sink
+            String brokerUrl = properties.getJmsSinkBrokerUrl();
+            KeyValuePair jmsBroker = new KeyValuePairImpl();
+            jmsBroker.setKey("jms.broker");
+            jmsBroker.setValue(brokerUrl);
+
+            String selector = properties.getJmsSinkTopicSelector();
+            KeyValuePair jmsTopicSelector = new KeyValuePairImpl();
+            jmsTopicSelector.setKey("jms.topic.selector");
+            jmsTopicSelector.setValue(selector);
+
+            String format = properties.getJmsSinkMessageFormat();
+            KeyValuePair jmsMessageFormat = new KeyValuePairImpl();
+            jmsMessageFormat.setKey("jms.message.format");
+            jmsMessageFormat.setValue(format);
+
+            List<KeyValuePair> jmsSinkConfig = Arrays.asList(jmsBroker, jmsTopicSelector, jmsMessageFormat);
+            log.debug("    _createMonitorsForSensor(): JMS SINK configuration: {}",
+                    jmsSinkConfig.stream().map(entry -> entry.getKey()+"="+entry.getValue()).collect(Collectors.toList()));
+
+            // Create JMS sink
+            Sink sink = new SinkImpl();
+            sink.setType(Sink.TypeType.JMS);
+            sink.setConfiguration(jmsSinkConfig);
+            List<Sink> sinks = Collections.singletonList(sink);
+            EMS_SINKS = sinks;
+        }
+    }
+
     protected Set<Monitor> _createMonitorsForSensor(TranslationContext _TC, ObjectContext objContext, Sensor sensor, DAGNode sensorDagNode) {
         log.info("    _createMonitorsForSensor(): sensor={}", sensor.getName());
 
@@ -902,10 +931,7 @@ public class ModelAnalyzer {
 
         // Initialize JMS_SINK if needed
         if (EMS_SINKS == null) {
-            Sink sink = new SinkImpl();
-            sink.setType(Sink.TypeType.JMS);
-            List<Sink> sinks = Collections.singletonList(sink);
-            EMS_SINKS = sinks;
+            _initializeSinks();
         }
 
         // Get additional configuration
@@ -934,7 +960,8 @@ public class ModelAnalyzer {
                         String key = attr.getName();
                         String value = null;
 
-                        if (attr.getValue() instanceof StringValue) value = ((StringValue) attr.getValue()).getValue();
+                        if (attr.getValue() instanceof StringValue)
+                            value = ((StringValue) attr.getValue()).getValue();
                         else if (attr.getValue() instanceof BooleanValue)
                             value = Boolean.toString(((BooleanValue) attr.getValue()).isValue());
                         else if (attr.getValue() instanceof IntValue)
@@ -997,7 +1024,8 @@ public class ModelAnalyzer {
 
         // Set sesnor interval
         if (isPull) {
-            if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE) {
+            if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE)
+            {
                 sensorInterval = properties.getSensorDefaultInterval();
             }
             Interval iv = new IntervalImpl();
