@@ -862,26 +862,44 @@ public class ModelAnalyzer {
 
     protected synchronized void _initializeSinks() {
         if (EMS_SINKS == null) {
-            log.debug("    _createMonitorsForSensor(): SINK configurations: {}", properties.getSinkConfig());
+            log.debug("    _initializeSinks(): Active Sinks type: {}", properties.getSinks());
+            log.debug("    _initializeSinks(): Sink type configurations: {}", properties.getSinkConfig());
 
-            // Create configuration for JMS sink
-            List<KeyValuePair> jmsSinkConfig = new ArrayList<>();
-            for (Map.Entry<String,String> e : properties.getSinkConfig().get(Sink.TypeType.JMS.name()).entrySet()) {
-                KeyValuePairImpl pair = new KeyValuePairImpl();
-                pair.setKey(e.getKey());
-                pair.setValue(e.getValue());
-                jmsSinkConfig.add(pair);
+            List<Sink> sinks = new ArrayList<>();
+            for (String sinkType : properties.getSinks()) {
+                log.trace("    _initializeSinks(): Processing sink type: {}", sinkType);
+                Sink.TypeType sinkTypeType = Sink.TypeType.valueOf(sinkType);
+                Map<String,String> configMap = properties.getSinkConfig().get(sinkType);
+
+                if (configMap==null || configMap.size()==0) {
+                    log.warn("    _initializeSinks(): WARN: Missing configuration for sink type: {}", sinkType);
+                    continue;
+                }
+
+                // Create configuration for sink type
+                List<KeyValuePair> sinkTypeConfig = new ArrayList<>();
+                for (Map.Entry<String,String> e : configMap.entrySet()) {
+                    KeyValuePairImpl pair = new KeyValuePairImpl();
+                    pair.setKey(e.getKey());
+                    pair.setValue(e.getValue());
+                    sinkTypeConfig.add(pair);
+                }
+
+                log.debug("    _initializeSinks(): {} sink type configuration: {}", sinkType,
+                        sinkTypeConfig.stream()
+                                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                                .collect(Collectors.toList()));
+
+                // Create sink entry
+                Sink sink = new SinkImpl();
+                sink.setType(sinkTypeType);
+                sink.setConfiguration(sinkTypeConfig);
+                sinks.add(sink);
             }
 
-            log.debug("    _createMonitorsForSensor(): JMS SINK configuration: {}",
-                    jmsSinkConfig.stream().map(entry -> entry.getKey()+"="+entry.getValue()).collect(Collectors.toList()));
-
-            // Create JMS sink
-            Sink sink = new SinkImpl();
-            sink.setType(Sink.TypeType.JMS);
-            sink.setConfiguration(jmsSinkConfig);
-            List<Sink> sinks = Collections.singletonList(sink);
+            // Store sink configurations
             EMS_SINKS = sinks;
+            log.debug("    _initializeSinks(): Sink type configurations initialized");
         }
     }
 

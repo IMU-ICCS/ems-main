@@ -20,7 +20,9 @@ import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.interfaces.ems.KeyValuePair;
 import eu.melodic.models.interfaces.ems.Monitor;
+import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
 import lombok.AllArgsConstructor;
@@ -290,6 +292,18 @@ public class ControlServiceCoordinator {
             }
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping Broker-CEP setup due to configuration");
+        }
+
+        // Process placeholders in sink type configurations
+        String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
+        for (Monitor mon : _TC.MON) {
+            for (Sink s : mon.getSinks()) {
+                for (KeyValuePair pair : s.getConfiguration()) {
+                    String val = pair.getValue();
+                    val = val.replace("%{BROKER_URL}%", brokerUrlForClients);
+                    pair.setValue(val);
+                }
+            }
         }
 
         // (Re-)Configure Baguette server
