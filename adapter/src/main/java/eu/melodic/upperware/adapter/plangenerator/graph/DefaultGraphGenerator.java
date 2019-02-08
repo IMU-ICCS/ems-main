@@ -80,20 +80,29 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         if (adapterProperties.getEms().isEnabled()) {
 //      0) Monitors
             Collection<AdapterMonitor> monitorsToRemove = getMonitorsToRemove(oldModel.getAdapterMonitors(), newModel.getAdapterMonitors());
+            log.debug("Monitors to remove: {}", monitorsToRemove);
+
             Collection<AdapterMonitor> monitorsToCreate = getMonitorsToCreate(newModel.getAdapterMonitors(), oldModel.getAdapterMonitors());
+            log.debug("Monitors to create: {}", monitorsToCreate);
 
             monitorsTasks = getMonitorsReconfigTasks(graph, monitorsToCreate, monitorsToRemove);
         }
 
 //      1) Process
         Collection<AdapterProcess> processesToRemove = getProcessesToRemove(oldModel.getAdapterProcesses(), newModel.getAdapterProcesses());
+        log.debug("Processes to remove: {}", processesToRemove);
+
         Collection<AdapterProcess> processesToCreate = getProcessesToCreate(newModel.getAdapterProcesses(), oldModel.getAdapterProcesses());
+        log.debug("Processes to create: {}", processesToCreate);
 
         Collection<ProcessTask> processTasks = genProcessReconfigTasks(graph, processesToCreate, processesToRemove);
 
 //      2) Node
         Collection<AdapterRequirement> nodesToRemove = getAdapterRequirementsToRemove(oldModel.getAdapterRequirements(), newModel.getAdapterRequirements());
+        log.debug("Nodes to remove: {}", processesToCreate);
+
         Collection<AdapterRequirement> nodesToCreate = getAdapterRequirementsToCreate(newModel.getAdapterRequirements(), oldModel.getAdapterRequirements());
+        log.debug("Nodes to create: {}", processesToCreate);
 
         Collection<NodeTask> nodeTasks = genNodeReconfigTasks(graph, nodesToCreate, nodesToRemove);
 
@@ -278,7 +287,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     private Collection<ProcessTask> genProcessTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterProcess> adapterProcesses, Type type){
 
         return adapterProcesses.stream()
-                .map(adapterRequirement -> new ProcessTask(CREATE, adapterRequirement))
+                .map(adapterRequirement -> new ProcessTask(type, adapterRequirement))
                 .peek(processTask ->  addVertex(graph, processTask))
                 .collect(toList());
     }
