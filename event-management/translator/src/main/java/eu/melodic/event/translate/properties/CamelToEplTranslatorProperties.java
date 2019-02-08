@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @Validated
 @Configuration
@@ -62,4 +65,10 @@ public class CamelToEplTranslatorProperties {
     private String jmsSinkTopicSelector;
     @Value("${jms-sink.message-format:}")
     private String jmsSinkMessageFormat;
+
+    private final Map<String,Map<String,String>> sinkConfig = new HashMap<>();
+
+    public Map<String,Map<String,String>> getSinkConfig() {
+        return sinkConfig;
+    }
 }

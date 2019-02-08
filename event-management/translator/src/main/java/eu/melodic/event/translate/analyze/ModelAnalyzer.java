@@ -862,23 +862,17 @@ public class ModelAnalyzer {
 
     protected synchronized void _initializeSinks() {
         if (EMS_SINKS == null) {
+            log.debug("    _createMonitorsForSensor(): SINK configurations: {}", properties.getSinkConfig());
+
             // Create configuration for JMS sink
-            String brokerUrl = properties.getJmsSinkBrokerUrl();
-            KeyValuePair jmsBroker = new KeyValuePairImpl();
-            jmsBroker.setKey("jms.broker");
-            jmsBroker.setValue(brokerUrl);
+            List<KeyValuePair> jmsSinkConfig = new ArrayList<>();
+            for (Map.Entry<String,String> e : properties.getSinkConfig().get(Sink.TypeType.JMS.name()).entrySet()) {
+                KeyValuePairImpl pair = new KeyValuePairImpl();
+                pair.setKey(e.getKey());
+                pair.setValue(e.getValue());
+                jmsSinkConfig.add(pair);
+            }
 
-            String selector = properties.getJmsSinkTopicSelector();
-            KeyValuePair jmsTopicSelector = new KeyValuePairImpl();
-            jmsTopicSelector.setKey("jms.topic.selector");
-            jmsTopicSelector.setValue(selector);
-
-            String format = properties.getJmsSinkMessageFormat();
-            KeyValuePair jmsMessageFormat = new KeyValuePairImpl();
-            jmsMessageFormat.setKey("jms.message.format");
-            jmsMessageFormat.setValue(format);
-
-            List<KeyValuePair> jmsSinkConfig = Arrays.asList(jmsBroker, jmsTopicSelector, jmsMessageFormat);
             log.debug("    _createMonitorsForSensor(): JMS SINK configuration: {}",
                     jmsSinkConfig.stream().map(entry -> entry.getKey()+"="+entry.getValue()).collect(Collectors.toList()));
 
