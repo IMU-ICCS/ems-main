@@ -3,6 +3,7 @@ package eu.melodic.upperware.adapter.plangenerator.converter.job;
 import camel.core.Attribute;
 import camel.core.Feature;
 import camel.deployment.ClusterConfiguration;
+import camel.deployment.Configuration;
 import camel.type.StringValue;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterSparkInterface;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
@@ -20,6 +21,11 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 public class SparkInterfaceConverter implements InterfaceConverter<ClusterConfiguration, AdapterSparkInterface> {
+
+    @Override
+    public boolean isInstance(Configuration configuration) {
+        return configuration instanceof ClusterConfiguration;
+    }
 
     @Override
     public AdapterSparkInterface convert(ClusterConfiguration configuration) {
