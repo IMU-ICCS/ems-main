@@ -160,13 +160,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     private void setDependencies1(MelodicGraph<Task, DefaultEdge> graph, List<MonitorTask> monitors, List<ProcessTask> processes, WaitTask waitTask, Type type) {
         monitors.forEach(monitorTask -> {
-            ProcessTask nodeTask = processes
+            ProcessTask processTask = processes
                     .stream()
-                    .filter(processTask -> processTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()))
+                    .filter(pt -> pt.getData().getNodeName().equals(monitorTask.getData().getNodeName()))
                     .findFirst()
                     .orElseThrow(() -> new AdapterException(format("Could not find %s ProcessTask for nodeName %s", type.name(), monitorTask.getData().getNodeName())));
 
-            setDependencies(graph, type, nodeTask, monitorTask);
+            setDependencies(graph, type, processTask, monitorTask);
             setDependencies(graph, type, monitorTask, waitTask);
         });
     }
@@ -229,7 +229,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     private Collection<AdapterMonitor> getMonitors(Collection<AdapterMonitor> m1, Collection<AdapterMonitor> m2) {
         return m1.stream()
-                .filter(m1e -> m2.stream().noneMatch(m2element -> m2element.getMetricName().equals(m1e.getMetricName())))
+                .filter(m1e -> m2.stream().noneMatch(
+                        m2element -> m2element.getMetricName().equals(m1e.getMetricName()) &&
+                                m2element.getNodeName().equals(m1e.getNodeName())
+                        ))
                 .collect(toList());
     }
 
