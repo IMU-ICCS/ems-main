@@ -48,27 +48,27 @@ public class Algo_DlmsTotalCosts {
 
 		if (isValid) {
 			if (!isBothPrivate(srcCp, dstCp)) {
-				if (!isSameCp(srcCp, dstCp))
+				if (!isSameCp(srcCp, dstCp)) {
 					dist += 10;
-				else {
+				}else {
 					Region srcRegion = getRegion(srcDc);
 					Region dstRegion = getRegion(dstDc);
 					if (isValid) {
 						if (!isSameRegion(srcRegion, dstRegion))
 							dist += 5;
-					} else
+					} else {
 						log.error("Problem getting the region");
+					}
 				}
-			}else
+			}else {
 				log.error("Problem getting the cloud provider");
-			if (!isSameZone(srcZone, dstZone))
+			} 
+			if (!isSameZone(srcZone, dstZone)) {
 				dist += 2;
+			}
 		}
 		transfer = size * dist;
 		log.info("The cost of the solution was computed successfully");
-		// if max and min is not known => not so efficient
-		// return (Norm (transfer));	
-		
 		return (transfer>0? Norm (transfer, max, min) : -1);
 	}
 

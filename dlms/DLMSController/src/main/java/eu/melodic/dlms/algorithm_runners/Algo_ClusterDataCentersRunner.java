@@ -7,8 +7,8 @@ import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Cluster data centers to different zones Two clustering algorithms are
- * available with different working mechanisms
+ * Cluster data centers to different zones 
+ * Two clustering algorithms are available with different working mechanisms
  */
 @Slf4j
 public class Algo_ClusterDataCentersRunner extends AlgorithmRunner {
@@ -27,7 +27,6 @@ public class Algo_ClusterDataCentersRunner extends AlgorithmRunner {
 			log.error("Number of parameters is not enough for Algo_ClusterDataCentersRunner");
 			return -1;
 		}
-
 		String clusteringMethod = parameters[0].toString();
 		int numCluster = Integer.parseInt(parameters[1].toString());
 
@@ -38,7 +37,7 @@ public class Algo_ClusterDataCentersRunner extends AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		// TODO Auto-generated method stub
+		// currently utility is not necessary to generate utility by this algorithm
 		return 0;
 	}
 

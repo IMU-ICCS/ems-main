@@ -64,10 +64,11 @@ public class Algo_AffinityAwarenessRunner extends AlgorithmRunner {
 						if (currentUtility == -1) {
 							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
 									toElement.getId());
-						} else
-							// increase iteration
+						} else {
+							// increase iteration and utility
 							numberConnection++;
-						utility += currentUtility;
+							utility += currentUtility;
+						}						
 					}
 				}
 			}

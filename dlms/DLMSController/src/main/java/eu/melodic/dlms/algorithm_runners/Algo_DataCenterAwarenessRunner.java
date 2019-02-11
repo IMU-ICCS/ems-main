@@ -13,9 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Get a list of historical records. Calculate latency and bandwidth between two
- * datacenters for the records based on different weight assignment strategy
- * Combine and normal latency and bandwidth to a single value between two
- * datacenters
+ * datacenters for the records based on different weight assignment strategy.
+ * Combine and normal latency and bandwidth to a single value between two datacenters.
  */
 @Slf4j
 public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
@@ -66,7 +65,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 				for (String toComp : toCompList) {
 					DlmsConfigurationElement toElement = getComp(proposed, toComp);
 					if (!isEmpty(toElement)) {
-						// calculate the utility between application component and datasource
+						// calculate the utility between application component and data center
 						double currentUtility = algo.calculatePerformance(fromElement.getId(), toElement.getId());
 
 						// there is no historical data between the two connections
@@ -74,7 +73,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
 									toElement.getId());
 						} else {
-							// increase iteration
+							// increase iteration and utility
 							numberConnection++;
 							utility += currentUtility;
 						}

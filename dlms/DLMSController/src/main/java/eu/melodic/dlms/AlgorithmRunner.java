@@ -42,7 +42,7 @@ public abstract class AlgorithmRunner {
 	 * Check DlmsConfigurationElement is not empty
 	 */
 	public boolean isEmpty(DlmsConfigurationElement element) {
-		return (element.getId()==null);
+		return element.getId()==null;
 	}
 
 }

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Generate the metrics between two data centers No need of this class in
- * production. No need of this class in production
+ * production. This is to generate data for testing.
  */
 @Slf4j
 public class Algo_DlmsMetricSender_DataCenterRunner extends AlgorithmRunner {

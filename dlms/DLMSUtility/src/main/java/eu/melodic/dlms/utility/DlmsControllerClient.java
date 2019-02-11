@@ -41,9 +41,6 @@ public class DlmsControllerClient {
 
 	/**
 	 * Main method just for stand-alone testing.
-	 *
-	 * <p>
-	 * <b>TODO: May be removed on integration?</b>
 	 */
 
 //	public static void main(String[] args) {

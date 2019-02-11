@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Generate the metrics for data write between application component and data
- * source. No need of this class in production
+ * source. This is to generate data for testing.
  */
 @Slf4j
 public class Algo_DlmsMetricSender_AcDsDataWriteRunner extends AlgorithmRunner {
@@ -52,7 +52,7 @@ public class Algo_DlmsMetricSender_AcDsDataWriteRunner extends AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		// TODO Auto-generated method stub
+		// currently utility is not necessary to generate utility by this algorithm
 		return 0;
 	}
 

@@ -63,11 +63,12 @@ public class Algo_AffinityAwareness {
 	public double calculateAffinity(String from, String to) {
 		double val = -1;
 		// historical execution data exists between two components
-		if (connectionExist(new AcDsKey(from, to)))
+		if (connectionExist(new AcDsKey(from, to))) {
 			val = getAffinity(new AcDsKey(from, to));
 		// if connection exists the other way
-		else if (connectionExist(new AcDsKey(to, from)))
+		}else if (connectionExist(new AcDsKey(to, from))) {
 			val = getAffinity(new AcDsKey(to, from));
+		}
 		return val;
 	}
 
