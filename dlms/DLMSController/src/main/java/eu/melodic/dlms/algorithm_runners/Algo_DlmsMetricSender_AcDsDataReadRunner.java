@@ -8,10 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Generate the metrics for data read between application component and data
- * source No need of this class in production
+ * source. This is to generate data for testing.
  */
 @Slf4j
-public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner {
+public class Algo_DlmsMetricSender_AcDsDataReadRunner extends AlgorithmRunner {
 
 	private Algo_DlmsMetricSender_AcDsDataRead algo;
 
@@ -24,7 +24,7 @@ public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner
 	@Override
 	public int update(Object... parameters) {
 		if (parameters.length < 6) {
-			log.error("Number of parameters is not enough for Algo_DlmsMetricSender_AcDsDataRead");
+			log.error("Number of parameters is not enough for Algo_DlmsMetricSender_AcDsDataReadRunner");
 			return -1;
 		}
 		String jmsServerAddress = parameters[0].toString();
@@ -51,7 +51,7 @@ public class Algo_DlmsMetricSender_AcDsDataReadRunner implements AlgorithmRunner
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		// TODO Auto-generated method stub
+		// currently utility is not necessary to generate utility by this algorithm
 		return 0;
 	}
 

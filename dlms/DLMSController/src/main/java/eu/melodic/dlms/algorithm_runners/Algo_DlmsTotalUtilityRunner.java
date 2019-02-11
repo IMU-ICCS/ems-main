@@ -6,9 +6,11 @@ import eu.melodic.dlms.algorithms.utility.Algo_DlmsTotalUtility;
 import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 
 /**
- * Calculate the cost of solutions
+ * Calculate the total utility of solutions
  */
-public class Algo_DlmsTotalUtilityRunner implements AlgorithmRunner {
+
+// Not yet implemented
+public class Algo_DlmsTotalUtilityRunner extends AlgorithmRunner {
 
 	private Algo_DlmsTotalUtility algo;
 
@@ -16,7 +18,6 @@ public class Algo_DlmsTotalUtilityRunner implements AlgorithmRunner {
 	public void initialize(DlmsControllerApplication application) {
 		
 	}
-
 
 	/**
 	 * Not essential to update this

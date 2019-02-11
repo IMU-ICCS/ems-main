@@ -99,7 +99,7 @@ public class DlmsControllerApplication {
 		return new TimerTask() {
 			@Override
 			public void run() {
-				log.info("running algorithm {}", algo.getName());
+				log.debug("running algorithm {}", algo.getName());
 				int result = runnerInstance.update(algo.getArguments());
 
 				if (result != 0) {

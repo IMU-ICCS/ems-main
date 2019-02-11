@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import camel.deployment.SoftwareComponent;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.latency_bandwidth.Algo_DataCenterAwareness;
@@ -14,12 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Get a list of historical records. Calculate latency and bandwidth between two
- * datacenters for the records based on different weight assignment strategy
- * Combine and normal latency and bandwidth to a single value between two
- * datacenters
+ * datacenters for the records based on different weight assignment strategy.
+ * Combine and normal latency and bandwidth to a single value between two datacenters.
  */
 @Slf4j
-public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
+public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 
 	private Algo_DataCenterAwareness algo;
 
@@ -50,45 +48,41 @@ public class Algo_DataCenterAwarenessRunner implements AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		log.info("Calculating utility from Alo_DataCenterAwarenessRunner");
+		log.info("Calculating utility from Algo_DataCenterAwarenessRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
-		Map<SoftwareComponent, List<SoftwareComponent>> compConMap = diff.getCompConMap();
+		Map<String, List<String>> compConMap = diff.getCompConMap();
 
 		double utility = 0;
 		int numberConnection = 0;
-		for (Map.Entry<SoftwareComponent, List<SoftwareComponent>> comp : compConMap.entrySet()) {
-			SoftwareComponent fromComp = comp.getKey();
-			List<SoftwareComponent> toCompList = comp.getValue();
+		for (Map.Entry<String, List<String>> comp : compConMap.entrySet()) {
+			String fromComp = comp.getKey();
+			List<String> toCompList = comp.getValue();
 			log.debug("Calculating utility");
 			DlmsConfigurationElement fromElement = getComp(proposed, fromComp);
-			// connected to data source
-			for (SoftwareComponent toComp : toCompList) {
-				DlmsConfigurationElement toElement = getComp(proposed, toComp);
-				// calculate the utility between application component and datasource
-				double currentUtility = algo.calculatePerformance(fromElement.getId(), toElement.getId());
 
-				// there is no historical data between the two connections
-				if (currentUtility == -1) {
-					log.debug("No historical data exists between: {} and {}", fromElement.getId(), toElement.getId());
-				} else {
-					// increase iteration
-					numberConnection++;
-					utility += currentUtility;
+			if (!isEmpty(fromElement)) {
+				// connection exists
+				for (String toComp : toCompList) {
+					DlmsConfigurationElement toElement = getComp(proposed, toComp);
+					if (!isEmpty(toElement)) {
+						// calculate the utility between application component and data center
+						double currentUtility = algo.calculatePerformance(fromElement.getId(), toElement.getId());
+
+						// there is no historical data between the two connections
+						if (currentUtility == -1) {
+							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
+									toElement.getId());
+						} else {
+							// increase iteration and utility
+							numberConnection++;
+							utility += currentUtility;
+						}
+					}
 				}
 			}
 		}
 		log.info("Utility for DATA_CENTER_AWARENESS was calculated successfully");
-		return utility / numberConnection;
-	}
-
-	/**
-	 * Get DlmsConfigurationElement matching the connection component name
-	 */
-	private DlmsConfigurationElement getComp(Collection<DlmsConfigurationElement> deployed, SoftwareComponent toComp) {
-		return deployed.stream()
-				.filter(dlmsConfigurationElement -> dlmsConfigurationElement.getId().equals(toComp.getName()))
-				.findFirst()
-				.orElse(new DlmsConfigurationElement());
+		return (numberConnection > 0 ? utility / numberConnection : 0);
 	}
 
 }

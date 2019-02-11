@@ -11,5 +11,5 @@ public interface ApplicationComponentDataSourceAffinityRepository
 		extends JpaRepository<ApplicationComponentDataSourceAffinity, Long> {
 
 	boolean existsByAcDsKey(AcDsKey acDsKey);
-	
+	ApplicationComponentDataSourceAffinity findByAcDsKey(AcDsKey acDsKey);
 }

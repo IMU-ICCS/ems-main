@@ -47,7 +47,7 @@ public class ClusterPAMClustering extends Algo_ClusterDataCenters {
 		for (Cluster cluster : clusterList) {
 			for (String item : cluster.getDataCenterList()) {
 				long dcId = Long.parseLong(item);
-				DataCenterZone dataCenterZone = new DataCenterZone(dcId, i);
+				DataCenterZone dataCenterZone = new DataCenterZone(dcId, item, i);
 				dataCenterZoneList.add(dataCenterZone);
 			}
 			// change to different zone

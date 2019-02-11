@@ -6,9 +6,12 @@ import eu.melodic.dlms.algorithms.source.Algo_SourceAwareness;
 import eu.melodic.dlms.utility.DlmsConfigurationConnection;
 
 /**
- * Calculate the cost of solutions
+ * Calculate the source awareness
+ * Need to experiment with Camel model!!!
  */
-public class Algo_SourceAwarenessRunner implements AlgorithmRunner {
+
+// Not yet implemented
+public class Algo_SourceAwarenessRunner extends AlgorithmRunner {
 
 	private Algo_SourceAwareness algo;
 
@@ -17,7 +20,9 @@ public class Algo_SourceAwarenessRunner implements AlgorithmRunner {
 
 	}
 
-	@Override
+	/**
+	 * Not essential to update this
+	 */
 	public int update(Object... parameters) {
 		return 0;
 	}

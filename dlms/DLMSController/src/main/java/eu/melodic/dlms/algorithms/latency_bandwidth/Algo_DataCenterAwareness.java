@@ -60,12 +60,12 @@ public class Algo_DataCenterAwareness {
 	public double calculatePerformance(String from, String to) {
 		double val = -1;
 		// historical execution data exists between two components
-		if (connectionExist(new TwoDCKey(from, to)))
+		if (connectionExist(new TwoDCKey(from, to))) {
 			val = getPerformance(new TwoDCKey(from, to));
 		// if original connection does not exist
-		else if (connectionExist(new TwoDCKey(to, from)))
+		}else if (connectionExist(new TwoDCKey(to, from))) {
 			val = getPerformance(new TwoDCKey(to, from));
-
+		}
 		return val;
 	}
 	

@@ -2,8 +2,6 @@ package eu.melodic.dlms.utility;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +9,11 @@ import java.util.Map;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import camel.deployment.SoftwareComponent;
 import eu.melodic.dlms.utility.camel.ModelAnalyzer;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +32,6 @@ public class DlmsControllerClient {
 	private final String datasourceServerUrl;
 	private final String camelModelId;
 
-
 	/**
 	 * Constructor for unit tests etc.
 	 */
@@ -44,13 +41,15 @@ public class DlmsControllerClient {
 
 	/**
 	 * Main method just for stand-alone testing.
-	 *
-	 * <p>
-	 * <b>TODO: May be removed on integration?</b>
 	 */
+
 //	public static void main(String[] args) {
+////		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
+////				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
+//		Collection<DlmsConfigurationElement> proposed = new ArrayList<>();
+//		proposed.add(new DlmsConfigurationElement("Component_App", null, 0));
 //		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-//				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
+//				.getUtilityValues(Collections.emptyList(), proposed);
 //		for (String key : result.getResults().keySet()) {
 //			log.info("{} --> {}", key, result.getResults().get(key));
 //		}
@@ -58,9 +57,8 @@ public class DlmsControllerClient {
 
 	/**
 	 * Obtain the deployed application topology from the camel model
-	 *
 	 */
-	public Map<SoftwareComponent, List<SoftwareComponent>> readCamelModel(String camelId) {
+	public Map<String, List<String>> readCamelModel(String camelId) {
 		ModelAnalyzer modelAnalyzer = new ModelAnalyzer();
 		modelAnalyzer.readModel(camelId);
 
@@ -75,16 +73,17 @@ public class DlmsControllerClient {
 	public UtilityMetrics getUtilityValues(Collection<DlmsConfigurationElement> deployed,
 			Collection<DlmsConfigurationElement> proposed) {
 		// get the connections between the application component and datasource
-		Map<SoftwareComponent, List<SoftwareComponent>> compConMap = readCamelModel(this.camelModelId);
+		Map<String, List<String>> compConMap = readCamelModel(this.camelModelId);
 		// get the connections
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			URI uri = new URI(datasourceServerUrl);
-			HttpHeaders headers = createHeaders();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			log.debug("The size of deployed is {}", deployed.size());
 			log.debug("The size of proposed is {}", proposed.size());
-			
+
 			if (deployed.size() > 0 && proposed.size() > 0) {
 				// if some solutions were deployed originally
 				DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
@@ -96,7 +95,7 @@ public class DlmsControllerClient {
 				checkSize(deployed, "deployed");
 				checkSize(proposed, "proposed");
 			}
-			// proposed and deployed solutions are different
+			// if original solutions were empty
 			if (proposed.size() > 0) {
 				log.info("Calculating the utility for the proposed solution");
 				DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
@@ -186,21 +185,6 @@ public class DlmsControllerClient {
 			DlmsConfigurationElement proposedElement) {
 		DlmsConfigurationDiff diff = new DlmsConfigurationDiff(deployedElement, proposedElement);
 		diffBundle.addConfigurationDiff(diff);
-	}
-
-	/**
-	 * Creates the HTTPHeaders with the security information. This will be changed
-	 * in production After we get actual utility
-	 */
-	private HttpHeaders createHeaders() {
-		return new HttpHeaders() {
-			{
-				String auth = "user" + ":" + "9687831d-a0bd-4d7a-993d-5d31e740749b";
-				byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")));
-				String authHeader = "Basic " + new String(encodedAuth);
-				set("Authorization", authHeader);
-			}
-		};
 	}
 
 }
