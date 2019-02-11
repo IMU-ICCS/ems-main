@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import camel.deployment.SoftwareComponent;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.affinity.Algo_AffinityAwareness;
@@ -16,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  * Calculate affinity between application component and data source
  */
 @Slf4j
-public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
+public class Algo_AffinityAwarenessRunner extends AlgorithmRunner {
 
 	private Algo_AffinityAwareness algo;
 
@@ -42,44 +41,40 @@ public class Algo_AffinityAwarenessRunner implements AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
+		log.debug("Calculating utility from Algo_AffinityAwarenessRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
-		Map<SoftwareComponent, List<SoftwareComponent>> compConMap = diff.getCompConMap();
+		Map<String, List<String>> compConMap = diff.getCompConMap();
 
 		double utility = 0;
 		int numberConnection = 0;
-		for (Map.Entry<SoftwareComponent, List<SoftwareComponent>> comp : compConMap.entrySet()) {
-			SoftwareComponent fromComp = comp.getKey();
-			List<SoftwareComponent> toCompList = comp.getValue();
+		for (Map.Entry<String, List<String>> comp : compConMap.entrySet()) {
+			String fromComp = comp.getKey();
+			List<String> toCompList = comp.getValue();
 
 			DlmsConfigurationElement fromElement = getComp(proposed, fromComp);
-			// connected to data source
-			for (SoftwareComponent toComp : toCompList) {
-				DlmsConfigurationElement toElement = getComp(proposed, toComp);
-				// calculate the utility between application component and datasource
-				double currentUtility = algo.calculateAffinity(fromElement.getId(), toElement.getId());
+			if (!isEmpty(fromElement)) {
+				// connected to data source
+				for (String toComp : toCompList) {
+					DlmsConfigurationElement toElement = getComp(proposed, toComp);
+					if (!isEmpty(toElement)) {
+						// calculate the utility between application component and datasource
+						double currentUtility = algo.calculateAffinity(fromElement.getId(), toElement.getId());
 
-				// there is no historical data between the two connections
-				if (currentUtility == -1) {
-					log.debug("No historical data exists between: {} and {}", fromElement.getId(), toElement.getId());
-
-				} else
-					// increase iteration
-					numberConnection++;
-				utility += currentUtility;
+						// there is no historical data between the two connections
+						if (currentUtility == -1) {
+							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
+									toElement.getId());
+						} else {
+							// increase iteration and utility
+							numberConnection++;
+							utility += currentUtility;
+						}						
+					}
+				}
 			}
 		}
 		log.debug("Utility for AFFINITY_AWARENESS was calculated successfully");
-		return utility / numberConnection;
-	}
-
-	/**
-	 * Get DlmsConfigurationElement matching the connection component name
-	 */
-	private DlmsConfigurationElement getComp(Collection<DlmsConfigurationElement> deployed, SoftwareComponent toComp) {
-		return deployed.stream()
-				.filter(dlmsConfigurationElement -> dlmsConfigurationElement.getId().equals(toComp.getName()))
-				.findFirst()
-				.orElse(new DlmsConfigurationElement());
+		return (numberConnection > 0 ? utility / numberConnection : 0);
 	}
 
 }

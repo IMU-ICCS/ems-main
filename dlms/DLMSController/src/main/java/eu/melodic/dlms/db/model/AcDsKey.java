@@ -21,9 +21,9 @@ import lombok.Setter;
 public class AcDsKey implements Serializable {
 	@NotNull
 	@Column(name = "appcomp_id", nullable = false)
-	private Long appCompId;
+	private String appCompId;
 	@NotNull
 	@Column(name = "ds_id", nullable = false)
-	private Long dsID;
+	private String dsID;
 
 }

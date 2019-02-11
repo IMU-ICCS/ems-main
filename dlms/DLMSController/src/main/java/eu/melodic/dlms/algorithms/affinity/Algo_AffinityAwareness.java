@@ -1,5 +1,6 @@
 package eu.melodic.dlms.algorithms.affinity;
 
+import eu.melodic.dlms.db.model.AcDsKey;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
@@ -18,9 +19,11 @@ public class Algo_AffinityAwareness {
 	protected final ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository;
 
 	// configuration parameter
-	@Getter	@Setter
+	@Getter
+	@Setter
 	protected int paraNumRecords;
-	@Getter	@Setter
+	@Getter
+	@Setter
 	private String functionName;
 
 	// can be modified to tune the best parameter settings
@@ -29,6 +32,10 @@ public class Algo_AffinityAwareness {
 	protected double WT_READ = 0.5;
 	protected double WT_AI = 1;
 	protected double WT_DATA_TRANSFER = 0.5;
+
+	/**
+	 * Compute affinity between all the application component and data sources
+	 */
 
 	public int computeAffinity() {
 		switch (functionName) {
@@ -49,13 +56,34 @@ public class Algo_AffinityAwareness {
 		}
 		return 0;
 	}
-	
-	
+
+	/**
+	 * Calculate the affinity between application component and datasources
+	 */
 	public double calculateAffinity(String from, String to) {
 		double val = -1;
 		// historical execution data exists between two components
-		
+		if (connectionExist(new AcDsKey(from, to))) {
+			val = getAffinity(new AcDsKey(from, to));
+		// if connection exists the other way
+		}else if (connectionExist(new AcDsKey(to, from))) {
+			val = getAffinity(new AcDsKey(to, from));
+		}
 		return val;
+	}
+
+	/**
+	 * Check historical execution data between application component and datasource
+	 */
+	public boolean connectionExist(AcDsKey acDsKey) {
+		return acDsAffinityRepository.existsByAcDsKey(acDsKey);
+	}
+
+	/**
+	 * Get the affinity between an application component and a datasource
+	 */
+	public double getAffinity(AcDsKey acDsKey) {
+		return acDsAffinityRepository.findByAcDsKey(acDsKey).getAffinity();
 	}
 
 }

@@ -43,7 +43,7 @@ public class ClusterAfffinityPropagation extends Algo_ClusterDataCenters{
 		for (AffinityPropagation.ClusterIds clusterId : clusterIdList) {
 			for (Integer item : clusterId.getDataCenterIdList()) {
 				long dcId = Long.parseLong(dataCenters.get(item));
-				DataCenterZone dataCenterZone = new DataCenterZone(dcId, i);
+				DataCenterZone dataCenterZone = new DataCenterZone(dcId,dataCenters.get(item), i);
 				dataCenterZoneList.add(dataCenterZone);
 			}
 			// change to different zone 

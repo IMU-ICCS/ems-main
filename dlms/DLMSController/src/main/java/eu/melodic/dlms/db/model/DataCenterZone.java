@@ -16,5 +16,6 @@ import lombok.Setter;
 public class DataCenterZone {
 	@Id
 	private long dataCenterId;
+	private String dataCenterName;
 	private int zone;
 }
