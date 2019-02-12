@@ -11,7 +11,11 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import eu.melodic.models.services.adapter.*;
 import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.exception.AdapterException;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.DockerInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.LanceInterfaceConverter;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
+import eu.passage.upperware.commons.model.tools.CdoTool;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,7 +33,11 @@ import static java.lang.String.format;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class MonitorConverter implements ModelConverter<DeploymentInstanceModel, List<AdapterMonitor>> {
+
+    private LanceInterfaceConverter lanceInterfaceConverter;
+    private DockerInterfaceConverter dockerInterfaceConverter;
 
     @Override
     public List<AdapterMonitor> toComparableModel(DeploymentInstanceModel model) {
@@ -40,6 +48,9 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
 
         return model.getSoftwareComponentInstances()
                 .stream()
+                .filter(softwareComponentInstance ->
+                    lanceInterfaceConverter.isInstance(CdoTool.getFirstElement(softwareComponentInstance.getType().getConfigurations())) ||
+                    dockerInterfaceConverter.isInstance(CdoTool.getFirstElement(softwareComponentInstance.getType().getConfigurations())))
                 .map(softwareComponentInstance -> toMonitors(softwareComponentInstance, jobName, monitors))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());

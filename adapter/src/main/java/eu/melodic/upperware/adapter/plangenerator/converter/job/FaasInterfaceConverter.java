@@ -1,6 +1,7 @@
 package eu.melodic.upperware.adapter.plangenerator.converter.job;
 
 import camel.core.Feature;
+import camel.deployment.Configuration;
 import camel.deployment.EventConfiguration;
 import camel.deployment.ServerlessConfiguration;
 import camel.deployment.SoftwareComponent;
@@ -24,6 +25,11 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class FaasInterfaceConverter implements InterfaceConverter<ServerlessConfiguration, AdapterFaasInterface> {
+
+    @Override
+    public boolean isInstance(Configuration configuration) {
+        return configuration instanceof ServerlessConfiguration;
+    }
 
     @Override
     public AdapterFaasInterface convert(ServerlessConfiguration configuration) {

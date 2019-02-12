@@ -1,5 +1,6 @@
 package eu.melodic.upperware.adapter.plangenerator.converter.job;
 
+import camel.deployment.Configuration;
 import camel.deployment.ScriptConfiguration;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterDockerInterface;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
@@ -13,6 +14,15 @@ import java.util.Map;
 @Slf4j
 @Service
 public class DockerInterfaceConverter implements InterfaceConverter<ScriptConfiguration, AdapterDockerInterface> {
+
+    @Override
+    public boolean isInstance(Configuration configuration) {
+        if (configuration instanceof ScriptConfiguration) {
+            ScriptConfiguration scriptConfiguration = (ScriptConfiguration) configuration;
+            return DOCKER_TAG.equals(scriptConfiguration.getDevopsTool());
+        }
+        return false;
+    }
 
     @Override
     public AdapterDockerInterface convert(ScriptConfiguration configuration) {

@@ -99,10 +99,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
 //      2) Node
         Collection<AdapterRequirement> nodesToRemove = getAdapterRequirementsToRemove(oldModel.getAdapterRequirements(), newModel.getAdapterRequirements());
-        log.debug("Nodes to remove: {}", processesToCreate);
+        log.debug("Nodes to remove: {}", nodesToRemove);
 
         Collection<AdapterRequirement> nodesToCreate = getAdapterRequirementsToCreate(newModel.getAdapterRequirements(), oldModel.getAdapterRequirements());
-        log.debug("Nodes to create: {}", processesToCreate);
+        log.debug("Nodes to create: {}", nodesToCreate);
 
         Collection<NodeTask> nodeTasks = genNodeReconfigTasks(graph, nodesToCreate, nodesToRemove);
 

@@ -2,10 +2,7 @@ package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.*;
 import camel.deployment.Communication;
-import eu.melodic.upperware.adapter.plangenerator.converter.job.DockerInterfaceConverter;
-import eu.melodic.upperware.adapter.plangenerator.converter.job.FaasInterfaceConverter;
-import eu.melodic.upperware.adapter.plangenerator.converter.job.LanceInterfaceConverter;
-import eu.melodic.upperware.adapter.plangenerator.converter.job.SparkInterfaceConverter;
+import eu.melodic.upperware.adapter.plangenerator.converter.job.*;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
@@ -28,11 +25,10 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     private SparkInterfaceConverter sparkInterfaceConverter;
     private DockerInterfaceConverter dockerInterfaceConverter;
     private FaasInterfaceConverter faasInterfaceConverter;
+    private DefaultInstanceConverter defaultInstanceConverter;
 
     private static final String PORT_PROVIDED = "PortProvided";
     private static final String PORT_REQUIRED = "PortRequired";
-
-    private static final String DOCKER_TAG = "docker";
 
     @Override
     public AdapterJob toComparableModel(DeploymentInstanceModel model) {
@@ -64,7 +60,7 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     }
 
     private AdapterTaskType chooseTaskType(SoftwareComponent softwareComponent) {
-        return isFaasComponent(getConfiguration(softwareComponent)) ? AdapterTaskType.BATCH : AdapterTaskType.SERVICE;
+        return faasInterfaceConverter.isInstance (getConfiguration(softwareComponent)) ? AdapterTaskType.BATCH : AdapterTaskType.SERVICE;
     }
 
 
@@ -72,50 +68,21 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
         Configuration configuration = getConfiguration(softwareComponent);
 
         AdapterTaskInterface result;
-        if (isLanceComponent(configuration)) {
+        if (lanceInterfaceConverter.isInstance(configuration)) {
             result = lanceInterfaceConverter.convert((ScriptConfiguration) configuration);
-        } else if (isDockerComponent(configuration)) {
+        } else if (dockerInterfaceConverter.isInstance(configuration)) {
             result = dockerInterfaceConverter.convert((ScriptConfiguration) configuration);
-        } else if (isSparkComponent(configuration)) {
+        } else if (sparkInterfaceConverter.isInstance(configuration)) {
             result = sparkInterfaceConverter.convert((ClusterConfiguration) configuration);
-        } else if (isFaasComponent(configuration)) {
+        } else if (faasInterfaceConverter.isInstance(configuration)) {
             result = faasInterfaceConverter.convert((ServerlessConfiguration) configuration);
-        } else if (isPlatformComponent(configuration)) {
-            result = new AdapterTaskInterface();
+        } else if (defaultInstanceConverter.isInstance(configuration)) {
+            result = defaultInstanceConverter.convert(configuration);
         } else {
             throw new IllegalStateException("Unknown Interface");
         }
         log.info("Configuration {} for {} converted to: {}", configuration.getName(), softwareComponent.getName(), result);
         return Collections.singletonList(result);
-    }
-
-
-    private boolean isLanceComponent(Configuration configuration) {
-        if (configuration instanceof ScriptConfiguration) {
-            ScriptConfiguration scriptConfiguration = (ScriptConfiguration) configuration;
-            return !DOCKER_TAG.equals(scriptConfiguration.getDevopsTool());
-        }
-        return false;
-    }
-
-    private boolean isSparkComponent(Configuration configuration) {
-        return configuration instanceof ClusterConfiguration;
-    }
-
-    private boolean isDockerComponent(Configuration configuration) {
-        if (configuration instanceof ScriptConfiguration) {
-            ScriptConfiguration scriptConfiguration = (ScriptConfiguration) configuration;
-            return DOCKER_TAG.equals(scriptConfiguration.getDevopsTool());
-        }
-        return false;
-    }
-
-    private boolean isFaasComponent(Configuration configuration) {
-        return configuration instanceof ServerlessConfiguration;
-    }
-
-    private boolean isPlatformComponent(Configuration configuration) {
-        throw new UnsupportedOperationException("Method not implemented yet");
     }
 
     private List<AdapterPort> convertToPorts(SoftwareComponent softwareComponent, List<Communication> communications) {
