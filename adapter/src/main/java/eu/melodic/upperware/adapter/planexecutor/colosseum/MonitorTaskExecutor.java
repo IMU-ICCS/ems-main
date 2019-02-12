@@ -36,9 +36,6 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
         String fistNodeId = getFistNodeId(nodeGroup);
 
-//        ProcessGroup processGroup = getProcessGroupByNodeId(fistNodeId)
-//                .orElseThrow(() -> new AdapterException(format("Could not find ProcessGroup (Simple) with nodeId %s", fistNodeId)));
-
         Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
         if (!processGroupByNodeId.isPresent()) {
             log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
@@ -83,10 +80,9 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
                 .tags(convertToTags(taskBody.getTags()));
     }
 
-    private List<MonitoringTag> convertToTags(List<Pair<String, String>> tags) {
+    private Map<String, String> convertToTags(List<Pair<String, String>> tags) {
         return tags.stream()
-                .map(pair -> new MonitoringTag().key(pair.getKey()).value(pair.getValue()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
     private List<DataSink> convertToSinks(List<AdapterSink> sinks) {
