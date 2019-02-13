@@ -252,9 +252,11 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                     ComposedExpression composedExpression = constraintService.getByName(cp.getAuxExpressions(), name)
                             .orElseThrow(() -> new GeneratorException("AuxExpression " + name + " not created!"));
 
-                    Constant tresholdConstant = constantService.createDoubleConstant(threshold);
-                    cp.getConstants().add(tresholdConstant);
-                    cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), tresholdConstant));
+
+                    Constant thresholdConstant = constantService.createIntegerConstant((int) threshold);
+                    log.info("Threshold for constraint {} is cast from double {} to int {} ", name, threshold, (int) threshold);
+                    cp.getConstants().add(thresholdConstant);
+                    cp.getConstraints().add(constraintService.createComparisonExpression(composedExpression, convertComparator(comparisonOperator), thresholdConstant));
                 }
         });
 
