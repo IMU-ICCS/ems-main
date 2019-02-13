@@ -31,8 +31,8 @@ fi
 export JAVA_OPTS BROKER_CEP_TEST
 
 # check logger configuration
-if [[ -z "$LOG_CONFIG_FILE" ]]; then
-    LOG_CONFIG_FILE=${MELODIC_CONFIG_DIR}/logback-spring.xml
+if [ -z "$LOG_CONFIG_FILE" ] then
+    LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-spring.xml
 fi
 
 # Use when Esper is packaged in control-service.jar
