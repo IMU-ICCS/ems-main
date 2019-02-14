@@ -160,7 +160,7 @@ public class Coordinator {
 
             } catch (Exception ex) {
                 log.error("Error: ", ex);
-                notifyPlanRejected(resourceName, notificationUri, uuid);
+                notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
             }
         } else {
             log.warn("Cannot pre-authorize target model. Target model is null");
