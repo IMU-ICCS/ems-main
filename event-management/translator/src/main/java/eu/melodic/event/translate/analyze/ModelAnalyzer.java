@@ -29,6 +29,7 @@ import eu.melodic.models.interfaces.ems.*;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.eclipse.emf.common.util.EList;
 
 import java.util.*;
@@ -871,7 +872,7 @@ public class ModelAnalyzer {
                 Sink.TypeType sinkTypeType = Sink.TypeType.valueOf(sinkType);
                 Map<String,String> configMap = properties.getSinkConfig().get(sinkType);
 
-                if (configMap==null || configMap.size()==0) {
+                if (MapUtils.isEmpty(configMap)) {
                     log.warn("    _initializeSinks(): WARN: Missing configuration for sink type: {}", sinkType);
                     continue;
                 }
@@ -879,7 +880,7 @@ public class ModelAnalyzer {
                 // Create configuration for sink type
                 List<KeyValuePair> sinkTypeConfig = new ArrayList<>();
                 for (Map.Entry<String,String> e : configMap.entrySet()) {
-                    KeyValuePairImpl pair = new KeyValuePairImpl();
+                    KeyValuePair pair = new KeyValuePairImpl();
                     pair.setKey(e.getKey());
                     pair.setValue(e.getValue());
                     sinkTypeConfig.add(pair);
@@ -888,7 +889,7 @@ public class ModelAnalyzer {
                 log.debug("    _initializeSinks(): {} sink type configuration: {}", sinkType,
                         sinkTypeConfig.stream()
                                 .map(entry -> entry.getKey() + "=" + entry.getValue())
-                                .collect(Collectors.toList()));
+                                .collect(Collectors.joining(", ", "[", "]")));
 
                 // Create sink entry
                 Sink sink = new SinkImpl();

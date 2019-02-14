@@ -43,7 +43,7 @@ public class CepEvalAggregator implements AggregationMethod {
         synchronized (entries) {
             if (entries.size() == 0) {
                 log.debug("CepEvalAggregator.getValue(): END_0: aggregator-hash={}, result=0", hashCode());
-                return new Double(0);
+                return 0;
             }
 
             // get formula and stream names (they must be identical for all entries)

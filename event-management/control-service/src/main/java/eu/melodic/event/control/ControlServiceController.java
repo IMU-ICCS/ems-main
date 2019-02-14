@@ -19,6 +19,7 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -158,21 +159,6 @@ public class ControlServiceController {
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
         // Extract node information from json
-        /*JsonParser parser = new JsonParser();
-        JsonObject jo = parser.parse(jsonNode).getAsJsonObject();
-        String nodeId = jo.get("id").getAsString();
-        String nodeName = jo.get("name").getAsString();
-        String nodeType = jo.get("type").getAsString();
-        //String nodeProvider = jo.getAsJsonObject("nodeProperties").get("providerId").getAsString();
-        //String nodeOs = jo.getAsJsonObject("nodeProperties").getAsJsonObject("operatingSystem").get("operatingSystemFamily").getAsString();
-        //String nodeIpAddress = jo.getAsJsonObject("connectTo").get("ip").getAsString();
-        String nodeProvider = jo.get("providerId").getAsString();
-        String nodeOs = jo.get("operatingSystem").getAsString();
-        String nodeIpAddress = jo.get("ip").getAsString();
-        log.info("ControlServiceController.baguetteRegisterNode(): Node information: id={}, name={}, type={}, provider={}, os={}, ip-address={}",
-                nodeId, nodeName, nodeType, nodeProvider, nodeOs, nodeIpAddress);*/
-
-        // Extract node information from json
         Type type = new TypeToken<Map<String, String>>(){}.getType();
         Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
         log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
@@ -185,8 +171,8 @@ public class ControlServiceController {
 
         // Get web server base URL
         String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
-        if (staticResourceContext.endsWith("/**")) staticResourceContext = staticResourceContext.substring(0,staticResourceContext.length()-3);
-        if (staticResourceContext.endsWith("/*")) staticResourceContext = staticResourceContext.substring(0,staticResourceContext.length()-2);
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
         String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);

@@ -28,8 +28,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
-//import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
-
 /**
  * Custom SSH server
  */
@@ -102,7 +100,6 @@ public class Sshd {
                 }
                         .setCredentials(configuration.getCredentials())
         );
-        //sshd.setPublickeyAuthenticator( new PublickeyAuthenticator() { public boolean authenticate(String username, PublicKey key, ServerSession session) { return true; } } );
 
         // Start SSH server and accept connections
         sshd.start();

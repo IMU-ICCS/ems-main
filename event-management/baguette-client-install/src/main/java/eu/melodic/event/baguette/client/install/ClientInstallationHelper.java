@@ -57,7 +57,6 @@ public class ClientInstallationHelper implements InitializingBean {
     }
 
     private String getResourceAsString(String resourcePath) throws IOException {
-        //InputStream resource = new ClassPathResource(resourcePath).getInputStream();
         InputStream resource = new FileSystemResource(resourcePath).getInputStream();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             return reader.lines().collect(Collectors.joining("\n"));
@@ -86,7 +85,6 @@ public class ClientInstallationHelper implements InitializingBean {
 
         // Get parameters
         log.debug("prepareInstallationInstructionsForLinux(): properties: {}", properties);
-        String installationDir = properties.getBaseDir();
         String checkInstallationFile = properties.getCheckInstalledFile();
 
         String baseDownloadUrl = _prepareUrl( properties.getDownloadUrl(), baseUrl);
@@ -101,7 +99,7 @@ public class ClientInstallationHelper implements InitializingBean {
 
         // Load client config. template and prepare configuration
         String clientConfTemplate = getResourceAsString(clientConfTemplateFile);
-        HashMap<String,String> valueMap = new HashMap<>();
+        Map<String,String> valueMap = new HashMap<>();
         valueMap.put("BAGUETTE_CLIENT_ID", clientId);
         valueMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
         valueMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());
@@ -126,15 +124,15 @@ public class ClientInstallationHelper implements InitializingBean {
 		
 		// Create Baguette Client installation directories
         installationInstructions.appendLog("Create Baguette Client installation directories");
-        properties.getMkdirs().forEach(dir -> {
-            installationInstructions.appendExec("sudo mkdir -p "+dir);
-        });
+        properties.getMkdirs().forEach(dir ->
+            installationInstructions.appendExec("sudo mkdir -p "+dir)
+        );
 
 		// Create files using touch
         installationInstructions.appendLog("Touch files");
-        properties.getTouchFiles().forEach(f -> {
-            installationInstructions.appendExec("sudo touch "+f);
-        });
+        properties.getTouchFiles().forEach(f ->
+            installationInstructions.appendExec("sudo touch "+f)
+        );
 
         // Download Baguette Client installation script
         installationInstructions

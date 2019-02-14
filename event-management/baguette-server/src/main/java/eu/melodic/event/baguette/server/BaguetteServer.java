@@ -211,8 +211,7 @@ public class BaguetteServer {
     public String registerClient(Map<String,Object> nodeInfoMap) {
         log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
 
-        HashMap<String,Object> nodeInfo = new HashMap<>();
-        nodeInfo.putAll(nodeInfoMap);
+        Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);
 
         String formatter = getConfiguration().getClientIdFormat();
         String clientId = null;

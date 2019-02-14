@@ -33,8 +33,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-//import eu.melodic.event.brokercep.event.MetricEvent;
-
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
 @Slf4j
@@ -194,11 +192,6 @@ public class BrokerCepService {
             return;
         _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
     }
-
-	/*public synchronized void publishEvent(String connectionString, String destinationName, MetricEvent event) throws JMSException {
-		if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event)) return;
-		_publishEvent(connectionString, destinationName, event);
-	}*/
 
     // When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
     private final static java.util.regex.Pattern urlPattern = java.util.regex.Pattern.compile("^([a-z]+://[a-zA-Z0-9_\\.\\-]+:[0-9]+)([/#\\?].*)?$");
