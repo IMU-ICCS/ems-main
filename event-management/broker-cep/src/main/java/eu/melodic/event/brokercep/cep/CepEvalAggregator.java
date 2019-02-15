@@ -34,9 +34,8 @@ public class CepEvalAggregator implements AggregationMethod {
     }
 
     public void leave(Object value) {
-        //XXX: TODO: see Pawel's comment: "Shouldn't it be: entries.remove(value);" ???
-        Object[] oldValue = entries.remove(0);
-        log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, removed={}, hash={}", hashCode(), value, oldValue, value.hashCode());
+        boolean deleted = entries.remove(value);
+        log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, removed={}, hash={}", hashCode(), value, deleted, value.hashCode());
     }
 
     public Object getValue() {
@@ -44,7 +43,7 @@ public class CepEvalAggregator implements AggregationMethod {
         synchronized (entries) {
             if (entries.size() == 0) {
                 log.debug("CepEvalAggregator.getValue(): END_0: aggregator-hash={}, result=0", hashCode());
-                return new Double(0);
+                return 0;
             }
 
             // get formula and stream names (they must be identical for all entries)

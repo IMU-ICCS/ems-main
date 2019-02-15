@@ -17,6 +17,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Data
 @Validated
 @Configuration
@@ -54,4 +58,15 @@ public class CamelToEplTranslatorProperties {
     private String[] exportFormats;
     @Value("${dag.export.image-width:-1}")
     private int exportImageWidth;
+
+    // Active sink types
+    @Value("${active-sinks}")
+    private List<String> sinks;
+
+    // Sink type configurations
+    private final Map<String,Map<String,String>> sinkConfig = new HashMap<>();
+
+    public Map<String,Map<String,String>> getSinkConfig() {
+        return sinkConfig;
+    }
 }

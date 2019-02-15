@@ -28,12 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
-import javax.management.ObjectName;
+import javax.management.*;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
-
-//import eu.melodic.event.brokercep.event.MetricEvent;
 
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
@@ -41,7 +39,7 @@ import java.util.Set;
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;
-    private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
+    private BrokerService brokerService;
     private ActiveMQConnectionFactory connectionFactory;
     private PasswordEncoder passwordEncoder;
 
@@ -58,11 +56,13 @@ public class BrokerCepService {
     public synchronized void clearState() {
         log.info("BrokerCepService.clearState(): Clearing Broker-CEP state...");
 
+        // Clear CEP service state
         cepService.clearStatements();
         cepService.clearEventTypes();
         cepService.clearConstants();
         cepService.clearFunctionDefinitions();
 
+        // Clear Broker service state
         try {
             BrokerView bv = brokerService.getAdminView();
             ObjectName[] queues = bv.getQueues();
@@ -79,6 +79,48 @@ public class BrokerCepService {
                 bv.removeQueue(name);
                 log.info("BrokerCepService.clearState(): Topic removed: {}", name);
             }
+
+            //XXX: remove JMX tests
+            /*ConnectionContext cc = brokerService.getAdminConnectionContext();
+            ActiveMQDestination dest[] = brokerService.getRegionBroker().getDestinations();
+            long removeDelay = 1;
+            for (ActiveMQDestination d : dest) {
+                if (d.getQualifiedName().indexOf("://ActiveMQ.")<0) {
+                    String name = d.getDestinationTypeAsString() + " " + d.getQualifiedName();
+                    brokerService.getRegionBroker().removeDestination(null, d, removeDelay);
+                    log.info("BrokerCepService.clearState(): Destination removed: {}", name);
+                }
+            }*/
+
+            //XXX: remove JMX tests
+            /*log.warn(">>>>>>>>>>> MBeans: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(null, null));*/
+/*            String topicMBeanNames = "org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName()
+                            +",destinationType=Topic,destinationName=*";
+            Set<ObjectInstance> instances = brokerService.getManagementContext()
+                    .getMBeanServer().queryMBeans(new ObjectName(topicMBeanNames), null);*/
+            /*log.warn(">>>>>>>>>>> TopicViews: {}", instances);*/
+            /*for (ObjectInstance oi: instances) {
+                log.warn("---->  oi: {} -> {} -> {}", oi.getObjectName(), oi.getClassName(), oi.getObjectName().getKeyProperty("destinationName"));
+            }*/
+
+/*            ObjectName brokerNameQuery =
+                    new ObjectName("org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName());
+            instances.stream()
+                    .map(ObjectInstance::getObjectName)
+                    .map(objName -> objName.getKeyProperty("destinationName"))
+                    .filter(name -> ! name.startsWith("ActiveMQ."))
+                    .peek(topicName -> log.warn("---->  {}", topicName))
+                    .forEach(topicName -> {
+                        try {
+                            brokerService.getManagementContext().getMBeanServer()
+                                    .invoke(brokerNameQuery,
+                                            "removeTopic",
+                                            new String[]{topicName},
+                                            new String[]{"java.lang.String"});
+                        } catch (Exception e) {
+                            log.error("Exception while deleting topic: {} -> {}", topicName, e);
+                        }
+                    });*/
 
             log.info("BrokerCepService.clearState(): Broker-CEP state cleared");
         } catch (Exception ex) {
@@ -150,11 +192,6 @@ public class BrokerCepService {
             return;
         _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
     }
-
-	/*public synchronized void publishEvent(String connectionString, String destinationName, MetricEvent event) throws JMSException {
-		if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event)) return;
-		_publishEvent(connectionString, destinationName, event);
-	}*/
 
     // When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
     private final static java.util.regex.Pattern urlPattern = java.util.regex.Pattern.compile("^([a-z]+://[a-zA-Z0-9_\\.\\-]+:[0-9]+)([/#\\?].*)?$");

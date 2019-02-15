@@ -29,6 +29,7 @@ import eu.melodic.models.interfaces.ems.*;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.eclipse.emf.common.util.EList;
 
 import java.util.*;
@@ -42,8 +43,6 @@ import java.util.stream.Collectors;
 public class ModelAnalyzer {
     private CamelToEplTranslatorProperties properties;
 
-    // ================================================================================================================
-    // Public API
     private List<Sink> EMS_SINKS;
 
     // ================================================================================================================
@@ -862,6 +861,49 @@ public class ModelAnalyzer {
         _TC.addComponentSensorPair(objContext, sensor);
     }
 
+    protected synchronized void _initializeSinks() {
+        if (EMS_SINKS == null) {
+            log.debug("    _initializeSinks(): Active Sinks type: {}", properties.getSinks());
+            log.debug("    _initializeSinks(): Sink type configurations: {}", properties.getSinkConfig());
+
+            List<Sink> sinks = new ArrayList<>();
+            for (String sinkType : properties.getSinks()) {
+                log.trace("    _initializeSinks(): Processing sink type: {}", sinkType);
+                Sink.TypeType sinkTypeType = Sink.TypeType.valueOf(sinkType);
+                Map<String,String> configMap = properties.getSinkConfig().get(sinkType);
+
+                if (MapUtils.isEmpty(configMap)) {
+                    log.warn("    _initializeSinks(): WARN: Missing configuration for sink type: {}", sinkType);
+                    continue;
+                }
+
+                // Create configuration for sink type
+                List<KeyValuePair> sinkTypeConfig = new ArrayList<>();
+                for (Map.Entry<String,String> e : configMap.entrySet()) {
+                    KeyValuePair pair = new KeyValuePairImpl();
+                    pair.setKey(e.getKey());
+                    pair.setValue(e.getValue());
+                    sinkTypeConfig.add(pair);
+                }
+
+                log.debug("    _initializeSinks(): {} sink type configuration: {}", sinkType,
+                        sinkTypeConfig.stream()
+                                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                                .collect(Collectors.joining(", ", "[", "]")));
+
+                // Create sink entry
+                Sink sink = new SinkImpl();
+                sink.setType(sinkTypeType);
+                sink.setConfiguration(sinkTypeConfig);
+                sinks.add(sink);
+            }
+
+            // Store sink configurations
+            EMS_SINKS = sinks;
+            log.debug("    _initializeSinks(): Sink type configurations initialized");
+        }
+    }
+
     protected Set<Monitor> _createMonitorsForSensor(TranslationContext _TC, ObjectContext objContext, Sensor sensor, DAGNode sensorDagNode) {
         log.info("    _createMonitorsForSensor(): sensor={}", sensor.getName());
 
@@ -902,10 +944,7 @@ public class ModelAnalyzer {
 
         // Initialize JMS_SINK if needed
         if (EMS_SINKS == null) {
-            Sink sink = new SinkImpl();
-            sink.setType(Sink.TypeType.JMS);
-            List<Sink> sinks = Collections.singletonList(sink);
-            EMS_SINKS = sinks;
+            _initializeSinks();
         }
 
         // Get additional configuration
@@ -934,7 +973,8 @@ public class ModelAnalyzer {
                         String key = attr.getName();
                         String value = null;
 
-                        if (attr.getValue() instanceof StringValue) value = ((StringValue) attr.getValue()).getValue();
+                        if (attr.getValue() instanceof StringValue)
+                            value = ((StringValue) attr.getValue()).getValue();
                         else if (attr.getValue() instanceof BooleanValue)
                             value = Boolean.toString(((BooleanValue) attr.getValue()).isValue());
                         else if (attr.getValue() instanceof IntValue)
@@ -997,7 +1037,8 @@ public class ModelAnalyzer {
 
         // Set sesnor interval
         if (isPull) {
-            if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE) {
+            if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE)
+            {
                 sensorInterval = properties.getSensorDefaultInterval();
             }
             Interval iv = new IntervalImpl();

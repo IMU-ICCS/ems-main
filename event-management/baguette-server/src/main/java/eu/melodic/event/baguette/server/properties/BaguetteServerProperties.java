@@ -50,6 +50,8 @@ public class BaguetteServerProperties {
     @Min(-1)
     private int NumberOfSegments;
 
+    @Value("#{ '${baguette.server.address}'!='' ? '${baguette.server.address}' : T(eu.melodic.event.baguette.server.util.NetUtil).getPublicIpAddress() }")
+    private String serverAddress;
     @Value("${baguette.server.port:2222}")
     @Min(value = 1, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
     @Max(value = 65535, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
@@ -64,6 +66,10 @@ public class BaguetteServerProperties {
 
     @Value("${baguette.server.debug.client-address-override-allowed:false}")
     private boolean clientAddressOverrideAllowed;
+    @Value("${baguette.server.client-id-format}")
+    private String clientIdFormat;
+    @Value("${baguette.server.client-id-format.escape:~}")
+    private String clientIdFormatEscape;
 
     private PasswordEncoder passwordEncoder = _createPasswordEncoder();
     private final CredentialsMap credentials = new CredentialsMap(passwordEncoder);

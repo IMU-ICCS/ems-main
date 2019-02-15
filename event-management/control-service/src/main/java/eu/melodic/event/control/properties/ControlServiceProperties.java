@@ -64,4 +64,7 @@ public class ControlServiceProperties {
     private long exitGracePeriod;
     @Value("${control.exit-code:0}")
     private int exitCode;
+
+    @Value("${static.resource.context:/**}")
+    private String staticResourceContext;
 }

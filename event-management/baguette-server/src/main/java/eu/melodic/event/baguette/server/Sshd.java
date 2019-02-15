@@ -12,6 +12,8 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.Factory;
+import org.apache.sshd.common.config.keys.KeyUtils;
+import org.apache.sshd.common.config.keys.impl.RSAPublicKeyDecoder;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
@@ -20,10 +22,11 @@ import org.apache.sshd.server.session.ServerSession;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-
-//import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 
 /**
  * Custom SSH server
@@ -33,6 +36,8 @@ public class Sshd {
     private ServerCoordinator coordinator;
     private BaguetteServerProperties configuration;
     private SshServer sshd;
+    private String serverPubkey;
+    private String serverPubkeyFingerprint;
 
     private boolean heartbeatOn;
     private long heartbeatPeriod;
@@ -45,6 +50,7 @@ public class Sshd {
         // Configure SSH server
         int port = configuration.getServerPort();
         String serverKeyFilePath = configuration.getServerKeyFile();
+        log.info("SSH server: Public IP address {}", configuration.getServerAddress());
         log.info("SSH server: Starting on port {}", port);
 
         sshd = SshServer.setUpDefaultServer();
@@ -52,6 +58,7 @@ public class Sshd {
         File serverKeyFile = new File(serverKeyFilePath);
         log.info("SSH server: Server key file: {}", serverKeyFile.getAbsolutePath());
         sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(serverKeyFile));
+        _loadPubkeyAndFingerprint();
 
         sshd.setShellFactory(
                 new Factory<Command>() {
@@ -93,8 +100,6 @@ public class Sshd {
                 }
                         .setCredentials(configuration.getCredentials())
         );
-        //sshd.setPublickeyAuthenticator( new PublickeyAuthenticator() { public boolean authenticate(String username, PublicKey key, ServerSession session) { return true; } } );
-
 
         // Start SSH server and accept connections
         sshd.start();
@@ -195,5 +200,41 @@ public class Sshd {
             log.info("SSH server: Sending constants to client {} : {}", csc.getId(), constants);
             csc.sendConstants(constants);
         }
+    }
+
+    public String getPublicKey() {
+        if (serverPubkey==null) _loadPubkeyAndFingerprint();
+        return serverPubkey;
+    }
+
+    public String getPublicKeyFingerprint() {
+        if (serverPubkeyFingerprint==null) _loadPubkeyAndFingerprint();
+        return serverPubkeyFingerprint;
+    }
+
+    private synchronized void _loadPubkeyAndFingerprint() {
+        String serverKeyFilePath = configuration.getServerKeyFile();
+        log.debug("_loadPubkeyAndFingerprint(): Server Key file: {}", serverKeyFilePath);
+        File serverKeyFile = new File(serverKeyFilePath);
+        SimpleGeneratorHostKeyProvider z = new SimpleGeneratorHostKeyProvider(serverKeyFile);
+        z.loadKeys().forEach(kp -> {
+            log.debug("_loadPubkeyAndFingerprint(): KeyPair found: {}", kp.toString());
+            PublicKey serverKey = kp.getPublic();
+            log.debug("_loadPubkeyAndFingerprint(): Pubkey: {}", kp.toString());
+            try {
+                log.debug("_loadPubkeyAndFingerprint(): Decoder class: {}", KeyUtils.getPublicKeyEntryDecoder(serverKey).getClass());
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                ((RSAPublicKeyDecoder) KeyUtils.getPublicKeyEntryDecoder(serverKey)).encodePublicKey(baos, (RSAPublicKey) serverKey);
+                String keyStr = new String(Base64.getEncoder().encode(baos.toByteArray()));
+
+                this.serverPubkey = keyStr;
+                this.serverPubkeyFingerprint = KeyUtils.getFingerPrint(serverKey);
+                log.debug("_loadPubkeyAndFingerprint(): Server public key: \n{}", keyStr);
+                log.debug("_loadPubkeyAndFingerprint(): Fingerprint: {}", serverPubkeyFingerprint);
+
+            } catch (Exception ex) {
+                log.error("_loadPubkeyAndFingerprint(): EXCEPTION: {}", ex);
+            }
+        });
     }
 }

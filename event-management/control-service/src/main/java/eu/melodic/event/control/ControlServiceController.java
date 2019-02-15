@@ -10,14 +10,16 @@
 package eu.melodic.event.control;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
 import eu.melodic.event.baguette.client.install.OrchestrationHelper;
+import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -25,7 +27,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -150,34 +154,32 @@ public class ControlServiceController {
     @RequestMapping(value = "/baguette/registerNode", method = POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) {
+    public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) throws Exception {
         log.info("ControlServiceController.baguetteRegisterNode(): Invoked");
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
         // Extract node information from json
-        JsonParser parser = new JsonParser();
-        JsonObject jo = parser.parse(jsonNode).getAsJsonObject();
-        String nodeId = jo.get("id").getAsString();
-        String nodeName = jo.get("name").getAsString();
-        String nodeType = jo.get("type").getAsString();
-        /*String nodeProvider = jo.getAsJsonObject("nodeProperties").get("providerId").getAsString();
-        String nodeOs = jo.getAsJsonObject("nodeProperties").getAsJsonObject("operatingSystem").get("operatingSystemFamily").getAsString();
-        String nodeIpAddress = jo.getAsJsonObject("connectTo").get("ip").getAsString();*/
-        String nodeProvider = jo.get("providerId").getAsString();
-        String nodeOs = jo.get("operatingSystem").getAsString();
-        String nodeIpAddress = jo.get("ip").getAsString();
-        log.info("ControlServiceController.baguetteRegisterNode(): Node information: id={}, name={}, type={}, provider={}, os={}, ip-address={}",
-                nodeId, nodeName, nodeType, nodeProvider, nodeOs, nodeIpAddress);
+        Type type = new TypeToken<Map<String, String>>(){}.getType();
+        Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
+        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
+        String nodeId = (String) nodeMap.get("id");
+        String nodeOs = (String) nodeMap.get("operatingSystem");
 
-        //XXX: TODO: do actual node registration with Baguette server. More information might be returned.
-        //++++++++++++++++++++
+        // Register node to Baguette server
+        BaguetteServer baguette = coordinator.getBaguetteServer();
+        String clientId = baguette.registerClient(nodeMap);
+
+        // Get web server base URL
+        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
+        if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
+        String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+        log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Prepare Baguette Client installation instructions for node
-        String baseUrl = request.getRequestURL().toString().replace("/baguette/registerNode", "");
-        baseUrl = "http://192.168.25.17:8111";
-        //int serverPort = request.getServerPort();
         OrchestrationHelper.InstallationInstructions installationInstructions =
-                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeOs, baseUrl);
+                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;

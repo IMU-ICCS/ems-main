@@ -26,11 +26,12 @@ import org.springframework.context.annotation.PropertySource;
 public class BrokerCepProperties {
     @Value("${broker-name:broker}")
     private String brokerName;
-    @Value("${broker-url:ssl://localhost:61616}")
+    @Value("${broker-url:ssl://0.0.0.0:61616}")
     private String brokerUrl;
-    @Value("${broker-url-for-consumer:}")
+    @Value("${broker-url-for-consumer:ssl://localhost:61616}")
     private String brokerUrlForConsumer;
-    @Value("${broker-url-for-clients:}")
+    //@Value("${broker-url-for-clients:}")
+    @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.baguette.server.util.NetUtil).getPublicIpAddress()+':61616' }")
     private String brokerUrlForClients;
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
