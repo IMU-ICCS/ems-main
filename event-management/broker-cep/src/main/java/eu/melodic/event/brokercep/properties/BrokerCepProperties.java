@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.properties;
 
+import eu.melodic.event.util.NetUtil;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +29,21 @@ public class BrokerCepProperties {
     private String brokerName;
     @Value("${broker-url:ssl://0.0.0.0:61616}")
     private String brokerUrl;
-    @Value("${broker-url-for-consumer:ssl://localhost:61616}")
+    @Value("${broker-url-for-consumer:ssl://127.0.0.1:61616}")
     private String brokerUrlForConsumer;
-    //@Value("${broker-url-for-clients:}")
-    @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.baguette.server.util.NetUtil).getPublicIpAddress()+':61616' }")
+    @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.util.NetUtil).getPublicIpAddress()+':61616' }")
     private String brokerUrlForClients;
+
+    public String getBrokerUrl() { return _prepareUrl(brokerUrl); }
+    public String getBrokerUrlForConsumer() { return _prepareUrl(brokerUrlForConsumer); }
+    public String getBrokerUrlForClients() { return _prepareUrl(brokerUrlForClients); }
+
+    protected String _prepareUrl(String url) {
+        return url
+                .replace("%{PUBLIC_IP}%", NetUtil.getPublicIpAddress())
+                .replace("%{DEFAULT_IP}%", NetUtil.getDefaultIpAddress());
+    }
+
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
     @Value("${brokercep.ssl.client-auth.required:false}")

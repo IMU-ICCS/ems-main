@@ -50,7 +50,7 @@ public class BaguetteServerProperties {
     @Min(-1)
     private int NumberOfSegments;
 
-    @Value("#{ '${baguette.server.address}'!='' ? '${baguette.server.address}' : T(eu.melodic.event.baguette.server.util.NetUtil).getPublicIpAddress() }")
+    @Value("#{ '${baguette.server.address}'!='' ? '${baguette.server.address}' : T(eu.melodic.event.util.NetUtil).getPublicIpAddress() }")
     private String serverAddress;
     @Value("${baguette.server.port:2222}")
     @Min(value = 1, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")

@@ -22,7 +22,7 @@
         <!-- EMS dependencies -->
         <dependency>
             <groupId>eu.melodic.event</groupId>
-            <artifactId>broker-client</artifactId>
+            <artifactId>util</artifactId>
             <version>${project.version}</version>
         </dependency>
 
