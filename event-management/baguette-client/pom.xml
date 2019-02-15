@@ -104,7 +104,7 @@
 				<configuration>
 					<fileSets>
 						<fileSet>
-							<directory>baguette-client/target</directory>
+							<directory>${project.basedir}/target</directory>
 							<!--<directory>target</directory>-->
 							<includes>
 								<include>*.zip</include>
