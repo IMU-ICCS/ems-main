@@ -9,11 +9,8 @@
 
 package eu.melodic.event.baguette.server.properties;
 
-import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
-import eu.passage.upperware.commons.passwords.PasswordEncoder;
+import eu.melodic.event.util.CredentialsMap;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -25,8 +22,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.HashMap;
-import java.util.Map;
 
 @Data
 @Validated
@@ -71,28 +66,5 @@ public class BaguetteServerProperties {
     @Value("${baguette.server.client-id-format.escape:~}")
     private String clientIdFormatEscape;
 
-    private PasswordEncoder passwordEncoder = _createPasswordEncoder();
-    private final CredentialsMap credentials = new CredentialsMap(passwordEncoder);
-
-    private PasswordEncoder _createPasswordEncoder() {
-        return new IdentityPasswordEncoder();
-    }
-
-    //XXX:TODO: Probably move inner class to melodic-commons
-    /**
-     *  HashMap with toString() method overidden in order to password encodes entry values.
-     *  Used to store credentials
-     */
-    public static class CredentialsMap extends HashMap<String,String> {
-        @Getter @Setter
-        private PasswordEncoder passwordEncoder = new IdentityPasswordEncoder();
-
-        public CredentialsMap(PasswordEncoder pe) { this.passwordEncoder = pe; }
-
-        public String toString() {
-            Map<String,String> temp = new HashMap<>();
-            entrySet().stream().forEach(e -> temp.put(e.getKey(), passwordEncoder.encode(e.getValue())));
-            return temp.toString();
-        }
-    }
+    private final CredentialsMap credentials = new CredentialsMap();
 }

@@ -42,11 +42,13 @@ public class BrokerCepProperties {
 
     @Value("${default-ip-address:}")
     private String defaultIpAddress;
+    @Value("${public-ip-address:}")
+    private String publicIpAddress;
 
     protected String _prepareUrl(String url) {
         if (url==null) return null;
         return url
-                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(defaultIpAddress))
+                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(publicIpAddress))
                 .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(defaultIpAddress));
     }
 
@@ -97,7 +99,4 @@ public class BrokerCepProperties {
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
-
-    @Value("${brokercep-password-encoder:eu.passage.upperware.commons.passwords.IdentityPasswordEncoder}")
-    private String passwordEncoder;
 }

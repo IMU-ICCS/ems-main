@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -146,7 +147,7 @@ public class BaguetteServer {
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password={}",
-                brokerUsername, config.getPasswordEncoder().encode(brokerPassword));
+                brokerUsername, PasswordUtil.encodePassword(brokerPassword));
 
         // Stop any running instance of SSH server
         stopServer();

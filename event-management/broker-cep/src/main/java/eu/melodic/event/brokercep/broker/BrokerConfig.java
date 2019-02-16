@@ -10,8 +10,7 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
-import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
-import eu.passage.upperware.commons.passwords.PasswordEncoder;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
@@ -19,11 +18,11 @@ import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.SslBrokerService;
 import org.apache.activemq.broker.jmx.ManagementContext;
-import org.apache.activemq.security.*;
+import org.apache.activemq.security.AuthenticationUser;
+import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +37,9 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
@@ -59,8 +59,6 @@ public class BrokerConfig implements InitializingBean {
 
     @Autowired
     private BrokerCepProperties properties;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
@@ -102,7 +100,8 @@ public class BrokerConfig implements InitializingBean {
                 String username = cred[0].trim();
                 String password = cred.length > 1 ? cred[1].trim() : "";
                 userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
-                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}", username, passwordEncoder.encode(password));
+                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}",
+                        username, PasswordUtil.encodePassword(password));
             }
 
             // initialize Broker authentication plugin
@@ -160,13 +159,13 @@ public class BrokerConfig implements InitializingBean {
         log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
     }
 
-    public void setBrokerPassword(String s) {
+    public void setBrokerPassword(String password) {
         if (userList != null) {
-            brokerPassword = s;
-            userList.get(LOCAL_USER_INDEX).setPassword(s);
+            brokerPassword = password;
+            userList.get(LOCAL_USER_INDEX).setPassword(password);
             brokerAuthenticationPlugin.setUsers(userList);
         }
-        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordEncoder.encode(s));
+        log.debug("BrokerConfig.setBrokerPassword(): password={}", PasswordUtil.encodePassword(password));
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
@@ -364,23 +363,5 @@ public class BrokerConfig implements InitializingBean {
         JmsTemplate template = new JmsTemplate();
         template.setConnectionFactory(connectionFactory());
         return template;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        Supplier<PasswordEncoder> passwordEncoderSupplier = IdentityPasswordEncoder::new;
-        String passwordEncoder = properties.getPasswordEncoder();
-        if (StringUtils.isBlank(passwordEncoder)) {
-            log.info("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
-            return passwordEncoderSupplier.get();
-        }
-
-        try {
-            Class<?> passwordEncoderClass = Class.forName(passwordEncoder);
-            return (PasswordEncoder) passwordEncoderClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            log.warn("Could not instantiate PasswordEncoder instance of {}. Default instance of PasswordEncoder will be created", passwordEncoder);
-            return passwordEncoderSupplier.get();
-        }
     }
 }

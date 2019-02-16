@@ -13,8 +13,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+        </dependency>
+
+        <!-- Spring-Boot dependencies -->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
         <!-- Lombok project -->
