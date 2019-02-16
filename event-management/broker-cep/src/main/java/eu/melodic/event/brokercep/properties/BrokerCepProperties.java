@@ -18,6 +18,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.Optional;
+
 @Data
 @ToString(exclude = {"truststorePassword", "keystorePassword"})
 @Configuration
@@ -38,10 +40,14 @@ public class BrokerCepProperties {
     public String getBrokerUrlForConsumer() { return _prepareUrl(brokerUrlForConsumer); }
     public String getBrokerUrlForClients() { return _prepareUrl(brokerUrlForClients); }
 
+    @Value("${default-ip-address:}")
+    private String defaultIpAddress;
+
     protected String _prepareUrl(String url) {
+        if (url==null) return null;
         return url
-                .replace("%{PUBLIC_IP}%", NetUtil.getPublicIpAddress())
-                .replace("%{DEFAULT_IP}%", NetUtil.getDefaultIpAddress());
+                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(defaultIpAddress))
+                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(defaultIpAddress));
     }
 
     @Value("${broker-url-properties:}")
@@ -53,9 +59,6 @@ public class BrokerCepProperties {
     @Value("${bypass-local-broker:false}")
     private boolean bypassLocalBroker;
 
-    /*	@Value("${brokercep.ssl.enable:true}")
-        private boolean sslEnabled;
-    */
     @Value("${brokercep.ssl.truststore.file:}")
     private String truststoreFile;
     @Value("${brokercep.ssl.truststore.type:}")
