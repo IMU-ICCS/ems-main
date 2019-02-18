@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *  CredentialsMap is a HashMap with toString() method overidden in order to password encodes entry values.
@@ -23,15 +24,16 @@ import java.util.Map;
  */
 @Slf4j
 public class CredentialsMap extends HashMap<String,String> {
-    @Getter @Setter
+    @Getter
     private PasswordEncoder passwordEncoder;
 
-    public CredentialsMap() { this.passwordEncoder = new IdentityPasswordEncoder(); }
+    public CredentialsMap() { this(new IdentityPasswordEncoder()); }
     public CredentialsMap(PasswordEncoder pe) { this.passwordEncoder = pe; }
 
     public String toString() {
-        Map<String,String> temp = new HashMap<>();
-        entrySet().stream().forEach(e -> temp.put(e.getKey(), passwordEncoder.encode(e.getValue())));
-        return temp.toString();
+        return entrySet()
+                .stream()
+                .collect(Collectors.toMap(Entry::getKey, e -> passwordEncoder.encode(e.getValue())))
+                .toString();
     }
 }
