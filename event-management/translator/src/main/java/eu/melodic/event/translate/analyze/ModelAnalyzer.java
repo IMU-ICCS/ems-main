@@ -1035,7 +1035,7 @@ public class ModelAnalyzer {
             results.add(monitor);
         }
 
-        // Set sesnor interval
+        // Set sensor interval
         if (isPull) {
             if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE)
             {
