@@ -14,7 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
 import eu.melodic.event.baguette.client.install.OrchestrationHelper;
 import eu.melodic.event.baguette.server.BaguetteServer;
-import eu.melodic.event.baguette.server.util.NetUtil;
+import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;

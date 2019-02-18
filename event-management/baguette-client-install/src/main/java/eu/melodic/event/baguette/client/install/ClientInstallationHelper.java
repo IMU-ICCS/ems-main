@@ -12,8 +12,8 @@ package eu.melodic.event.baguette.client.install;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.BaguetteServer;
-import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
-import eu.melodic.event.baguette.server.util.NetUtil;
+import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.InitializingBean;
@@ -105,7 +105,7 @@ public class ClientInstallationHelper implements InitializingBean {
         valueMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());
         valueMap.put("BAGUETTE_SERVER_PUBKEY", baguette.getServerPubkey());
         valueMap.put("BAGUETTE_SERVER_PUBKEY_FINGERPRINT", baguette.getServerPubkeyFingerprint());
-        BaguetteServerProperties.CredentialsMap.Entry<String,String> pair =
+        CredentialsMap.Entry<String,String> pair =
                 baguette.getConfiguration().getCredentials().entrySet().iterator().next();
         valueMap.put("BAGUETTE_SERVER_USERNAME", pair.getKey());
         valueMap.put("BAGUETTE_SERVER_PASSWORD", pair.getValue());

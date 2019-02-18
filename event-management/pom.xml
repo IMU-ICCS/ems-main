@@ -30,6 +30,7 @@
     </properties>
 
     <modules>
+        <module>util</module>
         <module>broker-client</module>
         <module>broker-cep</module>
         <module>baguette-client</module>

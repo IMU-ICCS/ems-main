@@ -7,10 +7,10 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.event.baguette.server.util;
+package eu.melodic.event.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.*;

@@ -13,7 +13,7 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
-import eu.melodic.event.baguette.server.util.NetUtil;
+import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Vector;

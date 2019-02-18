@@ -16,7 +16,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
-import eu.passage.upperware.commons.passwords.PasswordEncoder;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,6 @@ public class BrokerCepService {
     private BrokerConfig brokerConfig;
     private BrokerService brokerService;
     private ActiveMQConnectionFactory connectionFactory;
-    private PasswordEncoder passwordEncoder;
 
     //private BrokerAdvisoryWatcher advisoryMessageWatcher;
     @Getter
@@ -237,7 +236,8 @@ public class BrokerCepService {
         connectionFactory.setBrokerURL(connectionString);
 
         // Create a Connection
-        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}", connectionString, username, passwordEncoder.encode(password));
+        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}",
+                connectionString, username, PasswordUtil.encodePassword(password));
         Connection connection = StringUtils.isBlank(username)
                 ? connectionFactory.createConnection()
                 : connectionFactory.createConnection(username, password);
@@ -288,10 +288,11 @@ public class BrokerCepService {
         log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
     }
 
-    public void setBrokerCredentials(String u, String p) {
-        brokerConfig.setBrokerUsername(u);
-        brokerConfig.setBrokerPassword(p);
-        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password={}", u, passwordEncoder.encode(p));
+    public void setBrokerCredentials(String username, String password) {
+        brokerConfig.setBrokerUsername(username);
+        brokerConfig.setBrokerPassword(password);
+        log.info("BrokerCepService.setBrokerCredentials(): Broker credentials set: username={}, password={}",
+                username, PasswordUtil.encodePassword(password));
     }
 
     public String getBrokerUsername() {
