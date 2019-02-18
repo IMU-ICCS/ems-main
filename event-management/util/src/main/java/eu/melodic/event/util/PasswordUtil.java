@@ -67,6 +67,11 @@ public class PasswordUtil implements InitializingBean {
     }
 
     public static String encodePassword(String password) {
+        if (instance==null) {
+            PasswordUtil pu = new PasswordUtil();
+            pu.setPasswordEncoder("");
+            instance = pu;
+        }
         return instance.getPasswordEncoder().encode(password);
     }
 }
