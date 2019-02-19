@@ -1,10 +1,11 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class AdapterPortRequired extends AdapterPort {
 
     private String updateAction;

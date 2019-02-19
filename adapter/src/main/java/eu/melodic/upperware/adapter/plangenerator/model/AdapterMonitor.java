@@ -20,6 +20,6 @@ public class AdapterMonitor implements Data {
 
     @Override
     public String getName() {
-        return "AdapterMonitor_" + metricName + "_" + taskName;
+        return "AdapterMonitor_" + metricName + "_" + taskName + "_" + nodeName;
     }
 }

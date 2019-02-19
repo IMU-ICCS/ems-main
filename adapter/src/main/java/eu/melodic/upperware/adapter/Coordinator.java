@@ -291,9 +291,9 @@ public class Coordinator {
 
     private void saveCamelModelToFile(CamelModel camelModel) {
         String pcId = camelModel.getName();
-        log.debug("CDODatabaseProxy - saveModels to file");
-        String cpPath = CDO_SERVER_PATH + pcId;
-        cdoClientX.exportModel(camelModel, "/logs/adapter_camel_models/" + cpPath + System.currentTimeMillis() + ".xmi");
-        log.debug("CDODatabaseProxy - saveModels - Models saved to file! ");
+        log.debug("CDODatabaseProxy - saveModels to file...");
+        String fileName = "/logs/adapter_camel_models/" + CDO_SERVER_PATH + pcId + System.currentTimeMillis() + ".xmi";
+        cdoClientX.exportModel(camelModel, fileName);
+        log.debug("CDODatabaseProxy - saveModels - Models saved to file {}!", fileName);
     }
 }

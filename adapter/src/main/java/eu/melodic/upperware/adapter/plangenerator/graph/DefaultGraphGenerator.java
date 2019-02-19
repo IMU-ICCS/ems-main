@@ -9,7 +9,6 @@
 
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
-import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
@@ -26,15 +25,15 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE;
 import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -45,320 +44,191 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
     private ToLogGraphLogger toLogGraphLogger;
     private AdapterProperties adapterProperties;
 
+    // compare two the same instances
+    private static final BiPredicate<AdapterProcess, AdapterProcess> PROCESS_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getNodeName().equals(oldReq.getNodeName()) &&
+                    newReq.getScheduleName().equals((oldReq.getScheduleName())) &&
+                    newReq.getJobName().equals(oldReq.getJobName()) &&
+                    newReq.getTaskName().equals(oldReq.getTaskName());
+
+    private static final BiPredicate<AdapterMonitor, AdapterMonitor> MONITOR_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getMetricName().equals(oldReq.getMetricName()) &&
+                    newReq.getNodeName().equals(oldReq.getNodeName());
+
+    private static final BiPredicate<AdapterRequirement, AdapterRequirement> NODE_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getNodeName().equals(oldReq.getNodeName());
+
+
+    // create Task instance
+    private static final Function<AdapterJob, JobTask> JOB_TASK_CREATE = adapterJob -> new JobTask(CREATE, adapterJob);
+    private static final Function<AdapterJob, JobTask> JOB_TASK_DELETE = adapterJob -> new JobTask(DELETE, adapterJob);
+
+    private static final Function<AdapterSchedule, ScheduleTask> SCHEDULE_TASK_CREATE = adapterSchedule -> new ScheduleTask(CREATE, adapterSchedule);
+    private static final Function<AdapterSchedule, ScheduleTask> SCHEDULE_TASK_DELETE = adapterSchedule -> new ScheduleTask(DELETE, adapterSchedule);
+
+    private static final Function<AdapterRequirement, NodeTask> NODE_TASK_CREATE = adapterRequirement -> new NodeTask(CREATE, adapterRequirement);
+    private static final Function<AdapterRequirement, NodeTask> NODE_TASK_DELETE = adapterRequirement -> new NodeTask(DELETE, adapterRequirement);
+
+    private static final Function<AdapterProcess, ProcessTask> PROCESS_TASK_CREATE = adapterProcess -> new ProcessTask(CREATE, adapterProcess);
+    private static final Function<AdapterProcess, ProcessTask> PROCESS_TASK_DELETE = adapterProcess -> new ProcessTask(DELETE, adapterProcess);
+
+    private static final Function<AdapterMonitor, MonitorTask> MONITOR_TASK_CREATE = adapterMonitor -> new MonitorTask(CREATE, adapterMonitor);
+    private static final Function<AdapterMonitor, MonitorTask> MONITOR_TASK_DELETE = adapterMonitor -> new MonitorTask(DELETE, adapterMonitor);
+
+    private static final Function<WaitData, WaitTask> WAIT_TASK_CREATE = waitData -> new WaitTask(CREATE, waitData);
+    private static final Function<WaitData, WaitTask> WAIT_TASK_DELETE = waitData -> new WaitTask(DELETE, waitData);
+
+    //link different tasks
+    private static final BiPredicate<NodeTask, ProcessTask> NODE_TO_PROCESS_BI_PREDICATE = (nodeTask, processTask) ->
+            nodeTask.getData().getNodeName().equals(processTask.getData().getNodeName()) &&
+                    nodeTask.getType().equals(processTask.getType());
+
+    private static final BiPredicate<ProcessTask, NodeTask> PROCESS_TO_NODE_BI_PREDICATE = (processTask, nodeTask) ->
+            nodeTask.getData().getNodeName().equals(processTask.getData().getNodeName()) &&
+                    nodeTask.getType().equals(processTask.getType());
+
+    private static final BiPredicate<ProcessTask, MonitorTask> PROCESS_TO_MONITOR_BI_PREDICATE = (processTask, monitorTask) ->
+            processTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
+                processTask.getType().equals(monitorTask.getType());
+
+    private static final BiPredicate<MonitorTask, ProcessTask> MONITOR_TO_PROCESS_BI_PREDICATE = (monitorTask, processTask) ->
+            processTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
+                processTask.getType().equals(monitorTask.getType());
+
+
     @Override
-    public SimpleDirectedGraph<Task, DefaultEdge> generateConfigGraph(ComparableModel model) {
-        log.info("Building configuration graph from prepared model");
+    public SimpleDirectedGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel) {
+        return generateGraph(newComparableModel, ComparableModel.builder().build(), () -> new MelodicGraph<>(DefaultEdge.class, CONFIG));
+    }
 
-        MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, CONFIG);
+    @Override
+    public SimpleDirectedGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel, ComparableModel oldComparableModel) {
+        return generateGraph(newComparableModel, oldComparableModel, () -> new MelodicGraph<>(DefaultEdge.class, RECONFIG));
+    }
 
-        JobTask jobTask = genJobCreateTask(graph, model.getAdapterJob());
+    private MelodicGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel, ComparableModel oldComparableModel, Supplier<MelodicGraph<Task, DefaultEdge>> graphSupplier) {
+        MelodicGraph<Task, DefaultEdge> graph = graphSupplier.get();
 
-        ScheduleTask scheduleTask = genScheduleCreateTask(graph, jobTask, model.getAdapterSchedule());
+        //Job
+        AdapterJob newAdapterJob = newComparableModel.getAdapterJob();
+        AdapterJob oldAdapterJob = oldComparableModel.getAdapterJob();
+        JobTask jobTask = null;
+        if (!newAdapterJob.equals(oldAdapterJob)) {
+            jobTask = createTask(graph, newAdapterJob, JOB_TASK_CREATE);
+        }
+        Optional<JobTask> jobTaskOpt = Optional.ofNullable(jobTask);
 
-        Collection<NodeTask> nodeTasks = genNodeCreateTasks(graph, model.getAdapterRequirements());
+        //Node
+        List<AdapterRequirement> nodesToCreate = getDataToCreate(newComparableModel.getAdapterRequirements(), oldComparableModel.getAdapterRequirements(), NODE_BI_PREDICATE);
+        List<NodeTask> nodeTasksToCreate = createTasks(graph, nodesToCreate, NODE_TASK_CREATE);
 
-        Collection<ProcessTask> processTasks = genProcessCreateTasks(graph, scheduleTask, jobTask, nodeTasks, model.getAdapterProcesses());
+        //Job -> Schedule
+        AdapterSchedule newAdapterSchedule = newComparableModel.getAdapterSchedule();
+        AdapterSchedule oldAdapterSchedule = oldComparableModel.getAdapterSchedule();
 
+        ScheduleTask scheduleTask = null;
+        if (!newAdapterSchedule.equals(oldAdapterSchedule)) {
+            scheduleTask = createTask(graph, newAdapterSchedule, SCHEDULE_TASK_CREATE);
+            addEdge(graph, jobTask, scheduleTask, jobTaskOpt::isPresent);
+        }
+        Optional<ScheduleTask> scheduleTaskOpt = Optional.ofNullable(scheduleTask);
+
+        //Node, Schedule -> Process
+        List<AdapterProcess> processesToCreate = getDataToCreate(newComparableModel.getAdapterProcesses(), oldComparableModel.getAdapterProcesses(), PROCESS_BI_PREDICATE);
+        List<ProcessTask> processTasksToCreate = createTasks(graph, processesToCreate, PROCESS_TASK_CREATE);
+        addEdge(graph, scheduleTask, processTasksToCreate, scheduleTaskOpt::isPresent);
+        addEdge(graph, nodeTasksToCreate, processTasksToCreate, NODE_TO_PROCESS_BI_PREDICATE);
+
+        //Process -> Monitors
         if (adapterProperties.getEms().isEnabled()) {
-          Collection<MonitorTask> monitorTasks = getMonitorsTasks(graph, processTasks, model.getAdapterMonitors());
+            List<AdapterMonitor> monitorsToCreate = getDataToCreate(newComparableModel.getAdapterMonitors(), oldComparableModel.getAdapterMonitors(), MONITOR_BI_PREDICATE);
+            List<MonitorTask> monitorTasksToCreate = createTasks(graph, monitorsToCreate, MONITOR_TASK_CREATE);
+            addReverseEdge(graph, processTasksToCreate, monitorTasksToCreate, PROCESS_TO_MONITOR_BI_PREDICATE);
         }
 
+        //Monitors, Process -> Wait
+        //connect monitors to last tasks
+        List<Task> tasksToCreateWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, CREATE);
+        addWaitEdge(graph, () -> createTask(graph, new WaitData(), WAIT_TASK_CREATE), tasksToCreateWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToCreateWithoutOutgoingEdges));
+
+        //Wait -> Monitors (D)
+        List<Task> lastCreateTasks = getTasksWithoutOutgoingEdges(graph, CREATE);
+        Task lastCreateTask = CollectionUtils.isNotEmpty(lastCreateTasks) ? lastCreateTasks.get(0) : null;
+
+        List<MonitorTask>  monitorTasksToDelete = Collections.emptyList();
+        if (adapterProperties.getEms().isEnabled()) {
+            List<AdapterMonitor> monitorsToDelete = getDataToDelete(newComparableModel.getAdapterMonitors(), oldComparableModel.getAdapterMonitors(), MONITOR_BI_PREDICATE);
+            monitorTasksToDelete = createTasks(graph, monitorsToDelete, MONITOR_TASK_DELETE);
+            addEdge(graph, lastCreateTask, monitorTasksToDelete, () -> lastCreateTask != null);
+        }
+
+        //Monitors (D) -> Process (D)
+        List<AdapterProcess> processesToDelete = getDataToDelete(newComparableModel.getAdapterProcesses(), oldComparableModel.getAdapterProcesses(), PROCESS_BI_PREDICATE);
+        List<ProcessTask> processTasksToDelete = createTasks(graph, processesToDelete, PROCESS_TASK_DELETE);
+
+        if (CollectionUtils.isNotEmpty(monitorTasksToDelete)){
+            addEdge(graph, monitorTasksToDelete, processTasksToDelete, MONITOR_TO_PROCESS_BI_PREDICATE);
+        } else {
+            addEdge(graph, lastCreateTask, processTasksToDelete, () -> lastCreateTask != null);
+        }
+
+        //Process (D) -> Nodes(D)
+        List<AdapterRequirement> nodesToDelete = getDataToDelete(newComparableModel.getAdapterRequirements(), oldComparableModel.getAdapterRequirements(), NODE_BI_PREDICATE);
+        List<NodeTask> nodeTasksToDelete = createTasks(graph, nodesToDelete, NODE_TASK_DELETE);
+        addEdge(graph, processTasksToDelete, nodeTasksToDelete, PROCESS_TO_NODE_BI_PREDICATE);
+
+        //Process (D) -> Schedule (D)
+        //NOT implemented yet
+
+        // Schedule (D) -> Job (D)
+        //NOT implemented yet
+
+        // Job (D) -> Wait (D)
+        //NOT implemented yet
+        List<Task> tasksToDeleteWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, DELETE);
+
+        addWaitEdge(graph, () -> createTask(graph, new WaitData(), WAIT_TASK_DELETE), tasksToDeleteWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToDeleteWithoutOutgoingEdges));
+
         toLogGraphLogger.logGraph(graph);
-
-        log.info("Built config graph: {}", graph);
-
+        log.info("Built {} graph: {}", graph.getType(), graph);
         return graph;
     }
 
-    @Override
-    public SimpleDirectedGraph<Task, DefaultEdge> generateReconfigGraph(ComparableModel oldModel, ComparableModel newModel) {
-        log.info("Building reconfiguration graph from prepared models");
-
-        MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, RECONFIG);
-
-        Collection<MonitorTask> monitorsTasks = Collections.emptyList();
-        if (adapterProperties.getEms().isEnabled()) {
-//      0) Monitors
-            Collection<AdapterMonitor> monitorsToRemove = getMonitorsToRemove(oldModel.getAdapterMonitors(), newModel.getAdapterMonitors());
-            log.debug("Monitors to remove: {}", monitorsToRemove);
-
-            Collection<AdapterMonitor> monitorsToCreate = getMonitorsToCreate(newModel.getAdapterMonitors(), oldModel.getAdapterMonitors());
-            log.debug("Monitors to create: {}", monitorsToCreate);
-
-            monitorsTasks = getMonitorsReconfigTasks(graph, monitorsToCreate, monitorsToRemove);
-        }
-
-//      1) Process
-        Collection<AdapterProcess> processesToRemove = getProcessesToRemove(oldModel.getAdapterProcesses(), newModel.getAdapterProcesses());
-        log.debug("Processes to remove: {}", processesToRemove);
-
-        Collection<AdapterProcess> processesToCreate = getProcessesToCreate(newModel.getAdapterProcesses(), oldModel.getAdapterProcesses());
-        log.debug("Processes to create: {}", processesToCreate);
-
-        Collection<ProcessTask> processTasks = genProcessReconfigTasks(graph, processesToCreate, processesToRemove);
-
-//      2) Node
-        Collection<AdapterRequirement> nodesToRemove = getAdapterRequirementsToRemove(oldModel.getAdapterRequirements(), newModel.getAdapterRequirements());
-        log.debug("Nodes to remove: {}", nodesToRemove);
-
-        Collection<AdapterRequirement> nodesToCreate = getAdapterRequirementsToCreate(newModel.getAdapterRequirements(), oldModel.getAdapterRequirements());
-        log.debug("Nodes to create: {}", nodesToCreate);
-
-        Collection<NodeTask> nodeTasks = genNodeReconfigTasks(graph, nodesToCreate, nodesToRemove);
-
-//      3) Wait task
-        setDependenciesAndWaitTask(graph, monitorsTasks, processTasks, nodeTasks);
-
-        toLogGraphLogger.logGraph(graph);
-
-        log.info("Built reconfig graph: {}", graph);
-        return graph;
-    }
-
-    private void setDependenciesAndWaitTask(MelodicGraph<Task, DefaultEdge> graph, Collection<MonitorTask> monitorsTasks,
-                                            Collection<ProcessTask> processTasks, Collection<NodeTask> nodeTasks) {
-
-        WaitTask waitCreateTask = new WaitTask(CREATE, new WaitData());
-        addVertex(graph, waitCreateTask);
-
-        List<MonitorTask> createMonitors = getFiltered(monitorsTasks, CREATE);
-        List<MonitorTask> deleteMonitors = getFiltered(monitorsTasks, DELETE);
-
-        List<ProcessTask> createProcess = getFiltered(processTasks, CREATE);
-        List<ProcessTask> deleteProcess = getFiltered(processTasks, DELETE);
-
-        List<NodeTask> createNodes = getFiltered(nodeTasks, CREATE);
-        List<NodeTask> deleteNodes = getFiltered(nodeTasks, DELETE);
-
-        setDependencies1(graph, createMonitors, createProcess, waitCreateTask, CREATE);
-        setDependencies(graph, createProcess, createNodes, waitCreateTask, CREATE);
-
-        boolean isAnythingToDelete = CollectionUtils.isNotEmpty(deleteMonitors) || CollectionUtils.isNotEmpty(deleteProcess) || CollectionUtils.isNotEmpty(deleteNodes);
-        if (isAnythingToDelete) {
-            WaitTask waitDeleteTask = new WaitTask(DELETE, new WaitData());
-            addVertex(graph, waitDeleteTask);
-
-            setDependencies1(graph, deleteMonitors, deleteProcess, waitDeleteTask, DELETE);
-            setDependencies(graph, deleteProcess, deleteNodes, waitDeleteTask, DELETE);
-        }
-    }
-
-    private Collection<MonitorTask> getMonitorsTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<ProcessTask> processTasks, Collection<AdapterMonitor> adapterMonitors) {
-
-        List<MonitorTask> monitorTasks = adapterMonitors.stream()
-                .map(monitor -> new MonitorTask(CREATE, monitor))
+    private List<Task> getTasksWithoutOutgoingEdges(MelodicGraph<Task, DefaultEdge> graph, Type create) {
+        return graph.vertexSet()
+                .stream()
+                .filter(task -> graph.outgoingEdgesOf(task).isEmpty())
+                .filter(task -> create.equals(task.getType()))
                 .collect(toList());
-
-        monitorTasks.forEach(monitorTask -> {
-            addVertex(graph, monitorTask);
-
-            findAndSetProcessDependencies(graph, monitorTask, monitorTask.getData().getTaskName(), processTasks, CREATE);
-        });
-
-        return monitorTasks;
     }
 
-    private void setDependencies1(MelodicGraph<Task, DefaultEdge> graph, List<MonitorTask> monitors, List<ProcessTask> processes, WaitTask waitTask, Type type) {
-        monitors.forEach(monitorTask -> {
-            ProcessTask processTask = processes
-                    .stream()
-                    .filter(pt -> pt.getData().getNodeName().equals(monitorTask.getData().getNodeName()))
-                    .findFirst()
-                    .orElseThrow(() -> new AdapterException(format("Could not find %s ProcessTask for nodeName %s", type.name(), monitorTask.getData().getNodeName())));
-
-            setDependencies(graph, type, processTask, monitorTask);
-            setDependencies(graph, type, monitorTask, waitTask);
-        });
+    private <T extends Data> List<T> getDataToCreate(Collection<T> p1, Collection<T> p2, BiPredicate<T, T> biPredicate) {
+        return getData(p1, p2, biPredicate);
     }
 
-    private void setDependencies(MelodicGraph<Task, DefaultEdge> graph, List<ProcessTask> processes, List<NodeTask> nodes, WaitTask waitTask, Type type) {
-        processes.forEach(processTask -> {
-            NodeTask nodeTask = nodes
-                    .stream()
-                    .filter(nt -> nt.getData().getNodeName().equals(processTask.getData().getNodeName()))
-                    .findFirst()
-                    .orElseThrow(() -> new AdapterException(format("Could not find %s Node Task for nodeName %s", type.name(), processTask.getData().getNodeName())));
-
-            setDependencies(graph, type, nodeTask, processTask);
-            setDependencies(graph, type, processTask, waitTask);
-        });
+    private <T extends Data> List<T> getDataToDelete(Collection<T> p1, Collection<T> p2, BiPredicate<T, T> biPredicate) {
+        //we need to change arguments
+        return getData(p2, p1, biPredicate);
     }
 
-    private <T extends Task> List<T> getFiltered(Collection<T> collection, Type type){
-        return collection.stream().filter(t -> type.equals(t.getType())).collect(toList());
-    }
-
-    private Collection<AdapterRequirement> getAdapterRequirementsToRemove(Collection<AdapterRequirement> oldAdapterRequirements, Collection<AdapterRequirement> newAdapterRequirements) {
-        return getAdapterRequirements(oldAdapterRequirements, newAdapterRequirements);
-    }
-
-    private Collection<AdapterRequirement> getAdapterRequirementsToCreate(Collection<AdapterRequirement> newAdapterRequirements, Collection<AdapterRequirement> oldAdapterRequirements) {
-        return getAdapterRequirements(newAdapterRequirements, oldAdapterRequirements);
-    }
-
-    private Collection<AdapterRequirement> getAdapterRequirements(Collection<AdapterRequirement> p1, Collection<AdapterRequirement> p2) {
+    private <T extends Data> List<T> getData(Collection<T> p1, Collection<T> p2, BiPredicate<T, T> biPredicate) {
         return p1.stream()
-                .filter(newReq -> p2.stream().noneMatch(oldReq -> oldReq.getNodeName().equals(newReq.getNodeName())))
-                .collect(Collectors.toList());
-    }
-
-    private Collection<AdapterProcess> getProcessesToRemove(Collection<AdapterProcess> oldProcesses, Collection<AdapterProcess> newProcesses) {
-        return getProcesses(oldProcesses, newProcesses);
-    }
-
-    private Collection<AdapterProcess> getProcessesToCreate(Collection<AdapterProcess> newProcesses, Collection<AdapterProcess> oldProcesses) {
-        return getProcesses(newProcesses, oldProcesses);
-    }
-
-    private Collection<AdapterProcess> getProcesses(Collection<AdapterProcess> p1, Collection<AdapterProcess> p2) {
-        return p1.stream()
-                .filter(oldReq -> p2.stream().noneMatch(newReq -> newReq.getNodeName().equals(oldReq.getNodeName()) &&
-                        newReq.getScheduleName().equals((oldReq.getScheduleName())) &&
-                        newReq.getJobName().equals(oldReq.getJobName()) &&
-                        newReq.getTaskName().equals(oldReq.getTaskName())))
-                .collect(Collectors.toList());
-    }
-
-    private Collection<AdapterMonitor> getMonitorsToRemove(Collection<AdapterMonitor> oldMonitors, Collection<AdapterMonitor> newMonitors) {
-        return getMonitors(oldMonitors, newMonitors);
-    }
-
-    private Collection<AdapterMonitor> getMonitorsToCreate(Collection<AdapterMonitor> newMonitors, Collection<AdapterMonitor> oldMonitors) {
-        return getMonitors(newMonitors, oldMonitors);
-    }
-
-    private Collection<AdapterMonitor> getMonitors(Collection<AdapterMonitor> m1, Collection<AdapterMonitor> m2) {
-        return m1.stream()
-                .filter(m1e -> m2.stream().noneMatch(
-                        m2element -> m2element.getMetricName().equals(m1e.getMetricName()) &&
-                                m2element.getNodeName().equals(m1e.getNodeName())
-                        ))
+                .filter(oldReq -> p2.stream().noneMatch(newReq -> biPredicate.test(newReq, oldReq)))
                 .collect(toList());
     }
 
-    private Collection<NodeTask> genNodeReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-                                                      Collection<AdapterRequirement> toCreate, Collection<AdapterRequirement> toRemove) {
+    private <T extends Data, U extends Task> U createTask(MelodicGraph<Task, DefaultEdge> graph, T data, Function<T, U> function) {
+        U task = function.apply(data);
+        addVertex(graph, task);
+        return task;
+    }
 
-        Collection<NodeTask> nodeCreateTasks = genNodeCreateTasks(graph, toCreate);
-        Collection<NodeTask> nodeDeleteTasks = genNodeDeleteTasks(graph, toRemove);
+    private <T extends Data, U extends Task> List<U> createTasks(MelodicGraph<Task, DefaultEdge> graph, List<T> data, Function<T, U> function) {
 
-        return Stream.of(nodeDeleteTasks, nodeCreateTasks)
-                .flatMap(Collection::stream)
+        return CollectionUtils.emptyIfNull(data)
+                .stream()
+                .map(t -> createTask(graph, t, function))
                 .collect(toList());
-    }
-
-    private Collection<ProcessTask> genProcessDeleteTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterProcess> adapterProcesses) {
-        return genProcessTasks(graph, adapterProcesses, DELETE);
-    }
-
-    private Collection<ProcessTask> genProcessCreateTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterProcess> adapterProcesses) {
-        return genProcessCreateTasks(graph, null, null, Collections.emptyList(), adapterProcesses);
-    }
-
-    private Collection<ProcessTask> genProcessCreateTasks(MelodicGraph<Task, DefaultEdge> graph, ScheduleTask scheduleTask, JobTask jobTask, Collection<NodeTask> nodeTasks, Collection<AdapterProcess> adapterProcesses) {
-
-        Collection<ProcessTask> processTasks = genProcessTasks(graph, adapterProcesses, CREATE);
-
-        processTasks.forEach(processTask -> {
-
-            if (CollectionUtils.isNotEmpty(nodeTasks)) {
-                findAndSetNodeDependencies(graph, processTask, processTask.getData().getNodeName(), nodeTasks, CREATE);
-            }
-
-            if (scheduleTask != null) {
-                setDependencies(graph, CREATE, scheduleTask, processTask);
-            }
-
-            if (jobTask != null) {
-                setDependencies(graph, CREATE, jobTask, processTask);
-            }
-        });
-
-        return processTasks;
-    }
-
-    private Collection<ProcessTask> genProcessReconfigTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterProcess> processesToCreate, Collection<AdapterProcess> processesToRemove) {
-
-        Collection<ProcessTask> processCreateTasks = genProcessCreateTasks(graph, processesToCreate);
-        Collection<ProcessTask> processDeleteTasks = genProcessDeleteTasks(graph, processesToRemove);
-
-        return Stream.of(processDeleteTasks, processCreateTasks)
-                .flatMap(Collection::stream)
-                .collect(toList());
-    }
-
-    private Collection<ProcessTask> genProcessTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterProcess> adapterProcesses, Type type){
-
-        return adapterProcesses.stream()
-                .map(adapterRequirement -> new ProcessTask(type, adapterRequirement))
-                .peek(processTask ->  addVertex(graph, processTask))
-                .collect(toList());
-    }
-
-    private Collection<NodeTask> genNodeCreateTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterRequirement> adapterNodeRequirements) {
-        return getNodeTasks(graph, adapterNodeRequirements, CREATE);
-    }
-
-    private Collection<NodeTask> genNodeDeleteTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterRequirement> adapterNodeRequirements) {
-        return getNodeTasks(graph, adapterNodeRequirements, DELETE);
-    }
-
-    private Collection<NodeTask> getNodeTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterRequirement> adapterNodeRequirements, Type type) {
-        List<NodeTask> nodeTasks = adapterNodeRequirements.stream()
-                .map(adapterRequirement -> new NodeTask(type, adapterRequirement))
-                .collect(toList());
-
-        nodeTasks.forEach(nodeTask -> addVertex(graph, nodeTask));
-
-        return nodeTasks;
-    }
-
-    private Collection<MonitorTask> getMonitorsReconfigTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterMonitor> monitorsToCreate, Collection<AdapterMonitor> monitorsToRemove) {
-
-        Collection<MonitorTask> MonitorTask = genMonitorsCreateTasks(graph, monitorsToCreate);
-        Collection<MonitorTask> monitorsDeleteTasks = genMonitorsDeleteTasks(graph, monitorsToRemove);
-
-        return Stream.of(MonitorTask, monitorsDeleteTasks)
-                .flatMap(Collection::stream)
-                .collect(toList());
-    }
-
-    private Collection<MonitorTask> genMonitorsCreateTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterMonitor> adapterMonitors) {
-        return genMonitorTasks(graph, adapterMonitors, CREATE);
-    }
-
-    private Collection<MonitorTask> genMonitorsDeleteTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterMonitor> adapterMonitors) {
-        return genMonitorTasks(graph, adapterMonitors, DELETE);
-    }
-
-    private Collection<MonitorTask> genMonitorTasks(MelodicGraph<Task, DefaultEdge> graph, Collection<AdapterMonitor> adapterMonitors, Type type) {
-        List<MonitorTask> monitorTasks = adapterMonitors.stream()
-                .map(adapterMonitor -> new MonitorTask(type, adapterMonitor))
-                .collect(toList());
-
-        monitorTasks.forEach(monitorTask -> addVertex(graph, monitorTask));
-
-        return monitorTasks;
-    }
-
-    private ScheduleTask genScheduleCreateTask(MelodicGraph<Task, DefaultEdge> graph, JobTask jobTask, AdapterSchedule adapterSchedule) {
-        ScheduleTask scheduleTask = new ScheduleTask(CREATE, adapterSchedule);
-
-        addVertex(graph, scheduleTask);
-
-        if (jobTask != null) {
-            setDependencies(graph, CREATE, jobTask, scheduleTask);
-        }
-
-        return scheduleTask;
-    }
-
-    private JobTask genJobCreateTask(MelodicGraph<Task, DefaultEdge> graph, AdapterJob adapterJob) {
-        JobTask appTask = new JobTask(CREATE, adapterJob);
-
-        addVertex(graph, appTask);
-
-        return appTask;
     }
 
 }
