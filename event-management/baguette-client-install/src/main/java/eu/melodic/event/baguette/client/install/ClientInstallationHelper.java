@@ -165,10 +165,14 @@ public class ClientInstallationHelper implements InitializingBean {
         //log.debug("prepareInstallationInstructionsForLinux(): installationInstructions: {}", installationInstructions);
 
         // Pretty print installationInstructions JSON
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        StringWriter sw = new StringWriter();
-        try (PrintWriter writer = new PrintWriter(sw)) { gson.toJson(installationInstructions, writer); }
-        log.debug("prepareInstallationInstructionsForLinux(): installationInstructions:\n{}", sw.toString());
+        if (log.isDebugEnabled()) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            StringWriter sw = new StringWriter();
+            try (PrintWriter writer = new PrintWriter(sw)) {
+                gson.toJson(installationInstructions, writer);
+            }
+            log.debug("prepareInstallationInstructionsForLinux(): installationInstructions:\n{}", sw.toString());
+        }
 
         return installationInstructions;
     }
