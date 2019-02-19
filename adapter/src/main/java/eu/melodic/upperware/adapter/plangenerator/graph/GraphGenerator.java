@@ -15,8 +15,8 @@ import org.jgrapht.graph.DefaultEdge;
 
 public interface GraphGenerator<T> {
 
-  DirectedGraph<Task, DefaultEdge> generateConfigGraph(T comparableModel);
+  DirectedGraph<Task, DefaultEdge> generateGraph(T newComparableModel);
 
-  DirectedGraph<Task, DefaultEdge> generateReconfigGraph(T oldComparableModel, T newComparableModel);
+  DirectedGraph<Task, DefaultEdge> generateGraph(T newComparableModel, T oldComparableModel);
 
 }

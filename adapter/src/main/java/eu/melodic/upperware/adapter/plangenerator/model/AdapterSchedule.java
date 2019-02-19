@@ -1,15 +1,14 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 public class AdapterSchedule implements Data {
 
     private String jobName;
@@ -22,6 +21,6 @@ public class AdapterSchedule implements Data {
 
     public enum InstantiationEnum {
         AUTOMATIC,
-        MANUAL;
+        MANUAL
     }
 }

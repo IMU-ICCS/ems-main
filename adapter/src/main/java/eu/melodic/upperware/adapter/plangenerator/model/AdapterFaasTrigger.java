@@ -1,14 +1,12 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
 @ToString
+@EqualsAndHashCode
 public class AdapterFaasTrigger {
     private String type;
     private String httpPath;

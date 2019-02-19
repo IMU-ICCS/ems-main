@@ -10,81 +10,99 @@
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
-import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.DefaultEdge;
 
-import java.util.Collection;
-import java.util.function.Predicate;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiPredicate;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
 import static java.lang.String.format;
 
 @Slf4j
 public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator<T> {
 
-  void setDependencies(MelodicGraph<Task, DefaultEdge> graph, Type type, Task source, Task target) {
-    if (DELETE.equals(type)) {
-      log.debug("Setting {} as a dependency to {}", target, source);
-      graph.addEdge(target, source);
-    } else {
-      log.debug("Setting {} as a dependency to {}", source, target);
-      graph.addEdge(source, target);
+    void addVertex(MelodicGraph<Task, DefaultEdge> graph, Task task) {
+        log.debug("Adding vertex {}", task);
+        graph.addVertex(task);
     }
-  }
 
-  void addVertex(MelodicGraph<Task, DefaultEdge> graph, Task task) {
-    log.debug("Adding vertex {}", task);
-    graph.addVertex(task);
-  }
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, U to) {
+        addEdge(graph, from, to, ()-> true);
+    }
 
-  protected void findAndSetDependencies(MelodicGraph<Task, DefaultEdge> graph, Task task, String depName,
-                                        Collection<? extends Task> depTasks, Type type, Predicate<Task> predicate) {
-    boolean wasSet = false;
-    for (Task depTask : depTasks) {
-      if (predicate.test(depTask) && depTask.getType().equals(task.getType())) {
-        setDependencies(graph, type, depTask, task);
-        wasSet = true;
-      }
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, U to, BooleanSupplier booleanSupplier) {
+        if (booleanSupplier.getAsBoolean()) {
+            Objects.requireNonNull(from, "From task is null");
+            Objects.requireNonNull(to, "To task is null");
+            log.debug("Adding edge from {} to {}", from, to);
+            graph.addEdge(from, to);
+        }
     }
-    if (CONFIG.equals(graph.getType()) && !wasSet) {
-      throw new IllegalStateException(
-        format("Missing obligatory node of graph - dependency between %s and %s was not set",
-          depName, task.getData().getName()));
-    }
-  }
 
-  void findAndSetNodeDependencies(MelodicGraph<Task, DefaultEdge> graph, ProcessTask processTask, String depName,
-                                        Collection<NodeTask> nodeTasks, Type type) {
-    boolean wasSet = false;
-    for (NodeTask nodeTask : nodeTasks) {
-      if (nodeTask.getData().getNodeName().equals(depName) && nodeTask.getType().equals(processTask.getType())) {
-        setDependencies(graph, type, nodeTask, processTask);
-        wasSet = true;
-      }
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, List<U> to) {
+        addEdge(graph, from, to, () -> true);
     }
-    if (CONFIG.equals(graph.getType()) && !wasSet) {
-      throw new IllegalStateException(
-              format("Missing obligatory node of graph - dependency between %s and %s was not set",
-                      depName, processTask.getData().getName()));
-    }
-  }
 
-  void findAndSetProcessDependencies(MelodicGraph<Task, DefaultEdge> graph, MonitorTask monitorTask, String taskName,
-                                          Collection<ProcessTask> processTasks, Type type) {
-    boolean wasSet = false;
-    for (ProcessTask processTask : processTasks) {
-      if (processTask.getData().getTaskName().equals(taskName) && processTask.getType().equals(monitorTask.getType())) {
-        setDependencies(graph, type, processTask, monitorTask);
-        wasSet = true;
-      }
+    <T extends Task, U extends Task> void addWaitEdge(MelodicGraph<Task, DefaultEdge> graph, Supplier<T> from, List<U> to, BooleanSupplier booleanSupplier) {
+        if (booleanSupplier.getAsBoolean()) {
+            T t = from.get();
+            to.forEach(u -> addEdge(graph, u, t, booleanSupplier));
+        } else {
+            log.debug("Supplier is not invoked");
+        }
     }
-    if (CONFIG.equals(graph.getType()) && !wasSet) {
-      throw new IllegalStateException(
-              format("Missing obligatory node of graph - dependency between %s and %s was not set",
-                      taskName, monitorTask.getData().getName()));
+
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, List<U> to, BooleanSupplier booleanSupplier) {
+        to.forEach(u -> addEdge(graph, from, u, booleanSupplier));
     }
-  }
+
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, List<U> to, BiPredicate<T, U> biPredicate) {
+        for (T t : from) {
+            boolean wasSet = false;
+            for (U u : to) {
+                if (biPredicate.test(t, u)){
+                    addEdge(graph, t, u);
+                    wasSet = true;
+                }
+            }
+            if (CONFIG.equals(graph.getType()) && !wasSet) {
+                throw new IllegalStateException(
+                        format("Missing obligatory node of graph - dependency between %s and %s was not set", taskToString(t), tasksToString(to)));
+            }
+        }
+    }
+
+    <T extends Task, U extends Task> void addReverseEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, List<U> to, BiPredicate<T, U> biPredicate) {
+        for (U u : to) {
+            boolean wasSet = false;
+            for (T t : from) {
+                if (biPredicate.test(t, u)){
+                    addEdge(graph, t, u);
+                    wasSet = true;
+                }
+            }
+            if (CONFIG.equals(graph.getType()) && !wasSet) {
+                throw new IllegalStateException(
+                        format("Missing obligatory node of graph - dependency between %s and %s was not set", taskToString(u), tasksToString(from)));
+            }
+        }
+    }
+
+    <T extends Task> String tasksToString(List<T> tasks){
+        return tasks
+                .stream()
+                .map(this::taskToString)
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    <T extends Task> String taskToString(T task){
+        return task.getClass().getSimpleName() + "{" + task.getData().getName() + "}";
+    }
 
 }

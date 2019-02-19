@@ -36,7 +36,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
   public Plan buildConfigurationPlan(@NonNull DeploymentInstanceModel model) {
     log.info("Building configuration plan");
     ComparableModel compModel = converter.toComparableModel(model);
-    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateConfigGraph(compModel);
+    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateGraph(compModel);
     Plan plan = new SimplePlan(format("%s configuration plan", model.getName()), graph);
     log.info("Built plan: {}", plan);
     return plan;
@@ -47,7 +47,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
     log.info("Building reconfiguration plan");
     ComparableModel oldCompModel = converter.toComparableModel(oldModel);
     ComparableModel newCompModel = converter.toComparableModel(newModel);
-    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateReconfigGraph(oldCompModel, newCompModel);
+    SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateGraph(newCompModel, oldCompModel);
     Plan plan = new SimplePlan(format("%s->%s reconfiguration plan", oldModel.getName(), newModel.getName()), graph);
     log.info("Built plan: {}", plan);
     return plan;
