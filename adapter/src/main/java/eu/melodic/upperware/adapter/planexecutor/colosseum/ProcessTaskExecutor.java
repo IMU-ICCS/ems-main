@@ -27,7 +27,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
         super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
 
-    List<CloudiatorProcess.StateEnum> ACCEPTED_PROCESS_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
+    private List<CloudiatorProcess.StateEnum> ACCEPTED_PROCESS_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
 
     @Override
     public void create(AdapterProcess taskBody) {

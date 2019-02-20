@@ -1,6 +1,6 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
-public class WaitData implements Data {
+public class AdapterWaitData implements Data {
 
     @Override
     public String getName() {
