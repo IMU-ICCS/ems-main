@@ -59,25 +59,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
             newReq.getNodeName().equals(oldReq.getNodeName());
 
 
-    // create Task instance
-    private static final Function<AdapterJob, JobTask> JOB_TASK_CREATE = adapterJob -> new JobTask(CREATE, adapterJob);
-    private static final Function<AdapterJob, JobTask> JOB_TASK_DELETE = adapterJob -> new JobTask(DELETE, adapterJob);
-
-    private static final Function<AdapterSchedule, ScheduleTask> SCHEDULE_TASK_CREATE = adapterSchedule -> new ScheduleTask(CREATE, adapterSchedule);
-    private static final Function<AdapterSchedule, ScheduleTask> SCHEDULE_TASK_DELETE = adapterSchedule -> new ScheduleTask(DELETE, adapterSchedule);
-
-    private static final Function<AdapterRequirement, NodeTask> NODE_TASK_CREATE = adapterRequirement -> new NodeTask(CREATE, adapterRequirement);
-    private static final Function<AdapterRequirement, NodeTask> NODE_TASK_DELETE = adapterRequirement -> new NodeTask(DELETE, adapterRequirement);
-
-    private static final Function<AdapterProcess, ProcessTask> PROCESS_TASK_CREATE = adapterProcess -> new ProcessTask(CREATE, adapterProcess);
-    private static final Function<AdapterProcess, ProcessTask> PROCESS_TASK_DELETE = adapterProcess -> new ProcessTask(DELETE, adapterProcess);
-
-    private static final Function<AdapterMonitor, MonitorTask> MONITOR_TASK_CREATE = adapterMonitor -> new MonitorTask(CREATE, adapterMonitor);
-    private static final Function<AdapterMonitor, MonitorTask> MONITOR_TASK_DELETE = adapterMonitor -> new MonitorTask(DELETE, adapterMonitor);
-
-    private static final Function<WaitData, WaitTask> WAIT_TASK_CREATE = waitData -> new WaitTask(CREATE, waitData);
-    private static final Function<WaitData, WaitTask> WAIT_TASK_DELETE = waitData -> new WaitTask(DELETE, waitData);
-
     //link different tasks
     private static final BiPredicate<NodeTask, ProcessTask> NODE_TO_PROCESS_BI_PREDICATE = (nodeTask, processTask) ->
             nodeTask.getData().getNodeName().equals(processTask.getData().getNodeName()) &&
@@ -114,13 +95,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         AdapterJob oldAdapterJob = oldComparableModel.getAdapterJob();
         JobTask jobTask = null;
         if (!newAdapterJob.equals(oldAdapterJob)) {
-            jobTask = createTask(graph, newAdapterJob, JOB_TASK_CREATE);
+            jobTask = createTask(graph, newAdapterJob, JobTask.JOB_TASK_CREATE);
         }
         Optional<JobTask> jobTaskOpt = Optional.ofNullable(jobTask);
 
         //Node
         List<AdapterRequirement> nodesToCreate = getDataToCreate(newComparableModel.getAdapterRequirements(), oldComparableModel.getAdapterRequirements(), NODE_BI_PREDICATE);
-        List<NodeTask> nodeTasksToCreate = createTasks(graph, nodesToCreate, NODE_TASK_CREATE);
+        List<NodeTask> nodeTasksToCreate = createTasks(graph, nodesToCreate, NodeTask.NODE_TASK_CREATE);
 
         //Job -> Schedule
         AdapterSchedule newAdapterSchedule = newComparableModel.getAdapterSchedule();
@@ -128,28 +109,28 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         ScheduleTask scheduleTask = null;
         if (!newAdapterSchedule.equals(oldAdapterSchedule)) {
-            scheduleTask = createTask(graph, newAdapterSchedule, SCHEDULE_TASK_CREATE);
+            scheduleTask = createTask(graph, newAdapterSchedule, ScheduleTask.SCHEDULE_TASK_CREATE);
             addEdge(graph, jobTask, scheduleTask, jobTaskOpt::isPresent);
         }
         Optional<ScheduleTask> scheduleTaskOpt = Optional.ofNullable(scheduleTask);
 
         //Node, Schedule -> Process
         List<AdapterProcess> processesToCreate = getDataToCreate(newComparableModel.getAdapterProcesses(), oldComparableModel.getAdapterProcesses(), PROCESS_BI_PREDICATE);
-        List<ProcessTask> processTasksToCreate = createTasks(graph, processesToCreate, PROCESS_TASK_CREATE);
+        List<ProcessTask> processTasksToCreate = createTasks(graph, processesToCreate, ProcessTask.PROCESS_TASK_CREATE);
         addEdge(graph, scheduleTask, processTasksToCreate, scheduleTaskOpt::isPresent);
         addEdge(graph, nodeTasksToCreate, processTasksToCreate, NODE_TO_PROCESS_BI_PREDICATE);
 
         //Process -> Monitors
         if (adapterProperties.getEms().isEnabled()) {
             List<AdapterMonitor> monitorsToCreate = getDataToCreate(newComparableModel.getAdapterMonitors(), oldComparableModel.getAdapterMonitors(), MONITOR_BI_PREDICATE);
-            List<MonitorTask> monitorTasksToCreate = createTasks(graph, monitorsToCreate, MONITOR_TASK_CREATE);
+            List<MonitorTask> monitorTasksToCreate = createTasks(graph, monitorsToCreate, MonitorTask.MONITOR_TASK_CREATE);
             addReverseEdge(graph, processTasksToCreate, monitorTasksToCreate, PROCESS_TO_MONITOR_BI_PREDICATE);
         }
 
         //Monitors, Process -> Wait
         //connect monitors to last tasks
         List<Task> tasksToCreateWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, CREATE);
-        addWaitEdge(graph, () -> createTask(graph, new WaitData(), WAIT_TASK_CREATE), tasksToCreateWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToCreateWithoutOutgoingEdges));
+        addWaitEdge(graph, () -> createTask(graph, new AdapterWaitData(), WaitTask.WAIT_TASK_CREATE), tasksToCreateWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToCreateWithoutOutgoingEdges));
 
         //Wait -> Monitors (D)
         List<Task> lastCreateTasks = getTasksWithoutOutgoingEdges(graph, CREATE);
@@ -158,13 +139,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         List<MonitorTask>  monitorTasksToDelete = Collections.emptyList();
         if (adapterProperties.getEms().isEnabled()) {
             List<AdapterMonitor> monitorsToDelete = getDataToDelete(newComparableModel.getAdapterMonitors(), oldComparableModel.getAdapterMonitors(), MONITOR_BI_PREDICATE);
-            monitorTasksToDelete = createTasks(graph, monitorsToDelete, MONITOR_TASK_DELETE);
+            monitorTasksToDelete = createTasks(graph, monitorsToDelete, MonitorTask.MONITOR_TASK_DELETE);
             addEdge(graph, lastCreateTask, monitorTasksToDelete, () -> lastCreateTask != null);
         }
 
         //Monitors (D) -> Process (D)
         List<AdapterProcess> processesToDelete = getDataToDelete(newComparableModel.getAdapterProcesses(), oldComparableModel.getAdapterProcesses(), PROCESS_BI_PREDICATE);
-        List<ProcessTask> processTasksToDelete = createTasks(graph, processesToDelete, PROCESS_TASK_DELETE);
+        List<ProcessTask> processTasksToDelete = createTasks(graph, processesToDelete, ProcessTask.PROCESS_TASK_DELETE);
 
         if (CollectionUtils.isNotEmpty(monitorTasksToDelete)){
             addEdge(graph, monitorTasksToDelete, processTasksToDelete, MONITOR_TO_PROCESS_BI_PREDICATE);
@@ -174,7 +155,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         //Process (D) -> Nodes(D)
         List<AdapterRequirement> nodesToDelete = getDataToDelete(newComparableModel.getAdapterRequirements(), oldComparableModel.getAdapterRequirements(), NODE_BI_PREDICATE);
-        List<NodeTask> nodeTasksToDelete = createTasks(graph, nodesToDelete, NODE_TASK_DELETE);
+        List<NodeTask> nodeTasksToDelete = createTasks(graph, nodesToDelete, NodeTask.NODE_TASK_DELETE);
         addEdge(graph, processTasksToDelete, nodeTasksToDelete, PROCESS_TO_NODE_BI_PREDICATE);
 
         //Process (D) -> Schedule (D)
@@ -187,7 +168,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         //NOT implemented yet
         List<Task> tasksToDeleteWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, DELETE);
 
-        addWaitEdge(graph, () -> createTask(graph, new WaitData(), WAIT_TASK_DELETE), tasksToDeleteWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToDeleteWithoutOutgoingEdges));
+        addWaitEdge(graph, () -> createTask(graph, new AdapterWaitData(), WaitTask.WAIT_TASK_DELETE), tasksToDeleteWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToDeleteWithoutOutgoingEdges));
 
         toLogGraphLogger.logGraph(graph);
         log.info("Built {} graph: {}", graph.getType(), graph);
