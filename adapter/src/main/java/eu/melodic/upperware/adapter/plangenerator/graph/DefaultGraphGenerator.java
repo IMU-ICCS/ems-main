@@ -70,11 +70,13 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
     private static final BiPredicate<ProcessTask, MonitorTask> PROCESS_TO_MONITOR_BI_PREDICATE = (processTask, monitorTask) ->
             processTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
-                processTask.getType().equals(monitorTask.getType());
+                    processTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()) &&
+                    processTask.getType().equals(monitorTask.getType());
 
     private static final BiPredicate<MonitorTask, ProcessTask> MONITOR_TO_PROCESS_BI_PREDICATE = (monitorTask, processTask) ->
             processTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
-                processTask.getType().equals(monitorTask.getType());
+                    processTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()) &&
+                    processTask.getType().equals(monitorTask.getType());
 
 
     @Override
