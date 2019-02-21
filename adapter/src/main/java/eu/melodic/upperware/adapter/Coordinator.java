@@ -130,11 +130,11 @@ public class Coordinator {
             } else {
                 plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
             }
-            try {
-                tr.commit();
-            } catch (Exception e) {
-                throw new AdapterException("Exception during saving models", e);
-            }
+//            try {
+//                tr.commit();
+//            } catch (Exception e) {
+//                throw new AdapterException("Exception during saving models", e);
+//            }
         } finally {
             cdoSessionX.closeTransaction(tr);
             cdoSessionX.closeSession();
