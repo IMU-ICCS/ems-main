@@ -129,7 +129,11 @@ public class Coordinator {
                 plan = planGenerator.buildConfigurationPlan(targetModel);
             } else {
                 plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
-
+            }
+            try {
+                tr.commit();
+            } catch (Exception e) {
+                throw new AdapterException("Exception during saving models", e);
             }
         } finally {
             cdoSessionX.closeTransaction(tr);
@@ -144,26 +148,22 @@ public class Coordinator {
         }
 
         // pre-authorize target model
-        if (targetModel != null) {
-            log.info("Authorizing deployment plan with Authorization-Service...");
-            try {
-                if (deploymentInstanceModelValidator.validate(targetModel)) {
-                    log.info("Deployment plan authorized, executing...");
+        log.info("Authorizing deployment plan with Authorization-Service...");
+        try {
+            if (deploymentInstanceModelValidator.validate(targetModel)) {
+                log.info("Deployment plan authorized, executing...");
 
-                    planExecutor.executePlan(plan);
-                    cdoServerUpdater.updateCamelModel(resourceName);
-                    notifyPlanApplied(resourceName, notificationUri, uuid);
-                } else {
-                    log.info("Deployment plan authorized failed...");
-                    notifyPlanRejected(resourceName, notificationUri, uuid);
-                }
-
-            } catch (Exception ex) {
-                log.error("Error: ", ex);
-                notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
+                planExecutor.executePlan(plan);
+                cdoServerUpdater.updateCamelModel(resourceName);
+                notifyPlanApplied(resourceName, notificationUri, uuid);
+            } else {
+                log.info("Deployment plan authorized failed...");
+                notifyPlanRejected(resourceName, notificationUri, uuid);
             }
-        } else {
-            log.warn("Cannot pre-authorize target model. Target model is null");
+
+        } catch (Exception ex) {
+            log.error("Error: ", ex);
+            notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
         }
     }
 
@@ -186,7 +186,7 @@ public class Coordinator {
                 throw new AdapterException("Error during serialising Monitors", e);
             }
             attributes.add(createAttribute(attributeName, attributeValue));
-            log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
+                log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
                     monitors.stream().map(Monitor::getMetric).collect(Collectors.joining(", ", "[", "]")));
         }
     }
@@ -196,7 +196,7 @@ public class Coordinator {
     }
 
     private Attribute createAttribute(String attributeName, String attributeValue) {
-        log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
+            log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
         Attribute strAttribute = CoreFactory.eINSTANCE.createAttribute();
         strAttribute.setName(attributeName);
         strAttribute.setValue(createStringValue(attributeValue));

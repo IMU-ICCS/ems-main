@@ -43,8 +43,9 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         }
         ProcessGroup processGroup = processGroupByNodeId.get();
 
-        Monitor monitor = convertToMonitor(taskBody, getFistProcessId(processGroup));
-        Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName());
+        String fistProcessId = getFistProcessId(processGroup);
+        Monitor monitor = convertToMonitor(taskBody, fistProcessId);
+        Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), fistProcessId);
         if (monitorOpt.isPresent()) {
             log.info("There is already Monitor defined with metric: {}", taskBody.getMetricName());
             return;
@@ -127,7 +128,19 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     @Override
     public void delete(AdapterMonitor taskBody) {
-        if (!context.getMonitor(taskBody.getMetricName()).isPresent()) {
+        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
+
+        String fistNodeId = getFistNodeId(nodeGroup);
+
+        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
+        if (!processGroupByNodeId.isPresent()) {
+            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
+            return;
+        }
+        ProcessGroup processGroup = processGroupByNodeId.get();
+
+        if (!context.getMonitor(taskBody.getMetricName(), getFistProcessId(processGroup)).isPresent()) {
             log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());
             return;
         }

@@ -129,8 +129,14 @@ public class ColosseumContext implements ContextOperations {
         return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
     }
 
-    public Optional<Monitor> getMonitor(String metricName){
-        return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()),
+    public Optional<Monitor> getMonitor(String metricName, String processId){
+        Objects.requireNonNull(metricName);
+        Objects.requireNonNull(processId);
+        return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()) &&
+                                        monitor.getTargets().stream()
+                                                .anyMatch(monitoringTarget -> MonitoringTarget.TypeEnum.PROCESS.equals(monitoringTarget.getType()) &&
+                                                                processId.equals(monitoringTarget.getIdentifier())
+                                                        ),
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
