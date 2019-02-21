@@ -33,11 +33,11 @@ public class DefaultPlanGenerator implements PlanGenerator {
   private DefaultGraphGenerator generator;
 
   @Override
-  public Plan buildConfigurationPlan(@NonNull DeploymentInstanceModel model) {
+  public Plan buildConfigurationPlan(@NonNull DeploymentInstanceModel newModel) {
     log.info("Building configuration plan");
-    ComparableModel compModel = converter.toComparableModel(model);
+    ComparableModel compModel = converter.toComparableModel(newModel);
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateGraph(compModel);
-    Plan plan = new SimplePlan(format("%s configuration plan", model.getName()), graph);
+    Plan plan = new SimplePlan(format("%s configuration plan", newModel.getName()), graph);
     log.info("Built plan: {}", plan);
     return plan;
   }
