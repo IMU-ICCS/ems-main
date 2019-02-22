@@ -42,6 +42,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -116,25 +117,26 @@ public class Coordinator {
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
         CDOTransaction tr = cdoSessionX.openTransaction();
 
-        DeploymentInstanceModel targetModel = null;
-        DeploymentInstanceModel currentModel = null;
+        boolean isValid;
         try {
-            targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
+            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, tr); //new
             if (properties.getEms().isEnabled()) {
                 enrichMonitors(targetModel, uuid, authorization, resourceName);
             }
-            currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
-            saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
+            DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
             if (currentModel == null) {
                 plan = planGenerator.buildConfigurationPlan(targetModel);
             } else {
                 plan = planGenerator.buildReconfigurationPlan(currentModel, targetModel);
             }
-//            try {
-//                tr.commit();
-//            } catch (Exception e) {
-//                throw new AdapterException("Exception during saving models", e);
-//            }
+
+            try {
+                tr.commit();
+                isValid = deploymentInstanceModelValidator.validate(targetModel);
+                saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
+            } catch (CommitException e) {
+                throw new AdapterException("Exception during commiting transaction", e);
+            }
         } finally {
             cdoSessionX.closeTransaction(tr);
             cdoSessionX.closeSession();
@@ -150,7 +152,7 @@ public class Coordinator {
         // pre-authorize target model
         log.info("Authorizing deployment plan with Authorization-Service...");
         try {
-            if (deploymentInstanceModelValidator.validate(targetModel)) {
+            if (isValid) {
                 log.info("Deployment plan authorized, executing...");
 
                 planExecutor.executePlan(plan);
