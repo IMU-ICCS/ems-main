@@ -63,41 +63,12 @@ public class MonitorConverter implements ModelConverter<DeploymentInstanceModel,
 
         log.info("Attribute monitors is {}", isMonitorAttributeExists ? "FOUND":"NOT_FOUND");
 
-        List<Monitor> monitors = model.getAttributes()
+        return model.getAttributes()
                 .stream()
                 .filter(attribute -> "monitors".equals(attribute.getName()))
                 .findFirst()
                 .map(attribute -> ((StringValue) attribute.getValue()).getValue())
                 .map(this::fromJson).orElse(Collections.emptyList());
-
-
-        updateConfig(monitors);
-
-        return monitors;
-    }
-
-    //TODO - to remove
-    private void updateConfig(List<Monitor> monitors) {
-
-        KeyValuePair jmsBroker = new KeyValuePairImpl();
-        jmsBroker.setKey("jms.broker");
-        jmsBroker.setValue("failover:(tcp://localhost:61616)?initialReconnectDelay=1000&warnAfterReconnectAttempts=10");
-
-        KeyValuePair jmsTopicSelector = new KeyValuePairImpl();
-        jmsTopicSelector.setKey("jms.topic.selector");
-        jmsTopicSelector.setValue("de.uniulm.omi.cloudiator.visor.reporting.jms.MetricNameTopicSelector");
-
-        KeyValuePair jmsMessageFormat = new KeyValuePairImpl();
-        jmsMessageFormat.setKey("jms.message.format");
-        jmsMessageFormat.setValue("de.uniulm.omi.cloudiator.visor.reporting.jms.MelodicJsonEncoding");
-
-        List<KeyValuePair> newConfig = Arrays.asList(jmsBroker, jmsTopicSelector, jmsMessageFormat);
-
-        monitors.stream()
-                .map(Monitor::getSinks)
-                .flatMap(Collection::stream)
-                .filter(sink -> Sink.TypeType.JMS.equals(sink.getType()))
-                .forEach(sink -> sink.setConfiguration(newConfig));
     }
 
     private List<AdapterMonitor> toMonitors(SoftwareComponentInstance softwareComponentInstance, String jobName, List<Monitor> monitors) {
