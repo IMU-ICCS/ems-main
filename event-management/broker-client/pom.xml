@@ -35,7 +35,19 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
-
     </dependencies>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
