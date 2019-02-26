@@ -129,14 +129,20 @@ public class ColosseumContext implements ContextOperations {
         return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
     }
 
-    public Optional<Monitor> getMonitor(String metricName, String processId){
+    public Optional<Monitor> getMonitor(String metricName, MonitoringTarget monitoringTarget){
         Objects.requireNonNull(metricName);
-        Objects.requireNonNull(processId);
+        Objects.requireNonNull(monitoringTarget);
         return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()) &&
                                         monitor.getTargets().stream()
-                                                .anyMatch(monitoringTarget -> MonitoringTarget.TypeEnum.PROCESS.equals(monitoringTarget.getType()) &&
-                                                                processId.equals(monitoringTarget.getIdentifier())
+                                                .anyMatch(mt -> monitoringTarget.getType().equals(mt.getType()) &&
+                                                                monitoringTarget.getIdentifier().equals(mt.getIdentifier())
                                                         ),
+                () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
+    }
+
+    private Optional<Monitor> getMonitor(String metricName){
+        Objects.requireNonNull(metricName);
+        return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()),
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
@@ -160,11 +166,33 @@ public class ColosseumContext implements ContextOperations {
 
 
     public void addMonitor(@NonNull Monitor monitor) {
-        monitors.add(monitor);
+        Optional<Monitor> monitorOpt = getMonitor(monitor.getMetric());
+        if (!monitorOpt.isPresent()){
+            monitors.add(monitor);
+        } else {
+            Monitor m = monitorOpt.get();
+
+            for (MonitoringTarget target : monitor.getTargets()) {
+                boolean isMissing = m.getTargets().stream().noneMatch(monitoringTarget -> monitoringTarget.getType().equals(target.getType()) &&
+                        monitoringTarget.getIdentifier().equals(target.getIdentifier()));
+
+                if (isMissing) {
+                    m.getTargets().add(target);
+                }
+            }
+        }
     }
 
-    public void deleteMonitor(String metricName) {
-        monitors.removeIf(monitor -> metricName.equals(monitor.getMetric()));
+    public void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) {
+        getMonitor(metricName, monitoringTarget)
+                .ifPresent(monitor -> {
+                    if (monitor.getTargets().size() == 1) {
+                        monitors.remove(monitor);
+                    } else {
+                        monitor.getTargets()
+                                .removeIf(mt -> mt.getType().equals(monitoringTarget.getType()) && mt.getIdentifier().equals(monitoringTarget.getIdentifier()));
+                    }
+                });
     }
 
     private <T> Optional<T> getElement(List<T> collection, Predicate<T> predicate, Supplier<AmbiguousResultException> exceptionSupplier) {

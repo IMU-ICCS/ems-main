@@ -51,5 +51,5 @@ public interface ColosseumApi {
 
     Monitor addMonitor(Monitor monitor) throws ApiException;
 
-    void deleteMonitor(String metricName) throws ApiException;
+    void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) throws ApiException;
 }
