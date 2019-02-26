@@ -8,12 +8,11 @@ import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -21,6 +20,8 @@ import static java.lang.String.format;
 
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
+
+    private static final List<Node.StateEnum> ACCEPTED_STATES = Arrays.asList(Node.StateEnum.RUNNING, Node.StateEnum.PENDING);
 
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
                      ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
@@ -49,7 +50,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             boolean isNodeRunning = nodeGroup
                     .getNodes()
                     .stream()
-                    .allMatch(node -> Node.StateEnum.RUNNING.equals(node.getState()));
+                    .allMatch(node -> ACCEPTED_STATES.contains(node.getState()));
 
             if (isNodeRunning) {
                 log.info("New nodeGroup has been created: name: {}, nodeId: {}", nodeGroup.getId(),
@@ -64,7 +65,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                 String errorMessage = nodeGroup
                         .getNodes()
                         .stream()
-                        .filter(node -> !Node.StateEnum.RUNNING.equals(node.getState()))
+                        .filter(node -> !ACCEPTED_STATES.contains(node.getState()))
                         .map(node -> format("Node %s (id: %s) is in %s state", node.getName(), node.getId(), node.getState()))
                         .collect(Collectors.joining(", ", "NodeGroup " + nodeGroupId + " has been created but ", "."));
 

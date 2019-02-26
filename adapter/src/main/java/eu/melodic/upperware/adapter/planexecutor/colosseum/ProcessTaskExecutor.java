@@ -22,12 +22,12 @@ import static java.lang.String.format;
 @Slf4j
 public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProcess> {
 
+    private static final List<CloudiatorProcess.StateEnum> ACCEPTED_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
+
     ProcessTaskExecutor(ProcessTask task, Collection<Future> predecessors, ColosseumApi api,
                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
         super(task, predecessors, api, context, executor, colosseumExecutorFactory);
     }
-
-    private List<CloudiatorProcess.StateEnum> ACCEPTED_PROCESS_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
 
     @Override
     public void create(AdapterProcess taskBody) {
@@ -65,7 +65,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
             boolean isProcessRunning = processGroup
                     .getProcesses()
                     .stream()
-                    .allMatch(cloudiatorProcess ->  ACCEPTED_PROCESS_STATES.contains(cloudiatorProcess.getState()));
+                    .allMatch(cloudiatorProcess ->  ACCEPTED_STATES.contains(cloudiatorProcess.getState()));
 
             if (isProcessRunning) {
                 log.info("Process group has been created ProcessGroup details: {}", processGroup);
@@ -74,7 +74,7 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
                 String errorMessage = processGroup
                         .getProcesses()
                         .stream()
-                        .filter(cloudiatorProcess -> !ACCEPTED_PROCESS_STATES.contains(cloudiatorProcess.getState()))
+                        .filter(cloudiatorProcess -> !ACCEPTED_STATES.contains(cloudiatorProcess.getState()))
                         .map(cloudiatorProcess -> format("Process %s is in %s state", cloudiatorProcess.getId(), cloudiatorProcess.getState()))
                         .collect(Collectors.joining(", ", "ProcessGroup " + processGroupId + " has been created but ", "."));
 
