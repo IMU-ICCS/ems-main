@@ -105,12 +105,24 @@ public class ColosseumContext implements ContextOperations {
                 .filter(processGroup ->
                         processGroup.getProcesses()
                                 .stream()
-                                .anyMatch(cloudiatorProcess -> {
-                                    return scheduleId.equals(cloudiatorProcess.getSchedule()) &&
-                                            taskName.equals(cloudiatorProcess.getTask());
-                                    //TODO - add check if processGroup is equal
-                                }))
+                                .anyMatch(cloudiatorProcess -> scheduleId.equals(cloudiatorProcess.getSchedule()) &&
+                                        taskName.equals(cloudiatorProcess.getTask()) &&
+                                        checkProcess(cloudiatorProcess, nodeGroupId)))
                 .findFirst();
+    }
+
+    private boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeGroupId) {
+        if (cloudiatorProcess instanceof SingleProcess) {
+            String nodeName = ((SingleProcess) cloudiatorProcess).getNode();
+
+            return getNodeGroup(nodeGroupId)
+                    .filter(ng -> ng.getNodes().stream().anyMatch(node -> node.getId().equals(nodeName)))
+                    .isPresent();
+        } else if (cloudiatorProcess instanceof ClusterProcess) {
+            return ((ClusterProcess) cloudiatorProcess).getNodeGroup().equals(nodeGroupId);
+        }
+        log.warn("Cloudiator process is neither SingleProcess nor ClusterProcess but: {}", cloudiatorProcess.getClass().getSimpleName());
+        return false;
     }
 
     public void deleteProcessGroup(String processGroupId) {
