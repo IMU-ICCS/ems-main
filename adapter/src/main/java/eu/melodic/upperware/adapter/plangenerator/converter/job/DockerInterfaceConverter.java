@@ -1,7 +1,9 @@
 package eu.melodic.upperware.adapter.plangenerator.converter.job;
 
+import camel.core.Attribute;
 import camel.deployment.Configuration;
 import camel.deployment.ScriptConfiguration;
+import camel.type.StringValue;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterDockerInterface;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
@@ -28,7 +30,7 @@ public class DockerInterfaceConverter implements InterfaceConverter<ScriptConfig
     public AdapterDockerInterface convert(ScriptConfiguration configuration) {
         return AdapterDockerInterface
                 .builder()
-                .dockerImage(configuration.getImageId())
+                .dockerImage(findDockerImageId(configuration))
                 .environment(findEnvironment(configuration))
                 .build();
     }
@@ -39,4 +41,16 @@ public class DockerInterfaceConverter implements InterfaceConverter<ScriptConfig
                 .orElse(Collections.emptyMap());
     }
 
+    private String findDockerImageId(ScriptConfiguration configuration) {
+        Attribute attribute = findAttribute(configuration, CamelMetadataForTaskInterfaces.DOCKER_IMAGE.camelName);
+        return attribute == null ? null : ((StringValue) attribute.getValue()).getValue();
+    }
+
+    private Attribute findAttribute(ScriptConfiguration configuration, String camelAnnotation) {
+        return CamelMetadataToolForTaskInterfaces.findAttributeByAnnotation(configuration.getAttributes(), camelAnnotation)
+                .orElseGet(() -> {
+                    log.warn("Attribute with annotation: {} not found in camel model configuration", camelAnnotation);
+                    return null;
+                });
+    }
 }

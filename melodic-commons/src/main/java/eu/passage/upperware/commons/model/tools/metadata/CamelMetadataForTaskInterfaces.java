@@ -13,6 +13,7 @@ public enum CamelMetadataForTaskInterfaces {
     SPARK_CONFIGURATION("SPARKConfiguration"),
 
     // DockerInterface
+    DOCKER_IMAGE("DockerImageId"),
     DOCKER_ENVIRONMENT("DockerArguments"),
 
     // FaasInterface
