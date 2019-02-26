@@ -41,6 +41,8 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
             Objects.requireNonNull(from, "From task is null");
             Objects.requireNonNull(to, "To task is null");
             log.debug("Adding edge from {} to {}", from, to);
+            log.debug("Adding edge from data {} to data {}", from.getData().getName(), to.getData().getName());
+
             graph.addEdge(from, to);
         }
     }
