@@ -148,10 +148,10 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public void deleteMonitor(String metricName) throws ApiException {
+  public void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) throws ApiException {
     Objects.requireNonNull(metricName);
     log.info("Deleting monitor with metricName: {}", metricName);
-    monitoringApi.deleteMonitor(metricName);
+    monitoringApi.deleteMonitor(metricName, monitoringTarget);
   }
 
 }

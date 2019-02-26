@@ -45,7 +45,9 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
         String fistProcessId = getFistProcessId(processGroup);
         Monitor monitor = convertToMonitor(taskBody, fistProcessId);
-        Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), fistProcessId);
+        MonitoringTarget monitoringTarget = createMonitoringTarget(getFistProcessId(processGroup));
+
+        Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), monitoringTarget);
         if (monitorOpt.isPresent()) {
             log.info("There is already Monitor defined with metric: {}", taskBody.getMetricName());
             return;
@@ -140,7 +142,9 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         }
         ProcessGroup processGroup = processGroupByNodeId.get();
 
-        if (!context.getMonitor(taskBody.getMetricName(), getFistProcessId(processGroup)).isPresent()) {
+        MonitoringTarget monitoringTarget = createMonitoringTarget(getFistProcessId(processGroup));
+
+        if (!context.getMonitor(taskBody.getMetricName(), monitoringTarget).isPresent()) {
             log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());
             return;
         }
@@ -148,11 +152,18 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         log.info("Going to remove monitor {}", taskBody.getMetricName());
 
         try {
-            api.deleteMonitor(taskBody.getMetricName());
-            context.deleteMonitor(taskBody.getMetricName());
+            api.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
+            context.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
         } catch (ApiException e) {
             log.error("Could not delete Monitor with metricName. Error code: {}, Response body: {}, ResponseHeaders: {}",
                     taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
         }
+    }
+
+    private MonitoringTarget createMonitoringTarget(String fistProcessId) {
+        MonitoringTarget monitoringTarget = new MonitoringTarget();
+        monitoringTarget.setType(MonitoringTarget.TypeEnum.PROCESS);
+        monitoringTarget.setIdentifier(fistProcessId);
+        return monitoringTarget;
     }
 }
