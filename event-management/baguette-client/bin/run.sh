@@ -20,5 +20,5 @@ echo "MELODIC_CONFIG_DIR=$MELODIC_CONFIG_DIR"
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR BASEDIR
 
 # Run Baguette client
-java -classpath "conf:jars/*" eu.melodic.event.baguette.client.BaguetteClient $*
+/opt/cloudiator/jre8/bin/java -classpath "conf:jars/*" eu.melodic.event.baguette.client.BaguetteClient $*
 cd $PWD
