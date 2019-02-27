@@ -115,6 +115,9 @@
 							<!--<directory>target</directory>-->
 							<includes>
 								<include>*.zip</include>
+								<include>*.tar</include>
+								<include>*.tar.gz</include>
+								<include>*.tgz</include>
 							</includes>
 							<excludes>
 								<exclude>*.jar</exclude>
@@ -145,12 +148,12 @@
 						<configuration>
 							<fileSets>
 								<fileSet>
-									<sourceFile>target/baguette-client-vm.zip</sourceFile>
-                                    <destinationFile>../config-files/resources/baguette-client.zip</destinationFile>
+									<sourceFile>target/baguette-client-vm.tgz</sourceFile>
+									<destinationFile>../config-files/resources/baguette-client.tgz</destinationFile>
 								</fileSet>
 								<fileSet>
-									<sourceFile>target/baguette-client-vm.zip.md5</sourceFile>
-                                    <destinationFile>../config-files/resources/baguette-client.zip.md5</destinationFile>
+									<sourceFile>target/baguette-client-vm.tgz.md5</sourceFile>
+									<destinationFile>../config-files/resources/baguette-client.tgz.md5</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>bin/install.sh</sourceFile>

@@ -8,7 +8,7 @@
 >
     <id>vm</id>
     <formats>
-        <format>zip</format>
+        <format>tgz</format>
     </formats>
     <fileSets>
         <fileSet>

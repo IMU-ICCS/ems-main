@@ -26,10 +26,10 @@ echo ""
 date -Iseconds
 
 # Common variables
-DOWNLOAD_URL=$BASE_URL/baguette-client.zip
-DOWNLOAD_URL_MD5=$BASE_URL/baguette-client.zip.md5
-INSTALL_PACKAGE=/opt/baguette-client/baguette-client.zip
-INSTALL_PACKAGE_MD5=/opt/baguette-client/baguette-client.zip.md5
+DOWNLOAD_URL=$BASE_URL/baguette-client.tgz
+DOWNLOAD_URL_MD5=$BASE_URL/baguette-client.tgz.md5
+INSTALL_PACKAGE=/opt/baguette-client/baguette-client.tgz
+INSTALL_PACKAGE_MD5=/opt/baguette-client/baguette-client.tgz.md5
 INSTALL_DIR=/opt/
 STARTUP_SCRIPT=$BIN_DIRECTORY/baguette-client
 SERVICE_NAME=baguette-client
@@ -86,11 +86,11 @@ echo "Download installation package MD5 checksum...ok"
 
 # Check MD5 checksum
 PACKAGE_MD5=`cat $INSTALL_PACKAGE_MD5`
-ZIP_CHECKSUM=`md5sum $INSTALL_PACKAGE |cut -d " " -f 1`
+PACKAGE_CHECKSUM=`md5sum $INSTALL_PACKAGE |cut -d " " -f 1`
 echo ""
 echo "Checksum MD5:  $PACKAGE_MD5"
-echo "Checksum calc: $ZIP_CHECKSUM"
-if [ $ZIP_CHECKSUM == $PACKAGE_MD5 ]; then
+echo "Checksum calc: $PACKAGE_CHECKSUM"
+if [ $PACKAGE_CHECKSUM == $PACKAGE_MD5 ]; then
   echo "Checksum: ok"
 else
   echo "Checksum: wrong"
@@ -99,13 +99,14 @@ else
   exit 1
 fi
 
-# Unzip installation package
+# Extract installation package
 echo ""
-echo "Unzip installation package..."
+echo "Extracting installation package..."
 date -Iseconds
-unzip -o $INSTALL_PACKAGE -d $INSTALL_DIR
+#unzip -o $INSTALL_PACKAGE -d $INSTALL_DIR
+tar -xvzf $INSTALL_PACKAGE -C $INSTALL_DIR
 if [ $? != 0 ]; then
-  echo "Failed to unzip installation package ($?)"
+  echo "Failed to extract installation package contents ($?)"
   echo "Aborting installation..."
   date -Iseconds
   exit 1
