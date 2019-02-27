@@ -13,14 +13,14 @@ public class CamelMetadataTool {
 
     public static Optional<MetricVariableImpl> findVariableFor(List<MetricVariableImpl> variables, CamelMetadata camelMetadata) {
 
-        for (MetricVariableImpl variable : variables) {
-            boolean hasAnnotation = variable.getMetricTemplate().getAttribute().getAnnotations().stream().anyMatch(mmsObject -> camelMetadata.camelName.equals(mmsObject.getId()));
-
-            if (hasAnnotation) {
-                return Optional.of(variable);
-            }
-        }
-        return Optional.empty();
+        return variables.stream()
+                .filter(variable -> !variable.isCurrentConfiguration())
+                .filter(variable -> variable.getMetricTemplate()
+                        .getAttribute()
+                        .getAnnotations()
+                            .stream()
+                            .anyMatch(mmsObject -> camelMetadata.camelName.equals(mmsObject.getId())))
+                .findFirst();
     }
 
     public static boolean isFromVariable(MetricVariableImpl metricVariable) {
