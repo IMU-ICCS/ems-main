@@ -8,4 +8,18 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
-echo "** NOT YET IMPLEMENTED - Kill Baguette Client **"
+# Get Baguette client home directory
+BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
+
+# Update path
+PATH=$PATH:/opt/cloudiator/jre8/bin/
+
+# Kill Baguette client
+PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+if [ "$PID" != "" ]
+then
+	echo "Killing baguette client (pid: $PID)"
+	kill -9 $PID
+else
+	echo "Baguette client is not running"
+fi
