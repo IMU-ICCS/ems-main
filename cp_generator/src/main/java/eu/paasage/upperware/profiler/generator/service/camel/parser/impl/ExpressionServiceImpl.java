@@ -121,6 +121,8 @@ public class ExpressionServiceImpl implements ExpressionService {
     }
 
     private Token evaluateSubExpression(Marker marker, int deepestLevel, String finalExpressionName, ConstraintProblem cp, CamelModel camelModel, String cacheKey) {
+        String expressionStr = marker.getTokens().stream().map(token -> token.tokenStr).collect(Collectors.joining(""));
+        log.info("Evaluating subExpression {}", expressionStr);
         int level = marker.getTokenLevel();
         removeBrackets(marker.getTokens());
 
@@ -137,12 +139,16 @@ public class ExpressionServiceImpl implements ExpressionService {
 
             List<Token> tokensToAnalise = Stream.of(prevToken, operator, nextToken).collect(Collectors.toList());
 
-            log.debug("The expression {} will be replaced by {} in expression {}",
+            log.info("The expression {} will be replaced by {} in expression {}",
                     getTokenToPrint(tokensToAnalise), getTokenToPrint(Collections.singletonList(newToken)),
                     getTokenToPrint(marker.getTokens()));
 
             repleaceGroupInMarker(marker.getTokens(), tokensToAnalise, newToken);
             result = newToken;
+        }
+
+        if (result == null){
+            throw new GeneratorException(format("Could not create Token for formula: %s", expressionStr));
         }
 
         return result;
