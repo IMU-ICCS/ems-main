@@ -609,13 +609,17 @@ public class ModelAnalyzer {
     protected void _decomposeConstraint(TranslationContext _TC, Constraint constraint) {
         log.info("  _decomposeConstraint(): {} :: {}", constraint.getName(), constraint.getClass().getName());
         if (MetricConstraint.class.isAssignableFrom(constraint.getClass())) {
+            log.info("  _decomposeConstraint(): Metric Constraint found: {}", constraint.getName());
             _decomposeMetricConstraint(_TC, (MetricConstraint) constraint);
         } else if (IfThenConstraint.class.isAssignableFrom(constraint.getClass())) {
+            log.info("  _decomposeConstraint(): If-Then Constraint found: {}", constraint.getName());
             _decomposeIfThenConstraint(_TC, (IfThenConstraint) constraint);
         } else if (MetricVariableConstraint.class.isAssignableFrom(constraint.getClass())) {
+            log.info("  _decomposeConstraint(): Metric Variable Constraint found: {}", constraint.getName());
             // Not used in EMS
             //_decomposeMetricVariableConstraint(_TC, (MetricVariableConstraint)constraint);
         } else if (LogicalConstraint.class.isAssignableFrom(constraint.getClass())) {
+            log.info("  _decomposeConstraint(): Logical Constraint found: {}", constraint.getName());
             _decomposeLogicalConstraint(_TC, (LogicalConstraint) constraint);
         } else {
             throw new ModelAnalysisException(String.format("Invalid Constraint type occurred: %s  class=%s", constraint.getName(), constraint.getClass().getName()));
@@ -724,29 +728,29 @@ public class ModelAnalyzer {
                     _decomposeMetricContext(_TC, mc);
                 }
             } else
-                // check if it is metric variable
-                if (m instanceof MetricVariable) {
-                    // check if it is a composite metric variable
-                    if (_TC.CMVAR.contains(m.getName())) {
-                        hasNonMVVComponents = true;
+            // check if it is metric variable
+            if (m instanceof MetricVariable) {
+                // check if it is a composite metric variable
+                if (_TC.CMVAR.contains(m.getName())) {
+                    hasNonMVVComponents = true;
 
-                        // add metric variable 'm' as mvar's child and decompose it
-                        MetricVariable mv = (MetricVariable) m;
-                        log.debug("  _decomposeMetricVariable(): {} :: Component composite metric variable found: {}", mvar.getName(), mv.getName());
-                        _TC.DAG.addNode(mvar, mv).setGrouping(getGrouping(mv));
-                        if (_decomposeMetricVariable(_TC, mv)) hasNonMVVComponents = true;
-                    } else
-                        // check if it is an MVV
-                        if (_TC.MVV.contains(m.getName())) {
-                            log.debug("  _decomposeMetricVariable(): {} :: Component MVV found: {}", mvar.getName(), m.getName());
-                            _TC.DAG.addNode(mvar, m).setGrouping(getGrouping(m));
-                            // MVV can be pruned later (if property 'translator.prune-mmv' is true)
-                        } else {
-                            throw new ModelAnalysisException(String.format("INTERNAL ERROR: Metric Variable not found in CMVAR or in MVV sets: %s, class=%s", m.getName(), m.getClass().getName()));
-                        }
+                    // add metric variable 'm' as mvar's child and decompose it
+                    MetricVariable mv = (MetricVariable) m;
+                    log.debug("  _decomposeMetricVariable(): {} :: Component composite metric variable found: {}", mvar.getName(), mv.getName());
+                    _TC.DAG.addNode(mvar, mv).setGrouping(getGrouping(mv));
+                    if (_decomposeMetricVariable(_TC, mv)) hasNonMVVComponents = true;
+                } else
+                // check if it is an MVV
+                if (_TC.MVV.contains(m.getName())) {
+                    log.debug("  _decomposeMetricVariable(): {} :: Component MVV found: {}", mvar.getName(), m.getName());
+                    _TC.DAG.addNode(mvar, m).setGrouping(getGrouping(m));
+                    // MVV can be pruned later (if property 'translator.prune-mmv' is true)
                 } else {
-                    throw new ModelAnalysisException(String.format("Invalid Metric type occurred: %s, class=%s", m.getName(), m.getClass().getName()));
+                    throw new ModelAnalysisException(String.format("INTERNAL ERROR: Metric Variable not found in CMVAR or in MVV sets: %s, class=%s", m.getName(), m.getClass().getName()));
                 }
+            } else {
+                throw new ModelAnalysisException(String.format("Invalid Metric type occurred: %s, class=%s", m.getName(), m.getClass().getName()));
+            }
         }
 
         return hasNonMVVComponents;
