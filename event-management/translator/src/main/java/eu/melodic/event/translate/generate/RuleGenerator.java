@@ -17,6 +17,7 @@ import camel.core.NamedElement;
 import camel.data.Data;
 import camel.deployment.Component;
 import camel.metric.*;
+import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.BinaryEventPattern;
@@ -25,6 +26,7 @@ import camel.scalability.UnaryEventPattern;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.properties.RuleTemplateProperties;
+import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ import org.thymeleaf.spring5.dialect.SpringStandardDialect;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -437,15 +440,32 @@ public class RuleGenerator {
                 Component comp = mvar.getComponent();
                 String compName = comp != null ? comp.getName() : null;
                 String formula = mvar.getFormula();
-                EList<Metric> componentMetrics = mvar.getComponentMetrics();
+                EList<Metric> _componentMetrics = mvar.getComponentMetrics();
+                List<String> _componentMetricNames = _componentMetrics.stream().map(item -> item.getName()).collect(Collectors.toList());
+                boolean _containsMetrics = (_componentMetrics.size() > 0);
+
+                log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
+                        node, elemName, isCurrConfig, isOnNodeCand, compName, formula, _componentMetricNames, _containsMetrics);
+
+                // Remove CP model variables from component metrics
+                List<Metric> componentMetrics = new ArrayList<>();
+                for (Metric m : _componentMetrics) {
+                    if (m instanceof MetricVariable) {
+                        if (CamelMetadataTool.isFromVariable((MetricVariableImpl) m)) {
+                            log.warn("RuleGenerator.generateRules():        - CP model variable found and will be excluded from processing: {}", m.getName());
+                            continue;
+                        }
+                    }
+                    componentMetrics.add(m);
+                }
                 List<String> componentMetricNames = componentMetrics.stream().map(item -> item.getName()).collect(Collectors.toList());
                 boolean containsMetrics = (componentMetrics.size() > 0);
 
-                log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
+                log.warn("RuleGenerator.generateRules():      Metric-Variable after removing CP model variables: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
                         node, elemName, isCurrConfig, isOnNodeCand, compName, formula, componentMetricNames, containsMetrics);
 
                 // Select rule tag, depending on whether an Aggregator function is used in formula
-                // (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
+                // (a) VAR: when no Aggregator function is used in formula, (b) VAR-AGG: when an Aggregator function is used in formula
                 String ruleTag = "VAR";
                 if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-VAR";
                 log.warn("RuleGenerator.generateRules():      VAR-tag={}", ruleTag);
@@ -458,7 +478,7 @@ public class RuleGenerator {
                     log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, component-metrics={}, component-metric-contexts={}",
                             node, elemName, metricNames, contextNames);
 
-                    // Check that component metrics' names (from composite metric) and metric names from component contexts match
+                    // Check that component metrics' names (from metric variable) and metric names from component contexts match
                     if (! checkIfListsAreEqual(componentMetricNames, metricNames)) {
                         log.error("RuleGenerator.generateRules():      Component metrics of metric variable '{}' do not match to component contexts' metrics: component-metrics={}, component-context-metrics={}", mvar.getName(), componentMetricNames, metricNames);
                         throw new IllegalArgumentException(String.format("Component metrics of metric variable '%s' do not match to component contexts' metrics", mvar.getName()));

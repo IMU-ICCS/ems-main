@@ -30,6 +30,7 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
 
 import java.util.*;
@@ -87,7 +88,11 @@ public class ModelAnalyzer {
 
         // analyze constraints
 //		_analyzeConstraints(_TC, camelModel);
-//		log.debug("ModelAnalyzer._analyzeConstraints():  Constraints analysis completed");
+//		log.debug("ModelAnalyzer.analyzeModel():  Constraints analysis completed");
+
+        // analyze metric variable constraints (to extract metrics needed in CP model)
+		_analyzeMetricVariableConstraints(_TC, camelModel);
+		log.debug("ModelAnalyzer.analyzeModel():  Metric Variable Constraints analysis completed");
 
         // infer groupings
         _inferGroupings(_TC, leafGrouping);
@@ -563,6 +568,37 @@ public class ModelAnalyzer {
         });
     }*/
 
+    protected void _analyzeMetricVariableConstraints(TranslationContext _TC, CamelModel camelModel) {
+        // extract constraint models
+        log.info("  Extracting Constraint Models from CAMEL model...");
+        EList<ConstraintModel> constraintModels = camelModel.getConstraintModels();
+        log.info("  Extracting Constraint Models from CAMEL model... {}", getListElementNames(constraintModels));
+
+        // for each constraint model...
+        constraintModels.stream().forEach(cm -> {
+            // extract constraints
+            log.info("  Extracting Metric Variable Constraints from Constraints model {}...", cm.getName());
+            List<MetricVariableConstraint> constraints = cm.getConstraints().stream()
+                    .filter(c -> c instanceof MetricVariableConstraint)
+                    .map(c -> (MetricVariableConstraint)c)
+                    .collect(Collectors.toList());
+            log.info("  Extracting Metric Variable Constraints from Constraints model {}... {}", cm.getName(), getListElementNames(constraints));
+
+            // for each Constraint...
+            constraints.stream().forEach(con -> {
+                // extract constraint name and metric variable
+                String conName = con.getName();
+                log.info("  Processing Metric Variable Constraint {} from Constraints model {}: ...", con.getName(), cm.getName());
+
+                MetricVariable mv = con.getMetricVariable();
+                log.info("  Metric Variable Constraint {}: metric variable: {}", con.getName(), mv.getName());
+
+                // decompose constraint
+                _decomposeMetricVariableConstraint(_TC, con, true);
+            });
+        });
+    }
+
     protected void _decomposeEvent(TranslationContext _TC, Event event) {
         log.info("  _decomposeEvent(): {} :: {}", event.getName(), event.getClass().getName());
 
@@ -640,6 +676,10 @@ public class ModelAnalyzer {
     }
 
     protected void _decomposeMetricVariableConstraint(TranslationContext _TC, MetricVariableConstraint constraint) {
+        _decomposeMetricVariableConstraint(_TC, constraint, false);
+    }
+
+    protected void _decomposeMetricVariableConstraint(TranslationContext _TC, MetricVariableConstraint constraint, boolean isTopLevel) {
         log.info("  _decomposeMetricVariableConstraint(): {} :: {}", constraint.getName(), constraint.getClass().getName());
         java.util.Date validity = constraint.getValidity();
         String op = constraint.getComparisonOperator().getName();
@@ -647,9 +687,26 @@ public class ModelAnalyzer {
         MetricVariable mvar = constraint.getMetricVariable();
         log.info("  _decomposeMetricVariableConstraint(): {} ==> {} {} {}  validity: {}", constraint.getName(), mvar.getName(), op, threshold, validity);
 
-        _TC.DAG.addNode(constraint, mvar).setGrouping(Grouping.GLOBAL);
+        DAGNode mvNode;
+        if (isTopLevel)
+            mvNode = _TC.DAG.addTopLevelNode(mvar).setGrouping(Grouping.GLOBAL);
+        else
+            mvNode = _TC.DAG.addNode(constraint, mvar).setGrouping(Grouping.GLOBAL);
 
+        log.trace("  _decomposeMetricVariableConstraint(): CMVAR: {}", _TC.CMVAR);
+        log.trace("  _decomposeMetricVariableConstraint(): MVV:   {}", _TC.MVV);
         _decomposeMetricVariable(_TC, mvar);
+
+        // Remove top-level metric variable and make its children top-level
+        if (isTopLevel) {
+            Set<DAGNode> children = _TC.DAG.getNodeChildren(mvNode);
+            for (DAGNode child : children) {
+                _TC.DAG.removeEdge(mvNode, child);
+                //_TC.DAG.addEdge(_TC.DAG.getRootNode().getElement(), child.getElement());
+                _TC.DAG.addTopLevelNode(child.getElement());
+            }
+            _TC.DAG.removeNode(mvNode.getElement());
+        }
     }
 
     protected void _decomposeIfThenConstraint(TranslationContext _TC, IfThenConstraint constraint) {
@@ -745,8 +802,13 @@ public class ModelAnalyzer {
                     log.debug("  _decomposeMetricVariable(): {} :: Component MVV found: {}", mvar.getName(), m.getName());
                     _TC.DAG.addNode(mvar, m).setGrouping(getGrouping(m));
                     // MVV can be pruned later (if property 'translator.prune-mmv' is true)
+                } else
+                // check if it is a CP model variable (i.e. solver variable)
+                if (_isCpModelVariable(_TC, (MetricVariable)m)) {
+                    log.debug("  _decomposeMetricVariable(): {} :: CP model variable encountered: {}", mvar.getName(), m.getName());
+                    // No DAG node is added for CP model variables
                 } else {
-                    throw new ModelAnalysisException(String.format("INTERNAL ERROR: Metric Variable not found in CMVAR or in MVV sets: %s, class=%s", m.getName(), m.getClass().getName()));
+                    throw new ModelAnalysisException(String.format("INTERNAL ERROR: Metric Variable not found in CMVAR or in MVV sets and is not a CP model variable: %s, class=%s", m.getName(), m.getClass().getName()));
                 }
             } else {
                 throw new ModelAnalysisException(String.format("Invalid Metric type occurred: %s, class=%s", m.getName(), m.getClass().getName()));
@@ -1058,7 +1120,7 @@ public class ModelAnalyzer {
 
     protected void _checkFormulaAndComponents(TranslationContext _TC, String formula, List<Metric> componentMetrics) {
         if (!properties.isFormulaCheckEnabled()) return;
-        if (formula == null || formula.trim().isEmpty()) return;
+        if (StringUtils.isBlank(formula)) return;
 
         if (componentMetrics == null) componentMetrics = new ArrayList<>();
         List<String> metricNames = getListElementNames(componentMetrics);
@@ -1103,8 +1165,8 @@ public class ModelAnalyzer {
                     message = String.format("Formula component metric has >1 metric contexts in M2MC map: formula=%s, metric=%s, contexts=%s", formula, m.getName(), contexts);
                 if (message != null) {
                     log.error("    _checkFormulaAndComponents(): ERROR: {}", message);
-                    log.debug("    _checkFormulaAndComponents(): ERROR: metric: {}, hash: {}", m, m.hashCode());
-                    log.debug("    _checkFormulaAndComponents(): ERROR: M2MC: {}", _TC.M2MC);
+                    log.error("    _checkFormulaAndComponents(): ERROR: metric: {}, hash: {}", m, m.hashCode());
+                    log.error("    _checkFormulaAndComponents(): ERROR: M2MC: {}", _TC.M2MC);
                     throw new ModelAnalysisException(message);
                 }
 
@@ -1112,32 +1174,45 @@ public class ModelAnalyzer {
                     log.trace("    _checkFormulaAndComponents(): Formula component metric has exactly 1 metric context in M2MC map: formula={}, metric={}, context={}", formula, m.getName(), contexts.iterator().next());
                 }
             } else
-                // check if it is metric variable
-                if (MetricVariable.class.isAssignableFrom(m.getClass())) {
-                    // check if it is a composite metric variable
-                    if (_TC.CMVAR.contains(m.getName())) {
-                        if (log.isTraceEnabled()) {
-                            log.trace("    _checkFormulaAndComponents(): Formula composite component metric variable found: formula={}, metric-variable={}", formula, m.getName());
-                        }
-                    } else
-                        // check if it is an MVV
-                        if (_TC.MVV.contains(m.getName())) {
-                            if (log.isTraceEnabled()) {
-                                log.trace("    _checkFormulaAndComponents(): Formula component MVV found: formula={}, mvv={}", formula, m.getName());
-                            }
-                        } else {
-                            String message = String.format("INTERNAL ERROR: Formula component metric variable not found in CMVAR or in MVV sets: formula=%s, metric-variable=%s", formula, m.getName());
-                            log.error("    _checkFormulaAndComponents(): {}", message);
-                            throw new ModelAnalysisException(message);
-                        }
+            // check if it is metric variable
+            if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+                // check if it is a composite metric variable
+                if (_TC.CMVAR.contains(m.getName())) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("    _checkFormulaAndComponents(): Formula composite component metric variable found: formula={}, metric-variable={}", formula, m.getName());
+                    }
+                } else
+                // check if it is an MVV
+                if (_TC.MVV.contains(m.getName())) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("    _checkFormulaAndComponents(): Formula component MVV found: formula={}, mvv={}", formula, m.getName());
+                    }
+                } else
+                // check if it is a CP model variable (i.e. solver variable)
+                if (_isCpModelVariable(_TC, (MetricVariable)m)) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("    _checkFormulaAndComponents(): CP model variable encountered: formula={}, cp-model-var={}", formula, m.getName());
+                    }
                 } else {
-                    String message = String.format("INTERNAL ERROR: Invalid formula component metric: formula=%s, metric=%s, metric-class=%s", formula, m.getName(), m.getClass().getName());
+                    String message = String.format("INTERNAL ERROR: Formula component metric variable not found in CMVAR or in MVV sets and it is not CP model variable: formula=%s, metric-variable=%s", formula, m.getName());
                     log.error("    _checkFormulaAndComponents(): {}", message);
                     throw new ModelAnalysisException(message);
                 }
+            } else {
+                String message = String.format("INTERNAL ERROR: Invalid formula component metric: formula=%s, metric=%s, metric-class=%s", formula, m.getName(), m.getClass().getName());
+                log.error("    _checkFormulaAndComponents(): {}", message);
+                throw new ModelAnalysisException(message);
+            }
         }
 
         log.trace("    _checkFormulaAndComponents(): Formula arguments and component metrics match: formula={}, arguments={}, component-metric={}", formula, argNames, metricNames);
+    }
+
+    private boolean _isCpModelVariable(TranslationContext _TC, MetricVariable mv) {
+        log.debug("    _isCpModelVariable: mv={}", getElementName(mv));
+        boolean result = CamelMetadataTool.isFromVariable((MetricVariableImpl) mv);
+        log.debug("    _isCpModelVariable: result={}", result);
+        return result;
     }
 
     // ================================================================================================================
