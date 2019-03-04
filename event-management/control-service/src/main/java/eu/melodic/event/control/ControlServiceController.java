@@ -126,6 +126,21 @@ public class ControlServiceController {
         watermark.setSystem("EMS");
         watermark.setDate(new java.util.Date());
 
+        // Print debug info about sensors
+        if (log.isDebugEnabled()) {
+            log.debug("ControlServiceController.getSensors(): Printing monitors for Request: {}", requestUuid);
+            sensors.forEach(m -> {
+                log.debug("ControlServiceController.getSensors():     Monitor: metric={}, component={}, additional-properties={}",
+                        m.getMetric(), m.getComponent(), m.getAdditionalProperties());
+                Sensor s = m.getSensor();
+                if (s.isPushSensor())
+                    log.debug("ControlServiceController.getSensors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
+                else
+                    log.debug("ControlServiceController.getSensors():       PullSensor: class-name={}, interval={}, configuration={}",
+                            m.getSensor().getPullSensor().getClassName(), m.getSensor().getPullSensor().getInterval(), m.getSensor().getPullSensor().getConfiguration());
+            });
+        }
+
         // Prepare response
         MonitorsDataResponse response = new MonitorsDataResponseImpl();
         response.setMonitors(sensors);
