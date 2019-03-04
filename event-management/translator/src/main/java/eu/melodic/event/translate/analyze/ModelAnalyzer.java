@@ -29,6 +29,7 @@ import eu.melodic.models.interfaces.ems.*;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
@@ -311,7 +312,7 @@ public class ModelAnalyzer {
 
                 // Optimisation Goal's metric context's component metrics
                 Set<Metric> formulaMetrics = new HashSet<>();
-                ObjectContext objCtx = null;
+                ObjectContext objCtx;
                 if (mc != null) {
                     Metric m = mc.getMetric();
                     objCtx = mc.getObjectContext();
@@ -464,7 +465,7 @@ public class ModelAnalyzer {
                 boolean isOnNodeCand = mv.isOnNodeCandidates();
                 Component component = mv.getComponent();
                 String formula = mv.getFormula();
-                EList<Metric> componentMetrics = mv.getComponentMetrics();
+                List<Metric> componentMetrics = ListUtils.emptyIfNull(mv.getComponentMetrics());
                 boolean containsMetrics = (componentMetrics != null && componentMetrics.size() > 0);
                 log.info("  Processing Metric Variable {} from Metric Type model {}: template={}, is-current-configuration={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}...",
                         mvName, mm.getName(), getElementName(template), isCurrConfig, isOnNodeCand, getElementName(component), formula, getListElementNames(componentMetrics), containsMetrics);
@@ -1212,7 +1213,7 @@ public class ModelAnalyzer {
 
     private List<String> getListElementNames(List list) {
         ArrayList<String> names = new ArrayList<>();
-        for (Object elem : list) {
+        for (Object elem : ListUtils.emptyIfNull(list)) {
             if (elem instanceof NamedElement) {
                 names.add(((NamedElement) elem).getName());
             }
