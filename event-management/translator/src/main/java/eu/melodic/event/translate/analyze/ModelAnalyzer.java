@@ -585,7 +585,7 @@ public class ModelAnalyzer {
             log.info("  Extracting Metric Variable Constraints from Constraints model {}... {}", cm.getName(), getListElementNames(constraints));
 
             // for each Constraint...
-            constraints.stream().forEach(con -> {
+            constraints.forEach(con -> {
                 // extract constraint name and metric variable
                 String conName = con.getName();
                 log.info("  Processing Metric Variable Constraint {} from Constraints model {}: ...", con.getName(), cm.getName());
@@ -594,7 +594,16 @@ public class ModelAnalyzer {
                 log.info("  Metric Variable Constraint {}: metric variable: {}", con.getName(), mv.getName());
 
                 // decompose constraint
-                _decomposeMetricVariableConstraint(_TC, con, true);
+                DAGNode mvNode = _decomposeMetricVariableConstraint(_TC, con, true);
+
+                // Remove top-level metric variable and make its children top-level nodes
+                Set<DAGNode> children = _TC.DAG.getNodeChildren(mvNode);
+                for (DAGNode child : children) {
+                    _TC.DAG.removeEdge(mvNode, child);
+                    //_TC.DAG.addEdge(_TC.DAG.getRootNode().getElement(), child.getElement());
+                    _TC.DAG.addTopLevelNode(child.getElement());
+                }
+                _TC.DAG.removeNode(mvNode.getElement());
             });
         });
     }
@@ -679,7 +688,7 @@ public class ModelAnalyzer {
         _decomposeMetricVariableConstraint(_TC, constraint, false);
     }
 
-    protected void _decomposeMetricVariableConstraint(TranslationContext _TC, MetricVariableConstraint constraint, boolean isTopLevel) {
+    protected DAGNode _decomposeMetricVariableConstraint(TranslationContext _TC, MetricVariableConstraint constraint, boolean isTopLevel) {
         log.info("  _decomposeMetricVariableConstraint(): {} :: {}", constraint.getName(), constraint.getClass().getName());
         java.util.Date validity = constraint.getValidity();
         String op = constraint.getComparisonOperator().getName();
@@ -697,16 +706,7 @@ public class ModelAnalyzer {
         log.trace("  _decomposeMetricVariableConstraint(): MVV:   {}", _TC.MVV);
         _decomposeMetricVariable(_TC, mvar);
 
-        // Remove top-level metric variable and make its children top-level
-        if (isTopLevel) {
-            Set<DAGNode> children = _TC.DAG.getNodeChildren(mvNode);
-            for (DAGNode child : children) {
-                _TC.DAG.removeEdge(mvNode, child);
-                //_TC.DAG.addEdge(_TC.DAG.getRootNode().getElement(), child.getElement());
-                _TC.DAG.addTopLevelNode(child.getElement());
-            }
-            _TC.DAG.removeNode(mvNode.getElement());
-        }
+        return mvNode;
     }
 
     protected void _decomposeIfThenConstraint(TranslationContext _TC, IfThenConstraint constraint) {
